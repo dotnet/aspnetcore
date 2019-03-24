@@ -38,7 +38,8 @@ namespace MvcSandbox
             app.UseDeveloperExceptionPage();
             app.UseStaticFiles();
 
-            app.UseRouting(builder =>
+            app.UseRouting();
+            app.UseEndpoints(builder =>
             {
                 builder.MapGet(
                     requestDelegate: WriteEndpoints,
@@ -73,8 +74,6 @@ namespace MvcSandbox
                 builder.MapComponentHub<MvcSandbox.Components.App>("app");
                 builder.MapFallbackToPage("/Components");
             });
-
-            app.UseEndpoint();
         }
 
         private static Task WriteEndpoints(HttpContext httpContext)

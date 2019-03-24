@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
         }
 
         [Fact]
-        public void UseMvc_EndpointRoutingEnabled_AddsRoute()
+        public void UseMvc_EndpointRoutingEnabled_ThrowsException()
         {
             // Arrange
             var services = new ServiceCollection();
@@ -73,21 +73,21 @@ namespace Microsoft.AspNetCore.Mvc.Core.Builder
             var appBuilder = new ApplicationBuilder(serviceProvider);
 
             // Act
-            appBuilder.UseMvc(routes =>
+            var ex = Assert.Throws<InvalidOperationException>(() =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                appBuilder.UseMvc(routes =>
+                {
+                    routes.MapRoute(
+                        name: "default",
+                        template: "{controller=Home}/{action=Index}/{id?}");
+                });
             });
 
-            var routeOptions = appBuilder.ApplicationServices
-                .GetRequiredService<IOptions<RouteOptions>>();
-
-            var dataSource = (ActionEndpointDataSource)Assert.Single(routeOptions.Value.EndpointDataSources, ds => ds is ActionEndpointDataSource);
-
-            var endpointInfo = Assert.Single(dataSource.Routes);
-            Assert.Equal("default", endpointInfo.RouteName);
-            Assert.Equal("{controller=Home}/{action=Index}/{id?}", endpointInfo.Pattern.RawText);
+            var expected =
+                "Endpoint Routing does not support 'IApplicationBuilder.UseMvc(...)'. To use " +
+                "'IApplicationBuilder.UseMvc' set 'MvcOptions.EnableEndpointRouting = false' inside " +
+                "'ConfigureServices(...).";
+            Assert.Equal(expected, ex.Message);
         }
     }
 }

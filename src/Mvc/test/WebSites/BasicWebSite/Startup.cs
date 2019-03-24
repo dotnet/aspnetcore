@@ -35,14 +35,15 @@ namespace BasicWebSite
             // Initializes the RequestId service for each request
             app.UseMiddleware<RequestIdMiddleware>();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     name: "ActionAsMethod",
                     pattern: "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     name: "PageRoute",
                     pattern: "{controller}/{action}/{page}");
             });

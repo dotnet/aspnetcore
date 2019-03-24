@@ -17,16 +17,16 @@ namespace Microsoft.AspNetCore.Builder
         /// the component <typeparamref name="TComponent"/> to this hub instance as the given DOM <paramref name="selector"/>.
         /// </summary>
         /// <typeparam name="TComponent">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</typeparam>
-        /// <param name="routes">The <see cref="RouteBuilder"/>.</param>
+        /// <param name="endpoints">The <see cref="RouteBuilder"/>.</param>
         /// <param name="selector">The selector for the <typeparamref name="TComponent"/>.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
         public static IEndpointConventionBuilder MapComponentHub<TComponent>(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string selector)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (selector == null)
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            return routes.MapComponentHub(typeof(TComponent), selector, ComponentHub.DefaultPath);
+            return endpoints.MapComponentHub(typeof(TComponent), selector, ComponentHub.DefaultPath);
         }
 
         /// <summary>
@@ -42,18 +42,18 @@ namespace Microsoft.AspNetCore.Builder
         /// the component <typeparamref name="TComponent"/> to this hub instance as the given DOM <paramref name="selector"/>.
         /// </summary>
         /// <typeparam name="TComponent">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</typeparam>
-        /// <param name="routes">The <see cref="RouteBuilder"/>.</param>
+        /// <param name="endpoints">The <see cref="RouteBuilder"/>.</param>
         /// <param name="selector">The selector for the <typeparamref name="TComponent"/>.</param>
         /// <param name="path">The path to map to which the <see cref="ComponentHub"/> will be mapped.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
         public static IEndpointConventionBuilder MapComponentHub<TComponent>(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string selector,
             string path)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (path == null)
@@ -66,27 +66,27 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            return routes.MapComponentHub(typeof(TComponent), selector, path);
+            return endpoints.MapComponentHub(typeof(TComponent), selector, path);
         }
 
         /// <summary>
         /// Maps the SignalR <see cref="ComponentHub"/> to the path <paramref name="path"/> and associates
         /// the component <paramref name="componentType"/> to this hub instance as the given DOM <paramref name="selector"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="RouteBuilder"/>.</param>
+        /// <param name="endpoints">The <see cref="RouteBuilder"/>.</param>
         /// <param name="componentType">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</param>
         /// <param name="selector">The selector for the <paramref name="componentType"/>.</param>
         /// <param name="path">The path to map to which the <see cref="ComponentHub"/> will be mapped.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
         public static IEndpointConventionBuilder MapComponentHub(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             Type componentType,
             string selector,
             string path)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (path == null)
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            return routes.MapHub<ComponentHub>(path).AddComponent(componentType, selector);
+            return endpoints.MapHub<ComponentHub>(path).AddComponent(componentType, selector);
         }
     }
 }

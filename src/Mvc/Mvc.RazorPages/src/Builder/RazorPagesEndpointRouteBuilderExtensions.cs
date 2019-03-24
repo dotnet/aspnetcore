@@ -19,18 +19,18 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Adds endpoints for Razor Pages to the <see cref="IEndpointRouteBuilder"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with Razor Pages.</returns>
-        public static IEndpointConventionBuilder MapRazorPages(this IEndpointRouteBuilder routes)
+        public static IEndpointConventionBuilder MapRazorPages(this IEndpointRouteBuilder endpoints)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
-            return GetOrCreateDataSource(routes);
+            return GetOrCreateDataSource(endpoints);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a page endpoint that
         /// matches <paramref name="page"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="page">The page name.</param>
         /// <remarks>
         /// <para>
@@ -57,11 +57,11 @@ namespace Microsoft.AspNetCore.Builder
         /// will be available. 
         /// </para>
         /// </remarks>
-        public static void MapFallbackToPage(this IEndpointRouteBuilder routes, string page)
+        public static void MapFallbackToPage(this IEndpointRouteBuilder endpoints, string page)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (page == null)
@@ -71,14 +71,14 @@ namespace Microsoft.AspNetCore.Builder
 
             PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run. 
-            routes.MapFallback(context => Task.CompletedTask).Add(b =>
+            endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a page endpoint that
         /// matches <paramref name="page"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="page">The action name.</param>
         /// <remarks>
@@ -114,13 +114,13 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static void MapFallbackToPage(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             string page)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -135,14 +135,14 @@ namespace Microsoft.AspNetCore.Builder
 
             PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run. 
-            routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area: null));
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a page endpoint that
         /// matches <paramref name="page"/>, and <paramref name="area"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="page">The action name.</param>
         /// <param name="area">The area name.</param>
         /// <remarks>
@@ -175,13 +175,13 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static void MapFallbackToAreaPage(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string page,
             string area)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (page == null)
@@ -191,14 +191,14 @@ namespace Microsoft.AspNetCore.Builder
 
             PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run. 
-            routes.MapFallback(context => Task.CompletedTask).Add(b =>
+            endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area));
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a page endpoint that
         /// matches <paramref name="page"/>, and <paramref name="area"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="page">The action name.</param>
         /// <param name="area">The area name.</param>
@@ -235,14 +235,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static void MapFallbackToAreaPage(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             string page,
             string area)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -257,14 +257,14 @@ namespace Microsoft.AspNetCore.Builder
 
             PageConventionCollection.EnsureValidPageName(page, nameof(page));
 
-            EnsureRazorPagesServices(routes);
+            EnsureRazorPagesServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run. 
-            routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicPageMetadata(page, area));
@@ -280,9 +280,9 @@ namespace Microsoft.AspNetCore.Builder
             });
         }
 
-        private static void EnsureRazorPagesServices(IEndpointRouteBuilder routes)
+        private static void EnsureRazorPagesServices(IEndpointRouteBuilder endpoints)
         {
-            var marker = routes.ServiceProvider.GetService<PageActionEndpointDataSource>();
+            var marker = endpoints.ServiceProvider.GetService<PageActionEndpointDataSource>();
             if (marker == null)
             {
                 throw new InvalidOperationException(Mvc.Core.Resources.FormatUnableToFindServices(
@@ -292,13 +292,13 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private static PageActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder routes)
+        private static PageActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder endpoints)
         {
-            var dataSource = routes.DataSources.OfType<PageActionEndpointDataSource>().FirstOrDefault();
+            var dataSource = endpoints.DataSources.OfType<PageActionEndpointDataSource>().FirstOrDefault();
             if (dataSource == null)
             {
-                dataSource = routes.ServiceProvider.GetRequiredService<PageActionEndpointDataSource>();
-                routes.DataSources.Add(dataSource);
+                dataSource = endpoints.ServiceProvider.GetRequiredService<PageActionEndpointDataSource>();
+                endpoints.DataSources.Add(dataSource);
             }
 
             return dataSource;

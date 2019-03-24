@@ -38,62 +38,63 @@ namespace RoutingWebSite
 
         public virtual void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "NonParameterConstraintRoute",
                     "NonParameterConstraintRoute/{controller}/{action}",
                     defaults: null,
                     constraints: new { controller = "NonParameterConstraint", nonParameter = new QueryStringConstraint() });
 
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "DataTokensRoute",
                     "DataTokensRoute/{controller}/{action}",
                     defaults: null,
                     constraints: new { controller = "DataTokens" },
                     dataTokens: new { hasDataTokens = true });
 
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "ConventionalTransformerRoute",
                     "ConventionalTransformerRoute/{controller:slugify}/{action=Index}/{param:slugify?}",
                     defaults: null,
                     constraints: new { controller = "ConventionalTransformer" });
 
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "DefaultValuesRoute_OptionalParameter",
                     "DefaultValuesRoute/Optional/{controller=DEFAULTVALUES}/{action=OPTIONALPARAMETER}/{id?}/{**catchAll}",
                     defaults: null,
                     constraints: new { controller = "DefaultValues", action = "OptionalParameter" });
 
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "DefaultValuesRoute_DefaultParameter",
                     "DefaultValuesRoute/Default/{controller=DEFAULTVALUES}/{action=DEFAULTPARAMETER}/{id=17}/{**catchAll}",
                     defaults: null,
                     constraints: new { controller = "DefaultValues", action = "DefaultParameter" });
 
-                routes.MapAreaControllerRoute(
+                endpoints.MapAreaControllerRoute(
                     "flightRoute",
                     "adminRoute",
                     "{area:exists}/{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" },
                     constraints: new { area = "Travel" });
 
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "PageRoute",
                     "{controller}/{action}/{page}",
                     defaults: null,
                     constraints: new { controller = "PageRoute" });
 
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "ActionAsMethod",
                     "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "RouteWithOptionalSegment",
                     "{controller}/{action}/{path?}");
 
-                routes.MapRazorPages();
+                endpoints.MapRazorPages();
             });
 
             app.Map("/afterrouting", b => b.Run(c =>

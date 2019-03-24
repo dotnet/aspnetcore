@@ -5,11 +5,11 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class RazorPagesEndpointRouteBuilderExtensions
     {
-        public static void MapFallbackToAreaPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string page, string area) { }
-        public static void MapFallbackToAreaPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string page, string area) { }
-        public static void MapFallbackToPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string page) { }
-        public static void MapFallbackToPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string page) { }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapRazorPages(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
+        public static void MapFallbackToAreaPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string page, string area) { }
+        public static void MapFallbackToAreaPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string page, string area) { }
+        public static void MapFallbackToPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string page) { }
+        public static void MapFallbackToPage(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string page) { }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapRazorPages(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels

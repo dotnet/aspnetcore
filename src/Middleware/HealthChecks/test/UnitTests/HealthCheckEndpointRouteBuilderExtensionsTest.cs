@@ -24,9 +24,10 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseRouting(routes =>
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        routes.MapHealthChecks("/healthz");
+                        endpoints.MapHealthChecks("/healthz");
                     });
                 })
                 .ConfigureServices(services =>
@@ -50,9 +51,10 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseRouting(routes =>
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        routes.MapHealthChecks("/healthz");
+                        endpoints.MapHealthChecks("/healthz");
                     });
                 })
                 .ConfigureServices(services =>
@@ -79,9 +81,10 @@ namespace Microsoft.AspNetCore.Diagnostics.HealthChecks
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.UseRouting(routes =>
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        routes.MapHealthChecks("/healthz", new HealthCheckOptions
+                        endpoints.MapHealthChecks("/healthz", new HealthCheckOptions
                         {
                             ResponseWriter = async (context, report) =>
                             {

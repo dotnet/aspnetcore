@@ -32,6 +32,10 @@ namespace RazorWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
+            app.UseStaticFiles();
+
+            app.UseRouting();
+
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("en-US", "en-US"),
@@ -44,11 +48,10 @@ namespace RazorWebSite
                     new CultureInfo("en-US")
                 }
             });
-            app.UseStaticFiles();
-            
-            app.UseRouting(routes =>
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }

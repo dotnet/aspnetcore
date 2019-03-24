@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace SecurityWebSite
 {
-    public class StartupWithGlobalDenyAnonymousFilter
+    public class StartupWithGlobalDenyAnonymousFilterWithUseMvc
     {
         public void ConfigureServices(IServiceCollection services)
         {
@@ -24,6 +24,7 @@ namespace SecurityWebSite
 
             services.AddMvc(o =>
             {
+                o.EnableEndpointRouting = false;
                 o.Filters.Add(new AuthorizeFilter());
             })
             .SetCompatibilityVersion(CompatibilityVersion.Latest);
@@ -33,15 +34,9 @@ namespace SecurityWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting();
-
             app.UseAuthentication();
-            app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapDefaultControllerRoute();
-            });
+            app.UseMvcWithDefaultRoute();
         }
     }
 }

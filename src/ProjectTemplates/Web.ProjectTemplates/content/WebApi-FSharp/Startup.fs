@@ -37,10 +37,12 @@ type Startup private () =
 #else
 
 #endif
-        app.UseRouting(fun routes ->
-            routes.MapControllers() |> ignore
-            ) |> ignore
+        app.UseRouting() |> ignore
 
         app.UseAuthorization() |> ignore
+
+        app.UseEndpoints(fun endpoints ->
+            endpoints.MapControllers() |> ignore
+            ) |> ignore
 
     member val Configuration : IConfiguration = null with get, set

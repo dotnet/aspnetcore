@@ -5,29 +5,16 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class GlobalAuthorizationFilterTest : IClassFixture<MvcTestFixture<SecurityWebSite.StartupWithGlobalDenyAnonymousFilter>>
+    public abstract class GlobalAuthorizationFilterTestBase : IClassFixture<MvcTestFixture<SecurityWebSite.StartupWithGlobalDenyAnonymousFilter>>
     {
-        public GlobalAuthorizationFilterTest(MvcTestFixture<SecurityWebSite.StartupWithGlobalDenyAnonymousFilter> fixture)
-        {
-            Factory = fixture.Factories.FirstOrDefault() ?? fixture.WithWebHostBuilder(ConfigureWebHostBuilder);
-            Client = Factory.CreateDefaultClient();
-        }
-
-        private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
-            builder.UseStartup<SecurityWebSite.StartupWithGlobalDenyAnonymousFilter>();
-
-        public HttpClient Client { get; }
-
-        public WebApplicationFactory<SecurityWebSite.StartupWithGlobalDenyAnonymousFilter> Factory { get; }
+        public HttpClient Client { get; protected set; }
 
         [Fact]
-        public async Task DeniesAnonymousUsers_ByDefault()
+        public virtual async Task DeniesAnonymousUsers_ByDefault()
         {
             // Arrange & Act
             var response = await Client.GetAsync("http://localhost/Administration/Index");

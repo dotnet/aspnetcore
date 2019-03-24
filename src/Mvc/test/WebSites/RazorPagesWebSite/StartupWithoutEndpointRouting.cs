@@ -15,7 +15,7 @@ namespace RazorPagesWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options => options.LoginPath = "/Login");
-            services.AddMvc()
+            services.AddMvc(options => options.EnableEndpointRouting = false)
                 .AddMvcLocalization()
                 .AddNewtonsoftJson()
                 .AddRazorPagesOptions(options =>

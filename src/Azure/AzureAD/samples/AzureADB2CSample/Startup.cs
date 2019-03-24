@@ -38,9 +38,18 @@ namespace AzureADB2CSample
         public void Configure(IApplicationBuilder app)
         {
             app.UseHttpsRedirection();
-            app.UseAuthentication();
             app.UseStaticFiles();
-            app.UseMvcWithDefaultRoute();
+
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

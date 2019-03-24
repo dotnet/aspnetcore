@@ -17,25 +17,25 @@ namespace Microsoft.AspNetCore.Builder
         /// Maps incoming requests with the specified path to the specified <see cref="Hub"/> type.
         /// </summary>
         /// <typeparam name="THub">The <see cref="Hub"/> type to map requests to.</typeparam>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder routes, string pattern) where THub : Hub
+        public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder endpoints, string pattern) where THub : Hub
         {
-            return routes.MapHub<THub>(pattern, configureOptions: null);
+            return endpoints.MapHub<THub>(pattern, configureOptions: null);
         }
 
         /// <summary>
         /// Maps incoming requests with the specified path to the specified <see cref="Hub"/> type.
         /// </summary>
         /// <typeparam name="THub">The <see cref="Hub"/> type to map requests to.</typeparam>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder routes, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
+        public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
         {
-            var marker = routes.ServiceProvider.GetService<SignalRMarkerService>();
+            var marker = endpoints.ServiceProvider.GetService<SignalRMarkerService>();
 
             if (marker == null)
             {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Builder
 
             configureOptions?.Invoke(options);
 
-            var conventionBuilder = routes.MapConnections(pattern, options, b =>
+            var conventionBuilder = endpoints.MapConnections(pattern, options, b =>
             {
                 b.UseHub<THub>();
             });

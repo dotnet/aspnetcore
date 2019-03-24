@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will match
         /// requests for non-file-names with the lowest possible priority.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
         /// <remarks>
@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Builder
         /// <c>{*path:nonfile}</c>. The order of the registered endpoint will be <c>int.MaxValue</c>.
         /// </para>
         /// </remarks>
-        public static IEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder routes, RequestDelegate requestDelegate)
+        public static IEndpointConventionBuilder MapFallback(this IEndpointRouteBuilder endpoints, RequestDelegate requestDelegate)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (requestDelegate == null)
@@ -43,14 +43,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(requestDelegate));
             }
 
-            return routes.MapFallback("{*path:nonfile}", requestDelegate);
+            return endpoints.MapFallback("{*path:nonfile}", requestDelegate);
         }
 
         /// <summary>
         /// Adds a specialized <see cref="RouteEndpoint"/> to the <see cref="IEndpointRouteBuilder"/> that will match
         /// the provided pattern with the lowest possible priority.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="requestDelegate">The delegate executed when the endpoint is matched.</param>
         /// <returns>A <see cref="IEndpointConventionBuilder"/> that can be used to further customize the endpoint.</returns>
@@ -68,13 +68,13 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static IEndpointConventionBuilder MapFallback(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             RequestDelegate requestDelegate)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(requestDelegate));
             }
 
-            var conventionBuilder = routes.Map(pattern, requestDelegate);
+            var conventionBuilder = endpoints.Map(pattern, requestDelegate);
             conventionBuilder.WithDisplayName("Fallback " + pattern);
             conventionBuilder.Add(b => ((RouteEndpointBuilder)b).Order = int.MaxValue);
             return conventionBuilder;

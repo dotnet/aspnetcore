@@ -29,14 +29,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<UncreatableHub>("/uncreatable");
+                endpoints.MapHub<UncreatableHub>("/uncreatable");
 
-                routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
-                routes.MapConnectionHandler<WriteThenCloseConnectionHandler>("/echoAndClose");
-                routes.MapConnectionHandler<HttpHeaderConnectionHandler>("/httpheader");
-                routes.MapConnectionHandler<AuthConnectionHandler>("/auth");
+                endpoints.MapConnectionHandler<EchoConnectionHandler>("/echo");
+                endpoints.MapConnectionHandler<WriteThenCloseConnectionHandler>("/echoAndClose");
+                endpoints.MapConnectionHandler<HttpHeaderConnectionHandler>("/httpheader");
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/auth");
             });
         }
     }

@@ -30,22 +30,23 @@ namespace HtmlGenerationWebSite
         {
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     name: "areaRoute",
                     pattern: "{area:exists}/{controller}/{action}/{id?}",
                     defaults: new { action = "Index" });
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     name: "productRoute",
                     pattern: "Product/{action}",
                     defaults: new { controller = "Product" });
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller}/{action}/{id?}",
                     defaults: new { controller = "HtmlGeneration_Home", action = "Index" });
 
-                routes.MapRazorPages();
+                endpoints.MapRazorPages();
             });
         }
 
