@@ -13,6 +13,7 @@ using TriageBuildFailures.GitHub;
 using TriageBuildFailures.Handlers;
 using TriageBuildFailures.TeamCity;
 using TriageBuildFailures.VSTS;
+using TriageBuildFailures.VSTS.Models;
 
 namespace TriageBuildFailures.Commands
 {
@@ -57,7 +58,8 @@ namespace TriageBuildFailures.Commands
             "internal/release",
             "2.2",
             "2.1",
-            "2.0"
+            "2.0",
+            "PR"
         };
 
         /// <summary>
@@ -149,7 +151,7 @@ namespace TriageBuildFailures.Commands
 
         private bool IsWatchedBuild(ICIBuild build)
         {
-            if (_watchedBranches.Any(b => build.Branch.StartsWith(b, StringComparison.OrdinalIgnoreCase)) || build.Branch.StartsWith("refs/pull", StringComparison.OrdinalIgnoreCase))
+            if (_watchedBranches.Any(b => build.Branch.StartsWith(b, StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
