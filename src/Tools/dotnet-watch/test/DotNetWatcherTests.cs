@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
+using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
