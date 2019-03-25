@@ -47,12 +47,6 @@
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)" />
-    <!-- Write a dummy sln so content root will be found correctly -->
-    <WriteLinesToFile
-        File="$(PublishDir)\contentroot.sln"
-        Lines="Ignored"
-        Overwrite="true"
-        Encoding="Unicode"/>
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)" />
