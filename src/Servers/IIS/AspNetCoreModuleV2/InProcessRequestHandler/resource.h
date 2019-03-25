@@ -3,7 +3,6 @@
 // Used by HtmlResponses.rc
 //
 #define IN_PROCESS_RH_STATIC_HTML                       101
-#define IN_PROCESS_RH_EXCEPTION_PAGE_HTML               103
 
 // Next default values for new objects
 // 

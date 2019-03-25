@@ -10,6 +10,16 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, BYTE* content, int length) noexcept
+        : ServerErrorHandler(pContext, statusCode, subStatusCode, statusText, hr, module, disableStartupPage, 0, content, length)
+    {
+    }
+
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page) noexcept
+        : ServerErrorHandler(pContext, statusCode, subStatusCode, statusText, hr, module, disableStartupPage, page, nullptr, 0)
+    {
+    }
+
     ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page, BYTE* content, int length) noexcept
         : REQUEST_HANDLER(pContext),
         m_pContext(pContext),
@@ -18,9 +28,9 @@ public:
         m_statusCode(statusCode),
         m_subStatusCode(subStatusCode),
         m_statusText(std::move(statusText)),
+        m_page(page),
         m_ExceptionInfoContent(content),
         m_length(length),
-        m_page(page),
         m_moduleInstance(module)
     {
     }
@@ -43,24 +53,6 @@ private:
             return;
         }
 
-        if (m_length > 0)
-        {
-            // TODO cleanup
-            HTTP_DATA_CHUNK dataChunk = {};
-            IHttpResponse* pResponse = pContext.GetResponse();
-            pResponse->SetStatus(m_statusCode, m_statusText.c_str(), m_subStatusCode, hr, nullptr, true);
-            pResponse->SetHeader("Content-Type",
-                "text/html",
-                (USHORT)strlen("text/html"),
-                FALSE
-            );
-            dataChunk.DataChunkType = HttpDataChunkFromMemory;
-            dataChunk.FromMemory.pBuffer = m_ExceptionInfoContent;
-            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(m_length);
-            pResponse->WriteEntityChunkByReference(&dataChunk);
-            return;
-        }
-
         HTTP_DATA_CHUNK dataChunk = {};
         IHttpResponse* pResponse = pContext.GetResponse();
         pResponse->SetStatus(m_statusCode, m_statusText.c_str(), m_subStatusCode, hr, nullptr, true);
@@ -69,10 +61,19 @@ private:
             (USHORT)strlen("text/html"),
             FALSE
         );
-        dataChunk.DataChunkType = HttpDataChunkFromMemory;
 
-        dataChunk.FromMemory.pBuffer = page.data();
-        dataChunk.FromMemory.BufferLength = static_cast<ULONG>(page.size());
+        dataChunk.DataChunkType = HttpDataChunkFromMemory;
+        if (m_length > 0)
+        {
+            dataChunk.FromMemory.pBuffer = m_ExceptionInfoContent;
+            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(m_length);
+        }
+        else
+        {
+            dataChunk.FromMemory.pBuffer = page.data();
+            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(page.size());
+        }
+      
         pResponse->WriteEntityChunkByReference(&dataChunk);
     }
 
