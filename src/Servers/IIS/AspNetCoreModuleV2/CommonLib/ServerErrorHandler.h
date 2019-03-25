@@ -2,7 +2,6 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
-#include <utility>
 #include "requesthandler.h"
 #include "file_utility.h"
 #include "Environment.h"

@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Views;
@@ -19,6 +20,10 @@ using Microsoft.Extensions.StackTrace.Sources;
 
 internal class StartupHook
 {
+    /// <summary>
+    /// Startup hooks are pieces of code that will run before a users program main executes
+    /// See: https://github.com/dotnet/core-setup/blob/master/Documentation/design-docs/host-startup-hook.md
+    /// </summary>
     public static void Initialize()
     {
         // TODO make this unhandled exception
@@ -26,6 +31,7 @@ internal class StartupHook
         {
             var exception = eventArgs.Exception;
 
+            // Get the content root from IIS.
             var iisConfigData = NativeMethods.HttpGetApplicationProperties();
             var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
 
@@ -33,6 +39,7 @@ internal class StartupHook
             {
                 RuntimeDisplayName = RuntimeInformation.FrameworkDescription
             };
+
             var systemRuntimeAssembly = typeof(System.ComponentModel.DefaultValueAttribute).GetTypeInfo().Assembly;
             var assemblyVersion = new AssemblyName(systemRuntimeAssembly.FullName).Version.ToString();
             var clrVersion = assemblyVersion;
@@ -51,12 +58,28 @@ internal class StartupHook
             model.ErrorDetails = exceptionDetailProvider.GetDetails(exception);
 
             var errorPage = new ErrorPage(model);
+
+            // Create a temporary HttpContext to write the response into.
             var context = new IntermediateHttpContext();
+            // Sync over async here, but you can't have async code in startup hooks.
             errorPage.ExecuteAsync(context).GetAwaiter().GetResult();
-            context.Response.Body.Position = 0;
-            var content = ((MemoryStream)context.Response.Body).ToArray();
+
+            // Get the raw content and set the error page.
+            var stream = (MemoryStream)context.Response.Body;
+            stream.Position = 0;
+            var content = stream.ToArray();
 
             NativeMethods.HttpSetStartupErrorPageContent(content);
+
+            // Second part of startup hook is sending to event log.
+            var stringBuilder = new StringBuilder();
+            stringBuilder.Append("Application: " + Environment.NewLine); // TODO dll name
+            stringBuilder.Append("CoreCLR Version: " + clrVersion + Environment.NewLine);
+            stringBuilder.Append("Description: The process was terminated due to an unhandled exception." + Environment.NewLine);
+            stringBuilder.Append($"Exception Info: {exception.GetType().ToString()}: {exception.Message}" + Environment.NewLine);
+            stringBuilder.Append(exception.StackTrace);
+
+            NativeMethods.HttpSetStartupExceptionEventLogMessage(stringBuilder.ToString());
         };
     }
 
@@ -68,7 +91,7 @@ internal class StartupHook
 
         public override IFeatureCollection Features => throw new NotImplementedException();
 
-        public override HttpRequest Request => null; 
+        public override HttpRequest Request => null;
 
         public override HttpResponse Response { get; } = new IntermediateResponse();
 

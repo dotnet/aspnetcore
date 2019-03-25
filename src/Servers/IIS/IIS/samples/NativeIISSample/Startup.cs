@@ -118,16 +118,14 @@ namespace NativeIISSample
 
         public static void Main(string[] args)
         {
-            throw new InvalidOperationException("ex!");
+            var host = new WebHostBuilder()
+                .UseKestrel()
+                .UseIIS()
+                .UseIISIntegration()
+                .UseStartup<Startup>()
+                .Build();
 
-            //var host = new WebHostBuilder()
-            //    .UseKestrel()
-            //    .UseIIS()
-            //    .UseIISIntegration()
-            //    .UseStartup<Startup>()
-            //    .Build();
-
-            //host.Run();
+            host.Run();
         }
     }
 }

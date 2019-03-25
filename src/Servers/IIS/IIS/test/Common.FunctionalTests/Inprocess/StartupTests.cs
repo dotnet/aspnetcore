@@ -572,6 +572,24 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await request;
         }
 
+        [ConditionalFact]
+        public async Task ExceptionIsLoggedToEventLogAndPutInResponseForIISExpress()
+        {
+            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(result.IsSuccessStatusCode);
+
+            if (deploymentParameters.ServerType == ServerType.IISExpress)
+            {
+                var content = await result.Content.ReadAsStringAsync();
+                Assert.Contains("InvalidOperationException", content);
+                Assert.Contains("TestSite.Program.Main(string[] args)", content);
+            }
+        }
+
         private static void MoveApplication(
             IISDeploymentParameters parameters,
             string subdirectory)

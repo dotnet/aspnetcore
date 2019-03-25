@@ -15,6 +15,7 @@
 #include "HostFxr.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
+extern std::wstring g_exceptionEventLog;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
@@ -235,8 +236,15 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        bool clrThreadExited;
+        // TODO this doesn't work when running in VS and with the shared framework.
+        // We could hack it so we check if the dll exists before and after setting the current directory
+        // But the best solution would be to be able to set a specific assembly name rather than full path
+        // See: https://github.com/dotnet/core-setup/issues/5556
+        auto startupHookDll = Environment::GetCurrentDirectoryValue() + std::wstring(L"\\Microsoft.AspNetCore.Server.IIS.dll");
+        
+        SetEnvironmentVariable(L"DOTNET_STARTUP_HOOKS", startupHookDll.c_str());
 
+        bool clrThreadExited;
         {
             auto redirectionOutput = LoggingHelpers::CreateOutputs(
                     m_pConfig->QueryStdoutLogEnabled(),
@@ -460,10 +468,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
     {
         LOG_INFOF(L"Setting environment variable %ls=%ls", variable.first.c_str(), variable.second.c_str());
         SetEnvironmentVariable(variable.first.c_str(), variable.second.c_str());
-    }
-
-    auto startupHookDll = Environment::GetCurrentDirectoryValue() + std::wstring(L"\\Microsoft.AspNetCore.Server.IIS.dll");
-    SetEnvironmentVariable(L"DOTNET_STARTUP_HOOKS", startupHookDll.c_str());
+    }  
 
     return S_OK;
 }
@@ -475,6 +480,14 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
 
     if (context.m_exceptionCode != 0)
     {
+        if (!g_exceptionEventLog.empty())
+        {
+            EventLog::Error(
+                ASPNETCORE_EVENT_GENERAL_ERROR,
+                g_exceptionEventLog.c_str()
+            );
+        }
+
         if (!content.empty())
         {
             EventLog::Error(

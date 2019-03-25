@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.IIS.Core;
 
 namespace Microsoft.AspNetCore.Server.IIS
 {
-    public static class NativeMethods
+    internal static class NativeMethods
     {
         internal const int HR_OK = 0;
         internal const int ERROR_NOT_FOUND = unchecked((int)0x80070490);
@@ -149,6 +149,9 @@ namespace Microsoft.AspNetCore.Server.IIS
 
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_set_startup_error_page_content(byte* content, int contentLength);
+
+        [DllImport(AspNetCoreModuleDll)]
+        private static extern void http_set_startup_error_event_log([MarshalAs(UnmanagedType.LPWStr)]string content);
 
         public static void HttpPostCompletion(IntPtr pInProcessHandler, int cbBytes)
         {
@@ -306,6 +309,11 @@ namespace Microsoft.AspNetCore.Server.IIS
             {
                 http_set_startup_error_page_content(bytePtr, content.Length);
             }
+        }
+
+        internal static void HttpSetStartupExceptionEventLogMessage(string content)
+        {
+            http_set_startup_error_event_log(content);
         }
 
         private static void Validate(int hr)
