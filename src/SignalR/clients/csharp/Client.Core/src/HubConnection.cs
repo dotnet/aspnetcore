@@ -123,12 +123,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <remarks>
         /// This value will change if the connection is stopped and restarted.
         /// </remarks>
-        public string ConnectionId {
-            get
-            {
-                return _connectionId;
-            }
-        }
+        public string ConnectionId => _connectionId;
 
         /// <summary>
         /// Indicates the state of the <see cref="HubConnection"/> to the server.

@@ -177,7 +177,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     connectionIdFromServer = await connection.InvokeAsync<string>(nameof(TestHub.GetCallerConnectionId)).OrTimeout();
                     Assert.NotEqual(originalClientConnectionId, connectionIdFromServer);
                     Assert.Equal(connection.ConnectionId, connectionIdFromServer);
-
                 }
                 catch (Exception ex)
                 {
