@@ -51,6 +51,8 @@ namespace Identity.DefaultUI.WebSite
 
             services.AddMvc()
                 .AddNewtonsoftJson();
+                
+            services.AddSingleton<IFileVersionProvider, FileVersionProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
