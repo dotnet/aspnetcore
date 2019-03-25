@@ -27,7 +27,7 @@ namespace Templates.Test
         {
             Project = await ProjectFactory.GetOrCreateProject("workercsharp", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("worker", language: languageOverride);
+            var createResult = await Project.RunDotNetNewAsync("worker");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var projectExtension = "csproj";
