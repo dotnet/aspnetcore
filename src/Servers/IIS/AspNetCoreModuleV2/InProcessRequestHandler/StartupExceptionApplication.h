@@ -16,11 +16,13 @@ public:
         HINSTANCE moduleInstance,
         BOOL disableLogs,
         HRESULT hr,
-        std::wstring errorPageContent)
+        BYTE* errorPageContent,
+        int length)
         : m_disableLogs(disableLogs),
         m_HR(hr),
         m_moduleInstance(moduleInstance),
         m_errorPageContent(errorPageContent),
+        m_length(length),
         InProcessApplicationBase(pServer, pApplication)
     {
     }
@@ -29,22 +31,23 @@ public:
 
     HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler)
     {
-        if (m_errorPageContent.length() > 0)
+        if (m_length > 0)
         {
-            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_EXCEPTION_PAGE_HTML, to_multi_byte_string(m_errorPageContent, CP_UTF8));
+            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_EXCEPTION_PAGE_HTML, m_errorPageContent, m_length);
         }
         else
         {
-            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML, "");
+            *pRequestHandler = new ServerErrorHandler(*pHttpContext, 500, 30, "Internal Server Error", m_HR, m_moduleInstance, m_disableLogs, IN_PROCESS_RH_STATIC_HTML, nullptr, 0);
         }
 
         return S_OK;
     }
 
 private:
-    std::wstring m_errorPageContent;
+    BYTE* m_errorPageContent;
     BOOL m_disableLogs;
     HRESULT m_HR;
     HINSTANCE m_moduleInstance;
+    int m_length;
 };
 

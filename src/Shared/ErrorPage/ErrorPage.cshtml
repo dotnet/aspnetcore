@@ -1,4 +1,4 @@
-﻿@using System
+@using System
 @using System.Globalization
 @using System.Linq
 @using System.Net
@@ -22,13 +22,13 @@
 <html lang="@CultureInfo.CurrentUICulture.TwoLetterISOLanguageName" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
-        <title>@Resources.ErrorPageHtml_Title</title>
+        <title>Internal Server Error</title>
         <style>
             <%$ include: ErrorPage.css %>
         </style>
     </head>
     <body>
-        <h1>@Resources.ErrorPageHtml_UnhandledException</h1>
+        <h1>An error occurred while starting the application.</h1>
         @foreach (var errorDetail in Model.ErrorDetails)
         {
             <div class="titleerror">@errorDetail.Error.GetType().Name: @{ Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); }</div>
@@ -49,7 +49,7 @@
             }
             else
             {
-                <p class="location">@Resources.ErrorPageHtml_UnknownLocation</p>
+                <p class="location">Unknown location</p>
             }
 
             var reflectionTypeLoadException = errorDetail.Error as ReflectionTypeLoadException;

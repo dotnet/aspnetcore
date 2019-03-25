@@ -10,17 +10,18 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
-    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page, std::string errorPageContent) noexcept
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page, BYTE* content, int length) noexcept
         : REQUEST_HANDLER(pContext),
-            m_pContext(pContext),
-            m_HR(hr),
-            m_disableStartupPage(disableStartupPage),
-            m_statusCode(statusCode),
-            m_subStatusCode(subStatusCode),
-            m_statusText(std::move(statusText)),
-            m_ExceptionInfoContent(std::move(errorPageContent)),
-            m_page(page),
-            m_moduleInstance(module)
+        m_pContext(pContext),
+        m_HR(hr),
+        m_disableStartupPage(disableStartupPage),
+        m_statusCode(statusCode),
+        m_subStatusCode(subStatusCode),
+        m_statusText(std::move(statusText)),
+        m_ExceptionInfoContent(content),
+        m_length(length),
+        m_page(page),
+        m_moduleInstance(module)
     {
     }
 
@@ -34,11 +35,29 @@ public:
     }
 
 private:
-    void WriteStaticResponse(IHttpContext& pContext, std::string &page, HRESULT hr, bool disableStartupErrorPage) const
+    void WriteStaticResponse(IHttpContext& pContext, std::string& page, HRESULT hr, bool disableStartupErrorPage) const
     {
         if (disableStartupErrorPage)
         {
             pContext.GetResponse()->SetStatus(m_statusCode, m_statusText.c_str(), m_subStatusCode, E_FAIL);
+            return;
+        }
+
+        if (m_length > 0)
+        {
+            // TODO cleanup
+            HTTP_DATA_CHUNK dataChunk = {};
+            IHttpResponse* pResponse = pContext.GetResponse();
+            pResponse->SetStatus(m_statusCode, m_statusText.c_str(), m_subStatusCode, hr, nullptr, true);
+            pResponse->SetHeader("Content-Type",
+                "text/html",
+                (USHORT)strlen("text/html"),
+                FALSE
+            );
+            dataChunk.DataChunkType = HttpDataChunkFromMemory;
+            dataChunk.FromMemory.pBuffer = m_ExceptionInfoContent;
+            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(m_length);
+            pResponse->WriteEntityChunkByReference(&dataChunk);
             return;
         }
 
@@ -74,22 +93,15 @@ private:
             THROW_LAST_ERROR_IF_NULL(pTempData = static_cast<const char*>(LockResource(rcData)));
             data = std::string(pTempData, size);
 
-            if (page == 101) // TODO
-            {
-                auto additionalErrorLink = Environment::GetEnvironmentVariableValue(L"ANCM_ADDITIONAL_ERROR_PAGE_LINK");
-                std::string additionalHtml;
+            auto additionalErrorLink = Environment::GetEnvironmentVariableValue(L"ANCM_ADDITIONAL_ERROR_PAGE_LINK");
+            std::string additionalHtml;
 
-                if (additionalErrorLink.has_value())
-                {
-                    additionalHtml = format("<a href=\"%S\"> <cite> %S </cite></a> and ", additionalErrorLink->c_str(), additionalErrorLink->c_str());
-                }
-
-                return format(data, additionalHtml.c_str());
-            }
-            else
+            if (additionalErrorLink.has_value())
             {
-                return format(data, m_ExceptionInfoContent.c_str());
+                additionalHtml = format("<a href=\"%S\"> <cite> %S </cite></a> and ", additionalErrorLink->c_str(), additionalErrorLink->c_str());
             }
+
+            return format(data, additionalHtml.c_str());
         }
         catch (...)
         {
@@ -98,7 +110,7 @@ private:
         }
     }
 
-    IHttpContext &m_pContext;
+    IHttpContext& m_pContext;
     HRESULT m_HR;
     bool m_disableStartupPage;
     int m_page;
@@ -106,5 +118,6 @@ private:
     USHORT m_statusCode;
     USHORT m_subStatusCode;
     std::string m_statusText;
-    std::string m_ExceptionInfoContent;
+    byte* m_ExceptionInfoContent;
+    int m_length;
 };

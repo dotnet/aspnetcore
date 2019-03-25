@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.IIS
         private static extern int http_get_authentication_information(IntPtr pInProcessHandler, [MarshalAs(UnmanagedType.BStr)] out string authType, out IntPtr token);
 
         [DllImport(AspNetCoreModuleDll)]
-        private static extern int http_set_startup_error_page_content([MarshalAs(UnmanagedType.LPWStr)]string content);
+        private static extern unsafe int http_set_startup_error_page_content(byte* content, int contentLength);
 
         public static void HttpPostCompletion(IntPtr pInProcessHandler, int cbBytes)
         {
@@ -300,9 +300,12 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_get_authentication_information(pInProcessHandler, out authType, out token));
         }
 
-        public static void HttpSetStartupErrorPageContent(string content)
+        public static unsafe void HttpSetStartupErrorPageContent(byte[] content)
         {
-            http_set_startup_error_page_content(content);
+            fixed(byte* bytePtr = content)
+            {
+                http_set_startup_error_page_content(bytePtr, content.Length);
+            }
         }
 
         private static void Validate(int hr)

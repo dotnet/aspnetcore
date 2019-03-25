@@ -28,7 +28,8 @@ HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 bool                g_fInProcessApplicationCreated = false;
-std::wstring        g_errorPageContent;
+BYTE*               g_errorPageContent;
+int                 g_errorPageLength;
 HINSTANCE           g_hServerModule;
 
 HRESULT
@@ -129,7 +130,7 @@ CreateApplication(
             std::unique_ptr<InProcessOptions> options;
             THROW_IF_FAILED(InProcessOptions::Create(*pServer, pSite, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
-            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, g_hServerModule, options->QueryDisableStartUpErrorPage(), hr, g_errorPageContent);
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, g_hServerModule, options->QueryDisableStartUpErrorPage(), hr, g_errorPageContent, g_errorPageLength);
 
             RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
             *ppApplication = pErrorApplication.release();

@@ -302,7 +302,7 @@ Failure:
     }
     else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
-        ServerErrorHandler handler(*m_pW3Context, 502, 5, "Bad Gateway", hr, g_hOutOfProcessRHModule, m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(), OUT_OF_PROCESS_RH_STATIC_HTML, "");
+        ServerErrorHandler handler(*m_pW3Context, 502, 5, "Bad Gateway", hr, g_hOutOfProcessRHModule, m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(), OUT_OF_PROCESS_RH_STATIC_HTML, nullptr, 0);
         handler.ExecuteRequestHandler();
     }
     else

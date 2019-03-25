@@ -37,6 +37,8 @@
     <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Security.Principal.Windows" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ErrorPage\*.cs" />
   </ItemGroup>
 
   <Import Project="..\..\build\assets.props" />
