@@ -6,11 +6,12 @@
 #include <algorithm>
 #include "constants.h"
 #include "connection_impl.h"
-#include "request_sender.h"
+#include "negotiate.h"
 #include "url_builder.h"
 #include "trace_log_writer.h"
 #include "make_unique.h"
 #include "signalrclient/signalr_exception.h"
+#include "default_http_client.h"
 
 namespace signalr
 {
@@ -23,22 +24,30 @@ namespace signalr
 
     std::shared_ptr<connection_impl> connection_impl::create(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer)
     {
-        return connection_impl::create(url, trace_level, log_writer, std::make_unique<web_request_factory>(), std::make_unique<transport_factory>());
+        return connection_impl::create(url, trace_level, log_writer, nullptr, std::make_unique<transport_factory>());
     }
 
     std::shared_ptr<connection_impl> connection_impl::create(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
-        std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
+        std::unique_ptr<http_client> http_client, std::unique_ptr<transport_factory> transport_factory)
     {
         return std::shared_ptr<connection_impl>(new connection_impl(url, trace_level,
-            log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(web_request_factory), std::move(transport_factory)));
+            log_writer ? log_writer : std::make_shared<trace_log_writer>(), std::move(http_client), std::move(transport_factory)));
     }
 
     connection_impl::connection_impl(const std::string& url, trace_level trace_level, const std::shared_ptr<log_writer>& log_writer,
-        std::unique_ptr<web_request_factory> web_request_factory, std::unique_ptr<transport_factory> transport_factory)
-        : m_base_url(url), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level),
-        m_transport(nullptr), m_web_request_factory(std::move(web_request_factory)), m_transport_factory(std::move(transport_factory)),
-        m_message_received([](const std::string&) noexcept {}), m_disconnected([]() noexcept {})
-    { }
+        std::unique_ptr<http_client> http_client, std::unique_ptr<transport_factory> transport_factory)
+        : m_base_url(url), m_connection_state(connection_state::disconnected), m_logger(log_writer, trace_level), m_transport(nullptr),
+        m_transport_factory(std::move(transport_factory)), m_message_received([](const std::string&) noexcept {}), m_disconnected([]() noexcept {})
+    {
+        if (http_client != nullptr)
+        {
+            m_http_client = std::move(http_client);
+        }
+        else
+        {
+            m_http_client = std::unique_ptr<class http_client>(new default_http_client());
+        }
+    }
 
     connection_impl::~connection_impl()
     {
@@ -105,7 +114,7 @@ namespace signalr
             {
                 return pplx::task_from_exception<negotiation_response>("connection no longer exists");
             }
-            return request_sender::negotiate(*connection->m_web_request_factory, url, connection->m_signalr_client_config);
+            return negotiate::negotiate(*connection->m_http_client, url, connection->m_signalr_client_config);
         }, m_disconnect_cts.get_token())
             .then([weak_connection, start_tce, redirect_count, url](negotiation_response negotiation_response)
         {
@@ -224,52 +233,54 @@ namespace signalr
         const auto& disconnect_cts = m_disconnect_cts;
         const auto& logger = m_logger;
 
-        auto process_response_callback =
-            [weak_connection, disconnect_cts, logger](const std::string& response) mutable
-            {
-                // When a connection is stopped we don't wait for its transport to stop. As a result if the same connection
-                // is immediately re-started the old transport can still invoke this callback. To prevent this we capture
-                // the disconnect_cts by value which allows distinguishing if the message is for the running connection
-                // or for the one that was already stopped. If this is the latter we just ignore it.
-                if (disconnect_cts.get_token().is_canceled())
-                {
-                    logger.log(trace_level::info,
-                        std::string{ "ignoring stray message received after connection was restarted. message: " }
-                        .append(response));
-                    return;
-                }
-
-                auto connection = weak_connection.lock();
-                if (connection)
-                {
-                    connection->process_response(response);
-                }
-            };
-
-
-        auto error_callback =
-            [weak_connection, connect_request_tce, disconnect_cts, logger](const std::exception &e) mutable
-            {
-                // When a connection is stopped we don't wait for its transport to stop. As a result if the same connection
-                // is immediately re-started the old transport can still invoke this callback. To prevent this we capture
-                // the disconnect_cts by value which allows distinguishing if the error is for the running connection
-                // or for the one that was already stopped. If this is the latter we just ignore it.
-                if (disconnect_cts.get_token().is_canceled())
-                {
-                    logger.log(trace_level::info,
-                        std::string{ "ignoring stray error received after connection was restarted. error: " }
-                        .append(e.what()));
-
-                    return;
-                }
-
-                // no op after connection started successfully
-                connect_request_tce.set_exception(e);
-            };
-
         auto transport = connection->m_transport_factory->create_transport(
-            transport_type::websockets, connection->m_logger, connection->m_signalr_client_config,
-            process_response_callback, error_callback);
+            transport_type::websockets, connection->m_logger, connection->m_signalr_client_config);
+
+        transport->on_receive([disconnect_cts, connect_request_tce, logger, weak_connection](std::string message, std::exception_ptr exception)
+            {
+                if (exception != nullptr)
+                {
+                    try
+                    {
+                        // Rethrowing the exception so we can log it
+                        std::rethrow_exception(exception);
+                    }
+                    catch (const std::exception & e)
+                    {
+                        // When a connection is stopped we don't wait for its transport to stop. As a result if the same connection
+                        // is immediately re-started the old transport can still invoke this callback. To prevent this we capture
+                        // the disconnect_cts by value which allows distinguishing if the error is for the running connection
+                        // or for the one that was already stopped. If this is the latter we just ignore it.
+                        if (disconnect_cts.get_token().is_canceled())
+                        {
+                            logger.log(trace_level::info,
+                                std::string{ "ignoring stray error received after connection was restarted. error: " }
+                            .append(e.what()));
+
+                            return;
+                        }
+
+                        // no op after connection started successfully
+                        connect_request_tce.set_exception(exception);
+                    }
+                }
+                else
+                {
+                    if (disconnect_cts.get_token().is_canceled())
+                    {
+                        logger.log(trace_level::info,
+                            std::string{ "ignoring stray message received after connection was restarted. message: " }
+                        .append(message));
+                        return;
+                    }
+
+                    auto connection = weak_connection.lock();
+                    if (connection)
+                    {
+                        connection->process_response(message);
+                    }
+                }
+            });
 
         pplx::create_task([connect_request_tce, disconnect_cts, weak_connection]()
         {
@@ -300,12 +311,14 @@ namespace signalr
         auto query_string = "id=" + m_connection_id;
         auto connect_url = url_builder::build_connect(url, transport->get_transport_type(), query_string);
 
-        transport->connect(connect_url)
-            .then([transport, connect_request_tce, logger](pplx::task<void> connect_task)
+        transport->start(connect_url, transfer_format::text, [transport, connect_request_tce, logger](std::exception_ptr exception)
             mutable {
                 try
                 {
-                    connect_task.get();
+                    if (exception != nullptr)
+                    {
+                        std::rethrow_exception(exception);
+                    }
                     connect_request_tce.set();
                 }
                 catch (const std::exception& e)
@@ -368,12 +381,16 @@ namespace signalr
 
         logger.log(trace_level::info, std::string("sending data: ").append(data));
 
-        return transport->send(data)
-            .then([logger](pplx::task<void> send_task)
+        pplx::task_completion_event<void> event;
+        transport->send(data, [logger, event](std::exception_ptr exception)
             mutable {
                 try
                 {
-                    send_task.get();
+                    if (exception != nullptr)
+                    {
+                        std::rethrow_exception(exception);
+                    }
+                    event.set();
                 }
                 catch (const std::exception &e)
                 {
@@ -382,9 +399,11 @@ namespace signalr
                         std::string("error sending data: ")
                         .append(e.what()));
 
-                    throw;
+                    event.set_exception(exception);
                 }
             });
+
+        return pplx::create_task(event);
     }
 
     pplx::task<void> connection_impl::stop()
@@ -471,7 +490,20 @@ namespace signalr
             change_state(connection_state::disconnecting);
         }
 
-        return m_transport->disconnect();
+        pplx::task_completion_event<void> tce;
+        m_transport->stop([tce](std::exception_ptr exception)
+            {
+                if (exception != nullptr)
+                {
+                    tce.set_exception(exception);
+                }
+                else
+                {
+                    tce.set();
+                }
+            });
+
+        return pplx::create_task(tce);
     }
 
     connection_state connection_impl::get_connection_state() const noexcept

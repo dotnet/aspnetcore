@@ -4,7 +4,7 @@
 #include "stdafx.h"
 #include "test_utils.h"
 #include "test_transport_factory.h"
-#include "test_web_request_factory.h"
+#include "test_http_client.h"
 #include "hub_connection_impl.h"
 #include "trace_log_writer.h"
 #include "memory_log_writer.h"
@@ -17,7 +17,7 @@ std::shared_ptr<hub_connection_impl> create_hub_connection(std::shared_ptr<webso
     std::shared_ptr<log_writer> log_writer = std::make_shared<trace_log_writer>(), trace_level trace_level = trace_level::all)
 {
     return hub_connection_impl::create(create_uri(), trace_level, log_writer,
-        create_test_web_request_factory(), std::make_unique<test_transport_factory>(websocket_client));
+        create_test_http_client(), std::make_unique<test_transport_factory>(websocket_client));
 }
 
 TEST(url, negotiate_appended_to_url)
@@ -27,14 +27,14 @@ TEST(url, negotiate_appended_to_url)
     for (const auto& base_url : base_urls)
     {
         std::string requested_url;
-        auto web_request_factory = std::make_unique<test_web_request_factory>([&requested_url](const std::string& url)
+        auto http_client = std::make_unique<test_http_client>([&requested_url](const std::string& url, http_request)
         {
             requested_url = url;
-            return std::unique_ptr<web_request>(new web_request_stub((unsigned short)404, "Bad request", ""));
+            return http_response{ 404, "" };
         });
 
         auto hub_connection = hub_connection_impl::create(base_url, trace_level::none,
-            std::make_shared<trace_log_writer>(), std::move(web_request_factory),
+            std::make_shared<trace_log_writer>(), std::move(http_client),
             std::make_unique<test_transport_factory>(create_test_websocket_client()));
 
         try
@@ -50,7 +50,7 @@ TEST(url, negotiate_appended_to_url)
 TEST(start, start_starts_connection)
 {
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); });
     auto hub_connection = create_hub_connection(websocket_client);
 
     hub_connection->start().get();
@@ -62,8 +62,8 @@ TEST(start, start_sends_handshake)
 {
     auto message = std::make_shared<std::string>();
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */ [message](const std::string& msg) { *message = msg; return pplx::task_from_result(); });
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); },
+        /* send function */ [message](const std::string& msg, std::function<void(std::exception_ptr)> callback) { *message = msg; callback(nullptr); });
     auto hub_connection = create_hub_connection(websocket_client);
 
     hub_connection->start().get();
@@ -78,11 +78,11 @@ TEST(start, start_waits_for_handshake_response)
     pplx::task_completion_event<void> tce;
     pplx::task_completion_event<void> tceWaitForSend;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [tce, tceWaitForSend]()
+        /* receive function */ [tce, tceWaitForSend](std::function<void(std::string, std::exception_ptr)> callback)
         {
             tceWaitForSend.set();
             pplx::task<void>(tce).get();
-            return pplx::task_from_result(std::string("{ }\x1e"));
+            callback("{ }\x1e", nullptr);
         });
     auto hub_connection = create_hub_connection(websocket_client);
 
@@ -98,7 +98,7 @@ TEST(start, start_waits_for_handshake_response)
 TEST(start, start_fails_for_handshake_response_with_error)
 {
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{\"error\":\"bad things\"}\x1e")); });
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{\"error\":\"bad things\"}\x1e", nullptr); });
     auto hub_connection = create_hub_connection(websocket_client);
 
     try
@@ -119,11 +119,15 @@ TEST(start, start_fails_if_stop_called_before_handshake_response)
     pplx::task_completion_event<std::string> tce;
     pplx::task_completion_event<void> tceWaitForSend;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [tce]() { return pplx::task<std::string>(tce); },
-        /* send function */ [tceWaitForSend](const std::string &)
+        /* receive function */ [tce](std::function<void(std::string, std::exception_ptr)> callback)
+    {
+        auto str = pplx::task<std::string>(tce).get();
+        callback(str, nullptr);
+    },
+        /* send function */ [tceWaitForSend](const std::string &, std::function<void(std::exception_ptr)> callback)
         {
             tceWaitForSend.set();
-            return pplx::task_from_result();
+            callback(nullptr);
         });
     auto hub_connection = create_hub_connection(websocket_client);
 
@@ -147,7 +151,7 @@ TEST(start, start_fails_if_stop_called_before_handshake_response)
 TEST(stop, stop_stops_connection)
 {
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); });
     auto hub_connection = create_hub_connection(websocket_client);
 
     hub_connection->start().get();
@@ -159,7 +163,7 @@ TEST(stop, stop_stops_connection)
 TEST(stop, disconnected_callback_called_when_hub_connection_stops)
 {
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); });
     auto hub_connection = create_hub_connection(websocket_client);
 
     auto disconnected_invoked = false;
@@ -177,7 +181,7 @@ TEST(stop, connection_stopped_when_going_out_of_scope)
 
     {
         auto websocket_client = create_test_websocket_client(
-            /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
+            /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); });
         auto hub_connection = create_hub_connection(websocket_client, writer, trace_level::state_changes);
 
         hub_connection->start().get();
@@ -205,7 +209,7 @@ TEST(stop, stop_cancels_pending_callbacks)
 {
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number]()
+        /* receive function */ [call_number](std::function<void(std::string, std::exception_ptr)> callback)
         mutable {
         std::string responses[]
         {
@@ -218,7 +222,7 @@ TEST(stop, stop_cancels_pending_callbacks)
             call_number++;
         }
 
-        return pplx::task_from_result(responses[call_number]);
+        callback(responses[call_number], nullptr);
     });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -241,7 +245,7 @@ TEST(stop, pending_callbacks_finished_if_hub_connections_goes_out_of_scope)
 {
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number]()
+        /* receive function */ [call_number](std::function<void(std::string, std::exception_ptr)> callback)
         mutable {
         std::string responses[]
         {
@@ -254,7 +258,7 @@ TEST(stop, pending_callbacks_finished_if_hub_connections_goes_out_of_scope)
             call_number++;
         }
 
-        return pplx::task_from_result(responses[call_number]);
+        callback(responses[call_number], nullptr);
     });
 
     pplx::task<web::json::value> t;
@@ -280,7 +284,7 @@ TEST(hub_invocation, hub_connection_invokes_users_code_on_hub_invocations)
 {
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number]()
+        /* receive function */ [call_number](std::function<void(std::string, std::exception_ptr)> callback)
     mutable {
         std::string responses[]
         {
@@ -290,7 +294,7 @@ TEST(hub_invocation, hub_connection_invokes_users_code_on_hub_invocations)
 
         call_number = std::min(call_number + 1, 1);
 
-        return pplx::task_from_result(responses[call_number]);
+        callback(responses[call_number], nullptr);
     });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -315,16 +319,17 @@ TEST(send, creates_correct_payload)
     bool handshakeReceived = false;
 
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */[&payload, &handshakeReceived](const std::string& m)
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); },
+        /* send function */[&payload, &handshakeReceived](const std::string& m, std::function<void(std::exception_ptr)> callback)
         {
             if (handshakeReceived)
             {
                 payload = m;
-                return pplx::task_from_result();
+                callback(nullptr);
+                return;
             }
             handshakeReceived = true;
-            return pplx::task_from_result();
+            callback(nullptr);
         });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -341,7 +346,7 @@ TEST(send, does_not_wait_for_server_response)
     pplx::task_completion_event<void> waitForSend;
 
     auto websocket_client = create_test_websocket_client(
-    /* receive function */ [waitForSend, call_number]() mutable
+    /* receive function */ [waitForSend, call_number](std::function<void(std::string, std::exception_ptr)> callback) mutable
     {
         std::string responses[]
         {
@@ -356,7 +361,7 @@ TEST(send, does_not_wait_for_server_response)
             pplx::task<void>(waitForSend).get();
         }
 
-        return pplx::task_from_result(responses[call_number]);
+        callback(responses[call_number], nullptr);
     });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -373,16 +378,17 @@ TEST(invoke, creates_correct_payload)
     bool handshakeReceived = false;
 
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */[&payload, &handshakeReceived](const std::string& m)
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); },
+        /* send function */[&payload, &handshakeReceived](const std::string& m, std::function<void(std::exception_ptr)> callback)
     {
         if (handshakeReceived)
         {
             payload = m;
-            return pplx::task_from_exception<void>(std::runtime_error("error"));
+            callback(std::make_exception_ptr(std::runtime_error("error")));
+            return;
         }
         handshakeReceived = true;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -404,15 +410,16 @@ TEST(invoke, callback_not_called_if_send_throws)
 {
     bool handshakeReceived = false;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); },
-        /* send function */[handshakeReceived](const std::string&) mutable
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); },
+        /* send function */[handshakeReceived](const std::string&, std::function<void(std::exception_ptr)> callback) mutable
         {
             if (handshakeReceived)
             {
-                return pplx::task_from_exception<void>(std::runtime_error("error"));
+                callback(std::make_exception_ptr(std::runtime_error("error")));
+                return;
             }
             handshakeReceived = true;
-            return pplx::task_from_result();
+            callback(nullptr);
         });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -440,7 +447,7 @@ TEST(invoke, invoke_returns_value_returned_from_the_server)
 
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number, callback_registered_event]()
+        /* receive function */ [call_number, callback_registered_event](std::function<void(std::string, std::exception_ptr)> callback)
         mutable {
         std::string responses[]
         {
@@ -455,7 +462,7 @@ TEST(invoke, invoke_returns_value_returned_from_the_server)
             callback_registered_event->wait();
         }
 
-        return pplx::task_from_result(responses[call_number]);
+        callback(responses[call_number], nullptr);
     });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -476,7 +483,7 @@ TEST(invoke, invoke_propagates_errors_from_server_as_hub_exceptions)
 
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number, callback_registered_event]()
+        /* receive function */ [call_number, callback_registered_event](std::function<void(std::string, std::exception_ptr)> callback)
         mutable {
         std::string responses[]
         {
@@ -491,7 +498,7 @@ TEST(invoke, invoke_propagates_errors_from_server_as_hub_exceptions)
             callback_registered_event->wait();
         }
 
-        return pplx::task_from_result(responses[call_number]);
+        callback(responses[call_number], nullptr);
     });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -519,7 +526,7 @@ TEST(invoke, unblocks_task_when_server_completes_call)
 
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number, callback_registered_event]()
+        /* receive function */ [call_number, callback_registered_event](std::function<void(std::string, std::exception_ptr)> callback)
         mutable {
         std::string responses[]
         {
@@ -534,7 +541,7 @@ TEST(invoke, unblocks_task_when_server_completes_call)
             callback_registered_event->wait();
         }
 
-        return pplx::task_from_result(responses[call_number]);
+        callback(responses[call_number], nullptr);
     });
 
     auto hub_connection = create_hub_connection(websocket_client);
@@ -557,7 +564,7 @@ TEST(receive, logs_if_callback_for_given_id_not_found)
 
     int call_number = -1;
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ [call_number, message_received_event, handshake_sent]()
+        /* receive function */ [call_number, message_received_event, handshake_sent](std::function<void(std::string, std::exception_ptr)> callback)
         mutable {
         std::string responses[]
         {
@@ -575,12 +582,12 @@ TEST(receive, logs_if_callback_for_given_id_not_found)
             message_received_event->set();
         }
 
-        return pplx::task_from_result(responses[call_number]);
+        callback(responses[call_number], nullptr);
     },
-    [handshake_sent](const std::string&)
+    [handshake_sent](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
         handshake_sent->set();
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
@@ -602,7 +609,7 @@ TEST(invoke_void, invoke_creates_runtime_error)
 
    int call_number = -1;
    auto websocket_client = create_test_websocket_client(
-       /* receive function */ [call_number, callback_registered_event]()
+       /* receive function */ [call_number, callback_registered_event](std::function<void(std::string, std::exception_ptr)> callback)
        mutable {
        std::string responses[]
        {
@@ -617,7 +624,7 @@ TEST(invoke_void, invoke_creates_runtime_error)
            callback_registered_event->wait();
        }
 
-       return pplx::task_from_result(responses[call_number]);
+       callback(responses[call_number], nullptr);
    });
 
    auto hub_connection = create_hub_connection(websocket_client);
@@ -643,7 +650,7 @@ TEST(invoke_void, invoke_creates_runtime_error)
 TEST(connection_id, can_get_connection_id)
 {
     auto websocket_client = create_test_websocket_client(
-        /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
+        /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); });
     auto hub_connection = create_hub_connection(websocket_client);
 
     ASSERT_EQ("", hub_connection->get_connection_id());
@@ -692,7 +699,7 @@ TEST(on, cannot_register_handler_if_connection_not_in_disconnected_state)
     try
     {
         auto websocket_client = create_test_websocket_client(
-            /* receive function */ []() { return pplx::task_from_result(std::string("{ }\x1e")); });
+            /* receive function */ [](std::function<void(std::string, std::exception_ptr)> callback) { callback("{ }\x1e", nullptr); });
         auto hub_connection = create_hub_connection(websocket_client);
 
         hub_connection->start().get();

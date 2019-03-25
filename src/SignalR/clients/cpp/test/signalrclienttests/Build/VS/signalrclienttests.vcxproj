@@ -45,6 +45,7 @@
     <ClInclude Include="..\..\memory_log_writer.h" />
     <ClInclude Include="..\..\stdafx.h" />
     <ClInclude Include="..\..\targetver.h" />
+    <ClInclude Include="..\..\test_http_client.h" />
     <ClInclude Include="..\..\test_transport_factory.h" />
     <ClInclude Include="..\..\test_utils.h" />
     <ClInclude Include="..\..\test_websocket_client.h" />
@@ -60,11 +61,12 @@
     <ClCompile Include="..\..\hub_exception_tests.cpp" />
     <ClCompile Include="..\..\logger_tests.cpp" />
     <ClCompile Include="..\..\memory_log_writer.cpp" />
-    <ClCompile Include="..\..\request_sender_tests.cpp" />
+    <ClCompile Include="..\..\negotiate_tests.cpp" />
     <ClCompile Include="..\..\signalrclienttests.cpp" />
     <ClCompile Include="..\..\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="..\..\test_http_client.cpp" />
     <ClCompile Include="..\..\test_transport_factory.cpp" />
     <ClCompile Include="..\..\test_utils.cpp" />
     <ClCompile Include="..\..\test_websocket_client.cpp" />

@@ -8,15 +8,13 @@
 namespace signalr
 {
     std::shared_ptr<transport> transport_factory::create_transport(transport_type transport_type, const logger& logger,
-        const signalr_client_config& signalr_client_config,
-        std::function<void(const std::string&)> process_response_callback,
-        std::function<void(const std::exception&)> error_callback)
+        const signalr_client_config& signalr_client_config)
     {
         if (transport_type == signalr::transport_type::websockets)
         {
             return websocket_transport::create(
                 [signalr_client_config](){ return std::make_shared<default_websocket_client>(signalr_client_config); },
-                logger, process_response_callback, error_callback);
+                logger);
         }
 
         throw std::runtime_error("not implemented");

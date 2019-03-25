@@ -2,46 +2,42 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #include "stdafx.h"
-#include "cpprest/details/basic_types.h"
-#include "signalrclient/web_exception.h"
-#include "request_sender.h"
-#include "web_request_stub.h"
-#include "test_web_request_factory.h"
-#include "signalrclient/signalr_exception.h"
+#include "negotiate.h"
+#include "test_http_client.h"
 
 using namespace signalr;
 
-TEST(request_sender_negotiate, request_created_with_correct_url)
+TEST(negotiate, request_created_with_correct_url)
 {
     std::string requested_url;
-    auto request_factory = test_web_request_factory([&requested_url](const std::string& url) -> std::unique_ptr<web_request>
+    auto http_client = test_http_client([&requested_url](const std::string& url, http_request request)
     {
         std::string response_body(
             "{ \"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
             "\"availableTransports\" : [] }");
 
         requested_url = url;
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
+        return http_response(200, response_body);
     });
 
-    request_sender::negotiate(request_factory, "http://fake/signalr").get();
+    negotiate::negotiate(http_client, "http://fake/signalr").get();
 
     ASSERT_EQ("http://fake/signalr/negotiate", requested_url);
 }
 
-TEST(request_sender_negotiate, negotiation_request_sent_and_response_serialized)
+TEST(negotiate, negotiation_request_sent_and_response_serialized)
 {
-    auto request_factory = test_web_request_factory([](const std::string&) -> std::unique_ptr<web_request>
+    auto request_factory = test_http_client([](const std::string&, http_request request)
     {
         std::string response_body(
             "{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
             "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] },"
             "{ \"transport\": \"ServerSentEvents\", \"transferFormats\": [ \"Text\" ] } ] }");
 
-        return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
+        return http_response(200, response_body);
     });
 
-    auto response = request_sender::negotiate(request_factory, "http://fake/signalr").get();
+    auto response = negotiate::negotiate(request_factory, "http://fake/signalr").get();
 
     ASSERT_EQ("f7707523-307d-4cba-9abf-3eef701241e8", response.connectionId);
     ASSERT_EQ(2u, response.availableTransports.size());
@@ -50,4 +46,21 @@ TEST(request_sender_negotiate, negotiation_request_sent_and_response_serialized)
     ASSERT_EQ("Binary", response.availableTransports[0].transfer_formats[1]);
     ASSERT_EQ(1u, response.availableTransports[1].transfer_formats.size());
     ASSERT_EQ("Text", response.availableTransports[1].transfer_formats[0]);
+}
+
+TEST(negotiate, negotiation_response_with_redirect)
+{
+    auto request_factory = test_http_client([](const std::string&, http_request request)
+    {
+        std::string response_body(
+            "{\"url\" : \"http://redirect\", "
+            "\"accessToken\" : \"secret\" }");
+
+        return http_response(200, response_body);
+    });
+
+    auto response = negotiate::negotiate(request_factory, "http://fake/signalr").get();
+
+    ASSERT_EQ("http://redirect", response.url);
+    ASSERT_EQ("secret", response.accessToken);
 }

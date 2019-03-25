@@ -44,29 +44,32 @@
   <ItemGroup>
     <ClInclude Include="..\..\..\..\include\signalrclient\connection.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\connection_state.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\http_client.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\hub_connection.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\hub_exception.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\log_writer.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\trace_level.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\transfer_format.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\transport_type.h" />
+    <ClInclude Include="..\..\..\..\include\signalrclient\websocket_client.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\web_exception.h" />
     <ClInclude Include="..\..\..\..\include\signalrclient\_exports.h" />
     <ClInclude Include="..\..\..\signalrclient\case_insensitive_comparison_utils.h" />
     <ClInclude Include="..\..\..\signalrclient\connection_impl.h" />
     <ClInclude Include="..\..\..\signalrclient\constants.h" />
+    <ClInclude Include="..\..\..\signalrclient\default_http_client.h" />
     <ClInclude Include="..\..\..\signalrclient\default_websocket_client.h" />
     <ClInclude Include="..\..\..\signalrclient\http_sender.h" />
     <ClInclude Include="..\..\..\signalrclient\hub_connection_impl.h" />
     <ClInclude Include="..\..\..\signalrclient\callback_manager.h" />
     <ClInclude Include="..\..\..\signalrclient\logger.h" />
+    <ClInclude Include="..\..\..\signalrclient\negotiate.h" />
     <ClInclude Include="..\..\..\signalrclient\negotiation_response.h" />
-    <ClInclude Include="..\..\..\signalrclient\request_sender.h" />
     <ClInclude Include="..\..\..\signalrclient\stdafx.h" />
     <ClInclude Include="..\..\..\signalrclient\trace_log_writer.h" />
     <ClInclude Include="..\..\..\signalrclient\transport.h" />
     <ClInclude Include="..\..\..\signalrclient\transport_factory.h" />
     <ClInclude Include="..\..\..\signalrclient\url_builder.h" />
-    <ClInclude Include="..\..\..\signalrclient\websocket_client.h" />
     <ClInclude Include="..\..\..\signalrclient\websocket_transport.h" />
     <ClInclude Include="..\..\..\signalrclient\web_request.h" />
     <ClInclude Include="..\..\..\signalrclient\web_request_factory.h" />
@@ -76,13 +79,14 @@
   <ItemGroup>
     <ClCompile Include="..\..\..\signalrclient\connection.cpp" />
     <ClCompile Include="..\..\..\signalrclient\connection_impl.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\default_http_client.cpp" />
     <ClCompile Include="..\..\..\signalrclient\default_websocket_client.cpp" />
     <ClCompile Include="..\..\..\signalrclient\http_sender.cpp" />
     <ClCompile Include="..\..\..\signalrclient\hub_connection.cpp" />
     <ClCompile Include="..\..\..\signalrclient\hub_connection_impl.cpp" />
     <ClCompile Include="..\..\..\signalrclient\callback_manager.cpp" />
     <ClCompile Include="..\..\..\signalrclient\logger.cpp" />
-    <ClCompile Include="..\..\..\signalrclient\request_sender.cpp" />
+    <ClCompile Include="..\..\..\signalrclient\negotiate.cpp" />
     <ClCompile Include="..\..\..\signalrclient\signalr_client_config.cpp" />
     <ClCompile Include="..\..\..\signalrclient\stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
