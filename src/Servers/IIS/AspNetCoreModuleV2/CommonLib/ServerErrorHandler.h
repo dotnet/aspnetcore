@@ -37,15 +37,13 @@ public:
 
     REQUEST_NOTIFICATION_STATUS ExecuteRequestHandler() override
     {
-        static std::string s_html500Page = GetHtml(m_moduleInstance, m_page);
-
-        WriteStaticResponse(m_pContext, s_html500Page, m_HR, m_disableStartupPage);
+        WriteStaticResponse(m_pContext, m_HR, m_disableStartupPage);
 
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
 
 private:
-    void WriteStaticResponse(IHttpContext& pContext, std::string& page, HRESULT hr, bool disableStartupErrorPage) const
+    void WriteStaticResponse(IHttpContext& pContext, HRESULT hr, bool disableStartupErrorPage) 
     {
         if (disableStartupErrorPage)
         {
@@ -70,8 +68,9 @@ private:
         }
         else
         {
-            dataChunk.FromMemory.pBuffer = page.data();
-            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(page.size());
+            static std::string s_html500Page = GetHtml(m_moduleInstance, m_page);
+            dataChunk.FromMemory.pBuffer = s_html500Page.data();
+            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(s_html500Page.size());
         }
       
         pResponse->WriteEntityChunkByReference(&dataChunk);
@@ -119,6 +118,6 @@ private:
     USHORT m_statusCode;
     USHORT m_subStatusCode;
     std::string m_statusText;
-    byte* m_ExceptionInfoContent;
+    BYTE* m_ExceptionInfoContent;
     int m_length;
 };

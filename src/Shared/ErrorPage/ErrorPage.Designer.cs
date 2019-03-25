@@ -61,7 +61,7 @@ using Microsoft.AspNetCore.Hosting.Views
         {
             WriteLiteral("\r\n");
 #line 17 "ErrorPage.cshtml"
-  
+
     Response.ContentType = "text/html; charset=utf-8";
     var location = string.Empty;
 
@@ -294,7 +294,7 @@ a {
 #line hidden
             WriteLiteral("</h1>\r\n");
 #line 227 "ErrorPage.cshtml"
-        
+
 
 #line default
 #line hidden
@@ -314,32 +314,32 @@ a {
 #line hidden
             WriteLiteral(": ");
 #line 229 "ErrorPage.cshtml"
-                                                                          Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message)); 
+                                                                          Output.Write(HtmlEncodeAndReplaceLineBreaks(errorDetail.Error.Message));
 
 #line default
 #line hidden
 
             WriteLiteral("</div>\r\n");
 #line 230 "ErrorPage.cshtml"
-            
+
 
 #line default
 #line hidden
 
 #line 230 "ErrorPage.cshtml"
-              
+
                 var firstFrame = errorDetail.StackFrames.FirstOrDefault();
                 if (firstFrame != null)
                 {
                     location = firstFrame.Function;
                 }
-            
+
 
 #line default
 #line hidden
 
 #line 236 "ErrorPage.cshtml"
-             
+
             if (!string.IsNullOrEmpty(location) && firstFrame != null && !string.IsNullOrEmpty(firstFrame.File))
             {
 
@@ -417,7 +417,7 @@ WriteAttributeValue("", 4852, firstFrame.File, 4852, 16, false);
 
             WriteLiteral("                    <h3>Loader Exceptions:</h3>\r\n                    <ul>\r\n");
 #line 257 "ErrorPage.cshtml"
-                        
+
 
 #line default
 #line hidden
@@ -453,18 +453,18 @@ WriteAttributeValue("", 4852, firstFrame.File, 4852, 16, false);
 
             WriteLiteral("        <div id=\"stackpage\" class=\"page\">\r\n            <ul>\r\n");
 #line 267 "ErrorPage.cshtml"
-                
+
 
 #line default
 #line hidden
 
 #line 267 "ErrorPage.cshtml"
-                  
+
                     var exceptionCount = 0;
                     var stackFrameCount = 0;
                     var exceptionDetailId = "";
                     var frameId = "";
-                
+
 
 #line default
 #line hidden
@@ -473,22 +473,22 @@ WriteAttributeValue("", 4852, firstFrame.File, 4852, 16, false);
 #line 273 "ErrorPage.cshtml"
                  foreach (var errorDetail in Model.ErrorDetails)
                 {
-                    
+
 
 #line default
 #line hidden
 
 #line 275 "ErrorPage.cshtml"
-                      
+
                         exceptionCount++;
                         exceptionDetailId = "exceptionDetail" + exceptionCount;
-                    
+
 
 #line default
 #line hidden
 
 #line 278 "ErrorPage.cshtml"
-                     
+
 
 #line default
 #line hidden
@@ -507,7 +507,7 @@ WriteAttributeValue("", 4852, firstFrame.File, 4852, 16, false);
 #line hidden
             WriteLiteral("</h2>\r\n                        <ul>\r\n");
 #line 282 "ErrorPage.cshtml"
-                        
+
 
 #line default
 #line hidden
@@ -515,22 +515,22 @@ WriteAttributeValue("", 4852, firstFrame.File, 4852, 16, false);
 #line 282 "ErrorPage.cshtml"
                          foreach (var frame in errorDetail.StackFrames)
                         {
-                            
+
 
 #line default
 #line hidden
 
 #line 284 "ErrorPage.cshtml"
-                              
+
                                 stackFrameCount++;
                                 frameId = "frame" + stackFrameCount;
-                            
+
 
 #line default
 #line hidden
 
 #line 287 "ErrorPage.cshtml"
-                             
+
 
 #line default
 #line hidden
@@ -545,7 +545,7 @@ WriteAttributeValue("", 6879, frameId, 6879, 8, false);
             EndWriteAttribute();
             WriteLiteral(">\r\n");
 #line 289 "ErrorPage.cshtml"
-                                
+
 
 #line default
 #line hidden
@@ -601,7 +601,7 @@ WriteAttributeValue("", 7240, frame.File, 7240, 11, false);
 
             WriteLiteral("\r\n");
 #line 298 "ErrorPage.cshtml"
-                                
+
 
 #line default
 #line hidden
@@ -621,7 +621,7 @@ WriteAttributeValue("", 7240, frame.File, 7240, 11, false);
 #line hidden
             WriteLiteral("\">+</button>\r\n                                    <div class=\"source\">\r\n");
 #line 302 "ErrorPage.cshtml"
-                                        
+
 
 #line default
 #line hidden
@@ -643,7 +643,7 @@ WriteAttributeValue("", 7799, frame.PreContextLine, 7799, 21, false);
             EndWriteAttribute();
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 305 "ErrorPage.cshtml"
-                                                
+
 
 #line default
 #line hidden
@@ -685,7 +685,7 @@ WriteAttributeValue("", 8267, frame.Line, 8267, 11, false);
             EndWriteAttribute();
             WriteLiteral(" class=\"highlight\">\r\n");
 #line 313 "ErrorPage.cshtml"
-                                            
+
 
 #line default
 #line hidden
@@ -712,7 +712,7 @@ WriteAttributeValue("", 8267, frame.Line, 8267, 11, false);
 
             WriteLiteral("                                        </ol>\r\n\r\n");
 #line 319 "ErrorPage.cshtml"
-                                        
+
 
 #line default
 #line hidden
@@ -734,7 +734,7 @@ WriteAttributeValue("", 8779, frame.Line + 1, 8779, 17, false);
             EndWriteAttribute();
             WriteLiteral(" class=\"collapsible\">\r\n");
 #line 322 "ErrorPage.cshtml"
-                                                
+
 
 #line default
 #line hidden

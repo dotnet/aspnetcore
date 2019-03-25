@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             Validate(http_get_authentication_information(pInProcessHandler, out authType, out token));
         }
 
-        public static unsafe void HttpSetStartupErrorPageContent(byte[] content)
+        internal static unsafe void HttpSetStartupErrorPageContent(byte[] content)
         {
             fixed(byte* bytePtr = content)
             {
