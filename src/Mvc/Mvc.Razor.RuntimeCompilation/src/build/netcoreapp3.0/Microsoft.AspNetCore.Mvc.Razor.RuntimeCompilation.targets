@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+    <PreserveCompilationReferences>true</PreserveCompilationReferences>
+  </PropertyGroup>
+</Project>
