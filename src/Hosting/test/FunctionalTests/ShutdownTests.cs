@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/Hosting/issues/1214")]
+        [Flaky("https://github.com/aspnet/Hosting/issues/1214", FlakyOn.All)]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestWaitForShutdown()

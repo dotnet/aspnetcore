@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
         public async Task RunsWithIterationEnvVariable()
         {
             await _app.StartWatcherAsync();

@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             => e is IOException && e.Message.Contains("Unable to read data from the transport connection: The I/O operation has been aborted because of either a thread exit or an application request");
 
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8054")]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8054", FlakyOn.AzP.Windows)]
         [RetryTest(nameof(LargeUploadRetryPredicate),
             "Active investigation into potential corefx sockets bug: https://github.com/dotnet/corefx/issues/30691",
             OperatingSystems.Windows,
