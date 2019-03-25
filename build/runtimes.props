@@ -1,6 +1,9 @@
 <Project>
 
   <ItemGroup>
+    <!-- BaselineGenerator is netcoreapp2.1. Other build tools may also require 2.x. -->
+    <DotNetCoreRuntime Include="2.2.1" />
+
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
