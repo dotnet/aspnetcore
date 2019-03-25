@@ -32,6 +32,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Core" />
     <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <Reference Include="Microsoft.Extensions.FileProviders.Physical" />
     <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
     <Reference Include="System.IO.Pipelines" />
     <Reference Include="System.Security.Principal.Windows" />
