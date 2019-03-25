@@ -3,30 +3,142 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Extensions.DependencyInjection;
+using System.Globalization;
+using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
 {
     internal class DefaultTempDataSerializer : TempDataSerializer
     {
-        public override IDictionary<string, object> Deserialize(byte[] unprotectedData)
+        public override IDictionary<string, object> Deserialize(byte[] value)
         {
-            throw new InvalidOperationException(Core.Resources.FormatReferenceToNewtonsoftJsonRequired(
-                Resources.DeserializingTempData,
-                "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
-                nameof(IMvcBuilder),
-                "AddNewtonsoftJson",
-                "ConfigureServices(...)"));
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            if (value.Length == 0)
+            {
+                return new Dictionary<string, object>();
+            }
+
+            using var jsonDocument = JsonDocument.Parse(value);
+            var rootElement = jsonDocument.RootElement;
+            return DeserializeDictionary(rootElement);
+        }
+
+        private IDictionary<string, object> DeserializeDictionary(JsonElement rootElement)
+        {
+            var deserialized = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            foreach (var item in rootElement.EnumerateObject())
+            {
+                object deserializedValue;
+                switch (item.Value.Type)
+                {
+                    case JsonValueType.False:
+                    case JsonValueType.True:
+                        deserializedValue = item.Value.GetBoolean();
+                        break;
+
+                    case JsonValueType.Number:
+                        deserializedValue = item.Value.GetInt32();
+                        break;
+
+                    case JsonValueType.String:
+                        var stringValue = item.Value.GetString();
+                        if (DateTime.TryParseExact(stringValue, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dateTime))
+                        {
+                            deserializedValue = dateTime;
+                        }
+                        else
+                        {
+                            deserializedValue = stringValue;
+                        }
+                        break;
+
+                    case JsonValueType.Null:
+                        deserializedValue = null;
+                        break;
+
+                    default:
+                        throw new InvalidOperationException(Resources.FormatTempData_CannotDeserializeType(item.Value.Type));
+                }
+
+                deserialized[item.Name] = deserializedValue;
+            }
+
+            return deserialized;
         }
 
         public override byte[] Serialize(IDictionary<string, object> values)
         {
-            throw new InvalidOperationException(Core.Resources.FormatReferenceToNewtonsoftJsonRequired(
-                Resources.SerializingTempData,
-                "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
-                nameof(IMvcBuilder),
-                "AddNewtonsoftJson",
-                "ConfigureServices(...)"));
+            if (values == null || values.Count == 0)
+            {
+                return Array.Empty<byte>();
+            }
+
+            using (var bufferWriter = new ArrayBufferWriter<byte>())
+            {
+                var writer = new Utf8JsonWriter(bufferWriter);
+                writer.WriteStartObject();
+                foreach (var (key, value) in values)
+                {
+                    if (value == null)
+                    {
+                        writer.WriteNull(key);
+                        continue;
+                    }
+
+                    // We want to allow only simple types to be serialized.
+                    if (!CanSerializeType(value.GetType()))
+                    {
+                        throw new InvalidOperationException(
+                            Resources.FormatTempData_CannotSerializeType(
+                                typeof(DefaultTempDataSerializer).FullName,
+                                value.GetType()));
+                    }
+
+                    switch (value)
+                    {
+                        case Enum _:
+                            writer.WriteNumber(key, (int)value);
+                            break;
+
+                        case string stringValue:
+                            writer.WriteString(key, stringValue);
+                            break;
+
+                        case int intValue:
+                            writer.WriteNumber(key, intValue);
+                            break;
+
+                        case bool boolValue:
+                            writer.WriteBoolean(key, boolValue);
+                            break;
+
+                        case DateTime dateTimeValue:
+                            writer.WriteString(key, dateTimeValue.ToString("o", CultureInfo.InvariantCulture));
+                            break;
+                    }
+                }
+                writer.WriteEndObject();
+                writer.Flush();
+
+                return bufferWriter.WrittenMemory.ToArray();
+            }
+        }
+
+        public override bool CanSerializeType(Type type)
+        {
+            type = Nullable.GetUnderlyingType(type) ?? type;
+
+            return
+                type.IsEnum ||
+                type == typeof(int) ||
+                type == typeof(string) ||
+                type == typeof(bool) ||
+                type == typeof(DateTime);
         }
     }
 }
