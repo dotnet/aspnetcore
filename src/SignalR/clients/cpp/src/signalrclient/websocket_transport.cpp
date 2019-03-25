@@ -73,72 +73,47 @@ namespace signalr
                     }
                     catch (const std::exception & e)
                     {
-                        cts.cancel();
-
                         logger.log(
                             trace_level::errors,
                             std::string("[websocket transport] error receiving response from websocket: ")
                             .append(e.what()));
-
-                        std::promise<void> prom;
-                        websocket_client->stop([&prom](std::exception_ptr exception)
-                            {
-                                if (exception != nullptr)
-                                {
-                                    prom.set_exception(exception);
-                                }
-                                else
-                                {
-                                    prom.set_value();
-                                }
-                            });
-                        try
-                        {
-                            prom.get_future().get();
-                        }
-                        // We prefer the outer exception bubbling up to the user
-                        // REVIEW: log here?
-                        catch (...) { }
-
-                        auto transport = weak_transport.lock();
-                        if (transport)
-                        {
-                            transport->m_close_callback(exception);
-                        }
                     }
                     catch (...)
                     {
-                        cts.cancel();
-
                         logger.log(
                             trace_level::errors,
                             std::string("[websocket transport] unknown error occurred when receiving response from websocket"));
 
-                        std::promise<void> prom;
-                        websocket_client->stop([&prom](std::exception_ptr exception)
-                            {
-                                if (exception != nullptr)
-                                {
-                                    prom.set_exception(exception);
-                                }
-                                else
-                                {
-                                    prom.set_value();
-                                }
-                            });
-                        try
-                        {
-                            prom.get_future().get();
-                        }
-                        // We prefer the outer exception bubbling up to the user
-                        // REVIEW: log here?
-                        catch (...) {}
+                        exception = std::make_exception_ptr(signalr_exception("unknown error"));
+                    }
 
-                        auto transport = weak_transport.lock();
-                        if (transport)
+                    cts.cancel();
+
+                    std::promise<void> promise;
+                    websocket_client->stop([&promise](std::exception_ptr exception)
+                    {
+                        if (exception != nullptr)
                         {
-                            transport->m_close_callback(std::make_exception_ptr(signalr_exception("unknown error")));
+                            promise.set_exception(exception);
                         }
+                        else
+                        {
+                            promise.set_value();
+                        }
+                    });
+
+                    try
+                    {
+                        promise.get_future().get();
+                    }
+                    // We prefer the outer exception bubbling up to the user
+                    // REVIEW: log here?
+                    catch (...) {}
+
+                    auto transport = weak_transport.lock();
+                    if (transport)
+                    {
+                        transport->m_close_callback(exception);
                     }
 
                     return;
