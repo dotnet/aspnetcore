@@ -27,6 +27,17 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await register.SubmitRegisterFormForValidUserAsync(userName, password);
         }
 
+        internal static async Task<RegisterConfirmation> RegisterNewUserAsyncWithConfirmation(HttpClient client, string userName = null, string password = null, bool hasRealEmailSender = false)
+        {
+            userName = userName ?? $"{Guid.NewGuid()}@example.com";
+            password = password ?? $"!Test.Password1$";
+
+            var index = await Index.CreateAsync(client);
+            var register = await index.ClickRegisterLinkAsync();
+
+            return await register.SubmitRegisterFormWithConfirmation(userName, password, hasRealEmailSender);
+        }
+
 
         internal static async Task<Index> LoginExistingUserAsync(HttpClient client, string userName, string password)
         {
