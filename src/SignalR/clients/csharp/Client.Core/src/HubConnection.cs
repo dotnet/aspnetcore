@@ -118,11 +118,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public TimeSpan HandshakeTimeout { get; set; } = DefaultHandshakeTimeout;
 
         /// <summary>
-        /// Get the connections current connection Id.
+        /// Gets the connection's current Id. This value will be cleared when the connection is stopped and will have a new value every time the connection is (re)established.
+        /// This value will be null if the negotiation step is skipped via HttpConnectionOptions or if the WebSockets transport is explicitly specified because the
+        /// client skips negotiation in that case as well.
         /// </summary>
-        /// <remarks>
-        /// This value will change if the connection is stopped and restarted.
-        /// </remarks>
         public string ConnectionId => _connectionId;
 
         /// <summary>
