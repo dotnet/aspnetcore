@@ -21,6 +21,13 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        [TempData]
+        public string StatusMessage { get; set; }
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public virtual Task<IActionResult> OnGetAsync(string userId, string email, string code) => throw new NotImplementedException();
     }
 
@@ -51,7 +58,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             var result = await _userManager.ChangeEmailAsync(user, email, code);
             if (!result.Succeeded)
             {
-                ModelState.AddModelError(string.Empty, "Change email failed.");
+                StatusMessage = "Error changing email.";
                 return Page();
             }
 
@@ -60,7 +67,8 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             var setUserNameResult = await _userManager.SetUserNameAsync(user, email);
             if (!setUserNameResult.Succeeded)
             {
-                throw new InvalidOperationException($"Unexpected error occurred setting name for user with ID '{userId}'.");
+                StatusMessage = "Error changing user name.";
+                return Page();
             }
 
             await _signInManager.RefreshSignInAsync(user);
