@@ -165,7 +165,6 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
                 return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
-
             var userId = await _userManager.GetUserIdAsync(user);
             var email = await _userManager.GetEmailAsync(user);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
