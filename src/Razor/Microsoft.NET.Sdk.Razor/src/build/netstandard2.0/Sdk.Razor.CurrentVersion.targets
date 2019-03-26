@@ -372,13 +372,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolvedRazorConfiguration should only ever have one item in it. If misconfigured, we may resolve more than one item which
       may result in incorrect results or poorly worded build errors.
     -->
-    <Warning Text="Unable to resolve a Razor configuration for the value '$(_RazorConfiguration)'. Available configurations '@(RazorConfiguration)'.'"
-      Code="RazorSDK1000"
+    <Warning Text="Unable to resolve a Razor configuration for the value '$(RazorDefaultConfiguration)'. Available configurations '@(RazorConfiguration->'%(Identity)', ', ')'.'"
+      Code="RAZORSDK1000"
       Condition="'@(ResolvedRazorConfiguration->Count())' == '0'" />
 
-    <Warning Text="More than one Razor configuration was resolved for the value '$(_RazorConfiguration)'. Available configurations '@(RazorConfiguration)'.
-A common cause is a reference to an incompatible version of the 'Microsoft.AspNetCore.Mvc' or 'Microsoft.AspNetCore.Razor.Design' package."
-      Code="RazorSDK1001"
+    <Warning Text="More than one Razor configuration was resolved for the value '$(RazorDefaultConfiguration)'. Available configurations '@(RazorConfiguration->'%(Identity)', ', ')'."
+      Code="RAZORSDK1001"
       Condition="'@(ResolvedRazorConfiguration->Count())' &gt; '1'" />
 
     <FindInList

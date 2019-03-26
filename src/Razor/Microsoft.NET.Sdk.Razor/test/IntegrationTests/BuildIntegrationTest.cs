@@ -607,28 +607,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("SimpleMvc21")]
-        public async Task Building_WorksWhenMultipleRazorConfigurationsArePresent()
-        {
-            TargetFramework = "netcoreapp2.1";
-            AddProjectFileContent(@"
-<ItemGroup>
-    <RazorConfiguration Include=""MVC-2.1"">
-      <Extensions>MVC-2.1;$(CustomRazorExtension)</Extensions>
-    </RazorConfiguration>
-</ItemGroup>");
-
-            // Build
-            var result = await DotnetMSBuild("Build");
-
-            Assert.BuildPassed(result);
-            Assert.FileExists(result, OutputPath, "SimpleMvc21.dll");
-            Assert.FileExists(result, OutputPath, "SimpleMvc21.pdb");
-            Assert.FileExists(result, OutputPath, "SimpleMvc21.Views.dll");
-            Assert.FileExists(result, OutputPath, "SimpleMvc21.Views.pdb");
-        }
-
-        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithoutServer_ErrorDuringBuild_DisplaysErrorInMsBuildOutput()
         {
@@ -688,6 +666,20 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 suppressBuildServer: true);
 
             Assert.BuildWarning(result, "RAZORSDK1004");
+        }
+
+        [Fact]
+        [InitializeTestProject("ClassLibrary")]
+        public async Task Build_WithNoResolvedRazorConfiguration()
+        {
+AddProjectFileContent(@"
+<PropertyGroup>
+    <RazorDefaultConfiguration>Custom12.3</RazorDefaultConfiguration>
+</PropertyGroup>");
+
+            var result = await DotnetMSBuild("Build");
+
+            Assert.BuildWarning(result, "RAZORSDK1000");
         }
 
         private static DependencyContext ReadDependencyContext(string depsFilePath)
