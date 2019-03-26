@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.DotNet.Watcher.Tools.Tests;
 using Xunit;
@@ -25,6 +26,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [InlineData(true)]
         [InlineData(false)]
         [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8267", FlakyOn.AzP.Linux, FlakyOn.AzP.macOS)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
             _app.UsePollingWatcher = usePollingWatcher;
@@ -44,6 +46,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         [ConditionalFact]
         [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8267", FlakyOn.AzP.Linux, FlakyOn.AzP.macOS)]
         public async Task DeleteCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -61,6 +64,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         [ConditionalFact]
         [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/8267", FlakyOn.AzP.Linux, FlakyOn.AzP.macOS)]
         public async Task DeleteSourceFolder()
         {
             await _app.StartWatcherAsync();
