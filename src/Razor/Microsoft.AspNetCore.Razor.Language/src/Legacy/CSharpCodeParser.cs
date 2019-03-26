@@ -2001,9 +2001,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // using Identifier ==> Using Declaration
                 if (!topLevel)
                 {
-                    Context.ErrorSink.OnError(
-                        RazorDiagnosticFactory.CreateParsing_NamespaceImportAndTypeAliasCannotExistWithinCodeBlock(
-                            new SourceSpan(block.Start, block.Name.Length)));
+                    // using Variable Declaration
+
+                    if (!Context.FeatureFlags.AllowUsingVariableDeclarations)
+                    {
+                        Context.ErrorSink.OnError(
+                            RazorDiagnosticFactory.CreateParsing_NamespaceImportAndTypeAliasCannotExistWithinCodeBlock(
+                                new SourceSpan(block.Start, block.Name.Length)));
+                    }
+
+                    // There are cases when a user will do @using var x = 123; At which point we let C# notify the user
+                    // of their error like we do any other invalid expression.
                     if (transition != null)
                     {
                         builder.Add(transition);
