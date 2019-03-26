@@ -541,6 +541,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // These methods are for chunked http responses that use GetMemory/Advance
         private Memory<byte> GetChunkedMemory(int sizeHint)
         {
+            // Calling GetMemory on the PipeWriter can return a size larger than 4096
+            // if the sizeHint is greater.
+            // The max size we allow for chunking is 4096.
             if (sizeHint > _memoryPool.MaxBufferSize)
             {
                 sizeHint = _memoryPool.MaxBufferSize;
