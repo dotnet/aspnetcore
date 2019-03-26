@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await deploymentResult.AssertStarts();
 
             // Just "touching" web.config should be enough
-            deploymentResult.ModifyWebConfig(element => {});
+            deploymentResult.ModifyWebConfig(element => { });
 
             await deploymentResult.AssertRecycledAsync();
         }
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var processBefore = await deploymentResult.HttpClient.GetStringAsync("/ProcessId");
 
             // Just "touching" web.config should be enough
-            deploymentResult.ModifyWebConfig(element => {});
+            deploymentResult.ModifyWebConfig(element => { });
 
             // Have to retry here to allow ANCM to receive notification and react to it
             // Verify that worker process gets restarted with new process id
@@ -88,7 +88,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(Fixture.GetBaseDeploymentParameters(hostingModel));
 
             await deploymentResult.AssertStarts();
-            var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response => {
+            var load = Helpers.StressLoad(deploymentResult.HttpClient, "/HelloWorld", response =>
+            {
                 var statusCode = (int)response.StatusCode;
                 Assert.True(statusCode == 200 || statusCode == 503, "Status code was " + statusCode);
             });
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 // ModifyWebConfig might fail if web.config is being read by IIS
                 RetryHelper.RetryOperation(
-                    () => deploymentResult.ModifyWebConfig(element => {}),
+                    () => deploymentResult.ModifyWebConfig(element => { }),
                     e => Logger.LogError($"Failed to touch web.config : {e.Message}"),
                     retryCount: 3,
                     retryDelayMilliseconds: RetryDelay.Milliseconds);

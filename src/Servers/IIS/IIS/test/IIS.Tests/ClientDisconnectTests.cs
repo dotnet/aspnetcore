@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1817", FlakyOn.All)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1817", FlakyOn.AzP.Windows)]
         public async Task ReaderThrowsResetExceptionOnInvalidBody()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
@@ -319,7 +319,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var requestAborted = CreateTaskCompletionSource();
 
             using (var testServer = await TestServer.Create(
-                async ctx => {
+                async ctx =>
+                {
                     ctx.RequestAborted.Register(() => requestAborted.SetResult(true));
                     requestStarted.SetResult(true);
                     await requestAborted.Task;

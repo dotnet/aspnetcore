@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             return base.ReadAsync_UsesTryAddModelValidationErrorsToModelState();
         }
-        
+
         [Fact(Skip = "https://github.com/dotnet/corefx/issues/36026")]
         public override Task ReadAsync_ReadsValidArray_AsCollectionOfT()
         {
