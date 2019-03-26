@@ -87,11 +87,15 @@
       <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
+    <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />
+    <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
+
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
       <LatestRuntimeFrameworkVersion>$(SharedFxVersion)</LatestRuntimeFrameworkVersion>
       <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
-      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion>
+      <!-- <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion> -->
     </KnownFrameworkReference>
+
   </ItemGroup>
 
   <Import Project="eng\Workarounds.targets" />

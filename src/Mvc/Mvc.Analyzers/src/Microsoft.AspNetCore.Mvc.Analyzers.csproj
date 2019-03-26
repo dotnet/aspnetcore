@@ -15,7 +15,7 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
   </ItemGroup>
 
-  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="Build">
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
 
     <PropertyGroup>
       <NuspecProperties>
