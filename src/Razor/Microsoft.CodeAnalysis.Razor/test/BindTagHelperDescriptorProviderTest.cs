@@ -122,11 +122,11 @@ namespace Test
 
             Assert.Equal("bind-MyProperty", attribute.Name);
             Assert.Equal("MyProperty", attribute.GetPropertyName());
-            Assert.Equal("string Test.MyComponent.MyProperty", attribute.DisplayName);
+            Assert.Equal("System.Action<System.String> Test.MyComponent.MyProperty", attribute.DisplayName);
 
             // Defined from the property type
-            Assert.Equal("System.String", attribute.TypeName);
-            Assert.True(attribute.IsStringProperty);
+            Assert.Equal("System.Action<System.String>", attribute.TypeName);
+            Assert.False(attribute.IsStringProperty);
             Assert.False(attribute.IsBooleanProperty);
             Assert.False(attribute.IsEnum);
         }
@@ -237,11 +237,11 @@ namespace Test
 
             Assert.Equal("bind-MyProperty", attribute.Name);
             Assert.Equal("MyProperty", attribute.GetPropertyName());
-            Assert.Equal("string Test.MyComponent.MyProperty", attribute.DisplayName);
+            Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<System.String> Test.MyComponent.MyProperty", attribute.DisplayName);
 
             // Defined from the property type
-            Assert.Equal("System.String", attribute.TypeName);
-            Assert.True(attribute.IsStringProperty);
+            Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<System.String>", attribute.TypeName);
+            Assert.False(attribute.IsStringProperty);
             Assert.False(attribute.IsBooleanProperty);
             Assert.False(attribute.IsEnum);
         }

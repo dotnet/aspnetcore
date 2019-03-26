@@ -437,7 +437,7 @@ namespace Microsoft.CodeAnalysis.Razor
                             changeAttribute.Name);
 
                         attribute.Name = "bind-" + valueAttribute.Name;
-                        attribute.TypeName = valueAttribute.TypeName;
+                        attribute.TypeName = changeAttribute.TypeName;
                         attribute.IsEnum = valueAttribute.IsEnum;
 
                         // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
