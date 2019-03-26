@@ -561,7 +561,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
 
-                var memory = response.BodyWriter.GetMemory();
+                var memory = response.BodyWriter.GetMemory(5000);
                 length.Value = memory.Length;
                 semaphore.Release();
 
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 await response.BodyWriter.FlushAsync();
 
-                var memory = response.BodyWriter.GetMemory();
+                var memory = response.BodyWriter.GetMemory(5000);
                 length.Value = memory.Length;
                 semaphore.Release();
 
