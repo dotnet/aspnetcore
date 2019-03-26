@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Gets or sets the assembly that should be searched, along with its referenced
         /// assemblies, for components matching the URI.
         /// </summary>
-        [Parameter] private Assembly AppAssembly { get; set; }
+        [Parameter] public Assembly AppAssembly { get; private set; }
         
         /// <summary>
         /// Gets or sets the type of the component that should be used as a fallback when no match is found for the requested route.
         /// </summary>
-        [Parameter] private Type FallbackComponent { get; set; }
+        [Parameter] public Type FallbackComponent { get; private set; }
 
         private RouteTable Routes { get; set; }
 

@@ -11,7 +11,10 @@ namespace Microsoft.AspNetCore.Components.Forms
     /// </summary>
     public class InputSelect<T> : InputBase<T>
     {
-        [Parameter] RenderFragment ChildContent { get; set; }
+        /// <summary>
+        /// Gets or sets the child content to be rendering inside the select element.
+        /// </summary>
+        [Parameter] public RenderFragment ChildContent { get; private set; }
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)

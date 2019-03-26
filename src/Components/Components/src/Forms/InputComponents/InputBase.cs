@@ -24,12 +24,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <summary>
         /// Gets a value for the component's 'id' attribute.
         /// </summary>
-        [Parameter] protected string Id { get; private set; }
+        [Parameter] public string Id { get; private set; }
 
         /// <summary>
         /// Gets a value for the component's 'class' attribute.
         /// </summary>
-        [Parameter] protected string Class { get; private set; }
+        [Parameter] public string Class { get; private set; }
 
         /// <summary>
         /// Gets or sets the value of the input. This should be used with two-way binding.
@@ -37,17 +37,17 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <example>
         /// bind-Value="@model.PropertyName"
         /// </example>
-        [Parameter] T Value { get; set; }
+        [Parameter] public T Value { get; private set; }
 
         /// <summary>
         /// Gets or sets a callback that updates the bound value.
         /// </summary>
-        [Parameter] EventCallback<T> ValueChanged { get; set; }
+        [Parameter] public EventCallback<T> ValueChanged { get; private set; }
 
         /// <summary>
         /// Gets or sets an expression that identifies the bound value.
         /// </summary>
-        [Parameter] Expression<Func<T>> ValueExpression { get; set; }
+        [Parameter] public Expression<Func<T>> ValueExpression { get; private set; }
 
         /// <summary>
         /// Gets the associated <see cref="Microsoft.AspNetCore.Components.Forms.EditContext"/>.

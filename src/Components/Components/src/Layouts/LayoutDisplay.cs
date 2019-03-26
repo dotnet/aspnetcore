@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.Components.Layouts
         /// The type must implement <see cref="IComponent"/>.
         /// </summary>
         [Parameter]
-        Type Page { get; set; }
+        public Type Page { get; private set; }
 
         /// <summary>
         /// Gets or sets the parameters to pass to the page.
         /// </summary>
         [Parameter]
-        IDictionary<string, object> PageParameters { get; set; }
+        public IDictionary<string, object> PageParameters { get; private set; }
 
         /// <inheritdoc />
         public void Configure(RenderHandle renderHandle)
