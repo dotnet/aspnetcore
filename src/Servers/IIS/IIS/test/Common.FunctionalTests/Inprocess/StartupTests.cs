@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseForIISExpress()
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters();
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
