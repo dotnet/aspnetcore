@@ -70,7 +70,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 // Get the request ID (first try TraceParent header otherwise Request-ID header
                 if (!httpContext.Request.Headers.TryGetValue(TraceParentHeaderName, out var correlationId))
+                {
                     httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
+                }
 
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
@@ -244,13 +246,17 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var activity = new Activity(ActivityName);
 
             if (!httpContext.Request.Headers.TryGetValue(TraceParentHeaderName, out var requestId))
+            {
                 httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out requestId);
+            }
 
             if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
                 if (httpContext.Request.Headers.TryGetValue(TraceStateHeaderName, out var traceState))
+                {
                     activity.TraceStateString = traceState;
+                }
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
