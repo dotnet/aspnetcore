@@ -15,7 +15,6 @@
 #include "HostFxr.h"
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
-extern std::wstring g_exceptionEventLog;
 
 IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
@@ -480,14 +479,6 @@ IN_PROCESS_APPLICATION::UnexpectedThreadExit(const ExecuteClrContext& context) c
 
     if (context.m_exceptionCode != 0)
     {
-        if (!g_exceptionEventLog.empty())
-        {
-            EventLog::Error(
-                ASPNETCORE_EVENT_GENERAL_ERROR,
-                g_exceptionEventLog.c_str()
-            );
-        }
-
         if (!content.empty())
         {
             EventLog::Error(

@@ -186,6 +186,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 context.Response.StatusCode = 500;
                 context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                context.Response.ContentType = "text/html; charset=utf-8";
                 return errorPage.ExecuteAsync(context);
             };
         }

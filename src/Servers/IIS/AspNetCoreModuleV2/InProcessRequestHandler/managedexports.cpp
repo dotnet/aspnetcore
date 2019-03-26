@@ -10,7 +10,6 @@ extern bool g_fInProcessApplicationCreated;
 extern BYTE* g_errorPageContent;
 extern int g_errorPageLength;
 extern IHttpServer* g_pHttpServer;
-extern std::wstring g_exceptionEventLog;
 
 //
 // Initialization export
@@ -521,13 +520,5 @@ http_set_startup_error_page_content(_In_ byte* errorPageContent, int length)
         memcpy(g_errorPageContent, errorPageContent, length);
     }
 }
-
-EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
-VOID
-http_set_startup_error_event_log(_In_ LPCWSTR errorPageContent)
-{
-    g_exceptionEventLog = std::wstring(errorPageContent);
-}
-// TODO log exception message here.
 
 // End of export

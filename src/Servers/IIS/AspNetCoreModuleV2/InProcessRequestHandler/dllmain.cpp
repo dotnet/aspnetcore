@@ -30,7 +30,6 @@ HANDLE              g_hEventLog = NULL;
 bool                g_fInProcessApplicationCreated = false;
 BYTE*               g_errorPageContent;
 int                 g_errorPageLength;
-std::wstring        g_exceptionEventLog;
 HINSTANCE           g_hServerModule;
 
 HRESULT

@@ -150,9 +150,6 @@ namespace Microsoft.AspNetCore.Server.IIS
         [DllImport(AspNetCoreModuleDll)]
         private static extern unsafe int http_set_startup_error_page_content(byte* content, int contentLength);
 
-        [DllImport(AspNetCoreModuleDll)]
-        private static extern void http_set_startup_error_event_log([MarshalAs(UnmanagedType.LPWStr)]string content);
-
         public static void HttpPostCompletion(IntPtr pInProcessHandler, int cbBytes)
         {
             Validate(http_post_completion(pInProcessHandler, cbBytes));
@@ -309,11 +306,6 @@ namespace Microsoft.AspNetCore.Server.IIS
             {
                 http_set_startup_error_page_content(bytePtr, content.Length);
             }
-        }
-
-        internal static void HttpSetStartupExceptionEventLogMessage(string content)
-        {
-            http_set_startup_error_event_log(content);
         }
 
         private static void Validate(int hr)

@@ -62,7 +62,6 @@ using Microsoft.AspNetCore.Hosting.Views
             WriteLiteral("\r\n");
 #line 17 "ErrorPage.cshtml"
 
-    Response.ContentType = "text/html; charset=utf-8";
     var location = string.Empty;
 
 #line default
