@@ -6,6 +6,8 @@
     <EnableDefaultItems>False</EnableDefaultItems>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IncludeBuildOutput>False</IncludeBuildOutput>
+    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <NoWarn>2008</NoWarn>
     <Description>Templates for ASP.NET Core Blazor projects.</Description>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
