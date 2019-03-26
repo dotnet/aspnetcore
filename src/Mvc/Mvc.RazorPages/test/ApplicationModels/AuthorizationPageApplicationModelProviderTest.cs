@@ -167,9 +167,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         private static PageApplicationModelProviderContext GetApplicationProviderContext(TypeInfo typeInfo)
         {
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+
             var defaultProvider = new DefaultPageApplicationModelProvider(
-                TestModelMetadataProvider.CreateDefaultProvider(),
-                Options.Create(new RazorPagesOptions()));
+                modelMetadataProvider,
+                Options.Create(new RazorPagesOptions()),
+                new DefaultPageApplicationModelPartsProvider(modelMetadataProvider));
 
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);

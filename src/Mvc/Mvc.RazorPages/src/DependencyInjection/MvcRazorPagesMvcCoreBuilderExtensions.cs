@@ -100,6 +100,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, DefaultPageApplicationModelProvider>());
             services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPageApplicationModelPartsProvider, DefaultPageApplicationModelPartsProvider>());
+            services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, AutoValidateAntiforgeryPageApplicationModelProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, AuthorizationPageApplicationModelProvider>());
