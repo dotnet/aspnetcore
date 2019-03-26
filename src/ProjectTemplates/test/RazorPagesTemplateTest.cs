@@ -50,14 +50,14 @@ namespace Templates.Test
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, createResult));
 
+            var pages = new string[] { "/", "/Privacy" };
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Privacy");
+                await aspNetProcess.AssertPagesOk(pages, expectedLinks: pages);
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -66,8 +66,7 @@ namespace Templates.Test
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Privacy");
+                await aspNetProcess.AssertPagesOk(pages, expectedLinks: pages);
             }
         }
 
@@ -103,18 +102,24 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
             Project.AssertEmptyMigration("razorpages");
 
+            var pages = new string[] { "/", "/Identity/Account/Login", "/Privacy"};
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Identity/Account/Login");
-                await aspNetProcess.AssertOk("/Privacy");
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+
+                await aspNetProcess.AssertPagesOk(pages, expectedLinks: pages);
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
             {
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Identity/Account/Login");
-                await aspNetProcess.AssertOk("/Privacy");
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+
+                await aspNetProcess.AssertPagesOk(pages, expectedLinks: pages);
             }
         }
 

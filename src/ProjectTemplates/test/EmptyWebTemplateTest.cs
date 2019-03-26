@@ -45,10 +45,10 @@ namespace Templates.Test
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
-                    aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                   aspNetProcess.Process.HasExited,
+                   ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertLinksWork("/");
+                await aspNetProcess.AssertOk("/");
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -57,7 +57,7 @@ namespace Templates.Test
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertLinksWork("/");
+                await aspNetProcess.AssertOk("/");
             }
         }
     }
