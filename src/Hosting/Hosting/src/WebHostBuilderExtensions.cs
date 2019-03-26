@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Hosting
             return hostBuilder.Configure(configureApp, configureApp.GetMethodInfo().DeclaringType.GetTypeInfo().Assembly.GetName().Name);
         }
 
-        static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp, string startupAssemblyName)
+        private static IWebHostBuilder Configure(this IWebHostBuilder hostBuilder, Action<WebHostBuilderContext, IApplicationBuilder> configureApp, string startupAssemblyName)
         {
             if (configureApp == null)
             {
