@@ -93,7 +93,7 @@
     <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
       <LatestRuntimeFrameworkVersion>$(SharedFxVersion)</LatestRuntimeFrameworkVersion>
       <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
-      <!-- <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion> -->
+      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
   </ItemGroup>
