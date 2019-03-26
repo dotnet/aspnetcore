@@ -93,8 +93,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
-
             // If _fixedEditContext changes, tear down and recreate all descendants.
             // This is so we can safely use the IsFixed optimization on CascadingValue,
             // optimizing for the common case where _fixedEditContext never changes.

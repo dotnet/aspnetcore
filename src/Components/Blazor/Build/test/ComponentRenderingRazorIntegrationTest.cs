@@ -577,7 +577,6 @@ namespace Test
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             for (var i = 0; i < Count; i++)
             {
                 builder.AddContent(i, Template, Value);

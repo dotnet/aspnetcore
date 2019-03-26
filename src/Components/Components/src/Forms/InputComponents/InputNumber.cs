@@ -58,7 +58,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "number");
             builder.AddAttribute(2, "step", _stepAttributeValue);

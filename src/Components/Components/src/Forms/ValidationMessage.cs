@@ -64,8 +64,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
-
             foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
             {
                 builder.OpenElement(0, "div");
