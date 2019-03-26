@@ -21,6 +21,13 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
+        [TempData]
+        public string StatusMessage { get; set; }
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
         public virtual Task<IActionResult> OnGetAsync(string userId, string code) => throw new NotImplementedException();
     }
 
@@ -47,11 +54,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
             }
 
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            if (!result.Succeeded)
-            {
-                throw new InvalidOperationException($"Error confirming email for user with ID '{userId}':");
-            }
-
+            StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
             return Page();
         }
     }

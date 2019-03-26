@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
             }
 
             await _signInManager.RefreshSignInAsync(user);
+            StatusMessage = "Thank you for confirming your email change.";
             return Page();
         }
     }
