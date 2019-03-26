@@ -118,6 +118,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ResponsesAreChunkedAutomaticallyLargeResponseWithOverloadedWriteAsync()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedString = new string('a', 10000);
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync(expectedString);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "ff9",
+                        new string('a', 4089),
+                        "ff9",
+                        new string('a', 4089),
+                        "71e",
+                        new string('a', 1822),
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task SettingConnectionCloseHeaderInAppDoesNotDisableChunking()
         {
             var testContext = new TestServiceContext(LoggerFactory);
