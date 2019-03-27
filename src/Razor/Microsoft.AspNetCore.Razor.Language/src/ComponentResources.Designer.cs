@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Razor.Language {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;@{0}&apos; directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.
+        ///   Looks up a localized string similar to The &apos;@{0}&apos; directive specified in {1} file will not be imported. The directive must appear at the top of each Razor file.
         /// </summary>
         internal static string PageDirectiveCannotBeImported {
             get {

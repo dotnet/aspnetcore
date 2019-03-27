@@ -163,7 +163,7 @@
     <value>TypeName</value>
   </data>
   <data name="PageDirectiveCannotBeImported" xml:space="preserve">
-    <value>The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file</value>
+    <value>The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor file</value>
   </data>
   <data name="PageDirective_Description" xml:space="preserve">
     <value>Mark the page as a routable component.</value>

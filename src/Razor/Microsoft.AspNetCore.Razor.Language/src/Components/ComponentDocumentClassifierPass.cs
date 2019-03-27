@@ -70,47 +70,63 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             @namespace.Content = computedNamespace;
-
-            @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
             @class.ClassName = computedClass;
             @class.Modifiers.Clear();
             @class.Modifiers.Add("public");
 
-            var documentNode = codeDocument.GetDocumentIntermediateNode();
-            var typeParamReferences = documentNode.FindDirectiveReferences(ComponentTypeParamDirective.Directive);
-            for (var i = 0; i < typeParamReferences.Count; i++)
+            if (FileKinds.IsComponentImport(codeDocument.GetFileKind()))
             {
-                var typeParamNode = (DirectiveIntermediateNode)typeParamReferences[i].Node;
-                if (typeParamNode.HasDiagnostics)
+                // We don't want component imports to be considered as real component.
+                // But we still want to generate code for it so we can get diagnostics.
+                @class.BaseType = typeof(object).FullName;
+
+                method.ReturnType = "void";
+                method.MethodName = "Execute";
+                method.Modifiers.Clear();
+                method.Modifiers.Add("protected");
+
+                method.Parameters.Clear();
+            }
+            else
+            {
+                @class.BaseType = ComponentsApi.ComponentBase.FullTypeName;
+
+                var documentNode = codeDocument.GetDocumentIntermediateNode();
+                var typeParamReferences = documentNode.FindDirectiveReferences(ComponentTypeParamDirective.Directive);
+                for (var i = 0; i < typeParamReferences.Count; i++)
                 {
-                    continue;
+                    var typeParamNode = (DirectiveIntermediateNode)typeParamReferences[i].Node;
+                    if (typeParamNode.HasDiagnostics)
+                    {
+                        continue;
+                    }
+
+                    @class.TypeParameters.Add(new TypeParameter() { ParameterName = typeParamNode.Tokens.First().Content, });
                 }
 
-                @class.TypeParameters.Add(new TypeParameter() { ParameterName = typeParamNode.Tokens.First().Content, });
+                method.ReturnType = "void";
+                method.MethodName = ComponentsApi.ComponentBase.BuildRenderTree;
+                method.Modifiers.Clear();
+                method.Modifiers.Add("protected");
+                method.Modifiers.Add("override");
+
+                method.Parameters.Clear();
+                method.Parameters.Add(new MethodParameter()
+                {
+                    ParameterName = "builder",
+                    TypeName = ComponentsApi.RenderTreeBuilder.FullTypeName,
+                });
+
+                // We need to call the 'base' method as the first statement.
+                var callBase = new CSharpCodeIntermediateNode();
+                callBase.Annotations.Add(BuildRenderTreeBaseCallAnnotation, true);
+                callBase.Children.Add(new IntermediateToken
+                {
+                    Kind = TokenKind.CSharp,
+                    Content = $"base.{ComponentsApi.ComponentBase.BuildRenderTree}(builder);"
+                });
+                method.Children.Insert(0, callBase);
             }
-
-            method.ReturnType = "void";
-            method.MethodName = ComponentsApi.ComponentBase.BuildRenderTree;
-            method.Modifiers.Clear();
-            method.Modifiers.Add("protected");
-            method.Modifiers.Add("override");
-
-            method.Parameters.Clear();
-            method.Parameters.Add(new MethodParameter()
-            {
-                ParameterName = "builder",
-                TypeName = ComponentsApi.RenderTreeBuilder.FullTypeName,
-            });
-
-            // We need to call the 'base' method as the first statement.
-            var callBase = new CSharpCodeIntermediateNode();
-            callBase.Annotations.Add(BuildRenderTreeBaseCallAnnotation, true);
-            callBase.Children.Add(new IntermediateToken
-            {
-                Kind = TokenKind.CSharp,
-                Content = $"base.{ComponentsApi.ComponentBase.BuildRenderTree}(builder);"
-            });
-            method.Children.Insert(0, callBase);
         }
 
         internal static bool IsBuildRenderTreeBaseCall(CSharpCodeIntermediateNode node)

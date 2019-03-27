@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.AddDirective(FileKinds.Component, Directive);
+            builder.AddDirective(Directive, FileKinds.Component, FileKinds.ComponentImport);
             builder.Features.Add(new ComponentInjectDirectivePass());
         }
     }

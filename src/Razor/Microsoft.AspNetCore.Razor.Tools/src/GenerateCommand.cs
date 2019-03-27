@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.Extensions.CommandLineUtils;
@@ -286,6 +287,10 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 var outputPath = Path.Combine(projectDirectory, outputs[i]);
                 var fileKind = fileKinds.Count > 0 ? fileKinds[i] : "mvc";
+                if (Language.FileKinds.IsComponent(fileKind))
+                {
+                    fileKind = Language.FileKinds.GetComponentFileKindFromFilePath(sources[i]);
+                }
 
                 items[i] = new SourceItem(sources[i], outputs[i], relativePath[i], fileKind);
             }

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.AddDirective(Directive);
+            builder.AddDirective(Directive, FileKinds.Legacy, FileKinds.Component);
             builder.Features.Add(new FunctionsDirectivePass());
         }
 

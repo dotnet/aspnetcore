@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static readonly RazorDiagnosticDescriptor UnsupportedTagHelperDirective = new RazorDiagnosticDescriptor(
             $"{DiagnosticPrefix}9978",
             () => 
-                "The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document." +
+                "The directives @addTagHelper, @removeTagHelper and @tagHelperPrefix are not valid in a component document. " +
                 "Use '@using <namespace>' directive instead.",
             RazorDiagnosticSeverity.Error);
 
@@ -320,6 +320,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static RazorDiagnostic Create_ChildContentHasInvalidParameterOnComponent(SourceSpan? source, string attribute, string element)
         {
             return RazorDiagnostic.Create(ChildContentHasInvalidParameterOnComponent, source ?? SourceSpan.Undefined, attribute, element);
+        }
+
+        public static readonly RazorDiagnosticDescriptor UnsupportedComponentImportContent =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}10003",
+                () => "Markup, code and block directives are not valid in component imports.",
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic Create_UnsupportedComponentImportContent(SourceSpan? source)
+        {
+            return RazorDiagnostic.Create(UnsupportedComponentImportContent, source ?? SourceSpan.Undefined);
         }
     }
 }

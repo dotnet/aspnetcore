@@ -9,7 +9,21 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorDirectiveFeature : RazorEngineFeatureBase, IRazorDirectiveFeature, IConfigureRazorParserOptionsFeature
     {
-        public ICollection<DirectiveDescriptor> Directives { get; } = new List<DirectiveDescriptor>();
+        // To maintain backwards compatibility, adding to this list will default to legacy file kind.
+        public ICollection<DirectiveDescriptor> Directives
+        {
+            get
+            {
+                ICollection<DirectiveDescriptor> result;
+                if (!DirectivesByFileKind.TryGetValue(FileKinds.Legacy, out result))
+                {
+                    result = new List<DirectiveDescriptor>();
+                    DirectivesByFileKind.Add(FileKinds.Legacy, result);
+                }
+
+                return result;
+            }
+        }
 
         public IDictionary<string, ICollection<DirectiveDescriptor>> DirectivesByFileKind { get; } = new Dictionary<string, ICollection<DirectiveDescriptor>>(StringComparer.OrdinalIgnoreCase);
 
@@ -24,22 +38,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             options.Directives.Clear();
 
-            foreach (var directive in Directives)
-            {
-                options.Directives.Add(directive);
-            }
-
-            if (options.FileKind != null && DirectivesByFileKind.TryGetValue(options.FileKind, out var directives))
+            var fileKind = options.FileKind ?? FileKinds.Legacy;
+            if (DirectivesByFileKind.TryGetValue(fileKind, out var directives))
             {
                 foreach (var directive in directives)
                 {
-                    // Replace any non-file-kind-specific directives
-                    var replaces = options.Directives.Where(d => string.Equals(d.Directive, directive.Directive, StringComparison.Ordinal)).ToArray();
-                    foreach (var replace in replaces)
-                    {
-                        options.Directives.Remove(replace);
-                    }
-
                     options.Directives.Add(directive);
                 }
             }

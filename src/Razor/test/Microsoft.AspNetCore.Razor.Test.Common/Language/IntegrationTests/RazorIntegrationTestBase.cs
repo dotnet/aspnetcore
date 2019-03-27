@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             AdditionalSyntaxTrees = new List<SyntaxTree>();
             AdditionalRazorItems = new List<RazorProjectItem>();
+            ImportItems = new List<RazorProjectItem>();
 
             BaseCompilation = DefaultBaseCompilation;
             Configuration = RazorConfiguration.Default;
@@ -71,6 +72,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         }
 
         internal List<RazorProjectItem> AdditionalRazorItems { get; }
+
+        internal List<RazorProjectItem> ImportItems { get; }
 
         internal List<SyntaxTree> AdditionalSyntaxTrees { get; }
 
@@ -118,6 +121,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
 
+                b.Features.Add(new TestImportProjectFeature(ImportItems));
+
                 if (LineEnding != null)
                 {
                     b.Phases.Insert(0, new ForceLineEndingPhase(LineEnding));
@@ -135,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             });
         }
 
-        internal RazorProjectItem CreateProjectItem(string cshtmlRelativePath, string cshtmlContent)
+        internal RazorProjectItem CreateProjectItem(string cshtmlRelativePath, string cshtmlContent, string fileKind = null)
         {
             var fullPath = WorkingDirectory + PathSeparator + cshtmlRelativePath;
 
@@ -156,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 physicalPath: fullPath,
                 relativePhysicalPath: cshtmlRelativePath,
                 basePath: WorkingDirectory,
-                fileKind: FileKind)
+                fileKind: fileKind ?? FileKind)
             {
                 Content = cshtmlContent.TrimStart(),
             };
@@ -167,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             return CompileToCSharp(DefaultFileName, cshtmlContent, throwOnFailure);
         }
 
-        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent, bool throwOnFailure = true)
+        protected CompileToCSharpResult CompileToCSharp(string cshtmlRelativePath, string cshtmlContent, bool throwOnFailure = true, string fileKind = null)
         {
             if (DeclarationOnly && DesignTime)
             {
@@ -197,7 +202,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 }
 
                 // Result of generating declarations
-                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent);
+                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent, fileKind);
                 codeDocument = projectEngine.ProcessDeclarationOnly(projectItem);
                 var declaration = new CompileToCSharpResult
                 {
@@ -243,7 +248,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 // This will include the built-in components.
                 var projectEngine = CreateProjectEngine(Configuration, BaseCompilation.References.ToArray());
 
-                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent);
+                var projectItem = CreateProjectItem(cshtmlRelativePath, cshtmlContent, fileKind);
 
                 RazorCodeDocument codeDocument;
                 if (DeclarationOnly)
@@ -454,6 +459,23 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 var field = typeof(CodeRenderingContext).GetField("NewLineString", BindingFlags.Static | BindingFlags.NonPublic);
                 var key = field.GetValue(null);
                 codeDocument.Items[key] = LineEnding;
+            }
+        }
+
+        private class TestImportProjectFeature : IImportProjectFeature
+        {
+            private List<RazorProjectItem> _imports;
+
+            public TestImportProjectFeature(List<RazorProjectItem> imports)
+            {
+                _imports = imports;
+            }
+
+            public RazorProjectEngine ProjectEngine { get; set; }
+
+            public IReadOnlyList<RazorProjectItem> GetImports(RazorProjectItem projectItem)
+            {
+                return _imports;
             }
         }
     }

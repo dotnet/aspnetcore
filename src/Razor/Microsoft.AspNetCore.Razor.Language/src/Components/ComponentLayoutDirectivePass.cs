@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             attributeNode.Children.Add(new IntermediateToken()
             {
                 Kind = TokenKind.CSharp,
-                Content = $"[{ComponentsApi.LayoutAttribute.FullTypeName}(typeof({token.Content}))]" + Environment.NewLine,
+                Content = $"[{ComponentsApi.LayoutAttribute.FullTypeName}(typeof({token.Content}))]",
             });
             
             // Insert the new attribute on top of the class

@@ -166,19 +166,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Adds the specified <see cref="DirectiveDescriptor"/> for the provided file kind.
         /// </summary>
         /// <param name="builder">The <see cref="RazorProjectEngineBuilder"/>.</param>
-        /// <param name="fileKind">The file kind, for which to register the directive. See <see cref="FileKinds"/>.</param>
         /// <param name="directive">The <see cref="DirectiveDescriptor"/> to add.</param>
+        /// <param name="fileKinds">The file kinds, for which to register the directive. See <see cref="FileKinds"/>.</param>
         /// <returns>The <see cref="RazorProjectEngineBuilder"/>.</returns>
-        public static RazorProjectEngineBuilder AddDirective(this RazorProjectEngineBuilder builder, string fileKind, DirectiveDescriptor directive)
+        public static RazorProjectEngineBuilder AddDirective(this RazorProjectEngineBuilder builder, DirectiveDescriptor directive, params string[] fileKinds)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (fileKind == null)
-            {
-                throw new ArgumentNullException(nameof(fileKind));
             }
 
             if (directive == null)
@@ -186,15 +181,23 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(directive));
             }
 
-            var directiveFeature = GetDirectiveFeature(builder);
-
-            if (!directiveFeature.DirectivesByFileKind.TryGetValue(fileKind, out var directives))
+            if (fileKinds == null)
             {
-                directives = new List<DirectiveDescriptor>();
-                directiveFeature.DirectivesByFileKind.Add(fileKind, directives);
+                throw new ArgumentNullException(nameof(fileKinds));
             }
 
-            directives.Add(directive);
+            var directiveFeature = GetDirectiveFeature(builder);
+
+            foreach (var fileKind in fileKinds)
+            {
+                if (!directiveFeature.DirectivesByFileKind.TryGetValue(fileKind, out var directives))
+                {
+                    directives = new List<DirectiveDescriptor>();
+                    directiveFeature.DirectivesByFileKind.Add(fileKind, directives);
+                }
+
+                directives.Add(directive);
+            }
 
             return builder;
         }

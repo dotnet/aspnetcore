@@ -27,6 +27,23 @@ namespace Microsoft.AspNetCore.Razor.Language
             return string.Equals(fileKind, FileKinds.ComponentImport, StringComparison.OrdinalIgnoreCase);
         }
 
+        public static string GetComponentFileKindFromFilePath(string filePath)
+        {
+            if (filePath == null)
+            {
+                throw new ArgumentNullException(nameof(filePath));
+            }
+
+            if (string.Equals(ComponentMetadata.ImportsFileName, Path.GetFileName(filePath), StringComparison.Ordinal))
+            {
+                return FileKinds.ComponentImport;
+            }
+            else
+            {
+                return FileKinds.Component;
+            }
+        }
+
         public static string GetFileKindFromFilePath(string filePath)
         {
             if (filePath == null)

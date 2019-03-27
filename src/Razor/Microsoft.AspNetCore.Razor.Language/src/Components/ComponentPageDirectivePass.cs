@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             for (var i = 0; i < directives.Count; i++)
             {
                 var directive = directives[i];
-                if (directive.Node.IsImported())
+                if (FileKinds.IsComponentImport(codeDocument.GetFileKind()) || directive.Node.IsImported())
                 {
                     directive.Node.Diagnostics.Add(ComponentDiagnosticFactory.CreatePageDirective_CannotBeImported(directive.Node.Source.Value));
                 }

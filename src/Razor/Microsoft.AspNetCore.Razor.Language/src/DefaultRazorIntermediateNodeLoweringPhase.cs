@@ -45,7 +45,17 @@ namespace Microsoft.AspNetCore.Razor.Language
             // We need to decide up front if this document is a "component" file. This will affect how
             // lowering behaves.
             LoweringVisitor visitor;
-            if (FileKinds.IsComponent(codeDocument.GetFileKind()) &&
+            if (FileKinds.IsComponentImport(codeDocument.GetFileKind()) &&
+                syntaxTree.Options.FeatureFlags.AllowComponentFileKind)
+            {
+                visitor = new ComponentImportFileKindVisitor(document, builder, syntaxTree.Options.FeatureFlags)
+                {
+                    SourceDocument = syntaxTree.Source,
+                };
+
+                visitor.Visit(syntaxTree.Root);
+            }
+            else if (FileKinds.IsComponent(codeDocument.GetFileKind()) &&
                 syntaxTree.Options.FeatureFlags.AllowComponentFileKind)
             {
                 visitor = new ComponentFileKindVisitor(document, builder, syntaxTree.Options.FeatureFlags)
@@ -1853,6 +1863,58 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
 
                 return builder.ToList();
+            }
+        }
+
+        private class ComponentImportFileKindVisitor : LoweringVisitor
+        {
+            public ComponentImportFileKindVisitor(
+                DocumentIntermediateNode document,
+                IntermediateNodeBuilder builder,
+                RazorParserFeatureFlags featureFlags)
+                : base(document, builder, featureFlags)
+            {
+            }
+
+            public override void DefaultVisit(SyntaxNode node)
+            {
+                base.DefaultVisit(node);
+            }
+
+            public override void VisitMarkupElement(MarkupElementSyntax node)
+            {
+                _document.Diagnostics.Add(
+                    ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+            }
+
+            public override void VisitMarkupCommentBlock(MarkupCommentBlockSyntax node)
+            {
+                _document.Diagnostics.Add(
+                    ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+            }
+
+            public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
+            {
+                _document.Diagnostics.Add(
+                    ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+            }
+
+            public override void VisitCSharpImplicitExpression(CSharpImplicitExpressionSyntax node)
+            {
+                _document.Diagnostics.Add(
+                    ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+            }
+
+            public override void VisitCSharpExplicitExpression(CSharpExplicitExpressionSyntax node)
+            {
+                _document.Diagnostics.Add(
+                    ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+            }
+
+            public override void VisitCSharpStatement(CSharpStatementSyntax node)
+            {
+                _document.Diagnostics.Add(
+                    ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
             }
         }
 
