@@ -19,6 +19,8 @@
     <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
     <HelixAvailableTargetQueue Include="Ubuntu.1810.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Ubuntu.1604.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Ubuntu.1604.Arm64.Docker.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:debian-9-helix-arm64v8-0a0ebdd-20190312215438" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="Ubuntu.1604.Arm64.Docker.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-18.04-helix-arm64v8-0a0ebdd-20190312220351" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Centos.7.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Debian.8.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
