@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public class HeaderPropagationEntry
     {
         /// <summary>
-        /// Gets or sets the name of the header to be used by the <see cref="HeaderPropagationMessageHandler"/> fot the outbound http requests.
+        /// Gets or sets the name of the header to be used by the <see cref="HeaderPropagationMessageHandler"/> for the outbound http requests.
         /// </summary>
         public string OutboundHeaderName { get; set; }
 
