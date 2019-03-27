@@ -1,17 +1,25 @@
-cmake_minimum_required (VERSION 2.8.11)
+cmake_minimum_required (VERSION 3.7)
 project (signalrclient)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC")
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -fPIC -lcrypto -lssl -L/usr/local/Cellar/openssl/1.0.2q/lib")
+if(NOT WIN32)
+  set(EXTRA_FLAGS "-std=c++11 -fPIC")
+endif()
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_FLAGS} -DSIGNALRCLIENT_EXPORTS")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_LDFLAGS}")
 
-set(CPPREST_INCLUDE_DIR "" CACHE FILEPATH "Path to casablanca include dir")
+find_package(cpprestsdk REQUIRED)
+#set(CPPREST_INCLUDE_DIR "" CACHE FILEPATH "Path to casablanca include dir")
 
 include_directories (
-include
-"${CPPREST_INCLUDE_DIR}")
+include)
+#"${CPPREST_INCLUDE_DIR}")
 
-find_library(CPPREST_SO NAMES "cpprest" PATHS ${CPPREST_LIB_DIR} REQUIRED)
+#find_library(CPPREST_SO NAMES "cpprest" PATHS ${CPPREST_LIB_DIR} REQUIRED)
+
+# TODO: We shouldn't use this, it makes the dll/lib export all symbols
+# We need this for testing, but we might just add all the files to the test project manually
+set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 
 if(NOT WIN32)
   if(APPLE)
