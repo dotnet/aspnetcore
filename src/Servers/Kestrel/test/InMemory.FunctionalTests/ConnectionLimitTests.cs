@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "https://github.com/aspnet/KestrelHttpServer/issues/2282")]
+        [Flaky("https://github.com/aspnet/KestrelHttpServer/issues/2282", FlakyOn.AzP.macOS)]
         public async Task ConnectionCountingReturnsToZero()
         {
             const int count = 100;

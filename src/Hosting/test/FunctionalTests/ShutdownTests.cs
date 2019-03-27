@@ -28,13 +28,14 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [OSSkipCondition(OperatingSystems.Linux)] // https://github.com/aspnet/AspNetCore-Internal/issues/1687
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1687", FlakyOn.AzP.Linux)]
         public async Task ShutdownTestRun()
         {
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/Hosting/issues/1214")]
+        [ConditionalFact]
+        [Flaky("https://github.com/aspnet/Hosting/issues/1214", FlakyOn.All)]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestWaitForShutdown()
@@ -115,7 +116,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                 }
             }
         }
-
 
         private static void SendSIGINT(int processId)
         {

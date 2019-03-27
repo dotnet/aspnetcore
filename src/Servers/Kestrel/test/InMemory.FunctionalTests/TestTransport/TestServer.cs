@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     /// <summary>
     /// In-memory TestServer
     /// </summary
-    public class TestServer : IDisposable, IStartup
+    internal class TestServer : IDisposable, IStartup
     {
         private readonly MemoryPool<byte> _memoryPool;
         private readonly RequestDelegate _app;

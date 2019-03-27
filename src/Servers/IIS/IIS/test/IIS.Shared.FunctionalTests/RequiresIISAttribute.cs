@@ -124,12 +124,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
             }
 
-            if (capabilities.HasFlag(IISCapability.ShutdownToken))
-            {
-                IsMet = false;
-                SkipReason += "https://github.com/aspnet/IISIntegration/issues/1074";
-            }
-
             foreach (var module in Modules)
             {
                 if (capabilities.HasFlag(module.Capability))

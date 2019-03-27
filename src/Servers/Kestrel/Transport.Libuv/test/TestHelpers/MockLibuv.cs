@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 {
-    public class MockLibuv : LibuvFunctions
+    internal class MockLibuv : LibuvFunctions
     {
         private UvAsyncHandle _postHandle;
         private uv_async_cb _onPost;

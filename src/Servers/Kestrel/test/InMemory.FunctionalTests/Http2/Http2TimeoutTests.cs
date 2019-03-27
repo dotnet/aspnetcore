@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -129,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task HEADERS_ReceivedWithoutAllCONTINUATIONs_WithinRequestHeadersTimeout_AbortsConnection()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
-            var limits = _serviceContext.ServerOptions.Limits;;
+            var limits = _serviceContext.ServerOptions.Limits; ;
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
@@ -155,8 +154,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Http2ErrorCode.INTERNAL_ERROR,
                 CoreStrings.BadRequest_RequestHeadersTimeout);
 
-            _mockConnectionContext.Verify(c =>c.Abort(It.Is<ConnectionAbortedException>(e => 
-                e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
+            _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
+                 e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
 
             _mockTimeoutHandler.VerifyNoOtherCalls();
             _mockConnectionContext.VerifyNoOtherCalls();
@@ -176,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
 
-            AdvanceClock(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) + 
+            AdvanceClock(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
                 limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
@@ -186,18 +185,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
 
-            _mockConnectionContext.Verify(c =>c.Abort(It.Is<ConnectionAbortedException>(e => 
-                e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+            _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
+                 e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
 
             _mockTimeoutHandler.VerifyNoOtherCalls();
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1879")]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
+        [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1879", FlakyOn.AzP.Linux)]
+        [InlineData((int)Http2FrameType.DATA)]
+        [InlineData((int)Http2FrameType.CONTINUATION)]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(int intFinalFrameType)
         {
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
             // Remove callback that completes _pair.Application.Output on abort.
             _mockConnectionContext.Reset();
 
@@ -267,7 +268,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7000  
+        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7000
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -282,7 +283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_echoApplication);
-            
+
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
             await SendDataAsync(1, _helloWorldBytes, endStream: true);
 
@@ -316,8 +317,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
-            _mockConnectionContext.Verify(c =>c.Abort(It.Is<ConnectionAbortedException>(e => 
-                e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+            _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
+                 e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
 
             _mockTimeoutHandler.VerifyNoOtherCalls();
             _mockConnectionContext.VerifyNoOtherCalls();

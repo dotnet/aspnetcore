@@ -4,9 +4,11 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using ProjectTemplates.Tests.Helpers;
+using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -14,9 +16,25 @@ namespace Templates.Test
 {
     public class BaselineTest
     {
+        private static readonly Regex TemplateNameRegex = new Regex(
+            "new (?<template>[a-zA-Z]+)",
+            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline,
+            TimeSpan.FromSeconds(1));
+
+        private static readonly Regex AuthenticationOptionRegex = new Regex(
+            "-au (?<auth>[a-zA-Z]+)",
+            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline,
+            TimeSpan.FromSeconds(1));
+
+        private static readonly Regex LanguageRegex = new Regex(
+            "--language (?<language>\\w+)",
+            RegexOptions.Compiled | RegexOptions.ExplicitCapture | RegexOptions.Singleline,
+            TimeSpan.FromSeconds(1));
+
         public BaselineTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
-            Project = projectFactory.CreateProject(output);
+            ProjectFactory = projectFactory;
+            Output = output;
         }
 
         public Project Project { get; set; }
@@ -47,14 +65,20 @@ namespace Templates.Test
             }
         }
 
+        public ProjectFactoryFixture ProjectFactory { get; }
+        public ITestOutputHelper Output { get; }
+
         [Theory]
         [MemberData(nameof(TemplateBaselines))]
-        public void Template_Produces_The_Right_Set_Of_Files(string arguments, string[] expectedFiles)
+        public async Task Template_Produces_The_Right_Set_Of_FilesAsync(string arguments, string[] expectedFiles)
         {
-            Project.RunDotNet(arguments);
+            Project = await ProjectFactory.GetOrCreateProject("baseline" + SanitizeArgs(arguments), Output);
+            var createResult = await Project.RunDotNetNewRawAsync(arguments);
+            Assert.True(createResult.ExitCode == 0, createResult.GetFormattedOutput());
+
             foreach (var file in expectedFiles)
             {
-                Project.AssertFileExists(file, shouldExist: true);
+                AssertFileExists(Project.TemplateOutputDir, file, shouldExist: true);
             }
 
             var filesInFolder = Directory.EnumerateFiles(Project.TemplateOutputDir, "*", SearchOption.AllDirectories);
@@ -71,6 +95,37 @@ namespace Templates.Test
                     continue;
                 }
                 Assert.Contains(relativePath, expectedFiles);
+            }
+        }
+
+        private string SanitizeArgs(string arguments)
+        {
+            var text = TemplateNameRegex.Match(arguments)
+                .Groups.TryGetValue("template", out var template) ? template.Value : "";
+
+            text += AuthenticationOptionRegex.Match(arguments)
+                .Groups.TryGetValue("auth", out var auth) ? auth.Value : "";
+
+            text += arguments.Contains("--uld") ? "uld" : "";
+
+            text += LanguageRegex.Match(arguments)
+                .Groups.TryGetValue("language", out var language) ? language.Value.Replace("#", "Sharp") : "";
+
+            return text;
+        }
+
+        private void AssertFileExists(string basePath, string path, bool shouldExist)
+        {
+            var fullPath = Path.Combine(basePath, path);
+            var doesExist = File.Exists(fullPath);
+
+            if (shouldExist)
+            {
+                Assert.True(doesExist, "Expected file to exist, but it doesn't: " + path);
+            }
+            else
+            {
+                Assert.False(doesExist, "Expected file not to exist, but it does: " + path);
             }
         }
     }

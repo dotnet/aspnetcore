@@ -62,12 +62,12 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> and specifies a route
-        /// with the given <paramref name="name"/>, <paramref name="template"/>, 
+        /// with the given <paramref name="name"/>, <paramref name="pattern"/>,
         /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
         /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="name">The name of the route.</param>
-        /// <param name="template">The URL pattern of the route.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
         /// <param name="defaults">
         /// An object that contains default values for route parameters. The object's properties represent the
         /// names and values of the default values.
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Builder
         public static void MapControllerRoute(
             this IEndpointRouteBuilder routes,
             string name,
-            string template,
+            string pattern,
             object defaults = null,
             object constraints = null,
             object dataTokens = null)
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Builder
             var dataSource = GetOrCreateDataSource(routes);
             dataSource.AddRoute(new ConventionalRouteEntry(
                 name,
-                template,
+                pattern,
                 new RouteValueDictionary(defaults),
                 new RouteValueDictionary(constraints),
                 new RouteValueDictionary(dataTokens)));
@@ -106,13 +106,13 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> and specifies a route
-        /// with the given <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="template"/>, 
+        /// with the given <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="pattern"/>,
         /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
         /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="name">The name of the route.</param>
         /// <param name="areaName">The area name.</param>
-        /// <param name="template">The URL pattern of the route.</param>
+        /// <param name="pattern">The URL pattern of the route.</param>
         /// <param name="defaults">
         /// An object that contains default values for route parameters. The object's properties represent the
         /// names and values of the default values.
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Builder
             this IEndpointRouteBuilder routes,
             string name,
             string areaName,
-            string template,
+            string pattern,
             object defaults = null,
             object constraints = null,
             object dataTokens = null)
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Builder
             var constraintsDictionary = new RouteValueDictionary(constraints);
             constraintsDictionary["area"] = constraintsDictionary["area"] ?? new StringRouteConstraint(areaName);
 
-            routes.MapControllerRoute(name, template, defaultsDictionary, constraintsDictionary, dataTokens);
+            routes.MapControllerRoute(name, pattern, defaultsDictionary, constraintsDictionary, dataTokens);
         }
 
         /// <summary>
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <para>
         /// <see cref="MapFallbackToController(IEndpointRouteBuilder, string, string)"/> does not re-execute routing, and will
         /// not generate route values based on routes defined elsewhere. When using this overload, the <c>path</c> route value
-        /// will be available. 
+        /// will be available.
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToController(IEndpointRouteBuilder, string, string)"/> does not attempt to disambiguate between
@@ -184,8 +184,8 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static void MapFallbackToController(
-            this IEndpointRouteBuilder routes, 
-            string action, 
+            this IEndpointRouteBuilder routes,
+            string action,
             string controller)
         {
             if (routes == null)
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(routes);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
+            // we don't expect the delegate to run.
             routes.MapFallback(context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
@@ -228,8 +228,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="controller">The controller name.</param>
         /// <remarks>
         /// <para>
-        /// <see cref="MapFallbackToController(IEndpointRouteBuilder, string, string, string)"/> is intended to handle cases 
-        /// where URL path of the request does not contain a file name, and no other endpoint has matched. This is convenient 
+        /// <see cref="MapFallbackToController(IEndpointRouteBuilder, string, string, string)"/> is intended to handle cases
+        /// where URL path of the request does not contain a file name, and no other endpoint has matched. This is convenient
         /// for routing requests for dynamic content to a SPA framework, while also allowing requests for non-existent files to
         /// result in an HTTP 404.
         /// </para>
@@ -242,8 +242,8 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToController(IEndpointRouteBuilder, string, string, string)"/> does not re-execute routing, and will
-        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching 
-        /// <paramref name="pattern"/> will be available. 
+        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching
+        /// <paramref name="pattern"/> will be available.
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToController(IEndpointRouteBuilder, string, string, string)"/> does not attempt to disambiguate between
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(routes);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
+            // we don't expect the delegate to run.
             routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <para>
         /// <see cref="MapFallbackToAreaController(IEndpointRouteBuilder, string, string, string)"/> does not re-execute routing, and will
         /// not generate route values based on routes defined elsewhere. When using this overload, the <c>path</c> route value
-        /// will be available. 
+        /// will be available.
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToAreaController(IEndpointRouteBuilder, string, string, string)"/> does not attempt to disambiguate between
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(routes);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
+            // we don't expect the delegate to run.
             routes.MapFallback(context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
@@ -369,8 +369,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="area">The area name.</param>
         /// <remarks>
         /// <para>
-        /// <see cref="MapFallbackToAreaController(IEndpointRouteBuilder, string, string, string, string)"/> is intended to handle 
-        /// cases where URL path of the request does not contain a file name, and no other endpoint has matched. This is 
+        /// <see cref="MapFallbackToAreaController(IEndpointRouteBuilder, string, string, string, string)"/> is intended to handle
+        /// cases where URL path of the request does not contain a file name, and no other endpoint has matched. This is
         /// convenient for routing requests for dynamic content to a SPA framework, while also allowing requests for non-existent files to
         /// result in an HTTP 404.
         /// </para>
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// <para>
         /// <see cref="MapFallbackToAreaController(IEndpointRouteBuilder, string, string, string, string)"/> does not re-execute routing, and will
-        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching 
+        /// not generate route values based on routes defined elsewhere. When using this overload, the route values provided by matching
         /// <paramref name="pattern"/> will be available.
         /// </para>
         /// <para>
@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.Builder
             GetOrCreateDataSource(routes);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
-            // we don't expect the delegate to run. 
+            // we don't expect the delegate to run.
             routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.

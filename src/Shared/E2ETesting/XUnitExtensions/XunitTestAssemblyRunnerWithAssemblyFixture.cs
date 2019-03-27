@@ -31,15 +31,24 @@ namespace Microsoft.AspNetCore.E2ETesting
             // Find all the AssemblyFixtureAttributes on the test assembly
             Aggregator.Run(() =>
             {
-                var fixturesAttributes = ((IReflectionAssemblyInfo)TestAssembly.Assembly).Assembly
-                                                                                    .GetCustomAttributes(typeof(AssemblyFixtureAttribute), false)
-                                                                                    .Cast<AssemblyFixtureAttribute>()
-                                                                                    .ToList();
+                var fixturesAttributes = ((IReflectionAssemblyInfo)TestAssembly.Assembly)
+                    .Assembly
+                    .GetCustomAttributes(typeof(AssemblyFixtureAttribute), false)
+                    .Cast<AssemblyFixtureAttribute>()
+                    .ToList();
 
                 // Instantiate all the fixtures
                 foreach (var fixtureAttribute in fixturesAttributes)
                 {
-                    _assemblyFixtureMappings[fixtureAttribute.FixtureType] = Activator.CreateInstance(fixtureAttribute.FixtureType);
+                    var ctorWithDiagnostics = fixtureAttribute.FixtureType.GetConstructor(new[] { typeof(IMessageSink) });
+                    if (ctorWithDiagnostics != null)
+                    {
+                        _assemblyFixtureMappings[fixtureAttribute.FixtureType] = Activator.CreateInstance(fixtureAttribute.FixtureType, DiagnosticMessageSink);
+                    }
+                    else
+                    {
+                        _assemblyFixtureMappings[fixtureAttribute.FixtureType] = Activator.CreateInstance(fixtureAttribute.FixtureType);
+                    }
                 }
             });
         }
@@ -55,10 +64,11 @@ namespace Microsoft.AspNetCore.E2ETesting
             return base.BeforeTestAssemblyFinishedAsync();
         }
 
-        protected override Task<RunSummary> RunTestCollectionAsync(IMessageBus messageBus,
-                                                                   ITestCollection testCollection,
-                                                                   IEnumerable<IXunitTestCase> testCases,
-                                                                   CancellationTokenSource cancellationTokenSource)
+        protected override Task<RunSummary> RunTestCollectionAsync(
+            IMessageBus messageBus,
+            ITestCollection testCollection,
+            IEnumerable<IXunitTestCase> testCases,
+            CancellationTokenSource cancellationTokenSource)
             => new XunitTestCollectionRunnerWithAssemblyFixture(
                 _assemblyFixtureMappings,
                 testCollection,

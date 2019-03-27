@@ -13,21 +13,18 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class EndpointRouteBuilderExtensions
     {
-        public static IEndpointConventionBuilder MapHello(this IEndpointRouteBuilder builder, string template, string greeter)
+        public static IEndpointConventionBuilder MapHello(this IEndpointRouteBuilder routes, string template, string greeter)
         {
-            if (builder == null)
+            if (routes == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(routes));
             }
 
-            var pipeline = builder.CreateApplicationBuilder()
+            var pipeline = routes.CreateApplicationBuilder()
                .UseHello(greeter)
                .Build();
 
-            return builder.Map(
-                template,
-                "Hello " + greeter,
-                pipeline);
+            return routes.Map(template, pipeline).WithDisplayName("Hello " + greeter);
         }
     }
 }

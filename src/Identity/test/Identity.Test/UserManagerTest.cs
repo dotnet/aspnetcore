@@ -269,6 +269,48 @@ namespace Microsoft.AspNetCore.Identity.Test
             store.VerifyAll();
         }
 
+        private class CustomNormalizer : ILookupNormalizer
+        {
+            public string NormalizeName(string key) => "#"+key;
+            public string NormalizeEmail(string key) => "@" + key;
+        }
+
+        [Fact]
+        public async Task FindByEmailCallsStoreWithCustomNormalizedEmail()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<PocoUser>>();
+            var user = new PocoUser { Email = "Foo" };
+            store.Setup(s => s.FindByEmailAsync("@Foo", CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+            userManager.KeyNormalizer = new CustomNormalizer();
+
+            // Act
+            var result = await userManager.FindByEmailAsync(user.Email);
+
+            // Assert
+            Assert.Equal(user, result);
+            store.VerifyAll();
+        }
+
+        [Fact]
+        public async Task FindByNameCallsStoreWithCustomNormalizedName()
+        {
+            // Setup
+            var store = new Mock<IUserEmailStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo", Email = "Bar" };
+            store.Setup(s => s.FindByNameAsync("#Foo", CancellationToken.None)).Returns(Task.FromResult(user)).Verifiable();
+            var userManager = MockHelpers.TestUserManager(store.Object);
+            userManager.KeyNormalizer = new CustomNormalizer();
+
+            // Act
+            var result = await userManager.FindByNameAsync(user.UserName);
+
+            // Assert
+            Assert.Equal(user, result);
+            store.VerifyAll();
+        }
+
         [Fact]
         public async Task AddToRolesCallsStore()
         {
@@ -305,6 +347,45 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(result.Succeeded);
             store.VerifyAll();
             store.Verify(s => s.AddToRoleAsync(user, "C", CancellationToken.None), Times.Once());
+        }
+
+        [Fact]
+        public async Task AddToRolesCallsStoreWithCustomNameNormalizer()
+        {
+            // Setup
+            var store = new Mock<IUserRoleStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo" };
+            var roles = new string[] { "A", "B", "C", "C" };
+            store.Setup(s => s.AddToRoleAsync(user, "#A", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.AddToRoleAsync(user, "#B", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+            store.Setup(s => s.AddToRoleAsync(user, "#C", CancellationToken.None))
+                .Returns(Task.FromResult(0))
+                .Verifiable();
+
+            store.Setup(s => s.UpdateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "#A", CancellationToken.None))
+                .Returns(Task.FromResult(false))
+                .Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "#B", CancellationToken.None))
+                .Returns(Task.FromResult(false))
+                .Verifiable();
+            store.Setup(s => s.IsInRoleAsync(user, "#C", CancellationToken.None))
+                .Returns(Task.FromResult(false))
+                .Verifiable();
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+            userManager.KeyNormalizer = new CustomNormalizer();
+
+            // Act
+            var result = await userManager.AddToRolesAsync(user, roles);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+            store.Verify(s => s.AddToRoleAsync(user, "#C", CancellationToken.None), Times.Once());
         }
 
         [Fact]

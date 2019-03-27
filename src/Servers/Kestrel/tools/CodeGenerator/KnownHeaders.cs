@@ -337,7 +337,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
 {Each(loops, loop => $@"
-    public partial class {loop.ClassName}
+    internal partial class {loop.ClassName}
     {{{(loop.Bytes != null ?
         $@"
         private static ReadOnlySpan<byte> HeaderBytes => new byte[]

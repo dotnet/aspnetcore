@@ -39,12 +39,12 @@ namespace BasicWebSite
             {
                 routes.MapControllerRoute(
                     name: "ActionAsMethod",
-                    template: "{controller}/{action}",
+                    pattern: "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
                 routes.MapControllerRoute(
-                    name: "PageRoute", 
-                    template: "{controller}/{action}/{page}");
+                    name: "PageRoute",
+                    pattern: "{controller}/{action}/{page}");
             });
         }
     }

@@ -9,7 +9,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public partial class HttpResponseTrailers : HttpHeaders
+    internal partial class HttpResponseTrailers : HttpHeaders
     {
         public Enumerator GetEnumerator()
         {

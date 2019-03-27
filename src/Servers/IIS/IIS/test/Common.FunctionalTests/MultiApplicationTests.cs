@@ -18,20 +18,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class MultiApplicationTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
         private PublishedApplication _publishedApplication;
         private PublishedApplication _rootApplication;
 
-        public MultiApplicationTests(PublishedSitesFixture fixture)
+        public MultiApplicationTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         [ConditionalFact]
         public async Task RunsTwoOutOfProcessApps()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
             var result = await DeployAsync(parameters);
             var id1 = await result.HttpClient.GetStringAsync("/app1/ProcessId");
@@ -42,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         public async Task FailsAndLogsWhenRunningTwoInProcessApps()
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
+            var parameters = Fixture.GetBaseDeploymentParameters(HostingModel.InProcess);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
 
             var result = await DeployAsync(parameters);
@@ -51,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool());
+            EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
         }
 
         [ConditionalTheory]
@@ -59,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [InlineData(HostingModel.InProcess)]
         public async Task FailsAndLogsEventLogForMixedHostingModel(HostingModel firstApp)
         {
-            var parameters = _fixture.GetBaseDeploymentParameters(firstApp);
+            var parameters = Fixture.GetBaseDeploymentParameters(firstApp);
             parameters.ServerConfigActionList.Add(DuplicateApplication);
             var result = await DeployAsync(parameters);
 
@@ -72,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
-            EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.");
+            EventLogHelpers.VerifyEventLogEvent(result, "Mixed hosting model is not supported.", Logger);
         }
 
         private void SetHostingModel(string directory, HostingModel model)

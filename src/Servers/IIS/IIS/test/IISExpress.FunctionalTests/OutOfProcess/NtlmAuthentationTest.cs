@@ -21,11 +21,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         // TODO either enable windows auth on our CI or use containers to test this
         // behavior
 
-        private readonly PublishedSitesFixture _fixture;
-
-        public NtlmAuthenticationTests(PublishedSitesFixture fixture)
+        public NtlmAuthenticationTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
@@ -37,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task NtlmAuthentication(TestVariant variant)
         {
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:0/";
 
             deploymentParameters.SetWindowsAuth(enabled: true);

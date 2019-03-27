@@ -1,7 +1,7 @@
 <Project>
 
   <ItemGroup>
-    <!-- Workaround https://github.com/aspnet/AspNetCore/issues/6726. Required because illink (part of Microsoft.AspNetCore.Blazor.Mono) depends on .NET Core 2.x -->
+    <!-- BaselineGenerator is netcoreapp2.1. Other build tools may also require 2.x. -->
     <DotNetCoreRuntime Include="2.2.1" />
 
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"

@@ -21,9 +21,7 @@ Building ASP.NET Core on Windows requires:
 * Git. <https://git-scm.org>
 * (Optional) some optional components, like the SignalR Java client, may require
     * NodeJS. LTS version of 10.14.2 or newer recommended <https://nodejs.org>
-    * Java Development Kit 10 or newer. Either:
-        * OpenJDK <http://jdk.java.net/10/>
-        * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
+    * Java Development Kit (JDK) v8 with Java Runtime Environment (JRE) v8. See https://www.oracle.com/technetwork/java/javase/downloads/index.html
 
 ### macOS/Linux
 

@@ -7,6 +7,7 @@
 #include "test_websocket_client.h"
 #include "websocket_transport.h"
 #include "memory_log_writer.h"
+#include <future>
 
 using namespace signalr;
 
@@ -16,24 +17,29 @@ TEST(websocket_transport_connect, connect_connects_and_starts_receive_loop)
     auto receive_called = std::make_shared<event>();
     auto client = std::make_shared<test_websocket_client>();
 
-    client->set_connect_function([&connect_called](const std::string&) -> pplx::task<void>
+    client->set_connect_function([&connect_called](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
         connect_called = true;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
-    client->set_receive_function([receive_called]()->pplx::task<std::string>
+    client->set_receive_function([receive_called](std::function<void(std::string, std::exception_ptr)> callback)
     {
         receive_called->set();
-        return pplx::task_from_result(std::string(""));
+        callback("", nullptr);
     });
 
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::info),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::info));
 
-    ws_transport->connect("ws://fakeuri.org/connect?param=42").get();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org/connect?param=42", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+
+    mre.get();
 
     ASSERT_TRUE(connect_called);
     ASSERT_FALSE(receive_called->wait(5000));
@@ -48,18 +54,22 @@ TEST(websocket_transport_connect, connect_connects_and_starts_receive_loop)
 TEST(websocket_transport_connect, connect_propagates_exceptions)
 {
     auto client = std::make_shared<test_websocket_client>();
-    client->set_connect_function([](const std::string&)->pplx::task<void>
+    client->set_connect_function([](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
-        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+        callback(std::make_exception_ptr(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed"))));
     });
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     try
     {
-        ws_transport->connect("ws://fakeuri.org").get();
-        ASSERT_TRUE(false); // exception not thrown
+        auto mre = manual_reset_event<void>();
+        ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
+        {
+            mre.set_exception(exception);
+        });
+        mre.get();
+        ASSERT_TRUE(false);
     }
     catch (const std::exception &e)
     {
@@ -70,21 +80,24 @@ TEST(websocket_transport_connect, connect_propagates_exceptions)
 TEST(websocket_transport_connect, connect_logs_exceptions)
 {
     auto client = std::make_shared<test_websocket_client>();
-    client->set_connect_function([](const std::string&) -> pplx::task<void>
+    client->set_connect_function([](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
-        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed")));
+        callback(std::make_exception_ptr(web::websockets::client::websocket_exception(_XPLATSTR("connecting failed"))));
     });
 
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::errors),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::errors));
 
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
+    {
+        mre.set_exception(exception);
+    });
     try
     {
-        ws_transport->connect("ws://fakeuri.org").wait();
+        mre.get();
     }
-    catch (...)
-    { }
+    catch (...) {}
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
@@ -100,15 +113,23 @@ TEST(websocket_transport_connect, connect_logs_exceptions)
 TEST(websocket_transport_connect, cannot_call_connect_on_already_connected_transport)
 {
     auto client = std::make_shared<test_websocket_client>();
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    ws_transport->connect("ws://fakeuri.org").wait();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     try
     {
-        ws_transport->connect("ws://fakeuri.org").wait();
-        ASSERT_TRUE(false); // exception not thrown
+        ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr exception)
+        {
+            mre.set_exception(exception);
+        });
+        mre.get();
+        ASSERT_TRUE(false);
     }
     catch (const std::exception &e)
     {
@@ -119,13 +140,26 @@ TEST(websocket_transport_connect, cannot_call_connect_on_already_connected_trans
 TEST(websocket_transport_connect, can_connect_after_disconnecting)
 {
     auto client = std::make_shared<test_websocket_client>();
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    ws_transport->connect("ws://fakeuri.org").get();
-    ws_transport->disconnect().get();
-    ws_transport->connect("ws://fakeuri.org").get();
-    // shouldn't throw or crash
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
+
+    ws_transport->stop([&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
+
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 }
 
 TEST(websocket_transport_send, send_creates_and_sends_websocket_messages)
@@ -134,18 +168,26 @@ TEST(websocket_transport_send, send_creates_and_sends_websocket_messages)
 
     auto client = std::make_shared<test_websocket_client>();
 
-    client->set_send_function([&send_called](const std::string&) -> pplx::task<void>
+    client->set_send_function([&send_called](const std::string&, std::function<void(std::exception_ptr)> callback)
     {
         send_called = true;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    ws_transport->connect("ws://url")
-        .then([ws_transport](){ return ws_transport->send("ABC"); })
-        .wait();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
+
+    ws_transport->send("ABC", [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     ASSERT_TRUE(send_called);
 }
@@ -156,43 +198,67 @@ TEST(websocket_transport_disconnect, disconnect_closes_websocket)
 
     auto client = std::make_shared<test_websocket_client>();
 
-    client->set_close_function([&close_called]() -> pplx::task<void>
+    client->set_close_function([&close_called](std::function<void(std::exception_ptr)> callback)
     {
         close_called = true;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    ws_transport->connect("ws://url")
-        .then([ws_transport]()
-        {
-            return ws_transport->disconnect();
-        }).get();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
+
+    ws_transport->stop([&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     ASSERT_TRUE(close_called);
 }
 
-TEST(websocket_transport_disconnect, disconnect_does_not_throw)
+TEST(websocket_transport_stop, propogates_exception_from_close)
 {
     auto client = std::make_shared<test_websocket_client>();
 
     bool close_called = false;
-    client->set_close_function([&close_called]() -> pplx::task<void>
+    client->set_close_function([&close_called](std::function<void(std::exception_ptr)> callback)
     {
         close_called = true;
-        return pplx::task_from_exception<void>(std::exception());
+        callback(std::make_exception_ptr(std::exception()));
     });
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    ws_transport->connect("ws://url")
-        .then([ws_transport]()
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
     {
-        return ws_transport->disconnect();
-    }).get();
+        mre.set();
+    });
+    mre.get();
+
+    ws_transport->stop([&mre](std::exception_ptr exception)
+    {
+        if (exception)
+        {
+            mre.set_exception(exception);
+        }
+        else
+        {
+            mre.set();
+        }
+    });
+    try
+    {
+        mre.get();
+        ASSERT_TRUE(false);
+    }
+    catch (...) { }
 
     ASSERT_TRUE(close_called);
 }
@@ -200,21 +266,27 @@ TEST(websocket_transport_disconnect, disconnect_does_not_throw)
 TEST(websocket_transport_disconnect, disconnect_logs_exceptions)
 {
     auto client = std::make_shared<test_websocket_client>();
-    client->set_close_function([]()->pplx::task<void>
+    client->set_close_function([](std::function<void(std::exception_ptr)> callback)
     {
-        return pplx::task_from_exception<void>(web::websockets::client::websocket_exception(_XPLATSTR("connection closing failed")));
+        callback(std::make_exception_ptr(web::websockets::client::websocket_exception(_XPLATSTR("connection closing failed"))));
     });
 
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::errors),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level::errors));
 
-    ws_transport->connect("ws://url")
-        .then([ws_transport]()
-        {
-            return ws_transport->disconnect();
-        }).get();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
+
+    ws_transport->stop([&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     auto log_entries = std::dynamic_pointer_cast<memory_log_writer>(writer)->get_log_entries();
 
@@ -241,34 +313,59 @@ TEST(websocket_transport_disconnect, receive_not_called_after_disconnect)
     // receive_task_tce is captured by reference since we assign it a new value after the first disconnect. This is
     // safe here because we are blocking on disconnect and therefore we won't get into a state where we would be using
     // an invalid reference because the tce went out of scope and was destroyed.
-    client->set_close_function([&receive_task_tce]()
+    client->set_close_function([&receive_task_tce](std::function<void(std::exception_ptr)> callback)
     {
         // unblock receive
         receive_task_tce.set(std::string(""));
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
     int num_called = 0;
-
-    client->set_receive_function([&receive_task_tce, &receive_task_started_tce, &num_called]() -> pplx::task<std::string>
+    client->set_receive_function([&receive_task_tce, &receive_task_started_tce, &num_called](std::function<void(std::string, std::exception_ptr)> callback)
     {
         num_called++;
         receive_task_started_tce.set();
-        return pplx::create_task(receive_task_tce);
+        pplx::create_task(receive_task_tce)
+            .then([callback](pplx::task<std::string> prev)
+        {
+            prev.get();
+            callback("", nullptr);
+        });
     });
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    ws_transport->connect("ws://fakeuri.org").get();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
+
     pplx::create_task(receive_task_started_tce).get();
-    ws_transport->disconnect().get();
+
+    ws_transport->stop([&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     receive_task_tce = pplx::task_completion_event<std::string>();
     receive_task_started_tce = pplx::task_completion_event<void>();
-    ws_transport->connect("ws://fakeuri.org").get();
+
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
+
     pplx::create_task(receive_task_started_tce).get();
-    ws_transport->disconnect().get();
+
+    ws_transport->stop([&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     ASSERT_EQ(2, num_called);
 }
@@ -279,16 +376,20 @@ TEST(websocket_transport_disconnect, disconnect_is_no_op_if_transport_not_starte
 
     auto close_called = false;
 
-    client->set_close_function([&close_called]()
+    client->set_close_function([&close_called](std::function<void(std::exception_ptr)> callback)
     {
         close_called = true;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    ws_transport->disconnect().get();
+    auto mre = manual_reset_event<void>();
+    ws_transport->stop([&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     ASSERT_FALSE(close_called);
 }
@@ -298,20 +399,29 @@ TEST(websocket_transport_disconnect, exceptions_from_outstanding_receive_task_ob
     auto client = std::make_shared<test_websocket_client>();
 
     auto receive_event = std::make_shared<event>();
-    client->set_receive_function([receive_event]()
+    client->set_receive_function([receive_event](std::function<void(std::string, std::exception_ptr)> callback)
     {
-        return pplx::create_task([receive_event]()
+        pplx::create_task([receive_event, callback]()
         {
             receive_event->wait();
-            return pplx::task_from_exception<std::string>(std::runtime_error("exception from receive"));
+            callback("", std::make_exception_ptr(std::runtime_error("exception from receive")));
         });
     });
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
-    ws_transport->connect("ws://fakeuri.org").get();
-    ws_transport->disconnect().get();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
+
+    ws_transport->stop([&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     // at this point the cancellation token that closes the receive loop is set to cancelled so
     // we can unblock the the receive task which throws an exception that should be observed otwherwise the test will crash
@@ -333,8 +443,8 @@ TEST(websocket_transport_receive_loop, receive_loop_logs_if_receive_task_cancele
 {
     receive_loop_logs_exception_runner(
         pplx::task_canceled("canceled"),
-        "[info        ] [websocket transport] receive task canceled.\n",
-        trace_level::info);
+        "[error       ] [websocket transport] error receiving response from websocket: canceled\n",
+        trace_level::errors);
 }
 
 TEST(websocket_transport_receive_loop, receive_loop_logs_std_exception)
@@ -351,22 +461,24 @@ void receive_loop_logs_exception_runner(const T& e, const std::string& expected_
     event receive_event;
     auto client = std::make_shared<test_websocket_client>();
 
-    client->set_receive_function([&receive_event, &e]()->pplx::task<std::string>
+    client->set_receive_function([&receive_event, &e](std::function<void(std::string, std::exception_ptr)> callback)
     {
+        callback("", std::make_exception_ptr(e));
         receive_event.set();
-        return pplx::task_from_exception<std::string>(e);
     });
 
     std::shared_ptr<log_writer> writer(std::make_shared<memory_log_writer>());
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level),
-        [](const std::string&){}, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(writer, trace_level));
 
-    ws_transport->connect("ws://url")
-        .then([&receive_event]()
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://url", transfer_format::text, [&mre](std::exception_ptr)
     {
-        receive_event.wait();
-    }).get();
+        mre.set();
+    });
+    mre.get();
+
+    receive_event.wait();
 
     // this is race'y but there is nothing we can block on
     std::this_thread::sleep_for(std::chrono::milliseconds(10));
@@ -375,30 +487,36 @@ void receive_loop_logs_exception_runner(const T& e, const std::string& expected_
 
     ASSERT_NE(std::find_if(log_entries.begin(), log_entries.end(),
         [&expected_message](std::string entry) { return remove_date_from_log_entry(entry) == expected_message; }),
-        log_entries.end());
+        log_entries.end()) << dump_vector(log_entries);
 }
 
 TEST(websocket_transport_receive_loop, process_response_callback_called_when_message_received)
 {
     auto client = std::make_shared<test_websocket_client>();
-    client->set_receive_function([]() -> pplx::task<std::string>
+    client->set_receive_function([](std::function<void(std::string, std::exception_ptr)> callback)
     {
-        return pplx::task_from_result(std::string("msg"));
+        callback("msg", nullptr);
     });
 
     auto process_response_event = std::make_shared<event>();
     auto msg = std::make_shared<std::string>();
 
-    auto process_response = [msg, process_response_event](const std::string& message)
+    auto process_response = [msg, process_response_event](const std::string& message, std::exception_ptr exception)
     {
+        ASSERT_FALSE(exception);
         *msg = message;
         process_response_event->set();
     };
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        process_response, [](const std::exception&){});
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
+    ws_transport->on_receive(process_response);
 
-    ws_transport->connect("ws://fakeuri.org").get();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     process_response_event->wait(1000);
 
@@ -408,31 +526,43 @@ TEST(websocket_transport_receive_loop, process_response_callback_called_when_mes
 TEST(websocket_transport_receive_loop, error_callback_called_when_exception_thrown)
 {
     auto client = std::make_shared<test_websocket_client>();
-    client->set_receive_function([]()
+    client->set_receive_function([](std::function<void(std::string, std::exception_ptr)> callback)
     {
-        return pplx::task_from_exception<std::string>(std::runtime_error("error"));
+        callback("", std::make_exception_ptr(std::runtime_error("error")));
     });
 
     auto close_invoked = std::make_shared<bool>(false);
-    client->set_close_function([close_invoked]()
+    client->set_close_function([close_invoked](std::function<void(std::exception_ptr)> callback)
     {
         *close_invoked = true;
-        return pplx::task_from_result();
+        callback(nullptr);
     });
 
     auto error_event = std::make_shared<event>();
     auto exception_msg = std::make_shared<std::string>();
 
-    auto error_callback = [exception_msg, error_event](const std::exception& e)
+    auto error_callback = [exception_msg, error_event](std::exception_ptr exception)
     {
-        *exception_msg = e.what();
+        try
+        {
+            std::rethrow_exception(exception);
+        }
+        catch (const std::exception& e)
+        {
+            *exception_msg = e.what();
+        }
         error_event->set();
     };
 
-    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, error_callback);
+    auto ws_transport = websocket_transport::create([&](){ return client; }, logger(std::make_shared<trace_log_writer>(), trace_level::none));
+    ws_transport->on_close(error_callback);
 
-    ws_transport->connect("ws://fakeuri.org").get();
+    auto mre = manual_reset_event<void>();
+    ws_transport->start("ws://fakeuri.org", transfer_format::text, [&mre](std::exception_ptr)
+    {
+        mre.set();
+    });
+    mre.get();
 
     error_event->wait(1000);
 
@@ -444,8 +574,7 @@ TEST(websocket_transport_get_transport_type, get_transport_type_returns_websocke
 {
     auto ws_transport = websocket_transport::create(
         [](){ return std::make_shared<default_websocket_client>(); },
-        logger(std::make_shared<trace_log_writer>(), trace_level::none),
-        [](const std::string&){}, [](const std::exception&){});
+        logger(std::make_shared<trace_log_writer>(), trace_level::none));
 
     ASSERT_EQ(transport_type::websockets, ws_transport->get_transport_type());
 }

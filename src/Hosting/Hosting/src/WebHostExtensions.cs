@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Hosting
                     try
                     {
                         await host.WaitForTokenShutdownAsync(cts.Token);
+                        lifetime.SetExitedGracefully();
                     }
                     finally
                     {
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Hosting
             // Wait for token shutdown if it can be canceled
             if (token.CanBeCanceled)
             {
-                await host.RunAsync(token, shutdownMessage: null);
+                await host.RunAsync(token, startupMessage: null);
                 return;
             }
 
@@ -91,6 +92,7 @@ namespace Microsoft.AspNetCore.Hosting
                     try
                     {
                         await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
+                        lifetime.SetExitedGracefully();
                     }
                     finally
                     {
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private static async Task RunAsync(this IWebHost host, CancellationToken token, string shutdownMessage)
+        private static async Task RunAsync(this IWebHost host, CancellationToken token, string startupMessage)
         {
             try
             {
@@ -124,9 +126,9 @@ namespace Microsoft.AspNetCore.Hosting
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(shutdownMessage))
+                    if (!string.IsNullOrEmpty(startupMessage))
                     {
-                        Console.WriteLine(shutdownMessage);
+                        Console.WriteLine(startupMessage);
                     }
                 }
 

@@ -4,15 +4,23 @@
 namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
-    /// Provides an abstraction for normalizing keys for lookup purposes.
+    /// Provides an abstraction for normalizing keys (emails/names) for lookup purposes.
     /// </summary>
     public interface ILookupNormalizer
     {
         /// <summary>
-        /// Returns a normalized representation of the specified <paramref name="key"/>.
+        /// Returns a normalized representation of the specified <paramref name="name"/>.
         /// </summary>
-        /// <param name="key">The key to normalize.</param>
-        /// <returns>A normalized representation of the specified <paramref name="key"/>.</returns>
-        string Normalize(string key);
+        /// <param name="name">The key to normalize.</param>
+        /// <returns>A normalized representation of the specified <paramref name="name"/>.</returns>
+        string NormalizeName(string name);
+
+        /// <summary>
+        /// Returns a normalized representation of the specified <paramref name="email"/>.
+        /// </summary>
+        /// <param name="email">The email to normalize.</param>
+        /// <returns>A normalized representation of the specified <paramref name="email"/>.</returns>
+        string NormalizeEmail(string email);
+
     }
 }

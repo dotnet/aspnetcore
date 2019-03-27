@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using OpenQA.Selenium.Support.UI;
@@ -8,6 +11,12 @@ namespace Templates.Test.Helpers
 {
     public static class WebDriverExtensions
     {
+        // Maximum time any action performed by WebDriver will wait before failing.
+        // Any action will have to be completed in at most 10 seconds.
+        // Providing a smaller value won't improve the speed of the tests in any
+        // significant way and will make them more prone to fail on slower drivers.
+        internal const int DefaultMaxWaitTimeInSeconds = 10;
+
         public static string GetText(this ISearchContext driver, string cssSelector)
         {
             return driver.FindElement(By.CssSelector(cssSelector)).Text;
@@ -27,10 +36,6 @@ namespace Templates.Test.Helpers
                 .Perform();
         }
 
-        public static void Click(this IWebDriver driver, string cssSelector)
-        {
-            Click(driver, null, cssSelector);
-        }
 
         public static void Click(this IWebDriver driver, ISearchContext searchContext, string cssSelector)
         {
@@ -47,19 +52,9 @@ namespace Templates.Test.Helpers
             return webElement.FindElement(By.XPath(".."));
         }
 
-        public static IWebElement FindElement(this IWebDriver driver, string cssSelector, int timeoutSeconds)
-        {
-            return FindElement(driver, null, cssSelector, timeoutSeconds);
-        }
-
         public static IWebElement FindElement(this IWebDriver driver, ISearchContext searchContext, string cssSelector, int timeoutSeconds)
         {
             return FindElement(driver, searchContext, By.CssSelector(cssSelector), timeoutSeconds);
-        }
-
-        public static IWebElement FindElement(this IWebDriver driver, By by, int timeoutSeconds)
-        {
-            return FindElement(driver, null, by, timeoutSeconds);
         }
 
         public static IWebElement FindElement(this IWebDriver driver, ISearchContext searchContext, By by, int timeoutSeconds)
@@ -70,19 +65,19 @@ namespace Templates.Test.Helpers
 
         public static void WaitForUrl(this IWebDriver browser, string expectedUrl)
         {
-            new WebDriverWait(browser, TimeSpan.FromSeconds(WebDriverFactory.DefaultMaxWaitTimeInSeconds))
+            new WebDriverWait(browser, TimeSpan.FromSeconds(DefaultMaxWaitTimeInSeconds))
                 .Until(driver => driver.Url.Contains(expectedUrl, StringComparison.OrdinalIgnoreCase));
         }
 
         public static void WaitForElement(this IWebDriver browser, string expectedElementCss)
         {
-            new WebDriverWait(browser, TimeSpan.FromSeconds(WebDriverFactory.DefaultMaxWaitTimeInSeconds))
+            new WebDriverWait(browser, TimeSpan.FromSeconds(DefaultMaxWaitTimeInSeconds))
                 .Until(driver => driver.FindElements(By.CssSelector(expectedElementCss)).Count > 0);
         }
 
         public static void WaitForText(this IWebDriver browser, string cssSelector, string expectedText)
         {
-            new WebDriverWait(browser, TimeSpan.FromSeconds(WebDriverFactory.DefaultMaxWaitTimeInSeconds))
+            new WebDriverWait(browser, TimeSpan.FromSeconds(DefaultMaxWaitTimeInSeconds))
                 .Until(driver => {
                     try
                     {

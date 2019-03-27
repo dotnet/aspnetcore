@@ -64,6 +64,18 @@ namespace TestSite
                         Thread.Sleep(Timeout.Infinite);
                     }
                     break;
+                case "IncreaseShutdownLimit":
+                    {
+                        var host = new WebHostBuilder()
+                           .UseIIS()
+                           .UseShutdownTimeout(TimeSpan.FromSeconds(120))
+                           .UseStartup<Startup>()
+                           .Build();
+
+                        host.Run();
+                    }
+
+                    break;
                 case "CheckConsoleFunctions":
                     // Call a bunch of console functions and make sure none return invalid handle.
                     Console.OutputEncoding = Encoding.UTF8;

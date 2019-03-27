@@ -4,7 +4,7 @@
 #pragma once
 
 #include <functional>
-#include "websocket_client.h"
+#include "signalrclient/websocket_client.h"
 
 using namespace signalr;
 
@@ -13,28 +13,28 @@ class test_websocket_client : public websocket_client
 public:
     test_websocket_client();
 
-    pplx::task<void> connect(const std::string& url) override;
+    void start(std::string url, transfer_format format, std::function<void(std::exception_ptr)> callback) override;
 
-    pplx::task<void> send(const std::string& msg) override;
+    void stop(std::function<void(std::exception_ptr)> callback) override;
 
-    pplx::task<std::string> receive() override;
+    void send(std::string payload, std::function<void(std::exception_ptr)> callback) override;
 
-    pplx::task<void> close() override;
+    void receive(std::function<void(std::string, std::exception_ptr)> callback) override;
 
-    void set_connect_function(std::function<pplx::task<void>(const std::string& url)> connect_function);
+    void set_connect_function(std::function<void(const std::string&, std::function<void(std::exception_ptr)>)> connect_function);
 
-    void set_send_function(std::function<pplx::task<void>(const std::string& msg)> send_function);
+    void set_send_function(std::function<void(const std::string& msg, std::function<void(std::exception_ptr)>)> send_function);
 
-    void set_receive_function(std::function<pplx::task<std::string>()> receive_function);
+    void set_receive_function(std::function<void(std::function<void(std::string, std::exception_ptr)>)> receive_function);
 
-    void set_close_function(std::function<pplx::task<void>()> close_function);
+    void set_close_function(std::function<void(std::function<void(std::exception_ptr)>)> close_function);
 
 private:
-    std::function<pplx::task<void>(const std::string& url)> m_connect_function;
+    std::function<void(const std::string&, std::function<void(std::exception_ptr)>)> m_connect_function;
 
-    std::function<pplx::task<void>(const std::string&)> m_send_function;
+    std::function<void(const std::string&, std::function<void(std::exception_ptr)>)> m_send_function;
 
-    std::function<pplx::task<std::string>()> m_receive_function;
+    std::function<void(std::function<void(std::string, std::exception_ptr)>)> m_receive_function;
 
-    std::function<pplx::task<void>()> m_close_function;
+    std::function<void(std::function<void(std::exception_ptr)>)> m_close_function;
 };

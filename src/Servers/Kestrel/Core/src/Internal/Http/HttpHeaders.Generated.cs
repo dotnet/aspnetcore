@@ -12,7 +12,7 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
 
-    public partial class HttpRequestHeaders
+    internal partial class HttpRequestHeaders
     {
 
         private long _bits = 0;
@@ -4705,7 +4705,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
     }
 
-    public partial class HttpResponseHeaders
+    internal partial class HttpResponseHeaders
     {
         private static ReadOnlySpan<byte> HeaderBytes => new byte[]
         {
@@ -8531,7 +8531,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
     }
 
-    public partial class HttpResponseTrailers
+    internal partial class HttpResponseTrailers
     {
         private static ReadOnlySpan<byte> HeaderBytes => new byte[]
         {

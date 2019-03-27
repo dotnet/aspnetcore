@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -307,7 +308,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1383")]
+        [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1383", FlakyOn.All)]
         [WebSocketsSupportedCondition]
         [InlineData(5 * 4096)]
         [InlineData(1000 * 4096 + 32)]
@@ -530,7 +532,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        // Serves a fake transport that lets us verify fallback behavior 
+        // Serves a fake transport that lets us verify fallback behavior
         private class TestTransportFactory : ITransportFactory
         {
             private ITransport _transport;

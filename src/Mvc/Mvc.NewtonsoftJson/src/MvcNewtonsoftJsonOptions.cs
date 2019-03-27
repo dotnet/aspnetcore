@@ -13,7 +13,7 @@ using Newtonsoft.Json;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// Provides programmatic configuration for JSON in the MVC framework.
+    /// Provides programmatic configuration for JSON formatters using Newtonsoft.JSON.
     /// </summary>
     public class MvcNewtonsoftJsonOptions : IEnumerable<ICompatibilitySwitch>
     {

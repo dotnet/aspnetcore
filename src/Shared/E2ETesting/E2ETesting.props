@@ -2,6 +2,7 @@
   <PropertyGroup>
     <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..</_DefaultProjectFilter>
     <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
+    <SeleniumProcessTrackingFolder Condition="'$(SeleniumProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepositoryRoot)'))obj\selenium\</SeleniumProcessTrackingFolder>
     <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
     <EnforcePrerequisites Condition="'$(SeleniumE2ETestsSupported)' == 'true' and '$(EnforcePrerequisites)' == ''">true</EnforcePrerequisites>
 

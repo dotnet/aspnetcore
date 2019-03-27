@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -15,13 +16,17 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     public class HostedInAspNetTest : ServerTestBase<AspNetSiteServerFixture>
     {
         public HostedInAspNetTest(
-            BrowserFixture browserFixture, 
-            AspNetSiteServerFixture serverFixture, 
+            BrowserFixture browserFixture,
+            AspNetSiteServerFixture serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
             serverFixture.BuildWebHostMethod = HostedInAspNet.Server.Program.BuildWebHost;
             serverFixture.Environment = AspNetEnvironment.Development;
+        }
+
+        protected override void InitializeAsyncCore()
+        {
             Navigate("/", noReload: true);
             WaitUntilLoaded();
         }

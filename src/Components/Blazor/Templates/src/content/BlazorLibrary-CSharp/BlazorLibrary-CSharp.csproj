@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.Browser" Version="$(TemplateComponentsPackageVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.Build" Version="$(TemplateComponentsPackageVersion)" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>

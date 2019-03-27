@@ -5,6 +5,7 @@
 #include "test_utils.h"
 #include "test_websocket_client.h"
 #include "test_web_request_factory.h"
+#include "test_http_client.h"
 
 using namespace signalr;
 
@@ -17,10 +18,10 @@ std::string remove_date_from_log_entry(const std::string &log_entry)
     return log_entry.substr(date_end_index + 1);
 }
 
-std::shared_ptr<websocket_client> create_test_websocket_client(std::function<pplx::task<std::string>()> receive_function,
-    std::function<pplx::task<void>(const std::string& msg)> send_function,
-    std::function<pplx::task<void>(const std::string& url)> connect_function,
-    std::function<pplx::task<void>()> close_function)
+std::shared_ptr<websocket_client> create_test_websocket_client(std::function<void(std::function<void(std::string, std::exception_ptr)>)> receive_function,
+    std::function<void(const std::string& msg, std::function<void(std::exception_ptr)>)> send_function,
+    std::function<void(const std::string&, std::function<void(std::exception_ptr)>)> connect_function,
+    std::function<void(std::function<void(std::exception_ptr)>)> close_function)
 {
     auto websocket_client = std::make_shared<test_websocket_client>();
     websocket_client->set_receive_function(receive_function);
@@ -42,6 +43,20 @@ std::unique_ptr<web_request_factory> create_test_web_request_factory()
             : "";
 
         return std::unique_ptr<web_request>(new web_request_stub((unsigned short)200, "OK", response_body));
+    });
+}
+
+std::unique_ptr<http_client> create_test_http_client()
+{
+    return std::make_unique<test_http_client>([](const std::string & url, http_request request)
+    {
+        auto response_body =
+            url.find_first_of("/negotiate") != 0
+            ? "{\"connectionId\" : \"f7707523-307d-4cba-9abf-3eef701241e8\", "
+            "\"availableTransports\" : [ { \"transport\": \"WebSockets\", \"transferFormats\": [ \"Text\", \"Binary\" ] } ] }"
+            : "";
+
+        return http_response{ 200, response_body };
     });
 }
 

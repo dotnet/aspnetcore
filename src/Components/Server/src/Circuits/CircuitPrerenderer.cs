@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -26,8 +28,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 GetFullUri(context.Request),
                 GetFullBaseUri(context.Request));
 
+            // We don't need to unsubscribe because the circuit host object is scoped to this call.
+            circuitHost.UnhandledException += CircuitHost_UnhandledException;
+
             // For right now we just do prerendering and dispose the circuit. In the future we will keep the circuit around and
-            // reconnect to it from the ComponentsHub.
+            // reconnect to it from the ComponentsHub. If we keep the circuit/renderer we also need to unsubscribe this error
+            // handler.
             try
             {
                 return await circuitHost.PrerenderComponentAsync(
@@ -38,6 +44,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await circuitHost.DisposeAsync();
             }
+        }
+
+        private void CircuitHost_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            // Throw all exceptions encountered during pre-rendering so the default developer
+            // error page can respond.
+            ExceptionDispatchInfo.Capture((Exception)e.ExceptionObject).Throw();
         }
 
         private string GetFullUri(HttpRequest request)

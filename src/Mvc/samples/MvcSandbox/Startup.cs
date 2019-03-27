@@ -26,6 +26,7 @@ namespace MvcSandbox
             {
                 options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
             });
+            services.AddRazorComponents();
             services.AddMvc()
                 .AddRazorRuntimeCompilation()
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Latest);
@@ -34,26 +35,27 @@ namespace MvcSandbox
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app)
         {
+            app.UseDeveloperExceptionPage();
+            app.UseStaticFiles();
+
             app.UseRouting(builder =>
             {
                 builder.MapGet(
                     requestDelegate: WriteEndpoints,
-                    pattern: "/endpoints",
-                    displayName: "Home");
+                    pattern: "/endpoints").WithDisplayName("Endpoints");
 
                 builder.MapControllerRoute(
                     name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
 
                 builder.MapControllerRoute(
                     name: "transform",
-                    template: "Transform/{controller:slugify=Home}/{action:slugify=Index}/{id?}",
+                    pattern: "Transform/{controller:slugify=Home}/{action:slugify=Index}/{id?}",
                     defaults: null,
                     constraints: new { controller = "Home" });
 
                 builder.MapGet(
                     "/graph",
-                    "DFA Graph",
                     (httpContext) =>
                     {
                         using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
@@ -64,16 +66,13 @@ namespace MvcSandbox
                         }
 
                         return Task.CompletedTask;
-                    });
+                    }).WithDisplayName("DFA Graph");
 
                 builder.MapControllers();
                 builder.MapRazorPages();
-
-                builder.MapFallbackToController("Index", "Home");
+                builder.MapComponentHub<MvcSandbox.Components.App>("app");
+                builder.MapFallbackToPage("/Components");
             });
-
-            app.UseDeveloperExceptionPage();
-            app.UseStaticFiles();
 
             app.UseEndpoint();
         }
