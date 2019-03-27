@@ -239,7 +239,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await server.StopAsync();
             }
         }
-        // Do one with partial writes
 
         [Fact]
         public async Task SettingConnectionCloseHeaderInAppDoesNotDisableChunking()
