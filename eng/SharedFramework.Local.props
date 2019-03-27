@@ -56,7 +56,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Cors" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.HeaderPropagation" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HostFiltering" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.HttpOverrides" />
