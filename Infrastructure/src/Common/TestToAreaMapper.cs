@@ -25,6 +25,7 @@ namespace Common
 
                 // ASP.NET
                 ("Microsoft.AspNetCore.Authentication", "area-security"),
+                ("Microsoft.AspNetCore.Http.Connections", "area-signalr"),
                 ("Microsoft.AspNetCore.Http", "area-servers"),
                 ("Microsoft.AspNetCore.Mvc", "area-mvc"),
                 ("Microsoft.AspNetCore.Server", "area-servers"),
