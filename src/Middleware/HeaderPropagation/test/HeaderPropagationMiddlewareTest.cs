@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Fact]
-        public async Task NullEntryInConfiguration_HeaderInRequest_AddCorrectValue()
+        public async Task NullEntryInConfiguration_HeaderInRequest_AddsCorrectValue()
         {
             // Arrange
             Configuration.Headers.Add("in", null);
@@ -202,17 +202,16 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Fact]
-        public async Task NullEntryInConfiguration_NoHeaderInRequest_AddsDefaultValue()
+        public async Task NullEntryInConfiguration_NoHeaderInRequest_DoesNotAddHeader()
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValue = "default" });
+            Configuration.Headers.Add("in", null);
 
             // Act
             await Middleware.Invoke(Context);
 
             // Assert
-            Assert.Contains("in", State.Headers.Keys);
-            Assert.Equal("default", State.Headers["in"]);
+            Assert.DoesNotContain("in", State.Headers.Keys);
         }
     }
 }
