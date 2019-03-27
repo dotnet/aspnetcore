@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.HttpsPolicy;
 #endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RazorComponentsWeb_CSharp.Components;
 using RazorComponentsWeb_CSharp.Services;
 
 namespace RazorComponentsWeb_CSharp

@@ -11,9 +11,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.google.gson.stream.JsonReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.stream.JsonReader;
 
 import io.reactivex.Completable;
 import io.reactivex.Observable;
@@ -543,7 +544,7 @@ public class HubConnection {
     Object[] checkUploadStream(Object[] args, List<String> streamIds) {
         List<Object> params = new ArrayList<>(Arrays.asList(args));
         for (Object arg: args) {
-            if(arg instanceof Observable) {
+            if (arg instanceof Observable) {
                 params.remove(arg);
                 Observable stream = (Observable)arg;
                 String streamId = connectionState.getNextInvocationId();

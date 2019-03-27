@@ -63,15 +63,8 @@ namespace Microsoft.AspNetCore.Components
         public CascadingParameterAttribute() { }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class CascadingValue<T> : Microsoft.AspNetCore.Components.IComponent
-    {
-        public CascadingValue() { }
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
-    }
     public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
     {
-        public const string BuildRenderTreeMethodName = "BuildRenderTree";
         public ComponentBase() { }
         protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
         protected System.Threading.Tasks.Task Invoke(System.Action workItem) { throw null; }
@@ -617,11 +610,6 @@ namespace Microsoft.AspNetCore.Components
 }
 namespace Microsoft.AspNetCore.Components.Forms
 {
-    public partial class DataAnnotationsValidator : Microsoft.AspNetCore.Components.ComponentBase
-    {
-        public DataAnnotationsValidator() { }
-        protected override void OnInit() { }
-    }
     public sealed partial class EditContext
     {
         public EditContext(object model) { }
@@ -654,12 +642,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         public static string FieldClass(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, in Microsoft.AspNetCore.Components.Forms.FieldIdentifier fieldIdentifier) { throw null; }
         public static string FieldClass<TField>(this Microsoft.AspNetCore.Components.Forms.EditContext editContext, System.Linq.Expressions.Expression<System.Func<TField>> accessor) { throw null; }
     }
-    public partial class EditForm : Microsoft.AspNetCore.Components.ComponentBase
-    {
-        public EditForm() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override void OnParametersSet() { }
-    }
     public sealed partial class FieldChangedEventArgs
     {
         internal FieldChangedEventArgs() { }
@@ -675,60 +657,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         public static Microsoft.AspNetCore.Components.Forms.FieldIdentifier Create<T>(System.Linq.Expressions.Expression<System.Func<T>> accessor) { throw null; }
         public override bool Equals(object obj) { throw null; }
         public override int GetHashCode() { throw null; }
-    }
-    public abstract partial class InputBase<T> : Microsoft.AspNetCore.Components.ComponentBase
-    {
-        protected InputBase() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        protected string Class { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected string CssClass { get { throw null; } }
-        protected T CurrentValue { get { throw null; } set { } }
-        protected string CurrentValueAsString { get { throw null; } set { } }
-        protected Microsoft.AspNetCore.Components.Forms.EditContext EditContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected string FieldClass { get { throw null; } }
-        protected Microsoft.AspNetCore.Components.Forms.FieldIdentifier FieldIdentifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        protected string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected virtual string FormatValueAsString(T value) { throw null; }
-        public override System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
-        protected abstract bool TryParseValueFromString(string value, out T result, out string validationErrorMessage);
-    }
-    public partial class InputCheckbox : Microsoft.AspNetCore.Components.Forms.InputBase<bool>
-    {
-        public InputCheckbox() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override bool TryParseValueFromString(string value, out bool result, out string validationErrorMessage) { throw null; }
-    }
-    public partial class InputDate<T> : Microsoft.AspNetCore.Components.Forms.InputBase<T>
-    {
-        public InputDate() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override string FormatValueAsString(T value) { throw null; }
-        protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage) { throw null; }
-    }
-    public partial class InputNumber<T> : Microsoft.AspNetCore.Components.Forms.InputBase<T>
-    {
-        public InputNumber() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage) { throw null; }
-    }
-    public partial class InputSelect<T> : Microsoft.AspNetCore.Components.Forms.InputBase<T>
-    {
-        public InputSelect() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage) { throw null; }
-    }
-    public partial class InputText : Microsoft.AspNetCore.Components.Forms.InputBase<string>
-    {
-        public InputText() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override bool TryParseValueFromString(string value, out string result, out string validationErrorMessage) { throw null; }
-    }
-    public partial class InputTextArea : Microsoft.AspNetCore.Components.Forms.InputBase<string>
-    {
-        public InputTextArea() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override bool TryParseValueFromString(string value, out string result, out string validationErrorMessage) { throw null; }
     }
     public sealed partial class ValidationMessageStore
     {
@@ -746,13 +674,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         public static void AddRange(this Microsoft.AspNetCore.Components.Forms.ValidationMessageStore store, System.Linq.Expressions.Expression<System.Func<object>> accessor, System.Collections.Generic.IEnumerable<string> messages) { }
         public static void Clear(this Microsoft.AspNetCore.Components.Forms.ValidationMessageStore store, System.Linq.Expressions.Expression<System.Func<object>> accessor) { }
     }
-    public partial class ValidationMessage<T> : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
-    {
-        public ValidationMessage() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override void OnParametersSet() { }
-        void System.IDisposable.Dispose() { }
-    }
     public sealed partial class ValidationRequestedEventArgs
     {
         internal ValidationRequestedEventArgs() { }
@@ -760,13 +681,6 @@ namespace Microsoft.AspNetCore.Components.Forms
     public sealed partial class ValidationStateChangedEventArgs
     {
         internal ValidationStateChangedEventArgs() { }
-    }
-    public partial class ValidationSummary : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
-    {
-        public ValidationSummary() { }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override void OnParametersSet() { }
-        void System.IDisposable.Dispose() { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Layouts
@@ -782,12 +696,6 @@ namespace Microsoft.AspNetCore.Components.Layouts
         protected LayoutComponentBase() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         protected Microsoft.AspNetCore.Components.RenderFragment Body { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    public partial class LayoutDisplay : Microsoft.AspNetCore.Components.IComponent
-    {
-        public LayoutDisplay() { }
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Rendering
@@ -920,25 +828,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 }
 namespace Microsoft.AspNetCore.Components.Routing
 {
-    public partial class NavLink : Microsoft.AspNetCore.Components.IComponent, System.IDisposable
-    {
-        public NavLink() { }
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public void Dispose() { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
-    }
     public enum NavLinkMatch
     {
         All = 1,
         Prefix = 0,
-    }
-    public partial class Router : Microsoft.AspNetCore.Components.IComponent, System.IDisposable
-    {
-        public Router() { }
-        public void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle) { }
-        public void Dispose() { }
-        protected virtual void Render(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, System.Type handler, System.Collections.Generic.IDictionary<string, object> parameters) { }
-        public System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Components.Services

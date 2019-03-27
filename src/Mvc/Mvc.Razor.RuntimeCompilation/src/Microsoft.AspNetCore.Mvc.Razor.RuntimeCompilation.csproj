@@ -20,4 +20,8 @@
     <Compile Include="..\..\Mvc.Razor\src\ViewPath.cs" />
     <Compile Include="..\..\Mvc.RazorPages\src\ApplicationModels\PageRouteModelFactory.cs" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build\netcoreapp3.0\*" Pack="true" PackagePath="build\netcoreapp3.0" />
+  </ItemGroup>
 </Project>

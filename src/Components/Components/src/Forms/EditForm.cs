@@ -29,19 +29,19 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// also supply <see cref="Model"/>, since the model value will be taken
         /// from the <see cref="EditContext.Model"/> property.
         /// </summary>
-        [Parameter] EditContext EditContext { get; set; }
+        [Parameter] public EditContext EditContext { get; private set; }
 
         /// <summary>
         /// Specifies the top-level model object for the form. An edit context will
         /// be constructed for this model. If using this parameter, do not also supply
         /// a value for <see cref="EditContext"/>.
         /// </summary>
-        [Parameter] object Model { get; set; }
+        [Parameter] public object Model { get; private set; }
 
         /// <summary>
         /// Specifies the content to be rendered inside this <see cref="EditForm"/>.
         /// </summary>
-        [Parameter] RenderFragment<EditContext> ChildContent { get; set; }
+        [Parameter] public RenderFragment<EditContext> ChildContent { get; private set; }
 
         /// <summary>
         /// A callback that will be invoked when the form is submitted.
@@ -49,19 +49,19 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// If using this parameter, you are responsible for triggering any validation
         /// manually, e.g., by calling <see cref="EditContext.Validate"/>.
         /// </summary>
-        [Parameter] EventCallback<EditContext> OnSubmit { get; set; }
+        [Parameter] public EventCallback<EditContext> OnSubmit { get; private set; }
 
         /// <summary>
         /// A callback that will be invoked when the form is submitted and the
         /// <see cref="EditContext"/> is determined to be valid.
         /// </summary>
-        [Parameter] EventCallback<EditContext> OnValidSubmit { get; set; }
+        [Parameter] public EventCallback<EditContext> OnValidSubmit { get; private set; }
 
         /// <summary>
         /// A callback that will be invoked when the form is submitted and the
         /// <see cref="EditContext"/> is determined to be invalid.
         /// </summary>
-        [Parameter] EventCallback<EditContext> OnInvalidSubmit { get; set; }
+        [Parameter] public EventCallback<EditContext> OnInvalidSubmit { get; private set; }
 
         /// <inheritdoc />
         protected override void OnParametersSet()
@@ -93,8 +93,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
-
             // If _fixedEditContext changes, tear down and recreate all descendants.
             // This is so we can safely use the IsFixed optimization on CascadingValue,
             // optimizing for the common case where _fixedEditContext never changes.

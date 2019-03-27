@@ -482,7 +482,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                base.BuildRenderTree(builder);
                 builder.OpenElement(0, "p");
                 builder.AddContent(1, Value.ToString());
                 builder.CloseElement();
@@ -513,7 +512,6 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                base.BuildRenderTree(builder);
                 builder.OpenElement(0, "p");
                 builder.AddContent(1, Value.ToString());
                 builder.CloseElement();

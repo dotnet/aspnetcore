@@ -2,8 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,4 +24,29 @@
     <Reference Include="AngleSharp" />
   </ItemGroup>
 
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\UI\src\bin\$(Configuration)\netcoreapp3.0\Microsoft.AspNetCore.Identity.UI.Views.*.dll" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\bin\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\bin\$(Configuration)\netcoreapp3.0\Identity.DefaultUI.WebSite.deps.json" />
+      <_wwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\wwwroot\**\*.*" />
+      <_PagesFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\Identity.DefaultUI.WebSite\Pages\**\*.*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishFiles)"
+      DestinationFolder="$(PublishDir)" />
+    <Copy
+      SourceFiles="@(_PagesFiles)"
+      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
+    <Copy
+      SourceFiles="@(_wwwrootFiles)"
+      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
+    <!-- Drop a dummy sln to specify content root location -->
+    <WriteLinesToFile
+        File="$(PublishDir)\contentroot.sln"
+        Lines="Ignored"
+        Overwrite="true"
+        Encoding="Unicode"/>    
+  </Target>
+   
 </Project>

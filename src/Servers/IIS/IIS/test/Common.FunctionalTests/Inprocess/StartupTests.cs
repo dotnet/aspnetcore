@@ -430,42 +430,48 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var pathWithSpace = "\u03c0 \u2260 3\u00b714";
 
             dictionary.Add("App in bin subdirectory full path to dll using exec and quotes",
-                parameters => {
+                parameters =>
+                {
                     MoveApplication(parameters, "bin");
                     parameters.TransformArguments((arguments, root) => "exec " + Path.Combine(root, "bin", arguments));
                     return "";
                 });
 
             dictionary.Add("App in subdirectory with space",
-                parameters => {
+                parameters =>
+                {
                     MoveApplication(parameters, pathWithSpace);
                     parameters.TransformArguments((arguments, root) => Path.Combine(pathWithSpace, arguments));
                     return "";
                 });
 
             dictionary.Add("App in subdirectory with space and full path to dll",
-                parameters => {
+                parameters =>
+                {
                     MoveApplication(parameters, pathWithSpace);
                     parameters.TransformArguments((arguments, root) => Path.Combine(root, pathWithSpace, arguments));
                     return "";
                 });
 
             dictionary.Add("App in bin subdirectory with space full path to dll using exec and quotes",
-                parameters => {
+                parameters =>
+                {
                     MoveApplication(parameters, pathWithSpace);
                     parameters.TransformArguments((arguments, root) => "exec \"" + Path.Combine(root, pathWithSpace, arguments) + "\" extra arguments");
                     return "extra|arguments";
                 });
 
             dictionary.Add("App in bin subdirectory and quoted argument",
-                parameters => {
+                parameters =>
+                {
                     MoveApplication(parameters, "bin");
                     parameters.TransformArguments((arguments, root) => Path.Combine("bin", arguments) + " \"extra argument\"");
                     return "extra argument";
                 });
 
             dictionary.Add("App in bin subdirectory full path to dll",
-                parameters => {
+                parameters =>
+                {
                     MoveApplication(parameters, "bin");
                     parameters.TransformArguments((arguments, root) => Path.Combine(root, "bin", arguments) + " extra arguments");
                     return "extra|arguments";
@@ -495,7 +501,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var pathWithSpace = "\u03c0 \u2260 3\u00b714";
 
             dictionary.Add("App in subdirectory",
-                parameters => {
+                parameters =>
+                {
                     MoveApplication(parameters, pathWithSpace);
                     parameters.TransformPath((path, root) => Path.Combine(pathWithSpace, path));
                     parameters.TransformArguments((arguments, root) => "\"additional argument\"");
@@ -503,7 +510,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 });
 
             dictionary.Add("App in bin subdirectory full path",
-                parameters => {
+                parameters =>
+                {
                     MoveApplication(parameters, pathWithSpace);
                     parameters.TransformPath((path, root) => Path.Combine(root, pathWithSpace, path));
                     parameters.TransformArguments((arguments, root) => "additional arguments");
