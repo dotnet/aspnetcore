@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// <summary>
         /// Gets the headers values collected by the <see cref="HeaderPropagationMiddleware"/> from the current request that can be propagated.
         /// </summary>
-        public Dictionary<string, StringValues> Headers
+        public IDictionary<string, StringValues> Headers
         {
             get
             {
