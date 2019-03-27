@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Various helpers for writing tests that use ASP.NET Core.</Description>
+    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+    <EnableApiCheck>false</EnableApiCheck>
+    <IsPackable>true</IsPackable>
+    <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
+    <UseLatestPackageReferences>true</UseLatestPackageReferences>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Win32.Registry" />
+    <Reference Include="System.ValueTuple" />
+    <Reference Include="xunit.assert" />
+    <Reference Include="xunit.extensibility.execution" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Runtime.InteropServices.RuntimeInformation" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="contentFiles\cs\netstandard2.0\EventSourceTestCollection.cs" />
+    <Content Include="contentFiles\cs\netstandard2.0\EventSourceTestCollection.cs">
+      <Pack>True</Pack>
+      <PackagePath>contentFiles\cs\netstandard2.0\</PackagePath>
+    </Content>
+  </ItemGroup>
+
+</Project>
