@@ -77,7 +77,7 @@ function Setup-Dumps()
 
 function Shutdown-Dumps()
 {
-    Move-Item $env:windir\System32\_vsjitdebugger.exe $env:windir\System32\vsjitdebugger.exe;
+    Move-Item $env:windir\System32\_vsjitdebugger.exe $env:windir\System32\vsjitdebugger.exe -ErrorAction Ignore;
 
     Remove-Item $ldHive -Recurse -Force
 
