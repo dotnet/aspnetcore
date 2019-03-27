@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // "0\r\n\r\n"
         private static ReadOnlySpan<byte> EndChunkedResponseBytes => new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
 
-        private const int BeginChunkLengthMax = 5;
+        private const int BeginChunkFixedLength = 2;
         private const int EndChunkLength = 2;
 
         private readonly string _connectionId;
@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _completed;
         private bool _aborted;
         private long _unflushedBytes;
+        private long _currentMemoryStartBytes;
 
         private readonly PipeWriter _pipeWriter;
         private IMemoryOwner<byte> _fakeMemoryOwner;
@@ -230,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 else if (_autoChunk)
                 {
-                    if (_advancedBytesForChunk > _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength - bytes)
+                    if (_advancedBytesForChunk > _currentChunkMemory.Length - _currentMemoryStartBytes - EndChunkLength - bytes)
                     {
                         throw new ArgumentOutOfRangeException("Can't advance past buffer size.");
                     }
@@ -541,41 +542,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // These methods are for chunked http responses that use GetMemory/Advance
         private Memory<byte> GetChunkedMemory(int sizeHint)
         {
-            // Calling GetMemory on the PipeWriter can return a size larger than 4096
-            // if the sizeHint is greater.
-            // The max size we allow for chunking is 4096.
-            if (sizeHint > _memoryPool.MaxBufferSize)
+            var originalSizeHint = sizeHint;
+            if (sizeHint > 0)
             {
-                sizeHint = _memoryPool.MaxBufferSize;
+                sizeHint += sizeHint.ToString("X").Length + BeginChunkFixedLength + EndChunkLength;
             }
 
             if (!_currentChunkMemoryUpdated)
             {
-                // First time calling GetMemory
-                _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-                _currentChunkMemoryUpdated = true;
+                UpdateCurrentChunkMemory(sizeHint);
             }
 
-            var memoryMaxLength = _currentChunkMemory.Length - BeginChunkLengthMax - EndChunkLength;
-            if (_advancedBytesForChunk >= memoryMaxLength - sizeHint && _advancedBytesForChunk > 0)
+            var memoryMaxLength = _currentChunkMemory.Length - _currentMemoryStartBytes - EndChunkLength;
+            if (_advancedBytesForChunk >= memoryMaxLength - originalSizeHint && _advancedBytesForChunk > 0)
             {
-                // Chunk is completely written, commit it to the pipe so GetMemory will return a new chunk of memory.
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 WriteCurrentMemoryToPipeWriter(ref writer);
                 writer.Commit();
-
                 _unflushedBytes += writer.BytesCommitted;
-                _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-                _currentChunkMemoryUpdated = true;
+
+                UpdateCurrentChunkMemory(sizeHint);
             }
 
             var actualMemory = _currentChunkMemory.Slice(
-                BeginChunkLengthMax + _advancedBytesForChunk,
-                memoryMaxLength - _advancedBytesForChunk);
-
-            Debug.Assert(actualMemory.Length <= 4089);
+                (int)_currentMemoryStartBytes + _advancedBytesForChunk,
+                (int)memoryMaxLength - _advancedBytesForChunk);
 
             return actualMemory;
+        }
+
+        private void UpdateCurrentChunkMemory(int sizeHint)
+        {
+            _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
+            _currentMemoryStartBytes = _currentChunkMemory.Length.ToString("X").Length + BeginChunkFixedLength;
+            _currentChunkMemoryUpdated = true;
         }
 
         private void WriteCurrentMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
@@ -585,14 +585,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var bytesWritten = writer.WriteBeginChunkBytes(_advancedBytesForChunk);
 
-            Debug.Assert(bytesWritten <= BeginChunkLengthMax);
+            Debug.Assert(bytesWritten <= _currentMemoryStartBytes);
 
-            if (bytesWritten < BeginChunkLengthMax)
+            if (bytesWritten < _currentMemoryStartBytes)
             {
                 // If the current chunk of memory isn't completely utilized, we need to copy the contents forwards.
                 // This occurs if someone uses less than 255 bytes of the current Memory segment.
                 // Therefore, we need to copy it forwards by either 1 or 2 bytes (depending on number of bytes)
-                _currentChunkMemory.Slice(BeginChunkLengthMax, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
+                _currentChunkMemory.Slice((int)_currentMemoryStartBytes, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
             }
 
             writer.Advance(_advancedBytesForChunk);

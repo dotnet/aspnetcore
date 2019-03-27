@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Http
         {
             var pipeWriter = response.BodyWriter;
             var encodedLength = encoding.GetByteCount(text);
-            var destination = pipeWriter.GetSpan(encodedLength);
+            var destination = pipeWriter.GetSpan();
 
             if (encodedLength <= destination.Length)
             {
@@ -125,8 +125,8 @@ namespace Microsoft.AspNetCore.Http
 
                 writer.Advance(bytesUsed);
                 source = source.Slice(charsUsed);
-
-                destination = writer.GetSpan(encodedLength - totalBytesUsed);
+                
+                destination = writer.GetSpan();
             }
         }
     }
