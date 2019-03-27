@@ -71,7 +71,6 @@ namespace Microsoft.AspNetCore.Components
     }
     public abstract partial class ComponentBase : Microsoft.AspNetCore.Components.IComponent, Microsoft.AspNetCore.Components.IHandleAfterRender, Microsoft.AspNetCore.Components.IHandleEvent
     {
-        public const string BuildRenderTreeMethodName = "BuildRenderTree";
         public ComponentBase() { }
         protected virtual void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
         protected System.Threading.Tasks.Task Invoke(System.Action workItem) { throw null; }
