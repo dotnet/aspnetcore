@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             string[] expectedValues)
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValues = defaultValues });
+            Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValue = defaultValues });
 
             // Act
             await Middleware.Invoke(Context);
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             HttpContext receivedContext = null;
             Configuration.Headers.Add("in", new HeaderPropagationEntry
             {
-                DefaultValues = "no",
+                DefaultValue = "no",
                 ValueFactory = (name, ctx) =>
                 {
                     receivedName = name;
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Arrange
             Configuration.Headers.Add("in", new HeaderPropagationEntry
             {
-                DefaultValues = "no",
+                DefaultValue = "no",
                 ValueFactory = (name, ctx) => "test"
             });
             Context.Request.Headers.Add("in", "no");
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task NullEntryInConfiguration_NoHeaderInRequest_AddsDefaultValue()
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValues = "default" });
+            Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValue = "default" });
 
             // Act
             await Middleware.Invoke(Context);

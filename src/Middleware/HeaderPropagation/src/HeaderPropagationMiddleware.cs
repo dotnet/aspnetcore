@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 return values;
             }
 
-            return entry != null ? entry.DefaultValues : StringValues.Empty;
+            return entry != null ? entry.DefaultValue : StringValues.Empty;
         }
     }
 }
