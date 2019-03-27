@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         {
             foreach ((var headerName, var entry) in _options.Headers)
             {
-                var outputName = !string.IsNullOrEmpty(entry?.OutboundHeaderName) ? entry.OutboundHeaderName : headerName;
+                var outputName = string.IsNullOrEmpty(entry?.OutboundHeaderName) ? headerName : entry.OutboundHeaderName;
 
                 if (!request.Headers.Contains(outputName) &&
                     _values.Headers.TryGetValue(headerName, out var values) &&
