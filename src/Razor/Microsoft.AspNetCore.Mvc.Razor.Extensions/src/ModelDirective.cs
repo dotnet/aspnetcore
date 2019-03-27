@@ -76,6 +76,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
             {
+                if (documentNode.DocumentKind != RazorPageDocumentClassifierPass.RazorPageDocumentKind &&
+                   documentNode.DocumentKind != MvcViewDocumentClassifierPass.MvcViewDocumentKind)
+                {
+                    // Not a MVC file. Skip.
+                    return;
+                }
+
                 var visitor = new Visitor();
                 var modelType = GetModelType(documentNode, visitor);
 

@@ -3,7 +3,6 @@
 namespace __GeneratedComponent
 {
     #line hidden
-    using TModel = global::System.Object;
     using System;
     using System.Collections.Generic;
     using System.Linq;

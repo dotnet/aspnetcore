@@ -251,6 +251,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 // Notice we're not registering the ModelDirective.Pass here so we can run it on demand.
                 b.AddDirective(ModelDirective.Directive);
 
+                b.Features.Add(new RazorPageDocumentClassifierPass());
+                b.Features.Add(new MvcViewDocumentClassifierPass());
                 b.Features.Add(new DesignTimeOptionsFeature(designTime));
             }).Engine;
         }
@@ -276,21 +278,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             pass.Execute(codeDocument, codeDocument.GetDocumentIntermediateNode());
 
             return codeDocument.GetDocumentIntermediateNode();
-        }
-
-        private string GetCSharpContent(IntermediateNode node)
-        {
-            var builder = new StringBuilder();
-            for (var i = 0; i < node.Children.Count; i++)
-            {
-                var child = node.Children[i] as IntermediateToken;
-                if (child.Kind == TokenKind.CSharp)
-                {
-                    builder.Append(child.Content);
-                }
-            }
-
-            return builder.ToString();
         }
 
         private class ClassNodeVisitor : IntermediateNodeWalker
