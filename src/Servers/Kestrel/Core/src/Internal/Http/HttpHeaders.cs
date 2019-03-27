@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        protected static StringValues AppendValue(in StringValues existing, string append)
+        protected static StringValues AppendValue(StringValues existing, string append)
         {
             return StringValues.Concat(existing, append);
         }
@@ -157,10 +157,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected virtual bool TryGetValueFast(string key, out StringValues value)
         { throw new NotImplementedException(); }
 
-        protected virtual void SetValueFast(string key, in StringValues value)
+        protected virtual void SetValueFast(string key, StringValues value)
         { throw new NotImplementedException(); }
 
-        protected virtual bool AddValueFast(string key, in StringValues value)
+        protected virtual bool AddValueFast(string key, StringValues value)
         { throw new NotImplementedException(); }
 
         protected virtual bool RemoveFast(string key)
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return TryGetValueFast(key, out value);
         }
 
-        public static void ValidateHeaderValueCharacters(in StringValues headerValues)
+        public static void ValidateHeaderValueCharacters(StringValues headerValues)
         {
             var count = headerValues.Count;
             for (var i = 0; i < count; i++)
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public static unsafe ConnectionOptions ParseConnection(in StringValues connection)
+        public static unsafe ConnectionOptions ParseConnection(StringValues connection)
         {
             var connectionOptions = ConnectionOptions.None;
 
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return connectionOptions;
         }
 
-        public static unsafe TransferCoding GetFinalTransferCoding(in StringValues transferEncoding)
+        public static unsafe TransferCoding GetFinalTransferCoding(StringValues transferEncoding)
         {
             var transferEncodingOptions = TransferCoding.None;
 
