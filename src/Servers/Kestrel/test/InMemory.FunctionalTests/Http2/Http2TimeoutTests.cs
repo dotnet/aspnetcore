@@ -267,8 +267,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await sendTask.DefaultTimeout();
         }
 
-        [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7000
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1323", FlakyOn.All)]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
