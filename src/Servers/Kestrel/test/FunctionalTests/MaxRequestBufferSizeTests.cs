@@ -277,6 +277,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
 
                     options.Limits.MinRequestBodyDataRate = null;
+                    options.Limits.MaxRequestBodySize = _dataLength;
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Configure(app => app.Run(async context =>
