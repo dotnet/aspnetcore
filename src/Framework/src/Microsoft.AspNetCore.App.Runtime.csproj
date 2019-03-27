@@ -112,8 +112,8 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
 
-    <RuntimePackageRoot>$(NuGetPackageRoot)/runtime.$(RuntimeIdentifier).microsoft.netcore.app/$(MicrosoftNETCoreAppPackageVersion)/</RuntimePackageRoot>
-    <CrossgenToolPath>$(RuntimePackageRoot)tools/$(CrossgenToolPackagePath)</CrossgenToolPath>
+    <RuntimePackageRoot>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'runtime.$(RuntimeIdentifier).microsoft.netcore.app', '$(MicrosoftNETCoreAppPackageVersion)'))</RuntimePackageRoot>
+    <CrossgenToolPath>$([System.IO.Path]::Combine('$(RuntimePackageRoot)', 'tools', '$(CrossgenToolPackagePath)'))</CrossgenToolPath>
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
   </PropertyGroup>
 
