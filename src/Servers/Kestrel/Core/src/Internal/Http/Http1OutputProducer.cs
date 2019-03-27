@@ -580,10 +580,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Super edge case. If we call GetMemory and it returns 4099, we would originally calculate _currentMemoryPrefixBytes
             // as 6 bytes. However, after subtracting the bytes for _currentChunkMemory.Length and the endPrefix, the real
             // body length would be 5 bytes. 
-            if (ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength, out _, out _) != _currentMemoryPrefixBytes)
-            {
-                _currentMemoryPrefixBytes -= 1;
-            }
+            _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength, out _, out _);
 
             _currentChunkMemoryUpdated = true;
         }
