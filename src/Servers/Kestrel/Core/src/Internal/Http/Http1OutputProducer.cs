@@ -539,13 +539,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 cancellationToken);
         }
 
-        // These methods are for chunked http responses that use GetMemory/Advance
         private Memory<byte> GetChunkedMemory(int sizeHint)
         {
             var originalSizeHint = sizeHint;
 
             // To guarantee that sizeHint is a minimumSize, we need to call GetMemory with a sizeHint
-            // larger than what was provided. We add teh begin and end chunk lengths here.
+            // larger than what was provided. We add the begin and end chunk lengths here.
             if (sizeHint > 0)
             {
                 sizeHint += ChunkWriter.GetBeginChunkByteCount(sizeHint, out _, out _) + EndChunkLength;
@@ -556,8 +555,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 UpdateCurrentChunkMemory(sizeHint);
             }
 
-            var memoryMaxLength = _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength;
-            if (_advancedBytesForChunk >= memoryMaxLength - originalSizeHint && _advancedBytesForChunk > 0)
+            if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - originalSizeHint && _advancedBytesForChunk > 0)
             {
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 WriteCurrentMemoryToPipeWriter(ref writer);
@@ -569,7 +567,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var actualMemory = _currentChunkMemory.Slice(
                 _currentMemoryPrefixBytes + _advancedBytesForChunk,
-                memoryMaxLength - _advancedBytesForChunk);
+                _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - _advancedBytesForChunk);
 
             return actualMemory;
         }
@@ -580,12 +578,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length, out _, out _);
 
             // Super edge case. If we call GetMemory and it returns 4099, we would originally calculate _currentMemoryPrefixBytes
-            // as 7 bytes. However, after subtracting the bytes for _currentChunkMemory.Length and the endPrefix, the real
-            // body length would be 6 bytes. 
+            // as 6 bytes. However, after subtracting the bytes for _currentChunkMemory.Length and the endPrefix, the real
+            // body length would be 5 bytes. 
             if (ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength, out _, out _) != _currentMemoryPrefixBytes)
             {
                 _currentMemoryPrefixBytes -= 1;
             }
+
             _currentChunkMemoryUpdated = true;
         }
 
