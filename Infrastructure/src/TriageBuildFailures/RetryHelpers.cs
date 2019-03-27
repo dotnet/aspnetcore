@@ -57,7 +57,7 @@ namespace TriageBuildFailures
                 else
                 {
                     firstResponse = firstResponse ?? result;
-                    reporter.Output($"Bad StatusCode! {result.StatusCode}");
+                    reporter.Output($"Bad StatusCode {result.StatusCode} against {uri}");
                     reporter.Output($"Waiting {retryDelayInMinutes} minute(s) to retry ({retriesRemaining} left)...");
 
                     // Do exponential back-off, but limit it (1, 2, 4, 8, 15, 15, 15, ...)

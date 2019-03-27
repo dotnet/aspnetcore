@@ -45,7 +45,7 @@ namespace TriageBuildFailures.GitHub
                 foreach (var request in triageRequests)
                 {
                     _reporter.Output($"     {pr.Url} wants triage!");
-                    var url = request.Body.Replace(TriageRequestStart, "").Trim();
+                    var url = request.Body.Split(Environment.NewLine)[0].Replace(TriageRequestStart, "").Trim().Trim('.');
                     var build = await _vstsClient.GetBuild(url);
                     build.Branch = "PR";
                     build.CIType = typeof(PullRequestClient);
