@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.HeaderPropagation;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -22,7 +21,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             builder.Services.AddHeaderPropagation();
-            builder.Services.TryAddTransient<HeaderPropagationMessageHandler>();
 
             builder.AddHttpMessageHandler<HeaderPropagationMessageHandler>();
 

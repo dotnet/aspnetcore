@@ -23,6 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddSingleton<HeaderPropagationValues>();
+            services.TryAddTransient<HeaderPropagationMessageHandler>();
 
             return services;
         }
