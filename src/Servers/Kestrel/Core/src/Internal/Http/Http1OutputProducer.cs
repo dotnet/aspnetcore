@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // "0\r\n\r\n"
         private static ReadOnlySpan<byte> EndChunkedResponseBytes => new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
 
-        private const int BeginChunkFixedLength = 2;
         private const int EndChunkLength = 2;
 
         private readonly string _connectionId;
@@ -544,9 +543,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Memory<byte> GetChunkedMemory(int sizeHint)
         {
             var originalSizeHint = sizeHint;
+
+            // To guarantee that sizeHint is a minimumSize, we need to call GetMemory with a sizeHint
+            // larger than what was provided. We add teh begin and end chunk lengths here.
             if (sizeHint > 0)
             {
-                sizeHint += sizeHint.ToString("X").Length + BeginChunkFixedLength + EndChunkLength;
+                sizeHint += ChunkWriter.GetBeginChunkByteCount(sizeHint, out _, out _) + EndChunkLength;
             }
 
             if (!_currentChunkMemoryUpdated)
@@ -575,7 +577,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private void UpdateCurrentChunkMemory(int sizeHint)
         {
             _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-            _currentMemoryPrefixBytes = _currentChunkMemory.Length.ToString("X").Length + BeginChunkFixedLength;
+            _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length, out _, out _);
+
+            // Super edge case. If we call GetMemory and it returns 4099, we would originally calculate _currentMemoryPrefixBytes
+            // as 7 bytes. However, after subtracting the bytes for _currentChunkMemory.Length and the endPrefix, the real
+            // body length would be 6 bytes. 
+            if (ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength, out _, out _) != _currentMemoryPrefixBytes)
+            {
+                _currentMemoryPrefixBytes -= 1;
+            }
             _currentChunkMemoryUpdated = true;
         }
 

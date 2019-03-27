@@ -93,9 +93,10 @@ namespace Microsoft.AspNetCore.Http
 
         private static void Write(this HttpResponse response, string text, Encoding encoding)
         {
+            var minimumByteSize = encoding.GetMaxByteCount(1);
             var pipeWriter = response.BodyWriter;
             var encodedLength = encoding.GetByteCount(text);
-            var destination = pipeWriter.GetSpan();
+            var destination = pipeWriter.GetSpan(minimumByteSize);
 
             if (encodedLength <= destination.Length)
             {
@@ -105,11 +106,11 @@ namespace Microsoft.AspNetCore.Http
             }
             else
             {
-                WriteMultiSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength);
+                WriteMultiSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength, minimumByteSize);
             }
         }
 
-        private static void WriteMultiSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength)
+        private static void WriteMultiSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength, int minimumByteSize)
         {
             var encoder = encoding.GetEncoder();
             var source = text.AsSpan();
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Http
                 writer.Advance(bytesUsed);
                 source = source.Slice(charsUsed);
                 
-                destination = writer.GetSpan();
+                destination = writer.GetSpan(minimumByteSize);
             }
         }
     }

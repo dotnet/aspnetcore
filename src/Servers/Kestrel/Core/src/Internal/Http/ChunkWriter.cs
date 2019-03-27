@@ -16,16 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
         {
             // Determine the most-significant non-zero nibble
-            int total, shift;
-            var count = dataCount;
-            total = (count > 0xffff) ? 0x10 : 0x00;
-            count >>= total;
-            shift = (count > 0x00ff) ? 0x08 : 0x00;
-            count >>= shift;
-            total |= shift;
-            total |= (count > 0x000f) ? 0x04 : 0x00;
-
-            count = (total >> 2) + 3;
+            int total, shift; 
+            var count = GetBeginChunkByteCount(dataCount, out total, out shift);
 
             var offset = 0;
             ref var startHex = ref _hex[0];
@@ -42,6 +34,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             span[count - 1] = (byte)'\n';
 
             return count;
+        }
+
+        internal static int GetBeginChunkByteCount(int count, out int total, out int shift)
+        {
+            total = (count > 0xffff) ? 0x10 : 0x00;
+            count >>= total;
+            shift = (count > 0x00ff) ? 0x08 : 0x00;
+            count >>= shift;
+            total |= shift;
+            total |= (count > 0x000f) ? 0x04 : 0x00;
+
+            return (total >> 2) + 3;
         }
 
         internal static int WriteBeginChunkBytes(this ref BufferWriter<PipeWriter> start, int dataCount)
