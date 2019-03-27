@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Http
             // Need to change the StreamPipeWriter with a capped MemoryPool
             var memoryPool = new TestMemoryPool(maxBufferSize: 16);
             var outputStream = new MemoryStream();
-            var streamPipeWriter = new StreamPipeWriter(outputStream, minimumSegmentSize: 5, memoryPool);
+            var streamPipeWriter = new StreamPipeWriter(outputStream, minimumSegmentSize: 0, memoryPool);
 
             HttpContext context = new DefaultHttpContext();
             context.Response.BodyWriter = streamPipeWriter;

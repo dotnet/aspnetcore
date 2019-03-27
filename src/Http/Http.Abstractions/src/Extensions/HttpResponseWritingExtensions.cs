@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Http
 
                 writer.Advance(bytesUsed);
                 source = source.Slice(charsUsed);
-                
+
                 destination = writer.GetSpan(minimumByteSize);
             }
         }

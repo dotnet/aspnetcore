@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Theory]
-        [InlineData(4097)]
+        [InlineData(4096)]
         [InlineData(10000)]
         [InlineData(100000)]
         public async Task ResponsesAreChunkedAutomaticallyLargeChunksLargeResponseWithOverloadedWriteAsync(int length)
@@ -198,21 +198,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Theory]
-        [InlineData(2500)]
-        [InlineData(100)]
         [InlineData(2)]
-        [InlineData(10000)]
+        [InlineData(100)]
+        [InlineData(2500)]
+        [InlineData(8192)]
         [InlineData(49999)]
-        public async Task ResponsesAreChunkedAutomaticallyPartialWrite(int length)
+        public async Task ResponsesAreChunkedAutomaticallyPartialWrite(int partialLength)
         {
             var testContext = new TestServiceContext(LoggerFactory);
-            var expectedString = new string('a', length);
+            var expectedString = new string('a', partialLength);
             using (var server = new TestServer(async httpContext =>
             {
                 await httpContext.Response.StartAsync();
                 var memory = httpContext.Response.BodyWriter.GetMemory(100000);
                 Encoding.ASCII.GetBytes(expectedString).CopyTo(memory);
-                httpContext.Response.BodyWriter.Advance(length);
+                httpContext.Response.BodyWriter.Advance(partialLength);
                 await httpContext.Response.BodyWriter.FlushAsync();
             }, testContext))
             {
@@ -230,8 +230,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         $"Date: {testContext.DateHeaderValue}",
                         "Transfer-Encoding: chunked",
                         "",
-                        length.ToString("x"),
-                        new string('a', length),
+                        partialLength.ToString("x"),
+                        new string('a', partialLength),
                         "0",
                         "",
                         "");
