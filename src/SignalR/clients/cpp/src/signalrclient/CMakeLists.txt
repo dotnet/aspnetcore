@@ -26,7 +26,7 @@ add_library (signalrclient SHARED ${SOURCES})
 if(NOT WIN32)
   target_link_libraries(signalrclient cpprestsdk ${OPENSSL_LIBRARIES} Boost::boost Boost::system Boost::chrono Boost::thread)
 else()
-  target_link_libraries(signalrclient cpprestsdk::cpprest)
+  target_link_libraries(signalrclient ${CPPREST_LIB})
 endif()
 
 add_custom_command(TARGET signalrclient POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/include $<TARGET_FILE_DIR:signalrclient>/include)

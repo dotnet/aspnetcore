@@ -3,12 +3,14 @@
 
 #pragma once
 
+#include "_exports.h"
+
 namespace signalr
 {
     class log_writer
     {
     public:
         // NOTE: the caller does not enforce thread safety of this call
-        virtual void __cdecl write(const std::string &entry) = 0;
+        SIGNALRCLIENT_API virtual void write(const std::string &entry) = 0;
     };
 }

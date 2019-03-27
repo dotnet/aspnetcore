@@ -1,21 +1,28 @@
-cmake_minimum_required (VERSION 3.7)
+cmake_minimum_required (VERSION 3.5)
 project (signalrclient)
 
 if(NOT WIN32)
   set(EXTRA_FLAGS "-std=c++11 -fPIC")
+else()
+  set(EXTRA_FLAGS "-DSIGNALRCLIENT_EXPORTS")
 endif()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_FLAGS} -DSIGNALRCLIENT_EXPORTS")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_FLAGS}")
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${CMAKE_LDFLAGS}")
 
-find_package(cpprestsdk REQUIRED)
+if(WIN32)
+  find_package(cpprestsdk REQUIRED)
+  set(CPPREST_LIB "cpprestsdk::cpprest")
+endif()
 #set(CPPREST_INCLUDE_DIR "" CACHE FILEPATH "Path to casablanca include dir")
 
 include_directories (
 include)
 #"${CPPREST_INCLUDE_DIR}")
 
-#find_library(CPPREST_SO NAMES "cpprest" PATHS ${CPPREST_LIB_DIR} REQUIRED)
+if(NOT WIN32)
+  find_library(CPPREST_LIB NAMES "cpprest" PATHS ${CPPREST_LIB_DIR} REQUIRED)
+endif()
 
 # TODO: We shouldn't use this, it makes the dll/lib export all symbols
 # We need this for testing, but we might just add all the files to the test project manually
