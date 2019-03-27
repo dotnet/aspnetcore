@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// Adds services required for propagating headers to a <see cref="HttpClient"/>.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/> to add the services to.</param>
-        /// <param name="configureOptions">The <see cref="HeaderPropagationOptions"/> to configure the middleware with.</param>
+        /// <param name="configureOptions">A delegate used to configure the <see cref="HeaderPropagationOptions"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection AddHeaderPropagation(this IServiceCollection services, Action<HeaderPropagationOptions> configureOptions)
         {
