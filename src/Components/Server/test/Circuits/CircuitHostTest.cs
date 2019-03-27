@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async Task InitializeAsync_InvokesHandlers()
+        public void Initialize_InvokesHandlers()
         {
             // Arrange
             var cancellationToken = new CancellationToken();
@@ -74,11 +75,45 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var circuitHost = TestCircuitHost.Create(handlers: new[] { handler1.Object, handler2.Object });
 
             // Act
-            await circuitHost.InitializeAsync(cancellationToken);
+            circuitHost.Initialize(cancellationToken);
 
             // Assert
             handler1.VerifyAll();
             handler2.VerifyAll();
+        }
+
+        [Fact]
+        public void Initialize_ReportsAsyncExceptions()
+        {
+            // Arrange
+            var handler = new Mock<CircuitHandler>(MockBehavior.Strict);
+            var tcs = new TaskCompletionSource<object>();
+            var reportedErrors = new List<UnhandledExceptionEventArgs>();
+
+            handler
+                .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
+                .Returns(tcs.Task)
+                .Verifiable();
+
+            var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object });
+            circuitHost.UnhandledException += (sender, errorInfo) =>
+            {
+                Assert.Same(circuitHost, sender);
+                reportedErrors.Add(errorInfo);
+            };
+
+            // Act
+            circuitHost.Initialize(new CancellationToken());
+            handler.VerifyAll();
+
+            // Assert: there was no synchronous exception
+            Assert.Empty(reportedErrors);
+
+            // Act/Assert: if the handler throws later, that gets reported
+            var ex = new InvalidTimeZoneException();
+            tcs.SetException(ex);
+            Assert.Same(ex, reportedErrors.Single().ExceptionObject);
+            Assert.False(reportedErrors.Single().IsTerminating);
         }
 
         [Fact]

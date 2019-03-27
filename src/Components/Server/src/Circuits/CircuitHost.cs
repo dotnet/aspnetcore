@@ -104,21 +104,32 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             });
         }
 
-        public async Task InitializeAsync(CancellationToken cancellationToken)
+        public void Initialize(CancellationToken cancellationToken)
         {
-            await Renderer.InvokeAsync(async () =>
+            // This Initialize method is fire-and-forget as far as the caller is concerned, because
+            // if it was to await completion, it would be blocking the SignalR message loop. This could
+            // lead to deadlock, e.g., if the init process itself waited for an incoming SignalR message
+            // such as the result of a JSInterop call.
+            Renderer.InvokeAsync(async () =>
             {
-                SetCurrentCircuitHost(this);
-
-                for (var i = 0; i < Descriptors.Count; i++)
+                try
                 {
-                    var (componentType, domElementSelector) = Descriptors[i];
-                    await Renderer.AddComponentAsync(componentType, domElementSelector);
+                    SetCurrentCircuitHost(this);
+
+                    for (var i = 0; i < Descriptors.Count; i++)
+                    {
+                        var (componentType, domElementSelector) = Descriptors[i];
+                        await Renderer.AddComponentAsync(componentType, domElementSelector);
+                    }
+
+                    await OnCircuitOpenedAsync(cancellationToken);
+
+                    await OnConnectionUpAsync(cancellationToken);
                 }
-
-                await OnCircuitOpenedAsync(cancellationToken);
-
-                await OnConnectionUpAsync(cancellationToken);
+                catch (Exception ex)
+                {
+                    Renderer_UnhandledException(this, ex);
+                }
             });
 
             _initialized = true;

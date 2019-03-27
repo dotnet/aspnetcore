@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// <summary>
         /// Intended for framework use only. Applications should not call this method directly.
         /// </summary>
-        public async Task<string> StartCircuit(string uriAbsolute, string baseUriAbsolute)
+        public string StartCircuit(string uriAbsolute, string baseUriAbsolute)
         {
             var circuitClient = new CircuitClientProxy(Clients.Caller, Context.ConnectionId);
 
@@ -76,8 +76,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
             circuitHost.UnhandledException += CircuitHost_UnhandledException;
 
-            // If initialization fails, this will throw. The caller will fail if they try to call into any interop API.
-            await circuitHost.InitializeAsync(Context.ConnectionAborted);
+            circuitHost.Initialize(Context.ConnectionAborted);
 
             _circuitRegistry.Register(circuitHost);
 
