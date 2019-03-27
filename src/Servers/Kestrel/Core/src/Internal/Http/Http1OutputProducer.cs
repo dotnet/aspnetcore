@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private bool _completed;
         private bool _aborted;
         private long _unflushedBytes;
-        private long _currentMemoryStartBytes;
+        private int _currentMemoryPrefixBytes;
 
         private readonly PipeWriter _pipeWriter;
         private IMemoryOwner<byte> _fakeMemoryOwner;
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
                 else if (_autoChunk)
                 {
-                    if (_advancedBytesForChunk > _currentChunkMemory.Length - _currentMemoryStartBytes - EndChunkLength - bytes)
+                    if (_advancedBytesForChunk > _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - bytes)
                     {
                         throw new ArgumentOutOfRangeException("Can't advance past buffer size.");
                     }
@@ -484,6 +484,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _autoChunk = false;
             _startCalled = false;
             _currentChunkMemoryUpdated = false;
+            _currentMemoryPrefixBytes = 0;
         }
 
         private ValueTask<FlushResult> WriteAsync(
@@ -553,7 +554,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 UpdateCurrentChunkMemory(sizeHint);
             }
 
-            var memoryMaxLength = _currentChunkMemory.Length - _currentMemoryStartBytes - EndChunkLength;
+            var memoryMaxLength = _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength;
             if (_advancedBytesForChunk >= memoryMaxLength - originalSizeHint && _advancedBytesForChunk > 0)
             {
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
@@ -565,8 +566,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             var actualMemory = _currentChunkMemory.Slice(
-                (int)_currentMemoryStartBytes + _advancedBytesForChunk,
-                (int)memoryMaxLength - _advancedBytesForChunk);
+                _currentMemoryPrefixBytes + _advancedBytesForChunk,
+                memoryMaxLength - _advancedBytesForChunk);
 
             return actualMemory;
         }
@@ -574,7 +575,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private void UpdateCurrentChunkMemory(int sizeHint)
         {
             _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-            _currentMemoryStartBytes = _currentChunkMemory.Length.ToString("X").Length + BeginChunkFixedLength;
+            _currentMemoryPrefixBytes = _currentChunkMemory.Length.ToString("X").Length + BeginChunkFixedLength;
             _currentChunkMemoryUpdated = true;
         }
 
@@ -585,14 +586,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var bytesWritten = writer.WriteBeginChunkBytes(_advancedBytesForChunk);
 
-            Debug.Assert(bytesWritten <= _currentMemoryStartBytes);
+            Debug.Assert(bytesWritten <= _currentMemoryPrefixBytes);
 
-            if (bytesWritten < _currentMemoryStartBytes)
+            if (bytesWritten < _currentMemoryPrefixBytes)
             {
                 // If the current chunk of memory isn't completely utilized, we need to copy the contents forwards.
                 // This occurs if someone uses less than 255 bytes of the current Memory segment.
                 // Therefore, we need to copy it forwards by either 1 or 2 bytes (depending on number of bytes)
-                _currentChunkMemory.Slice((int)_currentMemoryStartBytes, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
+                _currentChunkMemory.Slice(_currentMemoryPrefixBytes, _advancedBytesForChunk).CopyTo(_currentChunkMemory.Slice(bytesWritten));
             }
 
             writer.Advance(_advancedBytesForChunk);
