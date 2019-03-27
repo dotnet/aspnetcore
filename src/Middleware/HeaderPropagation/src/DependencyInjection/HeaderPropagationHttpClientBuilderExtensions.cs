@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.HeaderPropagation;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -15,7 +16,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.</returns>
         public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder)
         {
-            builder.Services.TryAddSingleton<HeaderPropagationValues>();
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Services.AddHeaderPropagation();
             builder.Services.TryAddTransient<HeaderPropagationMessageHandler>();
 
             builder.AddHttpMessageHandler<HeaderPropagationMessageHandler>();
