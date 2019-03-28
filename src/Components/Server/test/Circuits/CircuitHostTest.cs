@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async Task Initialize_InvokesHandlers()
+        public async Task InitializeAsync_InvokesHandlers()
         {
             // Arrange
             var cancellationToken = new CancellationToken();
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public async Task Initialize_ReportsOwnAsyncExceptions()
+        public async Task InitializeAsync_ReportsOwnAsyncExceptions()
         {
             // Arrange
             var handler = new Mock<CircuitHandler>(MockBehavior.Strict);
