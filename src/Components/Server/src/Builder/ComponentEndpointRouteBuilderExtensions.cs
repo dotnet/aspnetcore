@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Builder
         /// Maps the SignalR <see cref="ComponentHub"/> to the path <paramref name="path"/> and associates
         /// the component <paramref name="componentType"/> to this hub instance as the given DOM <paramref name="selector"/>.
         /// </summary>
-        /// <param name="endpoints">The <see cref="RouteBuilder"/>.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <param name="componentType">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</param>
         /// <param name="selector">The selector for the <paramref name="componentType"/>.</param>
         /// <param name="path">The path to map to which the <see cref="ComponentHub"/> will be mapped.</param>
