@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Builder
         /// the component <typeparamref name="TComponent"/> to this hub instance as the given DOM <paramref name="selector"/>.
         /// </summary>
         /// <typeparam name="TComponent">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</typeparam>
-        /// <param name="endpoints">The <see cref="RouteBuilder"/>.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <param name="selector">The selector for the <typeparamref name="TComponent"/>.</param>
         /// <returns>The <see cref="IEndpointConventionBuilder"/>.</returns>
         public static IEndpointConventionBuilder MapComponentHub<TComponent>(
