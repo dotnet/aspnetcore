@@ -1017,13 +1017,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7000  
         public async Task ContentLength_Received_ReadViaPipes()
         {
             await InitializeConnectionAsync(async context =>
             {
                 var readResult = await context.Request.BodyReader.ReadAsync();
-                Assert.True(readResult.IsCompleted);
+                while (!readResult.IsCompleted)
+                {
+                    context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                    readResult = await context.Request.BodyReader.ReadAsync();
+                }
+
                 Assert.Equal(12, readResult.Buffer.Length);
                 context.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
 
