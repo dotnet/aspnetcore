@@ -1016,7 +1016,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.IsType<Http2StreamErrorException>(thrownEx.InnerException);
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task ContentLength_Received_ReadViaPipes()
         {
             await InitializeConnectionAsync(async context =>
