@@ -303,13 +303,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             builder.Build(instance)(container);
         }
 
-        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
         {
             _builder.ConfigureServices((context, services) =>
             {
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
-                    options.ConfigureApplication = configure;
+                    var webhostBuilderContext = GetWebHostBuilderContext(context);
+                    options.ConfigureApplication = app => configure(webhostBuilderContext, app);
                 });
             });
 
