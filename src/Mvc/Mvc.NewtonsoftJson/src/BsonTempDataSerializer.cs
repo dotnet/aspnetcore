@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             }
             else
             {
-                return Array.Empty<byte>();;
+                return Array.Empty<byte>();
             }
         }
 
