@@ -490,10 +490,10 @@ namespace Test
                 frame => AssertFrame.Element(frame, "div", 7, 0),
                 frame => AssertFrame.Attribute(frame, "value", "42", 1),
                 frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 2),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "span", 2, 4),
                 frame => AssertFrame.Text(frame, "42", 5),
-                frame => AssertFrame.Whitespace(frame, 6));
+                frame => AssertFrame.MarkupWhitespace(frame, 6));
         }
 
         [Fact]

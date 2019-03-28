@@ -109,7 +109,14 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
             AssertFrame.Sequence(frame, sequence);
         }
 
-        public static void Whitespace(RenderTreeFrame frame, int? sequence = null)
+        public static void MarkupWhitespace(RenderTreeFrame frame, int? sequence = null)
+        {
+            Assert.Equal(RenderTreeFrameType.Markup, frame.FrameType);
+            AssertFrame.Sequence(frame, sequence);
+            Assert.True(string.IsNullOrWhiteSpace(frame.TextContent));
+        }
+
+        public static void TextWhitespace(RenderTreeFrame frame, int? sequence = null)
         {
             Assert.Equal(RenderTreeFrameType.Text, frame.FrameType);
             AssertFrame.Sequence(frame, sequence);
