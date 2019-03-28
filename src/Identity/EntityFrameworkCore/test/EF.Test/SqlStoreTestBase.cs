@@ -350,22 +350,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             var result = await manager.CreateAsync(user);
             Assert.NotNull(user);
             user.SecurityStamp = null;
-            IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
-            await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.GetSecurityStampAsync(user));
-        }
-
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public async Task GetSecurityStampThrowsIfNull()
-        {
-            var manager = CreateManager();
-            var user = CreateTestUser();
-            var result = await manager.CreateAsync(user);
-            Assert.NotNull(user);
-            user.SecurityStamp = null;
-            IdentityResultAssert.IsSuccess(await manager.UpdateAsync(user));
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await manager.GetSecurityStampAsync(user));
         }
 
