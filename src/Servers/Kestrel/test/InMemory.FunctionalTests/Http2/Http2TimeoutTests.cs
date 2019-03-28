@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1879", FlakyOn.AzP.Linux)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1879", FlakyOn.All)]
         [InlineData((int)Http2FrameType.DATA)]
         [InlineData((int)Http2FrameType.CONTINUATION)]
         public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(int intFinalFrameType)
