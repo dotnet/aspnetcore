@@ -133,6 +133,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var serviceContext = new TestServiceContext(LoggerFactory);
 
+            TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
+
             var stopTask = Task.CompletedTask;
             using (var server = new TestServer(TestApp.EchoApp, serviceContext, listenOptions))
             {
