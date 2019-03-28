@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     internal class ComponentDocumentClassifierPass : DocumentClassifierPassBase
     {
         public static readonly string ComponentDocumentKind = "component.1.0";
-        private static readonly object BuildRenderTreeBaseCallAnnotation = new object();
 
         /// <summary>
         /// The fallback value of the root namespace. Only used if the fallback root namespace
@@ -116,20 +115,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     ParameterName = "builder",
                     TypeName = ComponentsApi.RenderTreeBuilder.FullTypeName,
                 });
-
-                // We need to call the 'base' method as the first statement.
-                var callBase = new CSharpCodeIntermediateNode();
-                callBase.Annotations.Add(BuildRenderTreeBaseCallAnnotation, true);
-                callBase.Children.Add(new IntermediateToken
-                {
-                    Kind = TokenKind.CSharp,
-                    Content = $"base.{ComponentsApi.ComponentBase.BuildRenderTree}(builder);"
-                });
-                method.Children.Insert(0, callBase);
             }
         }
-
-        internal static bool IsBuildRenderTreeBaseCall(CSharpCodeIntermediateNode node)
-            => node.Annotations[BuildRenderTreeBaseCallAnnotation] != null;
     }
 }

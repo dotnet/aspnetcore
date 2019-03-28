@@ -14,7 +14,6 @@ namespace __GeneratedComponent
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", this.ToString());
             builder.AddContent(2, "\r\n    Hello world\r\n    ");

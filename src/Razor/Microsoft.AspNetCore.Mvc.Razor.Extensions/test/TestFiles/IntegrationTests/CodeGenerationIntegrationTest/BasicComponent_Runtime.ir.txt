@@ -7,8 +7,6 @@ Document -
         UsingDirective - (102:4,1 [37] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - AspNetCore_d3c3d6059615673cb46fc4974164d61eabadb890 - Microsoft.AspNetCore.Components.ComponentBase - IDisposable
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                CSharpCode - 
-                    IntermediateToken -  - CSharp - base.BuildRenderTree(builder);
                 MarkupElement - (25:1,0 [91] BasicComponent.cshtml) - div
                     HtmlAttribute - (29:1,4 [25] BasicComponent.cshtml) -  class=" - "
                         CSharpExpressionAttributeValue - (37:1,12 [16] BasicComponent.cshtml) - 

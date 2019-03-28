@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                     case CSharpCodeIntermediateNode codeIntermediateNode:
                         shouldRemoveNode = false;
-                        shouldContinueIteration = ComponentDocumentClassifierPass.IsBuildRenderTreeBaseCall(codeIntermediateNode);
+                        shouldContinueIteration = false;
                         break;
 
                     default:
