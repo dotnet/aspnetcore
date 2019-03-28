@@ -30,4 +30,4 @@ add_executable (signalrclienttests ${SOURCES})
 # target_link_libraries(signalrclienttests gtest gtest_main signalrclient ${CPPREST_SO} ${Boost_SYSTEM_LIBRARY} ${OPENSSL_LIBRARIES})
 
 target_link_libraries(signalrclienttests gtest signalrclient ${CPPREST_LIB})
-add_test(signalrclienttests signalrclienttests)
+add_test(NAME signalrclienttests COMMAND signalrclienttests)

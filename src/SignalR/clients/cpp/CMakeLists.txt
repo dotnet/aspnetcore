@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.5)
 project (signalrclient)
 
 if(NOT WIN32)
-  set(EXTRA_FLAGS "-std=c++11 -fPIC")
+  set(EXTRA_FLAGS "-std=c++11 -fPIC -DNO_SIGNALRCLIENT_EXPORTS")
 else()
   set(EXTRA_FLAGS "-DSIGNALRCLIENT_EXPORTS")
 endif()
@@ -14,11 +14,9 @@ if(WIN32)
   find_package(cpprestsdk REQUIRED)
   set(CPPREST_LIB "cpprestsdk::cpprest")
 endif()
-#set(CPPREST_INCLUDE_DIR "" CACHE FILEPATH "Path to casablanca include dir")
 
 include_directories (
 include)
-#"${CPPREST_INCLUDE_DIR}")
 
 if(NOT WIN32)
   find_library(CPPREST_LIB NAMES "cpprest" PATHS ${CPPREST_LIB_DIR} REQUIRED)
@@ -47,4 +45,6 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(src/signalrclient)
+
+enable_testing()
 add_subdirectory(test)
