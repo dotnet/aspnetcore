@@ -32,11 +32,13 @@ namespace RoutingSandbox
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(builder =>
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                builder.MapHello("/helloworld", "World");
+                endpoints.MapHello("/helloworld", "World");
 
-                builder.MapGet(
+                endpoints.MapGet(
                     "/",
                     (httpContext) =>
                     {
@@ -58,7 +60,7 @@ namespace RoutingSandbox
                         response.ContentType = "text/plain";
                         return response.WriteAsync(sb.ToString());
                     });
-                builder.MapGet(
+                endpoints.MapGet(
                     "/plaintext",
                     (httpContext) =>
                     {
@@ -69,7 +71,7 @@ namespace RoutingSandbox
                         response.ContentLength = payloadLength;
                         return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
                     });
-                builder.MapGet(
+                endpoints.MapGet(
                     "/graph",
                     (httpContext) =>
                     {
@@ -83,11 +85,11 @@ namespace RoutingSandbox
                         return Task.CompletedTask;
                     }).WithDisplayName("DFA Graph");
 
-                builder.MapGet("/attributes", HandlerWithAttributes);
+                endpoints.MapGet("/attributes", HandlerWithAttributes);
 
-                builder.Map("/getwithattributes", Handler);
+                endpoints.Map("/getwithattributes", Handler);
 
-                builder.MapFramework(frameworkBuilder =>
+                endpoints.MapFramework(frameworkBuilder =>
                 {
                     frameworkBuilder.AddPattern("/transform/{hub:slugify=TestHub}/{method:slugify=TestMethod}");
                     frameworkBuilder.AddPattern("/{hub}/{method=TestMethod}");
@@ -98,7 +100,6 @@ namespace RoutingSandbox
                 });
             });
 
-            app.UseStaticFiles();
         }
 
         [Authorize]

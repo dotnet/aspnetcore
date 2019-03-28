@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     throw new InvalidOperationException(
                         $"{nameof(ComponentHub)} doesn't have an associated endpoint. " +
-                        "Use 'app.UseRouting(routes => routes.MapComponentHub<App>(\"app\"))' to register your hub.");
+                        "Use 'app.UseEndpoints(endpoints => endpoints.MapComponentHub<App>(\"app\"))' to register your hub.");
                 }
 
                 var componentsMetadata = endpoint.Metadata.OfType<ComponentDescriptor>().ToList();

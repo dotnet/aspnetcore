@@ -50,12 +50,14 @@ namespace Microsoft.AspNetCore.StaticFiles
         public async Task Endpoint_PassesThrough()
         {
             var builder = new WebHostBuilder()
-                .ConfigureServices(services => services.AddSingleton(LoggerFactory))
+                .ConfigureServices(services => { services.AddSingleton(LoggerFactory); services.AddRouting(); })
                 .UseKestrel()
                 .UseWebRoot(AppContext.BaseDirectory)
                 .Configure(app =>
                 {
                     // Routing first => static files noops
+                    app.UseRouting();
+
                     app.Use(next => context =>
                     {
                         // Assign an endpoint, this will make the default files noop.
@@ -70,6 +72,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                     });
 
                     app.UseStaticFiles();
+
+                    app.UseEndpoints(endpoints => {});
                 });
 
             using (var server = builder.Start(TestUrlHelper.GetTestUrl(ServerType.Kestrel)))

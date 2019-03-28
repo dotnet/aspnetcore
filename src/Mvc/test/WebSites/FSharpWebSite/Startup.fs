@@ -16,4 +16,5 @@ type Startup () =
     member this.Configure(app: IApplicationBuilder) =
         app.UseDeveloperExceptionPage() |> ignore
         app.UseStaticFiles() |> ignore
-        app.UseMvcWithDefaultRoute() |> ignore
+        app.UseRouting() |> ignore
+        app.UseEndpoints(fun endpoints -> endpoints.MapDefaultControllerRoute() |> ignore) |> ignore

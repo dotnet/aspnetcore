@@ -124,21 +124,34 @@ namespace FunctionalTests
                 return next.Invoke();
             });
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+
+            app.Use(async (context, next) =>
             {
-                routes.MapHub<TestHub>("/testhub");
-                routes.MapHub<TestHub>("/testhub-nowebsockets", options => options.Transports = HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling);
-                routes.MapHub<UncreatableHub>("/uncreatable");
-                routes.MapHub<HubWithAuthorization>("/authorizedhub");
+                if (context.Request.Path.Value.Contains("/negotiate"))
+                {
+                    context.Response.Cookies.Append("testCookie", "testValue");
+                    context.Response.Cookies.Append("testCookie2", "testValue2");
+                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
+                }
+                await next.Invoke();
+            });
 
-                routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<TestHub>("/testhub");
+                endpoints.MapHub<TestHub>("/testhub-nowebsockets", options => options.Transports = HttpTransportType.ServerSentEvents | HttpTransportType.LongPolling);
+                endpoints.MapHub<UncreatableHub>("/uncreatable");
+                endpoints.MapHub<HubWithAuthorization>("/authorizedhub");
 
-                routes.MapGet("/generateJwtToken", context =>
+                endpoints.MapConnectionHandler<EchoConnectionHandler>("/echo");
+
+                endpoints.MapGet("/generateJwtToken", context =>
                 {
                     return context.Response.WriteAsync(GenerateJwtToken());
                 });
 
-                routes.MapGet("/deployment", context =>
+                endpoints.MapGet("/deployment", context =>
                 {
                     var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
 
@@ -169,17 +182,6 @@ namespace FunctionalTests
 
                     return Task.CompletedTask;
                 });
-            });
-
-            app.Use(async (context, next) =>
-            {
-                if (context.Request.Path.Value.Contains("/negotiate"))
-                {
-                    context.Response.Cookies.Append("testCookie", "testValue");
-                    context.Response.Cookies.Append("testCookie2", "testValue2");
-                    context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
-                }
-                await next.Invoke();
             });
         }
 

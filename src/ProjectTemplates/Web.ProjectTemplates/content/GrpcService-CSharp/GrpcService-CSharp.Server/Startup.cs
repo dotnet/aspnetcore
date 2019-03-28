@@ -26,9 +26,11 @@ namespace GrpcService_CSharp
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapGrpcService<GreeterService>();
+                endpoints.MapGrpcService<GreeterService>();
             });
         }
     }

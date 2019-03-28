@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,23 +15,23 @@ namespace RoutingSandbox.Framework
 {
     public static class FrameworkEndpointRouteBuilderExtensions
     {
-        public static IEndpointConventionBuilder MapFramework(this IEndpointRouteBuilder routes, Action<FrameworkConfigurationBuilder> configure)
+        public static IEndpointConventionBuilder MapFramework(this IEndpointRouteBuilder endpoints, Action<FrameworkConfigurationBuilder> configure)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var dataSource = routes.ServiceProvider.GetRequiredService<FrameworkEndpointDataSource>();
+            var dataSource = endpoints.ServiceProvider.GetRequiredService<FrameworkEndpointDataSource>();
 
             var configurationBuilder = new FrameworkConfigurationBuilder(dataSource);
             configure(configurationBuilder);
 
-            routes.DataSources.Add(dataSource);
+            endpoints.DataSources.Add(dataSource);
 
             return dataSource;
         }

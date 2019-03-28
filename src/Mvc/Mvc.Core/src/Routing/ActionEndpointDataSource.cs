@@ -10,9 +10,6 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
-    // This is only used to support the scenario where UseMvc is called with
-    // EnableEndpointRouting = true. For layering reasons we can't use the PageActionEndpointDataSource
-    // here.
     internal class ActionEndpointDataSource : ActionEndpointDataSourceBase
     {
         private readonly ActionEndpointFactory _endpointFactory;
@@ -22,10 +19,10 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             : base(actions)
         {
             _endpointFactory = endpointFactory;
-            
+
             _routes = new List<ConventionalRouteEntry>();
 
-            // IMPORTANT: this needs to be the last thing we do in the constructor. 
+            // IMPORTANT: this needs to be the last thing we do in the constructor.
             // Change notifications can happen immediately!
             Subscribe();
         }

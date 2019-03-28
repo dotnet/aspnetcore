@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hello from /Admin/RouteTemplate my-user-id 4", content.Trim());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8387")]
         public async Task AuthConvention_IsAppliedOnBasePathRelativePaths_ForFiles()
         {
             // Act
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/Login?ReturnUrl=%2FConventions%2FAuth", response.Headers.Location.PathAndQuery);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8387")]
         public async Task AuthConvention_IsAppliedOnBasePathRelativePaths_For_Folders()
         {
             // Act
@@ -372,7 +372,7 @@ Hello from /Pages/Shared/";
             Assert.Equal(expected, response.Trim(), ignoreLineEndingDifferences: true);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8387")]
         public async Task AuthorizeFolderConvention_CanBeAppliedToAreaPages()
         {
             // Act

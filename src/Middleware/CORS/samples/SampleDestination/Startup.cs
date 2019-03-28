@@ -57,18 +57,18 @@ namespace SampleDestination
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routing =>
-            {
-                routing.Map("/allow-origin", HandleRequest).WithCorsPolicy("AllowOrigin");
-                routing.Map("/allow-header-method", HandleRequest).WithCorsPolicy("AllowHeaderMethod");
-                routing.Map("/allow-credentials", HandleRequest).WithCorsPolicy("AllowCredentials");
-                routing.Map("/exposed-header", HandleRequest).WithCorsPolicy("ExposedHeader");
-                routing.Map("/allow-all", HandleRequest).WithCorsPolicy("AllowAll");
-            });
+            app.UseRouting();
 
             app.UseCors();
 
-            app.UseEndpoint();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/allow-origin", HandleRequest).WithCorsPolicy("AllowOrigin");
+                endpoints.Map("/allow-header-method", HandleRequest).WithCorsPolicy("AllowHeaderMethod");
+                endpoints.Map("/allow-credentials", HandleRequest).WithCorsPolicy("AllowCredentials");
+                endpoints.Map("/exposed-header", HandleRequest).WithCorsPolicy("ExposedHeader");
+                endpoints.Map("/allow-all", HandleRequest).WithCorsPolicy("AllowAll");
+            });
 
             app.Run(async (context) =>
             {

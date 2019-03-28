@@ -59,7 +59,15 @@ namespace ApiAuthSample
             app.UseStaticFiles();
             app.UseIdentityServer();
 
-            app.UseMvc();
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }
