@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             services.AddSingleton(_BrowserHostBuilderContext);
             services.AddSingleton<IWebAssemblyHost, WebAssemblyHost>();
             services.AddSingleton<IJSRuntime>(WebAssemblyJSRuntime.Instance);
-
+            services.AddSingleton<IComponentContext, WebAssemblyComponentContext>();
             services.AddSingleton<IUriHelper>(WebAssemblyUriHelper.Instance);
             services.AddSingleton<HttpClient>(s =>
             {

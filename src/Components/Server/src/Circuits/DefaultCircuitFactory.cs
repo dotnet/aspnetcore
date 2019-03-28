@@ -41,7 +41,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var scope = _scopeFactory.CreateScope();
             var encoder = scope.ServiceProvider.GetRequiredService<HtmlEncoder>();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
+            var componentContext = (RemoteComponentContext)scope.ServiceProvider.GetRequiredService<IComponentContext>();
             jsRuntime.Initialize(client);
+            componentContext.Initialize(client);
 
             var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
             if (client != CircuitClientProxy.OfflineClient)
