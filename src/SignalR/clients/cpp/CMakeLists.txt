@@ -46,5 +46,9 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 add_subdirectory(src/signalrclient)
 
-enable_testing()
-add_subdirectory(test)
+SET(ENABLE_TESTING OFF CACHE BOOL "Enable tests to build")
+if(${ENABLE_TESTING})
+  enable_testing()
+  add_subdirectory(test)
+endif()
+UNSET(ENABLE_TESTING CACHE)
