@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
         {
             // Determine the most-significant non-zero nibble
-            int total, shift; 
-            var count = GetBeginChunkByteCount(dataCount, out total, out shift);
+            int total; 
+            var count = GetBeginChunkByteCount(dataCount, out total);
 
             var offset = 0;
             ref var startHex = ref _hex[0];
 
-            for (shift = total; shift >= 0; shift -= 4)
+            for (var shift = total; shift >= 0; shift -= 4)
             {
                 // Using Unsafe.Add to elide the bounds check on _hex as the & 0x0f definately
                 // constrains it to the range 0x0 - 0xf, matching the bounds of the array
@@ -36,11 +36,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return count;
         }
 
-        internal static int GetBeginChunkByteCount(int count, out int total, out int shift)
+        internal static int GetBeginChunkByteCount(int count)
+        {
+            var total = (count > 0xffff) ? 0x10 : 0x00;
+            count >>= total;
+            var shift = (count > 0x00ff) ? 0x08 : 0x00;
+            count >>= shift;
+            total |= shift;
+            total |= (count > 0x000f) ? 0x04 : 0x00;
+
+            return (total >> 2) + 3;
+        }
+
+        internal static int GetBeginChunkByteCount(int count, out int total)
         {
             total = (count > 0xffff) ? 0x10 : 0x00;
             count >>= total;
-            shift = (count > 0x00ff) ? 0x08 : 0x00;
+            var shift = (count > 0x00ff) ? 0x08 : 0x00;
             count >>= shift;
             total |= shift;
             total |= (count > 0x000f) ? 0x04 : 0x00;

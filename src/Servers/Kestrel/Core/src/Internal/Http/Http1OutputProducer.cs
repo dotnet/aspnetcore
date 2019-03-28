@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // larger than what was provided. We add the begin and end chunk lengths here.
             if (sizeHint > 0)
             {
-                sizeHint += ChunkWriter.GetBeginChunkByteCount(sizeHint, out _, out _) + EndChunkLength;
+                sizeHint += ChunkWriter.GetBeginChunkByteCount(sizeHint) + EndChunkLength;
             }
 
             if (!_currentChunkMemoryUpdated)
@@ -575,12 +575,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private void UpdateCurrentChunkMemory(int sizeHint)
         {
             _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-            _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length, out _, out _);
+            _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length);
 
             // Super edge case. If we call GetMemory and it returns 4099, we would originally calculate _currentMemoryPrefixBytes
             // as 6 bytes. However, after subtracting the bytes for _currentChunkMemory.Length and the endPrefix, the real
             // body length would be 5 bytes. 
-            _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength, out _, out _);
+            _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength);
 
             _currentChunkMemoryUpdated = true;
         }
