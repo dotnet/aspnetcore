@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class MaxRequestBufferSizeTests : LoggedTest
     {
-        private const int _dataLength = 20 * 1024 * 1024;
+        private const int _dataLength = 100 * 1024 * 1024;
 
         private static readonly string[] _requestLines = new[]
         {
@@ -277,6 +277,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     }
 
                     options.Limits.MinRequestBodyDataRate = null;
+                    options.Limits.MaxRequestBodySize = _dataLength;
                 })
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Configure(app => app.Run(async context =>
