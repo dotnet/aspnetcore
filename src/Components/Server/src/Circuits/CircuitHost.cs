@@ -104,35 +104,35 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             });
         }
 
-        public void Initialize(CancellationToken cancellationToken)
+        public async Task InitializeAsync(CancellationToken cancellationToken)
         {
-            // This Initialize method is fire-and-forget as far as the caller is concerned, because
-            // if it was to await completion, it would be blocking the SignalR message loop. This could
-            // lead to deadlock, e.g., if the init process itself waited for an incoming SignalR message
-            // such as the result of a JSInterop call.
-            Renderer.InvokeAsync(async () =>
+            await Renderer.InvokeAsync(async () =>
             {
                 try
                 {
                     SetCurrentCircuitHost(this);
+                    _initialized = true; // We're ready to accept incoming JSInterop calls from here on
 
+                    await OnCircuitOpenedAsync(cancellationToken);
+                    await OnConnectionUpAsync(cancellationToken);
+
+                    // We add the root components *after* the circuit is flagged as open.
+                    // That's because AddComponentAsync waits for quiescence, which can take
+                    // arbitrarily long. In the meantime we might need to be receiving and
+                    // processing incoming JSInterop calls or similar.
                     for (var i = 0; i < Descriptors.Count; i++)
                     {
                         var (componentType, domElementSelector) = Descriptors[i];
                         await Renderer.AddComponentAsync(componentType, domElementSelector);
                     }
-
-                    await OnCircuitOpenedAsync(cancellationToken);
-
-                    await OnConnectionUpAsync(cancellationToken);
                 }
                 catch (Exception ex)
                 {
+                    // We have to handle all our own errors here, because the upstream caller
+                    // has to fire-and-forget this
                     Renderer_UnhandledException(this, ex);
                 }
             });
-
-            _initialized = true;
         }
 
         public async void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)

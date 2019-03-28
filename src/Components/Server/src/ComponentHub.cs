@@ -76,7 +76,11 @@ namespace Microsoft.AspNetCore.Components.Server
 
             circuitHost.UnhandledException += CircuitHost_UnhandledException;
 
-            circuitHost.Initialize(Context.ConnectionAborted);
+            // Fire-and-forget the initialization process, because we can't block the
+            // SignalR message loop (we'd get a deadlock if any of the initialization
+            // logic relied on receiving a subsequent message from SignalR), and it will
+            // take care of its own errors anyway.
+            _ = circuitHost.InitializeAsync(Context.ConnectionAborted);
 
             _circuitRegistry.Register(circuitHost);
 

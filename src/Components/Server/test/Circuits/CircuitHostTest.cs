@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public void Initialize_InvokesHandlers()
+        public async Task Initialize_InvokesHandlers()
         {
             // Arrange
             var cancellationToken = new CancellationToken();
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var circuitHost = TestCircuitHost.Create(handlers: new[] { handler1.Object, handler2.Object });
 
             // Act
-            circuitHost.Initialize(cancellationToken);
+            await circuitHost.InitializeAsync(cancellationToken);
 
             // Assert
             handler1.VerifyAll();
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         }
 
         [Fact]
-        public void Initialize_ReportsAsyncExceptions()
+        public async Task Initialize_ReportsOwnAsyncExceptions()
         {
             // Arrange
             var handler = new Mock<CircuitHandler>(MockBehavior.Strict);
@@ -103,15 +103,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             };
 
             // Act
-            circuitHost.Initialize(new CancellationToken());
-            handler.VerifyAll();
+            var initializeAsyncTask = circuitHost.InitializeAsync(new CancellationToken());
 
-            // Assert: there was no synchronous exception
+            // Assert: No synchronous exceptions
+            handler.VerifyAll();
             Assert.Empty(reportedErrors);
 
-            // Act/Assert: if the handler throws later, that gets reported
+            // Act: Trigger async exception
             var ex = new InvalidTimeZoneException();
             tcs.SetException(ex);
+
+            // Assert: The top-level task still succeeds, because the intended usage
+            // pattern is fire-and-forget.
+            await initializeAsyncTask;
+
+            // Assert: The async exception was reported via the side-channel
             Assert.Same(ex, reportedErrors.Single().ExceptionObject);
             Assert.False(reportedErrors.Single().IsTerminating);
         }
