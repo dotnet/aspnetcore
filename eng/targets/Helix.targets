@@ -44,7 +44,7 @@ Usage: dotnet build /t:Helix src/MyTestProject.csproj
       <!-- Include default queues based on platform -->
       <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'%(HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true' AND '%(EnableByDefault)' == 'true'" />
 
-      <_HelixApplicableTargetQueue Include="%(_HelixProjectTargetQueue.Identity)" Condition="'%(Identity)' == '$(HelixTargetQueue)' AND '%(Arch)' == '$(TargetArchitecture)'" />
+      <_HelixApplicableTargetQueue Include="%(_HelixProjectTargetQueue.Identity)" Condition="'%(Identity)' == '$(HelixTargetQueue)' AND '%(_HelixProjectTargetQueue.Arch)' == '$(TargetArchitecture)'" />
     </ItemGroup>
 
     <PropertyGroup>
