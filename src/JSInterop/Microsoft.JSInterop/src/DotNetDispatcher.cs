@@ -7,6 +7,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 
 namespace Microsoft.JSInterop
@@ -72,8 +73,10 @@ namespace Microsoft.JSInterop
                 ? null
                 : jsRuntimeBaseInstance.ArgSerializerStrategy.FindDotNetObject(dotNetObjectId);
 
+            // Using ExceptionDispatchInfo here throughout because we want to always preserve
+            // original stack traces.
             object syncResult = null;
-            Exception syncException = null;
+            ExceptionDispatchInfo syncException = null;
 
             try
             {
@@ -81,45 +84,38 @@ namespace Microsoft.JSInterop
             }
             catch (Exception ex)
             {
-                syncException = ex;
+                syncException = ExceptionDispatchInfo.Capture(ex);
             }
 
             // If there was no callId, the caller does not want to be notified about the result
-            if (callId != null)
+            if (callId == null)
             {
-                // Invoke and coerce the result to a Task so the caller can use the same async API
-                // for both synchronous and asynchronous methods
-                var task = CoerceToTask(syncResult, syncException);
-
-                task.ContinueWith(completedTask =>
+                return;
+            }
+            else if (syncException != null)
+            {
+                // Threw synchronously, let's respond.
+                jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, syncException);
+            }
+            else if (syncResult is Task task)
+            {
+                // Returned a task - we need to continue that task and then report an exception
+                // or return the value.
+                task.ContinueWith(t =>
                 {
-                    try
+                    if (t.Exception != null)
                     {
-                        var result = TaskGenericsUtil.GetTaskResult(completedTask);
-                        jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, result);
+                        var exception = t.Exception.GetBaseException();
+                        jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, ExceptionDispatchInfo.Capture(exception));
                     }
-                    catch (Exception ex)
-                    {
-                        ex = UnwrapException(ex);
-                        jsRuntimeBaseInstance.EndInvokeDotNet(callId, false, ex);
-                    }
-                });
-            }
-        }
 
-        private static Task CoerceToTask(object syncResult, Exception syncException)
-        {
-            if (syncException != null)
-            {
-                return Task.FromException(syncException);
-            }
-            else if (syncResult is Task syncResultTask)
-            {
-                return syncResultTask;
+                    var result = TaskGenericsUtil.GetTaskResult(task);
+                    jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, result);
+                }, TaskScheduler.Current);
             }
             else
             {
-                return Task.FromResult(syncResult);
+                jsRuntimeBaseInstance.EndInvokeDotNet(callId, true, syncResult);
             }
         }
 
@@ -175,9 +171,10 @@ namespace Microsoft.JSInterop
             {
                 return methodInfo.Invoke(targetInstance, suppliedArgs);
             }
-            catch (Exception ex)
+            catch (TargetInvocationException tie) when (tie.InnerException != null)
             {
-                throw UnwrapException(ex);
+                ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+                throw null; // unreachable
             }
         }
 
@@ -284,16 +281,6 @@ namespace Microsoft.JSInterop
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             return loadedAssemblies.FirstOrDefault(a => a.GetName().Name.Equals(assemblyName, StringComparison.Ordinal))
                 ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyName}'.");
-        }
-
-        private static Exception UnwrapException(Exception ex)
-        {
-            while ((ex is AggregateException || ex is TargetInvocationException) && ex.InnerException != null)
-            {
-                ex = ex.InnerException;
-            }
-
-            return ex;
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -79,6 +80,10 @@ namespace Microsoft.JSInterop
             if (!success && resultOrException is Exception)
             {
                 resultOrException = resultOrException.ToString();
+            }
+            else if (!success && resultOrException is ExceptionDispatchInfo edi)
+            {
+                resultOrException = edi.SourceException.ToString();
             }
 
             // We pass 0 as the async handle because we don't want the JS-side code to

@@ -285,6 +285,54 @@ namespace Microsoft.JSInterop.Tests
             Assert.Equal(2468, resultDto2.IntVal);
         });
 
+
+        [Fact]
+        public Task CanInvokeSyncThrowingMethod() => WithJSRuntime(async jsRuntime =>
+        {
+            // Arrange
+
+            // Act
+            var callId = "123";
+            var resultTask = jsRuntime.NextInvocationTask;
+            DotNetDispatcher.BeginInvoke(callId, thisAssemblyName, nameof(ThrowingClass.ThrowingMethod), default, default);
+
+            await resultTask; // This won't throw, it sets properties on the jsRuntime.
+
+            // Assert
+            var result = Json.Deserialize<SimpleJson.JsonArray>(jsRuntime.LastInvocationArgsJson);
+            Assert.Equal(callId, result[0]);
+            Assert.False((bool)result[1]); // Fails
+
+            // Make sure the method that threw the exception shows up in the call stack
+            // https://github.com/aspnet/AspNetCore/issues/8612
+            var exception = (string)result[2];
+            Assert.Contains(nameof(ThrowingClass.ThrowingMethod), exception);
+        });
+
+        [Fact]
+        public Task CanInvokeAsyncThrowingMethod() => WithJSRuntime(async jsRuntime =>
+        {
+            // Arrange
+
+            // Act
+            var callId = "123";
+            var resultTask = jsRuntime.NextInvocationTask;
+            DotNetDispatcher.BeginInvoke(callId, thisAssemblyName, nameof(ThrowingClass.AsyncThrowingMethod), default, default);
+
+            await resultTask; // This won't throw, it sets properties on the jsRuntime.
+
+            // Assert
+            var result = Json.Deserialize<SimpleJson.JsonArray>(jsRuntime.LastInvocationArgsJson);
+            Assert.Equal(callId, result[0]);
+            Assert.False((bool)result[1]); // Fails
+
+            // Make sure the method that threw the exception shows up in the call stack
+            // https://github.com/aspnet/AspNetCore/issues/8612
+            var exception = (string)result[2];
+            Assert.Contains(nameof(ThrowingClass.AsyncThrowingMethod), exception);
+        });
+
+
         Task WithJSRuntime(Action<TestJSRuntime> testCode)
         {
             return WithJSRuntime(jsRuntime =>
@@ -411,6 +459,22 @@ namespace Microsoft.JSInterop.Tests
         {
             public string StringVal { get; set; }
             public int IntVal { get; set; }
+        }
+
+        public class ThrowingClass
+        {
+            [JSInvokable]
+            public static string ThrowingMethod()
+            {
+                throw new InvalidTimeZoneException();
+            }
+
+            [JSInvokable]
+            public static async Task<string> AsyncThrowingMethod()
+            {
+                await Task.Yield();
+                throw new InvalidTimeZoneException();
+            }
         }
 
         public class TestJSRuntime : JSInProcessRuntimeBase
