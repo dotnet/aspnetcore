@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -85,6 +86,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
         public async Task Caching_WithoutContentType_Cached_OnWin7AndWin2008R2()
         {
             if (Utilities.IsWin8orLater)
@@ -235,6 +237,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         [ConditionalTheory]
         [InlineData("0")]
         [InlineData("-1")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
         public async Task Caching_InvalidExpires_NotCached(string expiresValue)
         {
             var requestCount = 1;
@@ -375,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8091
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1826", FlakyOn.All)]
         public async Task Caching_VariousStatusCodes_Cached()
         {
             var requestCount = 1;
