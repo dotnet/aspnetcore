@@ -159,6 +159,27 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             Assert.Equal(value, roundTripValue);
         }
 
+        [Fact]
+        public void RoundTripTest_DateTimeValue()
+        {
+            // Arrange
+            var key = "test-key";
+            var value = new DateTime(2009, 1, 1, 12, 37, 43);
+            var testProvider = GetTempDataSerializer();
+            var input = new Dictionary<string, object>
+            {
+                { key, value },
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<DateTime>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
         [Theory]
         [InlineData(2147483648)]
         [InlineData(-2147483649)]

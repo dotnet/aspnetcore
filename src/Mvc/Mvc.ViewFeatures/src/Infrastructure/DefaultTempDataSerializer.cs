@@ -46,15 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                         break;
 
                     case JsonValueType.String:
-                        var stringValue = item.Value.GetString();
-                        if (DateTime.TryParseExact(stringValue, "o", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dateTime))
-                        {
-                            deserializedValue = dateTime;
-                        }
-                        else
-                        {
-                            deserializedValue = stringValue;
-                        }
+                        deserializedValue = item.Value.GetString();
                         break;
 
                     case JsonValueType.Null:
@@ -116,10 +108,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                         case bool boolValue:
                             writer.WriteBoolean(key, boolValue);
                             break;
-
-                        case DateTime dateTimeValue:
-                            writer.WriteString(key, dateTimeValue.ToString("o", CultureInfo.InvariantCulture));
-                            break;
                     }
                 }
                 writer.WriteEndObject();
@@ -137,8 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                 type.IsEnum ||
                 type == typeof(int) ||
                 type == typeof(string) ||
-                type == typeof(bool) ||
-                type == typeof(DateTime);
+                type == typeof(bool);
         }
     }
 }

@@ -64,23 +64,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
         }
 
         [Fact]
-        public void AddsTempDataPropertyFilter_ForTempDataAttributeProperties()
-        {
-            // Arrange
-            var type = typeof(TestController_NullableNonPrimitiveTempDataProperty);
-            var provider = CreateProvider();
-
-            var context = GetContext(type);
-
-            // Act
-            provider.OnProvidersExecuting(context);
-
-            // Assert
-            var controller = Assert.Single(context.Result.Controllers);
-            Assert.IsType<ControllerSaveTempDataPropertyFilterFactory>(Assert.Single(controller.Filters));
-        }
-
-        [Fact]
         public void InitializeFilterFactory_WithExpectedPropertyHelpers_ForTempDataAttributeProperties()
         {
             // Arrange
@@ -142,12 +125,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
 
         public class TestController_NoTempDataProperties
         {
-            public DateTime? DateTime { get; set; }
-        }
-
-        public class TestController_NullableNonPrimitiveTempDataProperty
-        {
-            [TempData]
             public DateTime? DateTime { get; set; }
         }
 
