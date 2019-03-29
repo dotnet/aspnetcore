@@ -16,9 +16,9 @@ namespace __GeneratedComponent
         {
             builder.OpenElement(0, "div");
             builder.AddAttribute(1, "class", this.ToString());
-            builder.AddContent(2, "\r\n    Hello world\r\n    ");
+            builder.AddMarkupContent(2, "\r\n    Hello world\r\n    ");
             builder.AddContent(3, string.Format("{0}", "Hello"));
-            builder.AddContent(4, "\r\n");
+            builder.AddMarkupContent(4, "\r\n");
             builder.CloseElement();
         }
         #pragma warning restore 1998

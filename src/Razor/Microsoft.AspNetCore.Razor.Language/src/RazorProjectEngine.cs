@@ -232,6 +232,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new ComponentGenericTypePass());
             builder.Features.Add(new ComponentChildContentDiagnosticPass());
             builder.Features.Add(new ComponentMarkupBlockPass());
+            builder.Features.Add(new ComponentMarkupEncodingPass());
         }
 
         private static void LoadExtensions(RazorProjectEngineBuilder builder, IReadOnlyList<RazorExtension> extensions)
