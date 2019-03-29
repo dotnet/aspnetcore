@@ -3,7 +3,9 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -220,63 +222,29 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         }
 
         [Fact]
-        public async Task ExecuteAsync_WritesToTheResponseStream_WhenContentIsLargerThanBuffer()
+        public async Task ExecuteAsync_LargePayload_DoesNotPerformSynchronousWrites()
         {
             // Arrange
-            var writeLength = 2 * TestHttpResponseStreamWriterFactory.DefaultBufferSize + 4;
-            var text = new string('a', writeLength);
-            var expectedWriteCallCount = Math.Ceiling((double)writeLength / TestHttpResponseStreamWriterFactory.DefaultBufferSize);
+            var model = Enumerable.Range(0, 1000).Select(p => new TestModel { Property = new string('a', 5000)});
 
-            var stream = new Mock<Stream>();
+            var stream = new Mock<Stream> { CallBase = true };
+            stream.Setup(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
             stream.SetupGet(s => s.CanWrite).Returns(true);
-            var httpContext = new DefaultHttpContext();
-            httpContext.Response.Body = stream.Object;
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+            var context = GetActionContext();
+            context.HttpContext.Response.Body = stream.Object;
 
-            var result = new JsonResult(text);
             var executor = CreateExecutor();
+            var result = new JsonResult(model);
 
             // Act
-            await executor.ExecuteAsync(actionContext, result);
+            await executor.ExecuteAsync(context, result);
 
             // Assert
-            // HttpResponseStreamWriter buffers content up to the buffer size (16k). When writes exceed the buffer size, it'll perform a synchronous
-            // write to the response stream.
-            stream.Verify(s => s.Write(It.IsAny<byte[]>(), It.IsAny<int>(), TestHttpResponseStreamWriterFactory.DefaultBufferSize), Times.Exactly(2));
+            stream.Verify(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce());
 
-            // Remainder buffered content is written asynchronously as part of the FlushAsync.
-            stream.Verify(s => s.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once());
-
-            // Dispose does not call Flush
-            stream.Verify(s => s.Flush(), Times.Never());
-        }
-
-        [Theory]
-        [InlineData(5)]
-        [InlineData(TestHttpResponseStreamWriterFactory.DefaultBufferSize - 30)]
-        public async Task ExecuteAsync_DoesNotWriteSynchronouslyToTheResponseBody_WhenContentIsSmallerThanBufferSize(int writeLength)
-        {
-            // Arrange
-            var text = new string('a', writeLength);
-
-            var stream = new Mock<Stream>();
-            stream.SetupGet(s => s.CanWrite).Returns(true);
-            var httpContext = new DefaultHttpContext();
-            httpContext.Response.Body = stream.Object;
-            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
-
-            var result = new JsonResult(text);
-            var executor = CreateExecutor();
-
-            // Act
-            await executor.ExecuteAsync(actionContext, result);
-
-            // Assert
-            // HttpResponseStreamWriter buffers content up to the buffer size (16k) and will asynchronously write content to the response as part
-            // of the FlushAsync call if the content written to it is smaller than the buffer size.
-            // This test verifies that no synchronous writes are performed in this scenario.
-            stream.Verify(s => s.Flush(), Times.Never());
-            stream.Verify(s => s.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
+            stream.Verify(v => v.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
+            stream.Verify(v => v.Flush(), Times.Never());
         }
 
         private static JsonResultExecutor CreateExecutor(ILogger<JsonResultExecutor> logger = null)
@@ -284,6 +252,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             return new JsonResultExecutor(
                 new TestHttpResponseStreamWriterFactory(),
                 logger ?? NullLogger<JsonResultExecutor>.Instance,
+                Options.Create(new MvcOptions()),
                 Options.Create(new MvcNewtonsoftJsonOptions()),
                 ArrayPool<char>.Shared);
         }
@@ -336,6 +305,11 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             {
                 MostRecentMessage = formatter(state, exception);
             }
+        }
+
+        private class TestModel
+        {
+            public string Property { get; set; }
         }
     }
 }

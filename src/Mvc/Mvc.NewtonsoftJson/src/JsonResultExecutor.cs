@@ -3,10 +3,13 @@
 
 using System;
 using System.Buffers;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
@@ -26,7 +29,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
         private readonly IHttpResponseStreamWriterFactory _writerFactory;
         private readonly ILogger _logger;
-        private readonly MvcNewtonsoftJsonOptions _options;
+        private readonly MvcOptions _mvcOptions;
+        private readonly MvcNewtonsoftJsonOptions _jsonOptions;
         private readonly IArrayPool<char> _charPool;
 
         /// <summary>
@@ -34,12 +38,14 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         /// </summary>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
         /// <param name="logger">The <see cref="ILogger{JsonResultExecutor}"/>.</param>
-        /// <param name="options">The <see cref="IOptions{MvcJsonOptions}"/>.</param>
+        /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
+        /// <param name="jsonOptions">Accessor to <see cref="MvcNewtonsoftJsonOptions"/>.</param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/> for creating <see cref="T:char[]"/> buffers.</param>
         public JsonResultExecutor(
             IHttpResponseStreamWriterFactory writerFactory,
             ILogger<JsonResultExecutor> logger,
-            IOptions<MvcNewtonsoftJsonOptions> options,
+            IOptions<MvcOptions> mvcOptions,
+            IOptions<MvcNewtonsoftJsonOptions> jsonOptions,
             ArrayPool<char> charPool)
         {
             if (writerFactory == null)
@@ -52,9 +58,9 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            if (options == null)
+            if (jsonOptions == null)
             {
-                throw new ArgumentNullException(nameof(options));
+                throw new ArgumentNullException(nameof(jsonOptions));
             }
 
             if (charPool == null)
@@ -64,7 +70,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             _writerFactory = writerFactory;
             _logger = logger;
-            _options = options.Value;
+            _mvcOptions = mvcOptions?.Value ?? throw new ArgumentNullException(nameof(mvcOptions));
+            _jsonOptions = jsonOptions.Value;
             _charPool = new JsonArrayPool<char>(charPool);
         }
 
@@ -105,22 +112,42 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             }
 
             _logger.JsonResultExecuting(result.Value);
-            using (var writer = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+
+            var responseStream = GetResponseStream(response);
+
+            try
             {
-                using (var jsonWriter = new JsonTextWriter(writer))
+                await using (var writer = _writerFactory.CreateWriter(responseStream, resolvedContentTypeEncoding))
                 {
-                    jsonWriter.ArrayPool = _charPool;
-                    jsonWriter.CloseOutput = false;
-                    jsonWriter.AutoCompleteOnClose = false;
+                    using (var jsonWriter = new JsonTextWriter(writer))
+                    {
+                        jsonWriter.ArrayPool = _charPool;
+                        jsonWriter.CloseOutput = false;
+                        jsonWriter.AutoCompleteOnClose = false;
 
-                    var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
-                    jsonSerializer.Serialize(jsonWriter, result.Value);
+                        var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
+                        jsonSerializer.Serialize(jsonWriter, result.Value);
+                    }
                 }
-
-                // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
-                // buffers. This is better than just letting dispose handle it (which would result in a synchronous write).
-                await writer.FlushAsync();
             }
+            finally
+            {
+                if (responseStream is FileBufferingWriteStream fileBufferingWriteStream)
+                {
+                    await fileBufferingWriteStream.DisposeAsync();
+                }
+            }
+        }
+
+        private Stream GetResponseStream(HttpResponse response)
+        {
+            var responseStream = response.Body;
+            if (!_mvcOptions.SuppressOutputFormatterBuffering)
+            {
+                responseStream = new FileBufferingWriteStream(responseStream);
+            }
+
+            return responseStream;
         }
 
         private JsonSerializerSettings GetSerializerSettings(JsonResult result)
@@ -128,9 +155,9 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             var serializerSettings = result.SerializerSettings;
             if (serializerSettings == null)
             {
-                return _options.SerializerSettings;
+                return _jsonOptions.SerializerSettings;
             }
-            else 
+            else
             {
                 if (!(serializerSettings is JsonSerializerSettings settingsFromResult))
                 {

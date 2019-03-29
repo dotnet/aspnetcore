@@ -6,7 +6,9 @@ using System.Buffers;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
@@ -17,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     public class NewtonsoftJsonOutputFormatter : TextOutputFormatter
     {
         private readonly IArrayPool<char> _charPool;
+        private readonly MvcOptions _mvcOptions;
 
         // Perf: JsonSerializers are relatively expensive to create, and are thread safe. We cache
         // the serializer and invalidate it when the settings change.
@@ -31,7 +34,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <see cref="JsonSerializerSettingsProvider.CreateSerializerSettings"/> initially returned.
         /// </param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/>.</param>
-        public NewtonsoftJsonOutputFormatter(JsonSerializerSettings serializerSettings, ArrayPool<char> charPool)
+        /// <param name="mvcOptions">The <see cref="MvcOptions"/>.</param>
+        public NewtonsoftJsonOutputFormatter(
+            JsonSerializerSettings serializerSettings,
+            ArrayPool<char> charPool,
+            MvcOptions mvcOptions)
         {
             if (serializerSettings == null)
             {
@@ -45,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             SerializerSettings = serializerSettings;
             _charPool = new JsonArrayPool<char>(charPool);
+            _mvcOptions = mvcOptions ?? throw new ArgumentNullException(nameof(mvcOptions));
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);
@@ -123,27 +131,39 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(selectedEncoding));
             }
 
-            // Opt into sync IO support until we can work out an alternative https://github.com/aspnet/AspNetCore/issues/6397
-            var syncIOFeature = context.HttpContext.Features.Get<Http.Features.IHttpBodyControlFeature>();
-            if (syncIOFeature != null)
-            {
-                syncIOFeature.AllowSynchronousIO = true;
-            }
-
             var response = context.HttpContext.Response;
-            using (var writer = context.WriterFactory(response.Body, selectedEncoding))
-            {
-                using (var jsonWriter = CreateJsonWriter(writer))
-                {
-                    var jsonSerializer = CreateJsonSerializer(context);
-                    jsonSerializer.Serialize(jsonWriter, context.Object);
-                }
 
-                // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
-                // buffers. This is better than just letting dispose handle it (which would result in a synchronous
-                // write).
-                await writer.FlushAsync();
+            var responseStream = GetResponseStream(response);
+
+            try
+            {
+                await using (var writer = context.WriterFactory(responseStream, selectedEncoding))
+                {
+                    using (var jsonWriter = CreateJsonWriter(writer))
+                    {
+                        var jsonSerializer = CreateJsonSerializer(context);
+                        jsonSerializer.Serialize(jsonWriter, context.Object);
+                    }
+                }
             }
+            finally
+            {
+                if (responseStream is FileBufferingWriteStream fileBufferingWriteStream)
+                {
+                    await fileBufferingWriteStream.DisposeAsync();
+                }
+            }
+        }
+
+        private Stream GetResponseStream(HttpResponse response)
+        {
+            var responseStream = response.Body;
+            if (!_mvcOptions.SuppressOutputFormatterBuffering)
+            {
+                responseStream = new FileBufferingWriteStream(responseStream);
+            }
+
+            return responseStream;
         }
     }
 }

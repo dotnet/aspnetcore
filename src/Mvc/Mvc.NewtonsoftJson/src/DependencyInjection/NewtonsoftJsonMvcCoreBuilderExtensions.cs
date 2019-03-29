@@ -102,12 +102,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddSingleton<IJsonHelper, NewtonsoftJsonHelper>();
-            services.TryAdd(ServiceDescriptor.Singleton(serviceProvider =>
-            {
-                var options = serviceProvider.GetRequiredService<IOptions<MvcNewtonsoftJsonOptions>>().Value;
-                var charPool = serviceProvider.GetRequiredService<ArrayPool<char>>();
-                return new NewtonsoftJsonOutputFormatter(options.SerializerSettings, charPool);
-            }));
         }
     }
 }

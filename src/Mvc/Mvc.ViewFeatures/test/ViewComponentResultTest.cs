@@ -573,7 +573,6 @@ namespace Microsoft.AspNetCore.Mvc
             HttpContext context,
             params ViewComponentDescriptor[] descriptors)
         {
-            var httpContext = new DefaultHttpContext();
             var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore");
             if (diagnosticListener != null)
             {
@@ -583,6 +582,7 @@ namespace Microsoft.AspNetCore.Mvc
             var services = new ServiceCollection();
             services.AddSingleton<DiagnosticListener>(diagnosticSource);
             services.AddSingleton<ViewComponentInvokerCache>();
+            services.AddSingleton(Options.Create(new MvcOptions()));
             services.AddSingleton(Options.Create(new MvcViewOptions()));
             services.AddTransient<IViewComponentHelper, DefaultViewComponentHelper>();
             services.AddSingleton<IViewComponentSelector, DefaultViewComponentSelector>();
@@ -600,6 +600,7 @@ namespace Microsoft.AspNetCore.Mvc
             services.AddSingleton<HtmlEncoder, HtmlTestEncoder>();
             services.AddSingleton<IViewBufferScope, TestViewBufferScope>();
             services.AddSingleton<IActionResultExecutor<ViewComponentResult>, ViewComponentResultExecutor>();
+            services.AddSingleton<IHttpResponseStreamWriterFactory, TestHttpResponseStreamWriterFactory>();
 
             return services;
         }
