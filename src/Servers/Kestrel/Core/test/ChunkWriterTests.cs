@@ -52,8 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             for (var i = 5; i < 10000000; i++)
             {
                 var currentMemory = memory.Slice(0, i);
-                currentMemory = ChunkWriter.SliceChunkedMemoryOnBoundary(currentMemory);
-                var prefixLength = ChunkWriter.GetPrefixLength(currentMemory, suffixLength: 2);
+                var prefixLength = ChunkWriter.GetPrefixBytesForChunk(ref currentMemory);
                 var slicedMemory = currentMemory.Slice(prefixLength, currentMemory.Length - prefixLength - 2);
                 var actualLength = ChunkWriter.BeginChunkBytes(slicedMemory.Length, currentMemory.Span);
 
