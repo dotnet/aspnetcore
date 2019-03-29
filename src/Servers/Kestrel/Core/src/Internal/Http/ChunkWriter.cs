@@ -46,9 +46,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return GetBeginChunkByteCount(memory.Length - prefixLength - suffixLength);
         }
 
-        internal static Memory<byte> SliceMemoryOnBoundary(Memory<byte> memory)
+        internal static Memory<byte> SliceChunkedMemoryOnBoundary(Memory<byte> memory)
         {
             var length = memory.Length;
+
+            // If GetMemory returns one of the following values, there is no way to set the prefix/body lengths
+            // such that we either wouldn't have an invalid chunk or would need to copy if the entire memory chunk is used.
+            // For example, if GetMemory returned 21, we would guess that the chunked prefix is 4 bytes initially
+            // and the suffix is 2 bytes, meaning there is 15 bytes remaining to write into. However, 15 bytes only need 3
+            // bytes for the chunked prefix, so we would have to copy once we call advance. Therefore, to avoid this scenario,
+            // we slice the memory by one byte.
             if (length == 21 || length == 262 || length == 4103 || length == 65544 || length == 1048585 || length == 16777226 || length == 268435467)
             {
                 return memory.Slice(0, length - 1);

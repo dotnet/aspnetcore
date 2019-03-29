@@ -544,9 +544,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (!_currentChunkMemoryUpdated)
             {
+                // Calculating ChunkWriter.GetBeginChunkByteCount isn't free, so instead, we can add
+                // the max length for the prefix and suffix and add it to the sizeHint.
+                // This still guarantees that the memory passed in will be larger than the sizeHint.
                 sizeHint += MaxBeginChunkLength + EndChunkLength; 
                 UpdateCurrentChunkMemory(sizeHint);
             }
+            // Check if we need to allocate a new memory.
             else if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - sizeHint && _advancedBytesForChunk > 0)
             {
                 sizeHint += MaxBeginChunkLength + EndChunkLength; 
@@ -568,7 +572,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private void UpdateCurrentChunkMemory(int sizeHint)
         {
             _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-            _currentChunkMemory = ChunkWriter.SliceMemoryOnBoundary(_currentChunkMemory);
+            // Cover a boundary case where we have a bad chunk size.
+            _currentChunkMemory = ChunkWriter.SliceChunkedMemoryOnBoundary(_currentChunkMemory);
             _currentMemoryPrefixBytes = ChunkWriter.GetPrefixLength(_currentChunkMemory, EndChunkLength);
             _currentChunkMemoryUpdated = true;
         }
