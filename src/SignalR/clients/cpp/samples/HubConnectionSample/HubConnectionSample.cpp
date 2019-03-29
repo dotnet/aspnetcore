@@ -57,7 +57,7 @@ void chat()
         {
             try
             {
-
+                std::rethrow_exception(exception);
             }
             catch (const std::exception & ex)
             {

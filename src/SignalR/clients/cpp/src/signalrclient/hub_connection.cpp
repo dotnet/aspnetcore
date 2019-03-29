@@ -19,11 +19,21 @@ namespace signalr
 
     void hub_connection::start(std::function<void(std::exception_ptr)> callback) noexcept
     {
+        if (!m_pImpl)
+        {
+            callback(std::make_exception_ptr(signalr_exception("start() cannot be called on destructed hub_connection instance")));
+        }
+
         m_pImpl->start(callback);
     }
 
     void hub_connection::stop(std::function<void(std::exception_ptr)> callback) noexcept
     {
+        if (!m_pImpl)
+        {
+            callback(std::make_exception_ptr(signalr_exception("stop() cannot be called on destructed hub_connection instance")));
+        }
+
         m_pImpl->stop(callback);
     }
 
@@ -31,7 +41,7 @@ namespace signalr
     {
         if (!m_pImpl)
         {
-            throw signalr_exception("on() cannot be called on uninitialized hub_connection instance");
+            throw signalr_exception("on() cannot be called on destructed hub_connection instance");
         }
 
         return m_pImpl->on(event_name, handler);
@@ -41,7 +51,7 @@ namespace signalr
     {
         if (!m_pImpl)
         {
-            callback(web::json::value(), std::make_exception_ptr(signalr_exception("invoke() cannot be called on uninitialized hub_connection instance")));
+            callback(web::json::value(), std::make_exception_ptr(signalr_exception("invoke() cannot be called on destructed hub_connection instance")));
             return;
         }
 
@@ -52,7 +62,7 @@ namespace signalr
     {
         if (!m_pImpl)
         {
-            callback(std::make_exception_ptr(signalr_exception("send() cannot be called on uninitialized hub_connection instance")));
+            callback(std::make_exception_ptr(signalr_exception("send() cannot be called on destructed hub_connection instance")));
             return;
         }
 
@@ -61,21 +71,41 @@ namespace signalr
 
     connection_state hub_connection::get_connection_state() const
     {
+        if (!m_pImpl)
+        {
+            throw signalr_exception("get_connection_state() cannot be called on destructed hub_connection instance");
+        }
+
         return m_pImpl->get_connection_state();
     }
 
     std::string hub_connection::get_connection_id() const
     {
+        if (!m_pImpl)
+        {
+            throw signalr_exception("get_connection_id() cannot be called on destructed hub_connection instance");
+        }
+
         return m_pImpl->get_connection_id();
     }
 
     void hub_connection::set_disconnected(const std::function<void()>& disconnected_callback)
     {
+        if (!m_pImpl)
+        {
+            throw signalr_exception("set_disconnected() cannot be called on destructed hub_connection instance");
+        }
+
         m_pImpl->set_disconnected(disconnected_callback);
     }
 
     void hub_connection::set_client_config(const signalr_client_config& config)
     {
+        if (!m_pImpl)
+        {
+            throw signalr_exception("set_client_config() cannot be called on destructed hub_connection instance");
+        }
+
         m_pImpl->set_client_config(config);
     }
 }

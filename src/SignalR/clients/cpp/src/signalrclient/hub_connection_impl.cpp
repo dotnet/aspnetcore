@@ -121,10 +121,16 @@ namespace signalr
 
                 if (start_exception)
                 {
-                    connection->m_connection->stop([start_exception, callback, connection](std::exception_ptr)
+                    connection->m_connection->stop([start_exception, callback, weak_connection](std::exception_ptr)
                     {
                         try
                         {
+                            auto connection = weak_connection.lock();
+                            if (!connection)
+                            {
+                                callback(std::make_exception_ptr(signalr_exception("the hub connection has been deconstructed")));
+                                return;
+                            }
                             pplx::task<void>(connection->m_handshakeTask).get();
                         }
                         catch (...) {}
@@ -134,7 +140,9 @@ namespace signalr
                     return;
                 }
 
-                connection->m_connection->send("{\"protocol\":\"json\",\"version\":1}\x1e", [weak_connection, callback](std::exception_ptr exception)
+                // TODO: Generate this later when we have the protocol abstraction
+                auto handshake_request = "{\"protocol\":\"json\",\"version\":1}\x1e";
+                connection->m_connection->send(handshake_request, [weak_connection, callback](std::exception_ptr exception)
                 {
                     auto connection = weak_connection.lock();
                     if (!connection)
