@@ -20,7 +20,6 @@
         <HelixAvailibleTargetQueue Include="Debian.8.Amd64.Open" Platform="Linux" />
         <HelixAvailibleTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
         <HelixAvailibleTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
-        <HelixAvailibleTargetQueue Include="Fedora.27.Amd64.Open" Platform="Linux" />
         <HelixAvailibleTargetQueue Include="Fedora.28.Amd64.Open" Platform="Linux" />
 
         <!--  TODO: re-enable Debian.9.Arm64.Open and Ubuntu.1804.Arm64.Open    -->
