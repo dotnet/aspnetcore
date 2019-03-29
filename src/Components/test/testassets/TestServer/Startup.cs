@@ -1,4 +1,5 @@
 using BasicTestApp;
+using BasicTestApp.RouterTest;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
@@ -67,6 +68,19 @@ namespace TestServer
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
+            });
+
+            // Separately, mount a prerendered server-side Blazor app on /prerendered
+            app.Map("/prerendered", subdirApp =>
+            {
+                subdirApp.UsePathBase("/prerendered");
+                subdirApp.UseStaticFiles();
+                subdirApp.UseRouting();
+                subdirApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapFallbackToPage("/PrerenderedHost");
+                    endpoints.MapComponentHub<TestRouter>("app");
+                });
             });
         }
 

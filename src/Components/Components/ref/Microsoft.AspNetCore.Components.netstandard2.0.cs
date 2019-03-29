@@ -836,6 +836,10 @@ namespace Microsoft.AspNetCore.Components.Routing
 }
 namespace Microsoft.AspNetCore.Components.Services
 {
+    public partial interface IComponentContext
+    {
+        bool IsConnected { get; }
+    }
     public partial interface IUriHelper
     {
         event System.EventHandler<string> OnLocationChanged;

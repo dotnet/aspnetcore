@@ -44,6 +44,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Standard razor component services implementations
             services.AddScoped<IUriHelper, RemoteUriHelper>();
             services.AddScoped<IJSRuntime, RemoteJSRuntime>();
+            services.AddScoped<IComponentContext, RemoteComponentContext>();
 
             return services;
         }
