@@ -37,6 +37,20 @@ namespace Templates.Test
 
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+
+            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+            }
+
+            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+            }
         }
     }
 }

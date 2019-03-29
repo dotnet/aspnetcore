@@ -1,9 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Templates.Test.Helpers;
+using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -55,14 +57,39 @@ namespace Templates.Test
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            var pages = new string[] { "/", "/Home/Privacy" };
+            IEnumerable<string> menuLinks = new List<string> {
+                PageUrls.HomeUrl,
+                PageUrls.HomeUrl,
+                PageUrls.PrivacyFullUrl
+            };
+
+            if(languageOverride == null)
+            {
+                menuLinks = menuLinks.Append(PageUrls.PrivacyFullUrl);
+            }
+            var footerLinks = new string[] { PageUrls.PrivacyFullUrl };
+
+            var pages = new List<Page>
+            {
+                new Page
+                {
+                    Url = PageUrls.HomeUrl,
+                    Links = menuLinks.Append(PageUrls.DocsUrl).Concat(footerLinks)
+                },
+                new Page
+                {
+                    Url = PageUrls.PrivacyFullUrl,
+                    Links = menuLinks.Concat(footerLinks)
+                }
+            };
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertPagesOk(pages, expectedLinks: pages);
+                await aspNetProcess.AssertPagesOk(pages);
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -71,7 +98,7 @@ namespace Templates.Test
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertPagesOk(pages, expectedLinks: pages);
+                await aspNetProcess.AssertPagesOk(pages);
             }
         }
 
@@ -109,14 +136,85 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
             Project.AssertEmptyMigration("mvc");
 
-            var pages = new string[] { "/", "/Identity/Account/Login", "/Home/Privacy" };
+            var pages = new List<Page> {
+                new Page
+                {
+                    Url = PageUrls.ForgotPassword,
+                    Links = new string [] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    Url = PageUrls.HomeUrl,
+                    Links = new string[] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.DocsUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    Url = PageUrls.PrivacyFullUrl,
+                    Links = new string[] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    Url = PageUrls.LoginUrl,
+                    Links = new string[] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.ForgotPassword,
+                        PageUrls.RegisterUrl,
+                        PageUrls.ExternalArticle,
+                        PageUrls.PrivacyUrl }
+                },
+                new Page
+                {
+                    Url = PageUrls.RegisterUrl,
+                    Links = new string [] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.ExternalArticle,
+                        PageUrls.PrivacyUrl
+                    }
+                }
+            };
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertPagesOk(pages, expectedLinks: pages);
+                await aspNetProcess.AssertPagesOk(pages);
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -125,7 +223,7 @@ namespace Templates.Test
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertPagesOk(pages, expectedLinks: pages);
+                await aspNetProcess.AssertPagesOk(pages);
             }
         }
 

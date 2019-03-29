@@ -57,7 +57,6 @@ namespace Templates.Test.Helpers
             _listeningUri = GetListeningUri(output);
         }
 
-
         public void VisitInBrowser(IWebDriver driver)
         {
             _output.WriteLine($"Opening browser at {_listeningUri}...");
@@ -87,55 +86,54 @@ namespace Templates.Test.Helpers
             }
         }
 
-        public async Task AssertPagesOk(IEnumerable<string> pages, IEnumerable<string> expectedLinks)
+        public async Task AssertPagesOk(IEnumerable<Page> pages)
         {
             foreach (var page in pages)
             {
-                await AssertOk(page);
-                await ContainsLinks(page, expectedLinks);
-                await ExternalLinksWork(page);
+                await AssertOk(page.Url);
+                await ContainsLinks(page);
             }
         }
 
-        public async Task ContainsLinks(string requestUrl, IEnumerable<string> expectedLinks)
+        public async Task ContainsLinks(Page page)
         {
-
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                new Uri(_listeningUri, requestUrl));
+                new Uri(_listeningUri, page.Url));
 
             var response = await _httpClient.SendAsync(request);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             var parser = new HtmlParser();
             var html = await parser.ParseAsync(await response.Content.ReadAsStreamAsync());
-            foreach (var expectedLink in expectedLinks)
+
+            foreach (IHtmlLinkElement styleSheet in html.GetElementsByTagName("link"))
             {
-                var containsLink = html.Links
-                    .Where(l => ((IHtmlAnchorElement)l).Protocol == "about:")
-                    .Any(l => string.Equals(expectedLink, ((IHtmlAnchorElement)l).PathName, StringComparison.InvariantCultureIgnoreCase));
-                Assert.True(containsLink, $"{expectedLink} is not on {requestUrl}");
+                Assert.Equal("stylesheet", styleSheet.Relation);
+                await AssertOk(styleSheet.Href.Replace("about://", string.Empty));
             }
-        }
-
-        public async Task ExternalLinksWork(string requestUrl)
-        {
-            var request = new HttpRequestMessage(
-                HttpMethod.Get,
-                new Uri(_listeningUri, requestUrl));
-
-            var response = await _httpClient.SendAsync(request);
-
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var parser = new HtmlParser();
-            var html = await parser.ParseAsync(await response.Content.ReadAsStreamAsync());
-            foreach (IHtmlAnchorElement link in html.Links)
+            foreach (var script in html.Scripts)
             {
-                // "about:" is a relative url, so this is only looking at external links
-                if (link.Protocol != "about:")
+                if (!string.IsNullOrEmpty(script.Source))
                 {
-                    var result = await _httpClient.GetAsync(link.Href);
-                    Assert.True(IsSuccessStatusCode(result), $"{link.Href} is a broken link!");
+                    await AssertOk(script.Source);
+                }
+            }
+
+            Assert.True(html.Links.Length == page.Links.Count(), $"Expected {page.Url} to have {page.Links.Count()} links but it had {html.Links.Length}");
+            foreach ((var link, var expectedLink) in html.Links.Zip(page.Links, Tuple.Create))
+            {
+                IHtmlAnchorElement anchor = (IHtmlAnchorElement)link;
+                if (string.Equals(anchor.Protocol, "about:"))
+                {
+                    Assert.True(anchor.PathName.EndsWith(expectedLink), $"Expected next link on {page.Url} to be {expectedLink} but it was {anchor.PathName}.");
+                    await AssertOk(anchor.PathName);
+                }
+                else
+                {
+                    Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
+                    var result = await _httpClient.GetAsync(anchor.Href);
+                    Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
                 }
             }
         }
@@ -196,7 +194,7 @@ namespace Templates.Test.Helpers
             }
 
             var response = await _httpClient.SendAsync(request);
-            Assert.Equal(statusCode, response.StatusCode);
+            Assert.True(statusCode == response.StatusCode, $"Expected {requestUrl} to have status '{statusCode}' but it was '{response.StatusCode}'.");
         }
 
         public void Dispose()
@@ -223,5 +221,11 @@ namespace Templates.Test.Helpers
 
             return result;
         }
+    }
+
+    public class Page
+    {
+        public string Url { get; set; }
+        public IEnumerable<string> Links { get; set; }
     }
 }
