@@ -15,15 +15,11 @@
         interactive states, we only load the .js file when told to.
     *@
     <hr />
-    <button id="load-boot-script" onclick="loadBootScript(event)">Load boot script</button>
-    <script>
-    function loadBootScript(event) {
-        event.srcElement.disabled = true;
-        var scriptElem = document.createElement('script');
-        scriptElem.src = '_framework/components.server.js';
-        document.body.appendChild(scriptElem);
-    }
 
+    <button id="load-boot-script" onclick="Blazor.start()">Load boot script</button>
+
+    <script src="_framework/components.server.js" autostart="false"></script>
+    <script>
     // Used by InteropOnInitializationComponent
     function setElementValue(element, newValue) {
       element.value = newValue;
