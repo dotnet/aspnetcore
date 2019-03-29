@@ -4,45 +4,24 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extensions for <see cref="IEndpointConventionBuilder"/>.
+    /// Extensions for <see cref="HubEndpointConventionBuilder"/>.
     /// </summary>
     public static class ComponentEndpointConventionBuilderExtensions
     {
         /// <summary>
-        /// Adds <typeparamref name="TComponent"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
-        /// </summary>
-        /// <typeparam name="TComponent">The component type.</typeparam>
-        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
-        /// <param name="selector">A CSS selector that identifies the DOM element into which the <typeparamref name="TComponent"/> will be placed.</param>
-        /// <returns>The <paramref name="builder"/>.</returns>
-        public static IEndpointConventionBuilder AddComponent<TComponent>(this IEndpointConventionBuilder builder, string selector)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            if (selector == null)
-            {
-                throw new ArgumentNullException(nameof(selector));
-            }
-
-            return AddComponent(builder, typeof(TComponent), selector);
-        }
-
-        /// <summary>
         /// Adds <paramref name="componentType"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// The selector will default to the component name in lowercase.
         /// </summary>
-        /// <param name="builder">The <see cref="IEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="HubEndpointConventionBuilder"/>.</param>
         /// <param name="componentType">The component type.</param>
         /// <param name="selector">The component selector in the DOM for the <paramref name="componentType"/>.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static IEndpointConventionBuilder AddComponent(this IEndpointConventionBuilder builder, Type componentType, string selector)
+        public static TBuilder AddComponent<TBuilder>(this TBuilder builder, Type componentType, string selector) where TBuilder : HubEndpointConventionBuilder
         {
             if (builder == null)
             {

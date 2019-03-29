@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <typeparam name="THub">The <see cref="Hub"/> type to map requests to.</typeparam>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder endpoints, string pattern) where THub : Hub
+        /// <returns>An <see cref="HubEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
+        public static HubEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder endpoints, string pattern) where THub : Hub
         {
             return endpoints.MapHub<THub>(pattern, configureOptions: null);
         }
@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
+        /// <returns>An <see cref="HubEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
+        public static HubEndpointConventionBuilder MapHub<THub>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
         {
             var marker = endpoints.ServiceProvider.GetService<SignalRMarkerService>();
 
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Builder
                 e.Metadata.Add(new HubMetadata(typeof(THub)));
             });
 
-            return conventionBuilder;
+            return new HubEndpointConventionBuilder(conventionBuilder);
         }
     }
 }

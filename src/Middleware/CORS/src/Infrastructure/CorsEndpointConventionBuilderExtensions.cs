@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The endpoint convention builder.</param>
         /// <param name="policyName">The CORS policy name.</param>
         /// <returns>The original convention builder parameter.</returns>
-        public static IEndpointConventionBuilder WithCorsPolicy(this IEndpointConventionBuilder builder, string policyName)
+        public static TBuilder WithCorsPolicy<TBuilder>(this TBuilder builder, string policyName) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The endpoint convention builder.</param>
         /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
         /// <returns>The original convention builder parameter.</returns>
-        public static IEndpointConventionBuilder WithCorsPolicy(this IEndpointConventionBuilder builder, Action<CorsPolicyBuilder> configurePolicy)
+        public static TBuilder WithCorsPolicy<TBuilder>(this TBuilder builder, Action<CorsPolicyBuilder> configurePolicy) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {
