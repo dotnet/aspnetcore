@@ -65,7 +65,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         private string GetFullBaseUri(HttpRequest request)
         {
-            return UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
+            var result = UriHelper.BuildAbsolute(request.Scheme, request.Host, request.PathBase);
+
+            // PathBase may be "/" or "/some/thing", but to be a well-formed base URI
+            // it has to end with a trailing slash
+            if (!result.EndsWith('/'))
+            {
+                result += '/';
+            }
+
+            return result;
         }
     }
 }

@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             if (remoteRenderer == null)
             {
                 remoteRenderer = new RemoteRenderer(
-                    Mock.Of<IServiceProvider>(),
+                    serviceScope.ServiceProvider ?? Mock.Of<IServiceProvider>(),
                     new RendererRegistry(),
                     jsRuntime,
                     clientProxy,
