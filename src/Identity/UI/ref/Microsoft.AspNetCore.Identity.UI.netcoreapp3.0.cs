@@ -40,12 +40,16 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
     public abstract partial class ConfirmEmailChangeModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected ConfirmEmailChangeModel() { }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string userId, string email, string code) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public abstract partial class ConfirmEmailModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected ConfirmEmailModel() { }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string userId, string code) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
@@ -487,12 +491,16 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
     public abstract partial class ConfirmEmailChangeModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected ConfirmEmailChangeModel() { }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string userId, string email, string code) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
     public abstract partial class ConfirmEmailModel : Microsoft.AspNetCore.Mvc.RazorPages.PageModel
     {
         protected ConfirmEmailModel() { }
+        [Microsoft.AspNetCore.Mvc.TempDataAttribute]
+        public string StatusMessage { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.IActionResult> OnGetAsync(string userId, string code) { throw null; }
     }
     [Microsoft.AspNetCore.Authorization.AllowAnonymousAttribute]
