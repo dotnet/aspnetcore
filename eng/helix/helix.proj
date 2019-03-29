@@ -11,17 +11,27 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <HelixSource>pr/aspnet/aspnetcore</HelixSource>
+    <!-- Set helix source -->
+    <HelixSourcePrefix>pr/</HelixSourcePrefix>
+    <HelixSourcePrefix Condition="'$(OfficialBuildId)' != ''">official/</HelixSourcePrefix>
+    <HelixSource Condition="'$(HelixSource)' == ''">$(HelixSourcePrefix)aspnet/aspnetcore</HelixSource>
+    <HelixSource Condition="'$(BUILD_SOURCEBRANCH)' != ''">$(HelixSource)/$(BUILD_SOURCEBRANCH)</HelixSource>    
     <HelixType>ci</HelixType>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixArchitecture>$(TargetArchitecture)</HelixArchitecture>
+    
     <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">false</WaitForWorkItemCompletion>
+    <!-- If mission control reports a test failure then fail the build whenever helix wait runs. -->
     <FailOnMissionControlTestFailure>false</FailOnMissionControlTestFailure>
+    <!-- If mission control reports a test crash (fireball) then fail the build on helix wait -->
+    <FailOnWorkItemFailure>true</FailOnWorkItemFailure>
     <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
     <IsExternal>true</IsExternal>
     <Creator>aspnetcore</Creator>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+    <MaxRetryCount>4</MaxRetryCount>    
   </PropertyGroup>
 
   <Target Name="Gather" BeforeTargets="Build">
