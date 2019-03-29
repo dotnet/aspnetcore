@@ -1,0 +1,23 @@
+<Project DefaultTargets="Build">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
+
+  <PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <Target Name="Restore" />
+  <Target Name="Pack" />
+
+  <Target Name="Build">
+    <Exec Command="mkdir build.$(Configuration) &amp; cd build.$(Configuration) &amp; cmake .. -A x64 -DCMAKE_TOOLCHAIN_FILE=$(MSBuildThisFileDirectory)../../../submodules/vcpkg/scripts/buildsystems/vcpkg.cmake -DENABLE_TESTING=1 -DCMAKE_BUILD_TYPE=$(Configuration)" />
+    <Exec Command="cd build.$(Configuration) &amp; cmake --build . --config $(Configuration)" />
+  </Target>
+
+  <Target Name="Test">
+    <Message Text="Running C++ client tests" Importance="high" />
+    <Exec Command="cd build.$(Configuration) &amp; ctest -C $(Configuration) --output-on-failure" IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+</Project>

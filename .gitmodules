@@ -5,3 +5,7 @@
 [submodule "src/submodules/MessagePack-CSharp"]
 	path = src/submodules/MessagePack-CSharp
 	url = https://github.com/aspnet/MessagePack-CSharp.git
+
+[submodule "src/submodules/vcpkg"]
+	path = src/submodules/vcpkg
+	url = https://github.com/microsoft/vcpkg
