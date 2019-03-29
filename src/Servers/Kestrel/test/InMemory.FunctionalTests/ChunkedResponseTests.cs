@@ -118,6 +118,128 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Fact]
+        public async Task ResponsesAreChunkedAutomaticallyLargeResponseWithOverloadedWriteAsync()
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedString = new string('a', 10000);
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.WriteAsync(expectedString);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        "f92",
+                        new string('a', 3986),
+                        "ff9",
+                        new string('a', 4089),
+                        "785",
+                        new string('a', 1925),
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(4096)]
+        [InlineData(10000)]
+        [InlineData(100000)]
+        public async Task ResponsesAreChunkedAutomaticallyLargeChunksLargeResponseWithOverloadedWriteAsync(int length)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedString = new string('a', length);
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                var memory = httpContext.Response.BodyWriter.GetMemory(length);
+                Assert.True(length <= memory.Length);
+                Encoding.ASCII.GetBytes(expectedString).CopyTo(memory);
+                httpContext.Response.BodyWriter.Advance(length);
+                await httpContext.Response.BodyWriter.FlushAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        length.ToString("x"), 
+                        new string('a', length),
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(16)]
+        [InlineData(256)]
+        [InlineData(4096)]
+        public async Task ResponsesAreChunkedAutomaticallyPartialWrite(int partialLength)
+        {
+            var testContext = new TestServiceContext(LoggerFactory);
+            var expectedString = new string('a', partialLength);
+            using (var server = new TestServer(async httpContext =>
+            {
+                await httpContext.Response.StartAsync();
+                var memory = httpContext.Response.BodyWriter.GetMemory(100000);
+                Encoding.ASCII.GetBytes(expectedString).CopyTo(memory);
+                httpContext.Response.BodyWriter.Advance(partialLength);
+                await httpContext.Response.BodyWriter.FlushAsync();
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host: ",
+                        "Connection: close",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {testContext.DateHeaderValue}",
+                        "Transfer-Encoding: chunked",
+                        "",
+                        partialLength.ToString("x"),
+                        new string('a', partialLength),
+                        "0",
+                        "",
+                        "");
+                }
+                await server.StopAsync();
+            }
+        }
+
+        [Fact]
         public async Task SettingConnectionCloseHeaderInAppDoesNotDisableChunking()
         {
             var testContext = new TestServiceContext(LoggerFactory);
@@ -523,7 +645,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var response = httpContext.Response;
 
-                var memory = response.BodyWriter.GetMemory();
+                var memory = response.BodyWriter.GetMemory(5000);
                 length.Value = memory.Length;
                 semaphore.Release();
 
@@ -581,7 +703,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 await response.BodyWriter.FlushAsync();
 
-                var memory = response.BodyWriter.GetMemory();
+                var memory = response.BodyWriter.GetMemory(5000);
                 length.Value = memory.Length;
                 semaphore.Release();
 
