@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapEndpoint_StringPattern_BuildsEndpoint()
         {
             // Arrange
-            var builder = new DefaultEndpointRouteBuilder();
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapEndpoint_TypedPattern_BuildsEndpoint()
         {
             // Arrange
-            var builder = new DefaultEndpointRouteBuilder();
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapEndpoint_AttributesCollectedAsMetadata()
         {
             // Arrange
-            var builder = new DefaultEndpointRouteBuilder();
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
 
             // Act
             var endpointBuilder = builder.Map(RoutePatternFactory.Parse("/"),  Handle);
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapEndpoint_GeneratedDelegateWorks()
         {
             // Arrange
-            var builder = new DefaultEndpointRouteBuilder();
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
 
             Expression<RequestDelegate> handler = context => Task.CompletedTask;
 
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.Builder
         public void MapEndpoint_PrecedenceOfMetadata_BuilderMetadataReturned()
         {
             // Arrange
-            var builder = new DefaultEndpointRouteBuilder();
+            var builder = new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>());
 
             // Act
             var endpointBuilder = builder.MapMethods("/", new[] { "METHOD" }, HandleHttpMetdata);

@@ -40,17 +40,18 @@ namespace GenericHostWebSite
 
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllerRoute(
+                endpoints.MapControllerRoute(
                     "areaRoute",
                     "{area:exists}/{controller}/{action}",
                     new { controller = "Home", action = "Index" });
 
-                routes.MapControllerRoute("ActionAsMethod", "{controller}/{action}",
+                endpoints.MapControllerRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
-                routes.MapControllerRoute("PageRoute", "{controller}/{action}/{page}");
+                endpoints.MapControllerRoute("PageRoute", "{controller}/{action}/{page}");
             });
         }
     }

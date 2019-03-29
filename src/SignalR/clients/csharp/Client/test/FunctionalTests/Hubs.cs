@@ -36,6 +36,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             await Clients.Client(Context.ConnectionId).SendAsync("NoClientHandler");
         }
 
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
+        }
+
         public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
 
         public string GetUserIdentifier()
@@ -110,6 +115,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             await Clients.Client(Context.ConnectionId).NoClientHandler();
         }
 
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
+        }
+
         public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
     }
 
@@ -133,6 +143,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public async Task CallHandlerThatDoesntExist()
         {
             await Clients.Client(Context.ConnectionId).NoClientHandler();
+        }
+
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
         }
 
         public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);

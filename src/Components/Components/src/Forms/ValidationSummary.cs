@@ -49,8 +49,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
-
             // As an optimization, only evaluate the messages enumerable once, and
             // only produce the enclosing <ul> if there's at least one message
             var messagesEnumerator = CurrentEditContext.GetValidationMessages().GetEnumerator();

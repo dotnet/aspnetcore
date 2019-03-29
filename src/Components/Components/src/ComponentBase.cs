@@ -25,11 +25,6 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class ComponentBase : IComponent, IHandleEvent, IHandleAfterRender
     {
-        /// <summary>
-        /// Specifies the name of the <see cref="RenderTree"/>-building method.
-        /// </summary>
-        public const string BuildRenderTreeMethodName = nameof(BuildRenderTree);
-
         private readonly RenderFragment _renderFragment;
         private RenderHandle _renderHandle;
         private bool _initialized;
@@ -41,7 +36,12 @@ namespace Microsoft.AspNetCore.Components
         /// </summary>
         public ComponentBase()
         {
-            _renderFragment = BuildRenderTree;
+            _renderFragment = builder =>
+            {
+                _hasPendingQueuedRender = false;
+                _hasNeverRendered = false;
+                BuildRenderTree(builder);
+            };
         }
 
         /// <summary>
@@ -52,8 +52,9 @@ namespace Microsoft.AspNetCore.Components
         {
             // Developers can either override this method in derived classes, or can use Razor
             // syntax to define a derived class and have the compiler generate the method.
-            _hasPendingQueuedRender = false;
-            _hasNeverRendered = false;
+
+            // Other code within this class should *not* invoke BuildRenderTree directly,
+            // but instead should invoke the _renderFragment field.
         }
 
         /// <summary>

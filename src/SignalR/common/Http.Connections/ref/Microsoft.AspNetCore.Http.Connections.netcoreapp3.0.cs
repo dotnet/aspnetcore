@@ -5,10 +5,10 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class ConnectionEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions options, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, System.Action<Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : Microsoft.AspNetCore.Connections.ConnectionHandler { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.Connections.HttpConnectionDispatcherOptions options, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapConnections(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, System.Action<Microsoft.AspNetCore.Connections.IConnectionBuilder> configure) { throw null; }
     }
     public static partial class ConnectionsAppBuilderExtensions
     {

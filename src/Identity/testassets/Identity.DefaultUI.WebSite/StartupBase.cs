@@ -77,9 +77,23 @@ namespace Identity.DefaultUI.WebSite
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
+            app.UseRouting();
+
             app.UseAuthentication();
 
-            app.UseMvc();
+            // This has to be disabled due to https://github.com/aspnet/AspNetCore/issues/8387
+            //
+            // UseAuthorization does not currently work with Razor pages, and it impacts
+            // many of the tests here. Uncomment when this is fixed so that we test what is recommended
+            // for users.
+            //
+            //app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

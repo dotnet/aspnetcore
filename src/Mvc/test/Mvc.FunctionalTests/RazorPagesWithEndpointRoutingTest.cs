@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8387")]
         public async Task Authorize_AppliedUsingConvention_Works()
         {
             // Act
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("Hello from Anonymous", content.Trim());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8387")]
         public async Task Authorize_AppliedUsingAttributeOnModel_Works()
         {
             // Act

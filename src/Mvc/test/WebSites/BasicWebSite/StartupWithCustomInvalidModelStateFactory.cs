@@ -48,9 +48,10 @@ namespace BasicWebSite
         {
             app.UseDeveloperExceptionPage();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllers();
+                endpoints.MapControllers();
             });
         }
     }

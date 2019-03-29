@@ -3655,7 +3655,6 @@ namespace Microsoft.AspNetCore.Components.Test
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                base.BuildRenderTree(builder);
                 var renderFactory = WhatToRender[TestId];
                 renderFactory(this)(builder);
             }

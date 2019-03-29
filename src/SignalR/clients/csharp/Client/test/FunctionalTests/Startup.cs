@@ -53,25 +53,28 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseRouting(routes =>
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<TestHub>("/default");
-                routes.MapHub<DynamicTestHub>("/dynamic");
-                routes.MapHub<TestHubT>("/hubT");
-                routes.MapHub<HubWithAuthorization>("/authorizedhub");
-                routes.MapHub<HubWithAuthorization2>("/authorizedhub2")
+                endpoints.MapHub<TestHub>("/default");
+                endpoints.MapHub<DynamicTestHub>("/dynamic");
+                endpoints.MapHub<TestHubT>("/hubT");
+                endpoints.MapHub<HubWithAuthorization>("/authorizedhub");
+                endpoints.MapHub<HubWithAuthorization2>("/authorizedhub2")
                       .RequireAuthorization(new AuthorizeAttribute(JwtBearerDefaults.AuthenticationScheme));
 
-                routes.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
+                endpoints.MapHub<TestHub>("/default-nowebsockets", options => options.Transports = HttpTransportType.LongPolling | HttpTransportType.ServerSentEvents);
 
-                routes.MapGet("/generateJwtToken", context =>
+                endpoints.MapGet("/generateJwtToken", context =>
                 {
                     return context.Response.WriteAsync(GenerateJwtToken());
                 });
 
-                routes.Map("/redirect/{*anything}", context =>
+                endpoints.Map("/redirect/{*anything}", context =>
                 {
                     return context.Response.WriteAsync(JsonConvert.SerializeObject(new
                     {
@@ -80,8 +83,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     }));
                 });
             });
-
-            app.UseAuthorization();
         }
 
         private string GenerateJwtToken()

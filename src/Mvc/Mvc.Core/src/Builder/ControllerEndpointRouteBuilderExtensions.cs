@@ -20,36 +20,36 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> without specifying any routes.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
-        public static IEndpointConventionBuilder MapControllers(this IEndpointRouteBuilder routes)
+        public static IEndpointConventionBuilder MapControllers(this IEndpointRouteBuilder endpoints)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
-            return GetOrCreateDataSource(routes);
+            return GetOrCreateDataSource(endpoints);
         }
 
         /// <summary>
         /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> and adds the default route
         /// <c>{controller=Home}/{action=Index}/{id?}</c>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
-        public static IEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder routes)
+        public static IEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder endpoints)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
-            var dataSource = GetOrCreateDataSource(routes);
+            var dataSource = GetOrCreateDataSource(endpoints);
             dataSource.AddRoute(new ConventionalRouteEntry(
                 "default",
                 "{controller=Home}/{action=Index}/{id?}",
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Builder
         /// with the given <paramref name="name"/>, <paramref name="pattern"/>,
         /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="name">The name of the route.</param>
         /// <param name="pattern">The URL pattern of the route.</param>
         /// <param name="defaults">
@@ -81,21 +81,21 @@ namespace Microsoft.AspNetCore.Builder
         /// values of the data tokens.
         /// </param>
         public static void MapControllerRoute(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string name,
             string pattern,
             object defaults = null,
             object constraints = null,
             object dataTokens = null)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
-            var dataSource = GetOrCreateDataSource(routes);
+            var dataSource = GetOrCreateDataSource(endpoints);
             dataSource.AddRoute(new ConventionalRouteEntry(
                 name,
                 pattern,
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Builder
         /// with the given <paramref name="name"/>, <paramref name="areaName"/>, <paramref name="pattern"/>,
         /// <paramref name="defaults"/>, <paramref name="constraints"/>, and <paramref name="dataTokens"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="name">The name of the route.</param>
         /// <param name="areaName">The area name.</param>
         /// <param name="pattern">The URL pattern of the route.</param>
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Builder
         /// values of the data tokens.
         /// </param>
         public static void MapAreaControllerRoute(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string name,
             string areaName,
             string pattern,
@@ -134,9 +134,9 @@ namespace Microsoft.AspNetCore.Builder
             object constraints = null,
             object dataTokens = null)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (string.IsNullOrEmpty(areaName))
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Builder
             var constraintsDictionary = new RouteValueDictionary(constraints);
             constraintsDictionary["area"] = constraintsDictionary["area"] ?? new StringRouteConstraint(areaName);
 
-            routes.MapControllerRoute(name, pattern, defaultsDictionary, constraintsDictionary, dataTokens);
+            endpoints.MapControllerRoute(name, pattern, defaultsDictionary, constraintsDictionary, dataTokens);
         }
 
         /// <summary>
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a controller endpoint that
         /// matches <paramref name="action"/>, and <paramref name="controller"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="action">The action name.</param>
         /// <param name="controller">The controller name.</param>
         /// <remarks>
@@ -184,13 +184,13 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static void MapFallbackToController(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string action,
             string controller)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (action == null)
@@ -203,14 +203,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            routes.MapFallback(context => Task.CompletedTask).Add(b =>
+            endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a controller endpoint that
         /// matches <paramref name="action"/>, and <paramref name="controller"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The action name.</param>
         /// <param name="controller">The controller name.</param>
@@ -252,14 +252,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static void MapFallbackToController(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             string action,
             string controller)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -277,14 +277,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a controller endpoint that
         /// matches <paramref name="action"/>, <paramref name="controller"/>, and <paramref name="area"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="action">The action name.</param>
         /// <param name="controller">The controller name.</param>
         /// <param name="area">The area name.</param>
@@ -323,14 +323,14 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static void MapFallbackToAreaController(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string action,
             string controller,
             string area)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (action == null)
@@ -343,14 +343,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            routes.MapFallback(context => Task.CompletedTask).Add(b =>
+            endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Builder
         /// requests for non-file-names with the lowest possible priority. The request will be routed to a controller endpoint that
         /// matches <paramref name="action"/>, <paramref name="controller"/>, and <paramref name="area"/>.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="action">The action name.</param>
         /// <param name="controller">The controller name.</param>
@@ -393,15 +393,15 @@ namespace Microsoft.AspNetCore.Builder
         /// </para>
         /// </remarks>
         public static void MapFallbackToAreaController(
-            this IEndpointRouteBuilder routes,
+            this IEndpointRouteBuilder endpoints,
             string pattern,
             string action,
             string controller,
             string area)
         {
-            if (routes == null)
+            if (endpoints == null)
             {
-                throw new ArgumentNullException(nameof(routes));
+                throw new ArgumentNullException(nameof(endpoints));
             }
 
             if (pattern == null)
@@ -419,14 +419,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(controller));
             }
 
-            EnsureControllerServices(routes);
+            EnsureControllerServices(endpoints);
 
             // Called for side-effect to make sure that the data source is registered.
-            GetOrCreateDataSource(routes);
+            GetOrCreateDataSource(endpoints);
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            routes.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
@@ -443,9 +443,9 @@ namespace Microsoft.AspNetCore.Builder
             });
         }
 
-        private static void EnsureControllerServices(IEndpointRouteBuilder routes)
+        private static void EnsureControllerServices(IEndpointRouteBuilder endpoints)
         {
-            var marker = routes.ServiceProvider.GetService<MvcMarkerService>();
+            var marker = endpoints.ServiceProvider.GetService<MvcMarkerService>();
             if (marker == null)
             {
                 throw new InvalidOperationException(Resources.FormatUnableToFindServices(
@@ -455,13 +455,13 @@ namespace Microsoft.AspNetCore.Builder
             }
         }
 
-        private static ControllerActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder routes)
+        private static ControllerActionEndpointDataSource GetOrCreateDataSource(IEndpointRouteBuilder endpoints)
         {
-            var dataSource = routes.DataSources.OfType<ControllerActionEndpointDataSource>().FirstOrDefault();
+            var dataSource = endpoints.DataSources.OfType<ControllerActionEndpointDataSource>().FirstOrDefault();
             if (dataSource == null)
             {
-                dataSource = routes.ServiceProvider.GetRequiredService<ControllerActionEndpointDataSource>();
-                routes.DataSources.Add(dataSource);
+                dataSource = endpoints.ServiceProvider.GetRequiredService<ControllerActionEndpointDataSource>();
+                endpoints.DataSources.Add(dataSource);
             }
 
             return dataSource;

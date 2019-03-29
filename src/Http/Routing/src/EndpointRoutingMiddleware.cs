@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -23,8 +22,8 @@ namespace Microsoft.AspNetCore.Routing
 
         public EndpointRoutingMiddleware(
             MatcherFactory matcherFactory,
-            EndpointDataSource endpointDataSource,
             ILogger<EndpointRoutingMiddleware> logger,
+            IEndpointRouteBuilder endpointRouteBuilder,
             RequestDelegate next)
         {
             if (matcherFactory == null)
@@ -32,14 +31,14 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(matcherFactory));
             }
 
-            if (endpointDataSource == null)
-            {
-                throw new ArgumentNullException(nameof(endpointDataSource));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (endpointRouteBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(endpointRouteBuilder));
             }
 
             if (next == null)
@@ -48,9 +47,10 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             _matcherFactory = matcherFactory;
-            _endpointDataSource = endpointDataSource;
             _logger = logger;
             _next = next;
+
+            _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
         }
 
         public async Task Invoke(HttpContext httpContext)

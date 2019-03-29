@@ -158,6 +158,41 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
+        public async Task CanAccessConnectionIdFromHubConnection(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    Assert.Null(connection.ConnectionId);
+                    await connection.StartAsync().OrTimeout();
+                    var originalClientConnectionId = connection.ConnectionId;
+                    var connectionIdFromServer = await connection.InvokeAsync<string>(nameof(TestHub.GetCallerConnectionId)).OrTimeout();
+                    Assert.Equal(connection.ConnectionId, connectionIdFromServer);
+                    await connection.StopAsync().OrTimeout();
+                    Assert.Null(connection.ConnectionId);
+                    await connection.StartAsync().OrTimeout();
+                    connectionIdFromServer = await connection.InvokeAsync<string>(nameof(TestHub.GetCallerConnectionId)).OrTimeout();
+                    Assert.NotEqual(originalClientConnectionId, connectionIdFromServer);
+                    Assert.Equal(connection.ConnectionId, connectionIdFromServer);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
         public async Task CanStartConnectionFromClosedEvent(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];

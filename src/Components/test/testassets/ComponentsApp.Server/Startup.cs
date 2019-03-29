@@ -29,10 +29,13 @@ namespace ComponentsApp.Server
             }
 
             app.UseStaticFiles();
-            app.UseRouting(builder =>
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                builder.MapRazorPages();
-                builder.MapComponentHub<App.App>("app");
+                endpoints.MapRazorPages();
+                endpoints.MapComponentHub<App.App>("app");
             });
         }
     }

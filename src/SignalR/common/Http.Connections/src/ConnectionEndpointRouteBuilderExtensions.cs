@@ -18,34 +18,34 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="configure">A callback to configure the connection.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapConnections(this IEndpointRouteBuilder routes, string pattern, Action<IConnectionBuilder> configure) =>
-            routes.MapConnections(pattern, new HttpConnectionDispatcherOptions(), configure);
+        public static IEndpointConventionBuilder MapConnections(this IEndpointRouteBuilder endpoints, string pattern, Action<IConnectionBuilder> configure) =>
+            endpoints.MapConnections(pattern, new HttpConnectionDispatcherOptions(), configure);
 
         /// <summary>
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
         /// <typeparam name="TConnectionHandler">The <see cref="ConnectionHandler"/> type.</typeparam>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder routes, string pattern) where TConnectionHandler : ConnectionHandler
+        public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder endpoints, string pattern) where TConnectionHandler : ConnectionHandler
         {
-            return routes.MapConnectionHandler<TConnectionHandler>(pattern, configureOptions: null);
+            return endpoints.MapConnectionHandler<TConnectionHandler>(pattern, configureOptions: null);
         }
 
         /// <summary>
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
         /// <typeparam name="TConnectionHandler">The <see cref="ConnectionHandler"/> type.</typeparam>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder routes, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
+        public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
             var options = new HttpConnectionDispatcherOptions();
             // REVIEW: WE should consider removing this and instead just relying on the
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Builder
             }
             configureOptions?.Invoke(options);
 
-            var conventionBuilder = routes.MapConnections(pattern, options, b =>
+            var conventionBuilder = endpoints.MapConnections(pattern, options, b =>
             {
                 b.UseConnectionHandler<TConnectionHandler>();
             });
@@ -79,16 +79,16 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Maps incoming requests with the specified path to the provided connection pipeline.
         /// </summary>
-        /// <param name="routes">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/> to add the route to.</param>
         /// <param name="pattern">The route pattern.</param>
         /// <param name="options">Options used to configure the connection.</param>
         /// <param name="configure">A callback to configure the connection.</param>
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
-        public static IEndpointConventionBuilder MapConnections(this IEndpointRouteBuilder routes, string pattern, HttpConnectionDispatcherOptions options, Action<IConnectionBuilder> configure)
+        public static IEndpointConventionBuilder MapConnections(this IEndpointRouteBuilder endpoints, string pattern, HttpConnectionDispatcherOptions options, Action<IConnectionBuilder> configure)
         {
-            var dispatcher = routes.ServiceProvider.GetRequiredService<HttpConnectionDispatcher>();
+            var dispatcher = endpoints.ServiceProvider.GetRequiredService<HttpConnectionDispatcher>();
 
-            var connectionBuilder = new ConnectionBuilder(routes.ServiceProvider);
+            var connectionBuilder = new ConnectionBuilder(endpoints.ServiceProvider);
             configure(connectionBuilder);
             var connectionDelegate = connectionBuilder.Build();
 
@@ -98,21 +98,21 @@ namespace Microsoft.AspNetCore.Builder
             var conventionBuilders = new List<IEndpointConventionBuilder>();
 
             // Build the negotiate application
-            var app = routes.CreateApplicationBuilder();
+            var app = endpoints.CreateApplicationBuilder();
             app.UseWebSockets();
             app.Run(c => dispatcher.ExecuteNegotiateAsync(c, options));
             var negotiateHandler = app.Build();
 
-            var negotiateBuilder = routes.Map(pattern + "/negotiate", negotiateHandler);
+            var negotiateBuilder = endpoints.Map(pattern + "/negotiate", negotiateHandler);
             conventionBuilders.Add(negotiateBuilder);
 
             // build the execute handler part of the protocol
-            app = routes.CreateApplicationBuilder();
+            app = endpoints.CreateApplicationBuilder();
             app.UseWebSockets();
             app.Run(c => dispatcher.ExecuteAsync(c, options, connectionDelegate));
             var executehandler = app.Build();
 
-            var executeBuilder = routes.Map(pattern, executehandler);
+            var executeBuilder = endpoints.Map(pattern, executehandler);
             conventionBuilders.Add(executeBuilder);
 
             var compositeConventionBuilder = new CompositeEndpointConventionBuilder(conventionBuilders);

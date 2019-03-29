@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Endpoints;
@@ -23,7 +24,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
         }
 
         [Fact]
-        public void BuildImplicitlyCallsMatchedEndpointAsLastStep()
+        public async Task BuildImplicitlyThrowsForMatchedEndpointAsLastStep()
         {
             var builder = new ApplicationBuilder(null);
             var app = builder.Build();
@@ -41,9 +42,14 @@ namespace Microsoft.AspNetCore.Builder.Internal
             var httpContext = new DefaultHttpContext();
             httpContext.SetEndpoint(endpoint);
 
-            app.Invoke(httpContext);
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => app.Invoke(httpContext));
 
-            Assert.True(endpointCalled);
+            var expected =
+                "The request reached the end of the pipeline without executing the endpoint: 'Test endpoint'. " +
+                "Please register the EndpointMiddleware using 'IApplicationBuilder.UseEndpoints(...)' if " +
+                "using routing, or 'IApplicationBuilder.UseEndpointExecutor()' if not using routing.";
+            Assert.Equal(expected, ex.Message);
+            Assert.False(endpointCalled);
         }
 
         [Fact]

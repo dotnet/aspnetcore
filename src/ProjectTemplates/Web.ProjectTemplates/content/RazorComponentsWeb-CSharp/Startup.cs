@@ -48,10 +48,12 @@ namespace RazorComponentsWeb_CSharp
 #endif
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRazorPages();
-                routes.MapComponentHub<App>("app");
+                endpoints.MapRazorPages();
+                endpoints.MapComponentHub<App>("app");
             });
         }
     }

@@ -78,9 +78,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var ex = Assert.Throws<InvalidOperationException>(() =>
                     {
-                        app.UseRouting(routes =>
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
                         {
-                            routes.MapHub<AuthHub>("/overloads");
+                            endpoints.MapHub<AuthHub>("/overloads");
                         });
                     });
 
@@ -166,10 +167,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubEndPointRoutingAppliesAttributesBeforeConventions()
         {
-            void ConfigureRoutes(IEndpointRouteBuilder routes)
+            void ConfigureRoutes(IEndpointRouteBuilder endpoints)
             {
                 // This "Foo" policy should override the default auth attribute
-                routes.MapHub<AuthHub>("/path")
+                endpoints.MapHub<AuthHub>("/path")
                       .RequireAuthorization(new AuthorizeAttribute("Foo"));
             }
 
@@ -188,10 +189,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubEndPointRoutingAppliesHubMetadata()
         {
-            void ConfigureRoutes(IEndpointRouteBuilder routes)
+            void ConfigureRoutes(IEndpointRouteBuilder endpoints)
             {
                 // This "Foo" policy should override the default auth attribute
-                routes.MapHub<AuthHub>("/path");
+                endpoints.MapHub<AuthHub>("/path");
             }
 
             using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
@@ -241,7 +242,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 })
                 .Configure(app =>
                 {
-                    app.UseRouting(routes => configure(routes));
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints => configure(endpoints));
                 })
                 .UseUrls("http://127.0.0.1:0")
                 .Build();

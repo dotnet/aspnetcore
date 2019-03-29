@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -266,6 +266,44 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1");
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
         }
+
+
+        [Fact]
+        public void ActivityTraceParentAndTraceStateFromHeaders()
+        {
+            var diagnosticSource = new DiagnosticListener("DummySource");
+            var hostingApplication = CreateApplication(out var features, diagnosticSource: diagnosticSource);
+
+            diagnosticSource.Subscribe(new CallbackDiagnosticListener(pair => { }),
+                s =>
+                {
+                    if (s.StartsWith("Microsoft.AspNetCore.Hosting.HttpRequestIn"))
+                    {
+                        return true;
+                    }
+                    return false;
+                });
+
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature()
+            {
+                Headers = new HeaderDictionary()
+                {
+                    {"traceparent", "00-0123456789abcdef0123456789abcdef-0123456789abcdef-01"},
+                    {"tracestate", "TraceState1"},
+                    {"Correlation-Context", "Key1=value1, Key2=value2"}
+                }
+            });
+            hostingApplication.CreateContext(features);
+            Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", Activity.Current.OperationName);
+            Assert.Equal(ActivityIdFormat.W3C, Activity.Current.IdFormat);
+            Assert.Equal("0123456789abcdef0123456789abcdef", Activity.Current.TraceId.ToHexString());
+            Assert.Equal("0123456789abcdef", Activity.Current.ParentSpanId.ToHexString());
+            Assert.Equal("TraceState1", Activity.Current.TraceStateString);
+
+            Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1");
+            Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
+        }
+
 
         private static void AssertProperty<T>(object o, string name)
         {

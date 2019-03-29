@@ -38,14 +38,17 @@ namespace RazorPagesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseAuthentication();
-
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllerRoute("areaRoute", "{area:exists}/{controller=Home}/{action=Index}");
-                routes.MapRazorPages();
+                endpoints.MapControllerRoute("areaRoute", "{area:exists}/{controller=Home}/{action=Index}");
+                endpoints.MapRazorPages();
             });
         }
     }

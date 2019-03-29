@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.OpenElement(0, "textarea");
             builder.AddAttribute(1, "id", Id);
             builder.AddAttribute(2, "class", CssClass);

@@ -41,12 +41,14 @@ type Startup private () =
 #endif
         app.UseStaticFiles() |> ignore
 
-        app.UseRouting(fun routes ->
-            routes.MapControllerRoute(
-                name = "default",
-                pattern = "{controller=Home}/{action=Index}/{id?}") |> ignore
-            routes.MapRazorPages() |> ignore) |> ignore
+        app.UseRouting() |> ignore
 
         app.UseAuthorization() |> ignore
+
+        app.UseEndpoints(fun endpoints ->
+            endpoints.MapControllerRoute(
+                name = "default",
+                pattern = "{controller=Home}/{action=Index}/{id?}") |> ignore
+            endpoints.MapRazorPages() |> ignore) |> ignore
 
     member val Configuration : IConfiguration = null with get, set

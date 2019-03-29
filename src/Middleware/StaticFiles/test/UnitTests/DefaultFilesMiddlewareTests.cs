@@ -82,6 +82,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var server = StaticFilesTestServer.Create(
                     app =>
                     {
+                        app.UseRouting();
+
                         app.Use(next => context =>
                         {
                             // Assign an endpoint, this will make the default files noop.
@@ -100,8 +102,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                             RequestPath = new PathString(""),
                             FileProvider = fileProvider
                         });
+
+                        app.UseEndpoints(endpoints => {});
                     },
-                    services => services.AddDirectoryBrowser());
+                    services => { services.AddDirectoryBrowser(); services.AddRouting(); });
 
                 var response = await server.CreateRequest("/SubFolder/").GetAsync();
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);

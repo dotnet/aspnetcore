@@ -65,11 +65,6 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             //
-            // Endpoint Infrastructure
-            //
-            services.TryAddTransient<IEndpointRouteBuilder, DefaultEndpointRouteBuilder>();
-
-            //
             // Default matcher implementation
             //
             services.TryAddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
