@@ -55,6 +55,10 @@ namespace Microsoft.AspNetCore.Http.Connections
         public LongPollingOptions() { }
         public System.TimeSpan PollTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public partial class NegotiateMetadata
+    {
+        public NegotiateMetadata() { }
+    }
     public partial class WebSocketOptions
     {
         public WebSocketOptions() { }
