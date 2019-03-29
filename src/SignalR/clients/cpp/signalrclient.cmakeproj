@@ -10,13 +10,14 @@
   <Target Name="Pack" />
 
   <Target Name="Build">
-    <Exec Command="mkdir build.$(Configuration) &amp; cd build.$(Configuration) &amp; cmake .. -A x64 -DCMAKE_TOOLCHAIN_FILE=$(MSBuildThisFileDirectory)../../../submodules/vcpkg/scripts/buildsystems/vcpkg.cmake -DENABLE_TESTING=1 -DCMAKE_BUILD_TYPE=$(Configuration)" />
-    <Exec Command="cd build.$(Configuration) &amp; cmake --build . --config $(Configuration)" />
+    <MakeDir Directories="$(MSBuildThisFileDirectory)build.$(Configuration)" />
+    <Exec Command="cmake .. -A x64 -DCMAKE_TOOLCHAIN_FILE=$(MSBuildThisFileDirectory)../../../submodules/vcpkg/scripts/buildsystems/vcpkg.cmake -DENABLE_TESTING=1 -DCMAKE_BUILD_TYPE=$(Configuration)" WorkingDirectory="$(MSBuildThisFileDirectory)build.$(Configuration)" />
+    <Exec Command="cmake --build . --config $(Configuration)" WorkingDirectory="$(MSBuildThisFileDirectory)build.$(Configuration)" />
   </Target>
 
   <Target Name="Test">
     <Message Text="Running C++ client tests" Importance="high" />
-    <Exec Command="cd build.$(Configuration) &amp; ctest -C $(Configuration) --output-on-failure" IgnoreStandardErrorWarningFormat="true" />
+    <Exec Command="ctest -C $(Configuration) --output-on-failure" IgnoreStandardErrorWarningFormat="true" WorkingDirectory="$(MSBuildThisFileDirectory)build.$(Configuration)" />
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
