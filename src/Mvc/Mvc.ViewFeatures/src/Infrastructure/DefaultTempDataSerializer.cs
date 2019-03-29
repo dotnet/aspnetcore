@@ -46,7 +46,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                         break;
 
                     case JsonValueType.String:
-                        deserializedValue = item.Value.GetString();
+                        var stringValue = item.Value.GetString();
+                        // BsonTempDataSerializer will parse certain types of string values. We'll attempt to imitiate it.
+                        if (DateTime.TryParseExact(stringValue, "r", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dateTime))
+                        {
+                            deserializedValue = dateTime;
+                        }
+                        else if (Guid.TryParseExact(stringValue, "B", out var guid))
+                        {
+                            deserializedValue = guid;
+                        }
+                        else
+                        {
+                            deserializedValue = stringValue;
+                        }
                         break;
 
                     case JsonValueType.Null:
@@ -108,6 +121,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                         case bool boolValue:
                             writer.WriteBoolean(key, boolValue);
                             break;
+
+                        case DateTime dateTime:
+                            writer.WriteString(key, dateTime.ToString("r", CultureInfo.InvariantCulture));
+                            break;
+
+                        case Guid guid:
+                            writer.WriteString(key, guid.ToString("B", CultureInfo.InvariantCulture));
+                            break;
                     }
                 }
                 writer.WriteEndObject();
@@ -119,13 +140,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
 
         public override bool CanSerializeType(Type type)
         {
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
             type = Nullable.GetUnderlyingType(type) ?? type;
 
             return
                 type.IsEnum ||
                 type == typeof(int) ||
                 type == typeof(string) ||
-                type == typeof(bool);
+                type == typeof(bool) ||
+                type == typeof(DateTime) ||
+                type == typeof(Guid);
         }
     }
 }
