@@ -1,0 +1,14 @@
+@page
+@using BasicTestApp.RouterTest
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Prerendering tests</title>
+    <base href="~/" />
+</head>
+<body>
+    <app>@(await Html.RenderComponentAsync<TestRouter>())</app>
+
+    <script src="_framework/components.server.js"></script>
+</body>
+</html>
