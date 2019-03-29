@@ -44,16 +44,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return count;
         }
 
-        internal static int GetPrefixBytesForChunk(ref Memory<byte> memory)
+        internal static int GetPrefixBytesForChunk(int length, out bool sliceOneByte)
         {
-            var length = memory.Length;
-
+            sliceOneByte = false;
             // If GetMemory returns one of the following values, there is no way to set the prefix/body lengths
             // such that we either wouldn't have an invalid chunk or would need to copy if the entire memory chunk is used.
             // For example, if GetMemory returned 21, we would guess that the chunked prefix is 4 bytes initially
             // and the suffix is 2 bytes, meaning there is 15 bytes remaining to write into. However, 15 bytes only need 3
             // bytes for the chunked prefix, so we would have to copy once we call advance. Therefore, to avoid this scenario,
             // we slice the memory by one byte.
+
+            // See https://gist.github.com/halter73/af2b9f78978f83813b19e187c4e5309e if you would like to tweek the algorithm at all.
 
             if (length <= 65544)
             {
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (length == 21)
                         {
-                            memory = memory.Slice(0, length - 1);
+                            sliceOneByte = true;
                         }
                         return 3;
                     }
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (length == 262)
                         {
-                            memory = memory.Slice(0, length - 1);
+                            sliceOneByte = true;
                         }
                         return 4;
                     }
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (length == 4103)
                         {
-                            memory = memory.Slice(0, length - 1);
+                            sliceOneByte = true;
                         }
                         return 5;
                     }
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (length == 65544)
                         {
-                            memory = memory.Slice(0, length - 1);
+                            sliceOneByte = true;
                         }
                         return 6;
                     }
@@ -104,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (length == 1048585)
                         {
-                            memory = memory.Slice(0, length - 1);
+                            sliceOneByte = true;
                         }
                         return 7;
                     }
@@ -112,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (length == 16777226)
                         {
-                            memory = memory.Slice(0, length - 1);
+                            sliceOneByte = true;
                         }
                         return 8;
                     }
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (length == 268435467)
                         {
-                            memory = memory.Slice(0, length - 1);
+                            sliceOneByte = true;
                         }
                         return 9;
                     }
