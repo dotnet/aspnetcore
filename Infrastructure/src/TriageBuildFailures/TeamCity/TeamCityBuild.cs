@@ -46,7 +46,7 @@ namespace TriageBuildFailures.TeamCity
             }
         }
 
-        public DateTimeOffset StartDate => TeamCityClientWrapper.ParseTCDateTime(StartDateString);
+        public DateTimeOffset? StartDate => TeamCityClientWrapper.ParseTCDateTime(StartDateString);
 
         [XmlElement(ElementName = "startDate")]
         public string StartDateString { get; set; }

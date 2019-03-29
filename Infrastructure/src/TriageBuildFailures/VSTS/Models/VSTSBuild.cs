@@ -47,16 +47,19 @@ namespace TriageBuildFailures.VSTS.Models
 
         public string Project => _build.Project.Id;
 
-        public string Branch {
-            get {
-                return string.IsNullOrEmpty(_branch)? _build.SourceBranch.Replace("refs/heads/", string.Empty) : _branch;
+        public string Branch
+        {
+            get
+            {
+                return string.IsNullOrEmpty(_branch) ? _build.SourceBranch.Replace("refs/heads/", string.Empty) : _branch;
             }
-            set {
+            set
+            {
                 _branch = value;
             }
         }
 
-        public DateTimeOffset StartDate => new DateTimeOffset(_build.StartTime.Value);
+        public DateTimeOffset? StartDate => _build.StartTime.HasValue? new DateTimeOffset(_build.StartTime.Value) : (DateTimeOffset?)null;
 
         public Uri Uri => _build.Uri;
 

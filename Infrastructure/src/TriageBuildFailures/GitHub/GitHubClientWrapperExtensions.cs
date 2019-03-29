@@ -18,7 +18,10 @@ namespace TriageBuildFailures.GitHub
             if (!commentsAboutThisBuild.Any())
             {
                 var count = testNames.Count;
-                var newComment = $"There were {count} failures [with about the same error]({build.WebURL}) on {build.Branch} at {build.StartDate.ToString("T")}:\n";
+
+                // VSTS sometimes doesn't set the StartDate
+                var startDate = build.StartDate.HasValue ? build.StartDate.Value.ToString("T") : "an unknown time";
+                var newComment = $"There were {count} failures [with about the same error]({build.WebURL}) on {build.Branch} at { startDate }:\n";
                 var testOutputLimit = 10;
                 for (var i = 0; i < testOutputLimit && i < count; ++i)
                 {
@@ -52,7 +55,9 @@ namespace TriageBuildFailures.GitHub
             var (commentsAboutThisBuild, commentsFromToday) = await gitHubClient.GatherComments(build, issue);
             if (!commentsAboutThisBuild.Any())
             {
-                var comment = $"{buildName} [failed again]({build.WebURL}) on {build.Branch} at {build.StartDate.ToString("T")}.";
+
+                var startDate = build.StartDate.HasValue ? build.StartDate.Value.ToString("T") : "an unknown time";
+                var comment = $"{buildName} [failed again]({build.WebURL}) on {build.Branch} at {startDate}.";
                 if (commentsFromToday.Count() == 0)
                 {
                     await gitHubClient.CreateComment(issue, comment);

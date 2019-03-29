@@ -13,7 +13,7 @@ namespace TriageBuildFailures.Abstractions
         string BuildName { get; }
         BuildStatus Status { get; }
         string Branch { get; }
-        DateTimeOffset StartDate { get; }
+        DateTimeOffset? StartDate { get; }
         Uri WebURL { get; }
 
         CIConfigBase GetCIConfig(Config config);
