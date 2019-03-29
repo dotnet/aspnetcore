@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 referenceAssemblies,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
+            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         }
 
         public RazorIntegrationTestBase(ITestOutputHelper output)
