@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         // "0\r\n\r\n"
         private static ReadOnlySpan<byte> EndChunkedResponseBytes => new byte[] { (byte)'0', (byte)'\r', (byte)'\n', (byte)'\r', (byte)'\n' };
 
+        private const int MaxBeginChunkLength = 10;
         private const int EndChunkLength = 2;
 
         private readonly string _connectionId;
@@ -541,17 +542,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Memory<byte> GetChunkedMemory(int sizeHint)
         {
-            // To guarantee that sizeHint is a minimumSize, we need to call GetMemory with a sizeHint
-            // larger than what was provided. We add the begin and end chunk lengths here.
-
             if (!_currentChunkMemoryUpdated)
             {
-                sizeHint += 10 + EndChunkLength; 
+                sizeHint += MaxBeginChunkLength + EndChunkLength; 
                 UpdateCurrentChunkMemory(sizeHint);
             }
             else if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - sizeHint && _advancedBytesForChunk > 0)
             {
-                sizeHint += 10 + EndChunkLength;
+                sizeHint += MaxBeginChunkLength + EndChunkLength; 
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
                 WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 writer.Commit();
@@ -560,18 +558,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 UpdateCurrentChunkMemory(sizeHint);
             }
 
-            // TODO I bet this logic can be simplified.
             var actualMemory = _currentChunkMemory.Slice(
                 _currentMemoryPrefixBytes + _advancedBytesForChunk,
                 _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - _advancedBytesForChunk);
-
-            if (ChunkWriter.GetPrefixLength(actualMemory, EndChunkLength) != _currentMemoryPrefixBytes)
-            {
-                _currentChunkMemory = _currentChunkMemory.Slice(0, _currentChunkMemory.Length - 1);
-                actualMemory = _currentChunkMemory.Slice(
-                    _currentMemoryPrefixBytes + _advancedBytesForChunk,
-                    _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - _advancedBytesForChunk);
-            }
 
             return actualMemory;
         }
@@ -579,6 +568,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private void UpdateCurrentChunkMemory(int sizeHint)
         {
             _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
+            _currentChunkMemory = ChunkWriter.SliceMemoryOnBoundary(_currentChunkMemory);
             _currentMemoryPrefixBytes = ChunkWriter.GetPrefixLength(_currentChunkMemory, EndChunkLength);
             _currentChunkMemoryUpdated = true;
         }

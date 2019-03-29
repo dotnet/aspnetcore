@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
         {
-            // TODO should we protect againt dataCount = 0 here?
             // Determine the most-significant non-zero nibble
             int total; 
             var count = GetBeginChunkByteCount(dataCount, out total);
@@ -45,6 +44,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // as 6 bytes. However, after subtracting the bytes for _currentChunkMemory.Length and the endPrefix, the real
             // body length would be 5 bytes. 
             return GetBeginChunkByteCount(memory.Length - prefixLength - suffixLength);
+        }
+
+        internal static Memory<byte> SliceMemoryOnBoundary(Memory<byte> memory)
+        {
+            var length = memory.Length;
+            if (length == 21 || length == 262 || length == 4103 || length == 65544 || length == 1048585 || length == 16777226 || length == 268435467)
+            {
+                return memory.Slice(0, length - 1);
+            }
+
+            return memory;
         }
 
         internal static int GetBeginChunkByteCount(int count)

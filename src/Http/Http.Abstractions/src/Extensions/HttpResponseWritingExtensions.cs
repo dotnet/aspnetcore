@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class HttpResponseWritingExtensions
     {
+        private const int UTF8MaxByteLength = 6;
+
         /// <summary>
         /// Writes the given text to the response body. UTF-8 encoding will be used.
         /// </summary>
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Http
 
         private static void Write(this HttpResponse response, string text, Encoding encoding)
         {
-            var minimumByteSize = encoding.GetMaxByteCount(1);
+            var minimumByteSize = GetEncodingMaxByteSize(encoding);
             var pipeWriter = response.BodyWriter;
             var encodedLength = encoding.GetByteCount(text);
             var destination = pipeWriter.GetSpan(minimumByteSize);
@@ -108,6 +110,16 @@ namespace Microsoft.AspNetCore.Http
             {
                 WriteMultiSegmentEncoded(pipeWriter, text, encoding, destination, encodedLength, minimumByteSize);
             }
+        }
+
+        private static int GetEncodingMaxByteSize(Encoding encoding)
+        {
+            if (encoding == Encoding.UTF8)
+            {
+                return UTF8MaxByteLength;
+            }
+
+            return encoding.GetMaxByteCount(1);
         }
 
         private static void WriteMultiSegmentEncoded(PipeWriter writer, string text, Encoding encoding, Span<byte> destination, int encodedLength, int minimumByteSize)

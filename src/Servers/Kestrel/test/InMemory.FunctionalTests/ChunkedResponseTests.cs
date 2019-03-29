@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 await httpContext.Response.StartAsync();
                 var memory = httpContext.Response.BodyWriter.GetMemory(length);
-                Assert.Equal(length, memory.Length);
+                Assert.True(length <= memory.Length);
                 Encoding.ASCII.GetBytes(expectedString).CopyTo(memory);
                 httpContext.Response.BodyWriter.Advance(length);
                 await httpContext.Response.BodyWriter.FlushAsync();
@@ -198,11 +198,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [Theory]
-        [InlineData(2)]
-        [InlineData(100)]
-        [InlineData(2500)]
-        [InlineData(8192)]
-        [InlineData(49999)]
+        [InlineData(1)]
+        [InlineData(16)]
+        [InlineData(256)]
+        [InlineData(4096)]
         public async Task ResponsesAreChunkedAutomaticallyPartialWrite(int partialLength)
         {
             var testContext = new TestServiceContext(LoggerFactory);
