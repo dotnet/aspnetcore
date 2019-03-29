@@ -43,5 +43,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(Encoding.ASCII.GetBytes(expected), span.Slice(0, count).ToArray());
         }
+
+        [Fact]
+        public void ChunkedPrefixReturnsSegmentThatDoesNotNeedToMove()
+        {
+            var memory = new Memory<byte>(new byte[10000000]);
+            // Will call GetMemory on at least 5 bytes from the Http1OutputProducer
+            for (var i = 5; i < 10000000; i++)
+            {
+                var currentMemory = memory.Slice(0, i);
+                var prefixLength = ChunkWriter.GetPrefixLength(currentMemory, suffixLength: 2);
+                var slicedMemory = currentMemory.Slice(prefixLength, currentMemory.Length - prefixLength - 2);
+                var actualLength = ChunkWriter.BeginChunkBytes(slicedMemory.Length, currentMemory.Span);
+                if (actualLength != prefixLength)
+                {
+                    slicedMemory = slicedMemory.Slice(0, slicedMemory.Length - 1);
+                    actualLength = ChunkWriter.BeginChunkBytes(slicedMemory.Length, currentMemory.Span);
+                }
+                Assert.Equal(prefixLength, actualLength);
+            }
+        }
     }
 }

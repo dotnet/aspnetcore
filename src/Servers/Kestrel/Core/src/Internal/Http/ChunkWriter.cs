@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public static int BeginChunkBytes(int dataCount, Span<byte> span)
         {
+            // TODO should we protect againt dataCount = 0 here?
             // Determine the most-significant non-zero nibble
             int total; 
             var count = GetBeginChunkByteCount(dataCount, out total);
@@ -36,16 +37,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return count;
         }
 
+        internal static int GetPrefixLength(Memory<byte> memory, int suffixLength)
+        {
+            var prefixLength = GetBeginChunkByteCount(memory.Length);
+
+            // Super edge case. If we call GetMemory and it returns 4099, we would originally calculate _currentMemoryPrefixBytes
+            // as 6 bytes. However, after subtracting the bytes for _currentChunkMemory.Length and the endPrefix, the real
+            // body length would be 5 bytes. 
+            return GetBeginChunkByteCount(memory.Length - prefixLength - suffixLength);
+        }
+
         internal static int GetBeginChunkByteCount(int count)
         {
-            var total = (count > 0xffff) ? 0x10 : 0x00;
-            count >>= total;
-            var shift = (count > 0x00ff) ? 0x08 : 0x00;
-            count >>= shift;
-            total |= shift;
-            total |= (count > 0x000f) ? 0x04 : 0x00;
-
-            return (total >> 2) + 3;
+            return GetBeginChunkByteCount(count, out _); 
         }
 
         internal static int GetBeginChunkByteCount(int count, out int total)

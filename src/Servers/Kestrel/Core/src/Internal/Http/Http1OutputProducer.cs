@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Debug.Assert(producer._autoChunk && producer._advancedBytesForChunk > 0);
 
                 var writer = new BufferWriter<PipeWriter>(producer._pipeWriter);
-                producer.WriteCurrentMemoryToPipeWriter(ref writer);
+                producer.WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 writer.Commit();
 
                 var bytesWritten = producer._unflushedBytes + writer.BytesCommitted;
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_advancedBytesForChunk > 0)
             {
-                WriteCurrentMemoryToPipeWriter(ref writer);
+                WriteCurrentChunkMemoryToPipeWriter(ref writer);
             }
 
             if (buffer.Length > 0)
@@ -513,7 +513,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     // If there is data that was chunked before writing (ex someone did GetMemory->Advance->WriteAsync)
                     // make sure to write whatever was advanced first
-                    WriteCurrentMemoryToPipeWriter(ref writer);
+                    WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 }
                 else
                 {
@@ -541,33 +541,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Memory<byte> GetChunkedMemory(int sizeHint)
         {
-            var originalSizeHint = sizeHint;
-
             // To guarantee that sizeHint is a minimumSize, we need to call GetMemory with a sizeHint
             // larger than what was provided. We add the begin and end chunk lengths here.
-            if (sizeHint > 0)
-            {
-                sizeHint += ChunkWriter.GetBeginChunkByteCount(sizeHint) + EndChunkLength;
-            }
 
             if (!_currentChunkMemoryUpdated)
             {
+                sizeHint += 10 + EndChunkLength; 
                 UpdateCurrentChunkMemory(sizeHint);
             }
-
-            if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - originalSizeHint && _advancedBytesForChunk > 0)
+            else if (_advancedBytesForChunk >= _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - sizeHint && _advancedBytesForChunk > 0)
             {
+                sizeHint += 10 + EndChunkLength;
                 var writer = new BufferWriter<PipeWriter>(_pipeWriter);
-                WriteCurrentMemoryToPipeWriter(ref writer);
+                WriteCurrentChunkMemoryToPipeWriter(ref writer);
                 writer.Commit();
                 _unflushedBytes += writer.BytesCommitted;
 
                 UpdateCurrentChunkMemory(sizeHint);
             }
 
+            // TODO I bet this logic can be simplified.
             var actualMemory = _currentChunkMemory.Slice(
                 _currentMemoryPrefixBytes + _advancedBytesForChunk,
                 _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - _advancedBytesForChunk);
+
+            if (ChunkWriter.GetPrefixLength(actualMemory, EndChunkLength) != _currentMemoryPrefixBytes)
+            {
+                _currentChunkMemory = _currentChunkMemory.Slice(0, _currentChunkMemory.Length - 1);
+                actualMemory = _currentChunkMemory.Slice(
+                    _currentMemoryPrefixBytes + _advancedBytesForChunk,
+                    _currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength - _advancedBytesForChunk);
+            }
 
             return actualMemory;
         }
@@ -575,17 +579,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private void UpdateCurrentChunkMemory(int sizeHint)
         {
             _currentChunkMemory = _pipeWriter.GetMemory(sizeHint);
-            _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length);
-
-            // Super edge case. If we call GetMemory and it returns 4099, we would originally calculate _currentMemoryPrefixBytes
-            // as 6 bytes. However, after subtracting the bytes for _currentChunkMemory.Length and the endPrefix, the real
-            // body length would be 5 bytes. 
-            _currentMemoryPrefixBytes = ChunkWriter.GetBeginChunkByteCount(_currentChunkMemory.Length - _currentMemoryPrefixBytes - EndChunkLength);
-
+            _currentMemoryPrefixBytes = ChunkWriter.GetPrefixLength(_currentChunkMemory, EndChunkLength);
             _currentChunkMemoryUpdated = true;
         }
-
-        private void WriteCurrentMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
+       
+        private void WriteCurrentChunkMemoryToPipeWriter(ref BufferWriter<PipeWriter> writer)
         {
             Debug.Assert(_advancedBytesForChunk <= _currentChunkMemory.Length);
             Debug.Assert(_advancedBytesForChunk > 0);
