@@ -135,7 +135,7 @@
                     Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" />
     </ItemGroup>
 
-    <RepoTasks.RemoveSharedFrameworkDependencies Condition="@(_BuildOutput->Count()) != 0"
+    <RepoTasks.RemoveSharedFrameworkDependencies
       Files="@(_BuildOutput)"
       FrameworkOnlyPackages="@(AspNetCoreAppReference)" />
   </Target>
