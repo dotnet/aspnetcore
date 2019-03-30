@@ -325,6 +325,76 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
+        public async Task StreamCoreAsyncTest(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var expectedValue = 0;
+                    var streamTo = 5;
+                    var asyncEnumerable = connection.StreamAsyncCore("Stream", typeof(int), new object[] { streamTo });
+                    await foreach (var streamValue in asyncEnumerable)
+                    {
+                        Assert.Equal(expectedValue, streamValue);
+                        expectedValue++;
+                    }
+
+                    Assert.Equal(streamTo, expectedValue);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncTest(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var expectedValue = 0;
+                    var streamTo = 5;
+                    var asyncEnumerable = connection.StreamAsync<int>("Stream", streamTo);
+                    await foreach (var streamValue in asyncEnumerable)
+                    {
+                        Assert.Equal(expectedValue, streamValue);
+                        expectedValue++;
+                    }
+
+                    Assert.Equal(streamTo, expectedValue);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
         public async Task CanInvokeClientMethodFromServer(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];

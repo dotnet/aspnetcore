@@ -65,6 +65,33 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             _cancellationTokenRegistration.Dispose();
         }
 
+        private class StreamingIAsyncEnumerable : InvocationRequest
+        {
+            public StreamingIAsyncEnumerable(CancellationToken cancellationToken, Type resultType, string invocationId, ILogger logger, HubConnection hubConnection) : base(cancellationToken, resultType, invocationId, logger, hubConnection)
+            {
+            }
+
+            public override void Complete(CompletionMessage message)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Fail(Exception exception)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override ValueTask<bool> StreamItem(object item)
+            {
+                throw new NotImplementedException();
+            }
+
+            protected override void Cancel()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
         private class Streaming : InvocationRequest
         {
             private readonly Channel<object> _channel = Channel.CreateUnbounded<object>();
