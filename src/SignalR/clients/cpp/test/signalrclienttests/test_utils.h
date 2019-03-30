@@ -5,7 +5,6 @@
 
 #include "cpprest/details/basic_types.h"
 #include "signalrclient/websocket_client.h"
-#include "web_request_factory.h"
 #include "signalrclient/http_client.h"
 #include <future>
 
@@ -17,7 +16,6 @@ std::shared_ptr<signalr::websocket_client> create_test_websocket_client(
     std::function<void(const std::string&, std::function<void(std::exception_ptr)>)> connect_function = [](const std::string&, std::function<void(std::exception_ptr)> callback) { callback(nullptr); },
     std::function<void(std::function<void(std::exception_ptr)>)> close_function = [](std::function<void(std::exception_ptr)> callback) { callback(nullptr); });
 
-std::unique_ptr<signalr::web_request_factory> create_test_web_request_factory();
 std::unique_ptr<signalr::http_client> create_test_http_client();
 std::string create_uri();
 std::string create_uri(const std::string& query_string);
@@ -33,12 +31,12 @@ public:
         m_promise.set_value(value);
     }
 
-    void set_exception(std::exception exception)
+    void set(const std::exception& exception)
     {
         m_promise.set_exception(std::make_exception_ptr(exception));
     }
 
-    void set_exception(std::exception_ptr exception)
+    void set(std::exception_ptr exception)
     {
         m_promise.set_exception(exception);
     }
@@ -71,14 +69,21 @@ public:
         m_promise.set_value();
     }
 
-    void set_exception(std::exception exception)
+    void set(const std::exception& exception)
     {
         m_promise.set_exception(std::make_exception_ptr(exception));
     }
 
-    void set_exception(std::exception_ptr exception)
+    void set(std::exception_ptr exception)
     {
-        m_promise.set_exception(exception);
+        if (exception != nullptr)
+        {
+            m_promise.set_exception(exception);
+        }
+        else
+        {
+            m_promise.set_value();
+        }
     }
 
     void get()

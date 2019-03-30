@@ -142,7 +142,7 @@ namespace signalr
         }
     }
 
-    void websocket_transport::start(const std::string& url, transfer_format format, std::function<void(std::exception_ptr)> callback)
+    void websocket_transport::start(const std::string& url, transfer_format format, std::function<void(std::exception_ptr)> callback) noexcept
     {
         web::uri uri(utility::conversions::to_string_t(url));
         _ASSERTE(uri.scheme() == _XPLATSTR("ws") || uri.scheme() == _XPLATSTR("wss"));
@@ -152,7 +152,8 @@ namespace signalr
 
             if (!m_receive_loop_cts.get_token().is_canceled())
             {
-                throw signalr_exception("transport already connected");
+                callback(std::make_exception_ptr(signalr_exception("transport already connected")));
+                return;
             }
 
             m_logger.log(trace_level::info,
@@ -197,7 +198,7 @@ namespace signalr
         }
     }
 
-    void websocket_transport::stop(std::function<void(std::exception_ptr)> callback)
+    void websocket_transport::stop(std::function<void(std::exception_ptr)> callback) noexcept
     {
         std::shared_ptr<websocket_client> websocket_client = nullptr;
 
@@ -252,7 +253,7 @@ namespace signalr
         m_process_response_callback = callback;
     }
 
-    void websocket_transport::send(std::string payload, std::function<void(std::exception_ptr)> callback)
+    void websocket_transport::send(std::string payload, std::function<void(std::exception_ptr)> callback) noexcept
     {
         safe_get_websocket_client()->send(payload, [callback](std::exception_ptr exception)
             {

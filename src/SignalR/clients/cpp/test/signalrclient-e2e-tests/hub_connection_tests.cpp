@@ -7,9 +7,10 @@
 #include <string>
 #include "cpprest/details/basic_types.h"
 #include "cpprest/json.h"
-#include "connection.h"
-#include "hub_connection.h"
-#include "signalr_exception.h"
+#include "signalrclient/connection.h"
+#include "signalrclient/hub_connection.h"
+#include "signalrclient/signalr_exception.h"
+#include "../signalrclienttests/test_utils.h"
 
 extern std::string url;
 
@@ -18,13 +19,29 @@ TEST(hub_connection_tests, connection_status_start_stop_start)
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
     auto weak_hub_conn = std::weak_ptr<signalr::hub_connection>(hub_conn);
 
-    hub_conn->start().get();
+    auto mre = manual_reset_event<void>();
+    hub_conn->start([&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
     ASSERT_EQ(hub_conn->get_connection_state(), signalr::connection_state::connected);
 
-    hub_conn->stop().get();
+    hub_conn->stop([&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
     ASSERT_EQ(hub_conn->get_connection_state(), signalr::connection_state::disconnected);
 
-    hub_conn->start().get();
+    hub_conn->start([&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
     ASSERT_EQ(hub_conn->get_connection_state(), signalr::connection_state::connected);
 }
 
@@ -40,14 +57,23 @@ TEST(hub_connection_tests, send_message)
         received_event->set();
     });
 
-    hub_conn->start().then([&hub_conn]()
+    auto mre = manual_reset_event<void>();
+    hub_conn->start([&mre](std::exception_ptr exception)
     {
-        web::json::value obj{};
-        obj[0] = web::json::value(U("test"));
+        mre.set(exception);
+    });
 
-        return hub_conn->send("invokeWithString", obj);
+    mre.get();
 
-    }).get();
+    web::json::value obj{};
+    obj[0] = web::json::value(U("test"));
+
+    hub_conn->send("invokeWithString", obj, [&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
@@ -58,14 +84,30 @@ TEST(hub_connection_tests, send_message_return)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
 
-    auto test = hub_conn->start().then([&hub_conn]()
+    auto mre = manual_reset_event<web::json::value>();
+    hub_conn->start([&mre](std::exception_ptr exception)
     {
-        web::json::value obj{};
-        obj[0] = web::json::value(U("test"));
+        mre.set(exception);
+    });
 
-        return hub_conn->invoke("returnString", obj);
+    mre.get();
 
-    }).get();
+    web::json::value obj{};
+    obj[0] = web::json::value(U("test"));
+
+    hub_conn->invoke("returnString", obj, [&mre](const web::json::value & value, std::exception_ptr exception)
+    {
+        if (exception)
+        {
+            mre.set(exception);
+        }
+        else
+        {
+            mre.set(value);
+        }
+    });
+
+    auto test = mre.get();
 
     ASSERT_EQ(test.serialize(), U("\"test\""));
 }
@@ -82,18 +124,37 @@ TEST(hub_connection_tests, send_message_after_connection_restart)
         received_event->set();
     });
 
-    hub_conn->start().get();
-
-    hub_conn->stop().get();
-
-    hub_conn->start().then([&hub_conn]()
+    auto mre = manual_reset_event<void>();
+    hub_conn->start([&mre](std::exception_ptr exception)
     {
-        web::json::value obj{};
-        obj[0] = web::json::value(U("test"));
+        mre.set(exception);
+    });
 
-        return hub_conn->send("invokeWithString", obj);
+    mre.get();
 
-    }).get();
+    hub_conn->stop([&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
+
+    hub_conn->start([&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
+
+    web::json::value obj{};
+    obj[0] = web::json::value(U("test"));
+
+    hub_conn->send("invokeWithString", obj, [&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
@@ -112,11 +173,21 @@ TEST(hub_connection_tests, send_message_empty_param)
         received_event->set();
     });
 
-    hub_conn->start().then([&hub_conn]()
+    auto mre = manual_reset_event<void>();
+    hub_conn->start([&mre](std::exception_ptr exception)
     {
-        return hub_conn->invoke("invokeWithEmptyParam");
+        mre.set(exception);
+    });
 
-    }).get();
+    mre.get();
+
+
+    hub_conn->invoke("invokeWithEmptyParam", web::json::value::array(), [&mre](const web::json::value &, std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
@@ -135,21 +206,29 @@ TEST(hub_connection_tests, send_message_primitive_params)
         received_event->set();
     });
 
-    hub_conn->start().then([&hub_conn]()
+    auto mre = manual_reset_event<void>();
+    hub_conn->start([&mre](std::exception_ptr exception)
     {
-        web::json::value obj{};
-        obj[0] = web::json::value(5);
-        obj[1] = web::json::value(21.05);
-        obj[2] = web::json::value(8.999999999);
-        obj[3] = web::json::value(true);
-        obj[4] = web::json::value('a');
-        return hub_conn->send("invokeWithPrimitiveParams", obj);
+        mre.set(exception);
+    });
 
-    }).get();
+    mre.get();
+
+    web::json::value obj{};
+    obj[0] = web::json::value(5);
+    obj[1] = web::json::value(21.05);
+    obj[2] = web::json::value(8.999999999);
+    obj[3] = web::json::value(true);
+    obj[4] = web::json::value('a');
+    hub_conn->send("invokeWithPrimitiveParams", obj, [&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
-    web::json::value obj{};
     obj[0] = web::json::value(6);
     obj[1] = web::json::value(22.05);
     obj[2] = web::json::value(9.999999999);
@@ -171,21 +250,30 @@ TEST(hub_connection_tests, send_message_complex_type)
         received_event->set();
     });
 
-    hub_conn->start().then([&hub_conn]()
+    auto mre = manual_reset_event<void>();
+    hub_conn->start([&mre](std::exception_ptr exception)
     {
-        web::json::value obj{};
-        web::json::value person;
-        web::json::value address;
-        address[U("street")] = web::json::value::string(U("main st"));
-        address[U("zip")] = web::json::value::string(U("98052"));
-        person[U("address")] = address;
-        person[U("name")] = web::json::value::string(U("test"));
-        person[U("age")] = web::json::value::number(15);
-        obj[0] = person;
+        mre.set(exception);
+    });
 
-        return hub_conn->send("invokeWithComplexType", obj);
+    mre.get();
 
-    }).get();
+    web::json::value obj{};
+    web::json::value person;
+    web::json::value address;
+    address[U("street")] = web::json::value::string(U("main st"));
+    address[U("zip")] = web::json::value::string(U("98052"));
+    person[U("address")] = address;
+    person[U("name")] = web::json::value::string(U("test"));
+    person[U("age")] = web::json::value::number(15);
+    obj[0] = person;
+
+    hub_conn->send("invokeWithComplexType", obj, [&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
 
     ASSERT_FALSE(received_event->wait(2000));
 
@@ -196,21 +284,37 @@ TEST(hub_connection_tests, send_message_complex_type_return)
 {
     auto hub_conn = std::make_shared<signalr::hub_connection>(url);
 
-    auto test = hub_conn->start().then([&hub_conn]()
+    auto mre = manual_reset_event<web::json::value>();
+    hub_conn->start([&mre](std::exception_ptr exception)
     {
-        web::json::value obj{};
-        web::json::value person;
-        web::json::value address;
-        address[U("street")] = web::json::value::string(U("main st"));
-        address[U("zip")] = web::json::value::string(U("98052"));
-        person[U("address")] = address;
-        person[U("name")] = web::json::value::string(U("test"));
-        person[U("age")] = web::json::value::number(15);
-        obj[0] = person;
+        mre.set(exception);
+    });
 
-        return hub_conn->invoke("returnComplexType", obj);
+    mre.get();
 
-    }).get();
+    web::json::value obj{};
+    web::json::value person;
+    web::json::value address;
+    address[U("street")] = web::json::value::string(U("main st"));
+    address[U("zip")] = web::json::value::string(U("98052"));
+    person[U("address")] = address;
+    person[U("name")] = web::json::value::string(U("test"));
+    person[U("age")] = web::json::value::number(15);
+    obj[0] = person;
+
+    hub_conn->invoke("returnComplexType", obj, [&mre](const web::json::value & value, std::exception_ptr exception)
+    {
+        if (exception)
+        {
+            mre.set(exception);
+        }
+        else
+        {
+            mre.set(value);
+        }
+    });
+
+    auto test = mre.get();
 
     ASSERT_EQ(test.serialize(), U("{\"Address\":{\"Street\":\"main st\",\"Zip\":\"98052\"},\"Age\":15,\"Name\":\"test\"}"));
 }
@@ -224,14 +328,31 @@ TEST(hub_connection_tests, connection_id_start_stop_start)
 
     ASSERT_EQ(u8"", hub_conn->get_connection_id());
 
-    hub_conn->start().get();
+    auto mre = manual_reset_event<void>();
+    hub_conn->start([&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
+
     connection_id = hub_conn->get_connection_id();
     ASSERT_NE(connection_id, u8"");
 
-    hub_conn->stop().get();
+    hub_conn->stop([&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
     ASSERT_EQ(hub_conn->get_connection_id(), connection_id);
 
-    hub_conn->start().get();
+    hub_conn->start([&mre](std::exception_ptr exception)
+    {
+        mre.set(exception);
+    });
+
+    mre.get();
     ASSERT_NE(hub_conn->get_connection_id(), u8"");
     ASSERT_NE(hub_conn->get_connection_id(), connection_id);
 

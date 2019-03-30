@@ -17,11 +17,11 @@ namespace signalr
 
         virtual ~transport();
 
-        virtual void start(const std::string& url, transfer_format format, std::function<void(std::exception_ptr)> callback) = 0;
-        virtual void stop(std::function<void(std::exception_ptr)> callback) = 0;
+        virtual void start(const std::string& url, transfer_format format, std::function<void(std::exception_ptr)> callback) noexcept = 0;
+        virtual void stop(std::function<void(std::exception_ptr)> callback) noexcept = 0;
         virtual void on_close(std::function<void(std::exception_ptr)> callback) = 0;
 
-        virtual void send(std::string payload, std::function<void(std::exception_ptr)> callback) = 0;
+        virtual void send(std::string payload, std::function<void(std::exception_ptr)> callback) noexcept = 0;
 
         virtual void on_receive(std::function<void(std::string, std::exception_ptr)> callback) = 0;
 
