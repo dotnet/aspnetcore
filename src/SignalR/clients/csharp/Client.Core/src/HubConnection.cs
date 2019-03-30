@@ -437,7 +437,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
 #if NETCOREAPP3_0
-
         public async IAsyncEnumerable<object> StreamAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
         {
             async Task OnStreamCanceled(InvocationRequest irq)
