@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         // When connectionAdapter=true, the MaxRequestBufferSize is set on two pipes, so it's effectively doubled.
         //
         // To ensure reliability, _dataLength must be greater than the largest "max pause" in any configuration
-        private const int _dataLength = 40 * 1024 * 1024;
+        private const int _dataLength = 100 * 1024 * 1024;
 
         private static readonly string[] _requestLines = new[]
         {
