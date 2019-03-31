@@ -9,21 +9,21 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview4.19174.2">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview4.19180.1">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>e9ff3dcec3e8be1e47566c42ac4676bb7b258034</Sha>
+      <Sha>c94aa5cd02d2e857b03a0a7512720ed1dd05aa59</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview4.19174.2">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview4.19180.1">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>e9ff3dcec3e8be1e47566c42ac4676bb7b258034</Sha>
+      <Sha>c94aa5cd02d2e857b03a0a7512720ed1dd05aa59</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview4.19174.2">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview4.19180.1">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>e9ff3dcec3e8be1e47566c42ac4676bb7b258034</Sha>
+      <Sha>c94aa5cd02d2e857b03a0a7512720ed1dd05aa59</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview4.19174.2">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview4.19180.1">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>e9ff3dcec3e8be1e47566c42ac4676bb7b258034</Sha>
+      <Sha>c94aa5cd02d2e857b03a0a7512720ed1dd05aa59</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.0-preview4.19174.3">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
@@ -361,9 +361,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>d6a30736858f91b297fdd3ed4e3d1dfde67bdbdb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview4-27524-01" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview4-27524-03" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>c91508ea425da7c4291fc437e902173f582763ad</Sha>
+      <Sha>f89f4f9def5f8faff4505376688671b9866172f7</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview4-27524-03">
       <Uri>https://github.com/dotnet/core-setup</Uri>
