@@ -3,8 +3,10 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Components.Services;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -23,7 +25,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
         public static IServiceCollection AddRazorComponents(this IServiceCollection services)
         {
-            services.AddSignalR().AddMessagePackProtocol();
+            services.AddSignalR()
+                .AddHubOptions<ComponentHub>(options =>
+            {
+                options.SupportedProtocols.Clear();
+                options.SupportedProtocols.Add(BlazorPackHubProtocol.ProtocolName);
+            });
+
+            // Register the Blazor specific hub protocol
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());
 
             // Here we add a bunch of services that don't vary in any way based on the
             // user's configuration. So even if the user has multiple independent server-side

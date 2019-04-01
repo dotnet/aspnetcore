@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -6,6 +6,7 @@
     <IsShippingPackage>true</IsShippingPackage>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <HasReferenceAssembly>false</HasReferenceAssembly>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <!-- Producing this package requires building with NodeJS enabled. -->
@@ -21,7 +22,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Browser" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />  
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
@@ -31,6 +31,31 @@
       Temporary until we move the prerendering APIs into this assembly.
     -->
     <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <MessagePackRoot>$(RepositoryRoot)src\submodules\MessagePack-CSharp\src\MessagePack\</MessagePackRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\MemoryBufferWriter.cs" LinkBase="BlazorPack" />
+
+    <!-- MessagePack -->
+    <Compile Include="$(MessagePackRoot)BufferWriter.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)ExtensionHeader.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)ExtensionResult.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)MessagePackCode.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)MessagePackReader.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)MessagePackReader.Integers.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)MessagePackWriter.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)Nil.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)FloatBits.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)Internal\DateTimeConstants.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)StringEncoding.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)SequenceReader.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">

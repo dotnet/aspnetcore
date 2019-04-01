@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -114,7 +115,16 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             // snapshot its contents now.
             // TODO: Consider using some kind of array pool instead of allocating a new
             //       buffer on every render.
-            var batchBytes = MessagePackSerializer.Serialize(batch, RenderBatchFormatterResolver.Instance);
+            byte[] batchBytes;
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))
+                {
+                    renderBatchWriter.Write(in batch);
+                }
+
+                batchBytes = memoryStream.ToArray();
+            }
 
             if (!_client.Connected)
             {
