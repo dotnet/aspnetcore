@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         public async Task CookieExpirationOptionThrows()
         {
             var services = new ServiceCollection();
-            services.AddAuthentication().AddCookies(o =>
+            services.AddAuthentication().AddCookie(o =>
             {
                 // this is currently ignored. Users should set o.ExpireTimeSpan instead
                 o.Cookie.Expiration = TimeSpan.FromDays(10);
