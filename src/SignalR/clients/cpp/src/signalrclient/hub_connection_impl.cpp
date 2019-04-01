@@ -397,7 +397,7 @@ namespace signalr
                 }
                 else
                 {
-                    set_result(json::value::value());
+                    set_result(json::value());
                 }
             };
         }
