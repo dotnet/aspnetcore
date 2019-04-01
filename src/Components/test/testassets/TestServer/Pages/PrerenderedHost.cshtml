@@ -22,6 +22,12 @@
         scriptElem.src = '_framework/components.server.js';
         document.body.appendChild(scriptElem);
     }
+
+    // Used by InteropOnInitializationComponent
+    function setElementValue(element, newValue) {
+      element.value = newValue;
+      return element.value;
+    }
     </script>
 </body>
 </html>

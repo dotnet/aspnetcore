@@ -447,8 +447,17 @@ namespace Microsoft.AspNetCore.Components.Rendering
             finally
             {
                 RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
-                _batchBuilder.Clear();
+                _batchBuilder.ClearStateForCurrentBatch();
                 _isBatchInProgress = false;
+            }
+
+            // An OnAfterRenderAsync callback might have queued more work synchronously.
+            // Note: we do *not* re-render implicitly after the OnAfterRenderAsync-returned
+            // task (that would be an infinite loop). We only render after an explicit render
+            // request (e.g., StateHasChanged()).
+            if (_batchBuilder.ComponentRenderQueue.Count > 0)
+            {
+                ProcessRenderQueue();
             }
         }
 
