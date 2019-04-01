@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
         /// <param name="clock">The system clock.</param>
         /// <param name="logger">The logger.</param>
-        public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILogger<SecurityStampValidator<TUser>> logger)
+        public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILoggerFactory logger)
         {
             if (options == null)
             {
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Identity
             SignInManager = signInManager;
             Options = options.Value;
             Clock = clock;
-            Logger = logger;
+            Logger = logger.CreateLogger(this.GetType().FullName);
         }
 
         /// <summary>
