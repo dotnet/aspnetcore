@@ -590,6 +590,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("First Second Third Fourth Fifth", () => result.Text);
         }
 
+        [Fact]
+        public void CanPerformInteropImmediatelyOnComponentInsertion()
+        {
+            var appElement = MountTestComponent<InteropOnInitializationComponent>();
+            Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-get-by-interop")).Text);
+            Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try

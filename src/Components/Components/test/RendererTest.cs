@@ -2507,6 +2507,31 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(1, childComponents[2].OnAfterRenderCallCount); // Disposed
         }
 
+        [Fact]
+        public void CanTriggerRenderingSynchronouslyFromInsideAfterRenderCallback()
+        {
+            // Arrange
+            AfterRenderCaptureComponent component = null;
+            component = new AfterRenderCaptureComponent
+            {
+                OnAfterRenderLogic = () =>
+                {
+                    if (component.OnAfterRenderCallCount < 10)
+                    {
+                        component.TriggerRender();
+                    }
+                }
+            };
+            var renderer = new TestRenderer();
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            component.TriggerRender();
+
+            // Assert
+            Assert.Equal(10, component.OnAfterRenderCallCount);
+        }
+
         [ConditionalFact]
         [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7487
         public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
@@ -3414,11 +3439,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class AfterRenderCaptureComponent : AutoRenderComponent, IComponent, IHandleAfterRender
         {
+            public Action OnAfterRenderLogic { get; set; }
+
             public int OnAfterRenderCallCount { get; private set; }
 
             public Task OnAfterRenderAsync()
             {
                 OnAfterRenderCallCount++;
+                OnAfterRenderLogic?.Invoke();
                 return Task.CompletedTask;
             }
 

@@ -39,6 +39,21 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             Browser.Equal("1", () => Browser.FindElement(By.Id("count")).Text);
         }
 
+        [Fact]
+        public void CanUseJSInteropFromOnAfterRenderAsync()
+        {
+            Navigate("/prerendered/prerendered-interop");
+
+            // Prerendered output can't use JSInterop
+            Browser.Equal("No value yet", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
+            Browser.Equal(string.Empty, () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+
+            // Once connected, we can
+            BeginInteractivity();
+            Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
+            Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
+        }
+
         private void BeginInteractivity()
         {
             Browser.FindElement(By.Id("load-boot-script")).Click();
