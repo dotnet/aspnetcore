@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection();
             services.AddSingleton(options.Object);
             services.AddSingleton(signInManager);
-            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager, new SystemClock()));
+            services.AddSingleton<ISecurityStampValidator>(new SecurityStampValidator<PocoUser>(options.Object, signInManager, new SystemClock(), new LoggerFactory()));
             httpContext.Setup(c => c.RequestServices).Returns(services.BuildServiceProvider());
 
             var tid = new ClaimsIdentity(IdentityConstants.ApplicationScheme);
