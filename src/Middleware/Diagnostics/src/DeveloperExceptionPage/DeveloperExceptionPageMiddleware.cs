@@ -60,6 +60,11 @@ namespace Microsoft.AspNetCore.Diagnostics
                 throw new ArgumentNullException(nameof(options));
             }
 
+            if (filters == null)
+            {
+                throw new ArgumentNullException(nameof(filters));
+            }
+
             _next = next;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<DeveloperExceptionPageMiddleware>();
@@ -225,7 +230,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                     }
                 }
             }
-                       
+
             var request = context.Request;
 
             var model = new ErrorPageModel
