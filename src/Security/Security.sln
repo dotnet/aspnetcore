@@ -136,6 +136,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IISIntegration", "..\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj", "{FD3AB895-2AF6-447D-82CF-DB002B491D23}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Integrated", "Integrated", "{A482E4FD-51C2-4061-8357-1E4757D6CF27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegratedAuthSample", "Authentication\Integrated\Samples\IntegratedAuthSample\IntegratedAuthSample.csproj", "{473D25BB-9F02-4BA4-A47A-729E239C06FD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -350,6 +354,10 @@ Global
 		{FD3AB895-2AF6-447D-82CF-DB002B491D23}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD3AB895-2AF6-447D-82CF-DB002B491D23}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD3AB895-2AF6-447D-82CF-DB002B491D23}.Release|Any CPU.Build.0 = Release|Any CPU
+		{473D25BB-9F02-4BA4-A47A-729E239C06FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{473D25BB-9F02-4BA4-A47A-729E239C06FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{473D25BB-9F02-4BA4-A47A-729E239C06FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{473D25BB-9F02-4BA4-A47A-729E239C06FD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -417,6 +425,8 @@ Global
 		{5B2F3890-198E-4BE8-8464-10B4D97F976A} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{71961A8D-B26F-46AE-A475-D00425D875A0} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{FD3AB895-2AF6-447D-82CF-DB002B491D23} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
+		{A482E4FD-51C2-4061-8357-1E4757D6CF27} = {79C549BA-2932-450A-B87D-635879361343}
+		{473D25BB-9F02-4BA4-A47A-729E239C06FD} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}

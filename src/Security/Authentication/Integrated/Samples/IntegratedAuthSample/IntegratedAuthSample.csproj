@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore" />
+    <Reference Include="Microsoft.Extensions.Hosting" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!--<Reference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.4.4" />-->
+  </ItemGroup>
+
+</Project>
