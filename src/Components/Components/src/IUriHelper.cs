@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components.Services
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Helpers for working with URIs and navigation state.

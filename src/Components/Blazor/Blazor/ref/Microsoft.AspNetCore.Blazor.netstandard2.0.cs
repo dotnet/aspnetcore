@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 }
 namespace Microsoft.AspNetCore.Blazor.Services
 {
-    public partial class WebAssemblyUriHelper : Microsoft.AspNetCore.Components.Services.UriHelperBase
+    public partial class WebAssemblyUriHelper : Microsoft.AspNetCore.Components.UriHelperBase
     {
         internal WebAssemblyUriHelper() { }
         public static readonly Microsoft.AspNetCore.Blazor.Services.WebAssemblyUriHelper Instance;
