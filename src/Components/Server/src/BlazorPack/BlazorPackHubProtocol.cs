@@ -17,9 +17,9 @@ using Microsoft.AspNetCore.SignalR.Protocol;
 namespace Microsoft.AspNetCore.Components.Server.BlazorPack
 {
     /// <summary>
-    /// Implements the SignalR Hub Protocol using MessagePack with limited type support. 
+    /// Implements the SignalR Hub Protocol using MessagePack with limited type support.
     /// </summary>
-    public class BlazorPackHubProtocol : IHubProtocol
+    internal sealed class BlazorPackHubProtocol : IHubProtocol
     {
         internal const string ProtocolName = "blazorpack";
         private const int ErrorResult = 1;
