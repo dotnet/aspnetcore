@@ -224,41 +224,41 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         public class ExceptionMessageFilter : IDeveloperPageExceptionFilter
         {
-            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            public Task HandleExceptionAsync(ErrorContext context, Func<ErrorContext, Task> next)
             {
-                return context.Response.WriteAsync(exception.Message);
+                return context.HttpContext.Response.WriteAsync(context.Exception.Message);
             }
         }
 
         public class ExceptionToStringFilter : IDeveloperPageExceptionFilter
         {
-            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            public Task HandleExceptionAsync(ErrorContext context, Func<ErrorContext, Task> next)
             {
-                return context.Response.WriteAsync(exception.ToString());
+                return context.HttpContext.Response.WriteAsync(context.Exception.ToString());
             }
         }
 
         public class AlwaysThrowSameMessageFilter : IDeveloperPageExceptionFilter
         {
-            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            public Task HandleExceptionAsync(ErrorContext context, Func<ErrorContext, Task> next)
             {
-                return context.Response.WriteAsync("An error occurred");
+                return context.HttpContext.Response.WriteAsync("An error occurred");
             }
         }
 
         public class AlwaysBadFormatExceptionFilter : IDeveloperPageExceptionFilter
         {
-            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            public Task HandleExceptionAsync(ErrorContext context, Func<ErrorContext, Task> next)
             {
-                return next(context, new FormatException("Bad format exception!"));
+                return next(new ErrorContext(context.HttpContext, new FormatException("Bad format exception!")));
             }
         }
 
         public class PassThroughExceptionFilter : IDeveloperPageExceptionFilter
         {
-            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            public Task HandleExceptionAsync(ErrorContext context, Func<ErrorContext, Task> next)
             {
-                return next(context, exception);
+                return next(context);
             }
         }
     }

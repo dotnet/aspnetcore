@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly IFileProvider _fileProvider;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
-        private readonly Func<HttpContext, Exception, Task> _exceptionHandler;
+        private readonly Func<ErrorContext, Task> _exceptionHandler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             foreach (var filter in filters.Reverse())
             {
                 var nextFilter = _exceptionHandler;
-                _exceptionHandler = (context, exception) => filter.HandleExceptionAsync(context, exception, nextFilter);
+                _exceptionHandler = errorContext => filter.HandleExceptionAsync(errorContext, nextFilter);
             }
         }
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                     context.Response.Clear();
                     context.Response.StatusCode = 500;
 
-                    await _exceptionHandler(context, ex);
+                    await _exceptionHandler(new ErrorContext(context, ex));
 
                     if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.UnhandledException"))
                     {
@@ -125,15 +125,15 @@ namespace Microsoft.AspNetCore.Diagnostics
         }
 
         // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
-        private Task DisplayException(HttpContext context, Exception ex)
+        private Task DisplayException(ErrorContext errorContext)
         {
-            var compilationException = ex as ICompilationException;
+            var compilationException = errorContext.Exception as ICompilationException;
             if (compilationException != null)
             {
-                return DisplayCompilationException(context, compilationException);
+                return DisplayCompilationException(errorContext.HttpContext, compilationException);
             }
 
-            return DisplayRuntimeException(context, ex);
+            return DisplayRuntimeException(errorContext.HttpContext, errorContext.Exception);
         }
 
         private Task DisplayCompilationException(
