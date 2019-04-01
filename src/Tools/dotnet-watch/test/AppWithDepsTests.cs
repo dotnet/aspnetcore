@@ -20,8 +20,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new AppWithDeps(logger);
         }
 
-        [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8267", FlakyOn.AzP.Linux, FlakyOn.AzP.macOS)]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task ChangeFileInDependency()
         {
             await _app.StartWatcherAsync();
