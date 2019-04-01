@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             var type = typeof(TestPageModel_InvalidProperties);
             var expected = $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.ModelState' of type '{typeof(ModelStateDictionary)}'." +
                 Environment.NewLine +
-                $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.Guid' of type '{typeof(Guid)}'.";
+                $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.TimeZone' of type '{typeof(TimeZoneInfo)}'.";
 
             var provider = CreateProvider();
             var context = CreateProviderContext(type);
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             public int SomeProperty { get; set; }
 
             [TempData]
-            public Guid Guid { get; set; }
+            public TimeZoneInfo TimeZone { get; set; }
         }
     }
 }

@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             var type = typeof(TestController_InvalidProperties);
             var expected = $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.ModelState' of type '{typeof(ModelStateDictionary)}'." +
                 Environment.NewLine +
-                $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.Guid' of type '{typeof(Guid)}'.";
+                $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.TimeZone' of type '{typeof(TimeZoneInfo)}'.";
             var provider = CreateProvider();
 
             var context = GetContext(type);
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             public int SomeProperty { get; set; }
 
             [TempData]
-            public Guid Guid { get; set; }
+            public TimeZoneInfo TimeZone { get; set; }
         }
     }
 }
