@@ -11,9 +11,6 @@
   <UsingTask TaskName="GetCurrentItems" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
   <UsingTask TaskName="GetFileReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
   <UsingTask TaskName="GetProjectReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
-  <UsingTask TaskName="GetUriReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
-  <UsingTask TaskName="Microsoft.Extensions.ApiDescription.Tasks.DownloadFile"
-      AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
 
   <!--
     Settings users may update as they see fit. All $(...Directory) values are interpreted relative to the client
@@ -25,11 +22,6 @@
     <ServiceProjectReferenceDirectory
         Condition="'$(ServiceProjectReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceProjectReferenceDirectory)'))</ServiceProjectReferenceDirectory>
 
-    <ServiceUriReferenceCheckIfNewer
-        Condition="'$(ServiceUriReferenceCheckIfNewer)' == ''">true</ServiceUriReferenceCheckIfNewer>
-    <ServiceUriReferenceDirectory
-        Condition="'$(ServiceUriReferenceDirectory)' != ''">$([MSBuild]::EnsureTrailingSlash('$(ServiceUriReferenceDirectory)'))</ServiceUriReferenceDirectory>
-
     <ServiceFileReferenceCheckIfNewer
         Condition="'$(ServiceFileReferenceCheckIfNewer)' == ''">true</ServiceFileReferenceCheckIfNewer>
     <ServiceFileReferenceDirectory
@@ -39,8 +31,8 @@
   </PropertyGroup>
 
   <!--
-    Well-known metadata of the code and document generator item groups. ServiceProjectReference and ServiceUriReference
-    items may also include ServiceFileReference metadata.
+    Well-known metadata of the code and document generator item groups. ServiceProjectReference items may also include
+    ServiceFileReference metadata.
   -->
   <ItemDefinitionGroup>
     <ServiceProjectReference>
@@ -106,14 +98,6 @@
       -->
       <Service />
     </ServiceProjectReference>
-
-    <ServiceUriReference>
-      <!--
-        Full path where the API description document is placed. Default filename is based on %(Identity).
-        Filenames and relative paths (if explicitly set) are combined with $(ServiceUriReferenceDirectory).
-      -->
-      <DocumentPath />
-    </ServiceUriReference>
 
     <ServiceFileReference>
       <!-- Name of the class to generate. Defaults to match final segment of %(OutputPath). -->
