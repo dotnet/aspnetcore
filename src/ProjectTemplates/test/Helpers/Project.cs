@@ -30,6 +30,12 @@ namespace Templates.Test.Helpers
         public string TemplateBuildDir => Path.Combine(TemplateOutputDir, "bin", "Debug", DefaultFramework);
         public string TemplatePublishDir => Path.Combine(TemplateOutputDir, "bin", "Release", DefaultFramework, "publish");
 
+        private string TemplateServerDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Server");
+        private string TemplateClientDir => Path.Combine(TemplateOutputDir, $"{ProjectName}.Client");
+        public string TemplateClientDebugDir => Path.Combine(TemplateClientDir, "bin", "Debug", DefaultFramework);
+        public string TemplateClientReleaseDir => Path.Combine(TemplateClientDir, "bin", "Release", DefaultFramework, "publish");
+        public string TemplateServerReleaseDir => Path.Combine(TemplateServerDir, "bin", "Release", DefaultFramework, "publish");
+
         public ITestOutputHelper Output { get; set; }
         public IMessageSink DiagnosticsMessageSink { get; set; }
 
@@ -127,11 +133,57 @@ namespace Templates.Test.Helpers
             }
         }
 
+        internal AspNetProcess StartBuiltServerAsync()
+        {
+            var environment = new Dictionary<string, string>
+            {
+                ["ASPNETCORE_ENVIRONMENT"] = "Development"
+            };
+
+            var projectDll = Path.Combine(TemplateServerDir, $"{ProjectName}.Server.dll");
+            return new AspNetProcess(Output, TemplateServerDir, projectDll, environment, useExec: false);
+        }
+
+        internal AspNetProcess StartBuiltClientAsync(AspNetProcess serverProcess)
+        {
+            var environment = new Dictionary<string, string>
+            {
+                ["ASPNETCORE_ENVIRONMENT"] = "Development"
+            };
+
+            var projectDll = Path.Combine(TemplateClientDebugDir, $"{ProjectName}.Client.dll {serverProcess.ListeningUri.Port}");
+            return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: false);
+        }
+
+        internal AspNetProcess StartPublishedServerAsync()
+        {
+            var environment = new Dictionary<string, string>
+            {
+                ["ASPNETCORE_URLS"] = _urls,
+            };
+
+            var projectDll = $"{ProjectName}.Server.dll";
+            return new AspNetProcess(Output, TemplateServerReleaseDir, projectDll, environment);
+        }
+
+        internal AspNetProcess StartPublishedClientAsync()
+        {
+            var environment = new Dictionary<string, string>
+            {
+                ["ASPNETCORE_URLS"] = _urls,
+            };
+
+            var projectDll = $"{ProjectName}.Client.dll";
+            return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
+        }
+
+        private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
+
         internal AspNetProcess StartBuiltProjectAsync()
         {
             var environment = new Dictionary<string, string>
             {
-                ["ASPNETCORE_URLS"] = $"http://127.0.0.1:0;https://127.0.0.1:0",
+                ["ASPNETCORE_URLS"] = _urls,
                 ["ASPNETCORE_ENVIRONMENT"] = "Development"
             };
 
@@ -143,7 +195,7 @@ namespace Templates.Test.Helpers
         {
             var environment = new Dictionary<string, string>
             {
-                ["ASPNETCORE_URLS"] = $"http://127.0.0.1:0;https://127.0.0.1:0",
+                ["ASPNETCORE_URLS"] = _urls,
             };
 
             var projectDll = $"{ProjectName}.dll";

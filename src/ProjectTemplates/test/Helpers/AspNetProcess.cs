@@ -23,17 +23,19 @@ namespace Templates.Test.Helpers
     public class AspNetProcess : IDisposable
     {
         private const string ListeningMessagePrefix = "Now listening on: ";
-        private readonly Uri _listeningUri;
         private readonly HttpClient _httpClient;
         private readonly ITestOutputHelper _output;
 
+        internal readonly Uri ListeningUri;
         internal ProcessEx Process { get; }
 
         public AspNetProcess(
             ITestOutputHelper output,
             string workingDirectory,
             string dllPath,
-            IDictionary<string, string> environmentVariables)
+            IDictionary<string, string> environmentVariables,
+            bool useExec = true,
+            bool hasListeningUri = true)
         {
             _output = output;
             _httpClient = new HttpClient(new HttpClientHandler()
@@ -50,17 +52,20 @@ namespace Templates.Test.Helpers
             var now = DateTimeOffset.Now;
             new CertificateManager().EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1));
 
-
             output.WriteLine("Running ASP.NET application...");
 
-            Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: environmentVariables);
-            _listeningUri = GetListeningUri(output);
+            var arguments = useExec ? $"exec {dllPath}" : "run";
+            Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
+            if(hasListeningUri)
+            {
+                ListeningUri = GetListeningUri(output);
+            }
         }
 
         public void VisitInBrowser(IWebDriver driver)
         {
-            _output.WriteLine($"Opening browser at {_listeningUri}...");
-            driver.Navigate().GoToUrl(_listeningUri);
+            _output.WriteLine($"Opening browser at {ListeningUri}...");
+            driver.Navigate().GoToUrl(ListeningUri);
 
             if (driver is EdgeDriver)
             {
@@ -76,7 +81,7 @@ namespace Templates.Test.Helpers
                     {
                         _output.WriteLine($"Clicking on link '{continueLink.Text}' to skip invalid certificate error page.");
                         continueLink.Click();
-                        driver.Navigate().GoToUrl(_listeningUri);
+                        driver.Navigate().GoToUrl(ListeningUri);
                     }
                     else
                     {
@@ -99,7 +104,7 @@ namespace Templates.Test.Helpers
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                new Uri(_listeningUri, page.Url));
+                new Uri(ListeningUri, page.Url));
 
             var response = await _httpClient.SendAsync(request);
 
@@ -179,14 +184,14 @@ namespace Templates.Test.Helpers
 
         internal Task<HttpResponseMessage> SendRequest(string path)
         {
-            return _httpClient.GetAsync(new Uri(_listeningUri, path));
+            return _httpClient.GetAsync(new Uri(ListeningUri, path));
         }
 
         public async Task AssertStatusCode(string requestUrl, HttpStatusCode statusCode, string acceptContentType = null)
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                new Uri(_listeningUri, requestUrl));
+                new Uri(ListeningUri, requestUrl));
 
             if (!string.IsNullOrEmpty(acceptContentType))
             {

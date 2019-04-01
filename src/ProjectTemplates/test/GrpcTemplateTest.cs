@@ -21,7 +21,7 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/7973")]
         public async Task GrpcTemplate()
         {
             Project = await ProjectFactory.GetOrCreateProject("grpc", Output);
@@ -35,18 +35,36 @@ namespace Templates.Test
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            using (var serverProcess = Project.StartBuiltServerAsync())
             {
                 Assert.False(
-                    aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+                    serverProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built server", Project, serverProcess.Process));
+
+                using (var clientProcess = Project.StartBuiltClientAsync(serverProcess))
+                {
+                    // Wait for the client to do its thing
+                    System.Threading.Thread.Sleep(100);
+                    Assert.False(
+                        clientProcess.Process.HasExited,
+                        ErrorMessages.GetFailedProcessMessageOrEmpty("Run built client", Project, clientProcess.Process));
+                }
             }
 
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            using (var aspNetProcess = Project.StartPublishedServerAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published server", Project, aspNetProcess.Process));
+
+                using (var clientProcess = Project.StartPublishedClientAsync())
+                {
+                    // Wait for the client to do its thing
+                    System.Threading.Thread.Sleep(100);
+                    Assert.False(
+                        clientProcess.Process.HasExited,
+                        ErrorMessages.GetFailedProcessMessageOrEmpty("Run built client", Project, clientProcess.Process));
+                }
             }
         }
     }
