@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
         public TransferFormat TransferFormat => TransferFormat.Binary;
 
         /// <inheritdoc />
-        public virtual bool IsVersionSupported(int version)
+        public bool IsVersionSupported(int version)
         {
             return version == Version;
         }

@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 message: CompletionMessage.WithResult("xyz", payload: TestEnum.One),
                 binary: "lQOAo3h5egOjT25l"),
 
-             // Invocation messages
+            // Invocation messages
             new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdAndSingleNullArg",
                 message: new InvocationMessage("method", new object[] { null }),
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 name: "InvocationWithNoHeadersNoIdIntAndEnumArgs",
                 message: new InvocationMessage("method", new object[] { 42, TestEnum.One }),
                 binary: "lgGAwKZtZXRob2SSKqNPbmWQ"),
-             new ProtocolTestData(
+            new ProtocolTestData(
                 name: "InvocationWithNoHeadersNoIdAndCustomObjectArg",
                 message: new InvocationMessage("method", new object[] { 42, "string", new CustomObject() }),
                 binary: "lgGAwKZtZXRob2STKqZzdHJpbmeGqlN0cmluZ1Byb3CoU2lnbmFsUiGqRG91YmxlUHJvcMtAGSH7VELPEqdJbnRQcm9wKqxEYXRlVGltZVByb3DW/1jsHICoTnVsbFByb3DAq0J5dGVBcnJQcm9wxAMBAgOQ"),
