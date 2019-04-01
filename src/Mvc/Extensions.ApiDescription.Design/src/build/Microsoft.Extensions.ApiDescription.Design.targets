@@ -187,7 +187,7 @@
             Condition="'%(GenerateDefaultDocumentOptions)' == ''">$(GenerateDefaultDocumentDefaultOptions)</GenerateDefaultDocumentOptions>
       </CurrentServiceProjectReference>
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
-        <Command>%(Command) --framework %(TargetFramework) --output %(DocumentPath)</Command>
+        <Command>%(Command) --documentName %(DocumentName) --framework %(TargetFramework) --output %(DocumentPath)</Command>
       </CurrentServiceProjectReference>
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
         <Command Condition="'%(Method)' != ''">%(Command) --method %(Method)</Command>
