@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>
         /// The <see cref="ILogger"/> used to log messages.
         /// </value>
-        public virtual ILogger Logger { get; set; }
+        public ILogger Logger { get; set; }
         
         /// <summary>
         /// Called when the security stamp has been verified.
