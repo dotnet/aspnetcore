@@ -63,6 +63,12 @@ namespace Microsoft.AspNetCore.Diagnostics
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
+    public partial class ErrorContext
+    {
+        public ErrorContext(Microsoft.AspNetCore.Http.HttpContext httpContext, System.Exception exception) { }
+        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public partial class ExceptionHandlerFeature : Microsoft.AspNetCore.Diagnostics.IExceptionHandlerFeature, Microsoft.AspNetCore.Diagnostics.IExceptionHandlerPathFeature
     {
         public ExceptionHandlerFeature() { }
@@ -77,7 +83,7 @@ namespace Microsoft.AspNetCore.Diagnostics
     }
     public partial interface IDeveloperPageExceptionFilter
     {
-        System.Threading.Tasks.Task HandleExceptionAsync(Microsoft.AspNetCore.Http.HttpContext context, System.Exception exception, System.Func<Microsoft.AspNetCore.Http.HttpContext, System.Exception, System.Threading.Tasks.Task> next);
+        System.Threading.Tasks.Task HandleExceptionAsync(Microsoft.AspNetCore.Diagnostics.ErrorContext errorContext, System.Func<Microsoft.AspNetCore.Diagnostics.ErrorContext, System.Threading.Tasks.Task> next);
     }
     public partial class StatusCodeContext
     {
