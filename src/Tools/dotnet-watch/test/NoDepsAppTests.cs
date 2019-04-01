@@ -25,8 +25,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _output = logger;
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task RestartProcessOnFileChange()
         {
             await _app.StartWatcherAsync(new[] { "--no-exit" });

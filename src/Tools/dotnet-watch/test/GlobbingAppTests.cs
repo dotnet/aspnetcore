@@ -22,10 +22,9 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app = new GlobbingApp(logger);
         }
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         [InlineData(true)]
         [InlineData(false)]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
             _app.UsePollingWatcher = usePollingWatcher;
@@ -43,8 +42,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(2, types);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task DeleteCompiledFile()
         {
             await _app.StartWatcherAsync();
@@ -60,8 +58,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task DeleteSourceFolder()
         {
             await _app.StartWatcherAsync();

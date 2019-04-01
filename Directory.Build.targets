@@ -90,7 +90,7 @@
     <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />
     <KnownFrameworkReference Remove="Microsoft.WindowsDesktop.App" />
 
-    <KnownFrameworkReference Update="Microsoft.AspNetCore.App">
+    <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' == 'true'" Update="Microsoft.AspNetCore.App">
       <LatestRuntimeFrameworkVersion>$(SharedFxVersion)</LatestRuntimeFrameworkVersion>
       <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
       <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion>
