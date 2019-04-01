@@ -3,15 +3,14 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
@@ -44,6 +43,88 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.NotNull(listener.DiagnosticUnhandledException?.Exception);
             Assert.Null(listener.DiagnosticHandledException?.HttpContext);
             Assert.Null(listener.DiagnosticHandledException?.Exception);
+        }
+
+        [Fact]
+        public async Task ExceptionPageFiltersAreApplied()
+        {
+            // Arrange
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
+                })
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var response = await server.CreateClient().GetAsync("/path");
+
+            // Assert
+            Assert.Equal("Test exception", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ExceptionFilterCallingNextWorks()
+        {
+            // Arrange
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<IDeveloperPageExceptionFilter, PassThroughExceptionFilter>();
+                    services.AddSingleton<IDeveloperPageExceptionFilter, AlwaysBadFormatExceptionFilter>();
+                    services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
+                })
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var response = await server.CreateClient().GetAsync("/path");
+
+            // Assert
+            Assert.Equal("Bad format exception!", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ExceptionPageFiltersAreAppliedInOrder()
+        {
+            // Arrange
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<IDeveloperPageExceptionFilter, AlwaysThrowSameMessageFilter>();
+                    services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionMessageFilter>();
+                    services.AddSingleton<IDeveloperPageExceptionFilter, ExceptionToStringFilter>();
+                })
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var response = await server.CreateClient().GetAsync("/path");
+
+            // Assert
+            Assert.Equal("An error occurred", await response.Content.ReadAsStringAsync());
         }
 
         public static TheoryData CompilationExceptionData
@@ -139,6 +220,46 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
 
             public IEnumerable<CompilationFailure> CompilationFailures { get; }
+        }
+
+        public class ExceptionMessageFilter : IDeveloperPageExceptionFilter
+        {
+            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            {
+                return context.Response.WriteAsync(exception.Message);
+            }
+        }
+
+        public class ExceptionToStringFilter : IDeveloperPageExceptionFilter
+        {
+            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            {
+                return context.Response.WriteAsync(exception.ToString());
+            }
+        }
+
+        public class AlwaysThrowSameMessageFilter : IDeveloperPageExceptionFilter
+        {
+            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            {
+                return context.Response.WriteAsync("An error occurred");
+            }
+        }
+
+        public class AlwaysBadFormatExceptionFilter : IDeveloperPageExceptionFilter
+        {
+            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            {
+                return next(context, new FormatException("Bad format exception!"));
+            }
+        }
+
+        public class PassThroughExceptionFilter : IDeveloperPageExceptionFilter
+        {
+            public Task HandleExceptionAsync(HttpContext context, Exception exception, Func<HttpContext, Exception, Task> next)
+            {
+                return next(context, exception);
+            }
         }
     }
 }

@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly IFileProvider _fileProvider;
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
+        private readonly Func<HttpContext, Exception, Task> _exceptionHandler;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -40,12 +41,14 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <param name="loggerFactory"></param>
         /// <param name="hostingEnvironment"></param>
         /// <param name="diagnosticSource"></param>
+        /// <param name="filters"></param>
         public DeveloperExceptionPageMiddleware(
             RequestDelegate next,
             IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
             IWebHostEnvironment hostingEnvironment,
-            DiagnosticSource diagnosticSource)
+            DiagnosticSource diagnosticSource,
+            IEnumerable<IDeveloperPageExceptionFilter> filters)
         {
             if (next == null)
             {
@@ -63,6 +66,13 @@ namespace Microsoft.AspNetCore.Diagnostics
             _fileProvider = _options.FileProvider ?? hostingEnvironment.ContentRootFileProvider;
             _diagnosticSource = diagnosticSource;
             _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _options.SourceCodeLineCount);
+            _exceptionHandler = DisplayException;
+
+            foreach (var filter in filters.Reverse())
+            {
+                var nextFilter = _exceptionHandler;
+                _exceptionHandler = (context, exception) => filter.HandleExceptionAsync(context, exception, nextFilter);
+            }
         }
 
         /// <summary>
@@ -91,7 +101,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                     context.Response.Clear();
                     context.Response.StatusCode = 500;
 
-                    await DisplayException(context, ex);
+                    await _exceptionHandler(context, ex);
 
                     if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.UnhandledException"))
                     {
