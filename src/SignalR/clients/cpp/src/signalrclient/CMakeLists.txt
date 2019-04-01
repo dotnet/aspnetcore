@@ -4,12 +4,13 @@ set (SOURCES
   callback_manager.cpp
   connection.cpp
   connection_impl.cpp
+  default_http_client.cpp
   default_websocket_client.cpp
   http_sender.cpp
   hub_connection.cpp
   hub_connection_impl.cpp
   logger.cpp
-  request_sender.cpp
+  negotiate.cpp
   signalr_client_config.cpp
   stdafx.cpp
   trace_log_writer.cpp

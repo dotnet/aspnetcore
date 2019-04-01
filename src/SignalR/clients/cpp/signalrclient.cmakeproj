@@ -4,6 +4,7 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
+    <ExtraCMakeArgs Condition=" '$(TargetOsName)' == 'win' ">-A $(TargetArchitecture)</ExtraCMakeArgs>
   </PropertyGroup>
 
   <Target Name="Restore" />
@@ -11,7 +12,7 @@
 
   <Target Name="Build">
     <MakeDir Directories="$(MSBuildThisFileDirectory)build.$(Configuration)" />
-    <Exec Command="cmake .. -A x64 -DCMAKE_TOOLCHAIN_FILE=$(MSBuildThisFileDirectory)../../../submodules/vcpkg/scripts/buildsystems/vcpkg.cmake -DENABLE_TESTING=1 -DCMAKE_BUILD_TYPE=$(Configuration)" WorkingDirectory="$(MSBuildThisFileDirectory)build.$(Configuration)" />
+    <Exec Command="cmake .. $(ExtraCMakeArgs) -DCMAKE_TOOLCHAIN_FILE=$(MSBuildThisFileDirectory)../../../submodules/vcpkg/scripts/buildsystems/vcpkg.cmake -DENABLE_TESTING=1 -DCMAKE_BUILD_TYPE=$(Configuration)" WorkingDirectory="$(MSBuildThisFileDirectory)build.$(Configuration)" />
     <Exec Command="cmake --build . --config $(Configuration)" WorkingDirectory="$(MSBuildThisFileDirectory)build.$(Configuration)" />
   </Target>
 

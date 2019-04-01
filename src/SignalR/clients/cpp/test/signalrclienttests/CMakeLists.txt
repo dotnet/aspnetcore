@@ -9,9 +9,9 @@ set (SOURCES
   hub_exception_tests.cpp
   logger_tests.cpp
   memory_log_writer.cpp
-  request_sender_tests.cpp
   signalrclienttests.cpp
   stdafx.cpp
+  test_http_client.cpp
   test_transport_factory.cpp
   test_utils.cpp
   test_web_request_factory.cpp
