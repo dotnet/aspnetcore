@@ -52,6 +52,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.OAuth" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authorization" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Server" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.CookiePolicy" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Cors" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />

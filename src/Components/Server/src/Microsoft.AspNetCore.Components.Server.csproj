@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -14,7 +13,7 @@
     <IsPackable>false</IsPackable>
     <GenerateEmbeddedFilesManifest>false</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
   </ItemGroup>

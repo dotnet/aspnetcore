@@ -9,7 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Server" Version="${MicrosoftAspNetCoreComponentsServerPackageVersion}" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="${MicrosoftAspNetCoreMvcNewtonsoftJsonPackageVersion}" />
   </ItemGroup>
 
