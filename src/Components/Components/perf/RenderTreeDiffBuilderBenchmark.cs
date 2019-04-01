@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Components.Performance
         [Benchmark(Description = "RenderTreeDiffBuilder: Input and validation on a single form field.", Baseline = true)]
         public void ComputeDiff_SingleFormField()
         {
-            builder.Clear();
+            builder.ClearStateForCurrentBatch();
             var diff = RenderTreeDiffBuilder.ComputeDiff(renderer, builder, 0, original.GetFrames(), modified.GetFrames());
             GC.KeepAlive(diff);
         }
