@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="options">Used to access the <see cref="IdentityOptions"/>.</param>
         /// <param name="signInManager">The <see cref="SignInManager{TUser}"/>.</param>
         /// <param name="clock">The system clock.</param>
+        /// <param name="logger">The logger.</param>
         public SecurityStampValidator(IOptions<SecurityStampValidatorOptions> options, SignInManager<TUser> signInManager, ISystemClock clock, ILogger<SecurityStampValidator<TUser>> logger)
         {
             if (options == null)
