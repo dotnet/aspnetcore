@@ -395,6 +395,86 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncDoesNotStartIfTokenAlreadyCanceled(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+
+                    var cts = new CancellationTokenSource();
+                    cts.Cancel();
+
+                    var stream = connection.StreamAsync<int>("Stream", 5, cts.Token);
+
+                    var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                    {
+                        await foreach (var streamValue in stream)
+                        {
+                            Assert.True(false, "Expected an exception from the streaming invocation.");
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncWithException(string protocolName, HttpTransportType transportType, string path)
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var asyncEnumerable = connection.StreamAsync<int>("StreamException");
+                    var ex = await Assert.ThrowsAsync<HubException>(async () =>
+                    {
+                        await foreach (var streamValue in asyncEnumerable)
+                        {
+                            Assert.True(false, "Expected an exception from the streaming invocation.");
+                        }
+                    });
+
+                    Assert.Equal("An unexpected error occurred invoking 'StreamException' on the server. InvalidOperationException: Error occurred while streaming.", ex.Message);
+
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
         public async Task CanInvokeClientMethodFromServer(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];
