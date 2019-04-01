@@ -25,9 +25,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _output = logger;
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore/issues/8267")]
         [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8267", FlakyOn.AzP.Linux, FlakyOn.AzP.macOS)]
         public async Task RestartProcessOnFileChange()
         {
             await _app.StartWatcherAsync(new[] { "--no-exit" });
