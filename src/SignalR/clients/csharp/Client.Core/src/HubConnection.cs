@@ -439,62 +439,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 #if NETCOREAPP3_0
         public async IAsyncEnumerable<object> StreamAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
         {
-            async Task OnStreamCanceled(InvocationRequest irq)
-            {
-                // We need to take the connection lock in order to ensure we a) have a connection and b) are the only one accessing the write end of the pipe.
-                await WaitConnectionLockAsync();
-                try
-                {
-                    if (_connectionState != null)
-                    {
-                        Log.SendingCancellation(_logger, irq.InvocationId);
-
-                        // Fire and forget, if it fails that means we aren't connected anymore.
-                        _ = SendHubMessage(new CancelInvocationMessage(irq.InvocationId), irq.CancellationToken);
-                    }
-                    else
-                    {
-                        Log.UnableToSendCancellation(_logger, irq.InvocationId);
-                    }
-                }
-                finally
-                {
-                    ReleaseConnectionLock();
-                }
-
-                // Cancel the invocation
-                irq.Dispose();
-            }
-
-            var readers = PackageStreamingParams(ref args, out var streamIds);
-
-            CheckDisposed();
-            await WaitConnectionLockAsync();
-
-            ChannelReader<object> channel;
-            try
-            {
-                CheckDisposed();
-                CheckConnectionActive(nameof(StreamAsyncCore));
-                cancellationToken.ThrowIfCancellationRequested();
-
-                // I just want an excuse to use 'irq' as a variable name...
-                var irq = InvocationRequest.Stream(cancellationToken, returnType, _connectionState.GetNextId(), _loggerFactory, this, out channel);
-                await InvokeStreamCore(methodName, irq, args, streamIds?.ToArray(), cancellationToken);
-
-                if (cancellationToken.CanBeCanceled)
-                {
-                    cancellationToken.Register(state => _ = OnStreamCanceled((InvocationRequest)state), irq);
-                }
-            }
-            finally
-            {
-                ReleaseConnectionLock();
-            }
-
-            LaunchStreams(readers, cancellationToken);
-
-            //channel.ReadAllAsync() -> Returns IAsyncEnumerable
+           var channel = await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken);
 
             while (await channel.WaitToReadAsync())
             {
@@ -504,7 +449,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
         }
-
 #endif
 
         private async Task<ChannelReader<object>> StreamAsChannelCoreAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
