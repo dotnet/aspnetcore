@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 // this is currently ignored. Users should set o.ExpireTimeSpan instead
                 o.Cookie.Expiration = TimeSpan.FromDays(10);
             });
-            var options = services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>();.
+            var options = services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
             await Assert.ThrowsAsync<OptionsValidationException>(async () => options.Get(CookieAuthenticationDefaults.AuthenticationScheme));
         }
 
