@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "default_http_client.h"
+#include <thread>
 
 namespace signalr
 {
