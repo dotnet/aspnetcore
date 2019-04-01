@@ -392,68 +392,6 @@ namespace Microsoft.AspNetCore.Components
     }
     public static partial class RuntimeHelpers
     {
-        public static T TypeCheck<T>(System.Action value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.Forms.EditContext> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIChangeEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIClipboardEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIDataTransferItem> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIDragEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIErrorEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIFocusEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIKeyboardEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIPointerEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIProgressEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UITouchEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<Microsoft.AspNetCore.Components.UIWheelEventArgs> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<bool> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<System.DateTime> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<decimal> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<double> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<int> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<long> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<bool?> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<System.DateTime?> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<decimal?> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<double?> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<int?> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<long?> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<float?> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<object> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<float> value) { throw null; }
-        public static T TypeCheck<T>(System.Action<string> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.Forms.EditContext, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIChangeEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIClipboardEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIDataTransferItem, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIDragEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIErrorEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIFocusEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIKeyboardEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIMouseEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIPointerEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIProgressEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UITouchEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<Microsoft.AspNetCore.Components.UIWheelEventArgs, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<bool, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<System.DateTime, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<decimal, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<double, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<int, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<long, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<bool?, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<System.DateTime?, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<decimal?, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<double?, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<int?, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<long?, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<float?, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<object, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<float, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<string, System.Threading.Tasks.Task> value) { throw null; }
-        public static T TypeCheck<T>(System.Func<System.Threading.Tasks.Task> value) { throw null; }
         public static T TypeCheck<T>(T value) { throw null; }
     }
     public partial class UIChangeEventArgs : Microsoft.AspNetCore.Components.UIEventArgs
