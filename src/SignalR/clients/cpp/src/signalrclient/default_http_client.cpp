@@ -36,13 +36,13 @@ namespace signalr
             http_request.headers() = headers;
         }
 
-        auto milliseconds = std::chrono::milliseconds(request.timeout).count();
+        auto milliseconds = std::chrono::milliseconds(request.timeout);
         pplx::cancellation_token_source cts;
-        if (milliseconds != 0)
+        if (milliseconds.count() != 0)
         {
             pplx::create_task([milliseconds, cts]()
             {
-                pplx::wait((unsigned int)milliseconds);
+                std::this_thread::sleep_for(milliseconds);
                 cts.cancel();
             });
         }
