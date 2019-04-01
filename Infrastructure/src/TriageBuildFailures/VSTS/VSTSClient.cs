@@ -138,7 +138,8 @@ namespace TriageBuildFailures.VSTS
             }
             else
             {
-                throw new NotImplementedException("Unsupported url format");
+                _reporter.Warn($"Unsupported url format '{url}'");
+                return null;
             }
             var vstsUri = $"{project}/_apis/build/builds/{id}";
             var build = await MakeVSTSRequest<Build>(HttpMethod.Get, vstsUri, apiVersion: ApiVersion.V5_0_Preview5);
