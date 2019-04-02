@@ -60,7 +60,7 @@ namespace TriageBuildFailures.VSTS.Models
             }
         }
 
-        public DateTimeOffset StartDate => _release.CreatedOn;
+        public DateTimeOffset? StartDate => _release.CreatedOn;
 
         public Uri WebURL => _release._Links.Web.Href;
 
