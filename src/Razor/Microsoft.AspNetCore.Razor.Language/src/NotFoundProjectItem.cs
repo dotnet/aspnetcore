@@ -16,10 +16,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         /// <param name="basePath">The base path.</param>
         /// <param name="path">The path.</param>
-        public NotFoundProjectItem(string basePath, string path)
+        /// <param name="fileKind">The file kind</param>
+        public NotFoundProjectItem(string basePath, string path, string fileKind)
         {
             BasePath = basePath;
             FilePath = path;
+            FileKind = fileKind ?? FileKinds.GetFileKindFromFilePath(path);
         }
 
         /// <inheritdoc />
@@ -27,6 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         /// <inheritdoc />
         public override string FilePath { get; }
+
+        /// <inheritdoc />
+        public override string FileKind { get; }
 
         /// <inheritdoc />
         public override bool Exists => false;

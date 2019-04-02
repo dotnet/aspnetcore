@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Razor.Tools
@@ -28,12 +27,18 @@ namespace Microsoft.AspNetCore.Razor.Tools
             }
         }
 
+        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
         public override RazorProjectItem GetItem(string path)
+        {
+            return GetItem(path, fileKind: null);
+        }
+
+        public override RazorProjectItem GetItem(string path, string fileKind)
         {
             RazorProjectItem razorProjectItem = null;
             foreach (var fileSystem in FileSystems)
             {
-                razorProjectItem = fileSystem.GetItem(path);
+                razorProjectItem = fileSystem.GetItem(path, fileKind);
                 if (razorProjectItem != null && razorProjectItem.Exists)
                 {
                     return razorProjectItem;

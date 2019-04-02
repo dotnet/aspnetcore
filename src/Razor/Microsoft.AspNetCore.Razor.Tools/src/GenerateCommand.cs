@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Razor.Tools
             {
                 var inputItem = inputs[i];
 
-                var codeDocument = engine.Process(engine.FileSystem.GetItem(inputItem.FilePath));
+                var codeDocument = engine.Process(engine.FileSystem.GetItem(inputItem.FilePath, inputItem.FileKind));
                 var csharpDocument = codeDocument.GetCSharpDocument();
                 outputs[i] = new OutputItem(inputItem, csharpDocument);
             });

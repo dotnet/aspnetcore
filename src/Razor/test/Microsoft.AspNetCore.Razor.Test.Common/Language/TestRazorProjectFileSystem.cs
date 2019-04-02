@@ -28,11 +28,17 @@ namespace Microsoft.AspNetCore.Razor.Language
             throw new NotImplementedException();
         }
 
+        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
         public override RazorProjectItem GetItem(string path)
+        {
+            return GetItem(path, fileKind: null);
+        }
+
+        public override RazorProjectItem GetItem(string path, string fileKind)
         {
             if (!_lookup.TryGetValue(path, out var value))
             {
-                value = new NotFoundProjectItem("", path);
+                value = new NotFoundProjectItem("", path, fileKind);
             }
 
             return value;

@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 });
         }
 
-        public override RazorProjectItem GetItem(string path)
+        public override RazorProjectItem GetItem(string path, string fileKind)
         {
             var absoluteBasePath = NormalizeAndEnsureValidPath("/");
             var absolutePath = NormalizeAndEnsureValidPath(path);
@@ -58,7 +58,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var relativePhysicalPath = file.FullName.Substring(absoluteBasePath.Length + 1); // Include leading separator
             var filePath = "/" + relativePhysicalPath.Replace(Path.DirectorySeparatorChar, '/');
 
-            return new DefaultRazorProjectItem("/", filePath, relativePhysicalPath, fileKind: null, new FileInfo(absolutePath));
+            return new DefaultRazorProjectItem("/", filePath, relativePhysicalPath, fileKind, new FileInfo(absolutePath));
+        }
+
+        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
+        public override RazorProjectItem GetItem(string path)
+        {
+            return GetItem(path, fileKind: null);
         }
 
         protected override string NormalizeAndEnsureValidPath(string path)

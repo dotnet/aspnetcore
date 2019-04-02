@@ -59,20 +59,20 @@ namespace Microsoft.AspNetCore.Razor.Tools
             // Arrange
             var basePath = "base-path";
             var filePath = "file-path";
-            var file1 = new NotFoundProjectItem(basePath, filePath);
+            var file1 = new NotFoundProjectItem(basePath, filePath, fileKind: null);
             var file2 = new TestRazorProjectItem(filePath);
             RazorProjectItem nullItem = null;
             var fileSystem1 = Mock.Of<RazorProjectFileSystem>(
-                f => f.GetItem(filePath) == file1);
+                f => f.GetItem(filePath, null) == file1);
             var fileSystem2 = Mock.Of<RazorProjectFileSystem>(
-                f => f.GetItem(filePath) == nullItem);
+                f => f.GetItem(filePath, null) == nullItem);
             var fileSystem3 = Mock.Of<RazorProjectFileSystem>(
-                f => f.GetItem(filePath) == file2);
+                f => f.GetItem(filePath, null) == file2);
 
             var compositeRazorProjectFileSystem = new CompositeRazorProjectFileSystem(new[] { fileSystem1, fileSystem2, fileSystem3 });
 
             // Act
-            var result = compositeRazorProjectFileSystem.GetItem(filePath);
+            var result = compositeRazorProjectFileSystem.GetItem(filePath, fileKind: null);
 
             // Assert
             Assert.Same(file2, result);

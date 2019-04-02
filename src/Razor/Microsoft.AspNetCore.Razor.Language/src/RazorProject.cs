@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         /// <param name="basePath">The base path.</param>
         /// <returns>The sequence of <see cref="RazorProjectItem"/>.</returns>
+        /// <remarks>
+        /// Project items returned by this method have inferred FileKinds from their corresponding file paths.
+        /// </remarks>
         public abstract IEnumerable<RazorProjectItem> EnumerateItems(string basePath);
 
         /// <summary>
@@ -25,7 +28,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         /// <param name="path">The path.</param>
         /// <returns>The <see cref="RazorProjectItem"/>.</returns>
+        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
         public abstract RazorProjectItem GetItem(string path);
+
+        /// <summary>
+        /// Gets a <see cref="RazorProjectItem"/> for the specified path.
+        /// </summary>
+        /// <param name="path">The path.</param>
+        /// <param name="fileKind">The file kind</param>
+        /// <returns>The <see cref="RazorProjectItem"/>.</returns>
+        public abstract RazorProjectItem GetItem(string path, string fileKind);
 
         /// <summary>
         /// Gets the sequence of files named <paramref name="fileName"/> that are applicable to the specified path.
@@ -38,6 +50,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// traverses to the project root.
         /// e.g.
         /// /Views/Home/View.cshtml -> [ /Views/Home/FileName.cshtml, /Views/FileName.cshtml, /FileName.cshtml ]
+        /// 
+        /// Project items returned by this method have inferred FileKinds from their corresponding file paths.
         /// </remarks>
         public IEnumerable<RazorProjectItem> FindHierarchicalItems(string path, string fileName)
         {
@@ -56,6 +70,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// traverses to the <paramref name="basePath"/>.
         /// e.g.
         /// (/Views, /Views/Home/View.cshtml) -> [ /Views/Home/FileName.cshtml, /Views/FileName.cshtml ]
+        /// 
+        /// Project items returned by this method have inferred FileKinds from their corresponding file paths.
         /// </remarks>
         public virtual IEnumerable<RazorProjectItem> FindHierarchicalItems(string basePath, string path, string fileName)
         {
@@ -101,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.Append(fileName);
 
                 var itemPath = builder.ToString();
-                yield return GetItem(itemPath);
+                yield return GetItem(itemPath, fileKind: null);
             }
         }
 
