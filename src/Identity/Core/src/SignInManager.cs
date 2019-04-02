@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return user;
             }
-            Logger.LogDebug(4, "Failed to validate a security stamp.");
+            Logger.LogDebug(5, "Failed to validate a security stamp.");
             return null;
         }
 
