@@ -26,9 +26,9 @@ namespace Templates.Test
         [Fact]
         public async Task RazorComponentsTemplateWorks()
         {
-            Project = await ProjectFactory.GetOrCreateProject("razorcomponents", Output);
+            Project = await ProjectFactory.GetOrCreateProject("blazorserverside", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("razorcomponents");
+            var createResult = await Project.RunDotNetNewAsync("blazorserverside");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();

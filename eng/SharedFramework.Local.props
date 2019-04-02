@@ -73,6 +73,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Razor" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.ApiExplorer" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Components.Prerendering" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.Cors" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Mvc.DataAnnotations" />
@@ -87,5 +88,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Connections" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.SignalR" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Components.Server" />
   </ItemGroup>
 </Project>

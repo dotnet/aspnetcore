@@ -3,9 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Runtime server features for ASP.NET Core Components.</Description>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
-    <HasReferenceAssembly>false</HasReferenceAssembly>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -14,7 +14,7 @@
     <IsPackable>false</IsPackable>
     <GenerateEmbeddedFilesManifest>false</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
   </ItemGroup>
@@ -61,7 +61,7 @@
 
   <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
     <!-- We need .Browser.JS to build first so we can embed its .js output -->
-    <EmbeddedResource Include="..\..\Browser.JS\src\dist\components.server.js" LogicalName="_framework\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\Browser.JS\src\dist\blazor.server.js" LogicalName="_framework\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <Target Name="_EnsureBrowserJS" BeforeTargets="CoreCompile" Condition="'$(BuildNodeJS)' != 'false'">

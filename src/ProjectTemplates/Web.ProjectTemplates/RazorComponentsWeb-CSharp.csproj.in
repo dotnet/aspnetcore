@@ -8,8 +8,5 @@
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Components.Prerendering" Version="${MicrosoftAspNetCoreMvcComponentsPrerenderingPackageVersion}" />
-  </ItemGroup>
 
 </Project>

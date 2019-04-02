@@ -17,11 +17,18 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private IJSRuntime _jsRuntime;
         private readonly ILogger<RemoteUriHelper> _logger;
 
+        /// <summary>
+        /// Creates a new <see cref="RemoteUriHelper"/> instance.
+        /// </summary>
+        /// <param name="logger">The <see cref="ILogger{TCategoryName}"/>.</param>
         public RemoteUriHelper(ILogger<RemoteUriHelper> logger)
         {
             _logger = logger;
         }
 
+        /// <summary>
+        /// Gets or sets whether the circuit has an attached <see cref="IJSRuntime"/>.
+        /// </summary>
         public bool HasAttachedJSRuntime => _jsRuntime != null;
 
         /// <summary>
@@ -29,7 +36,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// </summary>
         /// <param name="uriAbsolute">The absolute URI of the current page.</param>
         /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
-        /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
         public override void InitializeState(string uriAbsolute, string baseUriAbsolute)
         {
             base.InitializeState(uriAbsolute, baseUriAbsolute);
@@ -39,8 +45,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// <summary>
         /// Initializes the <see cref="RemoteUriHelper"/>.
         /// </summary>
-        /// <param name="uriAbsolute">The absolute URI of the current page.</param>
-        /// <param name="baseUriAbsolute">The absolute base URI of the current page.</param>
         /// <param name="jsRuntime">The <see cref="IJSRuntime"/> to use for interoperability.</param>
         internal void AttachJsRuntime(IJSRuntime jsRuntime)
         {

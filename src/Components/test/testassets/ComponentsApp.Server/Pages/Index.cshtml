@@ -15,7 +15,7 @@
 
     <app>@(await Html.RenderComponentAsync<App>(new { Name="Guest" }))</app>
 
-    <script src="_framework/components.server.js" autostart="false"></script>
+    <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
         Blazor.start({
             configureSignalR: function (builder) {

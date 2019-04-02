@@ -11,7 +11,6 @@
     <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\Extensions.ApiDescription.Design\src\Microsoft.Extensions.ApiDescription.Design.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepositoryRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepositoryRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepositoryRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" RefProjectPath="$(RepositoryRoot)src\DefaultBuilder\ref\Microsoft.AspNetCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.JsonPatch" ProjectPath="$(RepositoryRoot)src\Features\JsonPatch\src\Microsoft.AspNetCore.JsonPatch.csproj" RefProjectPath="$(RepositoryRoot)src\Features\JsonPatch\ref\Microsoft.AspNetCore.JsonPatch.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Abstractions" ProjectPath="$(RepositoryRoot)src\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" RefProjectPath="$(RepositoryRoot)src\DataProtection\Abstractions\ref\Microsoft.AspNetCore.DataProtection.Abstractions.csproj" />
@@ -130,5 +129,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Server" ProjectPath="$(RepositoryRoot)src\Components\Blazor\Server\src\Microsoft.AspNetCore.Blazor.Server.csproj" RefProjectPath="$(RepositoryRoot)src\Components\Blazor\Server\ref\Microsoft.AspNetCore.Blazor.Server.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Browser" ProjectPath="$(RepositoryRoot)src\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj" RefProjectPath="$(RepositoryRoot)src\Components\Browser\ref\Microsoft.AspNetCore.Components.Browser.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepositoryRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" RefProjectPath="$(RepositoryRoot)src\Components\Components\ref\Microsoft.AspNetCore.Components.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepositoryRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" RefProjectPath="$(RepositoryRoot)src\Components\Server\ref\Microsoft.AspNetCore.Components.Server.csproj" />
   </ItemGroup>
 </Project>

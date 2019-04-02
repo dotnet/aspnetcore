@@ -8,8 +8,8 @@ module.exports = (env, args) => ({
         rules: [{ test: /\.ts?$/, loader: 'ts-loader' }]
     },
     entry: {
-        'components.webassembly': './Boot.WebAssembly.ts',
-        'components.server': './Boot.Server.ts',
+        'blazor.webassembly': './Boot.WebAssembly.ts',
+        'blazor.server': './Boot.Server.ts',
     },
     output: { path: path.join(__dirname, '/dist'), filename: '[name].js' }
 });

@@ -21,7 +21,7 @@ namespace RazorComponentsWeb_CSharp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRazorPages();
-            services.AddRazorComponents();
+            services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
         }
 
@@ -50,7 +50,7 @@ namespace RazorComponentsWeb_CSharp
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapComponentHub();
+                endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
         }

@@ -17,7 +17,7 @@ namespace ComponentsApp.Server
         {
             services.AddMvc();
             services.AddSingleton<CircuitHandler, LoggingCircuitHandler>();
-            services.AddRazorComponents();
+            services.AddServerSideBlazor();
 
             services.AddSingleton<WeatherForecastService, DefaultWeatherForecastService>();
         }
@@ -37,7 +37,7 @@ namespace ComponentsApp.Server
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllers();
-                endpoints.MapComponentHub();
+                endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/Index");
             });
         }

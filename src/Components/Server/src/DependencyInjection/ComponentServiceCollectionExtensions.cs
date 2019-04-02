@@ -23,7 +23,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddRazorComponents(this IServiceCollection services)
+        public static IServiceCollection AddServerSideBlazor(this IServiceCollection services)
         {
             services.AddSignalR()
                 .AddHubOptions<ComponentHub>(options =>

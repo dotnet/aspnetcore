@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange & Act
             var client = CreateClient(Factory
-                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents())));
+                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
             var response = await client.GetAsync("http://localhost/components");
 
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task Renders_RoutingComponent()
         {
             // Arrange & Act
-            var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents())));
+            var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
             var response = await client.GetAsync("http://localhost/components/routable");
 
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange & Act
             var client = CreateClient(Factory
-                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents())));
+                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
             var response = await client.GetAsync("http://localhost/components/routable");
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange & Act
             var client = CreateClient(Factory
-                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents())));
+                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
             var response = await client.GetAsync("http://localhost/components/false");
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange & Act
             var client = CreateClient(Factory
-                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents())));
+                .WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
             var response = await client.GetAsync("http://localhost/components/routable/false");
 
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task Renders_ThrowingComponent_UsingRazorComponents_Prerenderer()
         {
             // Arrange & Act
-            var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddRazorComponents())));
+            var client = CreateClient(Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor())));
 
             var response = await client.GetAsync("http://localhost/components/throws");
 
