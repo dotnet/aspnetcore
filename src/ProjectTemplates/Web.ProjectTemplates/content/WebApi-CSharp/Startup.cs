@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 #if (IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 #endif
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
