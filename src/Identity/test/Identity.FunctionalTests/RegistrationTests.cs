@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -35,6 +36,59 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
 
             // Act & Assert
             await UserStories.RegisterNewUserAsync(client, userName, password);
+        }
+
+        [Fact]
+        public async Task CanRegisterAUserWithRequiredConfirmation()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) { services.Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedAccount = true); };
+
+            var server = ServerFactory
+                    .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+            var client = server.CreateClient();
+            var client2 = server.CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            // Act & Assert
+            var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password);
+
+            // Since we aren't confirmed yet, login should fail until we confirm
+            await UserStories.LoginFailsWithWrongPasswordAsync(client, userName, password);
+            await register.ClickConfirmLinkAsync();
+            await UserStories.LoginExistingUserAsync(client, userName, password);
+        }
+
+        private class FakeEmailSender : IEmailSender
+        {
+            public Task SendEmailAsync(string email, string subject, string htmlMessage)
+                => Task.CompletedTask;
+        }
+
+        [Fact]
+        public async Task RegisterWithRealConfirmationDoesNotShowLink()
+        {
+            // Arrange
+            void ConfigureTestServices(IServiceCollection services) {
+                services.Configure<IdentityOptions>(o => o.SignIn.RequireConfirmedAccount = true);
+                services.AddSingleton<IEmailSender, FakeEmailSender>();
+            };
+
+            var server = ServerFactory
+                    .WithWebHostBuilder(whb => whb.ConfigureServices(ConfigureTestServices));
+            var client = server.CreateClient();
+            var client2 = server.CreateClient();
+
+            var userName = $"{Guid.NewGuid()}@example.com";
+            var password = $"!Test.Password1$";
+
+            // Act & Assert
+            var register = await UserStories.RegisterNewUserAsyncWithConfirmation(client, userName, password, hasRealEmailSender: true);
+
+            // Since we aren't confirmed yet, login should fail until we confirm
+            await UserStories.LoginFailsWithWrongPasswordAsync(client, userName, password);
         }
 
         [Fact]

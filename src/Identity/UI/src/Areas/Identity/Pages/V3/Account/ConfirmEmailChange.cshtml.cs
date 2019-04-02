@@ -8,14 +8,15 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
+
 {
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
     [AllowAnonymous]
-    [IdentityDefaultUI(typeof(ConfirmEmailModel<>))]
-    public abstract class ConfirmEmailModel : PageModel
+    [IdentityDefaultUI(typeof(ConfirmEmailChangeModel<>))]
+    public abstract class ConfirmEmailChangeModel : PageModel
     {
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -28,21 +29,23 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Task<IActionResult> OnGetAsync(string userId, string code) => throw new NotImplementedException();
+        public virtual Task<IActionResult> OnGetAsync(string userId, string email, string code) => throw new NotImplementedException();
     }
 
-    internal class ConfirmEmailModel<TUser> : ConfirmEmailModel where TUser : class
+    internal class ConfirmEmailChangeModel<TUser> : ConfirmEmailChangeModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
+        private readonly SignInManager<TUser> _signInManager;
 
-        public ConfirmEmailModel(UserManager<TUser> userManager)
+        public ConfirmEmailChangeModel(UserManager<TUser> userManager, SignInManager<TUser> signInManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
-        public override async Task<IActionResult> OnGetAsync(string userId, string code)
+        public override async Task<IActionResult> OnGetAsync(string userId, string email, string code)
         {
-            if (userId == null || code == null)
+            if (userId == null || email == null || code == null)
             {
                 return RedirectToPage("/Index");
             }
@@ -53,8 +56,24 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
                 return NotFound($"Unable to load user with ID '{userId}'.");
             }
 
-            var result = await _userManager.ConfirmEmailAsync(user, code);
-            StatusMessage = result.Succeeded ? "Thank you for confirming your email." : "Error confirming your email.";
+            var result = await _userManager.ChangeEmailAsync(user, email, code);
+            if (!result.Succeeded)
+            {
+                StatusMessage = "Error changing email.";
+                return Page();
+            }
+
+            // In our UI email and user name are one and the same, so when we update the email
+            // we need to update the user name.
+            var setUserNameResult = await _userManager.SetUserNameAsync(user, email);
+            if (!setUserNameResult.Succeeded)
+            {
+                StatusMessage = "Error changing user name.";
+                return Page();
+            }
+
+            await _signInManager.RefreshSignInAsync(user);
+            StatusMessage = "Thank you for confirming your email change.";
             return Page();
         }
     }

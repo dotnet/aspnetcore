@@ -2,54 +2,47 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
-
+namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Manage.Internal
 {
     /// <summary>
     ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
     ///     directly from your code. This API may change or be removed in future releases.
     /// </summary>
-    [AllowAnonymous]
-    [IdentityDefaultUI(typeof(LoginModel<>))]
-    public abstract class LoginModel : PageModel
+    [IdentityDefaultUI(typeof(EmailModel<>))]
+    public abstract class EmailModel : PageModel
     {
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        [BindProperty]
-        public InputModel Input { get; set; }
+        public string Email { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public IList<AuthenticationScheme> ExternalLogins { get; set; }
-
-        /// <summary>
-        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-        ///     directly from your code. This API may change or be removed in future releases.
-        /// </summary>
-        public string ReturnUrl { get; set; }
+        public bool IsEmailConfirmed { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
         [TempData]
-        public string ErrorMessage { get; set; }
+        public string StatusMessage { get; set; }
+
+        /// <summary>
+        ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
+        ///     directly from your code. This API may change or be removed in future releases.
+        /// </summary>
+        [BindProperty]
+        public InputModel Input { get; set; }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -63,35 +56,21 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
             /// </summary>
             [Required]
             [EmailAddress]
-            public string Email { get; set; }
-
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Required]
-            [DataType(DataType.Password)]
-            public string Password { get; set; }
-
-            /// <summary>
-            ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
-            ///     directly from your code. This API may change or be removed in future releases.
-            /// </summary>
-            [Display(Name = "Remember me?")]
-            public bool RememberMe { get; set; }
+            [Display(Name = "New email")]
+            public string NewEmail { get; set; }
         }
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Task OnGetAsync(string returnUrl = null) => throw new NotImplementedException();
+        public virtual Task<IActionResult> OnGetAsync() => throw new NotImplementedException();
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
         ///     directly from your code. This API may change or be removed in future releases.
         /// </summary>
-        public virtual Task<IActionResult> OnPostAsync(string returnUrl = null) => throw new NotImplementedException();
+        public virtual Task<IActionResult> OnPostAsync() => throw new NotImplementedException();
 
         /// <summary>
         ///     This API supports the ASP.NET Core Identity default UI infrastructure and is not intended to be used
@@ -100,74 +79,77 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
         public virtual Task<IActionResult> OnPostSendVerificationEmailAsync() => throw new NotImplementedException();
     }
 
-    internal class LoginModel<TUser> : LoginModel where TUser : class
+    internal class EmailModel<TUser> : EmailModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
         private readonly SignInManager<TUser> _signInManager;
-        private readonly ILogger<LoginModel> _logger;
         private readonly IEmailSender _emailSender;
 
-        public LoginModel(SignInManager<TUser> signInManager, ILogger<LoginModel> logger,
+        public EmailModel(
             UserManager<TUser> userManager,
+            SignInManager<TUser> signInManager,
             IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _emailSender = emailSender;
-            _logger = logger;
         }
 
-        public override async Task OnGetAsync(string returnUrl = null)
+        public override async Task<IActionResult> OnGetAsync()
         {
-            if (!string.IsNullOrEmpty(ErrorMessage))
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
             {
-                ModelState.AddModelError(string.Empty, ErrorMessage);
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
+            var email = await _userManager.GetEmailAsync(user);
 
-            returnUrl = returnUrl ?? Url.Content("~/");
+            Email = email;
 
-            // Clear the existing external cookie to ensure a clean login process
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
-            ReturnUrl = returnUrl;
-        }
-
-        public override async Task<IActionResult> OnPostAsync(string returnUrl = null)
-        {
-            returnUrl = returnUrl ?? Url.Content("~/");
-
-            ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-
-            if (ModelState.IsValid)
+            Input = new InputModel
             {
-                // This doesn't count login failures towards account lockout
-                // To enable password failures to trigger account lockout, set lockoutOnFailure: true
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
-                if (result.Succeeded)
-                {
-                    _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
-                }
-                if (result.RequiresTwoFactor)
-                {
-                    return RedirectToPage("./LoginWith2fa", new { ReturnUrl = returnUrl, RememberMe = Input.RememberMe });
-                }
-                if (result.IsLockedOut)
-                {
-                    _logger.LogWarning("User account locked out.");
-                    return RedirectToPage("./Lockout");
-                }
-                else
-                {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
-                    return Page();
-                }
-            }
+                NewEmail = email,
+            };
 
-            // If we got this far, something failed, redisplay form
+            IsEmailConfirmed = await _userManager.IsEmailConfirmedAsync(user);
+
             return Page();
+        }
+
+        public override async Task<IActionResult> OnPostAsync()
+        {
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
+
+            var user = await _userManager.GetUserAsync(User);
+            if (user == null)
+            {
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
+            }
+
+            var email = await _userManager.GetEmailAsync(user);
+            if (Input.NewEmail != email)
+            {
+                var userId = await _userManager.GetUserIdAsync(user);
+                var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
+                var callbackUrl = Url.Page(
+                    "/Account/ConfirmEmailChange",
+                    pageHandler: null,
+                    values: new { userId = userId, email = Input.NewEmail, code = code },
+                    protocol: Request.Scheme);
+                await _emailSender.SendEmailAsync(
+                    Input.NewEmail,
+                    "Confirm your email",
+                    $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
+                StatusMessage = "Confirmation link to change email sent. Please check your email.";
+                return RedirectToPage();
+            }
+
+            StatusMessage = "Your email is unchanged.";
+            return RedirectToPage();
         }
 
         public override async Task<IActionResult> OnPostSendVerificationEmailAsync()
@@ -177,13 +159,14 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
                 return Page();
             }
 
-            var user = await _userManager.FindByEmailAsync(Input.Email);
+            var user = await _userManager.GetUserAsync(User);
             if (user == null)
             {
-                ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
+                return NotFound($"Unable to load user with ID '{_userManager.GetUserId(User)}'.");
             }
 
             var userId = await _userManager.GetUserIdAsync(user);
+            var email = await _userManager.GetEmailAsync(user);
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var callbackUrl = Url.Page(
                 "/Account/ConfirmEmail",
@@ -191,12 +174,12 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
                 values: new { userId = userId, code = code },
                 protocol: Request.Scheme);
             await _emailSender.SendEmailAsync(
-                Input.Email,
+                email,
                 "Confirm your email",
                 $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
 
-            ModelState.AddModelError(string.Empty, "Verification email sent. Please check your email.");
-            return Page();
+            StatusMessage = "Verification email sent. Please check your email.";
+            return RedirectToPage();
         }
     }
 }
