@@ -20,17 +20,18 @@
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\testassets\AzureAD.WebSite\bin\$(Configuration)\netcoreapp3.0\AzureAD.WebSite.deps.json" />
-      <_csProjFile Include="$(MSBuildThisFileDirectory)..\testassets\AzureAD.WebSite\*.csproj" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)" />
-    <Copy
-      SourceFiles="@(_csProjFiles)"
-      DestinationFolder="$(PublishDir)\AzureAD.WebSite" />    
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
+        Lines="Ignored"
+        Overwrite="true"
+        Encoding="Unicode"/>
+    <WriteLinesToFile
+        File="$(PublishDir)\AzureAD.WebSite\ignored.txt"
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
