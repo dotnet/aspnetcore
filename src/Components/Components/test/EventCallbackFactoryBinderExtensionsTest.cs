@@ -326,6 +326,44 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public async Task CreateBinder_Short()
+        {
+            // Arrange
+            var value = (short)17;
+            var component = new EventCountingComponent();
+            Action<short> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = (short)42;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "42", });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
+        public async Task CreateBinder_NullableShort()
+        {
+            // Arrange
+            var value = (short?)17;
+            var component = new EventCountingComponent();
+            Action<short?> setter = (_) => value = _;
+
+            var binder = EventCallback.Factory.CreateBinder(component, setter, value);
+
+            var expectedValue = (short?)42;
+
+            // Act
+            await binder.InvokeAsync(new UIChangeEventArgs() { Value = "42", });
+
+            Assert.Equal(expectedValue, value);
+            Assert.Equal(1, component.Count);
+        }
+
+        [Fact]
         public async Task CreateBinder_Enum()
         {
             // Arrange

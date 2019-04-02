@@ -246,6 +246,47 @@ namespace Microsoft.AspNetCore.Components
             return true;
         }
 
+        private static BindConverter<short> ConvertToShort = ConvertToShortCore;
+        private static BindConverter<short?> ConvertToNullableShort = ConvertToNullableShortCore;
+
+        private static bool ConvertToShortCore(object obj, out short value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return false;
+            }
+
+            if (!short.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
+        private static bool ConvertToNullableShortCore(object obj, out short? value)
+        {
+            var text = (string)obj;
+            if (string.IsNullOrEmpty(text))
+            {
+                value = default;
+                return true;
+            }
+
+            if (!short.TryParse(text, out var converted))
+            {
+                value = default;
+                return false;
+            }
+
+            value = converted;
+            return true;
+        }
+
         private static class EnumConverter<T> where T : struct, Enum
         {
             public static readonly BindConverter<T> Convert = ConvertCore;
@@ -499,6 +540,49 @@ namespace Microsoft.AspNetCore.Components
                 return null;
             };
             return CreateBinderCore<decimal?>(factory, receiver, setter, ConvertToNullableDecimal);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <returns></returns>
+        public static EventCallback<UIChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<short> setter,
+            short existingValue)
+        {
+            return CreateBinderCore<short>(factory, receiver, setter, ConvertToShort);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="receiver"></param>
+        /// <param name="setter"></param>
+        /// <param name="existingValue"></param>
+        /// <returns></returns>
+        public static EventCallback<UIChangeEventArgs> CreateBinder(
+            this EventCallbackFactory factory,
+            object receiver,
+            Action<short?> setter,
+            short? existingValue)
+        {
+            Func<object, short?> converter = (obj) =>
+            {
+                if (short.TryParse((string)obj, out var value))
+                {
+                    return value;
+                }
+
+                return null;
+            };
+            return CreateBinderCore<short?>(factory, receiver, setter, ConvertToNullableShort);
         }
 
         /// <summary>
