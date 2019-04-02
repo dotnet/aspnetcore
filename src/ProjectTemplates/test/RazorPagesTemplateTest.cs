@@ -24,7 +24,6 @@ namespace Templates.Test
 
         public ITestOutputHelper Output { get; }
 
-
         [Fact]
         public async Task RazorPagesTemplate_NoAuthImplAsync()
         {

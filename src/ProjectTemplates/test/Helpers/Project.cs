@@ -19,6 +19,8 @@ namespace Templates.Test.Helpers
     [DebuggerDisplay("{ToString(),nq}")]
     public class Project
     {
+        private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
+
         public const string DefaultFramework = "netcoreapp3.0";
 
         public SemaphoreSlim DotNetNewLock { get; set; }
@@ -141,7 +143,7 @@ namespace Templates.Test.Helpers
             };
 
             var projectDll = Path.Combine(TemplateServerDir, $"{ProjectName}.Server.dll");
-            return new AspNetProcess(Output, TemplateServerDir, projectDll, environment, useExec: false);
+            return new AspNetProcess(Output, TemplateServerDir, projectDll, environment, published: false);
         }
 
         internal AspNetProcess StartBuiltClientAsync(AspNetProcess serverProcess)
@@ -176,8 +178,6 @@ namespace Templates.Test.Helpers
             var projectDll = $"{ProjectName}.Client.dll";
             return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
         }
-
-        private const string _urls = "http://127.0.0.1:0;https://127.0.0.1:0";
 
         internal AspNetProcess StartBuiltProjectAsync()
         {

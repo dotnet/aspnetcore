@@ -44,7 +44,7 @@ namespace Templates.Test
                 using (var clientProcess = Project.StartBuiltClientAsync(serverProcess))
                 {
                     // Wait for the client to do its thing
-                    System.Threading.Thread.Sleep(100);
+                    await Task.Delay(100)
                     Assert.False(
                         clientProcess.Process.HasExited,
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run built client", Project, clientProcess.Process));
@@ -60,7 +60,7 @@ namespace Templates.Test
                 using (var clientProcess = Project.StartPublishedClientAsync())
                 {
                     // Wait for the client to do its thing
-                    System.Threading.Thread.Sleep(100);
+                    await Task.Delay(100)
                     Assert.False(
                         clientProcess.Process.HasExited,
                         ErrorMessages.GetFailedProcessMessageOrEmpty("Run built client", Project, clientProcess.Process));
