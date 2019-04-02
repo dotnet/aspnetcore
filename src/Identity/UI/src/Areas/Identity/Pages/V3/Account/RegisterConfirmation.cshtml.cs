@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
             }
 
             Email = email;
-            // This sender is a no-op, so we should auto confirm the account
+            // If the email sender is a no-op, display the confirm link in the page
             DisplayConfirmAccountLink = _sender is EmailSender;
             if (DisplayConfirmAccountLink)
             {
