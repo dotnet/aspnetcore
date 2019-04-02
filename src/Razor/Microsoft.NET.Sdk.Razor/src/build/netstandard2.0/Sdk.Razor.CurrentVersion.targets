@@ -34,6 +34,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <_TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</_TargetFrameworkVersionWithoutV>
 
+    <!-- Workaround for an older build of DesignTime.targets that requires this property to be available. This can be removed after 16.1 preview 2 insertion -->
+    <_TargetingNETCoreApp30OrLater Condition="'$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">true</_TargetingNETCoreApp30OrLater>
+
     <!--
       Infer the RazorLangVersion if no value was specified. When adding support for newer target frameworks, list newer language versions first.
     -->
