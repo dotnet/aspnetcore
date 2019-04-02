@@ -23,12 +23,17 @@ namespace TriageBuildFailures.VSTS
 
         public async Task<IEnumerable<ICIBuild>> GetFailedBuildsAsync(DateTime startDate)
         {
-            var projects = await GetProjects();
+            var failedBuilds = await GetBuildsAsync(startDate, VSTSBuildResult.Failed);
+            return failedBuilds.Concat(await GetBuildsAsync(startDate, VSTSBuildResult.PartiallySucceeded));
+        }
 
+        public async Task<IEnumerable<ICIBuild>> GetBuildsAsync(DateTime startDate, VSTSBuildResult result)
+        {
+            var projects = await GetProjects();
             var results = new List<ICIBuild>();
             foreach (var project in projects)
             {
-                var builds = await GetBuildsForProject(project, VSTSBuildResult.Failed, VSTSBuildStatus.Completed, startDate);
+                var builds = await GetBuildsForProject(project, result, VSTSBuildStatus.Completed, startDate);
 
                 results.AddRange(builds.Select(b => new VSTSBuild(b)));
             }

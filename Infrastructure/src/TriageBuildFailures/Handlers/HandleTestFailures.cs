@@ -19,36 +19,27 @@ namespace TriageBuildFailures.Handlers
     /// </summary>
     public class HandleTestFailures : HandleFailureBase
     {
+        // These tests fail on purpose, so we shouldn't file issues about them.
+        private readonly IEnumerable<string> IgnoredTests = new string[] {
+            "FlakyInAzPOnly",
+            "AlwaysFlakyInCI",
+            "FlakyInAzPmacOSOnly",
+            "FlakyInAzPNonWindowsOnly",
+            "FlakyInAzPLinuxOnly",
+        };
+
         private const string NoStackTraceAvailable = "No stacktrace available";
 
         public async override Task<bool> CanHandleFailure(ICIBuild build)
         {
-            var tests = await GetClient(build).GetTestsAsync(build, BuildStatus.FAILURE);
+            var tests = await GetTestsAsync(build);
             return tests.Any(s => s.Status == BuildStatus.FAILURE);
-        }
-
-        private static string SafeGetExceptionMessage(string errors)
-        {
-            return string.IsNullOrEmpty(errors) ? NoStackTraceAvailable : ErrorParsing.GetExceptionMessage(errors);
-        }
-
-        private string TrimTestFailureText(string text)
-        {
-            var result = text;
-
-            if (result.Length > 6000)
-            {
-                result = text.Substring(0, 6000);
-                result += $"{Environment.NewLine}...";
-            }
-
-            return result;
         }
 
         public override async Task HandleFailure(ICIBuild build)
         {
-            var client = GetClient(build);
-            var tests = await client.GetTestsAsync(build, BuildStatus.FAILURE);
+            var tests = await GetTestsAsync(build);
+
             if (tests.Any(s => s.Status != BuildStatus.FAILURE))
             {
                 throw new Exception("Tests which didn't fail got through somehow.");
@@ -64,7 +55,7 @@ namespace TriageBuildFailures.Handlers
                 var repo = "AspNetCore-Internal";
 
                 var flakyIssues = await GHClient.GetFlakyIssues(owner, repo);
-
+                var client = GetClient(build);
                 var errors = await client.GetTestFailureTextAsync(failure);
 
                 var applicableIssue = await GetApplicableIssue(client, flakyIssues, failure);
@@ -149,29 +140,6 @@ CC {GetOwnerMentions(failureArea)}";
             }
         }
 
-
-        private string[] GetOwnerNames(string areaName)
-        {
-            var owners = Config.GitHub.IssueAreas
-                .FirstOrDefault(area => area.AreaName.Equals(areaName, StringComparison.OrdinalIgnoreCase))
-                ?.OwnerNames;
-
-            if (string.IsNullOrEmpty(owners))
-            {
-                // Default to Eilon
-                return new[] { "Eilon" };
-            }
-            else
-            {
-                return owners.Split(',').Select(owner => owner.Trim()).ToArray();
-            }
-        }
-
-        private string GetOwnerMentions(string areaName)
-        {
-            return GitHubUtils.GetAtMentions(GetOwnerNames(areaName));
-        }
-
         private static string GetTestName(ICITestOccurrence testOccurrence)
         {
             var shortTestName = testOccurrence.Name.Replace(Constants.VSTestPrefix, string.Empty);
@@ -244,6 +212,52 @@ CC {GetOwnerMentions(failureArea)}";
             }
 
             return null;
+        }
+
+        private async Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build)
+        {
+            var tests = await GetClient(build).GetTestsAsync(build, BuildStatus.FAILURE);
+            return tests.Where(t => !IgnoredTests.Contains(GetTestName(t)));
+        }
+
+        private static string SafeGetExceptionMessage(string errors)
+        {
+            return string.IsNullOrEmpty(errors) ? NoStackTraceAvailable : ErrorParsing.GetExceptionMessage(errors);
+        }
+
+        private string TrimTestFailureText(string text)
+        {
+            var result = text;
+
+            if (result.Length > 6000)
+            {
+                result = text.Substring(0, 6000);
+                result += $"{Environment.NewLine}...";
+            }
+
+            return result;
+        }
+
+        private string[] GetOwnerNames(string areaName)
+        {
+            var owners = Config.GitHub.IssueAreas
+                .FirstOrDefault(area => area.AreaName.Equals(areaName, StringComparison.OrdinalIgnoreCase))
+                ?.OwnerNames;
+
+            if (string.IsNullOrEmpty(owners))
+            {
+                // Default to Eilon
+                return new[] { "Eilon" };
+            }
+            else
+            {
+                return owners.Split(',').Select(owner => owner.Trim()).ToArray();
+            }
+        }
+
+        private string GetOwnerMentions(string areaName)
+        {
+            return GitHubUtils.GetAtMentions(GetOwnerNames(areaName));
         }
     }
 }
