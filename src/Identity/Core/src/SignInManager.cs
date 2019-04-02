@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Identity
             }
             if (Options.SignIn.RequireConfirmedAccount && !(await _confirmation.IsConfirmedAsync(UserManager, user)))
             {
-                Logger.LogWarning(0, "User {userId} cannot sign in without a confirmed account.", await UserManager.GetUserIdAsync(user));
+                Logger.LogWarning(4, "User {userId} cannot sign in without a confirmed account.", await UserManager.GetUserIdAsync(user));
                 return false;
             }
             return true;
