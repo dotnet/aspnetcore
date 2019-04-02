@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private static IHtmlHelper CreateHelper(HttpContext ctx = null, Action<IServiceCollection> configureServices = null)
         {
             var services = new ServiceCollection();
-            //services.AddRazorComponents();
+            services.AddLogging();
             services.AddSingleton(HtmlEncoder.Default);
             configureServices = configureServices ?? (s => s.AddRazorComponents());
             configureServices?.Invoke(services);
