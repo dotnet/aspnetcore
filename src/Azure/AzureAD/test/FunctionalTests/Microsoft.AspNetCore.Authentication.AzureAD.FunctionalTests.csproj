@@ -19,7 +19,7 @@
 
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
-      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\testassets\AzureAD.WebSite\bin\$(Configuration)\netcoreapp3.0\AzureAD.WebSite.deps.json" />
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\testassets\AzureAD.WebSite\bin\$(Configuration)\netcoreapp3.0\AzureAD.WebSite.deps.json" />
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
