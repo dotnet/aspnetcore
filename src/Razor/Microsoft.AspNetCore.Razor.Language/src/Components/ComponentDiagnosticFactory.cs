@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         public static readonly RazorDiagnosticDescriptor CodeBlockInAttribute = new RazorDiagnosticDescriptor(
             $"{DiagnosticPrefix}9979",
             () =>
-                "Code blocks delimited by '@{...}' like '@{{ {0} }}' for attributes are no longer supported " +
+                "Code blocks delimited by '@{{...}}' like '@{{ {0} }}' for attributes are no longer supported " +
                 "These features have been changed to use attribute syntax. " +
-                "Use 'attr=\"@(x => {... }\"'.",
+                "Use 'attr=\"@(x => {{... }}\"'.",
             RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic Create_CodeBlockInAttribute(SourceSpan? source, string expression)
