@@ -3,7 +3,7 @@ import '@dotnet/jsinterop';
 let hasRegisteredEventListeners = false;
 
 // Will be initialized once someone registers
-let notifyLocationChangedCallback: { assemblyName: string, functionName: string } | null = null;
+let notifyLocationChangedCallback: { assemblyName: string; functionName: string } | null = null;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
@@ -11,7 +11,7 @@ export const internalFunctions = {
   navigateTo,
   getBaseURI: () => document.baseURI,
   getLocationHref: () => location.href,
-}
+};
 
 function enableNavigationInterception(assemblyName: string, functionName: string) {
   if (hasRegisteredEventListeners || assemblyName === undefined || functionName === undefined) {
@@ -80,7 +80,7 @@ function findClosestAncestor(element: Element | null, tagName: string) {
     ? null
     : element.tagName === tagName
       ? element
-      : findClosestAncestor(element.parentElement, tagName)
+      : findClosestAncestor(element.parentElement, tagName);
 }
 
 function isWithinBaseUriSpace(href: string) {

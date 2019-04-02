@@ -7,7 +7,9 @@ export default class RenderQueue {
   private static renderQueues = new Map<number, RenderQueue>();
 
   private nextBatchId = 2;
+
   public browserRendererId: number;
+
   public logger: ILogger;
 
   public constructor(browserRendererId: number, logger: ILogger) {

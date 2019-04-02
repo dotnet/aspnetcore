@@ -46,12 +46,12 @@ export function toLogicalRootCommentElement(start: Comment, end: Comment): Logic
   // |- *div
   // |- *component
   // |- *footer
-  if(!start.parentNode){
+  if (!start.parentNode){
     throw new Error(`Comment not connected to the DOM ${start.textContent}`);
   }
 
   const parent = start.parentNode;
-  const parentLogicalElement = toLogicalElement(parent, /* allow existing contents */  true);
+  const parentLogicalElement = toLogicalElement(parent, /* allow existing contents */ true);
   const children = getLogicalChildrenArray(parentLogicalElement);
   Array.from(parent.childNodes).forEach(n => children.push(n as unknown as LogicalElement));
   start[logicalParentPropname] = parentLogicalElement;

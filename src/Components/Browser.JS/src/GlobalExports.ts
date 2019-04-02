@@ -11,6 +11,6 @@ window['Blazor'] = {
   _internal: {
     attachRootComponentToElement,
     http: httpInternalFunctions,
-    uriHelper: uriHelperInternalFunctions
-  }
+    uriHelper: uriHelperInternalFunctions,
+  },
 };
