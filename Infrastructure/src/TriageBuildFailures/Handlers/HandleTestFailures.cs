@@ -26,6 +26,7 @@ namespace TriageBuildFailures.Handlers
             "FlakyInAzPmacOSOnly",
             "FlakyInAzPNonWindowsOnly",
             "FlakyInAzPLinuxOnly",
+            "FlakyInAzPWindowsOnly",
         };
 
         private const string NoStackTraceAvailable = "No stacktrace available";
