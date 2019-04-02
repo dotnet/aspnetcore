@@ -452,7 +452,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             protected override void HandleException(Exception exception)
             {
-                throw new NotImplementedException();
+                ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)

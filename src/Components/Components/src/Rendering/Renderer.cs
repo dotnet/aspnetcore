@@ -227,6 +227,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
                 task = callback.InvokeAsync(eventArgs);
             }
+            catch (Exception e)
+            {
+                HandleException(e);
+            }
             finally
             {
                 _isBatchInProgress = false;
@@ -443,6 +447,11 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 // Fire off the execution of OnAfterRenderAsync, but don't wait for it
                 // if there is async work to be done.
                 _ = InvokeRenderCompletedCalls(batch.UpdatedComponents, updateDisplayTask);
+            }
+            catch (Exception e)
+            {
+                // Ensure we catch errors while running the render functions of the components.
+                HandleException(e);
             }
             finally
             {

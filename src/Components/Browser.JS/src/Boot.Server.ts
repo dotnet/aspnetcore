@@ -10,6 +10,8 @@ import { ConsoleLogger } from './Platform/Logging/Loggers';
 import { LogLevel, ILogger } from './Platform/Logging/ILogger';
 import { discoverPrerenderedCircuits, startCircuit } from './Platform/Circuits/CircuitManager';
 
+let renderingFailed = false;
+
 async function boot(): Promise<void> {
 
   // For development.
@@ -33,7 +35,7 @@ async function boot(): Promise<void> {
   const circuits = discoverPrerenderedCircuits(document);
   for (let i = 0; i < circuits.length; i++) {
     const circuit = circuits[i];
-    for(let j = 0; j < circuit.components.length; j++){
+    for (let j = 0; j < circuit.components.length; j++) {
       const component = circuit.components[j];
       component.initialize();
     }
@@ -49,6 +51,10 @@ async function boot(): Promise<void> {
   }
 
   const reconnect = async (): Promise<boolean> => {
+    if (renderingFailed) {
+      // We can't reconnect after a failure, so exit early.
+      return false;
+    }
     const reconnection = await initializeConnection(circuitHandlers, logger);
     const results = await Promise.all(circuits.map(circuit => circuit.reconnect(reconnection)));
 
@@ -93,7 +99,7 @@ async function initializeConnection(circuitHandlers: CircuitHandler[], logger: I
     queue.processBatch(batchId, batchData, connection);
   });
 
-  connection.onclose(error => circuitHandlers.forEach(h => h.onConnectionDown && h.onConnectionDown(error)));
+  connection.onclose(error => !renderingFailed && circuitHandlers.forEach(h => h.onConnectionDown && h.onConnectionDown(error)));
   connection.on('JS.Error', error => unhandledError(connection, error, logger));
 
   window['Blazor']._internal.forceCloseConnection = () => connection.stop();
@@ -120,6 +126,7 @@ function unhandledError(connection: signalR.HubConnection, err: Error, logger: I
   //
   // Trying to call methods on the connection after its been closed will throw.
   if (connection) {
+    renderingFailed = true;
     connection.stop();
   }
 }

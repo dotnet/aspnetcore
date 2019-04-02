@@ -31,7 +31,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             await base.InitializeAsync();
             Navigate("/", noReload: false);
-            await Task.Delay(2000);
+            Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
+                .Any(l => l.Level == LogLevel.Info && l.Message.Contains("blazorpack")));
+
         }
 
         [Fact]
@@ -170,5 +172,17 @@ window.Blazor._internal.forceCloseConnection();");
             Browser.FindElement(By.LinkText("Greeter")).Click();
             Browser.Equal("Hello Guest", () => Browser.FindElement(By.ClassName("greeting")).Text);
         }
+
+        [Fact]
+        public void ErrorsStopTheRenderingProcess()
+        {
+            Browser.FindElement(By.LinkText("Error")).Click();
+            Browser.Equal("Error", () => Browser.FindElement(By.CssSelector("h1")).Text);
+
+            Browser.FindElement(By.Id("cause-error")).Click();
+            Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
+                .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
+        }
+
     }
 }

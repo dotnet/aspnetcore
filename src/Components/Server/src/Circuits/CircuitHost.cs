@@ -110,11 +110,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             });
         }
 
-        internal void InitializeServicesAfterPrerender()
+        internal void InitializeCircuitAfterPrerender(UnhandledExceptionEventHandler unhandledException)
         {
             if (!_initialized)
             {
                 _initialized = true;
+                UnhandledException += unhandledException;
                 var uriHelper = (RemoteUriHelper)Services.GetRequiredService<IUriHelper>();
                 if (!uriHelper.HasAttachedJSRuntime)
                 {

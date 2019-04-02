@@ -432,6 +432,10 @@ namespace Microsoft.AspNetCore.Components.Server.BlazorPack
                     writer.Write(byteArray);
                     break;
 
+                case Exception exception:
+                    writer.Write(exception.ToString());
+                    break;
+
                 default:
                     throw new FormatException($"Unsupported argument type {argument.GetType()}");
             }

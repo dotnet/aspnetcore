@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Components.Server
             {
                 CircuitHost = circuitHost;
 
-                circuitHost.InitializeServicesAfterPrerender();
+                circuitHost.InitializeCircuitAfterPrerender(CircuitHost_UnhandledException);
                 circuitHost.SendPendingBatches();
                 return true;
             }
