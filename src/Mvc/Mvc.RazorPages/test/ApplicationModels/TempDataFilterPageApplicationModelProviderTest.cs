@@ -5,9 +5,9 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
@@ -35,6 +35,23 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Arrange
             var type = typeof(TestPageModel_PrivateSet);
             var expected = $"The '{type.FullName}.Test' property with TempDataAttribute is invalid. A property using TempDataAttribute must have a public getter and setter.";
+
+            var provider = CreateProvider();
+            var context = CreateProviderContext(type);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+            Assert.Equal(expected, ex.Message);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_ThrowsIfThePropertyTypeIsUnsupported()
+        {
+            // Arrange
+            var type = typeof(TestPageModel_InvalidProperties);
+            var expected = $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.ModelState' of type '{typeof(ModelStateDictionary)}'." +
+                Environment.NewLine +
+                $"TempData serializer '{typeof(DefaultTempDataSerializer)}' cannot serialize property '{type}.TimeZone' of type '{typeof(TimeZoneInfo)}'.";
 
             var provider = CreateProvider();
             var context = CreateProviderContext(type);
@@ -114,18 +131,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             return context;
         }
 
-        private static CompiledPageActionDescriptor CreateDescriptor(Type type)
-        {
-            return new CompiledPageActionDescriptor(new PageActionDescriptor())
-            {
-                PageTypeInfo = typeof(TestPage).GetTypeInfo(),
-                HandlerTypeInfo = type.GetTypeInfo(),
-            };
-        }
-
         private static TempDataFilterPageApplicationModelProvider CreateProvider()
         {
-            var tempDataSerializer = Mock.Of<TempDataSerializer>(s => s.CanSerializeType(It.IsAny<Type>()) == true);
+            var tempDataSerializer = new DefaultTempDataSerializer();
             return new TempDataFilterPageApplicationModelProvider(tempDataSerializer);
         }
 
@@ -159,6 +167,18 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             [TempData]
             public string Test { get; private set; }
+        }
+
+        public class TestPageModel_InvalidProperties
+        {
+            [TempData]
+            public ModelStateDictionary ModelState { get; set; }
+
+            [TempData]
+            public int SomeProperty { get; set; }
+
+            [TempData]
+            public TimeZoneInfo TimeZone { get; set; }
         }
     }
 }

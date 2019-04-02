@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,9 +21,7 @@ namespace GenericHostWebSite
                     // Remove when all URL generation tests are passing - https://github.com/aspnet/Routing/issues/590
                     options.EnableEndpointRouting = false;
                 })
-                .SetCompatibilityVersion(CompatibilityVersion.Latest)
-                .AddNewtonsoftJson()
-                .AddXmlDataContractSerializerFormatters();
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
 
             services.AddLogging();
             services.AddHttpContextAccessor();
