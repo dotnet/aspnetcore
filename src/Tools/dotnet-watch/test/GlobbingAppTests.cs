@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             Assert.Equal(1, types);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8987")]
         public async Task RenameCompiledFile()
         {
             await _app.StartWatcherAsync();
