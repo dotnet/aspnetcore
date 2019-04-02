@@ -10,13 +10,8 @@
       _GenerateServiceProjectReferenceDocuments;
       _CreateFileItemsForServiceProjectReferences
     </GenerateServiceProjectReferenceDocumentsDependsOn>
-    <GenerateServiceUriReferenceDocumentsDependsOn>
-      _GetMetadataForServiceUriReferences;
-      _GenerateServiceUriReferenceDocuments
-    </GenerateServiceUriReferenceDocumentsDependsOn>
     <GenerateServiceFileReferenceCodesDependsOn>
       GenerateServiceProjectReferenceDocuments;
-      GenerateServiceUriReferenceDocuments;
       _GetMetadataForServiceFileReferences;
       _GenerateServiceFileReferenceCodes;
       _CreateCompileItemsForServiceFileReferences
@@ -210,41 +205,6 @@
         IgnoreExitCode="$([System.IO.File]::Exists('%(DocumentPath)'))" />
   </Target>
 
-  <!-- ServiceUriReference support -->
-
-  <Target Name="_GetMetadataForServiceUriReferences" Condition="'@(ServiceUriReference)' != ''">
-    <ItemGroup>
-      <_Temporary Remove="@(_Temporary)" />
-    </ItemGroup>
-
-    <GetUriReferenceMetadata Inputs="@(ServiceUriReference)" DocumentDirectory="$(ServiceUriReferenceDirectory)">
-      <Output TaskParameter="Outputs" ItemName="_Temporary" />
-    </GetUriReferenceMetadata>
-
-    <ItemGroup>
-      <ServiceUriReference Remove="@(ServiceUriReference)" />
-      <ServiceUriReference Include="@(_Temporary)" />
-      <_Temporary Remove="@(_Temporary)" />
-    </ItemGroup>
-  </Target>
-
-  <Target Name="_GenerateServiceUriReferenceDocuments" Condition="'@(ServiceUriReference)' != ''">
-    <Microsoft.Extensions.ApiDescription.Tasks.DownloadFile Uri="%(ServiceUriReference.Identity)"
-        DestinationPath="%(DocumentPath)"
-        Overwrite="$(ServiceUriReferenceCheckIfNewer)" />
-
-    <!-- GetUriReferenceMetadata task guarantees %(DocumentPath) values are unique. -->
-    <ItemGroup>
-      <ServiceFileReference Remove="@(ServiceUriReference -> '%(DocumentPath)')" />
-      <ServiceFileReference Include="@(ServiceUriReference -> '%(DocumentPath)')">
-        <SourceUri>%(ServiceUriReference.Identity)</SourceUri>
-      </ServiceFileReference>
-    </ItemGroup>
-  </Target>
-
-  <Target Name="GenerateServiceUriReferenceDocuments"
-      DependsOnTargets="$(GenerateServiceUriReferenceDocumentsDependsOn)" />
-
   <!-- ServiceFileReference support -->
 
   <Target Name="_GetMetadataForServiceFileReferences" Condition="'@(ServiceFileReference)' != ''">
@@ -285,8 +245,8 @@
 
   <Target Name="_CreateCompileItemsForServiceFileReferences" Condition="'@(ServiceFileReference)' != ''">
     <!--
-      While %(DocumentPath) metadata may include duplicates (due to overlaps between ServiceUriReference and
-      ServiceProjectReference items), GetFileReferenceMetadata task guarantees %(OutputPath) values are unique.
+      While %(DocumentPath) metadata may include duplicates, GetFileReferenceMetadata task guarantees %(OutputPath)
+      values are unique.
     -->
     <ItemGroup>
       <_Files Remove="@(_Files)" />
