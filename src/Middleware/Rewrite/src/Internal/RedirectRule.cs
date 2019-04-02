@@ -74,11 +74,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                         QueryString.FromUriComponent(
                             newPath.Substring(split)));
                     // not using the HttpContext.Response.redirect here because status codes may be 301, 302, 307, 308
-                    response.Headers[HeaderNames.Location] = pathBase + newPath.Substring(0, split) + query;
+                    response.Headers[HeaderNames.Location] = pathBase + newPath.Substring(0, split) + query.ToUriComponent();
                 }
                 else
                 {
-                    response.Headers[HeaderNames.Location] = pathBase + newPath + context.HttpContext.Request.QueryString;
+                    response.Headers[HeaderNames.Location] = pathBase + newPath + context.HttpContext.Request.QueryString.ToUriComponent();
                 }
 
                 context.Logger?.RedirectedRequest(newPath);
