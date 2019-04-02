@@ -2,8 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
@@ -17,11 +15,8 @@ using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 #if (IndividualB2CAuth)
 using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 #endif
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Company.WebApplication1
 {

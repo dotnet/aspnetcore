@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity.UI;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
