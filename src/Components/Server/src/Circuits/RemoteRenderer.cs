@@ -203,46 +203,18 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
 
             // We peek first in case we are receiving a duplicate or out of order ack from
             // the client.
-            while (PendingRenderBatches.TryPeek(out var entry))
+            if (!PendingRenderBatches.TryDequeue(out var entry) || entry.BatchId != incommingBatchId)
             {
-                // Dequeue entries until we sync with the render batch number received.
-                if (incommingBatchId < entry.BatchId)
-                {
-                    _logger.LogDebug($"Incoming batch {incommingBatchId} already acknowledged.");
-                    // We successfully received an ack for a pending batch left.
-                    // Which we already processed so no work.
-                    break;
-                }
+                HandleException(
+                    new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incommingBatchId}'."));
+            }
+            else
+            {
+                var message = $"Completing batch {entry.BatchId} " +
+                    errorMessageOrNull == null ? "without error." : "with error.";
 
-                // batchId >= entry.BatchId -> We are in sync or we missed an ack from the client.
-                // We simply catch up as a bigger number means the client already rendered
-                // previous batches successfully.
-                _logger.LogDebug($"Acknowledging batch {entry.BatchId} ack sequence {incommingBatchId}.");
-                // When the render is completed (success, fail), stop tracking it.
-                // We are the only ones removing things from the queue so Peek+Dequeue is ok here.
-                PendingRenderBatches.TryDequeue(out var _);
-
-                // If we are catching up, then invoke completed renders in the absence of errors.
-                // We notify the error in the appropriate batch number and avoid notifying previous batches
-                // as we are going to report an error and tear down the circuit(as this is a terminal error)
-                // and we don't want those previous batches to trigger more work.
-                if (errorMessageOrNull == null && entry.BatchId < incommingBatchId)
-                {
-                    _logger.LogDebug($"Completing batch {entry.BatchId} without error.");
-                    CompleteRender(entry.CompletionSource, errorMessageOrNull);
-                }
-
-                if (entry.BatchId == incommingBatchId)
-                {
-                    var message = $"Completing batch {entry.BatchId} " +
-                        errorMessageOrNull == null ? "without error." : "with error.";
-
-                    _logger.LogDebug(message);
-                    CompleteRender(entry.CompletionSource, errorMessageOrNull);
-
-                    // We cought up.
-                    break;
-                }
+                _logger.LogDebug(message);
+                CompleteRender(entry.CompletionSource, errorMessageOrNull);
             }
         }
 

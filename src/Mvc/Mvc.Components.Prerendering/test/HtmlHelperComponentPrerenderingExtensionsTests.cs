@@ -228,9 +228,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 _renderHandle.Render(builder =>
                 {
-                    var s = 0;
-                    builder.OpenElement(s++, "h1");
-                    builder.AddContent(s++, "Hello world!");
+                    builder.OpenElement(1, "h1");
+                    builder.AddContent(2, "Hello world!");
                     builder.CloseElement();
                 });
                 return Task.CompletedTask;
@@ -289,10 +288,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                var s = 0;
                 base.BuildRenderTree(builder);
-                builder.OpenElement(s++, "p");
-                builder.AddContent(s++, $"Hello {Name}!");
+                builder.OpenElement(1, "p");
+                builder.AddContent(2, $"Hello {Name}!");
                 builder.CloseElement();
             }
         }
@@ -358,76 +356,74 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 base.BuildRenderTree(builder);
-                var s = 0;
-                builder.OpenElement(s++, "table");
-                builder.AddMarkupContent(s++, "\n");
-                builder.OpenElement(s++, "thead");
-                builder.AddMarkupContent(s++, "\n");
-                builder.OpenElement(s++, "tr");
-                builder.AddMarkupContent(s++, "\n");
 
-                builder.OpenElement(s++, "th");
-                builder.AddContent(s++, "Date");
-                builder.CloseElement();
-                builder.AddMarkupContent(s++, "\n");
+                builder.OpenElement(0, "table");
+                builder.AddMarkupContent(1, "\n");
+                builder.OpenElement(2, "thead");
+                builder.AddMarkupContent(3, "\n");
+                builder.OpenElement(4, "tr");
+                builder.AddMarkupContent(5, "\n");
 
-                builder.OpenElement(s++, "th");
-                builder.AddContent(s++, "Summary");
+                builder.OpenElement(6, "th");
+                builder.AddContent(7, "Date");
                 builder.CloseElement();
-                builder.AddMarkupContent(s++, "\n");
+                builder.AddMarkupContent(8, "\n");
 
-                builder.OpenElement(s++, "th");
-                builder.AddContent(s++, "F");
+                builder.OpenElement(9, "th");
+                builder.AddContent(10, "Summary");
                 builder.CloseElement();
-                builder.AddMarkupContent(s++, "\n");
+                builder.AddMarkupContent(11, "\n");
 
-                builder.OpenElement(s++, "th");
-                builder.AddContent(s++, "C");
+                builder.OpenElement(12, "th");
+                builder.AddContent(13, "F");
                 builder.CloseElement();
-                builder.AddMarkupContent(s++, "\n");
+                builder.AddMarkupContent(14, "\n");
+
+                builder.OpenElement(15, "th");
+                builder.AddContent(16, "C");
+                builder.CloseElement();
+                builder.AddMarkupContent(17, "\n");
 
                 builder.CloseElement();
-                builder.AddMarkupContent(s++, "\n");
+                builder.AddMarkupContent(18, "\n");
                 builder.CloseElement();
-                builder.AddMarkupContent(s++, "\n");
-                builder.OpenElement(s++, "tbody");
-                builder.AddMarkupContent(s++, "\n");
+                builder.AddMarkupContent(19, "\n");
+                builder.OpenElement(20, "tbody");
+                builder.AddMarkupContent(21, "\n");
                 if (RowsToDisplay != null)
                 {
-                    var s2 = s;
                     foreach (var element in RowsToDisplay)
                     {
-                        s = s2;
-                        builder.OpenElement(s++, "tr");
-                        builder.AddMarkupContent(s++, "\n");
+                        builder.OpenElement(22, "tr");
+                        builder.AddMarkupContent(23, "\n");
 
-                        builder.OpenElement(s++, "td");
-                        builder.AddContent(s++, element.DateFormatted);
+                        builder.OpenElement(24, "td");
+                        builder.AddContent(25, element.DateFormatted);
                         builder.CloseElement();
-                        builder.AddMarkupContent(s++, "\n");
+                        builder.AddMarkupContent(26, "\n");
 
-                        builder.OpenElement(s++, "td");
-                        builder.AddContent(s++, element.Summary);
+                        builder.OpenElement(27, "td");
+                        builder.AddContent(28, element.Summary);
                         builder.CloseElement();
-                        builder.AddMarkupContent(s++, "\n");
+                        builder.AddMarkupContent(29, "\n");
 
-                        builder.OpenElement(s++, "td");
-                        builder.AddContent(s++, element.TemperatureF);
+                        builder.OpenElement(30, "td");
+                        builder.AddContent(31, element.TemperatureF);
                         builder.CloseElement();
-                        builder.AddMarkupContent(s++, "\n");
+                        builder.AddMarkupContent(32, "\n");
 
-                        builder.OpenElement(s++, "td");
-                        builder.AddContent(s++, element.TemperatureF);
+                        builder.OpenElement(33, "td");
+                        builder.AddContent(34, element.TemperatureF);
                         builder.CloseElement();
-                        builder.AddMarkupContent(s++, "\n");
+                        builder.AddMarkupContent(35, "\n");
 
                         builder.CloseElement();
-                        builder.AddMarkupContent(s++, "\n");
+                        builder.AddMarkupContent(36, "\n");
                     }
                 }
 
                 builder.CloseElement();
-                builder.AddMarkupContent(s++, "\n");
+                builder.AddMarkupContent(37, "\n");
 
                 builder.CloseElement();
             }
