@@ -22,9 +22,9 @@ namespace IntegratedAuthSample
             var ntAuthType = typeof(AuthenticationException).Assembly.GetType("System.Net.NTAuthentication");
             var constructor = ntAuthType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
             // internal NTAuthentication(bool isServer, string package, NetworkCredential credential, string spn, ContextFlagsPal requestedContextFlags, ChannelBinding channelBinding)
-            string spn = "chrross-coredev.redmond.corp.microsoft.com";
+            // string spn = "HTTP/chrross-coredev.redmond.corp.microsoft.com";
             var credential = CredentialCache.DefaultCredentials;
-            _instance = constructor.Invoke(new object[] { true, "Negotiate", credential, spn, 0, null });
+            _instance = constructor.Invoke(new object[] { true, "Negotiate", credential, null, 0, null });
             _getOutgoingBlob = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("GetOutgoingBlob") && info.GetParameters().Count() == 2).Single();
             _isCompleted = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
@@ -61,7 +61,7 @@ namespace IntegratedAuthSample
 
         internal bool IsCompleted
         {
-            get => (bool)_isCompleted.Invoke(_instance, new object[0]);
+            get => (bool)_isCompleted.Invoke(_instance, Array.Empty<object>());
         }
 
         internal ClaimsPrincipal GetPrincipal()
