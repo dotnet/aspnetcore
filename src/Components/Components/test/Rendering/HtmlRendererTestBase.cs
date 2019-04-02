@@ -390,12 +390,12 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Assert.Equal(expectedHtml, result);
         }
 
-        private IEnumerable<string> GetResult(Task<IEnumerable<string>> task)
+        private IEnumerable<string> GetResult(Task<ComponentRenderedText> task)
         {
             Assert.True(task.IsCompleted);
             if (task.IsCompletedSuccessfully)
             {
-                return task.Result;
+                return task.Result.Tokens;
             }
             else
             {
@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             })));
 
             // Assert
-            Assert.Equal(expectedHtml, result);
+            Assert.Equal(expectedHtml, result.Tokens);
         }
 
         [Fact]
@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             })));
 
             // Assert
-            Assert.Equal(expectedHtml, result);
+            Assert.Equal(expectedHtml, result.Tokens);
         }
 
 

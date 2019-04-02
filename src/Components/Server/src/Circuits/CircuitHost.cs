@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -95,13 +96,40 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public IDispatcher Dispatcher { get; }
 
-        public Task<IEnumerable<string>> PrerenderComponentAsync(Type componentType, ParameterCollection parameters)
+        public Task<ComponentRenderedText> PrerenderComponentAsync(Type componentType, ParameterCollection parameters)
         {
             return Dispatcher.InvokeAsync(async () =>
             {
                 var result = await Renderer.RenderComponentAsync(componentType, parameters);
+
+                // When we prerender we start the circuit in a disconnected state. As such, we only call
+                // OnCircuitOpenenedAsync here and when the client reconnects we run OnConnectionUpAsync
+                await OnCircuitOpenedAsync(CancellationToken.None);
+
                 return result;
             });
+        }
+
+        internal void InitializeCircuitAfterPrerender(UnhandledExceptionEventHandler unhandledException)
+        {
+            if (!_initialized)
+            {
+                _initialized = true;
+                UnhandledException += unhandledException;
+                var uriHelper = (RemoteUriHelper)Services.GetRequiredService<IUriHelper>();
+                if (!uriHelper.HasAttachedJSRuntime)
+                {
+                    uriHelper.AttachJsRuntime(JSRuntime);
+                }
+            }
+        }
+
+        internal void SendPendingBatches()
+        {
+            // Dispatch any buffered renders we accumulated during a disconnect.
+            // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
+            // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
+            var _ = Renderer.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 
         public async Task InitializeAsync(CancellationToken cancellationToken)
@@ -122,8 +150,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     // processing incoming JSInterop calls or similar.
                     for (var i = 0; i < Descriptors.Count; i++)
                     {
-                        var (componentType, domElementSelector) = Descriptors[i];
-                        await Renderer.AddComponentAsync(componentType, domElementSelector);
+                        var (componentType, domElementSelector, prerendered) = Descriptors[i];
+                        if (!prerendered)
+                        {
+                            await Renderer.AddComponentAsync(componentType, domElementSelector);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -248,10 +279,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await OnConnectionDownAsync(CancellationToken.None);
                 await OnCircuitDownAsync();
+                Renderer.Dispose();
+                _scope.Dispose();
             }));
-
-            _scope.Dispose();
-            Renderer.Dispose();
         }
 
         private void AssertInitialized()

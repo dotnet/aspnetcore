@@ -478,6 +478,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Act
             var response = await Client.GetStringAsync("Home/GetAssemblyPartData");
             var assemblyParts = JsonConvert.DeserializeObject<IList<string>>(response);
+            var expected = new[]
+            {
+                "BasicWebSite",
+                "Microsoft.AspNetCore.Components.Server",
+                "Microsoft.AspNetCore.Mvc.Components.Prerendering",
+                "Microsoft.AspNetCore.SpaServices",
+                "Microsoft.AspNetCore.SpaServices.Extensions",
+                "Microsoft.AspNetCore.Mvc.TagHelpers",
+                "Microsoft.AspNetCore.Mvc.Razor",
+            };
 
             // Assert
             //

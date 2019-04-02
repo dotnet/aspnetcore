@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -16,6 +17,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
 {
+    [DebuggerDisplay("{ToString(),nq}")]
     public class AspNetProcess : IDisposable
     {
         private const string ListeningMessagePrefix = "Now listening on: ";
@@ -141,6 +143,25 @@ namespace Templates.Test.Helpers
         {
             _httpClient.Dispose();
             Process.Dispose();
+        }
+
+        public override string ToString()
+        {
+            var result = "";
+            result += Process != null ? "Active: " : "Inactive";
+            if (Process != null)
+            {
+                if (!Process.HasExited)
+                {
+                    result += $"(Listening on {_listeningUri.OriginalString}) PID: {Process.Id}";
+                }
+                else
+                {
+                    result += "(Already finished)";
+                }
+            }
+
+            return result;
         }
     }
 }

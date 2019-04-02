@@ -317,6 +317,12 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FSharpWebSite", "test\WebSi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorBuildWebSite.PrecompiledViews", "test\WebSites\RazorBuildWebSite.PrecompiledViews\RazorBuildWebSite.PrecompiledViews.csproj", "{A8C3066F-E80D-4E03-9962-741B551B8FBC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Mvc.Components.Prerendering", "Mvc.Components.Prerendering", "{45CE788D-4B69-4F83-981C-F43D8F15B0F1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Components.Prerendering", "Mvc.Components.Prerendering\src\Microsoft.AspNetCore.Mvc.Components.Prerendering.csproj", "{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Components.Prerendering.Test", "Mvc.Components.Prerendering\test\Microsoft.AspNetCore.Mvc.Components.Prerendering.Test.csproj", "{C6F3BCE6-1EFD-4360-932B-B98573E78926}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1809,6 +1815,30 @@ Global
 		{A8C3066F-E80D-4E03-9962-741B551B8FBC}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{A8C3066F-E80D-4E03-9962-741B551B8FBC}.Release|x86.ActiveCfg = Release|Any CPU
 		{A8C3066F-E80D-4E03-9962-741B551B8FBC}.Release|x86.Build.0 = Release|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Debug|x86.Build.0 = Debug|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Release|x86.ActiveCfg = Release|Any CPU
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890}.Release|x86.Build.0 = Release|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Debug|x86.Build.0 = Debug|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|x86.ActiveCfg = Release|Any CPU
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1938,6 +1968,8 @@ Global
 		{F99CAC82-C96E-41F4-AA28-1BBBD09C447A} = {5FE3048A-E96B-44F8-A7C4-FC590D7E04B4}
 		{65E98187-96FB-4FCD-94A3-F8048C2F13F1} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{A8C3066F-E80D-4E03-9962-741B551B8FBC} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
+		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890} = {45CE788D-4B69-4F83-981C-F43D8F15B0F1}
+		{C6F3BCE6-1EFD-4360-932B-B98573E78926} = {45CE788D-4B69-4F83-981C-F43D8F15B0F1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {63D344F6-F86D-40E6-85B9-0AABBE338C4A}

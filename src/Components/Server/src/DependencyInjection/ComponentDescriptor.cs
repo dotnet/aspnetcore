@@ -11,10 +11,13 @@ namespace Microsoft.AspNetCore.Components.Server
 
         public string Selector { get; set; }
 
-        public void Deconstruct(out Type componentType, out string selector)
+        public bool Prerendered { get; set; }
+
+        public void Deconstruct(out Type componentType, out string selector, out bool prerendered)
         {
             componentType = ComponentType;
             selector = Selector;
+            prerendered = Prerendered;
         }
     }
 }

@@ -53,7 +53,8 @@ namespace RazorComponentsWeb_CSharp
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
-                endpoints.MapComponentHub<App>("app");
+                endpoints.MapComponentHub();
+                endpoints.MapFallbackToPage("/Host");
             });
         }
     }

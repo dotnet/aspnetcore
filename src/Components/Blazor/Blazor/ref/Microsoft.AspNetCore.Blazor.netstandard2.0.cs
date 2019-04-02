@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
     {
         internal WebAssemblyUriHelper() { }
         public static readonly Microsoft.AspNetCore.Blazor.Services.WebAssemblyUriHelper Instance;
-        protected override void InitializeState() { }
+        protected override void EnsureInitialized() { }
         protected override void NavigateToCore(string uri, bool forceLoad) { }
         [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
         public static void NotifyLocationChanged(string newAbsoluteUri) { }
