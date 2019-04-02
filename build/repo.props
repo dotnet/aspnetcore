@@ -30,6 +30,7 @@
 
   <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
     <BuildNative>true</BuildNative>
+    <BuildCMake>true</BuildCMake>
     <BuildManaged>true</BuildManaged>
     <BuildNodeJS>true</BuildNodeJS>
     <BuildJava>true</BuildJava>
@@ -127,7 +128,7 @@
                           $(RepositoryRoot)src\SignalR\**\*.cmakeproj;
                           " />
 
-        <ProjectToBuild Include="@(CMakeProjects)" />
+        <ProjectToBuild Condition=" '$(BuildCMake)' == 'true'" Include="@(CMakeProjects)" />
 
         <NodeJsProjects Include="
                           $(RepositoryRoot)src\SignalR\**\*.npmproj;
