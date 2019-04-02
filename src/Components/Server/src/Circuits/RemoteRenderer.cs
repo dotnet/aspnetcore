@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             // disposed.
         }
 
-        public void OnRenderCompleted(long incommingBatchId, string errorMessageOrNull)
+        public void OnRenderCompleted(long incomingBatchId, string errorMessageOrNull)
         {
             if (_disposing)
             {
@@ -201,12 +201,10 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 return;
             }
 
-            // We peek first in case we are receiving a duplicate or out of order ack from
-            // the client.
-            if (!PendingRenderBatches.TryDequeue(out var entry) || entry.BatchId != incommingBatchId)
+            if (!PendingRenderBatches.TryDequeue(out var entry) || entry.BatchId != incomingBatchId)
             {
                 HandleException(
-                    new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incommingBatchId}'."));
+                    new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
             }
             else
             {

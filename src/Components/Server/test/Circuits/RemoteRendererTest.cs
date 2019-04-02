@@ -59,10 +59,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
 
             var initialClient = new Mock<IClientProxy>();
             initialClient.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-                .Callback((string name, object[] value, CancellationToken token) =>
-                {
-                    renderIds.Add((long)value[1]);
-                })
+                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
                 .Returns(firstBatchTCS.Task);
             var circuitClient = new CircuitClientProxy(initialClient.Object, "connection0");
             var renderer = GetRemoteRenderer(serviceProvider, circuitClient);
@@ -75,10 +72,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
 
             var client = new Mock<IClientProxy>();
             client.Setup(c => c.SendCoreAsync(It.IsAny<string>(), It.IsAny<object[]>(), It.IsAny<CancellationToken>()))
-                .Callback((string name, object[] value, CancellationToken token) =>
-                {
-                    renderIds.Add((long)value[1]);
-                })
+                .Callback((string name, object[] value, CancellationToken token) => renderIds.Add((long)value[1]))
                 .Returns<string, object[], CancellationToken>((n, v, t) => (long)v[1] == 3 ? secondBatchTCS.Task : thirdBatchTCS.Task);
 
             var componentId = renderer.AssignRootComponentId(component);
@@ -213,7 +207,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             offlineClient.Transfer(onlineClient.Object, "new-connection");
             var task = renderer.ProcessBufferedRenderBatches();
             var exceptions = new List<Exception>();
-            renderer.UnhandledException += (sender, e) => 
+            renderer.UnhandledException += (sender, e) =>
             {
                 exceptions.Add(e);
             };
