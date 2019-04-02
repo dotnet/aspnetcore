@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -439,14 +440,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
 #if NETCOREAPP3_0
         public async IAsyncEnumerable<object> StreamAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
         {
-           var channel = await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken);
-
-            while (await channel.WaitToReadAsync())
-            {
-                while (channel.TryRead(out var streamItem))
-                {
-                    yield return streamItem;
-                }
+            var stream = (await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken)).ReadAllAsync();
+            await foreach(var item in AsyncEnumerableAdapters.MakeCancelableAsyncEnumerable(stream, cancellationToken)) {
+                yield return item;
             }
         }
 #endif

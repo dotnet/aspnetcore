@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
+#if NETCOREAPP3_0
+
     // True-internal because this is a weird and tricky class to use :)
     internal static class AsyncEnumerableAdapters
     {
@@ -67,4 +69,5 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
         }
     }
+#endif
 }

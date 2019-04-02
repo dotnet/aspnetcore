@@ -13,6 +13,8 @@
     <Compile Include="$(SignalRSharedSourceRoot)PipeWriterStream.cs" Link="PipeWriterStream.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)ReflectionHelper.cs" Link="ReflectionHelper.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)TimerAwaitable.cs" Link="Internal\TimerAwaitable.cs" />
+    <Compile Include="$(SignalRRoot)server\Core\src\Internal\AsyncEnumerableAdapters.cs" Link="Internal\AsyncEnumerableAdapters.cs" />
+
   </ItemGroup>
 
   <ItemGroup>
