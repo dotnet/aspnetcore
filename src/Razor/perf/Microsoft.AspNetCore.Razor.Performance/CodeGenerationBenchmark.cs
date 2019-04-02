@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Performance
             
             ProjectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, b => RazorExtensions.Register(b)); ;
 
-            MSN = fileSystem.GetItem(Path.Combine(root.FullName, "MSN.cshtml"));
+            MSN = fileSystem.GetItem(Path.Combine(root.FullName, "MSN.cshtml"), FileKinds.Legacy);
         }
 
         public RazorProjectEngine ProjectEngine { get; }
