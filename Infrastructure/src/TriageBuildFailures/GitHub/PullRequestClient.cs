@@ -13,10 +13,10 @@ namespace TriageBuildFailures.GitHub
     public class PullRequestClient : ICIClient
     {
         private readonly GitHubClientWrapper _gitHubClient;
-        private readonly VSTSClient _vstsClient;
+        private readonly VSTSBuildClient _vstsClient;
         private readonly IReporter _reporter;
 
-        public PullRequestClient(GitHubClientWrapper githubClient, VSTSClient vstsClient, IReporter reporter)
+        public PullRequestClient(GitHubClientWrapper githubClient, VSTSBuildClient vstsClient, IReporter reporter)
         {
             _gitHubClient = githubClient;
             _vstsClient = vstsClient;

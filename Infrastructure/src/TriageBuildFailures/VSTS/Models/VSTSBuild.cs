@@ -18,7 +18,7 @@ namespace TriageBuildFailures.VSTS.Models
             _build = build;
         }
 
-        public Type CIType { get; set; } = typeof(VSTSClient);
+        public Type CIType { get; set; } = typeof(VSTSBuildClient);
 
         public string Id => _build.Id;
 
