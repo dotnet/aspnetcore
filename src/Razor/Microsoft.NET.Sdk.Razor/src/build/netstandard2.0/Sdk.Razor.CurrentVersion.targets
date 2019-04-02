@@ -374,11 +374,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <Warning Text="Unable to resolve a Razor configuration for the value '$(RazorDefaultConfiguration)'. Available configurations '@(RazorConfiguration->'%(Identity)', ', ')'.'"
       Code="RAZORSDK1000"
-      Condition="'@(ResolvedRazorConfiguration->Count())' == '0'" />
+      Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '@(ResolvedRazorConfiguration->Count())' == '0'" />
 
     <Warning Text="More than one Razor configuration was resolved for the value '$(RazorDefaultConfiguration)'. Available configurations '@(RazorConfiguration->'%(Identity)', ', ')'."
       Code="RAZORSDK1001"
-      Condition="'@(ResolvedRazorConfiguration->Count())' &gt; '1'" />
+      Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '@(ResolvedRazorConfiguration->Count())' &gt; '1'" />
+
+    <!-- For a 3.0 project, targeting a RazorLangVersion is nearly always an error condition -->
+    <Warning Text="Detected Razor language version downgrade. This is typically caused by a reference to the Microsoft.AspNetCore.Razor.Design package. Consider removing this package reference."
+      Code="RAZORSDK1006"
+      Condition="'$(_Targeting30OrNewerRazorLangVersion)' != 'true' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'" />
 
     <FindInList
         List="@(RazorExtension)"

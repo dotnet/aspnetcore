@@ -21,6 +21,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <PropertyGroup>
+    <_RazorGenerateComponentDeclarationDesignTimeDependsOn>ResolveRazorConfiguration;ResolveRazorComponentInputs;AssignRazorComponentTargetPaths;RazorGenerateComponentDeclaration</_RazorGenerateComponentDeclarationDesignTimeDependsOn>
+    <_RazorGenerateComponentDesignTimeDependsOn>ResolveRazorComponentInputs;AssignRazorComponentTargetPaths</_RazorGenerateComponentDesignTimeDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Used for tracking inputs to component generation -->
     <_RazorComponentInputHash></_RazorComponentInputHash>
     <_RazorComponentInputCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorComponent.input.cache</_RazorComponentInputCacheFile>
