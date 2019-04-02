@@ -21,9 +21,5 @@
     <file src="buildMultiTargeting\*" target="buildMultiTargeting" />
     <file src="bin\$configuration$\net461\Microsoft.Extensions.ApiDescription.Tasks.*" target="tasks\net461" />
     <file src="bin\$configuration$\netstandard2.0\Microsoft.Extensions.ApiDescription.Tasks.*" target="tasks\netstandard2.0" />
-    <file src="..\..\dotnet-getdocument\src\bin\$configuration$\netcoreapp2.1\publish\*.*" target="tools" />
-    <file src="..\..\GetDocumentInsider\src\bin\$configuration$\net461\GetDocument.Insider.*" target="tools\net461" />
-    <file src="..\..\GetDocumentInsider\src\bin\x86\$configuration$\net461\GetDocument.Insider.*" target="tools\net461-x86" />
-    <file src="..\..\GetDocumentInsider\src\bin\$configuration$\netcoreapp2.0\GetDocument.Insider.*" target="tools\netcoreapp2.0" />
   </files>
 </package>

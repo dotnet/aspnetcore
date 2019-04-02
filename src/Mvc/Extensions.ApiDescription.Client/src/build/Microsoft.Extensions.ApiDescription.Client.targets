@@ -1,0 +1,151 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <!-- Internal settings. Not intended for customization. -->
+  <PropertyGroup>
+    <GenerateOpenApiReferenceCodeDependsOn>
+      _GetMetadataForOpenApiReferences;
+      _GenerateOpenApiReferenceCode;
+      _CreateCompileItemsForOpenApiReferences
+    </GenerateOpenApiReferenceCodeDependsOn>
+    <GenerateServiceFileReferenceCodeDependsOn>
+      _GenerateErrorsForOldItems;
+      _CreateOpenApiReferenceItemsForOpenApiProjectReferences;
+      GenerateOpenApiReferenceCode
+    </GenerateServiceFileReferenceCodeDependsOn>
+  </PropertyGroup>
+
+  <!-- OpenApiProjectReference support. -->
+
+  <ItemGroup>
+    <!--
+      Do not change %(ReferenceOutputAssembly) if project contains duplicate @(ProjectReference) and
+      @(OpenApiProjectReference) items.
+    -->
+    <ProjectReference Include="@(OpenApiProjectReference)" Exclude="@(ProjectReference)" ReferenceOutputAssembly="false" />
+    <ProjectReference Update="@(OpenApiProjectReference)" OpenApiReference="true" />
+  </ItemGroup>
+
+  <Target Name="_CreateOpenApiReferenceItemsForOpenApiProjectReferences"
+      AfterTargets="ResolveProjectReferences"
+      Condition="'%(ProjectReferenceWithConfiguration.OpenApiReference)' == 'true' AND '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"
+      Inputs="%(ProjectReferenceWithConfiguration.Identity)"
+      Outputs="&lt;not-a-file !&gt;">
+    <PropertyGroup>
+      <_Identity>%(ProjectReferenceWithConfiguration.Identity)</_Identity>
+      <_Temporary />
+    </PropertyGroup>
+
+    <MSBuild Target="OpenApiGetDocuments"
+        Project="$(_Identity)"
+        Properties="%(ProjectReferenceWithConfiguration.SetConfiguration); %(ProjectReferenceWithConfiguration.SetPlatform); %(ProjectReferenceWithConfiguration.SetTargetFramework)"
+        RebaseOutputs="true"
+        RemoveProperties="%(ProjectReferenceWithConfiguration.GlobalPropertiesToRemove);TargetFrameworks;RuntimeIdentifier">
+      <Output TaskParameter="TargetOutputs" PropertyName="_Temporary" />
+    </MSBuild>
+
+    <ItemGroup>
+      <OpenApiProjectReference Update="$(_Identity)">
+        <Documents>$(_Temporary)</Documents>
+      </OpenApiProjectReference>
+      <OpenApiReference Include="@(OpenApiProjectReference -> '%(Documents)')" Condition="'%(Identity)' == '$(_Identity)'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_Identity />
+      <_Temporary />
+    </PropertyGroup>
+  </Target>
+
+  <!-- OpenApiReference support. -->
+
+  <Target Name="_GetMetadataForOpenApiReferences" Condition="'@(OpenApiReference)' != ''">
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <GetFileReferenceMetadata Inputs="@(OpenApiReference)"
+        Extension="$(DefaultLanguageSourceExtension)"
+        Namespace="$(RootNamespace)"
+        OutputDirectory="$(OpenApiDefaultOutputDirectory)">
+      <Output TaskParameter="Outputs" ItemName="_Temporary" />
+    </GetFileReferenceMetadata>
+
+    <ItemGroup>
+      <OpenApiReference Remove="@(OpenApiReference)" />
+      <OpenApiReference Include="@(_Temporary)" />
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GetCurrentOpenApiReference">
+    <GetCurrentItems Input="$(GeneratorMetadata)">
+      <Output TaskParameter="Outputs" ItemName="CurrentOpenApiReference" />
+    </GetCurrentItems>
+  </Target>
+
+  <Target Name="_InnerGenerateOpenApiReferenceCode" DependsOnTargets="_GetCurrentOpenApiReference;$(GeneratorTarget)" />
+
+  <Target Name="_GenerateOpenApiReferenceCode" Inputs="@(OpenApiReference)" Outputs="%(OutputPath)"
+      Condition="$(OpenApiGenerateAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true') OR !Exists('%(OutputPath)')">
+    <MSBuild BuildInParallel="$(BuildInParallel)"
+        Projects="$(MSBuildProjectFullPath)"
+        Properties="GeneratorTargetPath=%(OpenApiReference.OutputPath);GeneratorTarget=Generate%(CodeGenerator);GeneratorMetadata=%(SerializedMetadata)"
+        RemoveProperties="TargetFrameworks"
+        Targets="_InnerGenerateOpenApiReferenceCode" />
+  </Target>
+
+  <Target Name="_CreateCompileItemsForOpenApiReferences" Condition="'@(OpenApiReference)' != ''">
+    <ItemGroup>
+      <_Files Remove="@(_Files)" />
+      <_Files Include="@(OpenApiReference -> '%(OutputPath)')"
+          Condition="$([System.IO.File]::Exists('%(OpenApiReference.OutputPath)'))">
+        <OutputPathExtension>$([System.IO.Path]::GetExtension('%(OpenApiReference.OutputPath)'))</OutputPathExtension>
+      </_Files>
+      <_Directories Remove="@(_Directories)" />
+      <_Directories Include="@(OpenApiReference -> '%(OutputPath)')"
+          Condition="Exists('%(OpenApiReference.OutputPath)') AND ! $([System.IO.File]::Exists('%(OpenApiReference.OutputPath)'))" />
+
+      <!-- If OutputPath is a file, add it directly to relevant items. -->
+      <TypeScriptCompile Remove="@(_Files)" Condition="'%(_Files.OutputPathExtension)' == '.ts'" />
+      <TypeScriptCompile Include="@(_Files)" Condition="'%(_Files.OutputPathExtension)' == '.ts'">
+        <SourceDocument>%(_Files.FullPath)</SourceDocument>
+      </TypeScriptCompile>
+
+      <Compile Remove="@(_Files)"
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.OutputPathExtension)' == '$(DefaultLanguageSourceExtension)'" />
+      <Compile Include="@(_Files)"
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.OutputPathExtension)' == '$(DefaultLanguageSourceExtension)'">
+        <SourceDocument>%(OpenApiReference.FullPath)</SourceDocument>
+      </Compile>
+
+      <!-- Otherwise, add all descendant files with the expected extension. -->
+      <TypeScriptCompile Remove="@(_Directories -> '%(Identity)/**/*.ts')" />
+      <TypeScriptCompile Include="@(_Directories -> '%(Identity)/**/*.ts')">
+        <SourceDocument>%(_Directories.FullPath)</SourceDocument>
+      </TypeScriptCompile>
+
+      <Compile Remove="@(_Directories -> '%(Identity)/**/*.$(DefaultLanguageSourceExtension)')"
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts'" />
+      <Compile Include="@(_Directories -> '%(Identity)/**/*.$(DefaultLanguageSourceExtension)')"
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts'">
+        <SourceDocument>%(_Directories.FullPath)</SourceDocument>
+      </Compile>
+
+      <_Files Remove="@(_Files)" />
+      <_Directories Remove="@(_Directories)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateOpenApiReferenceCode" DependsOnTargets="$(GenerateOpenApiReferenceCodeDependsOn)" />
+
+  <!-- Tie above code generation steps into the build.  -->
+
+  <Target Name="_GenerateErrorsForOldItems">
+    <Error Condition="'@(ServiceProjectReference)' != ''" Text="ServiceProjectReference items are no longer supported." />
+    <Error Condition="'@(ServiceUriReference)' != ''" Text="ServiceUriReference items are no longer supported." />
+    <Error Condition="'@(ServiceFileReference)' != ''" Text="ServiceFileReference items are no longer supported." />
+  </Target>
+
+  <Target Name="GenerateServiceFileReferenceCode"
+      BeforeTargets="BeforeCompile"
+      DependsOnTargets="$(GenerateServiceFileReferenceCodeDependsOn)" />
+</Project>

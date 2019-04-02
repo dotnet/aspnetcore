@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <PropertyGroup>
+    <_ApiDescriptionTasksAssemblyTarget
+        Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_ApiDescriptionTasksAssemblyTarget>
+    <_ApiDescriptionTasksAssemblyTarget
+        Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_ApiDescriptionTasksAssemblyTarget>
+    <_ApiDescriptionTasksAssemblyPath>$(MSBuildThisFileDirectory)/../tasks/$(_ApiDescriptionTasksAssemblyTarget)/Microsoft.Extensions.ApiDescription.Tasks.dll</_ApiDescriptionTasksAssemblyPath>
+    <_ApiDescriptionTasksAssemblyTarget />
+  </PropertyGroup>
+  <UsingTask TaskName="GetCurrentItems" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
+  <UsingTask TaskName="GetFileReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
+
+  <!--
+    Settings users may update as they see fit.
+  -->
+  <PropertyGroup>
+    <OpenApiDefaultGeneratorOptions Condition="'$(OpenApiDefaultGeneratorOptions)' == ''"></OpenApiDefaultGeneratorOptions>
+
+    <!--
+      If 'true', will generate code for OpenApiReference items during design-time builds. Otherwise, generate code only
+      for output files that do not yet exist during design-time builds.
+    -->
+    <OpenApiGenerateAtDesignTime Condition="'$(OpenApiGenerateAtDesignTime)' == ''">true</OpenApiGenerateAtDesignTime>
+
+    <!--
+      $(OpenApiDefaultOutputDirectory) value is interpreted relative to the project folder, unless already an
+      absolute path.
+    -->
+    <OpenApiDefaultOutputDirectory>
+        Condition="'$(OpenApiDefaultOutputDirectory)' == ''">$(BaseIntermediateOutputPath)</OpenApiDefaultOutputDirectory>
+    <OpenApiDefaultOutputDirectory>$([MSBuild]::EnsureTrailingSlash('$(OpenApiDefaultOutputDirectory)'))</OpenApiDefaultOutputDirectory>
+  </PropertyGroup>
+
+  <!--
+    Well-known metadata of the code generator item groups.
+  -->
+  <ItemDefinitionGroup>
+    <!-- OpenApiProjectReference items may also include OpenApiReference metadata. -->
+    <OpenApiProjectReference>
+      <!-- The original identity. Saved when creating OpenApiReference items. -->
+      <SourceProject>%(Identity)</SourceProject>
+    </OpenApiProjectReference>
+
+    <OpenApiReference>
+      <!-- Name of the class to generate. Defaults to match filename in %(OutputPath). -->
+      <ClassName />
+      <!--
+        Code generator to use. Required and must end with "CSharp" or "TypeScript" (the currently-supported target
+        languages) unless %(OutputPath) is set. Builds will invoke a target named "Generate%(CodeGenerator)" to do
+        actual code generation.
+      -->
+      <CodeGenerator>NSwagCSharp</CodeGenerator>
+      <!-- Namespace to contain generated class. Default is $(RootNamespace). -->
+      <Namespace />
+      <!--
+        Options to pass to the code generator target then (likely) added to a tool's command line. Value is passed
+        along to the code generator but otherwise unused in this package.
+      -->
+      <Options>$(OpenApiDefaultGeneratorOptions)</Options>
+      <!--
+        Path to place generated code. Code generator may interpret path as a filename or directory. Default filename or
+        folder name is %(Filename)Client.[cs|ts]. Filenames and relative paths (if explicitly set) are combined with
+        $(OpenApiDefaultOutputDirectory). Final value (depending on $(OpenApiDefaultOutputDirectory)) is likely to be
+        a path relative to the client project.
+      -->
+      <OutputPath />
+    </OpenApiReference>
+  </ItemDefinitionGroup>
+</Project>

@@ -10,8 +10,8 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.Extensions.ApiDescription.Tasks
 {
     /// <summary>
-    /// Adds or corrects ClassName, Namespace and OutputPath metadata in ServiceFileReference items. Also stores final
-    /// metadata as SerializedMetadata.
+    /// Adds or corrects ClassName, FirstForGenerator, Namespace, and OutputPath metadata in OpenApiReference items.
+    /// Also stores final metadata as SerializedMetadata.
     /// </summary>
     public class GetFileReferenceMetadata : Task
     {
@@ -35,13 +35,13 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
         public string OutputDirectory { get; set; }
 
         /// <summary>
-        /// The ServiceFileReference items to update.
+        /// The OpenApiReference items to update.
         /// </summary>
         [Required]
         public ITaskItem[] Inputs { get; set; }
 
         /// <summary>
-        /// The updated ServiceFileReference items. Will include ClassName, Namespace and OutputPath metadata.
+        /// The updated OpenApiReference items. Will include ClassName, Namespace and OutputPath metadata.
         /// </summary>
         [Output]
         public ITaskItem[] Outputs{ get; set; }
@@ -52,34 +52,44 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
             var outputs = new List<ITaskItem>(Inputs.Length);
             var destinations = new HashSet<string>();
 
+            var first = true;
             foreach (var item in Inputs)
             {
+                var codeGenerator = item.GetMetadata("CodeGenerator");
+                if (string.IsNullOrEmpty(codeGenerator))
+                {
+                    // This case occurs when user overrides the required metadata with an empty string.
+                    var type = string.IsNullOrEmpty(item.GetMetadata("SourceProject")) ?
+                        "OpenApiReference" :
+                        "OpenApiProjectReference";
+
+                    Log.LogError(
+                        Resources.FormatInvalidEmptyMetadataValue("CodeGenerator", "OpenApiReference", item.ItemSpec));
+                    continue;
+                }
+
                 var newItem = new TaskItem(item);
                 outputs.Add(newItem);
 
-                var codeGenerator = item.GetMetadata("CodeGenerator");
-                if (string.IsNullOrEmpty("CodeGenerator"))
+                if (first)
                 {
-                    // This case occurs when user forgets to specify the required metadata. We have no default here.
-                    string type;
-                    if (!string.IsNullOrEmpty(item.GetMetadata("SourceProject")))
-                    {
-                        type = "ServiceProjectReference";
-                    }
-                    else
-                    {
-                        type = "ServiceFileReference";
-                    }
-
-                    Log.LogError(Resources.FormatInvalidEmptyMetadataValue("CodeGenerator", type, item.ItemSpec));
+                    newItem.SetMetadata("FirstForGenerator", "true");
+                    first = false;
+                }
+                else
+                {
+                    newItem.SetMetadata("FirstForGenerator", "false");
                 }
 
                 var outputPath = item.GetMetadata("OutputPath");
                 if (string.IsNullOrEmpty(outputPath))
                 {
-                    // No need to further sanitize this path.
+                    // No need to further sanitize this path because the file must exist.
                     var filename = item.GetMetadata("Filename");
-                    var isTypeScript = codeGenerator.EndsWith(TypeScriptLanguageName, StringComparison.OrdinalIgnoreCase);
+                    var isTypeScript = codeGenerator.EndsWith(
+                        TypeScriptLanguageName,
+                        StringComparison.OrdinalIgnoreCase);
+
                     outputPath = $"{filename}Client{(isTypeScript ? ".ts" : Extension)}";
                 }
 
@@ -94,6 +104,7 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                     // This case may occur when user is experimenting e.g. with multiple code generators or options.
                     // May also occur when user accidentally duplicates OutputPath metadata.
                     Log.LogError(Resources.FormatDuplicateFileOutputPaths(outputPath));
+                    continue;
                 }
 
                 MetadataSerializer.SetMetadata(newItem, "OutputPath", outputPath);
