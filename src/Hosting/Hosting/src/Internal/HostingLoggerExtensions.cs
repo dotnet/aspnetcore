@@ -132,7 +132,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             public HostingLogScope(HttpContext httpContext, string correlationId)
             {
                 _traceIdentifier = httpContext.TraceIdentifier;
-                _path = (httpContext.Request.PathBase+httpContext.Request.Path).ToString();
+                _path = (httpContext.Request.PathBase.HasValue 
+                         ? httpContext.Request.PathBase + httpContext.Request.Path 
+                         : httpContext.Request.Path).ToString();
                 _correlationId = correlationId;
             }
 
