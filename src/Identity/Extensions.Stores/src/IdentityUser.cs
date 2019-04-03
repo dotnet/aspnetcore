@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Identity
         public IdentityUser()
         {
             Id = Guid.NewGuid().ToString();
+            SecurityStamp = Guid.NewGuid().ToString();
         }
 
         /// <summary>

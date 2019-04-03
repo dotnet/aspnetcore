@@ -860,7 +860,13 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(user));
             }
-            return await securityStore.GetSecurityStampAsync(user, CancellationToken);
+            var stamp = await securityStore.GetSecurityStampAsync(user, CancellationToken);
+            if (stamp == null) 
+            {
+                Logger.LogWarning(15, "GetSecurityStampAsync for user {userId} failed because stamp was null.", await GetUserIdAsync(user));
+                throw new InvalidOperationException(Resources.NullSecurityStamp);
+            }
+            return stamp;
         }
 
         /// <summary>

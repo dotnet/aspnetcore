@@ -85,6 +85,25 @@ namespace Microsoft.AspNetCore.Identity.Test
         }
 
         [Fact]
+        public async Task CreateUpdatesSecurityStampStore()
+        {
+            // Setup
+            var store = new Mock<IUserSecurityStampStore<PocoUser>>();
+            var user = new PocoUser { UserName = "Foo", SecurityStamp = "sssss" };
+            store.Setup(s => s.CreateAsync(user, CancellationToken.None)).ReturnsAsync(IdentityResult.Success).Verifiable();
+            store.Setup(s => s.GetSecurityStampAsync(user, CancellationToken.None)).Returns(Task.FromResult(user.SecurityStamp)).Verifiable();
+            store.Setup(s => s.SetSecurityStampAsync(user, It.IsAny<string>(), CancellationToken.None)).Returns(Task.FromResult(0)).Verifiable();
+            var userManager = MockHelpers.TestUserManager<PocoUser>(store.Object);
+
+            // Act
+            var result = await userManager.CreateAsync(user);
+
+            // Assert
+            Assert.True(result.Succeeded);
+            store.VerifyAll();
+        }
+
+        [Fact]
         public async Task CreateCallsUpdateEmailStore()
         {
             // Setup
