@@ -22,7 +22,6 @@ namespace RazorComponentsWeb_CSharp
         {
             services.AddRazorPages();
             services.AddRazorComponents();
-
             services.AddSingleton<WeatherForecastService>();
         }
 
@@ -43,6 +42,7 @@ namespace RazorComponentsWeb_CSharp
 
 #if (RequiresHttps)
             app.UseHttpsRedirection();
+
 #endif
             app.UseStaticFiles();
 
@@ -50,7 +50,6 @@ namespace RazorComponentsWeb_CSharp
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
                 endpoints.MapComponentHub<App>("app");
                 endpoints.MapFallbackToPage("/_Host");
             });
