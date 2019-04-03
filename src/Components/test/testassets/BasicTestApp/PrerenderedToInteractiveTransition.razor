@@ -17,16 +17,11 @@
 
 @functions {
     int count;
-    bool afterConnect = false;
     protected override Task OnAfterRenderAsync()
     {
-        if (!afterConnect && ComponentContext.IsConnected)
-        {
-            afterConnect = true;
-            // We need to queue another render when we connect, otherwise the
-            // browser won't see anything.
-            StateHasChanged();
-        }
+        // We need to queue another render when we connect, otherwise the
+        // browser won't see anything.
+        StateHasChanged();
 
         return Task.CompletedTask;
     }

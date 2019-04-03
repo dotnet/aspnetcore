@@ -49,8 +49,6 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             Browser.Equal(string.Empty, () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
 
             BeginInteractivity();
-            Browser.True(() => ((IJavaScriptExecutor)Browser)
-                .ExecuteScript("return window['__aspnetcore__testing__blazor__started__'];") == null ? false : true);
 
             // Once connected, we can
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
