@@ -3,9 +3,11 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>dotnet-blazor</AssemblyName>
     <PackageId>Microsoft.AspNetCore.Blazor.Cli</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
     <StartupObject>Microsoft.AspNetCore.Blazor.Cli.Program</StartupObject>
     <Description>Development server for use when building Blazor applications.</Description>
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
@@ -20,28 +22,29 @@
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
   </ItemGroup>
 
-  <!--
-    Temporarily use hand-authored .nuspec file until we can use <FrameworkReference>
-    The hand-authored .nuspec file is to ensure it *doesn't* reference the shared
-    framework packages that aren't actually shipping as packages. We can remove this
-    once the nuspec generation accounts for <FrameworkReference>.
-  -->
-  <Target Name="PrepareNuSpecProperties" BeforeTargets="_IntermediatePack">
+  <!-- Pack settings -->
+  <PropertyGroup>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <IntermediatePackDir>obj\publish\</IntermediatePackDir>
+    <PublishDir>$(IntermediatePackDir)$(TargetFramework)\</PublishDir>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.Cli.nuspec</NuspecFile>
+  </PropertyGroup>
+
+  <!-- Executes /t:Publish for all target frameworks before packing-->
+  <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
     <PropertyGroup>
-      <NuspecFile>Microsoft.AspNetCore.Blazor.Cli.nuspec</NuspecFile>
+      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
       <NuspecProperties>
-        outdir=$(OutDir);
+        packageId=$(PackageId);
+        description=$(Description);
+        publishDir=$([MSBuild]::NormalizeDirectory($(PublishDir)));
         componentsrootdir=..\..\..\;
         blazorversion=$(PackageVersion);
-        aspnetcoreversion=$(ComponentsPackageVersion);
-        sharedfxversion=$(SharedFxVersion);
         repositorycommit=$(SourceRevisionId);</NuspecProperties>
     </PropertyGroup>
-    <!-- Also temporarily generate the runtimeconfig.json manually until we can use <FrameworkReference> -->
-    <Sdk_GenerateFileFromTemplate
-      TemplateFile="temporaryruntimeconfig.json"
-      Properties="$(NuspecProperties)"
-      OutputPath="$(OutDir)temporaryruntimeconfig.out.json">
-    </Sdk_GenerateFileFromTemplate>
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFramework)" />
+    </ItemGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
   </Target>
 </Project>
