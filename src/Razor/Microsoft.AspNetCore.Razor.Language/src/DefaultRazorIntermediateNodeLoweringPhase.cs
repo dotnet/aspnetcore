@@ -1885,36 +1885,101 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _document.Diagnostics.Add(
                     ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+
+                base.VisitMarkupElement(node);
             }
 
             public override void VisitMarkupCommentBlock(MarkupCommentBlockSyntax node)
             {
                 _document.Diagnostics.Add(
                     ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+
+                base.VisitMarkupCommentBlock(node);
             }
 
             public override void VisitMarkupTagHelperElement(MarkupTagHelperElementSyntax node)
             {
                 _document.Diagnostics.Add(
                     ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
-            }
 
-            public override void VisitCSharpImplicitExpression(CSharpImplicitExpressionSyntax node)
-            {
-                _document.Diagnostics.Add(
-                    ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+                base.VisitMarkupTagHelperElement(node);
             }
 
             public override void VisitCSharpExplicitExpression(CSharpExplicitExpressionSyntax node)
             {
                 _document.Diagnostics.Add(
                     ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+
+                base.VisitCSharpExplicitExpression(node);
+            }
+
+            public override void VisitCSharpImplicitExpression(CSharpImplicitExpressionSyntax node)
+            {
+                // We typically don't want C# in imports files except for directives. But since Razor directive intellisense
+                // is tied to C# intellisense during design time, we want to still generate and IR node for implicit expressions.
+                // Otherwise, there will be no source mapping when someone types an `@` leading to no intellisense.
+                if (node.FirstAncestorOrSelf<SyntaxNode>(n => n is MarkupStartTagSyntax || n is MarkupEndTagSyntax) != null)
+                {
+                    // We don't care about implicit expresssion in attributes.
+                    return;
+                }
+
+                var expressionNode = new CSharpExpressionIntermediateNode();
+
+                _builder.Push(expressionNode);
+
+                base.VisitCSharpImplicitExpression(node);
+
+                _builder.Pop();
+
+                if (expressionNode.Children.Count > 0)
+                {
+                    var sourceRangeStart = expressionNode
+                        .Children
+                        .FirstOrDefault(child => child.Source != null)
+                        ?.Source;
+
+                    if (sourceRangeStart != null)
+                    {
+                        var contentLength = expressionNode.Children.Sum(child => child.Source?.Length ?? 0);
+
+                        expressionNode.Source = new SourceSpan(
+                            sourceRangeStart.Value.FilePath ?? SourceDocument.FilePath,
+                            sourceRangeStart.Value.AbsoluteIndex,
+                            sourceRangeStart.Value.LineIndex,
+                            sourceRangeStart.Value.CharacterIndex,
+                            contentLength);
+                    }
+                }
+
+                _document.Diagnostics.Add(
+                    ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(expressionNode.Source));
+
+                base.VisitCSharpImplicitExpression(node);
+            }
+
+            public override void VisitCSharpExpressionLiteral(CSharpExpressionLiteralSyntax node)
+            {
+                if (node.FirstAncestorOrSelf<SyntaxNode>(n => n is CSharpImplicitExpressionSyntax) == null)
+                {
+                    // We only care about implicit expressions.
+                    return;
+                }
+
+                _builder.Add(new IntermediateToken()
+                {
+                    Content = node.GetContent(),
+                    Kind = TokenKind.CSharp,
+                    Source = BuildSourceSpanFromNode(node),
+                });
             }
 
             public override void VisitCSharpStatement(CSharpStatementSyntax node)
             {
                 _document.Diagnostics.Add(
                     ComponentDiagnosticFactory.Create_UnsupportedComponentImportContent(BuildSourceSpanFromNode(node)));
+
+                base.VisitCSharpStatement(node);
             }
         }
 
