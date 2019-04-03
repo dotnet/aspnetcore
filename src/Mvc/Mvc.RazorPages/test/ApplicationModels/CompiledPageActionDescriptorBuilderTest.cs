@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             // Assert
             Assert.Same(actionDescriptor.ActionConstraints, actual.ActionConstraints);
             Assert.Same(actionDescriptor.AttributeRouteInfo, actual.AttributeRouteInfo);
-            Assert.Same(actionDescriptor.EndpointMetadata, actual.EndpointMetadata);
             Assert.Same(actionDescriptor.RelativePath, actual.RelativePath);
             Assert.Same(actionDescriptor.RouteValues, actual.RouteValues);
             Assert.Same(actionDescriptor.ViewEnginePath, actual.ViewEnginePath);
@@ -392,6 +391,35 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                     Assert.Same(propertyModel1.PropertyInfo, p.Property);
                     Assert.Same(propertyModel1.BindingInfo, p.BindingInfo);
                 });
+        }
+
+        [Fact]
+        public void CreateDescriptor_CombinesEndpointMetadataFromHandlerTypeAttributesAndAttributesOnModel()
+        {
+            // Arrange
+            var metadata1 = new object();
+            var metadata2 = new object();
+            var metadata3 = new object();
+            var actionDescriptor = new PageActionDescriptor
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>(),
+                AttributeRouteInfo = new AttributeRouteInfo(),
+                EndpointMetadata = new List<object> { metadata1 },
+                FilterDescriptors = new List<FilterDescriptor>(),
+                RelativePath = "/Foo",
+                RouteValues = new Dictionary<string, string>(),
+                ViewEnginePath = "/Pages/Foo",
+            };
+            var handlerTypeInfo = typeof(object).GetTypeInfo();
+            var pageApplicationModel = new PageApplicationModel(actionDescriptor, handlerTypeInfo, new[] { metadata3 });
+            pageApplicationModel.EndpointMetadata.Add(metadata2);
+            var globalFilters = new FilterCollection();
+
+            // Act
+            var actual = CompiledPageActionDescriptorBuilder.Build(pageApplicationModel, globalFilters);
+
+            // Assert
+            Assert.Equal(new[] { metadata1, metadata2, metadata3 }, actual.EndpointMetadata);
         }
 
         private class HandlerWithIgnoredProperties

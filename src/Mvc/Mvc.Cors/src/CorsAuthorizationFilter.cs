@@ -110,8 +110,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     // If this was a preflight, there is no need to run anything else.
-                    // Also the response is always 200 so that anyone after mvc can handle the pre flight request.
-                    context.Result = new StatusCodeResult(StatusCodes.Status200OK);
+                    context.Result = new StatusCodeResult(StatusCodes.Status204NoContent);
                 }
 
                 // Continue with other filters and action.

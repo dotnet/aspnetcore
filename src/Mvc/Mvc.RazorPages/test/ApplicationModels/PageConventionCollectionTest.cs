@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void RemoveType_RemovesAllOfType()
         {
             // Arrange
-            var collection = new PageConventionCollection
+            var collection = new PageConventionCollection(new MvcOptions())
             {
                 new FooPageConvention(),
                 new BarPageConvention(),
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void GenericRemoveType_RemovesAllOfType()
         {
             // Arrange
-            var collection = new PageConventionCollection
+            var collection = new PageConventionCollection(new MvcOptions())
             {
                 new FooPageConvention(),
                 new BarPageConvention(),

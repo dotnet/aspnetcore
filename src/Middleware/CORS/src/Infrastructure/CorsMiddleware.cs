@@ -145,8 +145,23 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Get the most significant CORS metadata for the endpoint
             // For backwards compatibility reasons this is then downcast to Enable/Disable metadata
             var corsMetadata = endpoint?.Metadata.GetMetadata<ICorsMetadata>();
+
             if (corsMetadata is IDisableCorsAttribute)
             {
+                var isOptionsRequest = string.Equals(
+                    context.Request.Method,
+                    CorsConstants.PreflightHttpMethod,
+                    StringComparison.OrdinalIgnoreCase);
+
+                var isCorsPreflightRequest = isOptionsRequest && context.Request.Headers.ContainsKey(CorsConstants.AccessControlRequestMethod);
+
+                if (isCorsPreflightRequest)
+                {
+                    // If this is a preflight request, and we disallow CORS, complete the request
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return;
+                }
+
                 await _next(context);
                 return;
             }

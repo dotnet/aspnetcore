@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             _viewCompilerProvider = viewCompilerProvider;
             _endpointFactory = endpointFactory;
-            _conventions = pageOptions.Value.Conventions;
+            _conventions = pageOptions.Value.Conventions ?? throw new ArgumentNullException(nameof(RazorPagesOptions.Conventions));
             _globalFilters = mvcOptions.Value.Filters;
         }
 

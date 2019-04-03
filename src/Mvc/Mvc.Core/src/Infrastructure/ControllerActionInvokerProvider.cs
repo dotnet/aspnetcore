@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     internal class ControllerActionInvokerProvider : IActionInvokerProvider
     {
         private readonly ControllerActionInvokerCache _controllerActionInvokerCache;
-        private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
+        private readonly IList<IValueProviderFactory> _valueProviderFactories;
         private readonly int _maxModelValidationErrors;
         private readonly ILogger _logger;
         private readonly DiagnosticListener _diagnosticListener;

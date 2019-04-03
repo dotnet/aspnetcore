@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Internal;
 
@@ -47,6 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             HandlerMethods = new List<PageHandlerModel>();
             HandlerProperties = new List<PagePropertyModel>();
             HandlerTypeAttributes = handlerAttributes;
+            EndpointMetadata = new CopyOnWriteList<object>(ActionDescriptor.EndpointMetadata ?? Array.Empty<object>());
         }
 
         /// <summary>
@@ -154,5 +156,10 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Gets the sequence of <see cref="PagePropertyModel"/> instances on <see cref="PageHandlerModel"/>.
         /// </summary>
         public IList<PagePropertyModel> HandlerProperties { get; }
+
+        /// <summary>
+        /// Gets the endpoint metadata for this action.
+        /// </summary>
+        public IList<object> EndpointMetadata { get; }
     }
 }

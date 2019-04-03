@@ -8,15 +8,15 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     internal class CopyOnWriteList<T> : IList<T>
     {
-        private readonly IReadOnlyList<T> _source;
+        private readonly IList<T> _source;
         private List<T> _copy;
 
-        public CopyOnWriteList(IReadOnlyList<T> source)
+        public CopyOnWriteList(IList<T> source)
         {
             _source = source;
         }
 
-        private IReadOnlyList<T> Readable => _copy ?? _source;
+        private IList<T> Readable => _copy ?? _source;
 
         private List<T> Writable
         {

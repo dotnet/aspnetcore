@@ -5,16 +5,21 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class AuthorizationPageApplicationModelProvider : IPageApplicationModelProvider
     {
         private readonly IAuthorizationPolicyProvider _policyProvider;
+        private readonly MvcOptions _mvcOptions;
 
-        public AuthorizationPageApplicationModelProvider(IAuthorizationPolicyProvider policyProvider)
+        public AuthorizationPageApplicationModelProvider(
+            IAuthorizationPolicyProvider policyProvider,
+            IOptions<MvcOptions> mvcOptions)
         {
             _policyProvider = policyProvider;
+            _mvcOptions = mvcOptions.Value;
         }
 
         // The order is set to execute after the DefaultPageApplicationModelProvider.
@@ -25,6 +30,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
+            }
+
+            if (_mvcOptions.EnableEndpointRouting)
+            {
+                // When using endpoint routing, the AuthorizationMiddleware does the work that Auth filters would otherwise perform.
+                // Consequently we do not need to convert authorization attributes to filters.
+                return;
             }
 
             var pageModel = context.PageApplicationModel;

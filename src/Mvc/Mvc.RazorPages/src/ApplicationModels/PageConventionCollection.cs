@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// Initializes a new instance of the <see cref="PageConventionCollection"/> class that is empty.
         /// </summary>
         public PageConventionCollection()
+            : this((MvcOptions)null)
         {
         }
 
@@ -26,6 +27,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             : base(conventions)
         {
         }
+
+        internal PageConventionCollection(MvcOptions mvcOptions)
+        {
+            MvcOptions = mvcOptions ?? throw new ArgumentNullException(nameof(mvcOptions));
+        }
+
+        internal MvcOptions MvcOptions { get; set; }
 
         /// <summary>
         /// Creates and adds an <see cref="IPageApplicationModelConvention"/> that invokes an action on the

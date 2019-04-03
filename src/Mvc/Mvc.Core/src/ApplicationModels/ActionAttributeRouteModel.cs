@@ -131,9 +131,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
             if (metadata != null)
             {
-                for (var i = 0; i < metadata.Count; i++)
+                for (var i = metadata.Count - 1; i >= 0; i--)
                 {
-                    selector.EndpointMetadata.Add(metadata[i]);
+                    // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
+                    // must appear later in the sequence.
+                    // In this case, the parameter named 'metadata' is the controller endpoint metadata and should appear earlier than the existing metadata
+                    // that represents the action metadata.
+                    selector.EndpointMetadata.Insert(0, metadata[i]);
                 }
             }
         }
