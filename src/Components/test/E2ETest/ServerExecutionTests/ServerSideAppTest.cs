@@ -42,6 +42,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void DoesNotStartTwoConnections()
+        {
+            Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
+                .Count(e => e.Message.Contains("blazorpack")) == 1);
+        }
+
+        [Fact]
         public void HasHeading()
         {
             Browser.Equal("Hello, world!", () => Browser.FindElement(By.CssSelector("h1#index")).Text);
