@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -26,10 +28,20 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             _serverFixture.BuildWebHostMethod = ComponentsApp.Server.Program.BuildWebHost;
         }
 
+        public DateTime LastLogTimeStamp { get; set; } = DateTime.MinValue;
 
         public override async Task InitializeAsync()
         {
             await base.InitializeAsync();
+
+            // Capture the last log timestamp so that we can filter logs when we
+            // check for duplicate connections.
+            var lastLog = Browser.Manage().Logs.GetLog(LogType.Browser).LastOrDefault();
+            if (lastLog != null)
+            {
+                LastLogTimeStamp = lastLog.Timestamp;
+            }
+
             Navigate("/", noReload: false);
             Browser.True(() => ((IJavaScriptExecutor)Browser)
                 .ExecuteScript("return window['__aspnetcore__testing__blazor__started__'];") == null ? false : true);
@@ -44,8 +56,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         [Fact]
         public void DoesNotStartTwoConnections()
         {
-            Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
-                .Count(e => e.Message.Contains("blazorpack")) == 1);
+            Browser.True(() =>
+            {
+                var logs = Browser.Manage().Logs.GetLog(LogType.Browser).ToArray();
+                var curatedLogs = logs.Where(l => l.Timestamp > LastLogTimeStamp);
+
+                return curatedLogs.Count(e => e.Message.Contains("blazorpack")) == 1;
+            });
         }
 
         [Fact]
