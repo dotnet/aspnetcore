@@ -17,11 +17,17 @@
 
 @functions {
     int count;
+    bool firstRender = false;
     protected override Task OnAfterRenderAsync()
     {
-        // We need to queue another render when we connect, otherwise the
-        // browser won't see anything.
-        StateHasChanged();
+        if (!firstRender)
+        {
+            firstRender = true;
+
+            // We need to queue another render when we connect, otherwise the
+            // browser won't see anything.
+            StateHasChanged();
+        }
 
         return Task.CompletedTask;
     }
