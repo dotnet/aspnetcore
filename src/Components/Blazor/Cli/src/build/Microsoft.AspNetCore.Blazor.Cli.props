@@ -1,7 +1,0 @@
-﻿<Project>
-  <PropertyGroup>
-    <_BlazorCliDll>$(MSBuildThisFileDirectory)../tools/dotnet-blazor.dll</_BlazorCliDll>
-    <RunCommand>dotnet</RunCommand>
-    <RunArguments>$(_BlazorCliDll) serve</RunArguments>
-  </PropertyGroup>
-</Project>

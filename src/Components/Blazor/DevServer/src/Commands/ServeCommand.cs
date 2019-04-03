@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.AspNetCore.Blazor.Cli.Commands
+namespace Microsoft.AspNetCore.Blazor.DevServer.Commands
 {
     internal class ServeCommand : CommandLineApplication
     {

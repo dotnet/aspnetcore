@@ -4,11 +4,11 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-    <AssemblyName>dotnet-blazor</AssemblyName>
-    <PackageId>Microsoft.AspNetCore.Blazor.Cli</PackageId>
+    <AssemblyName>blazor-devserver</AssemblyName>
+    <PackageId>Microsoft.AspNetCore.Blazor.DevServer</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
-    <StartupObject>Microsoft.AspNetCore.Blazor.Cli.Program</StartupObject>
+    <StartupObject>Microsoft.AspNetCore.Blazor.DevServer.Program</StartupObject>
     <Description>Development server for use when building Blazor applications.</Description>
     <!-- Set this to false because assemblies should not reference this assembly directly, (except for tests, of course). -->
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
@@ -27,7 +27,7 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IntermediatePackDir>obj\publish\</IntermediatePackDir>
     <PublishDir>$(IntermediatePackDir)$(TargetFramework)\</PublishDir>
-    <NuspecFile>Microsoft.AspNetCore.Blazor.Cli.nuspec</NuspecFile>
+    <NuspecFile>Microsoft.AspNetCore.Blazor.DevServer.nuspec</NuspecFile>
   </PropertyGroup>
 
   <!-- Executes /t:Publish for all target frameworks before packing-->
