@@ -10,6 +10,7 @@
 
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+    <WebApplicationFactoryContentRootAttribute Include="AzureAD.WebSite" AssemblyName="AzureAD.WebSite" ContentRootPath="." />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,17 +25,6 @@
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)" />
-    <!-- Drop a dummy sln to specify content root location -->
-    <WriteLinesToFile
-        File="$(PublishDir)\contentroot.sln"
-        Lines="Ignored"
-        Overwrite="true"
-        Encoding="Unicode"/>
-    <WriteLinesToFile
-        File="$(PublishDir)\AzureAD.WebSite\ignored.txt"
-        Lines="Ignored"
-        Overwrite="true"
-        Encoding="Unicode"/>
   </Target>
   
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
