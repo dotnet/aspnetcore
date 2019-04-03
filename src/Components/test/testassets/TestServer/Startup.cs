@@ -79,7 +79,7 @@ namespace TestServer
                 subdirApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapComponentHub<TestRouter>("app");
+                    endpoints.MapComponentHub();
                 });
             });
         }

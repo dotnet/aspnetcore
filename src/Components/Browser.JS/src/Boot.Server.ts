@@ -40,7 +40,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
   // In the future we will allow for users to configure this.
   const logger = new ConsoleLogger(options.logLevel);
 
-  logger.log(LogLevel.Information, 'Booting blazor.');
+  logger.log(LogLevel.Information, 'Starting up blazor server-side application.');
 
   const circuitHandlers: CircuitHandler[] = [new AutoReconnectCircuitHandler(logger)];
   window['Blazor'].circuitHandlers = circuitHandlers;
@@ -97,7 +97,7 @@ async function boot(userOptions?: Partial<BlazorOptions>): Promise<void> {
 
   await reconnectTask;
 
-  logger.log(LogLevel.Information, 'Components server application successfully started.');
+  logger.log(LogLevel.Information, 'Blazor server-side application started.');
 
   function reconnectionFailed(results: boolean[]): boolean {
     return !results.reduce((current, next) => current && next, true);
@@ -119,7 +119,7 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
 
   connection.on('JS.BeginInvokeJS', DotNet.jsCallDispatcher.beginInvokeJSFromDotNet);
   connection.on('JS.RenderBatch', (browserRendererId: number, batchId: number, batchData: Uint8Array) => {
-    logger.log(LogLevel.Information, `Received render batch for ${browserRendererId} with id ${batchId} and ${batchData.byteLength} bytes.`);
+    logger.log(LogLevel.Debug, `Received render batch for ${browserRendererId} with id ${batchId} and ${batchData.byteLength} bytes.`);
 
     const queue = RenderQueue.getOrCreateQueue(browserRendererId, logger);
 

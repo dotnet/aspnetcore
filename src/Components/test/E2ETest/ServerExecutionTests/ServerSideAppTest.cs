@@ -31,9 +31,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             await base.InitializeAsync();
             Navigate("/", noReload: false);
-            Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
-                .Any(l => l.Level == LogLevel.Info && l.Message.Contains("blazorpack")));
-
+            Browser.True(() => ((IJavaScriptExecutor)Browser)
+                .ExecuteScript("return window['__aspnetcore__testing__blazor__started__'];") == null ? false : true);
         }
 
         [Fact]

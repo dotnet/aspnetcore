@@ -48,8 +48,11 @@ namespace Microsoft.AspNetCore.Components.E2ETests.ServerExecutionTests
             Browser.Equal("No value yet", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal(string.Empty, () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
 
-            // Once connected, we can
             BeginInteractivity();
+            Browser.True(() => ((IJavaScriptExecutor)Browser)
+                .ExecuteScript("return window['__aspnetcore__testing__blazor__started__'];") == null ? false : true);
+
+            // Once connected, we can
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-get-by-interop")).Text);
             Browser.Equal("Hello from interop call", () => Browser.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
         }
