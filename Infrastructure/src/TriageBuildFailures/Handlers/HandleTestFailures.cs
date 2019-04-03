@@ -20,7 +20,7 @@ namespace TriageBuildFailures.Handlers
     public class HandleTestFailures : HandleFailureBase
     {
         // These tests fail on purpose, so we shouldn't file issues about them.
-        private readonly IEnumerable<string> IgnoredTests = new string[] {
+        public static readonly IEnumerable<string> IgnoredTests = new string[] {
             "FlakyInAzPOnly",
             "AlwaysFlakyInCI",
             "FlakyInAzPmacOSOnly",
@@ -141,7 +141,7 @@ CC {GetOwnerMentions(failureArea)}";
             }
         }
 
-        private static string GetTestName(ICITestOccurrence testOccurrence)
+        public static string GetTestName(ICITestOccurrence testOccurrence)
         {
             var shortTestName = testOccurrence.Name.Replace(Constants.VSTestPrefix, string.Empty);
             shortTestName = shortTestName.Split('(').First();

@@ -19,6 +19,6 @@ namespace TriageBuildFailures.VSTS.Models
         public IEnumerable<VSTSIssue> Issues { get; set; }
         public string AgentName { get; set; }
         public string LogUrl { get; set; }
-        public Uri LogUri => new Uri(LogUrl);
+        public Uri LogUri => string.IsNullOrEmpty(LogUrl) ? null : new Uri(LogUrl);
     }
 }

@@ -49,8 +49,20 @@ namespace TriageBuildFailures.VSTS
             return result.Value;
         }
 
-        public async Task<string> GetBuildLogAsync(ICIBuild build)
+        public Task<string> GetBuildLogAsync(ICIBuild build)
         {
+            return GetBuildLogAsync(build, onlyFailures: true);
+        }
+
+        private static readonly List<VSTSTaskResult> SuccessResults = new List<VSTSTaskResult>{
+            VSTSTaskResult.Succeeded,
+            VSTSTaskResult.SucceededWithIssues
+        };
+
+        public async Task<string> GetBuildLogAsync(ICIBuild build, bool onlyFailures = true)
+        {
+            var timeline = await GetTimelineAsync(build);
+            var builder = new StringBuilder();
             var vstsBuild = (VSTSBuild)build;
             var logs = await MakeVSTSRequest<VSTSArray<VSTSBuildLog>>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs");
             var validationResults = GetBuildLogFromValidationResult(vstsBuild);
@@ -60,13 +72,15 @@ namespace TriageBuildFailures.VSTS
             }
             else
             {
-                var builder = new StringBuilder();
-                foreach (var log in logs.Value)
+                foreach (var record in timeline.Records)
                 {
-                    using (var stream = await MakeVSTSRequest(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs/{log.Id}", "text/plain"))
-                    using (var streamReader = new StreamReader(stream))
+                    if (record.Result != null && (!SuccessResults.Contains(record.Result.Value) || !onlyFailures) && record.Log != null)
                     {
-                        builder.Append(await streamReader.ReadToEndAsync());
+                        using (var stream = await MakeVSTSRequest(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/logs/{record.Log.Id}", "text/plain"))
+                        using (var streamReader = new StreamReader(stream))
+                        {
+                            builder.Append(await streamReader.ReadToEndAsync());
+                        }
                     }
                 }
 
@@ -81,6 +95,12 @@ namespace TriageBuildFailures.VSTS
                     return result;
                 }
             }
+        }
+
+        public async Task<VSTSTimeline> GetTimelineAsync(ICIBuild build)
+        {
+            var vstsBuild = (VSTSBuild)build;
+            return await MakeVSTSRequest<VSTSTimeline>(HttpMethod.Get, $"{vstsBuild.Project}/_apis/build/builds/{build.Id}/timeline");
         }
 
         public Task<string> GetTestFailureTextAsync(ICITestOccurrence failure)

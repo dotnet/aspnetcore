@@ -39,8 +39,15 @@ namespace TriageBuildFailures.Handlers
         {
             var client = GetClient(build);
             var log = await client.GetBuildLogAsync(build);
-            var errors = GetErrorsFromLog(log);
-            return errors != null && errors.Count() > 0;
+            if (log == null)
+            {
+                return false;
+            }
+            else
+            {
+                var errors = GetErrorsFromLog(log);
+                return errors != null && errors.Count() > 0;
+            }
         }
 
         private const string _BrokenBuildLabel = "Broken Build";

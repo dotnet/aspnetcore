@@ -39,6 +39,7 @@ namespace TriageBuildFailures.VSTS.Models
                     case VSTSBuildResult.Succeeded:
                         return BuildStatus.SUCCESS;
                     case VSTSBuildResult.PartiallySucceeded:
+                        return BuildStatus.PARTIALSUCCESS;
                     default:
                         throw new NotImplementedException($"VSTS had an unknown build result '{_build.Result}'!");
                 }

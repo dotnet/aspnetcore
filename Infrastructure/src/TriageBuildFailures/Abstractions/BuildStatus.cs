@@ -7,6 +7,7 @@ namespace TriageBuildFailures.Abstractions
     {
         SUCCESS,
         FAILURE,
-        UNKNOWN
+        UNKNOWN,
+        PARTIALSUCCESS
     }
 }
