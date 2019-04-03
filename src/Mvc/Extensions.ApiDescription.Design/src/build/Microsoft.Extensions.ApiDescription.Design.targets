@@ -176,13 +176,13 @@
     <ItemGroup>
       <!-- @(CurrentServiceProjectReference) item group will never contain more than one item. -->
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
-        <Command>dotnet $(MSBuildThisFileDirectory)/../tools/dotnet-getdocument.dll --project %(FullPath)</Command>
+        <Command>dotnet $(MSBuildThisFileDirectory)/../tools/dotnet-getdocument.dll --project "%(FullPath)"</Command>
         <Configuration Condition="'%(Configuration)' == ''">$(Configuration)</Configuration>
         <GenerateDefaultDocumentOptions
             Condition="'%(GenerateDefaultDocumentOptions)' == ''">$(GenerateDefaultDocumentDefaultOptions)</GenerateDefaultDocumentOptions>
       </CurrentServiceProjectReference>
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
-        <Command>%(Command) --framework %(TargetFramework) --output %(DocumentPath)</Command>
+        <Command>%(Command) --documentName "%(DocumentName)" --framework %(TargetFramework) --output "%(DocumentPath)"</Command>
       </CurrentServiceProjectReference>
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
         <Command Condition="'%(Method)' != ''">%(Command) --method %(Method)</Command>
@@ -192,7 +192,7 @@
       </CurrentServiceProjectReference>
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
         <Command
-            Condition="'%(ProjectExtensionsPath)' != ''">%(Command) --projectExtensionsPath %(ProjectExtensionsPath)</Command>
+            Condition="'%(ProjectExtensionsPath)' != ''">%(Command) --projectExtensionsPath "%(ProjectExtensionsPath)"</Command>
       </CurrentServiceProjectReference>
       <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
         <Command>%(Command) --configuration %(Configuration) %(GenerateDefaultDocumentOptions)</Command>
