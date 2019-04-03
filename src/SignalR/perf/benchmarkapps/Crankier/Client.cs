@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
         private bool _sendInProgress;
         private volatile ConnectionState _connectionState = ConnectionState.Connecting;
 
+        public string ErrorMessage { get; private set;}
         public ConnectionState State => _connectionState;
         public async Task CreateAndStartConnectionAsync(string url, HttpTransportType transportType)
         {
@@ -33,7 +34,8 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 }
                 else
                 {
-                    Trace.WriteLine($"Connection terminated with error: {ex.GetType()}: {ex.Message}");
+                    ErrorMessage = $"Connection terminated with error: {ex.GetType()}: {ex.Message}";
+                    Trace.WriteLine(ErrorMessage);
                     _connectionState = ConnectionState.Faulted;
                 }
 
@@ -57,7 +59,8 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                 }
                 catch (Exception ex)
                 {
-                    Trace.WriteLine($"Connection.Start Failed: {ex.GetType()}: {ex.Message}");
+                    ErrorMessage = $"Connection.Start Failed: {ex.GetType()}: {ex.Message}";
+                    Trace.WriteLine(ErrorMessage);
 
                     if (connectCount == 3)
                     {
