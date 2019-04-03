@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 #endif
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using RazorComponentsWeb_CSharp.Services;
+using RazorComponentsWeb_CSharp.Data;
 
 namespace RazorComponentsWeb_CSharp
 {
@@ -20,11 +20,8 @@ namespace RazorComponentsWeb_CSharp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRazorPages()
-                .AddNewtonsoftJson();
-
+            services.AddRazorPages();
             services.AddRazorComponents();
-
             services.AddSingleton<WeatherForecastService>();
         }
 
@@ -45,6 +42,7 @@ namespace RazorComponentsWeb_CSharp
 
 #if (RequiresHttps)
             app.UseHttpsRedirection();
+
 #endif
             app.UseStaticFiles();
 
@@ -52,9 +50,8 @@ namespace RazorComponentsWeb_CSharp
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapRazorPages();
                 endpoints.MapComponentHub();
-                endpoints.MapFallbackToPage("/Host");
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }
