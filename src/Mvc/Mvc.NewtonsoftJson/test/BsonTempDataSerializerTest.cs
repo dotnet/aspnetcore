@@ -3,12 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 {
-    public class BsonTempDataSerializerTest
+    public class BsonTempDataSerializerTest : TempDataSerializerTestBase
     {
+        protected override TempDataSerializer GetTempDataSerializer() => new BsonTempDataSerializer();
+
         public static TheoryData<object, Type> InvalidTypes
         {
             get
@@ -93,6 +96,112 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             }
         }
 
+        [Fact]
+        public void RoundTripTest_ArrayOfIntegers()
+        {
+            // Arrange
+            var key = "test-key";
+            var value = new[] { 1, -2, 3 };
+            var testProvider = GetTempDataSerializer();
+            var input = new Dictionary<string, object>
+            {
+                { key, value },
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<int[]>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
+        [Fact]
+        public void RoundTripTest_DateTime()
+        {
+            // Arrange
+            var key = "test-key";
+            var value = new DateTime(2007, 1, 1);
+            var testProvider = GetTempDataSerializer();
+            var input = new Dictionary<string, object>
+            {
+                { key, value },
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<DateTime>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
+        [Fact]
+        public void RoundTripTest_Guid()
+        {
+            // Arrange
+            var key = "test-key";
+            var value = Guid.NewGuid();
+            var testProvider = GetTempDataSerializer();
+            var input = new Dictionary<string, object>
+            {
+                { key, value },
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<Guid>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
+        [Theory]
+        [InlineData(2147483648)]
+        [InlineData(-2147483649)]
+        public void RoundTripTest_LongValue(long value)
+        {
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var input = new Dictionary<string, object>
+            {
+                { key, value },
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<long>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
+        [Fact]
+        public void RoundTripTest_Double()
+        {
+            // Arrange
+            var key = "test-key";
+            var value = 10d;
+            var testProvider = GetTempDataSerializer();
+            var input = new Dictionary<string, object>
+            {
+                { key, value },
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = (double)values[key];
+            Assert.Equal(value, roundTripValue);
+        }
+
         [Theory]
         [MemberData(nameof(ValidTypes))]
         public void EnsureObjectCanBeSerialized_DoesNotThrow_OnValidType(object value)
@@ -102,40 +211,6 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             // Act & Assert (Does not throw)
             testProvider.EnsureObjectCanBeSerialized(value);
-        }
-
-        [Fact]
-        public void DeserializeTempData_ReturnsEmptyDictionary_DataIsEmpty()
-        {
-            // Arrange
-            var serializer = new BsonTempDataSerializer();
-
-            // Act
-            var tempDataDictionary = serializer.Deserialize(new byte[0]);
-
-            // Assert
-            Assert.NotNull(tempDataDictionary);
-            Assert.Empty(tempDataDictionary);
-        }
-
-        [Fact]
-        public void SerializeAndDeserialize_NullValue_RoundTripsSuccessfully()
-        {
-            // Arrange
-            var key = "NullKey";
-            var testProvider = new BsonTempDataSerializer();
-            var input = new Dictionary<string, object>
-             {
-                 { key, null }
-             };
-
-            // Act
-            var bytes = testProvider.Serialize(input);
-            var values = testProvider.Deserialize(bytes);
-
-            // Assert
-            Assert.True(values.ContainsKey(key));
-            Assert.Null(values[key]);
         }
 
         private class TestItem

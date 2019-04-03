@@ -13,6 +13,7 @@
   <ItemGroup>
     <Compile Include="..\..\Mvc.Core\test\Formatters\JsonInputFormatterTestBase.cs" />
     <Compile Include="..\..\Mvc.Core\test\Formatters\JsonOutputFormatterTestBase.cs" />
+    <Compile Include="..\..\Mvc.ViewFeatures\test\Infrastructure\TempDataSerializerTestBase.cs" />
   </ItemGroup>
 
 </Project>

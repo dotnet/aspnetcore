@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
-        public async Task PreFlightRequest_DoesNotMatchPolicy_DoesNotSetHeadersAndReturnsForbidden()
+        public async Task PreFlightRequest_DoesNotMatchPolicy_SetsResponseHeadersAndReturnsNoContent()
         {
             // Arrange
             var hostBuilder = new WebHostBuilder()
