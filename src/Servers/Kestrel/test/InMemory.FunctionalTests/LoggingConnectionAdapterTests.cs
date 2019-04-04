@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task LoggingConnectionAdapterCanBeAddedBeforeAndAfterHttpsAdapter()
         {
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
                 {
                     context.Response.ContentLength = 12;
                     return context.Response.WriteAsync("Hello World!");
@@ -32,11 +32,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     var response = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false)
                                                               .DefaultTimeout();
-
-
                     Assert.Equal("Hello World!", response);
                 }
-                await server.StopAsync();
             }
         }
     }

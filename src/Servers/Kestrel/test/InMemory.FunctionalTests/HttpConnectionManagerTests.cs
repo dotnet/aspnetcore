@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(new LoggerFactory(), mockTrace.Object);
             testContext.InitializeHeartbeat();
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
                 {
                     appStartedWh.Release();
                     var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -69,8 +69,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 Assert.True(logWaitAttempts < 10);
-
-                await server.StopAsync();
             }
         }
 #endif
