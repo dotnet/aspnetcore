@@ -1,7 +1,10 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": [ "Web", "ASP.NET" ],
+  "classifications": [
+    "Web",
+    "ASP.NET"
+  ],
   "name": "Razor Component",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A Razor Component",
@@ -12,7 +15,7 @@
   "groupIdentity": "Microsoft.AspNetCore.Mvc.RazorComponent",
   "precedence": "100",
   "identity": "Microsoft.AspNetCore.Mvc.RazorComponent",
-  "shortname": "component",
+  "shortname": "razorcomponent",
   "sourceName": "Index",
   "primaryOutputs": [
     {
@@ -30,7 +33,7 @@
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "description": "Opens Index.razor in the editor",
-      "manualInstructions": [ ],
+      "manualInstructions": [],
       "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
       "args": {
         "files": "0"

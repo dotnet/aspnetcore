@@ -285,6 +285,12 @@ namespace Templates.Test.Helpers
             }
         }
 
+        public string ReadFile(string path)
+        {
+            AssertFileExists(path, shouldExist: true);
+            return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
+        }
+
         internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
         {
             await DotNetNewLock.WaitAsync();

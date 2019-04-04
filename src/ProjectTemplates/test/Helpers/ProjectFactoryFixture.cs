@@ -15,10 +15,10 @@ namespace Templates.Test.Helpers
 {
     public class ProjectFactoryFixture : IDisposable
     {
-        private static SemaphoreSlim DotNetNewLock = new SemaphoreSlim(1);
-        private static SemaphoreSlim NodeLock = new SemaphoreSlim(1);
+        private readonly static SemaphoreSlim DotNetNewLock = new SemaphoreSlim(1);
+        private readonly static SemaphoreSlim NodeLock = new SemaphoreSlim(1);
 
-        private ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
+        private readonly ConcurrentDictionary<string, Project> _projects = new ConcurrentDictionary<string, Project>();
 
         public IMessageSink DiagnosticsMessageSink { get; }
 

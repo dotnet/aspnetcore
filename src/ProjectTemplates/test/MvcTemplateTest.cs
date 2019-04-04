@@ -33,7 +33,7 @@ namespace Templates.Test
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var projectExtension = languageOverride == "F#" ? "fsproj" : "csproj";
-            var projectFileContents = ReadFile($"{Project.ProjectName}.{projectExtension}");
+            var projectFileContents = Project.ReadFile($"{Project.ProjectName}.{projectExtension}");
             Assert.DoesNotContain(".db", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
@@ -81,7 +81,7 @@ namespace Templates.Test
             var createResult = await Project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
-            var projectFileContents = ReadFile($"{Project.ProjectName}.csproj");
+            var projectFileContents = Project.ReadFile($"{Project.ProjectName}.csproj");
             if (!useLocalDB)
             {
                 Assert.Contains(".db", projectFileContents);
@@ -114,12 +114,6 @@ namespace Templates.Test
                 await aspNetProcess.AssertOk("/Identity/Account/Login");
                 await aspNetProcess.AssertOk("/Home/Privacy");
             }
-        }
-
-        private string ReadFile(string path)
-        {
-            Project.AssertFileExists(path, shouldExist: true);
-            return File.ReadAllText(Path.Combine(Project.TemplateOutputDir, path));
         }
     }
 }

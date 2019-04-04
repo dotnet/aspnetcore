@@ -26,10 +26,11 @@ namespace Templates.Items.Test
         {
             Project = await ProjectFactory.GetOrCreateProject("razorcomponentitem", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("razorcomponent --name Steve.razor");
+            var createResult = await Project.RunDotNetNewAsync("razorcomponent --name Steve");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create", Project, createResult));
 
             Project.AssertFileExists("Steve.razor", shouldExist: true);
+            Assert.Contains("<h3>Steve</h3>", Project.ReadFile("Steve.razor"));
         }
     }
 }
