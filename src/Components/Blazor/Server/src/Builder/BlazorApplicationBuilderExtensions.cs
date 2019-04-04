@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public static class BlazorApplicationBuilderExtensions
     {
-        const string DevServerApplicationName = "dotnet-blazor";
+        const string DevServerApplicationName = "blazor-devserver";
 
         /// <summary>
         /// Configures the middleware pipeline to work with Blazor.

@@ -30,18 +30,18 @@ export default class RenderQueue {
 
   public processBatch(receivedBatchId: number, batchData: Uint8Array, connection: HubConnection): void {
     if (receivedBatchId < this.nextBatchId) {
-      this.logger.log(LogLevel.Information, `Batch ${receivedBatchId} already processed. Waiting for batch ${this.nextBatchId}.`);
+      this.logger.log(LogLevel.Debug, `Batch ${receivedBatchId} already processed. Waiting for batch ${this.nextBatchId}.`);
       return;
     }
 
     if (receivedBatchId > this.nextBatchId) {
-      this.logger.log(LogLevel.Information, `Waiting for batch ${this.nextBatchId}. Batch ${receivedBatchId} not processed.`);
+      this.logger.log(LogLevel.Debug, `Waiting for batch ${this.nextBatchId}. Batch ${receivedBatchId} not processed.`);
       return;
     }
 
     try {
       this.nextBatchId++;
-      this.logger.log(LogLevel.Information, `Applying batch ${receivedBatchId}.`);
+      this.logger.log(LogLevel.Debug, `Applying batch ${receivedBatchId}.`);
       renderBatch(this.browserRendererId, new OutOfProcessRenderBatch(batchData));
       this.completeBatch(connection, receivedBatchId);
     } catch (error) {

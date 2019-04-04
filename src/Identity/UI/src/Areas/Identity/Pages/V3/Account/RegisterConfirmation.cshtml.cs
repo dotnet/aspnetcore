@@ -4,11 +4,9 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
 
@@ -49,13 +47,11 @@ namespace Microsoft.AspNetCore.Identity.UI.V3.Pages.Account.Internal
     internal class RegisterConfirmationModel<TUser> : RegisterConfirmationModel where TUser : class
     {
         private readonly UserManager<TUser> _userManager;
-        private readonly IWebHostEnvironment _hostingEnv;
         private readonly IEmailSender _sender;
 
-        public RegisterConfirmationModel(UserManager<TUser> userManager, IWebHostEnvironment hostingEnv, IEmailSender sender)
+        public RegisterConfirmationModel(UserManager<TUser> userManager, IEmailSender sender)
         {
             _userManager = userManager;
-            _hostingEnv = hostingEnv;
             _sender = sender;
         }
 

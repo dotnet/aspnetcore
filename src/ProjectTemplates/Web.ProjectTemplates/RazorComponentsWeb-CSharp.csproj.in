@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Components.Prerendering" Version="${MicrosoftAspNetCoreMvcComponentsPrerenderingPackageVersion}" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="${MicrosoftAspNetCoreMvcNewtonsoftJsonPackageVersion}" />
   </ItemGroup>
 
 </Project>

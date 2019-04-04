@@ -19,7 +19,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Build.Tests", "Blazor\Build\test\Microsoft.AspNetCore.Blazor.Build.Tests.csproj", "{E38FDBB0-08C1-444E-A449-69C8A59D721B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.Cli", "Blazor\Cli\src\Microsoft.AspNetCore.Blazor.Cli.csproj", "{A6C8050D-7C18-4585-ADCF-833AC1765847}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.DevServer", "Blazor\DevServer\src\Microsoft.AspNetCore.Blazor.DevServer.csproj", "{A6C8050D-7C18-4585-ADCF-833AC1765847}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Blazor.E2EPerformance", "Blazor\testassets\Microsoft.AspNetCore.Blazor.E2EPerformance\Microsoft.AspNetCore.Blazor.E2EPerformance.csproj", "{08773DD6-6FED-4BF2-BD9F-C19D2CF919BB}"
 EndProject

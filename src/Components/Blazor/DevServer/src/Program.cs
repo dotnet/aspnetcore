@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Blazor.Cli.Commands;
+using Microsoft.AspNetCore.Blazor.DevServer.Commands;
 using Microsoft.Extensions.CommandLineUtils;
 
-namespace Microsoft.AspNetCore.Blazor.Cli
+namespace Microsoft.AspNetCore.Blazor.DevServer
 {
     internal class Program
     {
@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Blazor.Cli
         {
             var app = new CommandLineApplication(throwOnUnexpectedArg: false)
             {
-                Name = "blazor-cli"
+                Name = "blazor-devserver"
             };
             app.HelpOption("-?|-h|--help");
 

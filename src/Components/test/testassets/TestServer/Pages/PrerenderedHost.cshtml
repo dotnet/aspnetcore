@@ -1,6 +1,5 @@
 @page
 @using BasicTestApp.RouterTest
-@using Microsoft.AspNetCore.Mvc.ViewFeatures
 <!DOCTYPE html>
 <html>
 <head>
@@ -16,7 +15,7 @@
     *@
     <hr />
 
-    <button id="load-boot-script" onclick="Blazor.start()">Load boot script</button>
+    <button id="load-boot-script" onclick="start()">Load boot script</button>
 
     <script src="_framework/components.server.js" autostart="false"></script>
     <script>
@@ -24,6 +23,12 @@
     function setElementValue(element, newValue) {
       element.value = newValue;
       return element.value;
+            }
+
+    function start() {
+        Blazor.start({
+            logLevel: 1 // LogLevel.Debug
+        });
     }
     </script>
 </body>
