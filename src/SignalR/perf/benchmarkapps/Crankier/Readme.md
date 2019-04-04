@@ -30,7 +30,7 @@ Notes:
 Attempt to make 10,000 connections to the `echo` hub using WebSockets and 10 workers:
 
 ```
-dotnet run local --target-url https://localhost:5001/echo --workers 10
+dotnet run -- local --target-url https://localhost:5001/echo --workers 10
 ```
 
 Attempt to make 5,000 connections to the `echo` hub using Long Polling
