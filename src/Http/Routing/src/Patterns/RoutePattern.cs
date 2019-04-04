@@ -21,7 +21,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// A marker object that can be used in <see cref="RequiredValues"/> to designate that
         /// any non-null or non-empty value is required.
         /// </summary>
-        public static object RequiredValueAny = new RequiredValueAnySentinal();
+        /// <remarks>
+        /// <see cref="RequiredValueAny"/> is only use in routing is in <see cref="RoutePattern.RequiredValues"/>.
+        /// <see cref="RequiredValueAny"/> is not valid as a route value, and will convert to the null/empty string.
+        /// </remarks>
+        public static readonly object RequiredValueAny = new RequiredValueAnySentinal();
 
         internal static bool IsRequiredValueAny(object value)
         {

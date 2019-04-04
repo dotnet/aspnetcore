@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
                 else if (RoutePattern.IsRequiredValueAny(kvp.Value))
                 {
-                    // Required value is *any* - this is allowed for a parameter with a default, but not
+                    // 2. Required value is *any* - this is allowed for a parameter with a default, but not
                     // a non-parameter default.
                     if (original.GetParameter(kvp.Key) == null &&
                         original.Defaults.TryGetValue(kvp.Key, out var defaultValue) &&
@@ -90,7 +90,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         // Ex: Admin/{controller=Home}/{action=Index}/{id?} defaults: { area = "Admin" } - with required values: { area = *any* }
                         return null;
                     }
-
 
                     // Success: (for this parameter at least)
                     //

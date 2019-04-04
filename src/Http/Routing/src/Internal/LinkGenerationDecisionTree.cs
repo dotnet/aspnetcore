@@ -26,8 +26,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         public LinkGenerationDecisionTree(IReadOnlyList<OutboundMatch> entries)
         {
+            // We split up the entries into:
+            // 1. attribute routes - these go into the tree
+            // 2. conventional routes - these are a list
             var attributedEntries = new List<OutboundMatch>();
             _conventionalEntries = new List<OutboundMatch>();
+
+            // Anything with a RoutePattern.RequiredValueAny as a RequiredValue is a conventional route.
+            // This is because RequiredValueAny acts as a wildcard, whereas an attribute route entry
+            // is denormalized to contain an exact set of required values.
+            //
+            // We will only see conventional routes show up here for endpoint routing.
             for (var i = 0; i < entries.Count; i++)
             {
                 var isAttributeRoute = true;

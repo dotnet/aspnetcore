@@ -73,6 +73,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         continue;
                     }
 
+                    // We suppress link generation for each conventionally routed endpoint. We generate a single endpoint per-route
+                    // to handle link generation.
                     var builder = CreateEndpoint(
                         action,
                         updatedRoutePattern,

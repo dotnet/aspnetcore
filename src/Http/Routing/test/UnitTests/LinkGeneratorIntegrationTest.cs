@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Routing
                         "{controller=Home}/{action=Index}/{id?}",
                         defaults: null,
                         parameterPolicies: null,
-                        requiredValues: new { controller = RoutePattern.RequiredValueAny, action = RoutePattern.RequiredValueAny, area = (string)null, page = (string)null,}),
+                        requiredValues: new { controller = RoutePattern.RequiredValueAny, action = RoutePattern.RequiredValueAny, area = (string)null, page = (string)null, }),
                     order: 2000,
                     metadata: new object[] { new SuppressMatchingMetadata(), }),
 
@@ -121,9 +121,29 @@ namespace Microsoft.AspNetCore.Routing
                         "Admin/{controller=Home}/{action=Index}/{id?}",
                         defaults: new { area = "Admin", },
                         parameterPolicies: new { area = "Admin", },
-                        requiredValues: new { controller = RoutePattern.RequiredValueAny, action = RoutePattern.RequiredValueAny, area = "Admin", page = (string)null,}),
+                        requiredValues: new { controller = RoutePattern.RequiredValueAny, action = RoutePattern.RequiredValueAny, area = "Admin", page = (string)null, }),
                     order: 1000,
                     metadata: new object[] { new SuppressMatchingMetadata(), }),
+
+                // Conventional routed link generation route 3 - this doesn't match any actions.
+                EndpointFactory.CreateRouteEndpoint(
+                    RoutePatternFactory.Parse(
+                        "api/{controller}/{id?}",
+                        defaults: new { },
+                        parameterPolicies: new { },
+                        requiredValues: new { controller = RoutePattern.RequiredValueAny, action = (string)null, area = (string)null, page = (string)null, }),
+                    order: 3000,
+                    metadata: new object[] { new SuppressMatchingMetadata(), new RouteNameMetadata("custom"), }),
+
+                // Conventional routed link generation route 3 - this doesn't match any actions.
+                EndpointFactory.CreateRouteEndpoint(
+                    RoutePatternFactory.Parse(
+                        "api/Foo/{custom2}",
+                        defaults: new { },
+                        parameterPolicies: new { },
+                        requiredValues: new { controller = (string)null, action = (string)null, area = (string)null, page = (string)null, }),
+                    order: 3000,
+                    metadata: new object[] { new SuppressMatchingMetadata(), new RouteNameMetadata("custom2"), }),
 
                 // Razor Page 1 primary endpoint
                 EndpointFactory.CreateRouteEndpoint(
@@ -253,6 +273,27 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal("/Admin/Users/Add", path);
+        }
+
+        [Fact]
+        public void GetPathByAddress_LinkToConventionalRoute_GeneratesPath()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+
+            var values = new { controller = "Store", id = "17", };
+            var ambientValues = new { };
+            var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
+
+            // Act
+            var path = LinkGenerator.GetPathByAddress(
+                httpContext,
+                address,
+                address.ExplicitValues,
+                address.AmbientValues);
+
+            // Assert
+            Assert.Equal("/api/Store/17", path);
         }
 
         [Fact]
@@ -488,6 +529,69 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal("/Admin/Home/Index11", path);
+        }
+
+        [Fact]
+        public void GetPathByAddress_LinkToConventionalRoute_FromAction_DiscardsAmbientValues()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+
+            var values = new { controller = "Store", };
+            var ambientValues = new { controller = "Home", action = "Index", id = "17", };
+            var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
+
+            // Act
+            var path = LinkGenerator.GetPathByAddress(
+                httpContext,
+                address,
+                address.ExplicitValues,
+                address.AmbientValues);
+
+            // Assert
+            Assert.Equal("/api/Store", path);
+        }
+
+        [Fact]
+        public void GetPathByAddress_LinkToConventionalRoute_WithAmbientValues_GeneratesPath()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+
+            var values = new { controller = "Store", id = "17", };
+            var ambientValues = new { controller = "Store", };
+            var address = CreateAddress(routeName: "custom", values: values, ambientValues: ambientValues);
+
+            // Act
+            var path = LinkGenerator.GetPathByAddress(
+                httpContext,
+                address,
+                address.ExplicitValues,
+                address.AmbientValues);
+
+            // Assert
+            Assert.Equal("/api/Store/17", path);
+        }
+
+        [Fact]
+        public void GetPathByAddress_LinkToConventionalRouteWithoutSharedAmbientValues_WithAmbientValues_GeneratesPath()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+
+            var values = new { custom2 = "17", };
+            var ambientValues = new { controller = "Store", };
+            var address = CreateAddress(routeName: "custom2", values: values, ambientValues: ambientValues);
+
+            // Act
+            var path = LinkGenerator.GetPathByAddress(
+                httpContext,
+                address,
+                address.ExplicitValues,
+                address.AmbientValues);
+
+            // Assert
+            Assert.Equal("/api/Foo/17", path);
         }
 
         [Fact]

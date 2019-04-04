@@ -229,5 +229,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("https://www.example.com/Admin/LGAreaPage?handler=a-handler", responseContent);
         }
+
+        [Fact]
+        public async Task GetUriByRouteValues_CanGenerateUriToRouteWithoutMvcParameters()
+        {
+            // Act
+            var response = await Client.GetAsync("LG1/LinkToRouteWithNoMvcParameters?custom=17");
+            var responseContent = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("https://www.example.com/routewithnomvcparameters/17", responseContent);
+        }
     }
 }
