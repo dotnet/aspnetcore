@@ -370,7 +370,7 @@
     }
   },
   "web": {
-    "None": {
+    "CSharp": {
       "Template": "web",
       "Arguments": "new web",
       "Files": [
@@ -378,6 +378,18 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
+        "Properties/launchSettings.json"
+      ],
+      "AuthOption": "None"
+    },
+    "FSharp": {
+      "Template": "web",
+      "Arguments": "new web --language F#",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.fs",
+        "Startup.fs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -435,6 +447,18 @@
         "Properties/launchSettings.json"
       ],
       "AuthOption": "Windows"
+    },
+    "FSharp": {
+      "Template": "webapi",
+      "Arguments": "new webapi --language F#",
+      "Files": [
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.fs",
+        "Startup.fs",
+        "Controllers/ValuesController.fs",
+        "Properties/launchSettings.json"
+      ]
     }
   },
   "mvc": {
@@ -861,6 +885,55 @@
       "Files": [
         "Areas/MyFeature/Pages/Page1.cshtml",
         "Areas/MyFeature/Pages/Page1.cshtml.cs"
+      ]
+    }
+  },
+  "razorcomponents": {
+    "None": {
+      "Template": "razorcomponents",
+      "Arguments": "new razorcomponents",
+      "Files": [
+        "Pages/_Imports.razor",
+        "Pages/Counter.razor",
+        "Pages/FetchData.razor",
+        "Pages/_Host.cshtml",
+        "Pages/Index.razor",
+        "Shared/MainLayout.razor",
+        "Shared/NavMenu.razor",
+        "_Imports.razor",
+        "App.razor",
+        "Properties/launchSettings.json",
+        "Data/WeatherForecast.cs",
+        "Data/WeatherForecastService.cs",
+        "wwwroot/css/bootstrap/bootstrap.min.css",
+        "wwwroot/css/bootstrap/bootstrap.min.css.map",
+        "wwwroot/css/open-iconic/font/css/open-iconic-bootstrap.min.css",
+        "wwwroot/css/open-iconic/font/fonts/open-iconic.eot",
+        "wwwroot/css/open-iconic/font/fonts/open-iconic.otf",
+        "wwwroot/css/open-iconic/font/fonts/open-iconic.svg",
+        "wwwroot/css/open-iconic/font/fonts/open-iconic.ttf",
+        "wwwroot/css/open-iconic/font/fonts/open-iconic.woff",
+        "wwwroot/css/open-iconic/FONT-LICENSE",
+        "wwwroot/css/open-iconic/ICON-LICENSE",
+        "wwwroot/css/open-iconic/README.md",
+        "wwwroot/css/site.css",
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "Startup.cs"
+      ]
+    }
+  },
+  "worker": {
+    "None": {
+      "Template": "worker",
+      "Arguments": "new worker",
+      "Files": [
+        "Properties/launchSettings.json",
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "Worker.cs"
       ]
     }
   },

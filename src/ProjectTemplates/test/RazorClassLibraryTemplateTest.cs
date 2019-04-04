@@ -8,9 +8,9 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class EmptyWebTemplateTest
+    public class RazorClassLibraryTemplateTest
     {
-        public EmptyWebTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+        public RazorClassLibraryTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
             ProjectFactory = projectFactory;
             Output = output;
@@ -19,17 +19,14 @@ namespace Templates.Test
         public Project Project { get; set; }
 
         public ProjectFactoryFixture ProjectFactory { get; }
-
         public ITestOutputHelper Output { get; }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("F#")]
-        public async Task EmptyWebTemplateAsync(string languageOverride)
+        [Fact]
+        public async Task RazorClassLibraryTemplateAsync()
         {
-            Project = await ProjectFactory.GetOrCreateProject("empty" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
+            Project = await ProjectFactory.GetOrCreateProject("razorclasslib", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("web", language: languageOverride);
+            var createResult = await Project.RunDotNetNewAsync("razorclasslib");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();
@@ -41,24 +38,6 @@ namespace Templates.Test
 
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
-
-            using (var aspNetProcess = Project.StartBuiltProjectAsync())
-            {
-                Assert.False(
-                   aspNetProcess.Process.HasExited,
-                   ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
-
-                await aspNetProcess.AssertOk("/");
-            }
-
-            using (var aspNetProcess = Project.StartPublishedProjectAsync())
-            {
-                Assert.False(
-                    aspNetProcess.Process.HasExited,
-                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
-
-                await aspNetProcess.AssertOk("/");
-            }
         }
     }
 }

@@ -8,28 +8,24 @@ using Xunit.Abstractions;
 
 namespace Templates.Test
 {
-    public class WebApiTemplateTest
+    public class WorkerTemplateTest
     {
-        public WebApiTemplateTest(ProjectFactoryFixture factoryFixture, ITestOutputHelper output)
+        public WorkerTemplateTest(ProjectFactoryFixture projectFactory, ITestOutputHelper output)
         {
-            FactoryFixture = factoryFixture;
+            ProjectFactory = projectFactory;
             Output = output;
         }
 
-        public ProjectFactoryFixture FactoryFixture { get; }
-
+        public Project Project { get; set; }
+        public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        public Project Project { get; set; }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("F#")]
-        public async Task WebApiTemplateAsync(string languageOverride)
+        [Fact(Skip = "Microsoft.NET.Sdk.Worker isn't available yet")]
+        public async Task WorkerTemplateAsync()
         {
-            Project = await FactoryFixture.GetOrCreateProject("webapi" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
+            Project = await ProjectFactory.GetOrCreateProject("worker", Output);
 
-            var createResult = await Project.RunDotNetNewAsync("webapi", language: languageOverride);
+            var createResult = await Project.RunDotNetNewAsync("worker");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();
@@ -47,9 +43,6 @@ namespace Templates.Test
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
-
-                await aspNetProcess.AssertOk("/api/values");
-                await aspNetProcess.AssertNotFound("/");
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -57,10 +50,6 @@ namespace Templates.Test
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
-
-
-                await aspNetProcess.AssertOk("/api/values");
-                await aspNetProcess.AssertNotFound("/");
             }
         }
     }

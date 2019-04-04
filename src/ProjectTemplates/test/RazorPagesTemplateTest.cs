@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Templates.Test.Helpers;
@@ -31,8 +32,6 @@ namespace Templates.Test
             var createResult = await Project.RunDotNetNewAsync("razor");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("razor", Project, createResult));
 
-            AssertFileExists(Project.TemplateOutputDir, "Pages/Shared/_LoginPartial.cshtml", false);
-
             var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
             Assert.DoesNotContain(".db", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
@@ -50,14 +49,39 @@ namespace Templates.Test
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, createResult));
 
+            var pages = new List<Page>
+            {
+                new Page
+                {
+                    Url = PageUrls.HomeUrl,
+                    Links = new string[] {
+                        PageUrls.HomeUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.DocsUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    Url = PageUrls.PrivacyUrl,
+                    Links = new string[] {
+                        PageUrls.HomeUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl }
+                }
+            };
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
                 Assert.False(
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Privacy");
+                await aspNetProcess.AssertPagesOk(pages);
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
@@ -66,8 +90,7 @@ namespace Templates.Test
                     aspNetProcess.Process.HasExited,
                     ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
 
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Privacy");
+                await aspNetProcess.AssertPagesOk(pages);
             }
         }
 
@@ -80,8 +103,6 @@ namespace Templates.Test
 
             var createResult = await Project.RunDotNetNewAsync("razor", auth: "Individual", useLocalDB: useLocalDB);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
-
-            AssertFileExists(Project.TemplateOutputDir, "Pages/Shared/_LoginPartial.cshtml", true);
 
             var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
             if (!useLocalDB)
@@ -103,39 +124,104 @@ namespace Templates.Test
             Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
             Project.AssertEmptyMigration("razorpages");
 
+            var pages = new List<Page> {
+                new Page
+                {
+                    Url = PageUrls.ForgotPassword,
+                    Links = new string [] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    Url = PageUrls.HomeUrl,
+                    Links = new string[] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.DocsUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    Url = PageUrls.PrivacyUrl,
+                    Links = new string[] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl
+                    }
+                },
+                new Page
+                {
+                    Url = PageUrls.LoginUrl,
+                    Links = new string[] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.ForgotPassword,
+                        PageUrls.RegisterUrl,
+                        PageUrls.ExternalArticle,
+                        PageUrls.PrivacyUrl }
+                },
+                new Page
+                {
+                    Url = PageUrls.RegisterUrl,
+                    Links = new string [] {
+                        PageUrls.HomeUrl,
+                        PageUrls.RegisterUrl,
+                        PageUrls.LoginUrl,
+                        PageUrls.HomeUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.PrivacyUrl,
+                        PageUrls.ExternalArticle,
+                        PageUrls.PrivacyUrl
+                    }
+                }
+            };
+
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
             {
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Identity/Account/Login");
-                await aspNetProcess.AssertOk("/Privacy");
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+
+                await aspNetProcess.AssertPagesOk(pages);
             }
 
             using (var aspNetProcess = Project.StartPublishedProjectAsync())
             {
-                await aspNetProcess.AssertOk("/");
-                await aspNetProcess.AssertOk("/Identity/Account/Login");
-                await aspNetProcess.AssertOk("/Privacy");
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+
+                await aspNetProcess.AssertPagesOk(pages);
             }
         }
 
-        private void AssertFileExists(string basePath, string path, bool shouldExist)
+
+        private string ReadFile(string basePath, string path)
         {
             var fullPath = Path.Combine(basePath, path);
             var doesExist = File.Exists(fullPath);
 
-            if (shouldExist)
-            {
-                Assert.True(doesExist, "Expected file to exist, but it doesn't: " + path);
-            }
-            else
-            {
-                Assert.False(doesExist, "Expected file not to exist, but it does: " + path);
-            }
-        }
-
-        private string ReadFile(string basePath, string path)
-        {
-            AssertFileExists(basePath, path, shouldExist: true);
+            Assert.True(doesExist, $"Expected file to exist, but it doesn't: {path}");
             return File.ReadAllText(Path.Combine(basePath, path));
         }
     }
