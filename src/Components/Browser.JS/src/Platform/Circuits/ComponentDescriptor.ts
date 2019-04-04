@@ -23,8 +23,11 @@ export interface MarkupRegistrationTags {
 
 export class ComponentDescriptor {
   public registrationTags: MarkupRegistrationTags;
+
   public componentId: number;
+
   public circuitId: string;
+
   public rendererId: number;
 
   public constructor(componentId: number, circuitId: string, rendererId: number, descriptor: MarkupRegistrationTags) {

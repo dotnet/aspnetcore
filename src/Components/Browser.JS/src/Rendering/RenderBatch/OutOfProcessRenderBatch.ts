@@ -55,9 +55,13 @@ export class OutOfProcessRenderBatch implements RenderBatch {
   }
 
   diffReader: RenderTreeDiffReader;
+
   editReader: RenderTreeEditReader;
+
   frameReader: RenderTreeFrameReader;
+
   arrayRangeReader: ArrayRangeReader;
+
   arraySegmentReader: ArraySegmentReader;
 }
 

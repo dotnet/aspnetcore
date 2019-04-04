@@ -5,9 +5,13 @@ import { ReconnectDisplay } from './ReconnectDisplay';
 import { ILogger, LogLevel } from '../Logging/ILogger';
 export class AutoReconnectCircuitHandler implements CircuitHandler {
   public static readonly MaxRetries = 5;
+
   public static readonly RetryInterval = 3000;
+
   public static readonly DialogId = 'components-reconnect-modal';
+
   public reconnectDisplay: ReconnectDisplay;
+
   public logger: ILogger;
 
   public constructor(logger: ILogger) {
@@ -20,6 +24,7 @@ export class AutoReconnectCircuitHandler implements CircuitHandler {
       }
     });
   }
+
   public onConnectionUp(): void {
     this.reconnectDisplay.hide();
   }

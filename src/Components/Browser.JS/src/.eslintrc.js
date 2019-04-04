@@ -33,7 +33,37 @@ module.exports = {
     }],
     "comma-style": ["error", "last"],
     "comma-spacing": ["error", { "after": true }],
-    "no-trailing-spaces": ["error"]
+    "no-trailing-spaces": ["error"],
+    "curly": ["error"],
+    "dot-location": ["error", "property"],
+    "eqeqeq": ["error", "always"],
+    "no-eq-null": ["error"],
+    "no-multi-spaces": ["error"],
+    "no-unused-labels": ["error"],
+    "require-await": ["error"],
+    "array-bracket-newline": ["error", { "multiline": true, "minItems": 4 }],
+    "array-bracket-spacing": ["error", "never"],
+    "array-element-newline": ["error", { "minItems": 3 }],
+    "block-spacing": ["error"],
+    "func-call-spacing": ["error", "never"],
+    "function-paren-newline": ["error", "multiline"],
+    "key-spacing": ["error", { "mode": "strict" }],
+    "keyword-spacing": ["error", { "before": true }],
+    "lines-between-class-members": ["error", "always"],
+    "new-parens": ["error"],
+    "no-multi-assign": ["error"],
+    "no-multiple-empty-lines": ["error"],
+    "no-unneeded-ternary": ["error"],
+    "no-whitespace-before-property": ["error"],
+    "one-var": ["error", "never"],
+    "space-before-function-paren": ["error", {
+      "anonymous": "never",
+      "named": "never",
+      "asyncArrow": "always"
+    }],
+    "space-in-parens": ["error", "never"],
+    "space-infix-ops": ["error"]
+
   },
   globals: {
     DotNet: "readonly"

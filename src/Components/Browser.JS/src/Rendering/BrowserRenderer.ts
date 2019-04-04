@@ -11,7 +11,9 @@ const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement 
 
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
+
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
+
   private browserRendererId: number;
 
   public constructor(browserRendererId: number) {
@@ -388,7 +390,8 @@ function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: num
     'Microsoft.AspNetCore.Components.Browser',
     'DispatchEvent',
     eventDescriptor,
-    JSON.stringify(eventArgs.data));
+    JSON.stringify(eventArgs.data)
+  );
 }
 
 function clearElement(element: Element) {
@@ -400,7 +403,7 @@ function clearElement(element: Element) {
 
 function clearBetween(start: Node, end: Node): void {
   const logicalParent = getLogicalParent(start as unknown as LogicalElement);
-  if(!logicalParent){
+  if (!logicalParent){
     throw new Error("Can't clear between nodes. The start node does not have a logical parent.");
   }
   const children = getLogicalChildrenArray(logicalParent);

@@ -13,30 +13,48 @@ export class SharedMemoryRenderBatch implements RenderBatch {
   }
 
   // Keep in sync with memory layout in RenderBatch.cs
-  updatedComponents() { return platform.readStructField<Pointer>(this.batchAddress, 0) as any as ArrayRange<RenderTreeDiff>; }
-  referenceFrames() { return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength) as any as ArrayRange<RenderTreeDiff>; }
-  disposedComponentIds() { return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 2) as any as ArrayRange<number>; }
-  disposedEventHandlerIds() { return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 3) as any as ArrayRange<number>; }
+  updatedComponents() {
+    return platform.readStructField<Pointer>(this.batchAddress, 0) as any as ArrayRange<RenderTreeDiff>;
+  }
+
+  referenceFrames() {
+    return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength) as any as ArrayRange<RenderTreeDiff>;
+  }
+
+  disposedComponentIds() {
+    return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 2) as any as ArrayRange<number>;
+  }
+
+  disposedEventHandlerIds() {
+    return platform.readStructField<Pointer>(this.batchAddress, arrayRangeReader.structLength * 3) as any as ArrayRange<number>;
+  }
 
   updatedComponentsEntry(values: ArrayValues<RenderTreeDiff>, index: number) {
     return arrayValuesEntry(values, index, diffReader.structLength);
   }
+
   referenceFramesEntry(values: ArrayValues<RenderTreeFrame>, index: number) {
     return arrayValuesEntry(values, index, frameReader.structLength);
   }
+
   disposedComponentIdsEntry(values: ArrayValues<number>, index: number) {
     const pointer = arrayValuesEntry(values, index, /* int length */ 4);
     return platform.readInt32Field(pointer as any as Pointer);
   }
+
   disposedEventHandlerIdsEntry(values: ArrayValues<number>, index: number) {
     const pointer = arrayValuesEntry(values, index, /* int length */ 4);
     return platform.readInt32Field(pointer as any as Pointer);
   }
 
   arrayRangeReader = arrayRangeReader;
+
   arraySegmentReader = arraySegmentReader;
+
   diffReader = diffReader;
+
   editReader = editReader;
+
   frameReader = frameReader;
 }
 
