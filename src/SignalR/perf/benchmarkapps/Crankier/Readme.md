@@ -36,5 +36,5 @@ dotnet run -- local --target-url https://localhost:5001/echo --workers 10
 Attempt to make 5,000 connections to the `echo` hub using Long Polling
 
 ```
-dotnet run local --target-url https://localhost:5001/echo --connections 1000 --transport LongPolling
+dotnet run -- local --target-url https://localhost:5001/echo --connections 1000 --transport LongPolling
 ```
