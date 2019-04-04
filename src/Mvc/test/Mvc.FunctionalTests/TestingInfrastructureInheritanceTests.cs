@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Xunit;
 
@@ -50,6 +51,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.True(factory.CreateHostCalled);
             Assert.False(factory.CreateServerCalled);
             Assert.False(factory.CreateWebHostBuilderCalled);
+        }
+
+        [Fact]
+        public void TestingInfrastructure_GenericHost_WithWithHostBuilderHasServices()
+        {
+            // Act
+            var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+
+            // Assert
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
         }
 
         private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
