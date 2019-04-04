@@ -30,11 +30,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
       Resolve MVC specific configuration depending on the presence of MVC specific Razor files.
   -->
-  <Target Name="_ResolveMvcSpecificRazorConfiguration"
+  <Target Name="_ResolveMvcAssemblyAttributes"
     DependsOnTargets="ResolveRazorGenerateInputs"
     Condition="'$(Language)' == 'C#' AND '$(AddRazorSupportForMvc)' == 'true'">
-
-    <Message Text="@(RazorGenerateWithTargetPath)" Importance="High" />
 
    <PropertyGroup Condition="'@(RazorGenerate->Count())' != '0'">
       <!--

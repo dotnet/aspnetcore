@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
         }
 
-         [Fact]
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_DoesNotAddHostingMetadata_ByDefault()
         {

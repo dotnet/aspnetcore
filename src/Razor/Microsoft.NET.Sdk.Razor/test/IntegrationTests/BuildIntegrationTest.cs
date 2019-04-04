@@ -444,7 +444,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Build_GeneratesHostingAttributesByDefault()
+        public async Task Build_GeneratesHostingAttributes_WhenGenerateRazorHostingAssemblyInfoIsSet()
         {
             var razorAssemblyInfo = Path.Combine(IntermediateOutputPath, "SimpleMvc.AssemblyInfo.cs");
             var result = await DotnetMSBuild("Build", "/p:GenerateRazorHostingAssemblyInfo=false");
