@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             counter.OnLock += (s, e) => lockedTcs.TrySetResult(e);
             counter.OnRelease += (s, e) => releasedTcs.TrySetResult(null);
 
-            using (var server = CreateServerWithMaxConnections(async context =>
+            await using (var server = CreateServerWithMaxConnections(async context =>
             {
                 await context.Response.WriteAsync("Hello");
                 await requestTcs.Task;
@@ -44,8 +44,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.True(await lockedTcs.Task.DefaultTimeout());
                     requestTcs.TrySetResult(null);
                 }
-
-                await server.StopAsync();
             }
 
             await releasedTcs.Task.DefaultTimeout();
@@ -54,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task UpgradedConnectionsCountsAgainstDifferentLimit()
         {
-            using (var server = CreateServerWithMaxConnections(async context =>
+            await using (var server = CreateServerWithMaxConnections(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
                 if (feature.IsUpgradableRequest)
@@ -96,7 +94,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         await rejected.WaitForConnectionClose();
                     }
                 }
-                await server.StopAsync();
             }
         }
 
@@ -106,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             const int max = 10;
             var requestTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using (var server = CreateServerWithMaxConnections(async context =>
+            await using (var server = CreateServerWithMaxConnections(async context =>
             {
                 await context.Response.WriteAsync("Hello");
                 await requestTcs.Task;
@@ -142,7 +139,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     requestTcs.TrySetResult(null);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -174,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = CreateServerWithMaxConnections(_ => Task.CompletedTask, counter))
+            await using (var server = CreateServerWithMaxConnections(_ => Task.CompletedTask, counter))
             {
                 // open a bunch of connections in parallel
                 Parallel.For(0, count, async i =>
@@ -199,7 +195,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 await closedTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
                 Assert.Equal(count, opened);
                 Assert.Equal(count, closed);
-                await server.StopAsync();
             }
         }
 
