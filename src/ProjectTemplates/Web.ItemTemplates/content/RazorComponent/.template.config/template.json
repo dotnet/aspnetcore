@@ -7,22 +7,22 @@
   ],
   "name": "Razor Component",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A Razor Component",
+  "description": "A reusable web UI component implemented with Razor",
   "tags": {
     "language": "C#",
     "type": "item"
   },
-  "groupIdentity": "Microsoft.AspNetCore.Mvc.RazorComponent",
+  "groupIdentity": "Microsoft.AspNetCore.Components.RazorComponent",
   "precedence": "100",
-  "identity": "Microsoft.AspNetCore.Mvc.RazorComponent",
+  "identity": "Microsoft.AspNetCore.Components.RazorComponent",
   "shortname": "razorcomponent",
-  "sourceName": "Index",
+  "sourceName": "Component1",
   "primaryOutputs": [
     {
-      "path": "Index.razor"
+      "path": "Component1.razor"
     }
   ],
-  "defaultName": "Index",
+  "defaultName": "Component1",
   "symbols": {
     "HostIdentifier": {
       "type": "bind",
@@ -32,7 +32,7 @@
   "postActions": [
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "description": "Opens Index.razor in the editor",
+      "description": "Opens Component1.razor in the editor",
       "manualInstructions": [],
       "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
       "args": {
