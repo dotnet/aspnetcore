@@ -52,6 +52,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.False(factory.CreateWebHostBuilderCalled);
         }
 
+        [Fact]
+        public void TestingInfrastructure_GenericHost_WithWithHostBuilderHasServices()
+        {
+            // Act
+            var factory = new CustomizedFactory<GenericHostWebSite.Startup>();
+
+            // Assert
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+        }
+
         private class CustomizedFactory<TEntryPoint> : WebApplicationFactory<TEntryPoint> where TEntryPoint : class
         {
             public bool GetTestAssembliesCalled { get; private set; }
