@@ -441,6 +441,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("0.010", mirrorValue.GetAttribute("value"));
         }
 
+        [Fact]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2166")]
         public void CanBindTextboxNullableDecimal()
         {
