@@ -311,6 +311,10 @@ namespace Microsoft.AspNetCore.Components
         void Configure(Microsoft.AspNetCore.Components.RenderHandle renderHandle);
         System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters);
     }
+    public partial interface IComponentContext
+    {
+        bool IsConnected { get; }
+    }
     public partial interface IHandleAfterRender
     {
         System.Threading.Tasks.Task OnAfterRenderAsync();
@@ -323,6 +327,16 @@ namespace Microsoft.AspNetCore.Components
     public partial class InjectAttribute : System.Attribute
     {
         public InjectAttribute() { }
+    }
+    public partial interface IUriHelper
+    {
+        event System.EventHandler<string> OnLocationChanged;
+        string GetAbsoluteUri();
+        string GetBaseUri();
+        void NavigateTo(string uri);
+        void NavigateTo(string uri, bool forceLoad);
+        System.Uri ToAbsoluteUri(string href);
+        string ToBaseRelativePath(string baseUri, string locationAbsolute);
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct MarkupString
@@ -544,6 +558,23 @@ namespace Microsoft.AspNetCore.Components
         public double DeltaX { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public double DeltaY { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public double DeltaZ { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public abstract partial class UriHelperBase : Microsoft.AspNetCore.Components.IUriHelper
+    {
+        protected UriHelperBase() { }
+        public event System.EventHandler<string> OnLocationChanged { add { } remove { } }
+        protected virtual void EnsureInitialized() { }
+        public string GetAbsoluteUri() { throw null; }
+        public virtual string GetBaseUri() { throw null; }
+        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
+        public void NavigateTo(string uri) { }
+        public void NavigateTo(string uri, bool forceLoad) { }
+        protected abstract void NavigateToCore(string uri, bool forceLoad);
+        protected void SetAbsoluteBaseUri(string baseUri) { }
+        protected void SetAbsoluteUri(string uri) { }
+        public System.Uri ToAbsoluteUri(string href) { throw null; }
+        public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
+        protected void TriggerOnLocationChanged() { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Forms
@@ -778,39 +809,5 @@ namespace Microsoft.AspNetCore.Components.Routing
     {
         All = 1,
         Prefix = 0,
-    }
-}
-namespace Microsoft.AspNetCore.Components.Services
-{
-    public partial interface IComponentContext
-    {
-        bool IsConnected { get; }
-    }
-    public partial interface IUriHelper
-    {
-        event System.EventHandler<string> OnLocationChanged;
-        string GetAbsoluteUri();
-        string GetBaseUri();
-        void NavigateTo(string uri);
-        void NavigateTo(string uri, bool forceLoad);
-        System.Uri ToAbsoluteUri(string href);
-        string ToBaseRelativePath(string baseUri, string locationAbsolute);
-    }
-    public abstract partial class UriHelperBase : Microsoft.AspNetCore.Components.Services.IUriHelper
-    {
-        protected UriHelperBase() { }
-        public event System.EventHandler<string> OnLocationChanged { add { } remove { } }
-        protected virtual void EnsureInitialized() { }
-        public string GetAbsoluteUri() { throw null; }
-        public virtual string GetBaseUri() { throw null; }
-        public virtual void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
-        public void NavigateTo(string uri) { }
-        public void NavigateTo(string uri, bool forceLoad) { }
-        protected abstract void NavigateToCore(string uri, bool forceLoad);
-        protected void SetAbsoluteBaseUri(string baseUri) { }
-        protected void SetAbsoluteUri(string uri) { }
-        public System.Uri ToAbsoluteUri(string href) { throw null; }
-        public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
-        protected void TriggerOnLocationChanged() { }
     }
 }

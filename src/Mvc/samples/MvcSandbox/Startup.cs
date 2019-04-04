@@ -26,7 +26,7 @@ namespace MvcSandbox
             {
                 options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
             });
-            services.AddRazorComponents();
+            services.AddServerSideBlazor();
             services.AddMvc()
                 .AddRazorRuntimeCompilation()
                 .SetCompatibilityVersion(Microsoft.AspNetCore.Mvc.CompatibilityVersion.Latest);
@@ -71,7 +71,7 @@ namespace MvcSandbox
 
                 builder.MapControllers();
                 builder.MapRazorPages();
-                builder.MapComponentHub<MvcSandbox.Components.App>("app");
+                builder.MapBlazorHub<MvcSandbox.Components.App>("app");
                 builder.MapFallbackToPage("/Components");
             });
         }

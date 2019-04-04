@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Components.Services
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// A base class for <see cref="IUriHelper"/> implementations.

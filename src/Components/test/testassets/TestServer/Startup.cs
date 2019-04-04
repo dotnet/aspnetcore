@@ -27,7 +27,7 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddRazorComponents();
+            services.AddServerSideBlazor();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -52,7 +52,6 @@ namespace TestServer
                 // we're not relying on any extra magic inside MapComponentsHub, since it's
                 // important that people can set up these bits of middleware manually (e.g., to
                 // swap in UseAzureSignalR instead of UseSignalR).
-
                 subdirApp.UseRouting();
 
                 subdirApp.UseEndpoints(endpoints =>
@@ -79,7 +78,7 @@ namespace TestServer
                 subdirApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapFallbackToPage("/PrerenderedHost");
-                    endpoints.MapComponentHub();
+                    endpoints.MapBlazorHub();
                 });
             });
         }

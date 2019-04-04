@@ -8,8 +8,8 @@
 
   <ItemGroup>
     <WebpackInputs Include="**\*.ts" Exclude="node_modules\**" />
-    <WebPackOutputs Include="src\dist\components.webassembly.js" />
-    <WebPackOutputs Include="src\dist\components.server.js" />
+    <WebPackOutputs Include="src\dist\blazor.webassembly.js" />
+    <WebPackOutputs Include="src\dist\blazor.server.js" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

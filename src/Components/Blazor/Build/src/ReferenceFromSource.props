@@ -11,7 +11,7 @@
 
   <PropertyGroup>
     <BlazorBuildReferenceFromSource>true</BlazorBuildReferenceFromSource>
-    <BlazorJsPath>$(RepositoryRoot)src\Components\Browser.JS\src\dist\components.*.js</BlazorJsPath>
+    <BlazorJsPath>$(RepositoryRoot)src\Components\Browser.JS\src\dist\blazor.*.js</BlazorJsPath>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)targets/All.props" />

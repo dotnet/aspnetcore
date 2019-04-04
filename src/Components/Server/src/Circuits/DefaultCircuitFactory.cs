@@ -8,7 +8,6 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -105,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     throw new InvalidOperationException(
                         $"{nameof(ComponentHub)} doesn't have an associated endpoint. " +
-                        "Use 'app.UseEndpoints(endpoints => endpoints.MapComponentHub<App>(\"app\"))' to register your hub.");
+                        "Use 'app.UseEndpoints(endpoints => endpoints.MapBlazorHub<App>(\"app\"))' to register your hub.");
                 }
 
                 var componentsMetadata = endpoint.Metadata.OfType<ComponentDescriptor>().ToList();
