@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2118")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2118", FlakyOn.All)]
         public void CanRenderTextOnlyComponent()
         {
             var appElement = MountTestComponent<TextOnlyComponent>();
