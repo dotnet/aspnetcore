@@ -890,8 +890,8 @@
   },
   "razorcomponents": {
     "None": {
-      "Template": "razorcomponents",
-      "Arguments": "new razorcomponents",
+      "Template": "blazorserverside",
+      "Arguments": "new blazorserverside",
       "Files": [
         "Pages/_Imports.razor",
         "Pages/Counter.razor",
