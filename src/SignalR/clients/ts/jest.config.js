@@ -11,7 +11,7 @@ module.exports = {
     },
     reporters: [
         "default",
-        ["./common/node_modules/jest-junit/index.js", { "output": "../../artifacts/logs/" + `${process.platform}` + ".signalr.junit.xml" }]
+        ["./common/node_modules/jest-junit/index.js", { "output": "../../../../artifacts/logs/" + `${process.platform}` + ".signalr.junit.xml" }]
     ],
     transform: {
         "^.+\\.tsx?$": "./common/node_modules/ts-jest"
