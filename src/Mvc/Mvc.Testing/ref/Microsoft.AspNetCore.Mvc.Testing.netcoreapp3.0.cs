@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         public Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactoryClientOptions ClientOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint>> Factories { get { throw null; } }
         public Microsoft.AspNetCore.TestHost.TestServer Server { get { throw null; } }
+        public virtual System.IServiceProvider Services { get { throw null; } }
         protected virtual void ConfigureClient(System.Net.Http.HttpClient client) { }
         protected virtual void ConfigureWebHost(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { }
         public System.Net.Http.HttpClient CreateClient() { throw null; }
