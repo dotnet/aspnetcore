@@ -18,16 +18,16 @@
   <Import Project="$(MSBuildThisFileDirectory)targets/All.targets" />
 
   <!--
-    Debugging support using dotnet-blazor serve.
+    Debugging support using blazor-devserver serve.
 
     A few things to note here:
       - We have to use dotnet exec to avoid launching another process and confusing the debugger.
-      - Since we're doing dotnet exec, it won't automatically rebuild the CLI project.
+      - Since we're doing dotnet exec, it won't automatically rebuild the DevServer project.
       - $(AdditionalRunArguments) needs to be defined before importing this file.
    -->
   <PropertyGroup>
     <RunCommand>dotnet</RunCommand>
-    <_BlazorCliLocation>$(MSBuildThisFileDirectory)../../Cli/src/bin/$(Configuration)/netcoreapp3.0/dotnet-blazor.dll</_BlazorCliLocation>
+    <_BlazorCliLocation>$(MSBuildThisFileDirectory)../../DevServer/src/bin/$(Configuration)/netcoreapp3.0/blazor-devserver.dll</_BlazorCliLocation>
     <RunArguments>exec &quot;$(_BlazorCliLocation)&quot; serve $(AdditionalRunArguments)</RunArguments>
   </PropertyGroup>
 

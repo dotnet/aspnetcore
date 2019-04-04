@@ -13,7 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Net.Mime;
 
-namespace Microsoft.AspNetCore.Blazor.Cli.Server
+namespace Microsoft.AspNetCore.Blazor.DevServer.Server
 {
     internal class Startup
     {

@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
-namespace Microsoft.AspNetCore.Blazor.Cli.Server
+namespace Microsoft.AspNetCore.Blazor.DevServer.Server
 {
     // This project is a CLI tool, so we don't expect anyone to reference it
     // as a runtime library. As such we consider it reasonable to mark the
