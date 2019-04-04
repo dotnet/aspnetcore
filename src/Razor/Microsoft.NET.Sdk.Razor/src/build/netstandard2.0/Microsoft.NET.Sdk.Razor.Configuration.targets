@@ -28,30 +28,44 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <!--
-      Configure MVC specific configuration if the application uses a configuration that supports MVC.
+      Resolve MVC specific configuration depending on the presence of MVC specific Razor files.
   -->
-  <PropertyGroup Condition="'$(AddRazorSupportForMvc)' == 'true'">
-    <!--
-      MVC uses a ProvideApplicationPartFactoryAttribute on the generated assembly to load compiled views from assembly. Set this to false, to prevent generating this attribute.
-    -->
-    <GenerateProvideApplicationPartFactoryAttribute Condition="'$(GenerateProvideApplicationPartFactoryAttribute)'==''">true</GenerateProvideApplicationPartFactoryAttribute>
+  <Target Name="_ResolveMvcSpecificRazorConfiguration"
+    DependsOnTargets="ResolveRazorGenerateInputs"
+    Condition="'$(Language)' == 'C#' AND '$(AddRazorSupportForMvc)' == 'true'">
 
-    <!--
-      Determines if the Sdk is allowed to add additional attributes to the project assembly.
-      For instance, MVC will generally want to add attributes to support view discovery and runtime compilation.
-    -->
-    <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'==''">true</GenerateRazorAssemblyInfo>
+    <Message Text="@(RazorGenerateWithTargetPath)" Importance="High" />
 
-    <!--
-      MVC will generally want to add support for runtime compilation, but only for applications.
-    -->
-    <GenerateRazorHostingAssemblyInfo Condition="'$(GenerateRazorHostingAssemblyInfo)'=='' AND '$(OutputType)'=='exe'">$(GenerateRazorAssemblyInfo)</GenerateRazorHostingAssemblyInfo>
+   <PropertyGroup Condition="'@(RazorGenerate->Count())' != '0'">
+      <!--
+        MVC uses a ProvideApplicationPartFactoryAttribute on the generated assembly to load compiled views from assembly. Set this to false, to prevent generating this attribute.
+      -->
+      <GenerateProvideApplicationPartFactoryAttribute Condition="'$(GenerateProvideApplicationPartFactoryAttribute)'==''">true</GenerateProvideApplicationPartFactoryAttribute>
 
-    <!--
-      The type name of the ApplicationPartFactory applied to the generated Razor file.
-    -->
-    <ProvideApplicationPartFactoryAttributeTypeName Condition="'$(ProvideApplicationPartFactoryAttributeTypeName)' == ''">Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor</ProvideApplicationPartFactoryAttributeTypeName>
-  </PropertyGroup>
+      <!--
+        Determines if the Sdk is allowed to add additional attributes to the project assembly.
+        For instance, MVC will generally want to add attributes to support view discovery and runtime compilation.
+      -->
+      <GenerateRazorAssemblyInfo Condition="'$(GenerateRazorAssemblyInfo)'==''">true</GenerateRazorAssemblyInfo>
+
+      <!--
+        The type name of the ApplicationPartFactory applied to the generated Razor file.
+      -->
+      <ProvideApplicationPartFactoryAttributeTypeName Condition="'$(ProvideApplicationPartFactoryAttributeTypeName)' == ''">Microsoft.AspNetCore.Mvc.ApplicationParts.CompiledRazorAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor</ProvideApplicationPartFactoryAttributeTypeName>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(GenerateProvideApplicationPartFactoryAttribute)' == 'true' AND '$(ProvideApplicationPartFactoryAttributeTypeName)'!=''">
+      <RazorTargetAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute">
+        <_Parameter1>$(ProvideApplicationPartFactoryAttributeTypeName)</_Parameter1>
+      </RazorTargetAssemblyAttribute>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true' AND '$(ResolvedRazorCompileToolset)'=='RazorSdk' AND ('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' == 'true')">
+      <_RazorAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute">
+        <_Parameter1>$(RazorTargetName)</_Parameter1>
+      </_RazorAssemblyAttribute>
+    </ItemGroup>
+  </Target>
 
   <!--
     Determine the default Razor configuration
@@ -78,18 +92,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <AssemblyName>Microsoft.AspNetCore.Mvc.Razor.Extensions</AssemblyName>
       <AssemblyFilePath>$(RazorSdkDirectoryRoot)extensions\mvc-3-0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll</AssemblyFilePath>
     </RazorExtension>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true' AND '$(ResolvedRazorCompileToolset)'=='RazorSdk' AND ('$(RazorCompileOnBuild)' == 'true' OR '$(RazorCompileOnPublish)' == 'true')">
-    <_RazorAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute">
-      <_Parameter1>$(RazorTargetName)</_Parameter1>
-    </_RazorAssemblyAttribute>
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(GenerateProvideApplicationPartFactoryAttribute)' == 'true' AND '$(ProvideApplicationPartFactoryAttributeTypeName)'!=''">
-    <RazorTargetAssemblyAttribute Include="Microsoft.AspNetCore.Mvc.ApplicationParts.ProvideApplicationPartFactoryAttribute">
-      <_Parameter1>$(ProvideApplicationPartFactoryAttributeTypeName)</_Parameter1>
-    </RazorTargetAssemblyAttribute>
   </ItemGroup>
 
 </Project>

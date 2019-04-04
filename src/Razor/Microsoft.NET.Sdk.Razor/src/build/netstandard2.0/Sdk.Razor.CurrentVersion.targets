@@ -407,9 +407,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     The SDK expects configurations that use runtime compilation to set $(GenerateRazorHostingAssemblyInfo) to true,
     it will be unset by default.
   -->
-  <PropertyGroup>
-    <_GenerateRazorAssemblyInfoDependsOn>RazorGetAssemblyAttributes;$(_GenerateRazorAssemblyInfoDependsOn)</_GenerateRazorAssemblyInfoDependsOn>
-  </PropertyGroup>
 
   <Target
     Name="RazorGetAssemblyAttributes"

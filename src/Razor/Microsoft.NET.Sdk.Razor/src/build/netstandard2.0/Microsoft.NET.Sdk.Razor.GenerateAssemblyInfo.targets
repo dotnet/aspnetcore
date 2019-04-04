@@ -32,6 +32,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       _CreateRazorTargetAssemblyInfoInputsCacheFile;
       CoreGenerateRazorTargetAssemblyInfo
     </GenerateRazorTargetAssemblyInfoDependsOn>
+
+    <GenerateRazorTargetAssemblyInfoDependsOn Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'">
+      _ResolveMvcSpecificRazorConfiguration;
+      $(GenerateRazorTargetAssemblyInfoDependsOn)
+    </GenerateRazorTargetAssemblyInfoDependsOn>
   </PropertyGroup>
 
   <Target
@@ -156,9 +161,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="_CreateRazorAssemblyInfoInputsCacheFile"
     Inputs="$(_RazorAssemblyInfoInputsCacheFile)"
     Outputs="$(_RazorAssemblyInfo)"
-    Condition="'@(_RazorAssemblyAttribute)' != ''">
+    Condition="'$(GenerateRazorAssemblyInfo)' == 'true' AND '@(_RazorAssemblyAttribute)' != ''">
 
-    <ItemGroup Condition="'$(GenerateRazorAssemblyInfo)'=='true'">
+    <ItemGroup>
       <Compile Remove="$(_RazorAssemblyInfo)" />
       <Compile Include="$(_RazorAssemblyInfo)" />
     </ItemGroup>
@@ -173,11 +178,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <!-- Generate attributes in the main assembly if we're targeting a C# project and using the Razor Sdk. -->
-    <CoreCompileDependsOn Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(Language)' == 'C#' and '$(GenerateRazorAssemblyInfo)' == 'true'">
-      $(CoreCompileDependsOn);_GenerateRazorAssemblyInfo
+    <CoreCompileDependsOn Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(Language)' == 'C#'">
+      $(CoreCompileDependsOn);
+      _GenerateRazorAssemblyInfo
     </CoreCompileDependsOn>
 
-    <_GenerateRazorAssemblyInfoDependsOn>PrepareForBuild;_CoreGenerateRazorAssemblyInfo</_GenerateRazorAssemblyInfoDependsOn>
+    <_GenerateRazorAssemblyInfoDependsOn>RazorGetAssemblyAttributes;PrepareForBuild;_CoreGenerateRazorAssemblyInfo</_GenerateRazorAssemblyInfoDependsOn>
+
+    <!-- In 3.0 or later, we need to invoke a target to determine MVC specific configuration. -->
+    <_GenerateRazorAssemblyInfoDependsOn Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'">
+      _ResolveMvcSpecificRazorConfiguration;
+      $(_GenerateRazorAssemblyInfoDependsOn);
+    </_GenerateRazorAssemblyInfoDependsOn>
   </PropertyGroup>
 
   <Target Name="_GenerateRazorAssemblyInfo" DependsOnTargets="$(_GenerateRazorAssemblyInfoDependsOn)" />

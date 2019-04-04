@@ -379,9 +379,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             Assert.BuildPassed(result);
 
-            Assert.FileExists(result, razorAssemblyInfo);
-            Assert.FileDoesNotContain(result, razorAssemblyInfo, "RelatedAssemblyAttribute");
-
+            Assert.FileDoesNotExist(result, razorAssemblyInfo);
             Assert.FileDoesNotExist(result, IntermediateOutputPath, "SimpleMvc.RazorTargetAssemblyInfo.cs");
         }
 
@@ -454,8 +452,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildPassed(result);
 
             Assert.FileExists(result, razorAssemblyInfo);
-            Assert.FileDoesNotContain(result, razorAssemblyInfo, "Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"2.1\")");
-            Assert.FileDoesNotContain(result, razorAssemblyInfo, "Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-2-1\")");
+            Assert.FileDoesNotContain(result, razorAssemblyInfo, "Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute");
+            Assert.FileDoesNotContain(result, razorAssemblyInfo, "Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute");
         }
 
         [Fact]

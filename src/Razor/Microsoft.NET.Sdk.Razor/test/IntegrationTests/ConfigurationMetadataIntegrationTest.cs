@@ -14,12 +14,43 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
         }
 
-        [Fact]
+         [Fact]
         [InitializeTestProject("SimpleMvc")]
-        public async Task Build_WithMvc_AddsConfigurationMetadata()
+        public async Task Build_DoesNotAddHostingMetadata_ByDefault()
         {
             var razorAssemblyInfo = Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
             var result = await DotnetMSBuild("Build");
+
+            Assert.BuildPassed(result);
+
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.dll");
+            Assert.FileExists(result, IntermediateOutputPath, "SimpleMvc.Views.pdb");
+
+            Assert.FileExists(result, razorAssemblyInfo);
+            Assert.FileContainsLine(
+                result,
+                razorAssemblyInfo,
+                "[assembly: Microsoft.AspNetCore.Mvc.ApplicationParts.RelatedAssemblyAttribute(\"SimpleMvc.Views\")]");
+            Assert.FileDoesNotContainLine(
+                result,
+                razorAssemblyInfo,
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorLanguageVersionAttribute(\"3.0\")]");
+            Assert.FileDoesNotContainLine(
+                result,
+                razorAssemblyInfo,
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorConfigurationNameAttribute(\"MVC-3.0\")]");
+            Assert.FileDoesNotContainLine(
+                result,
+                razorAssemblyInfo,
+                "[assembly: Microsoft.AspNetCore.Razor.Hosting.RazorExtensionAssemblyNameAttribute(\"MVC-3.0\", \"Microsoft.AspNetCore.Mvc.Razor.Extensions\")]");
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task Build_WithGenerateRazorHostingAssemblyInfo_AddsConfigurationMetadata()
+        {
+            var razorAssemblyInfo = Path.Combine(IntermediateOutputPath, "SimpleMvc.RazorAssemblyInfo.cs");
+            var result = await DotnetMSBuild("Build", "/p:GenerateRazorHostingAssemblyInfo=true");
 
             Assert.BuildPassed(result);
 

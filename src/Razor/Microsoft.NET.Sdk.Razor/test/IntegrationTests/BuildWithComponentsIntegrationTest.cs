@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         [Fact]
         [InitializeTestProject("ComponentApp")]
-        public async Task Build_DoesNotProduceMvcArtifacts_IfAddRazorSupportForMvcIsFalse()
+        public async Task Build_DoesNotProduceMvcArtifacts_IfProjectDoesNotContainRazorGenerateItems()
         {
             var result = await DotnetMSBuild("Build");
 
