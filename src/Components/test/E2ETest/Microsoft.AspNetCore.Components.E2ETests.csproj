@@ -11,13 +11,6 @@
       Temporarily disabled until this runs on macOS
     -->
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
-
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <BaseOutputPath />
-    <OutputPath />
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -44,7 +37,25 @@
     <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <HelixPreCommand Include="call npm i yarn;call node_modules\.bin\yarn install" />
+    <HelixContent Include="package.json" />
+    <HelixContent Include="yarn.lock" />
+    <!-- This is currently windows only -->
+    <HelixProjectPlatform Remove="Linux;OSX" />
+    <HelixProjectPlatform Remove="@(HelixProjectPlatform)" />    
+    <HelixProjectTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" />
+  </ItemGroup>
+   
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
 
+  <Target Name="PublishAssets" AfterTargets="Publish">
+    <ItemGroup>
+      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\testassets\**\*.*" />
+    </ItemGroup>
+    <Copy
+      SourceFiles="@(_PublishFiles)"
+      DestinationFolder="$(PublishDir)\%(RecursiveDir)" />
+  </Target>
 </Project>
