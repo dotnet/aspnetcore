@@ -18,7 +18,12 @@
 
   <Target Name="Restore">
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install $(InstallArgs)" />
+    <Yarn Command="install $(InstallArgs)" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode"/>
+    </Yarn>
+    <Yarn Command="install $(InstallArgs)" Condition="'$(_YarnExitCode)' != '0'">
+      <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode"/>
+    </Yarn>
   </Target>
 
   <Target Name="PrepareForBuild">

@@ -25,7 +25,12 @@
 
   <Target Name="YarnInstall">
     <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-    <Yarn Command="install" />
+    <Yarn Command="install" IgnoreExitCode="true">
+      <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode"/>
+    </Yarn>
+    <Yarn Command="install" Condition="'$(_YarnExitCode)' != '0'">
+      <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode"/>
+    </Yarn>
   </Target>
 
   <Target Name="PrepublishScript" DependsOnTargets="YarnInstall" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
