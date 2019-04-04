@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("Basic test app", Browser.Title);
         }
 
+        [Fact]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2118")]
         public void CanRenderTextOnlyComponent()
         {
