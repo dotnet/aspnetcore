@@ -75,7 +75,7 @@ namespace Templates.Test.Helpers
                 if (driver.Title.Contains("Certificate error", StringComparison.OrdinalIgnoreCase))
                 {
                     _output.WriteLine("Page contains certificate error. Attempting to get around this...");
-                    driver.Click(By.Id("moreInformationDropdownSpan"));
+                    driver.FindElement(By.Id("moreInformationDropdownSpan")).Click();
                     var continueLink = driver.FindElement(By.Id("invalidcert_continue"));
                     if (continueLink != null)
                     {
