@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             else
             {
                 var message = $"Completing batch {entry.BatchId} " +
-                    errorMessageOrNull == null ? "without error." : "with error.";
+                    (errorMessageOrNull == null ? "without error." : "with error.");
 
                 _logger.LogDebug(message);
                 CompleteRender(entry.CompletionSource, errorMessageOrNull);
