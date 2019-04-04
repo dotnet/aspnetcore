@@ -178,7 +178,8 @@ namespace Microsoft.AspNetCore.Routing.Template
                             throw new InvalidOperationException($"Unable to find required value '{key}' on route pattern.");
                         }
 
-                        if (!RoutePartsEqual(ambientValue, _pattern.RequiredValues[key]) && !object.ReferenceEquals(RoutePattern.RequiredValueAny, _pattern.RequiredValues[key]))
+                        if (!RoutePartsEqual(ambientValue, _pattern.RequiredValues[key]) &&
+                            !RoutePattern.IsRequiredValueAny(_pattern.RequiredValues[key]))
                         {
                             copyAmbientValues = false;
                             break;
@@ -265,7 +266,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 {
                     hasAmbientValue = ambientValues != null && ambientValues.TryGetValue(key, out ambientValue);
                     if (hasAmbientValue &&
-                        (RoutePartsEqual(requiredValue, ambientValue) || object.ReferenceEquals(RoutePattern.RequiredValueAny, requiredValue)))
+                        (RoutePartsEqual(requiredValue, ambientValue) || RoutePattern.IsRequiredValueAny(requiredValue)))
                     {
                         // Treat this an an explicit value to *force it*. 
                         slots[i] = new KeyValuePair<string, object>(key, ambientValue);

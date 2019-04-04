@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     // Ex: {controller=Home}/{action=Index}/{id?} - with required values: { area = "", ... }
                     continue;
                 }
-                else if (object.ReferenceEquals(kvp.Value, RoutePattern.RequiredValueAny))
+                else if (RoutePattern.IsRequiredValueAny(kvp.Value))
                 {
                     // Required value is *any* - this is allowed for a parameter with a default, but not
                     // a non-parameter default.
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 //
                 // If the required value is *any* then don't remove the default.
                 if (parameter != null &&
-                    !object.ReferenceEquals(kvp.Value, RoutePattern.RequiredValueAny) &&
+                    !RoutePattern.IsRequiredValueAny(kvp.Value) &&
                     original.Defaults.TryGetValue(kvp.Key, out var defaultValue) && 
                     !RouteValueEqualityComparer.Default.Equals(kvp.Value, defaultValue))
                 {
