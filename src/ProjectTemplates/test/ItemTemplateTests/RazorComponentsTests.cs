@@ -22,14 +22,14 @@ namespace Templates.Items.Test
         public ITestOutputHelper Output { get; }
 
         [Fact]
-        public async Task RazorComponentsTemplate()
+        public async Task RazorComponentsItemTemplate()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorcomponentitem", Output);
 
             var createResult = await Project.RunDotNetNewAsync("razorcomponent --name Steve.razor");
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create", Project, createResult));
 
-            AssertFileExists(Project.TemplateOutputDir, "Steve.razor", shouldExist: true);
+            Project.AssertFileExists("Steve.razor", shouldExist: true);
         }
     }
 }

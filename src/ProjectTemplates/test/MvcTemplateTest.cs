@@ -32,13 +32,8 @@ namespace Templates.Test
             var createResult = await Project.RunDotNetNewAsync("mvc", language: languageOverride);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
-            AssertDirectoryExists(Project.TemplateOutputDir, "Areas", false);
-            AssertDirectoryExists(Project.TemplateOutputDir, "Extensions", false);
-            AssertFileExists(Project.TemplateOutputDir, "urlRewrite.config", false);
-            AssertFileExists(Project.TemplateOutputDir, "Controllers/AccountController.cs", false);
-
             var projectExtension = languageOverride == "F#" ? "fsproj" : "csproj";
-            var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.{projectExtension}");
+            var projectFileContents = ReadFile($"{Project.ProjectName}.{projectExtension}");
             Assert.DoesNotContain(".db", projectFileContents);
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools", projectFileContents);
             Assert.DoesNotContain("Microsoft.VisualStudio.Web.CodeGeneration.Design", projectFileContents);
@@ -86,11 +81,7 @@ namespace Templates.Test
             var createResult = await Project.RunDotNetNewAsync("mvc", auth: "Individual", useLocalDB: useLocalDB);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
-            AssertDirectoryExists(Project.TemplateOutputDir, "Extensions", false);
-            AssertFileExists(Project.TemplateOutputDir, "urlRewrite.config", false);
-            AssertFileExists(Project.TemplateOutputDir, "Controllers/AccountController.cs", false);
-
-            var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
+            var projectFileContents = ReadFile($"{Project.ProjectName}.csproj");
             if (!useLocalDB)
             {
                 Assert.Contains(".db", projectFileContents);
@@ -122,21 +113,6 @@ namespace Templates.Test
                 await aspNetProcess.AssertOk("/");
                 await aspNetProcess.AssertOk("/Identity/Account/Login");
                 await aspNetProcess.AssertOk("/Home/Privacy");
-            }
-        }
-
-        private void AssertDirectoryExists(string basePath, string path, bool shouldExist)
-        {
-            var fullPath = Path.Combine(basePath, path);
-            var doesExist = Directory.Exists(fullPath);
-
-            if (shouldExist)
-            {
-                Assert.True(doesExist, "Expected directory to exist, but it doesn't: " + path);
-            }
-            else
-            {
-                Assert.False(doesExist, "Expected directory not to exist, but it does: " + path);
             }
         }
 
