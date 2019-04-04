@@ -438,11 +438,28 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
 #if NETCOREAPP3_0
-        public async IAsyncEnumerable<object> StreamAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
+
+        /// <summary>
+        /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
+        /// </summary>
+        /// <typeparam name="TResult">The return type of the streaming server method.</typeparam>
+        /// <param name="methodName">The name of the server method to invoke.</param>
+        /// <param name="args">The arguments used to invoke the server method.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>
+        /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
+        /// </returns>
+        public async Task<IAsyncEnumerable<TResult>> StreamAsyncCore<TResult>(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            var stream = (await StreamAsChannelCoreAsyncCore(methodName, returnType, args, cancellationToken)).ReadAllAsync();
-            await foreach(var item in AsyncEnumerableAdapters.MakeCancelableAsyncEnumerable(stream, cancellationToken)) {
-                yield return item;
+            var stream = CastIAsyncEnumerable<TResult>((await StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cancellationToken)).ReadAllAsync());
+            return AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, cancellationToken);
+        }
+
+        private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(IAsyncEnumerable<object> stream)
+        {
+            await foreach (var item in stream)
+            {
+                yield return (T)item;
             }
         }
 #endif

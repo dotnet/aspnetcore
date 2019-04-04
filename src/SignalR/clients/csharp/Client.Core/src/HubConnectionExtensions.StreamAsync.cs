@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, Array.Empty<object>(), cancellationToken);
         }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1 }, cancellationToken);
         }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2 }, cancellationToken);
         }
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3 }, cancellationToken);
         }
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3, arg4 }, cancellationToken);
         }
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3, arg4, arg5 }, cancellationToken);
         }
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3, arg4, arg5, arg6 }, cancellationToken);
         }
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7 }, cancellationToken);
         }
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8 }, cancellationToken);
         }
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9 }, cancellationToken);
         }
@@ -232,35 +232,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>
         /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
         /// </returns>
-        public static IAsyncEnumerable<TResult> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, CancellationToken cancellationToken = default)
+        public static Task<IAsyncEnumerable<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, object arg1, object arg2, object arg3, object arg4, object arg5, object arg6, object arg7, object arg8, object arg9, object arg10, CancellationToken cancellationToken = default)
         {
             return hubConnection.StreamAsyncCore<TResult>(methodName, new[] { arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9, arg10 }, cancellationToken);
-        }
-
-        /// <summary>
-        /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
-        /// </summary>
-        /// <typeparam name="TResult">The return type of the streaming server method.</typeparam>
-        /// <param name="hubConnection">The hub connection.</param>
-        /// <param name="methodName">The name of the server method to invoke.</param>
-        /// <param name="args">The arguments used to invoke the server method.</param>
-        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
-        /// <returns>
-        /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
-        /// </returns>
-        public static async IAsyncEnumerable<TResult> StreamAsyncCore<TResult>(this HubConnection hubConnection, string methodName, object[] args, CancellationToken cancellationToken = default)
-        {
-            if (hubConnection == null)
-            {
-                throw new ArgumentNullException(nameof(hubConnection));
-            }
-
-            var asyncEnumerable = hubConnection.StreamAsyncCore(methodName, typeof(TResult), args, cancellationToken);
-
-            await foreach (var value in asyncEnumerable)
-            {
-                yield return (TResult)value;
-            }
         }
 #endif
 

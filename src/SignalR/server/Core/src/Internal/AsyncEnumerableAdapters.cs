@@ -9,14 +9,18 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-#if NETCOREAPP3_0
-
     // True-internal because this is a weird and tricky class to use :)
     internal static class AsyncEnumerableAdapters
     {
+#if NETCOREAPP3_0
         public static IAsyncEnumerable<object> MakeCancelableAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default)
         {
             return new CancelableAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
+        }
+
+        public static IAsyncEnumerable<T> MakeCancelableTypedAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default)
+        {
+            return new CancelableTypedAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
         }
 
         public static IAsyncEnumerable<object> MakeCancelableAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default)
@@ -24,11 +28,39 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return MakeCancelableAsyncEnumerable(channel.ReadAllAsync(), cancellationToken);
         }
 
+        private class CancelableTypedAsyncEnumerable<TResult> : IAsyncEnumerable<TResult>
+        {
+            private readonly IAsyncEnumerable<TResult> _asyncEnumerable;
+            private CancellationToken _cancellationToken;
+
+            public CancelableTypedAsyncEnumerable(IAsyncEnumerable<TResult> asyncEnumerable, CancellationToken cancellationToken)
+            {
+                _asyncEnumerable = asyncEnumerable;
+                _cancellationToken = cancellationToken;
+            }
+
+            public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
+            {
+                if (cancellationToken != default)
+                {
+                    if (_cancellationToken != default)
+                    {
+                        _cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, cancellationToken).Token;
+                    }
+                    else
+                    {
+                        _cancellationToken = cancellationToken;
+                    }
+                }
+                return _asyncEnumerable.GetAsyncEnumerator(_cancellationToken);
+            }
+        }
+
         /// <summary>Converts an IAsyncEnumerable of T to an IAsyncEnumerable of object.</summary>
         private class CancelableAsyncEnumerable<T> : IAsyncEnumerable<object>
         {
             private readonly IAsyncEnumerable<T> _asyncEnumerable;
-            private readonly CancellationToken _cancellationToken;
+            private CancellationToken _cancellationToken;
 
             public CancelableAsyncEnumerable(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken)
             {
@@ -68,6 +100,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 }
             }
         }
-    }
 #endif
+    }
 }
