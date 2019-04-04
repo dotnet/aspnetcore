@@ -102,7 +102,7 @@ namespace Company.WebApplication1
                         context.HandleResponse(); // Suppress the exception
                          return Task.CompletedTask;
                     },
-                    // If your application needs to do authenticate single users, add your user validation below.
+                    // If your application needs to authenticate single users, add your user validation below.
                     //OnTokenValidated = context =>
                     //{
                     //    return myUserValidationLogic(context.Ticket.Principal);
