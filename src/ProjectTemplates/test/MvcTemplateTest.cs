@@ -140,25 +140,10 @@ namespace Templates.Test
             }
         }
 
-        private void AssertFileExists(string basePath, string path, bool shouldExist)
+        private string ReadFile(string path)
         {
-            var fullPath = Path.Combine(basePath, path);
-            var doesExist = File.Exists(fullPath);
-
-            if (shouldExist)
-            {
-                Assert.True(doesExist, "Expected file to exist, but it doesn't: " + path);
-            }
-            else
-            {
-                Assert.False(doesExist, "Expected file not to exist, but it does: " + path);
-            }
-        }
-
-        private string ReadFile(string basePath, string path)
-        {
-            AssertFileExists(basePath, path, shouldExist: true);
-            return File.ReadAllText(Path.Combine(basePath, path));
+            Project.AssertFileExists(path, shouldExist: true);
+            return File.ReadAllText(Path.Combine(Project.TemplateOutputDir, path));
         }
     }
 }
