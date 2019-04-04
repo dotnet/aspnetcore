@@ -7,7 +7,7 @@ Load testing for ASP.NET Core SignalR
 ### local
 
 ```
-> dotnet run help local
+> dotnet run -- help local
 
 Usage:  local [options]
 
