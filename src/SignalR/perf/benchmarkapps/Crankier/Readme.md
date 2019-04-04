@@ -6,6 +6,8 @@ Load testing for ASP.NET Core SignalR
 
 ### local
 
+The `local` command launches a set of local worker clients to establish connections to your SignalR server.
+
 ```
 > dotnet run -- help local
 
@@ -24,6 +26,8 @@ Notes:
 
 * `TARGET_URL` needs to be the route to your hub exposed by `UseSignalr` in your application.
 * `CONNECTION_COUNT` defaults to 10,000.
+* `SEND_DURATION_IN_SECONDS` defaults to 300
+* `WORKER_COUNT` defaults to 1
 
 #### Examples
 
@@ -36,5 +40,5 @@ dotnet run -- local --target-url https://localhost:5001/echo --workers 10
 Attempt to make 5,000 connections to the `echo` hub using Long Polling
 
 ```
-dotnet run -- local --target-url https://localhost:5001/echo --connections 1000 --transport LongPolling
+dotnet run -- local --target-url https://localhost:5001/echo --connections 5000 --transport LongPolling
 ```
