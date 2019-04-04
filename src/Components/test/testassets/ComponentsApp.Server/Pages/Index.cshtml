@@ -1,4 +1,4 @@
-@page
+﻿@page
 @using ComponentsApp.App
 
 <!DOCTYPE html>
@@ -20,7 +20,10 @@
         Blazor.start({
             configureSignalR: function (builder) {
                 builder.configureLogging(2); // LogLevel.Information
-            }
+            },
+            logLevel: 2 // LogLevel.Information
+        }).then(function () {
+            window['__aspnetcore__testing__blazor__started__'] = true;
         });
     </script>
 </body>

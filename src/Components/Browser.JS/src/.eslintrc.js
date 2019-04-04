@@ -14,6 +14,7 @@ module.exports = {
     // e.g. "@typescript-eslint/explicit-function-return-type": "off",
     "@typescript-eslint/indent": ["error", 2],
     "@typescript-eslint/no-use-before-define": [ "off" ],
+    "@typescript-eslint/no-unused-vars": ["error", { "varsIgnorePattern": "^_", "argsIgnorePattern": "^_" }],
     "no-var": "error",
     "prefer-const": "error",
     "quotes": ["error", "single", { "avoidEscape": true }],
