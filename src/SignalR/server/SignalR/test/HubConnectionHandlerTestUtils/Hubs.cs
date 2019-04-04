@@ -232,7 +232,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
                 return "error identified and caught";
             }
 
