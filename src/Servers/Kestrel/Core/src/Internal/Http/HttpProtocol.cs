@@ -25,6 +25,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal abstract partial class HttpProtocol : IDefaultHttpContextContainer, IHttpResponseControl
     {
+        private const string DisableHeaderReuseSwitch = "Switch.Microsoft.AspNetCore.Kestrel.DisableHeaderReuse";
+        private static readonly bool DisableHeaderReuse = GetDisableHeaderReuseSwitch();
+
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
@@ -74,6 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
+            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !DisableHeaderReuse);
             HttpResponseControl = this;
         }
 
@@ -124,8 +128,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public string Scheme { get; set; }
         public HttpMethod Method { get; set; }
         public string PathBase { get; set; }
+
+        protected string _parsedPath = null;
         public string Path { get; set; }
+
+        protected string _parsedQueryString = null;
         public string QueryString { get; set; }
+
+        protected string _parsedRawTarget = null;
         public string RawTarget { get; set; }
 
         public string HttpVersion
@@ -275,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasFlushedHeaders => _requestProcessingStatus == RequestProcessingStatus.HeadersFlushed;
 
-        protected HttpRequestHeaders HttpRequestHeaders { get; } = new HttpRequestHeaders();
+        protected HttpRequestHeaders HttpRequestHeaders { get; }
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
@@ -492,9 +502,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
-            var valueString = value.GetAsciiOrUTF8StringNonNullCharacters();
 
-            HttpRequestHeaders.Append(name, valueString);
+            HttpRequestHeaders.Append(name, value);
+        }
+
+        public void OnHeadersComplete()
+        {
+            HttpRequestHeaders.OnHeadersComplete();
         }
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
@@ -1489,6 +1503,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 HandleNonBodyResponseWrite();
                 return await Output.FlushAsync(cancellationToken);
             }
+        }
+
+        private static bool GetDisableHeaderReuseSwitch()
+        {
+            if (AppContext.TryGetSwitch(DisableHeaderReuseSwitch, out var disableHeaderReuse))
+            {
+                return disableHeaderReuse;
+            }
+
+            return false;
         }
     }
 }

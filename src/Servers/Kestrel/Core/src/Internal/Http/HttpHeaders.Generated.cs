@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
 
     internal partial class HttpRequestHeaders
     {
-
-        private long _bits = 0;
         private HeaderReferences _headers;
 
         public bool HasConnection => (_bits & 0x2L) != 0;
@@ -703,12 +703,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._UserAgent = value; 
             }
         }
-        public StringValues HeaderOrigin
+        public StringValues HeaderDNT
         {
             get
             {
                 StringValues value = default;
                 if ((_bits & 0x10000000000L) != 0)
+                {
+                    value = _headers._DNT;
+                }
+                return value;
+            }
+            set
+            {
+                _bits |= 0x10000000000L;
+                _headers._DNT = value; 
+            }
+        }
+        public StringValues HeaderUpgradeInsecureRequests
+        {
+            get
+            {
+                StringValues value = default;
+                if ((_bits & 0x20000000000L) != 0)
+                {
+                    value = _headers._UpgradeInsecureRequests;
+                }
+                return value;
+            }
+            set
+            {
+                _bits |= 0x20000000000L;
+                _headers._UpgradeInsecureRequests = value; 
+            }
+        }
+        public StringValues HeaderOrigin
+        {
+            get
+            {
+                StringValues value = default;
+                if ((_bits & 0x40000000000L) != 0)
                 {
                     value = _headers._Origin;
                 }
@@ -716,7 +750,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x10000000000L;
+                _bits |= 0x40000000000L;
                 _headers._Origin = value; 
             }
         }
@@ -725,7 +759,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x20000000000L) != 0)
+                if ((_bits & 0x80000000000L) != 0)
                 {
                     value = _headers._AccessControlRequestMethod;
                 }
@@ -733,7 +767,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x20000000000L;
+                _bits |= 0x80000000000L;
                 _headers._AccessControlRequestMethod = value; 
             }
         }
@@ -742,7 +776,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x40000000000L) != 0)
+                if ((_bits & 0x100000000000L) != 0)
                 {
                     value = _headers._AccessControlRequestHeaders;
                 }
@@ -750,7 +784,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x40000000000L;
+                _bits |= 0x100000000000L;
                 _headers._AccessControlRequestHeaders = value; 
             }
         }
@@ -932,7 +966,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            if ((_bits & 0x10000000000L) != 0)
+                            if ((_bits & 0x40000000000L) != 0)
                             {
                                 value = _headers._Origin;
                                 return true;
@@ -1019,6 +1053,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if ((_bits & 0x100L) != 0)
                             {
                                 value = _headers._Via;
+                                return true;
+                            }
+                            return false;
+                        }
+                        if ("DNT".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 0x10000000000L) != 0)
+                            {
+                                value = _headers._DNT;
                                 return true;
                             }
                             return false;
@@ -1227,11 +1270,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                     }
                     break;
+                case 25:
+                    {
+                        if ("Upgrade-Insecure-Requests".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 0x20000000000L) != 0)
+                            {
+                                value = _headers._UpgradeInsecureRequests;
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
                 case 29:
                     {
                         if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            if ((_bits & 0x20000000000L) != 0)
+                            if ((_bits & 0x80000000000L) != 0)
                             {
                                 value = _headers._AccessControlRequestMethod;
                                 return true;
@@ -1244,7 +1300,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            if ((_bits & 0x40000000000L) != 0)
+                            if ((_bits & 0x100000000000L) != 0)
                             {
                                 value = _headers._AccessControlRequestHeaders;
                                 return true;
@@ -1368,7 +1424,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            _bits |= 0x10000000000L;
+                            _bits |= 0x40000000000L;
                             _headers._Origin = value;
                             return;
                         }
@@ -1430,6 +1486,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         {
                             _bits |= 0x100L;
                             _headers._Via = value;
+                            return;
+                        }
+                        if ("DNT".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _bits |= 0x10000000000L;
+                            _headers._DNT = value;
                             return;
                         }
                     }
@@ -1581,11 +1643,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                     }
                     break;
+                case 25:
+                    {
+                        if ("Upgrade-Insecure-Requests".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            _bits |= 0x20000000000L;
+                            _headers._UpgradeInsecureRequests = value;
+                            return;
+                        }
+                    }
+                    break;
                 case 29:
                     {
                         if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            _bits |= 0x20000000000L;
+                            _bits |= 0x80000000000L;
                             _headers._AccessControlRequestMethod = value;
                             return;
                         }
@@ -1595,7 +1667,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            _bits |= 0x40000000000L;
+                            _bits |= 0x100000000000L;
                             _headers._AccessControlRequestHeaders = value;
                             return;
                         }
@@ -1776,9 +1848,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            if ((_bits & 0x10000000000L) == 0)
+                            if ((_bits & 0x40000000000L) == 0)
                             {
-                                _bits |= 0x10000000000L;
+                                _bits |= 0x40000000000L;
                                 _headers._Origin = value;
                                 return true;
                             }
@@ -1872,6 +1944,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 _bits |= 0x100L;
                                 _headers._Via = value;
+                                return true;
+                            }
+                            return false;
+                        }
+                        if ("DNT".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 0x10000000000L) == 0)
+                            {
+                                _bits |= 0x10000000000L;
+                                _headers._DNT = value;
                                 return true;
                             }
                             return false;
@@ -2097,13 +2179,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                     }
                     break;
-                case 29:
+                case 25:
                     {
-                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ("Upgrade-Insecure-Requests".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
                             if ((_bits & 0x20000000000L) == 0)
                             {
                                 _bits |= 0x20000000000L;
+                                _headers._UpgradeInsecureRequests = value;
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
+                case 29:
+                    {
+                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 0x80000000000L) == 0)
+                            {
+                                _bits |= 0x80000000000L;
                                 _headers._AccessControlRequestMethod = value;
                                 return true;
                             }
@@ -2115,9 +2211,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            if ((_bits & 0x40000000000L) == 0)
+                            if ((_bits & 0x100000000000L) == 0)
                             {
-                                _bits |= 0x40000000000L;
+                                _bits |= 0x100000000000L;
                                 _headers._AccessControlRequestHeaders = value;
                                 return true;
                             }
@@ -2302,9 +2398,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                         if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            if ((_bits & 0x10000000000L) != 0)
+                            if ((_bits & 0x40000000000L) != 0)
                             {
-                                _bits &= ~0x10000000000L;
+                                _bits &= ~0x40000000000L;
                                 _headers._Origin = default(StringValues);
                                 return true;
                             }
@@ -2398,6 +2494,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 _bits &= ~0x100L;
                                 _headers._Via = default(StringValues);
+                                return true;
+                            }
+                            return false;
+                        }
+                        if ("DNT".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 0x10000000000L) != 0)
+                            {
+                                _bits &= ~0x10000000000L;
+                                _headers._DNT = default(StringValues);
                                 return true;
                             }
                             return false;
@@ -2623,13 +2729,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         }
                     }
                     break;
-                case 29:
+                case 25:
                     {
-                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ("Upgrade-Insecure-Requests".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
                             if ((_bits & 0x20000000000L) != 0)
                             {
                                 _bits &= ~0x20000000000L;
+                                _headers._UpgradeInsecureRequests = default(StringValues);
+                                return true;
+                            }
+                            return false;
+                        }
+                    }
+                    break;
+                case 29:
+                    {
+                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        {
+                            if ((_bits & 0x80000000000L) != 0)
+                            {
+                                _bits &= ~0x80000000000L;
                                 _headers._AccessControlRequestMethod = default(StringValues);
                                 return true;
                             }
@@ -2641,9 +2761,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
                         {
-                            if ((_bits & 0x40000000000L) != 0)
+                            if ((_bits & 0x100000000000L) != 0)
                             {
-                                _bits &= ~0x40000000000L;
+                                _bits &= ~0x100000000000L;
                                 _headers._AccessControlRequestHeaders = default(StringValues);
                                 return true;
                             }
@@ -2655,18 +2775,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return MaybeUnknown?.Remove(key) ?? false;
         }
-
-        protected override void ClearFast()
+        private void Clear(long bitsToClear)
         {
-            MaybeUnknown?.Clear();
-            _contentLength = null;
-            var tempBits = _bits;
-            _bits = 0;
-            if(HttpHeaders.BitCount(tempBits) > 12)
-            {
-                _headers = default(HeaderReferences);
-                return;
-            }
+            var tempBits = bitsToClear;
             
             if ((tempBits & 0x2L) != 0)
             {
@@ -3070,7 +3181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10000000000L) != 0)
             {
-                _headers._Origin = default(StringValues);
+                _headers._DNT = default(StringValues);
                 if((tempBits & ~0x10000000000L) == 0)
                 {
                     return;
@@ -3080,7 +3191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20000000000L) != 0)
             {
-                _headers._AccessControlRequestMethod = default(StringValues);
+                _headers._UpgradeInsecureRequests = default(StringValues);
                 if((tempBits & ~0x20000000000L) == 0)
                 {
                     return;
@@ -3090,12 +3201,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40000000000L) != 0)
             {
-                _headers._AccessControlRequestHeaders = default(StringValues);
+                _headers._Origin = default(StringValues);
                 if((tempBits & ~0x40000000000L) == 0)
                 {
                     return;
                 }
                 tempBits &= ~0x40000000000L;
+            }
+            
+            if ((tempBits & 0x80000000000L) != 0)
+            {
+                _headers._AccessControlRequestMethod = default(StringValues);
+                if((tempBits & ~0x80000000000L) == 0)
+                {
+                    return;
+                }
+                tempBits &= ~0x80000000000L;
+            }
+            
+            if ((tempBits & 0x100000000000L) != 0)
+            {
+                _headers._AccessControlRequestHeaders = default(StringValues);
+                if((tempBits & ~0x100000000000L) == 0)
+                {
+                    return;
+                }
+                tempBits &= ~0x100000000000L;
             }
             
         }
@@ -3473,7 +3604,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Origin", _headers._Origin);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("DNT", _headers._DNT);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20000000000L) != 0)
@@ -3482,10 +3613,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _headers._AccessControlRequestMethod);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Upgrade-Insecure-Requests", _headers._UpgradeInsecureRequests);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40000000000L) != 0)
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        return false;
+                    }
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Origin", _headers._Origin);
+                    ++arrayIndex;
+                }
+                if ((_bits & 0x80000000000L) != 0)
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        return false;
+                    }
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _headers._AccessControlRequestMethod);
+                    ++arrayIndex;
+                }
+                if ((_bits & 0x100000000000L) != 0)
                 {
                     if (arrayIndex == array.Length)
                     {
@@ -3508,734 +3657,345 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return true;
         }
         
-        
-        public unsafe void Append(byte* pKeyBytes, int keyLength, string value)
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe void Append(Span<byte> name, Span<byte> value)
         {
-            var pUB = pKeyBytes;
-            var pUL = (ulong*)pUB;
-                var pUI = (uint*)pUB;
-                var pUS = (ushort*)pUB;
-                var stringValue = new StringValues(value);
-                switch (keyLength)
+            ref byte nameStart = ref MemoryMarshal.GetReference(name);
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var flag = 0L;
+
+            // Does the name matched any "known" headers
+            switch (name.Length)
+            {
+                case 2:
+                    if (((Unsafe.ReadUnaligned<ushort>(ref nameStart) & 0xdfdfu) == 0x4554u))
+                    {
+                        flag = 0x2000000000L;
+                        values = ref _headers._TE;
+                    }
+                    break;
+                case 3:
+                    var firstTerm3 = (Unsafe.ReadUnaligned<ushort>(ref nameStart) & 0xdfdfu);
+                    if ((firstTerm3 == 0x4e44u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x54u))
+                    {
+                        flag = 0x10000000000L;
+                        values = ref _headers._DNT;
+                    }
+                    else if ((firstTerm3 == 0x4956u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)2) & 0xdfu) == 0x41u))
+                    {
+                        flag = 0x100L;
+                        values = ref _headers._Via;
+                    }
+                    break;
+                case 4:
+                    var firstTerm4 = (Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu);
+                    if ((firstTerm4 == 0x54534f48u))
+                    {
+                        flag = 0x8000000L;
+                        values = ref _headers._Host;
+                    }
+                    else if ((firstTerm4 == 0x45544144u))
+                    {
+                        flag = 0x4L;
+                        values = ref _headers._Date;
+                    }
+                    else if ((firstTerm4 == 0x4d4f5246u))
+                    {
+                        flag = 0x4000000L;
+                        values = ref _headers._From;
+                    }
+                    break;
+                case 5:
+                    var firstTerm5 = (Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu);
+                    if ((firstTerm5 == 0x4f4c4c41u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x57u))
+                    {
+                        flag = 0x400L;
+                        values = ref _headers._Allow;
+                    }
+                    else if ((firstTerm5 == 0x474e4152u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)4) & 0xdfu) == 0x45u))
+                    {
+                        flag = 0x1000000000L;
+                        values = ref _headers._Range;
+                    }
+                    break;
+                case 6:
+                    var firstTerm6 = (Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu);
+                    if ((firstTerm6 == 0x45434341u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5450u))
+                    {
+                        flag = 0x80000L;
+                        values = ref _headers._Accept;
+                    }
+                    else if ((firstTerm6 == 0x4b4f4f43u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4549u))
+                    {
+                        flag = 0x1000000L;
+                        values = ref _headers._Cookie;
+                    }
+                    else if ((firstTerm6 == 0x45505845u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x5443u))
+                    {
+                        flag = 0x2000000L;
+                        values = ref _headers._Expect;
+                    }
+                    else if ((firstTerm6 == 0x4749524fu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u))
+                    {
+                        flag = 0x40000000000L;
+                        values = ref _headers._Origin;
+                    }
+                    else if ((firstTerm6 == 0x47415250u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x414du))
+                    {
+                        flag = 0x10L;
+                        values = ref _headers._Pragma;
+                    }
+                    break;
+                case 7:
+                    var firstTerm7 = (Unsafe.ReadUnaligned<uint>(ref nameStart) & 0xdfdfdfdfu);
+                    if ((firstTerm7 == 0x49505845u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4552u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x53u))
+                    {
+                        flag = 0x20000L;
+                        values = ref _headers._Expires;
+                    }
+                    else if ((firstTerm7 == 0x45464552u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4552u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x52u))
+                    {
+                        flag = 0x800000000L;
+                        values = ref _headers._Referer;
+                    }
+                    else if ((firstTerm7 == 0x49415254u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x454cu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x52u))
+                    {
+                        flag = 0x20L;
+                        values = ref _headers._Trailer;
+                    }
+                    else if ((firstTerm7 == 0x52475055u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x45u))
+                    {
+                        flag = 0x80L;
+                        values = ref _headers._Upgrade;
+                    }
+                    else if ((firstTerm7 == 0x4e524157u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)6) & 0xdfu) == 0x47u))
+                    {
+                        flag = 0x200L;
+                        values = ref _headers._Warning;
+                    }
+                    break;
+                case 8:
+                    var firstTerm8 = (Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL);
+                    if ((firstTerm8 == 0x484354414d2d4649uL))
+                    {
+                        flag = 0x10000000L;
+                        values = ref _headers._IfMatch;
+                    }
+                    else if ((firstTerm8 == 0x45474e41522d4649uL))
+                    {
+                        flag = 0x80000000L;
+                        values = ref _headers._IfRange;
+                    }
+                    break;
+                case 9:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c534e415254uL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)8) & 0xdfu) == 0x45u))
+                    {
+                        flag = 0x4000000000L;
+                        values = ref _headers._Translate;
+                    }
+                    break;
+                case 10:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x495443454e4e4f43uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e4fu))
+                    {
+                        flag = 0x2L;
+                        values = ref _headers._Connection;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x4547412d52455355uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x544eu))
+                    {
+                        flag = 0x8000000000L;
+                        values = ref _headers._UserAgent;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x494c412d5045454buL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4556u))
+                    {
+                        flag = 0x8L;
+                        values = ref _headers._KeepAlive;
+                    }
+                    break;
+                case 11:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x444du) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)10) & 0xffu) == 0x35u))
+                    {
+                        flag = 0x8000L;
+                        values = ref _headers._ContentMD5;
+                    }
+                    break;
+                case 12:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45505954u))
+                    {
+                        flag = 0x800L;
+                        values = ref _headers._ContentType;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfffdfdfdfuL) == 0x57524f462d58414duL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53445241u))
+                    {
+                        flag = 0x200000000L;
+                        values = ref _headers._MaxForwards;
+                    }
+                    break;
+                case 13:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5a49524f48545541uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f495441u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4eu))
+                    {
+                        flag = 0x800000L;
+                        values = ref _headers._Authorization;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x4f432d4548434143uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f52544eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x4cu))
+                    {
+                        flag = 0x1L;
+                        values = ref _headers._CacheControl;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e4152u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x45u))
+                    {
+                        flag = 0x10000L;
+                        values = ref _headers._ContentRange;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfffdfdfuL) == 0x2d454e4f4e2d4649uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4354414du) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x48u))
+                    {
+                        flag = 0x40000000L;
+                        values = ref _headers._IfNoneMatch;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfffdfdfdfdfuL) == 0x444f4d2d5453414cuL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45494649u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)12) & 0xdfu) == 0x44u))
+                    {
+                        flag = 0x40000L;
+                        values = ref _headers._LastModified;
+                    }
+                    break;
+                case 14:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d545045434341uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x53524148u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x5445u))
+                    {
+                        flag = 0x100000L;
+                        values = ref _headers._AcceptCharset;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x474e454cu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4854u))
+                    {
+                        AppendContentLength(value);
+                        return;
+                    }
+                    break;
+                case 15:
+                    var firstTerm15 = (Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL);
+                    if ((firstTerm15 == 0x452d545045434341uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x444f434eu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x47u))
+                    {
+                        flag = 0x200000L;
+                        values = ref _headers._AcceptEncoding;
+                    }
+                    else if ((firstTerm15 == 0x4c2d545045434341uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x55474e41u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(ushort)))) & 0xdfdfu) == 0x4741u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)14) & 0xdfu) == 0x45u))
+                    {
+                        flag = 0x400000L;
+                        values = ref _headers._AcceptLanguage;
+                    }
+                    break;
+                case 16:
+                    var firstTerm16 = (Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL);
+                    if ((firstTerm16 == 0x2d544e45544e4f43uL))
+                    {
+                        if (((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x474e49444f434e45uL))
+                        {
+                            flag = 0x1000L;
+                            values = ref _headers._ContentEncoding;
+                        }
+                        else if (((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x45474155474e414cuL))
+                        {
+                            flag = 0x2000L;
+                            values = ref _headers._ContentLanguage;
+                        }
+                        else if (((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x4e4f495441434f4cuL))
+                        {
+                            flag = 0x4000L;
+                            values = ref _headers._ContentLocation;
+                        }
+                    }
+                    break;
+                case 17:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x4649444f4d2d4649uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x434e49532d444549uL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x45u))
+                    {
+                        flag = 0x20000000L;
+                        values = ref _headers._IfModifiedSince;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x524546534e415254uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfffuL) == 0x4e49444f434e452duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)16) & 0xdfu) == 0x47u))
+                    {
+                        flag = 0x40L;
+                        values = ref _headers._TransferEncoding;
+                    }
+                    break;
+                case 19:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x444f4d4e552d4649uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfffdfdfdfdfdfuL) == 0x49532d4445494649uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x434eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x45u))
+                    {
+                        flag = 0x100000000L;
+                        values = ref _headers._IfUnmodifiedSince;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfffdfdfdfdfdfuL) == 0x55412d59584f5250uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x54415a49524f4854uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x4f49u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x4eu))
+                    {
+                        flag = 0x400000000L;
+                        values = ref _headers._ProxyAuthorization;
+                    }
+                    break;
+                case 25:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d45444152475055uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfdfdfdfdfuL) == 0x4552554345534e49uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfdfdfdfdfdfdfffuL) == 0x545345555145522duL) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)24) & 0xdfu) == 0x53u))
+                    {
+                        flag = 0x20000000000L;
+                        values = ref _headers._UpgradeInsecureRequests;
+                    }
+                    break;
+                case 29:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x4d2d545345555145uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f485445u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)28) & 0xdfu) == 0x44u))
+                    {
+                        flag = 0x80000000000L;
+                        values = ref _headers._AccessControlRequestMethod;
+                    }
+                    break;
+                case 30:
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x482d545345555145uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45444145u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(14 * sizeof(ushort)))) & 0xdfdfu) == 0x5352u))
+                    {
+                        flag = 0x100000000000L;
+                        values = ref _headers._AccessControlRequestHeaders;
+                    }
+                    break;
+            }
+
+            if (flag != 0)
+            {
+                // Matched a known header
+                if ((_previousBits & flag) != 0)
                 {
-                    case 10:
+                    // Had a previous string for this header, mark it as used so we don't clear it OnHeadersComplete or consider it if we get a second header
+                    _previousBits ^= flag;
+
+                    // We will only reuse this header if there was only one previous header
+                    if (values.Count == 1)
+                    {
+                        var previousValue = values.ToString();
+                        // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
+                        // We do not consider Utf8 headers for reuse.
+                        if (previousValue.Length == value.Length &&
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
                         {
-                            if ((((pUL[0] & 16131858542891098079uL) == 5283922227757993795uL) && ((pUS[4] & 57311u) == 20047u)))
-                            {
-                                if ((_bits & 0x2L) != 0)
-                                {
-                                    _headers._Connection = AppendValue(_headers._Connection, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x2L;
-                                    _headers._Connection = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858680330051551uL) == 4992030374873092949uL) && ((pUS[4] & 57311u) == 21582u)))
-                            {
-                                if ((_bits & 0x8000000000L) != 0)
-                                {
-                                    _headers._UserAgent = AppendValue(_headers._UserAgent, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x8000000000L;
-                                    _headers._UserAgent = stringValue;
-                                }
-                                return;
-                            }
+                            // The previous string matches what the bytes would convert to, so we will just use that one.
+                            _bits |= flag;
+                            return;
                         }
-                        break;
-                
-                    case 6:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1162036033u) && ((pUS[2] & 57311u) == 21584u)))
-                            {
-                                if ((_bits & 0x80000L) != 0)
-                                {
-                                    _headers._Accept = AppendValue(_headers._Accept, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x80000L;
-                                    _headers._Accept = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 4:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1414745928u)))
-                            {
-                                if ((_bits & 0x8000000L) != 0)
-                                {
-                                    _headers._Host = AppendValue(_headers._Host, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x8000000L;
-                                    _headers._Host = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
+                    }
                 }
 
-            AppendNonPrimaryHeaders(pKeyBytes, keyLength, value);
-        }
-
-        private unsafe void AppendNonPrimaryHeaders(byte* pKeyBytes, int keyLength, string value)
-        {
-                var pUB = pKeyBytes;
-                var pUL = (ulong*)pUB;
-                var pUI = (uint*)pUB;
-                var pUS = (ushort*)pUB;
-                var stringValue = new StringValues(value);
-                switch (keyLength)
+                // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
+                var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+                if ((_bits & flag) == 0)
                 {
-                    case 13:
-                        {
-                            if ((((pUL[0] & 16131893727263186911uL) == 5711458528024281411uL) && ((pUI[2] & 3755991007u) == 1330795598u) && ((pUB[12] & 223u) == 76u)))
-                            {
-                                if ((_bits & 0x1L) != 0)
-                                {
-                                    _headers._CacheControl = AppendValue(_headers._CacheControl, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x1L;
-                                    _headers._CacheControl = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196310866u) && ((pUB[12] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x10000L) != 0)
-                                {
-                                    _headers._ContentRange = AppendValue(_headers._ContentRange, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x10000L;
-                                    _headers._ContentRange = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858680330051551uL) == 4922237774822850892uL) && ((pUI[2] & 3755991007u) == 1162430025u) && ((pUB[12] & 223u) == 68u)))
-                            {
-                                if ((_bits & 0x40000L) != 0)
-                                {
-                                    _headers._LastModified = AppendValue(_headers._LastModified, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x40000L;
-                                    _headers._LastModified = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858542891098079uL) == 6505821637182772545uL) && ((pUI[2] & 3755991007u) == 1330205761u) && ((pUB[12] & 223u) == 78u)))
-                            {
-                                if ((_bits & 0x800000L) != 0)
-                                {
-                                    _headers._Authorization = AppendValue(_headers._Authorization, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x800000L;
-                                    _headers._Authorization = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552106889183uL) == 3262099607620765257uL) && ((pUI[2] & 3755991007u) == 1129595213u) && ((pUB[12] & 223u) == 72u)))
-                            {
-                                if ((_bits & 0x40000000L) != 0)
-                                {
-                                    _headers._IfNoneMatch = AppendValue(_headers._IfNoneMatch, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x40000000L;
-                                    _headers._IfNoneMatch = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 4:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1163149636u)))
-                            {
-                                if ((_bits & 0x4L) != 0)
-                                {
-                                    _headers._Date = AppendValue(_headers._Date, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x4L;
-                                    _headers._Date = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1297044038u)))
-                            {
-                                if ((_bits & 0x4000000L) != 0)
-                                {
-                                    _headers._From = AppendValue(_headers._From, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x4000000L;
-                                    _headers._From = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 10:
-                        {
-                            if ((((pUL[0] & 16131858680330051551uL) == 5281668125874799947uL) && ((pUS[4] & 57311u) == 17750u)))
-                            {
-                                if ((_bits & 0x8L) != 0)
-                                {
-                                    _headers._KeepAlive = AppendValue(_headers._KeepAlive, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x8L;
-                                    _headers._KeepAlive = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 6:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1195463248u) && ((pUS[2] & 57311u) == 16717u)))
-                            {
-                                if ((_bits & 0x10L) != 0)
-                                {
-                                    _headers._Pragma = AppendValue(_headers._Pragma, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x10L;
-                                    _headers._Pragma = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1263488835u) && ((pUS[2] & 57311u) == 17737u)))
-                            {
-                                if ((_bits & 0x1000000L) != 0)
-                                {
-                                    _headers._Cookie = AppendValue(_headers._Cookie, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x1000000L;
-                                    _headers._Cookie = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1162893381u) && ((pUS[2] & 57311u) == 21571u)))
-                            {
-                                if ((_bits & 0x2000000L) != 0)
-                                {
-                                    _headers._Expect = AppendValue(_headers._Expect, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x2000000L;
-                                    _headers._Expect = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1195987535u) && ((pUS[2] & 57311u) == 20041u)))
-                            {
-                                if ((_bits & 0x10000000000L) != 0)
-                                {
-                                    _headers._Origin = AppendValue(_headers._Origin, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x10000000000L;
-                                    _headers._Origin = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 7:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1229017684u) && ((pUS[2] & 57311u) == 17740u) && ((pUB[6] & 223u) == 82u)))
-                            {
-                                if ((_bits & 0x20L) != 0)
-                                {
-                                    _headers._Trailer = AppendValue(_headers._Trailer, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x20L;
-                                    _headers._Trailer = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1380405333u) && ((pUS[2] & 57311u) == 17473u) && ((pUB[6] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x80L) != 0)
-                                {
-                                    _headers._Upgrade = AppendValue(_headers._Upgrade, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x80L;
-                                    _headers._Upgrade = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1314013527u) && ((pUS[2] & 57311u) == 20041u) && ((pUB[6] & 223u) == 71u)))
-                            {
-                                if ((_bits & 0x200L) != 0)
-                                {
-                                    _headers._Warning = AppendValue(_headers._Warning, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x200L;
-                                    _headers._Warning = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1230002245u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 83u)))
-                            {
-                                if ((_bits & 0x20000L) != 0)
-                                {
-                                    _headers._Expires = AppendValue(_headers._Expires, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x20000L;
-                                    _headers._Expires = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1162233170u) && ((pUS[2] & 57311u) == 17746u) && ((pUB[6] & 223u) == 82u)))
-                            {
-                                if ((_bits & 0x800000000L) != 0)
-                                {
-                                    _headers._Referer = AppendValue(_headers._Referer, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x800000000L;
-                                    _headers._Referer = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 17:
-                        {
-                            if ((((pUL[0] & 16131858542891098079uL) == 5928221808112259668uL) && ((pUL[1] & 16131858542891098111uL) == 5641115115480565037uL) && ((pUB[16] & 223u) == 71u)))
-                            {
-                                if ((_bits & 0x40L) != 0)
-                                {
-                                    _headers._TransferEncoding = AppendValue(_headers._TransferEncoding, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x40L;
-                                    _headers._TransferEncoding = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858542893195231uL) == 5064654363342751305uL) && ((pUL[1] & 16131858543427968991uL) == 4849894470315165001uL) && ((pUB[16] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x20000000L) != 0)
-                                {
-                                    _headers._IfModifiedSince = AppendValue(_headers._IfModifiedSince, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x20000000L;
-                                    _headers._IfModifiedSince = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 3:
-                        {
-                            if ((((pUS[0] & 57311u) == 18774u) && ((pUB[2] & 223u) == 65u)))
-                            {
-                                if ((_bits & 0x100L) != 0)
-                                {
-                                    _headers._Via = AppendValue(_headers._Via, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x100L;
-                                    _headers._Via = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 5:
-                        {
-                            if ((((pUI[0] & 3755991007u) == 1330400321u) && ((pUB[4] & 223u) == 87u)))
-                            {
-                                if ((_bits & 0x400L) != 0)
-                                {
-                                    _headers._Allow = AppendValue(_headers._Allow, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x400L;
-                                    _headers._Allow = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUI[0] & 3755991007u) == 1196310866u) && ((pUB[4] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x1000000000L) != 0)
-                                {
-                                    _headers._Range = AppendValue(_headers._Range, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x1000000000L;
-                                    _headers._Range = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 12:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1162893652u)))
-                            {
-                                if ((_bits & 0x800L) != 0)
-                                {
-                                    _headers._ContentType = AppendValue(_headers._ContentType, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x800L;
-                                    _headers._ContentType = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858543427968991uL) == 6292178792217067853uL) && ((pUI[2] & 3755991007u) == 1396986433u)))
-                            {
-                                if ((_bits & 0x200000000L) != 0)
-                                {
-                                    _headers._MaxForwards = AppendValue(_headers._MaxForwards, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x200000000L;
-                                    _headers._MaxForwards = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 16:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5138124782612729413uL)))
-                            {
-                                if ((_bits & 0x1000L) != 0)
-                                {
-                                    _headers._ContentEncoding = AppendValue(_headers._ContentEncoding, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x1000L;
-                                    _headers._ContentEncoding = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 4992030546487820620uL)))
-                            {
-                                if ((_bits & 0x2000L) != 0)
-                                {
-                                    _headers._ContentLanguage = AppendValue(_headers._ContentLanguage, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x2000L;
-                                    _headers._ContentLanguage = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUL[1] & 16131858542891098079uL) == 5642809484339531596uL)))
-                            {
-                                if ((_bits & 0x4000L) != 0)
-                                {
-                                    _headers._ContentLocation = AppendValue(_headers._ContentLocation, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x4000L;
-                                    _headers._ContentLocation = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 11:
-                        {
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUS[4] & 57311u) == 17485u) && ((pUB[10] & 255u) == 53u)))
-                            {
-                                if ((_bits & 0x8000L) != 0)
-                                {
-                                    _headers._ContentMD5 = AppendValue(_headers._ContentMD5, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x8000L;
-                                    _headers._ContentMD5 = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 14:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840617878229304129uL) && ((pUI[2] & 3755991007u) == 1397899592u) && ((pUS[6] & 57311u) == 21573u)))
-                            {
-                                if ((_bits & 0x100000L) != 0)
-                                {
-                                    _headers._AcceptCharset = AppendValue(_headers._AcceptCharset, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x100000L;
-                                    _headers._AcceptCharset = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 18437701552104792031uL) == 3266321689424580419uL) && ((pUI[2] & 3755991007u) == 1196311884u) && ((pUS[6] & 57311u) == 18516u)))
-                            {
-                                if (_contentLength.HasValue)
-                                {
-                                    BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
-                                }
-                                else
-                                {
-                                    _contentLength = ParseContentLength(value);
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 15:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4984733066305160001uL) && ((pUI[2] & 3755991007u) == 1146045262u) && ((pUS[6] & 57311u) == 20041u) && ((pUB[14] & 223u) == 71u)))
-                            {
-                                if ((_bits & 0x200000L) != 0)
-                                {
-                                    _headers._AcceptEncoding = AppendValue(_headers._AcceptEncoding, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x200000L;
-                                    _headers._AcceptEncoding = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16140865742145839071uL) == 5489136224570655553uL) && ((pUI[2] & 3755991007u) == 1430736449u) && ((pUS[6] & 57311u) == 18241u) && ((pUB[14] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x400000L) != 0)
-                                {
-                                    _headers._AcceptLanguage = AppendValue(_headers._AcceptLanguage, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x400000L;
-                                    _headers._AcceptLanguage = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 8:
-                        {
-                            if ((((pUL[0] & 16131858542893195231uL) == 5207098233614845513uL)))
-                            {
-                                if ((_bits & 0x10000000L) != 0)
-                                {
-                                    _headers._IfMatch = AppendValue(_headers._IfMatch, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x10000000L;
-                                    _headers._IfMatch = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131858542893195231uL) == 4992044754422023753uL)))
-                            {
-                                if ((_bits & 0x80000000L) != 0)
-                                {
-                                    _headers._IfRange = AppendValue(_headers._IfRange, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x80000000L;
-                                    _headers._IfRange = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 19:
-                        {
-                            if ((((pUL[0] & 16131858542893195231uL) == 4922237916571059785uL) && ((pUL[1] & 16131893727263186911uL) == 5283616559079179849uL) && ((pUS[8] & 57311u) == 17230u) && ((pUB[18] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x100000000L) != 0)
-                                {
-                                    _headers._IfUnmodifiedSince = AppendValue(_headers._IfUnmodifiedSince, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x100000000L;
-                                    _headers._IfUnmodifiedSince = stringValue;
-                                }
-                                return;
-                            }
-                        
-                            if ((((pUL[0] & 16131893727263186911uL) == 6143241228466999888uL) && ((pUL[1] & 16131858542891098079uL) == 6071233043632179284uL) && ((pUS[8] & 57311u) == 20297u) && ((pUB[18] & 223u) == 78u)))
-                            {
-                                if ((_bits & 0x400000000L) != 0)
-                                {
-                                    _headers._ProxyAuthorization = AppendValue(_headers._ProxyAuthorization, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x400000000L;
-                                    _headers._ProxyAuthorization = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 2:
-                        {
-                            if ((((pUS[0] & 57311u) == 17748u)))
-                            {
-                                if ((_bits & 0x2000000000L) != 0)
-                                {
-                                    _headers._TE = AppendValue(_headers._TE, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x2000000000L;
-                                    _headers._TE = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 9:
-                        {
-                            if ((((pUL[0] & 16131858542891098079uL) == 6071217693351039572uL) && ((pUB[8] & 223u) == 69u)))
-                            {
-                                if ((_bits & 0x4000000000L) != 0)
-                                {
-                                    _headers._Translate = AppendValue(_headers._Translate, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x4000000000L;
-                                    _headers._Translate = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 29:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5561193831494668613uL) && ((pUI[6] & 3755991007u) == 1330140229u) && ((pUB[28] & 223u) == 68u)))
-                            {
-                                if ((_bits & 0x20000000000L) != 0)
-                                {
-                                    _headers._AccessControlRequestMethod = AppendValue(_headers._AccessControlRequestMethod, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x20000000000L;
-                                    _headers._AccessControlRequestMethod = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
-                
-                    case 30:
-                        {
-                            if ((((pUL[0] & 16140865742145839071uL) == 4840616791602578241uL) && ((pUL[1] & 16140865742145839071uL) == 5921472988629454415uL) && ((pUL[2] & 16140865742145839071uL) == 5200905861305028933uL) && ((pUI[6] & 3755991007u) == 1162101061u) && ((pUS[14] & 57311u) == 21330u)))
-                            {
-                                if ((_bits & 0x40000000000L) != 0)
-                                {
-                                    _headers._AccessControlRequestHeaders = AppendValue(_headers._AccessControlRequestHeaders, value);
-                                }
-                                else
-                                {
-                                    _bits |= 0x40000000000L;
-                                    _headers._AccessControlRequestHeaders = stringValue;
-                                }
-                                return;
-                            }
-                        }
-                        break;
+                    // We didn't already have a header set, so add a new one.
+                    _bits |= flag;
+                    values = new StringValues(valueStr);
                 }
-
-                AppendUnknownHeaders(pKeyBytes, keyLength, value);
+                else
+                {
+                    // We already had a header set, so concatenate the new one.
+                    values = AppendValue(values, valueStr);
+                }
+            }
+            else
+            {
+                // The header was not one of the "known" headers.
+                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
+                // this method with rep stosd, which is slower than necessary.
+                var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+                AppendUnknownHeaders(name, valueStr);
+            }
         }
 
         private struct HeaderReferences
@@ -4280,6 +4040,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _TE;
             public StringValues _Translate;
             public StringValues _UserAgent;
+            public StringValues _DNT;
+            public StringValues _UpgradeInsecureRequests;
             public StringValues _Origin;
             public StringValues _AccessControlRequestMethod;
             public StringValues _AccessControlRequestHeaders;
@@ -4374,12 +4136,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     case 39:
                         goto HeaderUserAgent;
                     case 40:
-                        goto HeaderOrigin;
+                        goto HeaderDNT;
                     case 41:
-                        goto HeaderAccessControlRequestMethod;
+                        goto HeaderUpgradeInsecureRequests;
                     case 42:
-                        goto HeaderAccessControlRequestHeaders;
+                        goto HeaderOrigin;
                     case 43:
+                        goto HeaderAccessControlRequestMethod;
+                    case 44:
+                        goto HeaderAccessControlRequestHeaders;
+                    case 45:
                         goto HeaderContentLength;
                     default:
                         goto ExtraHeaders;
@@ -4665,32 +4431,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         _next = 40;
                         return true;
                     }
-                HeaderOrigin: // case 40
+                HeaderDNT: // case 40
                     if ((_bits & 0x10000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Origin", _collection._headers._Origin);
+                        _current = new KeyValuePair<string, StringValues>("DNT", _collection._headers._DNT);
                         _next = 41;
                         return true;
                     }
-                HeaderAccessControlRequestMethod: // case 41
+                HeaderUpgradeInsecureRequests: // case 41
                     if ((_bits & 0x20000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _collection._headers._AccessControlRequestMethod);
+                        _current = new KeyValuePair<string, StringValues>("Upgrade-Insecure-Requests", _collection._headers._UpgradeInsecureRequests);
                         _next = 42;
                         return true;
                     }
-                HeaderAccessControlRequestHeaders: // case 42
+                HeaderOrigin: // case 42
                     if ((_bits & 0x40000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _collection._headers._AccessControlRequestHeaders);
+                        _current = new KeyValuePair<string, StringValues>("Origin", _collection._headers._Origin);
                         _next = 43;
                         return true;
                     }
-                HeaderContentLength: // case 43
+                HeaderAccessControlRequestMethod: // case 43
+                    if ((_bits & 0x80000000000L) != 0)
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _collection._headers._AccessControlRequestMethod);
+                        _next = 44;
+                        return true;
+                    }
+                HeaderAccessControlRequestHeaders: // case 44
+                    if ((_bits & 0x100000000000L) != 0)
+                    {
+                        _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _collection._headers._AccessControlRequestHeaders);
+                        _next = 45;
+                        return true;
+                    }
+                HeaderContentLength: // case 45
                     if (_collection._contentLength.HasValue)
                     {
                         _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _next = 44;
+                        _next = 46;
                         return true;
                     }
                 ExtraHeaders:
@@ -4711,8 +4491,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             13,10,67,97,99,104,101,45,67,111,110,116,114,111,108,58,32,13,10,67,111,110,110,101,99,116,105,111,110,58,32,13,10,68,97,116,101,58,32,13,10,75,101,101,112,45,65,108,105,118,101,58,32,13,10,80,114,97,103,109,97,58,32,13,10,84,114,97,105,108,101,114,58,32,13,10,84,114,97,110,115,102,101,114,45,69,110,99,111,100,105,110,103,58,32,13,10,85,112,103,114,97,100,101,58,32,13,10,86,105,97,58,32,13,10,87,97,114,110,105,110,103,58,32,13,10,65,108,108,111,119,58,32,13,10,67,111,110,116,101,110,116,45,84,121,112,101,58,32,13,10,67,111,110,116,101,110,116,45,69,110,99,111,100,105,110,103,58,32,13,10,67,111,110,116,101,110,116,45,76,97,110,103,117,97,103,101,58,32,13,10,67,111,110,116,101,110,116,45,76,111,99,97,116,105,111,110,58,32,13,10,67,111,110,116,101,110,116,45,77,68,53,58,32,13,10,67,111,110,116,101,110,116,45,82,97,110,103,101,58,32,13,10,69,120,112,105,114,101,115,58,32,13,10,76,97,115,116,45,77,111,100,105,102,105,101,100,58,32,13,10,65,99,99,101,112,116,45,82,97,110,103,101,115,58,32,13,10,65,103,101,58,32,13,10,69,84,97,103,58,32,13,10,76,111,99,97,116,105,111,110,58,32,13,10,80,114,111,120,121,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,82,101,116,114,121,45,65,102,116,101,114,58,32,13,10,83,101,114,118,101,114,58,32,13,10,83,101,116,45,67,111,111,107,105,101,58,32,13,10,86,97,114,121,58,32,13,10,87,87,87,45,65,117,116,104,101,110,116,105,99,97,116,101,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,67,114,101,100,101,110,116,105,97,108,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,77,101,116,104,111,100,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,65,108,108,111,119,45,79,114,105,103,105,110,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,69,120,112,111,115,101,45,72,101,97,100,101,114,115,58,32,13,10,65,99,99,101,115,115,45,67,111,110,116,114,111,108,45,77,97,120,45,65,103,101,58,32,13,10,67,111,110,116,101,110,116,45,76,101,110,103,116,104,58,32,
         };
-
-        private long _bits = 0;
         private HeaderReferences _headers;
 
         public bool HasConnection => (_bits & 0x2L) != 0;
@@ -6980,7 +6758,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return MaybeUnknown?.Remove(key) ?? false;
         }
-
         protected override void ClearFast()
         {
             MaybeUnknown?.Clear();
@@ -8138,7 +7915,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 }
             } while (tempBits != 0);
         }
-        
 
         private struct HeaderReferences
         {
@@ -8537,8 +8313,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             13,10,69,84,97,103,58,32,
         };
-
-        private long _bits = 0;
         private HeaderReferences _headers;
 
 
@@ -8657,7 +8431,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return MaybeUnknown?.Remove(key) ?? false;
         }
-
         protected override void ClearFast()
         {
             MaybeUnknown?.Clear();
@@ -8711,7 +8484,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return true;
         }
-        
         
 
         private struct HeaderReferences

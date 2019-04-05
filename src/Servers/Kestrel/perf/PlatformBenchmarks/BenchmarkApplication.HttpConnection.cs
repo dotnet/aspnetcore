@@ -125,6 +125,12 @@ namespace PlatformBenchmarks
         {
         }
 
+#if NETCOREAPP3_0
+        public void OnHeadersComplete()
+        {
+        }
+#endif
+
         public async ValueTask OnReadCompletedAsync()
         {
             await Writer.FlushAsync();
