@@ -192,7 +192,7 @@ CC {GetOwnerMentions(failureArea)}";
         private async Task<GitHubIssue> GetApplicableIssue(ICIClient client, IEnumerable<GitHubIssue> issues, ICITestOccurrence failure)
         {
             var testError = await client.GetTestFailureTextAsync(failure);
-            var testException = SafeGetExceptionMessage(testError); ;
+            var testException = SafeGetExceptionMessage(testError);
             var shortTestName = GetTestName(failure);
 
             foreach (var issue in issues)

@@ -107,7 +107,16 @@ namespace TriageBuildFailures.VSTS
         {
             var vstsTest = failure as VSTSTestOccurrence;
 
-            return Task.FromResult(vstsTest.TestCaseResult.ErrorMessage);
+            // For right now we're not getting error messages out of JUnit, use the (overly descriptive) name instead
+            // https://github.com/aspnet/AspNetCore-Internal/issues/2172
+            if (string.Equals(vstsTest.TestCaseResult.AutomatedTestType, "JUnit", StringComparison.InvariantCultureIgnoreCase))
+            {
+                return Task.FromResult(vstsTest.Name);
+            }
+            else
+            {
+                return Task.FromResult(vstsTest.TestCaseResult.ErrorMessage);
+            }
         }
 
         public async Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build, BuildStatus? buildStatus = null)
