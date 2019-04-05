@@ -26,7 +26,7 @@ namespace Templates.Test
 
         [Theory]
         [InlineData(null)]
-        [InlineData("F#", Skip = "https://github.com/aspnet/AspNetCore/issues/8996")]
+        [InlineData("F#")]
         public async Task MvcTemplate_NoAuthImplAsync(string languageOverride)
         {
             Project = await ProjectFactory.GetOrCreateProject("mvcnoauth" + (languageOverride == "F#" ? "fsharp" : "csharp"), Output);
