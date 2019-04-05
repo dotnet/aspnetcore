@@ -81,7 +81,8 @@ namespace Templates.Test.SpaTemplateTest
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            var shouldVisitFetchData = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || !useLocalDb;
+            // localdb is not installed on the CI machines, so skip it.
+            var shouldVisitFetchData = !useLocalDb;
 
             if (usesAuth)
             {
