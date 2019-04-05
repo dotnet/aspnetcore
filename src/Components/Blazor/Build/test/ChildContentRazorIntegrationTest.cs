@@ -132,10 +132,10 @@ namespace Test
                 frame => AssertFrame.Component(frame, "Test.RenderChildContentString", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", "HI", 1),
                 frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 2),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "hi", 5),
-                frame => AssertFrame.Whitespace(frame, 6));
+                frame => AssertFrame.MarkupWhitespace(frame, 6));
         }
 
         [Fact]
@@ -184,10 +184,10 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 0),
                 frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 1),
-                frame => AssertFrame.Whitespace(frame, 2),
+                frame => AssertFrame.MarkupWhitespace(frame, 2),
                 frame => AssertFrame.Component(frame, "Test.RenderChildContent", 2, 3),
                 frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 4),
-                frame => AssertFrame.Whitespace(frame, 6),
+                frame => AssertFrame.MarkupWhitespace(frame, 6),
                 frame => AssertFrame.Markup(frame, "\n    <div></div>\n  ", 5));
         }
 

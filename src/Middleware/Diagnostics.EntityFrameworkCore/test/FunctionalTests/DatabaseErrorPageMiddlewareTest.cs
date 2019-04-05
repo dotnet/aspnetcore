@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
             {
                 var db = context.RequestServices.GetService<BloggingContext>();
                 db.Database.EnsureCreated();
-                db.Database.ExecuteRawSql("ALTER TABLE dbo.Blogs DROP COLUMN Name");
+                db.Database.ExecuteSqlRaw("ALTER TABLE dbo.Blogs DROP COLUMN Name");
 
                 db.Blogs.Add(new Blog());
                 db.SaveChanges();

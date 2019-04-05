@@ -171,14 +171,14 @@ namespace Test
                 frame => AssertFrame.Component(frame, genericComponentType.FullName, 3, 0),
                 frame => AssertFrame.Attribute(frame, "Items", typeof(List<int>), 1),
                 frame => AssertFrame.Attribute(frame, RenderTreeBuilder.ChildContent, 2),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "0", 5),
-                frame => AssertFrame.Whitespace(frame, 6),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.MarkupWhitespace(frame, 6),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "div", 2, 4),
                 frame => AssertFrame.Text(frame, "2", 5),
-                frame => AssertFrame.Whitespace(frame, 6));
+                frame => AssertFrame.MarkupWhitespace(frame, 6));
         }
 
         [Fact]

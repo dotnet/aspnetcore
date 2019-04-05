@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 return true;
             }
 
-            var projectItem = fileSystem.GetItem(primaryChecksum.Identifier);
+            var projectItem = fileSystem.GetItem(primaryChecksum.Identifier, fileKind: null);
             if (!projectItem.Exists)
             {
                 // Main file doesn't exist - assume valid.
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                     continue;
                 }
 
-                var importItem = fileSystem.GetItem(checksum.Identifier);
+                var importItem = fileSystem.GetItem(checksum.Identifier, fileKind: null);
                 if (!importItem.Exists)
                 {
                     // Import file doesn't exist - assume invalid.
