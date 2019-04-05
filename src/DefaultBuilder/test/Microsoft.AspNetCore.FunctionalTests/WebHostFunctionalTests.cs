@@ -151,8 +151,7 @@ namespace Microsoft.AspNetCore.Tests
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2170")]
-        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2170")]
         public async Task RunsInIISExpressInProcess()
         {
             var applicationName = "CreateDefaultBuilderApp";
