@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Components.Server
                 var endpointFeature = Context.GetHttpContext().Features.Get<IEndpointFeature>();
                 var endpoint = endpointFeature?.Endpoint;
 
-                _logger.LogInformation($"No components registered in the current endpoint '{endpoint.DisplayName}'.");
+                _logger.LogDebug($"No components registered in the current endpoint '{endpoint.DisplayName}'.");
 
                 // No components preregistered so return. This is totally normal if the components were prerendered.
                 return null;
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Components.Server
         /// </summary>
         public void OnRenderCompleted(long renderId, string errorMessageOrNull)
         {
-            _logger.LogInformation($"Received confirmation for batch {renderId}.");
+            _logger.LogDebug($"Received confirmation for batch {renderId}.");
             EnsureCircuitHost().Renderer.OnRenderCompleted(renderId, errorMessageOrNull);
         }
 

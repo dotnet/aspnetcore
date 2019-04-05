@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                     typeof(RemoteUriHelper).Assembly.GetName().Name,
                     nameof(NotifyLocationChanged));
 
-            _logger.LogInformation($"{nameof(RemoteUriHelper)} initialized.");
+            _logger.LogDebug($"{nameof(RemoteUriHelper)} initialized.");
         }
 
         /// <summary>
