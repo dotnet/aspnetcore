@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,8 @@ namespace Microsoft.AspNetCore.Analyzers
         public StartupAnalyzerTest()
         {
             StartupAnalyzer = new StartupAnalzyer();
+            StartupAnalyzer.StartupFilePredicate = path => path.Equals("Test.cs", StringComparison.Ordinal);
+
             Runner = new MvcDiagnosticAnalyzerRunner(StartupAnalyzer);
 
             Analyses = new ConcurrentBag<StartupComputedAnalysis>();
@@ -75,10 +78,10 @@ namespace Microsoft.AspNetCore.Analyzers
         }
 
         [Fact]
-        public async Task StartupAnalyzer_MvcOptionsAnalysis_FindsEndpointRoutingDisabled()
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_UseMvc_FindsEndpointRoutingDisabled()
         {
             // Arrange
-            var source = ReadSource("MvcOptions_UseMvcAndEndpointRoutingDisabled");
+            var source = ReadSource("MvcOptions_UseMvcWithDefaultRouteAndEndpointRoutingDisabled");
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -95,10 +98,33 @@ namespace Microsoft.AspNetCore.Analyzers
         }
 
         [Fact]
-        public async Task StartupAnalyzer_MvcOptionsAnalysis_FindsEndpointRoutingEnabled()
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_AddMvcOptions_FindsEndpointRoutingDisabled()
         {
             // Arrange
-            var source = ReadSource("MvcOptions_UseMvcAndEndpointRoutingEnabled");
+            var source = ReadSource("MvcOptions_UseMvcWithDefaultRouteAndAddMvcOptionsEndpointRoutingDisabled");
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var mvcOptionsAnalysis = Assert.Single(Analyses.OfType<MvcOptionsAnalysis>());
+            Assert.False(mvcOptionsAnalysis.EndpointRoutingEnabled);
+
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+            var middleware = Assert.Single(middlewareAnalysis.Middleware);
+            Assert.Equal("UseMvcWithDefaultRoute", middleware.UseMethod.Name);
+
+            Assert.Empty(diagnostics);
+        }
+
+        [Theory]
+        [InlineData("MvcOptions_UseMvc", "UseMvc")]
+        [InlineData("MvcOptions_UseMvcAndConfiguredRoutes", "UseMvc")]
+        [InlineData("MvcOptions_UseMvcWithDefaultRoute", "UseMvcWithDefaultRoute")]
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_FindsEndpointRoutingEnabled(string sourceFileName, string mvcMiddlewareName)
+        {
+            // Arrange
+            var source = ReadSource(sourceFileName);
 
             // Act
             var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
@@ -109,7 +135,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
             var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
             var middleware = Assert.Single(middlewareAnalysis.Middleware);
-            Assert.Equal("UseMvcWithDefaultRoute", middleware.UseMethod.Name);
+            Assert.Equal(mvcMiddlewareName, middleware.UseMethod.Name);
 
             Assert.Collection(
                 diagnostics,
@@ -117,6 +143,70 @@ namespace Microsoft.AspNetCore.Analyzers
                 {
                     Assert.Same(StartupAnalzyer.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
                     AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_MultipleMiddleware()
+        {
+            // Arrange
+            var source = ReadSource("MvcOptions_UseMvcWithOtherMiddleware");
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var mvcOptionsAnalysis = Assert.Single(Analyses.OfType<MvcOptionsAnalysis>());
+            Assert.Null(mvcOptionsAnalysis.EndpointRoutingEnabled);
+
+            var middlewareAnalysis = Assert.Single(Analyses.OfType<MiddlewareAnalysis>());
+
+            Assert.Collection(
+                middlewareAnalysis.Middleware,
+                item => Assert.Equal("UseAuthorization", item.UseMethod.Name),
+                item => Assert.Equal("UseMiddleware", item.UseMethod.Name),
+                item => Assert.Equal("UseMvc", item.UseMethod.Name),
+                item => Assert.Equal("UseRouting", item.UseMethod.Name),
+                item => Assert.Equal("UseEndpoints", item.UseMethod.Name));
+
+            Assert.Collection(
+                diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalzyer.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.DefaultMarkerLocation, diagnostic.Location);
+                });
+        }
+
+        [Fact]
+        public async Task StartupAnalyzer_MvcOptionsAnalysis_MultipleUseMvc()
+        {
+            // Arrange
+            var source = ReadSource("MvcOptions_UseMvcMultiple");
+
+            // Act
+            var diagnostics = await Runner.GetDiagnosticsAsync(source.Source);
+
+            // Assert
+            var mvcOptionsAnalysis = Assert.Single(Analyses.OfType<MvcOptionsAnalysis>());
+            Assert.Null(mvcOptionsAnalysis.EndpointRoutingEnabled);
+
+            Assert.Collection(
+                diagnostics,
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalzyer.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM1"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalzyer.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM2"], diagnostic.Location);
+                },
+                diagnostic =>
+                {
+                    Assert.Same(StartupAnalzyer.UnsupportedUseMvcWithEndpointRouting, diagnostic.Descriptor);
+                    AnalyzerAssert.DiagnosticLocation(source.MarkerLocations["MM3"], diagnostic.Location);
                 });
         }
 

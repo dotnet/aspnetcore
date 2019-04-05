@@ -6,11 +6,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
 {
-    public class MvcOptions_UseMvcAndEndpointRoutingDisabled
+    public class MvcOptions_UseMvcWithDefaultRouteAndEndpointRoutingDisabled
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc().AddMvcOptions(options => options.EnableEndpointRouting = false);
+            services.AddMvc(options => options.EnableEndpointRouting = false);
         }
 
         public void Configure(IApplicationBuilder app)

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     internal class UseMvcDiagnosticValidator : StartupDiagnosticValidator
     {
-        public static UseMvcDiagnosticValidator CreateAndInitialize(SemanticModelAnalysisContext context, ConcurrentBag<StartupComputedAnalysis> analyses)
+        public static UseMvcDiagnosticValidator CreateAndInitialize(CompilationAnalysisContext context, ConcurrentBag<StartupComputedAnalysis> analyses)
         {
             if (analyses == null)
             {

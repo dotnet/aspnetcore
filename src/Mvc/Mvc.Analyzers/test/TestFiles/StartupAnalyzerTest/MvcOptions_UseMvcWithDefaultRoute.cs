@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Analyzers.TestFiles.StartupAnalyzerTest
 {
-    public class MvcOptions_UseMvcAndEndpointRoutingEnabled
+    public class MvcOptions_UseMvcWithDefaultRoute
     {
         public void ConfigureServices(IServiceCollection services)
         {

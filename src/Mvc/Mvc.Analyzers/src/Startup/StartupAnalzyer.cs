@@ -24,11 +24,9 @@ namespace Microsoft.AspNetCore.Analyzers
             MiddlewareAnalysis.CreateAndInitialize,
         };
 
-        private readonly static Func<SemanticModelAnalysisContext, ConcurrentBag<StartupComputedAnalysis>, StartupDiagnosticValidator>[] DiagnosticValidatorFactories = new Func<SemanticModelAnalysisContext, ConcurrentBag<StartupComputedAnalysis>, StartupDiagnosticValidator>[]
+        private readonly static Func<CompilationAnalysisContext, ConcurrentBag<StartupComputedAnalysis>, StartupDiagnosticValidator>[] DiagnosticValidatorFactories = new Func<CompilationAnalysisContext, ConcurrentBag<StartupComputedAnalysis>, StartupDiagnosticValidator>[]
         {
             UseMvcDiagnosticValidator.CreateAndInitialize,
-            MiddlewareRequiredServiceValidator.CreateAndInitialize,
-            MiddlewareOrderingValidator.CreateAndInitialize,
         };
 
 #pragma warning restore RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
@@ -37,11 +35,16 @@ namespace Microsoft.AspNetCore.Analyzers
         {
             SupportedDiagnostics = ImmutableArray.Create<DiagnosticDescriptor>(new[]
             {
-                MiddlewareMissingRequiredServices,
-                MiddlewareInvalidOrder,
                 UnsupportedUseMvcWithEndpointRouting,
             });
+
+            // By default just analyze file named Startup.cs in the root directory
+            // Analzyer only runs for C# so limiting to *.cs file is fine
+            // Can be overriden for unit testing other file names
+            StartupFilePredicate = path => string.Equals(path, "Startup.cs", StringComparison.OrdinalIgnoreCase);
         }
+
+        internal Func<string, bool> StartupFilePredicate { get; set; }
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
 
@@ -67,6 +70,11 @@ namespace Microsoft.AspNetCore.Analyzers
 
             context.RegisterOperationBlockStartAction(context =>
             {
+                if (!IsStartupFile(context))
+                {
+                    return;
+                }
+
                 if (context.OwningSymbol.Kind != SymbolKind.Method)
                 {
                     return;
@@ -98,17 +106,29 @@ namespace Microsoft.AspNetCore.Analyzers
 
                     OnConfigureMethodFound(method);
                 }
-
             });
 
             // Run after analyses have had a chance to finish to add diagnostics.
-            context.RegisterSemanticModelAction(semanticModelContext =>
+            context.RegisterCompilationEndAction(analysisContext =>
             {
                 for (var i = 0; i < DiagnosticValidatorFactories.Length; i++)
                 {
-                    var validator = DiagnosticValidatorFactories[i].Invoke(semanticModelContext, analyses);
+                    var validator = DiagnosticValidatorFactories[i].Invoke(analysisContext, analyses);
                 }
             });
+        }
+
+        private bool IsStartupFile(OperationBlockStartAnalysisContext context)
+        {
+            foreach (var location in context.OwningSymbol.Locations)
+            {
+                if (location.IsInSource && StartupFilePredicate(location.SourceTree.FilePath))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
