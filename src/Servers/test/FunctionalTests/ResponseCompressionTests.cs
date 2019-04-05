@@ -32,7 +32,7 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix NoCompressionTestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx,  ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.Kestrel, ServerType.Nginx,  ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllHostingModels();
 
@@ -44,7 +44,7 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix HostCompressionTestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Nginx)
+            => TestMatrix.ForServers(ServerType.Nginx)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllHostingModels();
 
@@ -56,7 +56,7 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix AppCompressionTestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys) // No pass-through compression for nginx
+            => TestMatrix.ForServers(ServerType.Kestrel, ServerType.HttpSys) // No pass-through compression for nginx
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllHostingModels();
 
@@ -68,7 +68,7 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix HostAndAppCompressionTestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.Kestrel, ServerType.Nginx, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllHostingModels();
 
