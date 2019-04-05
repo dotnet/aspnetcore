@@ -7,7 +7,7 @@
   ],
   "name": "Razor Component",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A reusable web UI component implemented with Razor",
+  "description": "A reusable UI component implemented with Razor",
   "tags": {
     "language": "C#",
     "type": "item"
