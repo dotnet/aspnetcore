@@ -451,15 +451,21 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </returns>
         public async Task<IAsyncEnumerable<TResult>> StreamAsyncCore<TResult>(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            var stream = CastIAsyncEnumerable<TResult>((await StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cancellationToken)).ReadAllAsync());
-            return AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, cancellationToken);
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var stream = CastIAsyncEnumerable<TResult>((await StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cts.Token)), cts.Token);
+            var cancelableStream = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, cts);
+
+            return cancelableStream;
         }
 
-        private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(IAsyncEnumerable<object> stream)
+        private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(ChannelReader<object> reader, CancellationToken token)
         {
-            await foreach (var item in stream)
+            while (await reader.WaitToReadAsync(token))
             {
-                yield return (T)item;
+                while (reader.TryRead(out var item))
+                {
+                    yield return (T)item;
+                }
             }
         }
 #endif

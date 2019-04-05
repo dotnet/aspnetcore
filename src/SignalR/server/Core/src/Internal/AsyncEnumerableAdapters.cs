@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return new CancelableAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
         }
 
-        public static IAsyncEnumerable<T> MakeCancelableTypedAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default)
+        public static IAsyncEnumerable<T> MakeCancelableTypedAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationTokenSource cts)
         {
-            return new CancelableTypedAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
+            return new CancelableTypedAsyncEnumerable<T>(asyncEnumerable, cts);
         }
 
         public static IAsyncEnumerable<object> MakeCancelableAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default)
@@ -31,28 +31,24 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private class CancelableTypedAsyncEnumerable<TResult> : IAsyncEnumerable<TResult>
         {
             private readonly IAsyncEnumerable<TResult> _asyncEnumerable;
-            private CancellationToken _cancellationToken;
+            private readonly CancellationTokenSource _cts;
 
-            public CancelableTypedAsyncEnumerable(IAsyncEnumerable<TResult> asyncEnumerable, CancellationToken cancellationToken)
+            public CancelableTypedAsyncEnumerable(IAsyncEnumerable<TResult> asyncEnumerable, CancellationTokenSource cts)
             {
                 _asyncEnumerable = asyncEnumerable;
-                _cancellationToken = cancellationToken;
+                _cts = cts;
             }
 
             public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {
-                if (cancellationToken != default)
+                if (cancellationToken.CanBeCanceled)
                 {
-                    if (_cancellationToken != default)
+                    cancellationToken.Register(() =>
                     {
-                        _cancellationToken = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken, cancellationToken).Token;
-                    }
-                    else
-                    {
-                        _cancellationToken = cancellationToken;
-                    }
+                        _cts.Cancel();
+                    });
                 }
-                return _asyncEnumerable.GetAsyncEnumerator(_cancellationToken);
+                return _asyncEnumerable.GetAsyncEnumerator(cancellationToken);
             }
         }
 
@@ -60,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private class CancelableAsyncEnumerable<T> : IAsyncEnumerable<object>
         {
             private readonly IAsyncEnumerable<T> _asyncEnumerable;
-            private CancellationToken _cancellationToken;
+            private readonly CancellationToken _cancellationToken;
 
             public CancelableAsyncEnumerable(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken)
             {

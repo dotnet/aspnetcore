@@ -450,47 +450,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var results = new List<int>();
 
                     var enumerator = stream.GetAsyncEnumerator();
-                    await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-                    {
-                        while (await enumerator.MoveNextAsync())
-                        {
-                            results.Add(enumerator.Current);
-                            cts.Cancel();
-                        }
-                    });
-
-                    Assert.Single(results);
-                    Assert.Equal(0, results[0]);
-                }
-                catch (Exception ex)
-                {
-                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
-                    throw;
-                }
-                finally
-                {
-                    await connection.DisposeAsync().OrTimeout();
-                }
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
-        [LogLevel(LogLevel.Trace)]
-        public async Task StreamAsyncCanBeCancelledThroughGetEnumerator(string protocolName, HttpTransportType transportType, string path)
-        {
-            var protocol = HubProtocols[protocolName];
-            using (StartServer<Startup>(out var server))
-            {
-                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
-                try
-                {
-                    await connection.StartAsync().OrTimeout();
-                    var stream = await connection.StreamAsync<int>("Hang");
-                    var results = new List<int>();
-
-                    var cts = new CancellationTokenSource();
-                    var enumerator = stream.GetAsyncEnumerator(cts.Token);
                     await Assert.ThrowsAsync<TaskCanceledException>(async () =>
                     {
                         while (await enumerator.MoveNextAsync())
@@ -687,6 +646,48 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var results = await channel.ReadAndCollectAllAsync().OrTimeout();
                     Assert.Empty(results);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncCanBeCancelledThroughGetEnumerator(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var stream = await connection.StreamAsyncCore<int>("Stream", new object[] { 5 });
+                    var results = new List<int>();
+
+                    var cts = new CancellationTokenSource();
+
+                    var enumerator = stream.GetAsyncEnumerator(cts.Token);
+                    await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                    {
+                        while (await enumerator.MoveNextAsync())
+                        {
+                            results.Add(enumerator.Current);
+                            cts.Cancel();
+                        }
+                    });
+
+                    Assert.Single(results);
+                    Assert.Equal(0, results[0]);
                 }
                 catch (Exception ex)
                 {
