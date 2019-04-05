@@ -17,6 +17,21 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePattern
     {
+        /// <summary>
+        /// A marker object that can be used in <see cref="RequiredValues"/> to designate that
+        /// any non-null or non-empty value is required.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="RequiredValueAny"/> is only use in routing is in <see cref="RoutePattern.RequiredValues"/>.
+        /// <see cref="RequiredValueAny"/> is not valid as a route value, and will convert to the null/empty string.
+        /// </remarks>
+        public static readonly object RequiredValueAny = new RequiredValueAnySentinal();
+
+        internal static bool IsRequiredValueAny(object value)
+        {
+            return object.ReferenceEquals(RequiredValueAny, value);
+        }
+
         private const string SeparatorString = "/";
 
         internal RoutePattern(
@@ -139,6 +154,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         internal string DebuggerToString()
         {
             return RawText ?? string.Join(SeparatorString, PathSegments.Select(s => s.DebuggerToString()));
+        }
+
+        [DebuggerDisplay("{DebuggerToString(),nq}")]
+        private class RequiredValueAnySentinal
+        {
+            private string DebuggerToString() => "*any*";
         }
     }
 }

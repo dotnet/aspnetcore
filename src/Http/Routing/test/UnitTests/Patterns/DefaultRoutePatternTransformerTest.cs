@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Routing.Constraints;
@@ -63,11 +63,56 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         [Fact]
+        public void SubstituteRequiredValues_AllowRequiredValueAnyForParameter()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { };
+            var policies = new { };
+
+            var original = RoutePatternFactory.Parse(template, defaults, policies);
+
+            var requiredValues = new { controller = RoutePattern.RequiredValueAny, };
+
+            // Act
+            var actual = Transformer.SubstituteRequiredValues(original, requiredValues);
+
+            // Assert
+            Assert.Collection(
+                actual.Defaults.OrderBy(kvp => kvp.Key),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("action", "Index"), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp)); // default is preserved
+
+            Assert.Collection(
+                actual.RequiredValues.OrderBy(kvp => kvp.Key),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("controller", RoutePattern.RequiredValueAny), kvp));
+        }
+
+        [Fact]
         public void SubstituteRequiredValues_RejectsNullForOutOfLineDefault()
         {
             // Arrange
             var template = "{controller=Home}/{action=Index}/{id?}";
             var defaults = new { area = "Admin" };
+            var policies = new { };
+
+            var original = RoutePatternFactory.Parse(template, defaults, policies);
+
+            var requiredValues = new { area = string.Empty, };
+
+            // Act
+            var actual = Transformer.SubstituteRequiredValues(original, requiredValues);
+
+            // Assert
+            Assert.Null(actual);
+        }
+
+        [Fact]
+        public void SubstituteRequiredValues_RejectsRequiredValueAnyForOutOfLineDefault()
+        {
+            // Arrange
+            var template = "{controller=Home}/{action=Index}/{id?}";
+            var defaults = new { area = RoutePattern.RequiredValueAny };
             var policies = new { };
 
             var original = RoutePatternFactory.Parse(template, defaults, policies);

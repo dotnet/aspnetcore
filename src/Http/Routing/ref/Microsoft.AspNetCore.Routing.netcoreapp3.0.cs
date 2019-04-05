@@ -671,6 +671,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     public sealed partial class RoutePattern
     {
         internal RoutePattern() { }
+        public static readonly object RequiredValueAny;
         public System.Collections.Generic.IReadOnlyDictionary<string, object> Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public decimal InboundPrecedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public decimal OutboundPrecedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

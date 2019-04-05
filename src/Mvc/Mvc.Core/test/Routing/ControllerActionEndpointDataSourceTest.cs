@@ -81,15 +81,15 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 .Returns(new ActionDescriptorCollection(actions, 0));
 
             var dataSource = (ControllerActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
-            dataSource.AddRoute(new ConventionalRouteEntry("1", "/1/{controller}/{action}/{id?}", null, null, null));
-            dataSource.AddRoute(new ConventionalRouteEntry("2", "/2/{controller}/{action}/{id?}", null, null, null));
+            dataSource.AddRoute("1", "/1/{controller}/{action}/{id?}", null, null, null);
+            dataSource.AddRoute("2", "/2/{controller}/{action}/{id?}", null, null, null);
 
             // Act
             var endpoints = dataSource.Endpoints;
 
             // Assert
             Assert.Collection(
-                endpoints.Cast<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
+                endpoints.OfType<RouteEndpoint>().Where(e => !SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
                 e =>
                 {
                     Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
@@ -99,6 +99,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
                     Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                });
+
+            Assert.Collection(
+                endpoints.OfType<RouteEndpoint>().Where(e => SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+                e =>
+                {
+                    Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                },
+                e =>
+                {
+                    Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
                 },
                 e =>
                 {
@@ -139,8 +152,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
 
             var dataSource = (ControllerActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
-            dataSource.AddRoute(new ConventionalRouteEntry("1", "/1/{controller}/{action}/{id?}", null, null, null));
-            dataSource.AddRoute(new ConventionalRouteEntry("2", "/2/{controller}/{action}/{id?}", null, null, null));
+            dataSource.AddRoute("1", "/1/{controller}/{action}/{id?}", null, null, null);
+            dataSource.AddRoute("2", "/2/{controller}/{action}/{id?}", null, null, null);
 
             dataSource.Add((b) =>
             {
@@ -152,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // Assert
             Assert.Collection(
-                endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText),
+                endpoints.OfType<RouteEndpoint>().Where(e => !SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
                 e =>
                 {
                     Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
@@ -164,6 +177,21 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
                     Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
                     Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                });
+
+            Assert.Collection(
+                endpoints.OfType<RouteEndpoint>().Where(e => SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+                e =>
+                {
+                    Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                },
+                e =>
+                {
+                    Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
                 },
                 e =>
                 {
@@ -171,6 +199,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
                     Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
                 });
+        }
+
+        private static bool SupportsLinkGeneration(RouteEndpoint endpoint)
+        {
+            return !(endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true);
         }
 
         private protected override ActionEndpointDataSourceBase CreateDataSource(IActionDescriptorCollectionProvider actions, ActionEndpointFactory endpointFactory)
