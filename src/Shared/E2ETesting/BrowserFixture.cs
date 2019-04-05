@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             if (!IsHostAutomationSupported())
             {
                 output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
-                return default;
+                return Task.FromResult<(IWebDriver, ILogs)>(default);
             }
 
             return _browsers.GetOrAdd(isolationContext, CreateBrowserAsync, output);
