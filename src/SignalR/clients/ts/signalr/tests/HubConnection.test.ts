@@ -1239,12 +1239,10 @@ async function pingAndWait(connection: TestConnection): Promise<void> {
 }
 
 class TestConnection implements IConnection {
-
     public readonly features: any = {};
+    public connectionId?: string;
     public onreceive: ((data: string | ArrayBuffer) => void) | null;
     public onclose: ((error?: Error) => void) | null;
-    public onreconnecting: ((e?: Error) => void) | null;
-    public onreconnected: ((connectionId?: string) => void) | null;
     public sentData: any[];
     public lastInvocationId: string | null;
 
@@ -1253,8 +1251,6 @@ class TestConnection implements IConnection {
     constructor(autoHandshake: boolean = true) {
         this.onreceive = null;
         this.onclose = null;
-        this.onreconnecting = null;
-        this.onreconnected = null;
         this.sentData = [];
         this.lastInvocationId = null;
         this.autoHandshake = autoHandshake;
@@ -1287,14 +1283,6 @@ class TestConnection implements IConnection {
             this.onclose(error);
         }
         return Promise.resolve();
-    }
-
-    public connectionLost(error: Error): Promise<void> {
-        return this.stop(error);
-    }
-
-    public continueReconnecting(error: Error): Promise<void> {
-        throw new Error("Method not implemented.");
     }
 
     public receiveHandshakeResponse(error?: string): void {

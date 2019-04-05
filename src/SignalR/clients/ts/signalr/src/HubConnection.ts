@@ -605,7 +605,7 @@ export class HubConnection {
             this.connectionState = HubConnectionState.Disconnected;
         }
 
-        // If neither completeClose nor reconnect were called the HubConnection must be in either:
+        // If none of the above if conditions were true were called the HubConnection must be in either:
         // 1. The Reconnecting state in which case the handshakeRejecter will fail the current reconnect attempt
         //    and potentially continue the reconnect() loop.
         // 2. The Disconnected state in which case we're already done.

@@ -198,7 +198,7 @@ export class HttpConnection implements IConnection {
 
             this.transport = undefined;
         } else {
-            this.logger.log(LogLevel.Debug, "HttpConnection.transport became unset because start() failed.");
+            this.logger.log(LogLevel.Debug, "HttpConnection.transport is undefined in HttpConnection.stop() because start() failed.");
             this.stopConnection();
         }
     }
@@ -283,7 +283,6 @@ export class HttpConnection implements IConnection {
         } catch (e) {
             this.logger.log(LogLevel.Error, "Failed to start the connection: " + e);
             this.connectionState = ConnectionState.Disconnected;
-
             this.transport = undefined;
             return Promise.reject(e);
         }
