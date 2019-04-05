@@ -68,7 +68,7 @@ namespace Templates.Test
         public ProjectFactoryFixture ProjectFactory { get; }
         public ITestOutputHelper Output { get; }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2164")]
+        [Theory]
         [MemberData(nameof(TemplateBaselines))]
         public async Task Template_Produces_The_Right_Set_Of_FilesAsync(string arguments, string[] expectedFiles)
         {
