@@ -7,7 +7,6 @@
     <PackageTags>aspnetcore;apiauth;identity</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <IsShippingPackage>true</IsShippingPackage>
-    <NoWarn>NU1603</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
