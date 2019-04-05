@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         public IList<IActionConstraintMetadata> ActionConstraints { get; }
 
-        public IList<object> EndpointMetadata { get; }
+        /// <summary>
+        /// Gets or sets the <see cref="EndpointMetadata"/> associated with the <see cref="SelectorModel"/>.
+        /// </summary>
+        public IList<object> EndpointMetadata { get; set; }
     }
 }

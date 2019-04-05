@@ -181,7 +181,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
             }
 
-            var allowAnonymous = new AllowAnonymousAttribute();
             conventions.AddFolderApplicationModelConvention(folderPath, model =>
             {
                 if (conventions.MvcOptions.EnableEndpointRouting)
@@ -229,7 +228,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
             }
 
-            var allowAnonymous = new AllowAnonymousAttribute();
             conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model =>
             {
                 if (conventions.MvcOptions.EnableEndpointRouting)
@@ -337,7 +335,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
             }
 
-            var authorizeAttribute = new AuthorizeAttribute(policy);
             conventions.AddAreaPageApplicationModelConvention(areaName, pageName, model =>
             {
                 if (conventions.MvcOptions.EnableEndpointRouting)
@@ -371,7 +368,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
             }
 
-            var authorizeAttribute = new AuthorizeAttribute(policy);
             conventions.AddFolderApplicationModelConvention(folderPath, model =>
             {
                 if (conventions.MvcOptions.EnableEndpointRouting)
@@ -446,7 +442,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(folderPath));
             }
 
-            var authorizeAttribute = new AuthorizeAttribute(policy);
             conventions.AddAreaFolderApplicationModelConvention(areaName, folderPath, model =>
             {
                 if (conventions.MvcOptions.EnableEndpointRouting)

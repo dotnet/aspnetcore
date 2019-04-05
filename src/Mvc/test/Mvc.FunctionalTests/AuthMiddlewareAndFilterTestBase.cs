@@ -26,16 +26,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task AllowAnonymousOnActionsWork()
         {
             // Arrange & Act
-            var response = await Client.GetAsync("Authorized/ActionWithoutAllowAnonymous");
+            var response = await Client.GetAsync("AuthorizedActions/ActionWithoutAllowAnonymous");
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
         }
 
         [Fact]
-        public async Task AuthorizationOnControllerWorks()
+        public async Task GlobalAuthFilter_AppliesToActionsWithoutAnyAuthAttributes()
         {
-            var action = "Authorized/ActionWithoutAuthAttribute";
+            var action = "AuthorizedActions/ActionWithoutAuthAttribute";
             var response = await Client.GetAsync(action);
 
             await AssertAuthorizeResponse(response);
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         [Fact]
         public async Task GlobalAuthFilter_CombinesWithAuthAttributeSpecifiedOnAction()
         {
-            var action = "Authorized/ActionWithAuthAttribute";
+            var action = "AuthorizedActions/ActionWithAuthAttribute";
             var response = await Client.GetAsync(action);
 
             await AssertAuthorizeResponse(response);

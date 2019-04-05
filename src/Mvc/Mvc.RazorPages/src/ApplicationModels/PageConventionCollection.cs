@@ -5,16 +5,21 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     public class PageConventionCollection : Collection<IPageConvention>
     {
+        private readonly IServiceProvider _serviceProvider;
+        private MvcOptions _mvcOptions;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="PageConventionCollection"/> class that is empty.
         /// </summary>
         public PageConventionCollection()
-            : this((MvcOptions)null)
+            : this((IServiceProvider)null)
         {
         }
 
@@ -28,12 +33,20 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         {
         }
 
-        internal PageConventionCollection(MvcOptions mvcOptions)
+        internal PageConventionCollection(IServiceProvider serviceProvider)
         {
-            MvcOptions = mvcOptions ?? throw new ArgumentNullException(nameof(mvcOptions));
+            _serviceProvider = serviceProvider;
         }
 
-        internal MvcOptions MvcOptions { get; set; }
+        internal MvcOptions MvcOptions
+        {
+            get
+            {
+                // Avoid eagerly getting to the MvcOptions from the options setup for RazorPagesOptions.
+                _mvcOptions ??= _serviceProvider.GetRequiredService<IOptions<MvcOptions>>().Value;
+                return _mvcOptions;
+            }
+        }
 
         /// <summary>
         /// Creates and adds an <see cref="IPageApplicationModelConvention"/> that invokes an action on the

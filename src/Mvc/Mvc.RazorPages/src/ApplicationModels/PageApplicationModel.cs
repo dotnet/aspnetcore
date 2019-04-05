@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Internal;
 
@@ -48,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             HandlerMethods = new List<PageHandlerModel>();
             HandlerProperties = new List<PagePropertyModel>();
             HandlerTypeAttributes = handlerAttributes;
-            EndpointMetadata = new CopyOnWriteList<object>(ActionDescriptor.EndpointMetadata ?? Array.Empty<object>());
+            EndpointMetadata = new List<object>(ActionDescriptor.EndpointMetadata ?? Array.Empty<object>());
         }
 
         /// <summary>
@@ -73,6 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             HandlerMethods = new List<PageHandlerModel>(other.HandlerMethods.Select(m => new PageHandlerModel(m)));
             HandlerProperties = new List<PagePropertyModel>(other.HandlerProperties.Select(p => new PagePropertyModel(p)));
             HandlerTypeAttributes = other.HandlerTypeAttributes;
+            EndpointMetadata = new List<object>(other.EndpointMetadata);
         }
 
         /// <summary>

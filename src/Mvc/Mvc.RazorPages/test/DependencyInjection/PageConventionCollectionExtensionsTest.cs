@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -977,7 +978,10 @@ namespace Microsoft.Extensions.DependencyInjection
         private PageConventionCollection GetConventions(bool enableEndpointRouting = true)
         {
             var options = new MvcOptions { EnableEndpointRouting = enableEndpointRouting };
-            return new PageConventionCollection(options);
+            var serviceProvider = new ServiceCollection()
+                .AddSingleton<IOptions<MvcOptions>>(Options.Options.Create(options))
+                .BuildServiceProvider();
+            return new PageConventionCollection(serviceProvider);
         }
 
         private static SelectorModel CreateSelectorModel(string template, bool suppressLinkGeneration = false)

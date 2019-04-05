@@ -585,7 +585,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 "test"));
             var context = new AuthorizationFilterContext(ActionContext, new[] { filter, });
 
-
             // Act
             var effectivePolicy = await filter.GetEffectivePolicyAsync(context);
 

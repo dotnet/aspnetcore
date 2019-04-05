@@ -127,18 +127,16 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             }
         }
 
-        private static void AddEndpointMetadata(SelectorModel selector, IList<object> metadata)
+        private static void AddEndpointMetadata(SelectorModel selector, IList<object> controllerMetadata)
         {
-            if (metadata != null)
+            if (controllerMetadata != null)
             {
-                for (var i = metadata.Count - 1; i >= 0; i--)
-                {
-                    // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
-                    // must appear later in the sequence.
-                    // In this case, the parameter named 'metadata' is the controller endpoint metadata and should appear earlier than the existing metadata
-                    // that represents the action metadata.
-                    selector.EndpointMetadata.Insert(0, metadata[i]);
-                }
+                // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
+                // must appear later in the sequence.
+                // In this case, the parameter named 'metadata' is the controller endpoint metadata and should appear earlier than the existing metadata
+                // that represents the action metadata.
+                var combinedMetadata = Enumerable.Concat(controllerMetadata, selector.EndpointMetadata).ToList();
+                selector.EndpointMetadata = combinedMetadata;
             }
         }
 

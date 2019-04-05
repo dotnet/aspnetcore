@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Options;
@@ -11,11 +10,11 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     internal class RazorPagesOptionsSetup : IConfigureOptions<RazorPagesOptions>
     {
-        private readonly MvcOptions _mvcOptions;
+        private readonly IServiceProvider _serviceProvider;
 
-        public RazorPagesOptionsSetup(IOptions<MvcOptions> pagesOptions)
+        public RazorPagesOptionsSetup(IServiceProvider serviceProvider)
         {
-            _mvcOptions = pagesOptions?.Value ?? throw new ArgumentNullException(nameof(pagesOptions));
+            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
         public void Configure(RazorPagesOptions options)
@@ -25,7 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.Conventions = new PageConventionCollection(_mvcOptions);
+            options.Conventions = new PageConventionCollection(_serviceProvider);
         }
     }
 }

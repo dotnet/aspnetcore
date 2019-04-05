@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class DefaultPageLoaderTest
     {
-        private readonly IOptions<RazorPagesOptions> RazorPagesOptions = Options.Create(new RazorPagesOptions { Conventions = new PageConventionCollection(new MvcOptions()) });
+        private readonly IOptions<RazorPagesOptions> RazorPagesOptions = Options.Create(new RazorPagesOptions { Conventions = new PageConventionCollection(Mock.Of<IServiceProvider>()) });
         private readonly IActionDescriptorCollectionProvider ActionDescriptorCollectionProvider;
 
         public DefaultPageLoaderTest()
@@ -354,7 +354,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(model, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions())
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>())
             {
                 convention.Object,
             };
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(model, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions())
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>())
             {
                 globalConvention.Object,
             };
@@ -420,7 +420,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(handlerModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions());
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(handlerModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions()) { handlerModelConvention.Object };
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>()) { handlerModelConvention.Object };
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -478,7 +478,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     m.Page.HandlerMethods.Remove(m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions());
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -509,7 +509,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(parameterModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions());
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(parameterModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions()) { parameterModelConvention.Object };
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>()) { parameterModelConvention.Object };
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     model.Handler.Parameters.Remove(model);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions());
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -609,7 +609,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(propertyModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions());
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -640,7 +640,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     Assert.Same(propertyModel, m);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions()) { propertyModelConvention.Object };
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>()) { propertyModelConvention.Object };
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);
@@ -672,7 +672,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     model.Page.HandlerProperties.Remove(model);
                 })
                 .Verifiable();
-            var conventionCollection = new PageConventionCollection(new MvcOptions());
+            var conventionCollection = new PageConventionCollection(Mock.Of<IServiceProvider>());
 
             // Act
             DefaultPageLoader.ApplyConventions(conventionCollection, applicationModel);

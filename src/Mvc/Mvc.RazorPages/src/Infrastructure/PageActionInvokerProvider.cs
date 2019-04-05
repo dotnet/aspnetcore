@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private readonly IRazorPageFactoryProvider _razorPageFactoryProvider;
         private readonly IActionDescriptorCollectionProvider _collectionProvider;
         private readonly IFilterProvider[] _filterProviders;
-        private readonly IList<IValueProviderFactory> _valueProviderFactories;
+        private readonly IReadOnlyList<IValueProviderFactory> _valueProviderFactories;
         private readonly ParameterBinder _parameterBinder;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataFactory;

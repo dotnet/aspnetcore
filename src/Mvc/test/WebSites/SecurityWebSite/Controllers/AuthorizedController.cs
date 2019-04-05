@@ -6,14 +6,15 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace SecurityWebSite.Controllers
 {
+    [Authorize] // requires any authenticated user (aka the application cookie typically)
     public class AuthorizedController : ControllerBase
     {
+        [Authorize(AuthenticationSchemes = "Bearer")]
+        public IActionResult Api() => Ok();
+
+        public IActionResult Cookie() => Ok();
+
         [AllowAnonymous]
-        public IActionResult ActionWithoutAllowAnonymous() => Ok();
-
-        public IActionResult ActionWithoutAuthAttribute() => Ok();
-
-        [Authorize("RequireClaimB")]
-        public IActionResult ActionWithAuthAttribute() => Ok();
+        public IActionResult AllowAnonymous() => Ok();
     }
 }
