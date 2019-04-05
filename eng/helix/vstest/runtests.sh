@@ -80,8 +80,8 @@ if [ "$1" = "InMemory.FunctionalTests.dll" ]; then
 fi
 
 while [ $retries -gt 0 ]; do
-    $DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
     let retries=retries-1
+    $DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
 done
 
 nonflaky_exitcode=$?
