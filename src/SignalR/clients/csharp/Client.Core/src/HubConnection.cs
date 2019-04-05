@@ -462,7 +462,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             try
             {
-
                 while (await reader.WaitToReadAsync(cts.Token))
                 {
                     while (reader.TryRead(out var item))
