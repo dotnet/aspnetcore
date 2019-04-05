@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Tests
             }
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2170")]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         public async Task RunsInIISExpressInProcess()
         {
