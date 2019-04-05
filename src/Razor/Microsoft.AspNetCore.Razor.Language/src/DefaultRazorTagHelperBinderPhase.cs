@@ -334,6 +334,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                             }
 
                             var typeName = tagHelper.GetTypeName();
+                            if (tagHelper.IsChildContentTagHelper())
+                            {
+                                // If this is a child content tag helper, we want to add it if it's original type is in scope of the given namespace.
+                                // E.g, if the type name is `Test.MyComponent.ChildContent`, we want to add it if `Test.MyComponent` is in this namespace.
+                                TrySplitNamespaceAndType(typeName, out typeName, out var _);
+                            }
                             if (typeName != null && IsTypeInNamespace(typeName, @namespace))
                             {
                                 // If the type is at the top-level or if the type's namespace matches the using's namespace, add it.
@@ -390,7 +396,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             // open file in the editor. We mangle the class name for its generated code, so using that here to filter these out.
             internal static bool IsTagHelperFromMangledClass(TagHelperDescriptor tagHelper)
             {
-                if (!TrySplitNamespaceAndType(tagHelper.GetTypeName(), out var _, out var className))
+                var typeName = tagHelper.GetTypeName();
+                if (tagHelper.IsChildContentTagHelper())
+                {
+                    // If this is a child content tag helper, we want to look at it's original type.
+                    // E.g, if the type name is `Test.__generated__MyComponent.ChildContent`, we want to look at `Test.__generated__MyComponent`.
+                    TrySplitNamespaceAndType(typeName, out typeName, out var _);
+                }
+                if (!TrySplitNamespaceAndType(typeName, out var _, out var className))
                 {
                     return false;
                 }
