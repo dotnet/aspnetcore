@@ -451,21 +451,29 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </returns>
         public async Task<IAsyncEnumerable<TResult>> StreamAsyncCore<TResult>(string methodName, object[] args, CancellationToken cancellationToken = default)
         {
-            var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var stream = CastIAsyncEnumerable<TResult>((await StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cts.Token)), cts.Token);
+            var cts = cancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken) : new CancellationTokenSource();
+            var channel = await StreamAsChannelCoreAsync(methodName, typeof(TResult), args, cts.Token);
+            var stream = CastIAsyncEnumerable<TResult>(channel, cts);
             var cancelableStream = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, cts);
-
             return cancelableStream;
         }
 
-        private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(ChannelReader<object> reader, CancellationToken token)
+        private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(ChannelReader<object> reader, CancellationTokenSource cts)
         {
-            while (await reader.WaitToReadAsync(token))
+            try
             {
-                while (reader.TryRead(out var item))
+
+                while (await reader.WaitToReadAsync(cts.Token))
                 {
-                    yield return (T)item;
+                    while (reader.TryRead(out var item))
+                    {
+                        yield return (T)item;
+                    }
                 }
+            }
+            finally
+            {
+                cts.Dispose();
             }
         }
 #endif

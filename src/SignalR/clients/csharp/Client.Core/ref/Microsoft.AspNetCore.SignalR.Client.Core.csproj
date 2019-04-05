@@ -11,6 +11,7 @@
     <Reference Include="Microsoft.Extensions.Logging"  />
     <Reference Include="System.Threading.Channels"  />
   </ItemGroup>
+  
 <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.SignalR.Client.Core.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Common"  />

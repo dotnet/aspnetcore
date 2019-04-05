@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
-        public async Task StreamCoreAsyncTest(string protocolName, HttpTransportType transportType, string path)
+        public async Task StreamAsyncCoreTest(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];
             using (StartServer<Startup>(out var server))
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
-        public async Task StreamAsyncCanBeCancelled(string protocolName, HttpTransportType transportType, string path)
+        public async Task StreamAsyncCanBeCanceled(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];
             using (StartServer<Startup>(out var server))
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var cts = new CancellationTokenSource();
 
-                    var stream = await connection.StreamAsync<int>("Stream", 5, cts.Token);
+                    var stream = await connection.StreamAsync<int>("Stream", 5, cts.Token).OrTimeout(); ;
                     var results = new List<int>();
 
                     var enumerator = stream.GetAsyncEnumerator();
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var asyncEnumerable = await connection.StreamAsync<int>("StreamException");
+                    var asyncEnumerable = await connection.StreamAsync<int>("StreamException").OrTimeout();
                     var ex = await Assert.ThrowsAsync<HubException>(async () =>
                     {
                         await foreach (var streamValue in asyncEnumerable)
@@ -662,7 +662,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
-        public async Task StreamAsyncCanBeCancelledThroughGetEnumerator(string protocolName, HttpTransportType transportType, string path)
+        public async Task StreamAsyncCanBeCanceledThroughGetEnumerator(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];
             using (StartServer<Startup>(out var server))
@@ -671,7 +671,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var stream = await connection.StreamAsyncCore<int>("Stream", new object[] { 5 });
+                    var stream = await connection.StreamAsync<int>("Stream", 5 );
                     var results = new List<int>();
 
                     var cts = new CancellationTokenSource();
