@@ -25,6 +25,7 @@
         "Microsoft.VisualStudio.Workload.NetCoreBuildTools",
         "Microsoft.VisualStudio.Workload.VCTools",
         "Microsoft.VisualStudio.Workload.VisualStudioExtensionBuildTools",
-        "Microsoft.VisualStudio.Workload.WebBuildTools"
+        "Microsoft.VisualStudio.Workload.WebBuildTools",
+        "Microsoft.VisualStudio.Component.IISExpress"
     ]
 }
