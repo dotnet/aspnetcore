@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void SetValueUnknown(string key, in StringValues value)
+        private void SetValueUnknown(string key, StringValues value)
         {
             ValidateHeaderNameCharacters(key);
             Unknown[key] = value;

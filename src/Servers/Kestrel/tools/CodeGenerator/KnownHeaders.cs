@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}")}
         }}")}
 {Each(loop.Headers.Where(header => header.EnhancedSetter), header => $@"
-        public void SetRaw{header.Identifier}(in StringValues value, byte[] raw)
+        public void SetRaw{header.Identifier}(StringValues value, byte[] raw)
         {{
             {header.SetBit()};
             _headers._{header.Identifier} = value;
@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }}
 
-        protected override void SetValueFast(string key, in StringValues value)
+        protected override void SetValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
             ValidateHeaderValueCharacters(value);" : "")}
             switch (key.Length)
@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             SetValueUnknown(key, value);
         }}
 
-        protected override bool AddValueFast(string key, in StringValues value)
+        protected override bool AddValueFast(string key, StringValues value)
         {{{(loop.ClassName != "HttpRequestHeaders" ? @"
             ValidateHeaderValueCharacters(value);" : "")}
             switch (key.Length)

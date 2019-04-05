@@ -1258,7 +1258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }
 
-        protected override void SetValueFast(string key, in StringValues value)
+        protected override void SetValueFast(string key, StringValues value)
         {
             switch (key.Length)
             {
@@ -1606,7 +1606,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             SetValueUnknown(key, value);
         }
 
-        protected override bool AddValueFast(string key, in StringValues value)
+        protected override bool AddValueFast(string key, StringValues value)
         {
             switch (key.Length)
             {
@@ -5337,25 +5337,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void SetRawConnection(in StringValues value, byte[] raw)
+        public void SetRawConnection(StringValues value, byte[] raw)
         {
             _bits |= 0x2L;
             _headers._Connection = value;
             _headers._rawConnection = raw;
         }
-        public void SetRawDate(in StringValues value, byte[] raw)
+        public void SetRawDate(StringValues value, byte[] raw)
         {
             _bits |= 0x4L;
             _headers._Date = value;
             _headers._rawDate = raw;
         }
-        public void SetRawTransferEncoding(in StringValues value, byte[] raw)
+        public void SetRawTransferEncoding(StringValues value, byte[] raw)
         {
             _bits |= 0x40L;
             _headers._TransferEncoding = value;
             _headers._rawTransferEncoding = raw;
         }
-        public void SetRawServer(in StringValues value, byte[] raw)
+        public void SetRawServer(StringValues value, byte[] raw)
         {
             _bits |= 0x2000000L;
             _headers._Server = value;
@@ -5776,7 +5776,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }
 
-        protected override void SetValueFast(string key, in StringValues value)
+        protected override void SetValueFast(string key, StringValues value)
         {
             ValidateHeaderValueCharacters(value);
             switch (key.Length)
@@ -6081,7 +6081,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             SetValueUnknown(key, value);
         }
 
-        protected override bool AddValueFast(string key, in StringValues value)
+        protected override bool AddValueFast(string key, StringValues value)
         {
             ValidateHeaderValueCharacters(value);
             switch (key.Length)
@@ -8589,7 +8589,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return MaybeUnknown?.TryGetValue(key, out value) ?? false;
         }
 
-        protected override void SetValueFast(string key, in StringValues value)
+        protected override void SetValueFast(string key, StringValues value)
         {
             ValidateHeaderValueCharacters(value);
             switch (key.Length)
@@ -8609,7 +8609,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             SetValueUnknown(key, value);
         }
 
-        protected override bool AddValueFast(string key, in StringValues value)
+        protected override bool AddValueFast(string key, StringValues value)
         {
             ValidateHeaderValueCharacters(value);
             switch (key.Length)
