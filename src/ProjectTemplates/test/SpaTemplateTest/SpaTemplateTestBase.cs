@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
 using Newtonsoft.Json.Linq;
@@ -80,11 +81,19 @@ namespace Templates.Test.SpaTemplateTest
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
+            var shouldVisitFetchData = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || useLocalDb;
+
             if (usesAuth)
             {
                 var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync(template);
                 Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
                 Project.AssertEmptyMigration(template);
+
+                if (shouldVisitFetchData)
+                {
+                    var dbUpdateResult = await Project.RunDotNetEfUpdateDatabaseAsync();
+                    Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", Project, dbUpdateResult));
+                }
             }
 
             using (var aspNetProcess = Project.StartBuiltProjectAsync())
@@ -98,8 +107,9 @@ namespace Templates.Test.SpaTemplateTest
 
                 if (BrowserFixture.IsHostAutomationSupported())
                 {
-                    aspNetProcess.VisitInBrowser(Browser);
-                    TestBasicNavigation(visitFetchData: !usesAuth);
+                    var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, $"{Project.ProjectName}.build");
+                    aspNetProcess.VisitInBrowser(browser);
+                    TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser);
                 }
             }
 
@@ -119,8 +129,9 @@ namespace Templates.Test.SpaTemplateTest
 
                 if (BrowserFixture.IsHostAutomationSupported())
                 {
-                    aspNetProcess.VisitInBrowser(Browser);
-                    TestBasicNavigation(visitFetchData: !usesAuth);
+                    var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, $"{Project.ProjectName}.publish");
+                    aspNetProcess.VisitInBrowser(browser);
+                    TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser);
                 }
             }
         }
@@ -167,36 +178,52 @@ namespace Templates.Test.SpaTemplateTest
             File.WriteAllText(Path.Combine(Project.TemplatePublishDir, "appsettings.json"), testAppSettings);
         }
 
-        private void TestBasicNavigation(bool visitFetchData)
+        private void TestBasicNavigation(bool visitFetchData, bool usesAuth, IWebDriver browser)
         {
-            Browser.Exists(By.TagName("ul"));
+            browser.Exists(By.TagName("ul"));
             // <title> element gets project ID injected into it during template execution
-            Browser.Contains(Project.ProjectGuid, () => Browser.Title);
+            browser.Contains(Project.ProjectGuid, () => browser.Title);
 
             // Initially displays the home page
-            Browser.Equal("Hello, world!", () => Browser.FindElement(By.TagName("h1")).Text);
+            browser.Equal("Hello, world!", () => browser.FindElement(By.TagName("h1")).Text);
 
             // Can navigate to the counter page
-            Browser.FindElement(By.PartialLinkText("Counter")).Click();
-            Browser.Contains("counter", () => Browser.Url);
+            browser.FindElement(By.PartialLinkText("Counter")).Click();
+            browser.Contains("counter", () => browser.Url);
 
-            Browser.Equal("Counter", () => Browser.FindElement(By.TagName("h1")).Text);
+            browser.Equal("Counter", () => browser.FindElement(By.TagName("h1")).Text);
 
             // Clicking the counter button works
-            Browser.Equal("0", () => Browser.FindElement(By.CssSelector("p>strong")).Text);
-            Browser.FindElement(By.CssSelector("p+button")).Click();
-            Browser.Equal("1", () => Browser.FindElement(By.CssSelector("p>strong")).Text);
+            browser.Equal("0", () => browser.FindElement(By.CssSelector("p>strong")).Text);
+            browser.FindElement(By.CssSelector("p+button")).Click();
+            browser.Equal("1", () => browser.FindElement(By.CssSelector("p>strong")).Text);
 
             if (visitFetchData)
             {
+                browser.FindElement(By.PartialLinkText("Fetch data")).Click();
+
+                if (usesAuth)
+                {
+                    // We will be redirected to the identity UI
+                    browser.Contains("/Identity/Account/Login", () => browser.Url);
+                    browser.FindElement(By.PartialLinkText("Register as a new user")).Click();
+
+                    var userName = $"{Guid.NewGuid()}@example.com";
+                    var password = $"!Test.Password1$";
+                    browser.Exists(By.Name("Input.Email"));
+                    browser.FindElement(By.Name("Input.Email")).SendKeys(userName);
+                    browser.FindElement(By.Name("Input.Password")).SendKeys(password);
+                    browser.FindElement(By.Name("Input.ConfirmPassword")).SendKeys(password);
+                    browser.FindElement(By.Id("registerSubmit")).Click();
+                }
+
                 // Can navigate to the 'fetch data' page
-                Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
-                Browser.Contains("fetch-data", () => Browser.Url);
-                Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
+                browser.Contains("fetch-data", () => browser.Url);
+                browser.Equal("Weather forecast", () => browser.FindElement(By.TagName("h1")).Text);
 
                 // Asynchronously loads and displays the table of weather forecasts
-                Browser.Exists(By.CssSelector("table>tbody>tr"));
-                Browser.Equal(5, () => Browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
+                browser.Exists(By.CssSelector("table>tbody>tr"));
+                browser.Equal(5, () => browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
             }
         }
 

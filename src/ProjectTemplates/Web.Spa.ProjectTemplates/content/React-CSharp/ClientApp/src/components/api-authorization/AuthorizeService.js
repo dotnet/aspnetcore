@@ -7,6 +7,12 @@ export class AuthorizeService {
     _user = null;
     _isAuthenticated = false;
 
+    // By default pop ups are disabled because they don't work properly on Edge.
+    // If you want to enable pop up authentication simply remove this line of code
+    // and the associated if clauses below.
+    _popUpDisabled = true;
+
+
     async isAuthenticated() {
         const user = await this.getUser();
         return !!user;
@@ -47,6 +53,10 @@ export class AuthorizeService {
             console.log("Silent authentication error: ", silentError);
 
             try {
+                if (this._popUpDisabled) {
+                    throw new Error('Popup disabled. Change \'AuthorizeService.js:AuthorizeService._popupDisabled\' to false to enable it.')
+                }
+
                 const popUpUser = await this.userManager.signinPopup(this.createArguments(LoginMode.PopUp));
                 this.updateState(popUpUser);
                 return this.success(state);
@@ -54,8 +64,9 @@ export class AuthorizeService {
                 if (popUpError.message === "Popup window closed") {
                     // The user explicitly cancelled the login action by closing an opened popup.
                     return this.error("The user closed the window.");
+                } else if (!this._popUpDisabled) {
+                    console.log("Popup authentication error: ", popUpError);
                 }
-                console.log("Popup authentication error: ", popUpError);
 
                 // PopUps might be blocked by the user, fallback to redirect
                 try {

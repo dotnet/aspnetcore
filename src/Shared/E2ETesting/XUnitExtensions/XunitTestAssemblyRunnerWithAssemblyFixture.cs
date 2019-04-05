@@ -61,6 +61,12 @@ namespace Microsoft.AspNetCore.E2ETesting
                 Aggregator.Run(disposable.Dispose);
             }
 
+            foreach (var disposable in _assemblyFixtureMappings.Values.OfType<IAsyncDisposable>())
+            {
+                // We need to wrap it in a lambda to coerce from valuetask to task.
+                Aggregator.RunAsync(async () => await disposable.DisposeAsync());
+            }
+
             return base.BeforeTestAssemblyFinishedAsync();
         }
 

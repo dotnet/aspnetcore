@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -230,12 +230,6 @@ namespace Company.WebApplication1.Data.Migrations
                 name: "IX_DeviceCodes_DeviceCode",
                 table: "DeviceCodes",
                 column: "DeviceCode",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_DeviceCodes_UserCode",
-                table: "DeviceCodes",
-                column: "UserCode",
                 unique: true);
 
             migrationBuilder.CreateIndex(

@@ -294,6 +294,31 @@ namespace Templates.Test.Helpers
             }
         }
 
+        internal async Task<ProcessEx> RunDotNetEfUpdateDatabaseAsync()
+        {
+            var assembly = typeof(ProjectFactoryFixture).Assembly;
+
+            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(attribute => attribute.Key == "DotNetEfFullPath")
+                .Value;
+
+            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build database update";
+
+            // Only run one instance of 'dotnet new' at once, as a workaround for
+            // https://github.com/aspnet/templating/issues/63
+            await DotNetNewLock.WaitAsync();
+            try
+            {
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                await result.Exited;
+                return result;
+            }
+            finally
+            {
+                DotNetNewLock.Release();
+            }
+        }
+
         // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
         public void AssertEmptyMigration(string migration)
         {
