@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
@@ -14,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
     public class LoggingConnectionAdapterTests : LoggedTest
     {
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1753", FlakyOn.Helix.All)]
         public async Task LoggingConnectionAdapterCanBeAddedBeforeAndAfterHttpsAdapter()
         {
             using (var server = new TestServer(context =>
