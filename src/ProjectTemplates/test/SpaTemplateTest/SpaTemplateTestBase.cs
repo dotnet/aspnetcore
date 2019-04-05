@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
@@ -168,37 +169,34 @@ namespace Templates.Test.SpaTemplateTest
 
         private void TestBasicNavigation(bool visitFetchData)
         {
-            Browser.WaitForElement("ul");
+            Browser.Exists(By.TagName("ul"));
             // <title> element gets project ID injected into it during template execution
-            Assert.Contains(Project.ProjectGuid, Browser.Title);
+            Browser.Contains(Project.ProjectGuid, () => Browser.Title);
 
             // Initially displays the home page
-            Assert.Equal("Hello, world!", Browser.GetText("h1"));
+            Browser.Equal("Hello, world!", () => Browser.FindElement(By.TagName("h1")).Text);
 
             // Can navigate to the counter page
-            Browser.Click(By.PartialLinkText("Counter"));
-            Browser.WaitForUrl("counter");
+            Browser.FindElement(By.PartialLinkText("Counter")).Click();
+            Browser.Contains("counter", () => Browser.Url);
 
-            Assert.Equal("Counter", Browser.GetText("h1"));
+            Browser.Equal("Counter", () => Browser.FindElement(By.TagName("h1")).Text);
 
             // Clicking the counter button works
-            var counterComponent = Browser.FindElement("h1").Parent();
-            Assert.Equal("0", counterComponent.GetText("strong"));
-            Browser.Click(counterComponent, "button");
-            Assert.Equal("1", counterComponent.GetText("strong"));
+            Browser.Equal("0", () => Browser.FindElement(By.CssSelector("p>strong")).Text);
+            Browser.FindElement(By.CssSelector("p+button")).Click();
+            Browser.Equal("1", () => Browser.FindElement(By.CssSelector("p>strong")).Text);
 
             if (visitFetchData)
             {
                 // Can navigate to the 'fetch data' page
-                Browser.Click(By.PartialLinkText("Fetch data"));
-                Browser.WaitForUrl("fetch-data");
-                Assert.Equal("Weather forecast", Browser.GetText("h1"));
+                Browser.FindElement(By.PartialLinkText("Fetch data")).Click();
+                Browser.Contains("fetch-data", () => Browser.Url);
+                Browser.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
 
                 // Asynchronously loads and displays the table of weather forecasts
-                var fetchDataComponent = Browser.FindElement("h1").Parent();
-                Browser.WaitForElement("table>tbody>tr");
-                var table = Browser.FindElement(fetchDataComponent, "table", timeoutSeconds: 5);
-                Assert.Equal(5, table.FindElements(By.CssSelector("tbody tr")).Count);
+                Browser.Exists(By.CssSelector("table>tbody>tr"));
+                Browser.Equal(5, () => Browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
             }
         }
 

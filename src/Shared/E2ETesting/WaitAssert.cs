@@ -4,7 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Runtime.ExceptionServices;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using Xunit;
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
     public static class WaitAssert
     {
-        private readonly static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
+        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
 
         public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.Equal(expected, actual()));
@@ -41,6 +41,9 @@ namespace Microsoft.AspNetCore.E2ETesting
         public static void Single(this IWebDriver driver, Func<IEnumerable> actualValues)
             => WaitAssertCore(driver, () => Assert.Single(actualValues()));
 
+        public static void Exists(this IWebDriver driver, By finder)
+            => WaitAssertCore(driver, () => Assert.NotEmpty(driver.FindElements(finder)));
+
         private static void WaitAssertCore(IWebDriver driver, Action assertion, TimeSpan timeout = default)
         {
             if (timeout == default)
@@ -48,6 +51,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                 timeout = DefaultTimeout;
             }
 
+            Exception lastException = null;
             try
             {
                 new WebDriverWait(driver, timeout).Until(_ =>
@@ -57,16 +61,24 @@ namespace Microsoft.AspNetCore.E2ETesting
                         assertion();
                         return true;
                     }
-                    catch
+                    catch(Exception e)
                     {
+                        lastException = e;
                         return false;
                     }
                 });
             }
             catch (WebDriverTimeoutException)
             {
-                // Instead of reporting it as a timeout, report the Xunit exception
-                assertion();
+                if (lastException != null)
+                {
+                    ExceptionDispatchInfo.Capture(lastException).Throw();
+                }
+                else
+                {
+                    // Instead of reporting it as a timeout, report the Xunit exception
+                    assertion();
+                }
             }
         }
     }
