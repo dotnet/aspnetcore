@@ -95,7 +95,7 @@ export class AuthorizeService {
 
       try {
         if (this.popUpDisabled) {
-          throw new Error('Popup disabled. Change \'authorize.service.ts:AuthorizeService.popupDisabled\' to false to enable it.')
+          throw new Error('Popup disabled. Change \'authorize.service.ts:AuthorizeService.popupDisabled\' to false to enable it.');
         }
         user = await this.userManager.signinPopup(this.createArguments(LoginMode.PopUp));
         this.userSubject.next(user.profile);
