@@ -75,9 +75,10 @@ NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=tr
 echo "Running non-flaky tests."
 retries=1
 
-if [ "$1" -eq "InMemory.FunctionalTests.dll"]
+if [ "$1" = "InMemory.FunctionalTests.dll" ]; then
     let retries=10
 fi
+
 while [ $retries -gt 0 ]; do
     $DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
     let retries=retries-1
