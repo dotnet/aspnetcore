@@ -397,29 +397,34 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         public void CreateDescriptor_CombinesEndpointMetadataFromHandlerTypeAttributesAndAttributesOnModel()
         {
             // Arrange
-            var metadata1 = new object();
-            var metadata2 = new object();
-            var metadata3 = new object();
+            var metadata1 = "metadata1";
+            var metadata2 = "metadata2";
+            var metadata3 = "metadata3";
+            var metadata4 = "metadata4";
+            var metadata5 = "metadata5";
+            var metadata6 = "metadata6";
+
             var actionDescriptor = new PageActionDescriptor
             {
                 ActionConstraints = new List<IActionConstraintMetadata>(),
                 AttributeRouteInfo = new AttributeRouteInfo(),
-                EndpointMetadata = new List<object> { metadata1 },
+                EndpointMetadata = new List<object> { metadata3, metadata4, },
                 FilterDescriptors = new List<FilterDescriptor>(),
                 RelativePath = "/Foo",
                 RouteValues = new Dictionary<string, string>(),
                 ViewEnginePath = "/Pages/Foo",
             };
             var handlerTypeInfo = typeof(object).GetTypeInfo();
-            var pageApplicationModel = new PageApplicationModel(actionDescriptor, handlerTypeInfo, new[] { metadata3 });
-            pageApplicationModel.EndpointMetadata.Add(metadata2);
+            var pageApplicationModel = new PageApplicationModel(actionDescriptor, handlerTypeInfo, new[] { metadata1, metadata2, });
+            pageApplicationModel.EndpointMetadata.Add(metadata5);
+            pageApplicationModel.EndpointMetadata.Add(metadata6);
             var globalFilters = new FilterCollection();
 
             // Act
             var actual = CompiledPageActionDescriptorBuilder.Build(pageApplicationModel, globalFilters);
 
             // Assert
-            Assert.Equal(new[] { metadata1, metadata2, metadata3 }, actual.EndpointMetadata);
+            Assert.Equal(new[] { metadata1, metadata2, metadata3, metadata4, metadata5, metadata6 }, actual.EndpointMetadata);
         }
 
         private class HandlerWithIgnoredProperties

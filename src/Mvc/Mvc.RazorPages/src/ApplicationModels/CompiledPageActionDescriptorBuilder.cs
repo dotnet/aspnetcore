@@ -64,13 +64,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         private static IList<object> CreateEndPointMetadata(PageApplicationModel applicationModel)
         {
             var handlerMetatdata = applicationModel.HandlerTypeAttributes;
-            var endPointMetadata = applicationModel.EndpointMetadata;
+            var endpointMetadata = applicationModel.EndpointMetadata;
 
             // It is criticial to get the order in which metadata appears in endpoint metadata correct. More significant metadata
             // must appear later in the sequence.
             // In this case, handlerMetadata is attributes on the Page \ PageModel, and endPointMetadata is configured via conventions. and 
             // We consider the latter to be more significant.
-            return Enumerable.Concat(handlerMetatdata, endPointMetadata).ToList();
+            return Enumerable.Concat(handlerMetatdata, endpointMetadata).ToList();
         }
 
         // Internal for unit testing

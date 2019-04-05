@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Xunit;
@@ -115,6 +116,102 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task CanLoginWithBearer()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Api");
+            var response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            var token = await GetBearerTokenAsync();
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Api");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CanLoginWithBearerAfterAnonymous()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/AllowAnonymous");
+            var response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Api");
+            response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            var token = await GetBearerTokenAsync();
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Api");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CanLoginWithCookie()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Cookie");
+            var response = await Client.SendAsync(request);
+            await AssertAuthorizeResponse(response);
+
+            var cookie = await GetAuthCookieAsync("LoginDefaultScheme");
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Cookie");
+            request.Headers.Add("Cookie", cookie);
+            response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CanLoginWithCookieAfterAnonymous()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/AllowAnonymous");
+            var response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Cookie");
+            response = await Client.SendAsync(request);
+            await AssertAuthorizeResponse(response);
+
+            var cookie = await GetAuthCookieAsync("LoginDefaultScheme");
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Cookie");
+            request.Headers.Add("Cookie", cookie);
+            response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task CanLoginWithBearerAfterCookie()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Cookie");
+            var response = await Client.SendAsync(request);
+            await AssertAuthorizeResponse(response);
+
+            var cookie = await GetAuthCookieAsync("LoginDefaultScheme");
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Cookie");
+            request.Headers.Add("Cookie", cookie);
+            response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Api");
+            request.Headers.Add("Cookie", cookie);
+            response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+
+            var token = await GetBearerTokenAsync();
+
+            request = new HttpRequestMessage(HttpMethod.Get, "/Authorized/Api");
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            request.Headers.Add("Cookie", cookie);
+            response = await Client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
         public Task GlobalAuthFilter_CombinesWithAuthAttributeOnPageModel()
         {
             // Arrange
@@ -169,6 +266,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             Assert.True(response.Headers.Contains("Set-Cookie"));
             return response.Headers.GetValues("Set-Cookie").FirstOrDefault();
+        }
+
+        private async Task<string> GetBearerTokenAsync()
+        {
+            var response = await Client.GetAsync("/Login/LoginBearerClaimA");
+            return await response.Content.ReadAsStringAsync();
         }
     }
 }

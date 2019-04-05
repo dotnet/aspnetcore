@@ -15,7 +15,11 @@ namespace SecurityWebSite
         {
             services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie();
+                .AddCookie()
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = BearerAuth.CreateTokenValidationParameters();
+                });
 
             services.AddAuthorization(options =>
             {

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Endpoints;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
@@ -527,10 +528,9 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             var effectivePolicy = await filter.GetEffectivePolicyAsync(context);
 
             // Assert
-            Assert.Same(policy, effectivePolicy);
-
+            //
             // Verify the policy is cached
-            Assert.Same(policy, await filter.GetEffectivePolicyAsync(context));
+            Assert.Same(effectivePolicy, await filter.GetEffectivePolicyAsync(context));
         }
 
         [Fact]
@@ -647,6 +647,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
             var contextItems = new Dictionary<object, object>();
             httpContext.SetupGet(c => c.Items).Returns(contextItems);
+            httpContext.SetupGet(c => c.Features).Returns(Mock.Of<IFeatureCollection>());
 
             // AuthorizationFilterContext
             var actionContext = new ActionContext(
