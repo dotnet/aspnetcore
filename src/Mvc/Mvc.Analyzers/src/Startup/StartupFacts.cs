@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Mvc.Analyzers;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Analyzers
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 return false;
             }
 
-            if (!string.Equals(symbol.Name, "ConfigureServices",StringComparison.Ordinal))
+            if (!string.Equals(symbol.Name, SymbolNames.ConfigureServicesMethod, StringComparison.Ordinal))
             {
                 return false;
             }
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 return false;
             }
 
-            if (symbol.Name == null || !symbol.Name.StartsWith("Configure", StringComparison.Ordinal))
+            if (symbol.Name == null || !symbol.Name.StartsWith(SymbolNames.ConfigureMethod, StringComparison.Ordinal))
             {
                 return false;
             }

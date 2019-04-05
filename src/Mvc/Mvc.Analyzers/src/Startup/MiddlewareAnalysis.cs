@@ -4,38 +4,38 @@
 using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
     internal class MiddlewareAnalysis : ConfigureMethodAnalysis
     {
-        public static MiddlewareAnalysis CreateAndInitialize(OperationBlockStartAnalysisContext context)
+        public static MiddlewareAnalysis CreateAndInitialize(StartupAnalysisContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var analysis = new MiddlewareAnalysis((IMethodSymbol)context.OwningSymbol);
+            var symbols = context.StartupSymbols;
+            var analysis = new MiddlewareAnalysis((IMethodSymbol)context.OperationBlockStartAnalysisContext.OwningSymbol);
 
             var middleware = ImmutableArray.CreateBuilder<MiddlewareItem>();
 
-            context.RegisterOperationAction(context =>
+            context.OperationBlockStartAnalysisContext.RegisterOperationAction(context =>
             {
                 // We're looking for usage of extension methods, so we need to look at the 'this' parameter
                 // rather than invocation.Instance.
                 if (context.Operation is IInvocationOperation invocation &&
                     invocation.Instance == null &&
                     invocation.Arguments.Length >= 1 &&
-                    invocation.Arguments[0].Parameter.Type.Name == "IApplicationBuilder")
+                    invocation.Arguments[0].Parameter?.Type == symbols.IApplicationBuilder)
                 {
                     middleware.Add(new MiddlewareItem(invocation));
                 }
             }, OperationKind.Invocation);
 
-            context.RegisterOperationBlockEndAction(context =>
+            context.OperationBlockStartAnalysisContext.RegisterOperationBlockEndAction(context =>
             {
                 analysis.Middleware = middleware.ToImmutable();
             });

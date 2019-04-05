@@ -4,37 +4,37 @@
 using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.AspNetCore.Analyzers
 {
     internal class ServicesAnalysis : ConfigureServicesMethodAnalysis
     {
-        public static ServicesAnalysis CreateAndInitialize(OperationBlockStartAnalysisContext context)
+        public static ServicesAnalysis CreateAndInitialize(StartupAnalysisContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var analysis = new ServicesAnalysis((IMethodSymbol)context.OwningSymbol);
+            var symbols = context.StartupSymbols;
+            var analysis = new ServicesAnalysis((IMethodSymbol)context.OperationBlockStartAnalysisContext.OwningSymbol);
 
             var services = ImmutableArray.CreateBuilder<ServicesItem>();
-            context.RegisterOperationAction(context =>
+            context.OperationBlockStartAnalysisContext.RegisterOperationAction(context =>
             {
                 // We're looking for usage of extension methods, so we need to look at the 'this' parameter
                 // rather than invocation.Instance.
                 if (context.Operation is IInvocationOperation invocation &&
                     invocation.Instance == null &&
                     invocation.Arguments.Length >= 1 &&
-                    invocation.Arguments[0].Parameter.Type.Name == "IServiceCollection")
+                    invocation.Arguments[0].Parameter?.Type == symbols.IServiceCollection)
                 {
                     services.Add(new ServicesItem(invocation));
                 }
             }, OperationKind.Invocation);
 
-            context.RegisterOperationBlockEndAction(context =>
+            context.OperationBlockStartAnalysisContext.RegisterOperationBlockEndAction(context =>
             {
                 analysis.Services = services.ToImmutable();
             });

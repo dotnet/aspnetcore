@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Analyzers
     public partial class StartupAnalzyer : DiagnosticAnalyzer
     {
 #pragma warning disable RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
-        private readonly static Func<OperationBlockStartAnalysisContext, StartupComputedAnalysis>[] ConfigureServicesMethodAnalysisFactories = new Func<OperationBlockStartAnalysisContext, StartupComputedAnalysis>[]
+        private readonly static Func<StartupAnalysisContext, StartupComputedAnalysis>[] ConfigureServicesMethodAnalysisFactories = new Func<StartupAnalysisContext, StartupComputedAnalysis>[]
         {
             ServicesAnalysis.CreateAndInitialize,
             MvcOptionsAnalysis.CreateAndInitialize,
         };
 
-        private readonly static Func<OperationBlockStartAnalysisContext, StartupComputedAnalysis>[] ConfigureMethodAnalysisFactories = new Func<OperationBlockStartAnalysisContext, StartupComputedAnalysis>[]
+        private readonly static Func<StartupAnalysisContext, StartupComputedAnalysis>[] ConfigureMethodAnalysisFactories = new Func<StartupAnalysisContext, StartupComputedAnalysis>[]
         {
             MiddlewareAnalysis.CreateAndInitialize,
         };
@@ -80,12 +80,14 @@ namespace Microsoft.AspNetCore.Analyzers
                     return;
                 }
 
+                var startupAnalysisContext = new StartupAnalysisContext(context, symbols);
+
                 var method = (IMethodSymbol)context.OwningSymbol;
                 if (StartupFacts.IsConfigureServices(symbols, method))
                 {
                     for (var i = 0; i < ConfigureServicesMethodAnalysisFactories.Length; i++)
                     {
-                        var analysis = ConfigureServicesMethodAnalysisFactories[i].Invoke(context);
+                        var analysis = ConfigureServicesMethodAnalysisFactories[i].Invoke(startupAnalysisContext);
                         analyses.Add(analysis);
 
                         OnAnalysisStarted(analysis);
@@ -98,7 +100,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 {
                     for (var i = 0; i < ConfigureMethodAnalysisFactories.Length; i++)
                     {
-                        var analysis = ConfigureMethodAnalysisFactories[i].Invoke(context);
+                        var analysis = ConfigureMethodAnalysisFactories[i].Invoke(startupAnalysisContext);
                         analyses.Add(analysis);
 
                         OnAnalysisStarted(analysis);

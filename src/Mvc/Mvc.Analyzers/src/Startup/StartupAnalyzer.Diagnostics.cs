@@ -15,6 +15,6 @@ namespace Microsoft.AspNetCore.Analyzers
             "Usage", 
             DiagnosticSeverity.Warning, 
             isEnabledByDefault: true,
-            helpLinkUri: null); // TODO docs link.
+            helpLinkUri: "https://aka.ms/YJggeFn");
     }
 }
