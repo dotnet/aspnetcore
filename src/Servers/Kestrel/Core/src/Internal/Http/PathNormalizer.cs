@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // https://tools.ietf.org/html/rfc3986#section-2.2
                 pathLength = RemoveDotSegments(path.Slice(0, pathLength));
 
-                return GetUtf8String(path.Slice(0, pathLength));
+                return Encoding.UTF8.GetString(path.Slice(0, pathLength));
             }
 
             pathLength = RemoveDotSegments(path);
@@ -48,16 +48,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             return path.Slice(0, pathLength).GetAsciiStringNonNullCharacters();
-        }
-
-        private static unsafe string GetUtf8String(Span<byte> path)
-        {
-            // .NET 451 doesn't have pointer overloads for Encoding.GetString so we
-            // copy to an array
-            fixed (byte* pointer = path)
-            {
-                return Encoding.UTF8.GetString(pointer, path.Length);
-            }
         }
 
         // In-place implementation of the algorithm from https://tools.ietf.org/html/rfc3986#section-5.2.4
