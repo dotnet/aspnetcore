@@ -7,12 +7,15 @@
     <PackageTags>aspnetcore;apiauth;identity</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
     <IsShippingPackage>true</IsShippingPackage>
+    <NoWarn>NU1603</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="IdentityServer4.AspNetIdentity" />
     <Reference Include="IdentityServer4.EntityFramework" />
+    <Reference Include="IdentityServer4.EntityFramework.Storage" />
     <Reference Include="IdentityServer4" />
+    <Reference Include="IdentityServer4.Storage" />
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
