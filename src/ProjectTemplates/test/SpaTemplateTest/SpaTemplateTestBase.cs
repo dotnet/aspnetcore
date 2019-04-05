@@ -81,7 +81,7 @@ namespace Templates.Test.SpaTemplateTest
             var buildResult = await Project.RunDotNetBuildAsync();
             Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
 
-            var shouldVisitFetchData = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || useLocalDb;
+            var shouldVisitFetchData = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || !useLocalDb;
 
             if (usesAuth)
             {

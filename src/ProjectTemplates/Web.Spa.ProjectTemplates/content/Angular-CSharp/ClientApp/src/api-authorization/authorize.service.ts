@@ -51,8 +51,8 @@ interface IAuthenticationState {
 })
 export class AuthorizeService {
   // By default pop ups are disabled because they don't work properly on Edge.
-  // If you want to enable pop up authentication simply remove this line of code
-  // and the associated if clauses below.
+  // If you want to enable pop up authentication simply set this flag to false.
+
   private popUpDisabled = true;
   private userManager: UserManager;
   private userSubject: BehaviorSubject<IUser | null> = new BehaviorSubject(null);
@@ -182,6 +182,7 @@ export class AuthorizeService {
         throw new Error(`Invalid login mode '${mode}'.`);
     }
   }
+
   // We try to sign out the user in two different ways:
   // 1) We try to do a sign-out using a PopUp Window. This might fail if there is a
   //    Pop-Up blocker or the user has disabled PopUps.
