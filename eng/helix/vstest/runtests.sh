@@ -73,7 +73,16 @@ fi
 # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
 NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$HELIX!=true"
 echo "Running non-flaky tests."
-$DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
+retries=1
+
+if [ "$1" -eq "InMemory.FunctionalTests.dll"]
+    let retries=10
+fi
+while [ $retries -gt 0 ]; do
+    $DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
+    let retries=retries-1
+done
+
 nonflaky_exitcode=$?
 if [ $nonflaky_exitcode != 0 ]; then
     echo "Non-flaky tests failed!" 1>&2
