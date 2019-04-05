@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Analyzers
         }
 
         public OperationBlockStartAnalysisContext OperationBlockStartAnalysisContext { get; }
+
         public StartupSymbols StartupSymbols { get; }
     }
 }
