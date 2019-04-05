@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
                     var expectedValue = 0;
                     var streamTo = 5;
-                    var asyncEnumerable = await connection.StreamAsyncCore<int>("Stream", new object[] { streamTo });
+                    var asyncEnumerable = connection.StreamAsyncCore<int>("Stream", new object[] { streamTo });
                     await foreach (var streamValue in asyncEnumerable)
                     {
                         Assert.Equal(expectedValue, streamValue);
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
                     var expectedValue = 0;
                     var streamTo = 5;
-                    var asyncEnumerable = await connection.StreamAsync<int>("Stream", streamTo);
+                    var asyncEnumerable = connection.StreamAsync<int>("Stream", streamTo);
                     await foreach (var streamValue in asyncEnumerable)
                     {
                         Assert.Equal(expectedValue, streamValue);
@@ -413,10 +413,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var cts = new CancellationTokenSource();
                     cts.Cancel();
 
-                    var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                    var ex = Assert.ThrowsAsync<OperationCanceledException>(async () =>
                     {
-                        var stream = await connection.StreamAsync<int>("Stream", 5, cts.Token).OrTimeout();
-                        Assert.True(false, "Expected an exception from the streaming invocation.");
+                        var stream = connection.StreamAsync<int>("Stream", 5, cts.Token);
+                        await foreach (var streamValue in stream)
+                        {
+                            Assert.True(false, "Expected an exception from the streaming invocation.");
+                        }
                     });
                 }
                 catch (Exception ex)
@@ -446,7 +449,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var cts = new CancellationTokenSource();
 
-                    var stream = await connection.StreamAsync<int>("Stream", 5, cts.Token).OrTimeout(); ;
+                    var stream = connection.StreamAsync<int>("Stream", 5, cts.Token);
                     var results = new List<int>();
 
                     var enumerator = stream.GetAsyncEnumerator();
@@ -492,7 +495,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var asyncEnumerable = await connection.StreamAsync<int>("StreamException").OrTimeout();
+                    var asyncEnumerable = connection.StreamAsync<int>("StreamException");
                     var ex = await Assert.ThrowsAsync<HubException>(async () =>
                     {
                         await foreach (var streamValue in asyncEnumerable)
@@ -671,7 +674,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var stream = await connection.StreamAsync<int>("Stream", 5 );
+                    var stream = connection.StreamAsync<int>("Stream", 5 );
                     var results = new List<int>();
 
                     var cts = new CancellationTokenSource();
