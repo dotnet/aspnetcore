@@ -805,7 +805,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2176")]
         public async Task ContentLengthReadAsyncSingleBytesAtATime()
         {
             var testContext = new TestServiceContext(LoggerFactory);
