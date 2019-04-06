@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
             if (string.IsNullOrEmpty(dependencyContextOptions.LanguageVersion))
             {
-                // During preview releases, the Roslyn assumes Preview language version for netcoreapp3.0 targeting projects.
+                // During preview releases, Roslyn assumes Preview language version for netcoreapp3.0 targeting projects.
                 // We will match the behavior if the project does not specify a value for C# language (e.g. if you're using Razor compilation in a F# project).
                 // Prior to 3.0 RTM, this value needs to be changed to "Latest". This is tracked via https://github.com/aspnet/AspNetCore/issues/9129
                 parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.Preview);
