@@ -35,10 +35,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (extraHeaders != null && extraHeaders.Count > 0)
             {
                 // Only reserve stack space for the enumartors if there are extra headers
-                CopyExtraHeaders(extraHeaders, ref buffer);
+                CopyExtraHeaders(ref buffer, extraHeaders);
             }
 
-            void CopyExtraHeaders(Dictionary<string, StringValues> headers, ref BufferWriter<PipeWriter> buf)
+            static void CopyExtraHeaders(ref BufferWriter<PipeWriter> buffer, Dictionary<string, StringValues> headers)
             {
                 foreach (var kv in headers)
                 {
@@ -46,10 +46,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         if (value != null)
                         {
-                            buf.Write(_CrLf);
-                            buf.WriteAsciiNoValidation(kv.Key);
-                            buf.Write(_colonSpace);
-                            buf.WriteAsciiNoValidation(value);
+                            buffer.Write(_CrLf);
+                            buffer.WriteAsciiNoValidation(kv.Key);
+                            buffer.Write(_colonSpace);
+                            buffer.WriteAsciiNoValidation(value);
                         }
                     }
                 }
