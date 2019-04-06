@@ -2,5 +2,8 @@
   <PropertyGroup>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <PreserveCompilationReferences>true</PreserveCompilationReferences>
+
+    <!-- Generate hosting attributes during build time compilation to support runtime compilation -->
+    <GenerateRazorHostingAssemblyInfo Condition="'$(GenerateRazorHostingAssemblyInfo)'==''">true</GenerateRazorHostingAssemblyInfo>
   </PropertyGroup>
 </Project>

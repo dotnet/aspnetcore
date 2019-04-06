@@ -83,6 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton(s =>
             {
                 var fileSystem = s.GetRequiredService<RazorProjectFileSystem>();
+                var csharpCompiler = s.GetRequiredService<CSharpCompiler>();
                 var projectEngine = RazorProjectEngine.Create(RazorConfiguration.Default, fileSystem, builder =>
                 {
                     RazorExtensions.Register(builder);
@@ -95,6 +96,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     // TagHelperDescriptorProviders (actually do tag helper discovery)
                     builder.Features.Add(new DefaultTagHelperDescriptorProvider());
                     builder.Features.Add(new ViewComponentTagHelperDescriptorProvider());
+                    builder.SetCSharpLanguageVersion(csharpCompiler.ParseOptions.LanguageVersion);
                 });
 
                 return projectEngine;
