@@ -52,5 +52,8 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
                 DiagnosticSeverity.Warning,
                 isEnabledByDefault: true,
                 helpLinkUri: "https://aka.ms/AA20pbc");
+
+        
+        // MVC1005 reserved for startup
     }
 }

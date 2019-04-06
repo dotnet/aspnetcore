@@ -60,5 +60,17 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         public const string ProducesResponseTypeAttribute = "Microsoft.AspNetCore.Mvc.ProducesResponseTypeAttribute";
 
         public const string RenderPartialMethod = "RenderPartial";
+
+        public const string IApplicationBuilder = "Microsoft.AspNetCore.Builder.IApplicationBuilder";
+
+        public const string IServiceCollection = "Microsoft.Extensions.DependencyInjection.IServiceCollection";
+
+        public const string MvcOptions = "Microsoft.AspNetCore.Mvc.MvcOptions";
+
+        public const string EnableEndpointRoutingProperty = "EnableEndpointRouting";
+
+        public const string ConfigureServicesMethod = "ConfigureServices";
+
+        public const string ConfigureMethod = "Configure";
     }
 }
