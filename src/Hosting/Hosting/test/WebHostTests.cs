@@ -975,6 +975,54 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Contains("ConfigureServices", ex.Message);
         }
 
+        [Fact]
+        public void Dispose_DisposesAppConfiguration()
+        {
+            var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
+            providerMock.Setup(d => d.Dispose());
+
+            var sourceMock = new Mock<IConfigurationSource>();
+            sourceMock.Setup(s => s.Build(It.IsAny<IConfigurationBuilder>()))
+                .Returns((ConfigurationProvider)providerMock.Object);
+
+            var host = CreateBuilder()
+                .ConfigureAppConfiguration(configuration =>
+                {
+                    configuration.Add(sourceMock.Object);
+                })
+                .Build();
+
+            providerMock.Verify(c => c.Dispose(), Times.Never);
+
+            host.Dispose();
+
+            providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
+        }
+
+        [Fact]
+        public async Task DisposeAsync_DisposesAppConfiguration()
+        {
+            var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
+            providerMock.Setup(d => d.Dispose());
+
+            var sourceMock = new Mock<IConfigurationSource>();
+            sourceMock.Setup(s => s.Build(It.IsAny<IConfigurationBuilder>()))
+                .Returns((ConfigurationProvider)providerMock.Object);
+
+            var host = CreateBuilder()
+                .ConfigureAppConfiguration(configuration =>
+                {
+                    configuration.Add(sourceMock.Object);
+                })
+                .Build();
+
+            providerMock.Verify(c => c.Dispose(), Times.Never);
+
+            await ((IAsyncDisposable)host).DisposeAsync();
+
+            providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
+        }
+
         public class BadConfigureServicesStartup
         {
             public void ConfigureServices(IServiceCollection services, int gunk) { }
