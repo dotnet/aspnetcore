@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Analyzers
                 UnsupportedUseMvcWithEndpointRouting,
             });
 
-            // By default just analyze file named Startup.cs in the root directory
-            // Analzyer only runs for C# so limiting to *.cs file is fine
+            // By default the analyzer will only run for files ending with Startup.cs
             // Can be overriden for unit testing other file names
+            // Analzyer only runs for C# so limiting to *.cs file is fine
             StartupFilePredicate = path => path.EndsWith("Startup.cs", StringComparison.OrdinalIgnoreCase);
         }
 
@@ -57,6 +57,8 @@ namespace Microsoft.AspNetCore.Analyzers
         private void OnCompilationStart(CompilationStartAnalysisContext context)
         {
             var symbols = new StartupSymbols(context.Compilation);
+
+            // Don't run analyzer if ASP.NET Core types cannot be found
             if (symbols.IServiceCollection == null || symbols.IApplicationBuilder == null)
             {
                 return;
@@ -70,54 +72,64 @@ namespace Microsoft.AspNetCore.Analyzers
 
             context.RegisterOperationBlockStartAction(context =>
             {
-                if (!IsStartupFile(context))
-                {
-                    return;
-                }
-
-                if (context.OwningSymbol.Kind != SymbolKind.Method)
-                {
-                    return;
-                }
-
-                var startupAnalysisContext = new StartupAnalysisContext(context, symbols);
-
-                var method = (IMethodSymbol)context.OwningSymbol;
-                if (StartupFacts.IsConfigureServices(symbols, method))
-                {
-                    for (var i = 0; i < ConfigureServicesMethodAnalysisFactories.Length; i++)
-                    {
-                        var analysis = ConfigureServicesMethodAnalysisFactories[i].Invoke(startupAnalysisContext);
-                        analyses.Add(analysis);
-
-                        OnAnalysisStarted(analysis);
-                    }
-
-                    OnConfigureServicesMethodFound(method);
-                }
-
-                if (StartupFacts.IsConfigure(symbols, method))
-                {
-                    for (var i = 0; i < ConfigureMethodAnalysisFactories.Length; i++)
-                    {
-                        var analysis = ConfigureMethodAnalysisFactories[i].Invoke(startupAnalysisContext);
-                        analyses.Add(analysis);
-
-                        OnAnalysisStarted(analysis);
-                    }
-
-                    OnConfigureMethodFound(method);
-                }
+                AnalyzeStartupMethods(context, symbols, analyses);
             });
 
             // Run after analyses have had a chance to finish to add diagnostics.
             context.RegisterCompilationEndAction(analysisContext =>
             {
-                for (var i = 0; i < DiagnosticValidatorFactories.Length; i++)
-                {
-                    var validator = DiagnosticValidatorFactories[i].Invoke(analysisContext, analyses);
-                }
+                RunAnalysis(analysisContext, analyses);
             });
+        }
+
+        private static void RunAnalysis(CompilationAnalysisContext analysisContext, ConcurrentBag<StartupComputedAnalysis> analyses)
+        {
+            for (var i = 0; i < DiagnosticValidatorFactories.Length; i++)
+            {
+                var validator = DiagnosticValidatorFactories[i].Invoke(analysisContext, analyses);
+            }
+        }
+
+        private void AnalyzeStartupMethods(OperationBlockStartAnalysisContext context, StartupSymbols symbols, ConcurrentBag<StartupComputedAnalysis> analyses)
+        {
+            if (!IsStartupFile(context))
+            {
+                return;
+            }
+
+            if (context.OwningSymbol.Kind != SymbolKind.Method)
+            {
+                return;
+            }
+
+            var startupAnalysisContext = new StartupAnalysisContext(context, symbols);
+
+            var method = (IMethodSymbol)context.OwningSymbol;
+            if (StartupFacts.IsConfigureServices(symbols, method))
+            {
+                for (var i = 0; i < ConfigureServicesMethodAnalysisFactories.Length; i++)
+                {
+                    var analysis = ConfigureServicesMethodAnalysisFactories[i].Invoke(startupAnalysisContext);
+                    analyses.Add(analysis);
+
+                    OnAnalysisStarted(analysis);
+                }
+
+                OnConfigureServicesMethodFound(method);
+            }
+
+            if (StartupFacts.IsConfigure(symbols, method))
+            {
+                for (var i = 0; i < ConfigureMethodAnalysisFactories.Length; i++)
+                {
+                    var analysis = ConfigureMethodAnalysisFactories[i].Invoke(startupAnalysisContext);
+                    analyses.Add(analysis);
+
+                    OnAnalysisStarted(analysis);
+                }
+
+                OnConfigureMethodFound(method);
+            }
         }
 
         private bool IsStartupFile(OperationBlockStartAnalysisContext context)
