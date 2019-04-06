@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Analyzers
             // By default just analyze file named Startup.cs in the root directory
             // Analzyer only runs for C# so limiting to *.cs file is fine
             // Can be overriden for unit testing other file names
-            StartupFilePredicate = path => string.Equals(path, "Startup.cs", StringComparison.OrdinalIgnoreCase);
+            StartupFilePredicate = path => path.EndsWith("Startup.cs", StringComparison.OrdinalIgnoreCase);
         }
 
         internal Func<string, bool> StartupFilePredicate { get; set; }
