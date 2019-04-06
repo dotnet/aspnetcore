@@ -27,9 +27,12 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             switch (HubProtocol)
             {
                 case Protocol.MsgPack:
-                    _hubProtocol = new JsonHubProtocol();
+                    _hubProtocol = new MessagePackHubProtocol();
                     break;
                 case Protocol.Json:
+                    _hubProtocol = new JsonHubProtocol();
+                    break;
+                case Protocol.NewtonsoftJson:
                     _hubProtocol = new NewtonsoftJsonHubProtocol();
                     break;
             }
@@ -54,15 +57,15 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             _binder = new TestBinder(_hubMessage);
         }
 
-        // [Benchmark]
-        // public void ReadSingleMessage()
-        // {
-        //     var data = new ReadOnlySequence<byte>(_binaryInput);
-        //     if (!_hubProtocol.TryParseMessage(ref data, _binder, out _))
-        //     {
-        //         throw new InvalidOperationException("Failed to read message");
-        //     }
-        // }
+        [Benchmark]
+        public void ReadSingleMessage()
+        {
+            var data = new ReadOnlySequence<byte>(_binaryInput);
+            if (!_hubProtocol.TryParseMessage(ref data, _binder, out _))
+            {
+                throw new InvalidOperationException("Failed to read message");
+            }
+        }
 
         [Benchmark]
         public void WriteSingleMessage()
@@ -77,7 +80,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         public enum Protocol
         {
             MsgPack = 0,
-            Json = 1
+            Json = 1,
+            NewtonsoftJson = 2,
         }
 
         public enum Message

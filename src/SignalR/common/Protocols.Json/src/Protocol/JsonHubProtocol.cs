@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                 if (string.IsNullOrEmpty(invocationId))
                                 {
-                                    // If we don't have an invocation id then we need to store it as a JToken so we can parse it later
+                                    // If we don't have an invocation id then we need to store it as a JsonDocument so we can parse it later
                                     resultToken = JsonDocument.ParseValue(ref reader);
                                 }
                                 else
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 }
                                 else
                                 {
-                                    // If we don't have an id yet then we need to store it as a JToken to parse later
+                                    // If we don't have an id yet then we need to store it as a JsonDocument to parse later
                                     itemsToken = JsonDocument.ParseValue(ref reader);
                                     continue;
                                 }
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                 if (string.IsNullOrEmpty(target))
                                 {
-                                    // We don't know the method name yet so just parse an array of generic JArray
+                                    // We don't know the method name yet so just store the array in JsonDocument
                                     argumentsToken = JsonDocument.ParseValue(ref reader);
                                 }
                                 else
@@ -699,19 +699,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
 
             return new InvocationMessage(invocationId, target, arguments, streamIds);
-        }
-
-        private bool ReadArgumentAsType(ref Utf8JsonReader reader, IReadOnlyList<Type> paramTypes, int paramIndex)
-        {
-            if (paramIndex < paramTypes.Count)
-            {
-                var paramType = paramTypes[paramIndex];
-
-                // ReadForType
-                return reader.Read();
-            }
-
-            return reader.Read();
         }
 
         private object BindType(JsonElement jsonObject, Type type)
