@@ -12,10 +12,20 @@ import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 
 import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
-import { defaultConnectionId, defaultNegotiateResponse, PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
+import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
     logger: NullLogger.instance,
+};
+
+const defaultConnectionId = "abc123";
+const defaultNegotiateResponse: INegotiateResponse = {
+    availableTransports: [
+        { transport: "WebSockets", transferFormats: ["Text", "Binary"] },
+        { transport: "ServerSentEvents", transferFormats: ["Text"] },
+        { transport: "LongPolling", transferFormats: ["Text", "Binary"] },
+    ],
+    connectionId: defaultConnectionId,
 };
 
 registerUnhandledRejectionHandler();
