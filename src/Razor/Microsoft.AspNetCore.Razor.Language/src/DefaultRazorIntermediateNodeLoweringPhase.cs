@@ -1148,6 +1148,15 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override void VisitMarkupElement(MarkupElementSyntax node)
             {
+                if ((node.StartTag != null && node.StartTag.IsMarkupTransition) ||
+                    (node.EndTag != null && node.EndTag.IsMarkupTransition))
+                {
+                    // We don't want to create a node for Markup transitions (<text></text>). Treat their contents as regular markup.
+                    // Technically there shouldn't be an end transition without a start transition but just being defensive.
+                    base.VisitMarkupElement(node);
+                    return;
+                }
+
                 var element = new MarkupElementIntermediateNode()
                 {
                     Source = BuildSourceSpanFromNode(node),
