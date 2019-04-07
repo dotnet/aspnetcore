@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 }
 
                 // Create a comparision vector for all bits being equal
-                var AllTrue = new Vector<ushort>(ushort.MaxValue);
+                var AllTrue = new Vector<short>(-1);
                 // do/while as entry condition already checked, remaining length must be Vector<byte>.Count or larger.
                 do
                 {
