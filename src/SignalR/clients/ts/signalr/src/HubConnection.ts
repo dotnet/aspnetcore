@@ -16,15 +16,15 @@ const DEFAULT_PING_INTERVAL_IN_MS: number = 15 * 1000;
 /** Describes the current state of the {@link HubConnection} to the server. */
 export enum HubConnectionState {
     /** The hub connection is disconnected. */
-    Disconnected,
+    Disconnected = "Disconnected",
     /** The hub connection is connecting. */
-    Connecting,
+    Connecting = "Connecting",
     /** The hub connection is connected. */
-    Connected,
+    Connected = "Connected",
     /** The hub connection is disconnecting. */
-    Disconnecting,
+    Disconnecting = "Disconnecting",
     /** The hub connection is reconnecting. */
-    Reconnecting,
+    Reconnecting = "Reconnecting",
 }
 
 /** Represents a connection to a SignalR Hub. */

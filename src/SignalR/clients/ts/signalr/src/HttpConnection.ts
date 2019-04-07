@@ -14,10 +14,10 @@ import { WebSocketTransport } from "./WebSocketTransport";
 
 /** @private */
 const enum ConnectionState {
-    Connecting,
-    Connected,
-    Disconnected,
-    Disconnecting,
+    Connecting = "Connecting ",
+    Connected = "Connected",
+    Disconnected = "Disconnected",
+    Disconnecting = "Disconnecting",
 }
 
 /** @private */
