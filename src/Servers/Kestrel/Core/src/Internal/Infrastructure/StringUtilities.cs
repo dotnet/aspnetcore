@@ -156,10 +156,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         // 64-bit: Loop longs by default
                         while ((byte*)(offset + sizeof(long)) <= (byte*)count)
                         {
-                            if (!WidenFourAsciiBytesToUtf16AndComapreToChars(
+                            if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                     ref Unsafe.Add(ref str, offset),
                                     Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref bytes, offset))) ||
-                                !WidenFourAsciiBytesToUtf16AndComapreToChars(
+                                !WidenFourAsciiBytesToUtf16AndCompareToChars(
                                     ref Unsafe.Add(ref str, offset + 4),
                                     Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref bytes, offset + 4))))
                             {
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         }
                         if ((byte*)(offset + sizeof(int)) <= (byte*)count)
                         {
-                            if (!WidenFourAsciiBytesToUtf16AndComapreToChars(
+                            if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                 ref Unsafe.Add(ref str, offset),
                                 Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref bytes, offset))))
                             {
@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                         // 32-bit: Loop ints by default
                         while ((byte*)(offset + sizeof(int)) <= (byte*)count)
                         {
-                            if (!WidenFourAsciiBytesToUtf16AndComapreToChars(
+                            if (!WidenFourAsciiBytesToUtf16AndCompareToChars(
                                 ref Unsafe.Add(ref str, offset),
                                 Unsafe.ReadUnaligned<uint>(ref Unsafe.Add(ref bytes, offset))))
                             {
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                     }
                     if ((byte*)(offset + sizeof(short)) <= (byte*)count)
                     {
-                        if (!WidenTwoAsciiBytesToUtf16AndComapreToChars(
+                        if (!WidenTwoAsciiBytesToUtf16AndCompareToChars(
                             ref Unsafe.Add(ref str, offset),
                             Unsafe.ReadUnaligned<ushort>(ref Unsafe.Add(ref bytes, offset))))
                         {
@@ -226,13 +226,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 do
                 {
                     // Read a Vector length from the input as bytes
-                    var vector = Unsafe.ReadUnaligned<Vector<byte>>(ref Unsafe.Add(ref bytes, offset));
+                    var vector = Unsafe.ReadUnaligned<Vector<sbyte>>(ref Unsafe.Add(ref bytes, offset));
+                    if (!CheckBytesInAsciiRange(vector))
+                    {
+                        goto NotEqual;
+                    }
                     // Widen the bytes directly to chars (ushort) as if they were ascii.
                     // As widening doubles the size we get two vectors back.
                     Vector.Widen(vector, out var vector0, out var vector1);
                     // Read two char vectors from the string to perform the match.
-                    var compare0 = Unsafe.ReadUnaligned<Vector<ushort>>(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref str, offset)));
-                    var compare1 = Unsafe.ReadUnaligned<Vector<ushort>>(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref str, offset + Vector<ushort>.Count)));
+                    var compare0 = Unsafe.ReadUnaligned<Vector<short>>(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref str, offset)));
+                    var compare1 = Unsafe.ReadUnaligned<Vector<short>>(ref Unsafe.As<char, byte>(ref Unsafe.Add(ref str, offset + Vector<ushort>.Count)));
 
                     // If the string is not ascii, then the widened bytes cannot match
                     // as each widened byte element as chars will be in the range 0-255
@@ -268,7 +272,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// compares them to the WORD buffer with machine endianness.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        private static bool WidenFourAsciiBytesToUtf16AndComapreToChars(ref char charStart, uint value)
+        private static bool WidenFourAsciiBytesToUtf16AndCompareToChars(ref char charStart, uint value)
         {
             if (!AllBytesInUInt32AreAscii(value))
             {
@@ -305,7 +309,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         /// compares them to the WORD buffer with machine endianness.
         /// </summary>
         [MethodImpl(MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization)]
-        private static bool WidenTwoAsciiBytesToUtf16AndComapreToChars(ref char charStart, ushort value)
+        private static bool WidenTwoAsciiBytesToUtf16AndCompareToChars(ref char charStart, ushort value)
         {
             if (!AllBytesInUInt16AreAscii(value))
             {
