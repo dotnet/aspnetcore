@@ -11,6 +11,8 @@ import { eachTransport, eachTransportAndProtocol, ENDPOINT_BASE_HTTPS_URL, ENDPO
 import "./LogBannerReporter";
 import { TestLogger } from "./TestLogger";
 
+import { PromiseSource } from "../../signalr/tests/Utils";
+
 import * as RX from "rxjs";
 
 const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
@@ -695,6 +697,47 @@ describe("hubConnection", () => {
                 expect(cookieValue).toBeNull();
                 await hubConnection.stop();
                 done();
+            });
+
+            it("can reconnect", async (done) => {
+                try {
+                    const reconnectingPromise = new PromiseSource();
+                    const reconnectedPromise = new PromiseSource<string | undefined>();
+                    const hubConnection = getConnectionBuilder(transportType)
+                        .withAutomaticReconnect()
+                        .build();
+
+                    hubConnection.onreconnecting(() => {
+                        reconnectingPromise.resolve();
+                    });
+
+                    hubConnection.onreconnected((connectionId?) => {
+                        reconnectedPromise.resolve(connectionId);
+                    });
+
+                    await hubConnection.start();
+
+                    const initialConnectionId = (hubConnection as any).connection.connectionId as string;
+
+                    // Induce reconnect
+                    (hubConnection as any).serverTimeout();
+
+                    await reconnectingPromise;
+                    const newConnectionId = await reconnectedPromise;
+
+                    expect(newConnectionId).not.toBe(initialConnectionId);
+
+                    const response = await hubConnection.invoke("Echo", "test");
+
+                    expect(response).toEqual("test");
+
+                    await hubConnection.stop();
+
+                    done();
+                } catch (err) {
+                    fail(err);
+                    done();
+                }
             });
         });
     });
