@@ -420,7 +420,7 @@ export class HttpConnection implements IConnection {
     }
 
     private stopConnection(error?: Error): void {
-        this.logger.log(LogLevel.Debug, `HttpConnection.stopConnection(${error}) called while in sate ${this.connectionState}.`);
+        this.logger.log(LogLevel.Debug, `HttpConnection.stopConnection(${error}) called while in state ${this.connectionState}.`);
 
         const connectionStarted = this.connectionStarted;
 

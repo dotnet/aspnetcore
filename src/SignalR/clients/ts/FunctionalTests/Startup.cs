@@ -6,6 +6,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.IO;
 using System.Reflection;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -28,6 +29,8 @@ namespace FunctionalTests
     {
         private readonly SymmetricSecurityKey SecurityKey = new SymmetricSecurityKey(Guid.NewGuid().ToByteArray());
         private readonly JwtSecurityTokenHandler JwtTokenHandler = new JwtSecurityTokenHandler();
+
+        private int _numRedirects;
 
         public void ConfigureServices(IServiceCollection services)
         {
@@ -125,6 +128,17 @@ namespace FunctionalTests
             });
 
             app.UseRouting();
+
+            app.Use((context, next) =>
+            {
+                if (context.Request.Path.StartsWithSegments("/redirect"))
+                {
+                    var newUrl = context.Request.Query["baseUrl"] + "/testHub?numRedirects=" + Interlocked.Increment(ref _numRedirects);
+                    return context.Response.WriteAsync($"{{ \"url\": \"{newUrl}\" }}");
+                }
+
+                return next();
+            });
 
             app.Use(async (context, next) =>
             {

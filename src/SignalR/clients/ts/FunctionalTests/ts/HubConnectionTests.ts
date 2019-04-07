@@ -19,6 +19,7 @@ const TESTHUBENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub";
 const TESTHUBENDPOINT_HTTPS_URL = ENDPOINT_BASE_HTTPS_URL ? (ENDPOINT_BASE_HTTPS_URL + "/testhub") : undefined;
 
 const TESTHUB_NOWEBSOCKETS_ENDPOINT_URL = ENDPOINT_BASE_URL + "/testhub-nowebsockets";
+const TESTHUB_REDIRECT_ENDPOINT_URL = ENDPOINT_BASE_URL + "/redirect?numRedirects=0&baseUrl=" + ENDPOINT_BASE_URL;
 
 const commonOptions: IHttpConnectionOptions = {
     logMessageContent: true,
@@ -740,6 +741,92 @@ describe("hubConnection", () => {
                 }
             });
         });
+    });
+
+    it("can reconnect after negotiate redirect", async (done) => {
+        try {
+            const reconnectingPromise = new PromiseSource();
+            const reconnectedPromise = new PromiseSource<string | undefined>();
+            const hubConnection = getConnectionBuilder(undefined, TESTHUB_REDIRECT_ENDPOINT_URL)
+                .withAutomaticReconnect()
+                .build();
+
+            hubConnection.onreconnecting(() => {
+                reconnectingPromise.resolve();
+            });
+
+            hubConnection.onreconnected((connectionId?) => {
+                reconnectedPromise.resolve(connectionId);
+            });
+
+            await hubConnection.start();
+
+            const preReconnectRedirects = await hubConnection.invoke<number>("GetNumRedirects");
+
+            const initialConnectionId = (hubConnection as any).connection.connectionId as string;
+
+            // Induce reconnect
+            (hubConnection as any).serverTimeout();
+
+            await reconnectingPromise;
+            const newConnectionId = await reconnectedPromise;
+
+            expect(newConnectionId).not.toBe(initialConnectionId);
+
+            const postReconnectRedirects = await hubConnection.invoke<number>("GetNumRedirects");
+
+            expect(postReconnectRedirects).toBeGreaterThan(preReconnectRedirects);
+
+            await hubConnection.stop();
+
+            done();
+        } catch (err) {
+            fail(err);
+            done();
+        }
+    });
+
+    it("can reconnect after skipping negotiation", async (done) => {
+        try {
+            const reconnectingPromise = new PromiseSource();
+            const reconnectedPromise = new PromiseSource<string | undefined>();
+            const hubConnection = getConnectionBuilder(
+                    HttpTransportType.WebSockets,
+                    undefined,
+                    { skipNegotiation: true },
+                )
+                .withAutomaticReconnect()
+                .build();
+
+            hubConnection.onreconnecting(() => {
+                reconnectingPromise.resolve();
+            });
+
+            hubConnection.onreconnected((connectionId?) => {
+                reconnectedPromise.resolve(connectionId);
+            });
+
+            await hubConnection.start();
+
+            // Induce reconnect
+            (hubConnection as any).serverTimeout();
+
+            await reconnectingPromise;
+            const newConnectionId = await reconnectedPromise;
+
+            expect(newConnectionId).toBeUndefined();
+
+            const response = await hubConnection.invoke("Echo", "test");
+
+            expect(response).toEqual("test");
+
+            await hubConnection.stop();
+
+            done();
+        } catch (err) {
+            fail(err);
+            done();
+        }
     });
 
     if (typeof EventSource !== "undefined") {
