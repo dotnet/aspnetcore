@@ -7,7 +7,7 @@ import { JsonHubProtocol } from "../src/JsonHubProtocol";
 
 import { VerifyLogger } from "./Common";
 import { TestConnection } from "./TestConnection";
-import {  PromiseSource } from "./Utils";
+import { PromiseSource } from "./Utils";
 
 describe("auto reconnect", () => {
     it("is not enabled by default", async () => {
@@ -87,6 +87,7 @@ describe("auto reconnect", () => {
             await nextRetryDelayCalledPromise;
             nextRetryDelayCalledPromise = new PromiseSource();
 
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
             expect(lastRetryCount).toBe(0);
             expect(lastElapsedMs).toBe(0);
             expect(onreconnectingCount).toBe(1);
@@ -107,6 +108,7 @@ describe("auto reconnect", () => {
             continueRetryingPromise.resolve();
             await reconnectedPromise;
 
+            expect(hubConnection.state).toBe(HubConnectionState.Connected);
             expect(lastRetryCount).toBe(1);
             expect(lastElapsedMs).toBeGreaterThanOrEqual(0);
             expect(onreconnectingCount).toBe(1);
@@ -123,377 +125,419 @@ describe("auto reconnect", () => {
         });
     });
 
-    // it("can be opted into", async () => {
-    //     let negotiateCount = 0;
+    it("stops if the reconnect policy returns null", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const closePromise = new PromiseSource();
+
+            let nextRetryDelayCalledPromise = new PromiseSource();
+
+            let lastRetryCount = -1;
+            let lastElapsedMs = -1;
+            let onreconnectingCount = 0;
+            let onreconnectedCount = 0;
+            let closeCount = 0;
+
+            const connection = new TestConnection();
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
+                    nextRetryDelayInMilliseconds(previousRetryCount: number, elapsedMilliseconds: number) {
+                        lastRetryCount = previousRetryCount;
+                        lastElapsedMs = elapsedMilliseconds;
+                        nextRetryDelayCalledPromise.resolve();
+
+                        return previousRetryCount === 0 ? 0 : null;
+                    },
+                });
+
+            hubConnection.onreconnecting(() => {
+                onreconnectingCount++;
+            });
+
+            hubConnection.onreconnected(() => {
+                onreconnectedCount++;
+            });
+
+            hubConnection.onclose(() => {
+                closeCount++;
+                closePromise.resolve();
+            });
+
+            await hubConnection.start();
+
+            connection.start = () => {
+                return Promise.reject("Reconnect attempt failed");
+            };
+
+            // Typically this would be called by the transport
+            connection.onclose!(new Error("Connection lost"));
+
+            await nextRetryDelayCalledPromise;
+            nextRetryDelayCalledPromise = new PromiseSource();
+
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+            expect(lastRetryCount).toBe(0);
+            expect(lastElapsedMs).toBe(0);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(0);
+
+            await nextRetryDelayCalledPromise;
+
+            expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
+            expect(lastRetryCount).toBe(1);
+            expect(lastElapsedMs).toBeGreaterThanOrEqual(0);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(1);
+        });
+    });
+
+    it("can reconnect multiple times", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let nextRetryDelayCalledPromise = new PromiseSource();
+            let reconnectedPromise = new PromiseSource();
+
+            let lastRetryCount = -1;
+            let lastElapsedMs = -1;
+            let onreconnectingCount = 0;
+            let onreconnectedCount = 0;
+            let closeCount = 0;
+
+            const connection = new TestConnection();
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
+                    nextRetryDelayInMilliseconds(previousRetryCount: number, elapsedMilliseconds: number) {
+                        lastRetryCount = previousRetryCount;
+                        lastElapsedMs = elapsedMilliseconds;
+                        nextRetryDelayCalledPromise.resolve();
+                        return 0;
+                    },
+                });
+
+            hubConnection.onreconnecting(() => {
+                onreconnectingCount++;
+            });
+
+            hubConnection.onreconnected(() => {
+                onreconnectedCount++;
+                reconnectedPromise.resolve();
+            });
+
+            hubConnection.onclose(() => {
+                closeCount++;
+            });
+
+            await hubConnection.start();
+
+            // Typically this would be called by the transport
+            connection.onclose!(new Error("Connection lost"));
+
+            await nextRetryDelayCalledPromise;
+            nextRetryDelayCalledPromise = new PromiseSource();
+
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+            expect(lastRetryCount).toBe(0);
+            expect(lastElapsedMs).toBe(0);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(0);
+
+            await reconnectedPromise;
+            reconnectedPromise = new PromiseSource();
+
+            expect(hubConnection.state).toBe(HubConnectionState.Connected);
+            expect(lastRetryCount).toBe(0);
+            expect(lastElapsedMs).toBe(0);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(1);
+            expect(closeCount).toBe(0);
 
-    //     await VerifyLogger.run(async (logger) => {
-    //         const options = {
-    //             ...commonOptions,
-    //             httpClient: new TestHttpClient()
-    //                 .on("POST", () => {
-    //                     negotiateCount++;
-    //                     return defaultNegotiateResponse;
-    //                 }),
-    //             logger,
-    //             reconnectPolicy: new DefaultReconnectPolicy(),
-    //         };
+            connection.onclose!(new Error("Connection lost"));
 
-    //         const reconnectingPromise = new PromiseSource();
-    //         const reconnectedPromise = new PromiseSource();
-    //         let oncloseCalled = false;
-    //         let onreconnectingCallCount = 0;
+            await nextRetryDelayCalledPromise;
 
-    //         const connection = new HttpConnection("http://tempuri.org", options);
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         const startPromise = connection.start(TransferFormat.Text);
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-
-    //         await startPromise;
-
-    //         connection.onclose = (e) => {
-    //             oncloseCalled = true;
-    //         };
-
-    //         connection.onreconnecting = (e) => {
-    //             onreconnectingCallCount++;
-    //             reconnectingPromise.resolve();
-    //         };
-
-    //         connection.onreconnected = (connectionId) => {
-    //             reconnectedPromise.resolve();
-    //         };
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         TestWebSocket.webSocket.onclose(new TestCloseEvent());
-
-    //         await reconnectingPromise;
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-
-    //         await reconnectedPromise;
-
-    //         expect(onreconnectingCallCount).toBe(1);
-    //         expect(oncloseCalled).toBe(false);
-
-    //         await connection.stop();
-
-    //         expect(onreconnectingCallCount).toBe(1);
-    //         expect(oncloseCalled).toBe(true);
-
-    //         expect(negotiateCount).toBe(2);
-    //     },
-    //     "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.");
-    // });
-
-    // it("can be triggered by calling connectionLost()", async () => {
-    //     await VerifyLogger.run(async (logger) => {
-    //         const options = {
-    //             ...commonOptions,
-    //             logger,
-    //             reconnectPolicy: new DefaultReconnectPolicy(),
-    //         };
-
-    //         const reconnectingPromise = new PromiseSource();
-    //         const reconnectedPromise = new PromiseSource();
-    //         let oncloseCalled = false;
-    //         let onreconnectingCallCount = 0;
-
-    //         const connection = new HttpConnection("http://tempuri.org", options);
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         const startPromise = connection.start(TransferFormat.Text);
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-
-    //         await startPromise;
-
-    //         connection.onclose = (e) => {
-    //             oncloseCalled = true;
-    //         };
-
-    //         connection.onreconnecting = (e) => {
-    //             onreconnectingCallCount++;
-    //             reconnectingPromise.resolve();
-    //         };
-
-    //         connection.onreconnected = (connectionId) => {
-    //             reconnectedPromise.resolve();
-    //         };
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         await connection.connectionLost(new Error());
-
-    //         await reconnectingPromise;
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-
-    //         await reconnectedPromise;
-
-    //         expect(onreconnectingCallCount).toBe(1);
-    //         expect(oncloseCalled).toBe(false);
-
-    //         await connection.stop();
-
-    //         expect(onreconnectingCallCount).toBe(1);
-    //         expect(oncloseCalled).toBe(true);
-    //     },
-    //     "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.");
-    // });
-
-    // it("will attempt to use all available transports", async () => {
-    //     await VerifyLogger.run(async (logger) => {
-    //         const options = {
-    //             ...commonOptions,
-    //             logger,
-    //             reconnectPolicy: new DefaultReconnectPolicy(),
-    //             transport: undefined,
-    //         };
-
-    //         const reconnectingPromise = new PromiseSource();
-    //         const reconnectedPromise = new PromiseSource();
-    //         let oncloseCalled = false;
-    //         let onreconnectingCallCount = 0;
-
-    //         const connection = new HttpConnection("http://tempuri.org", options);
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         const startPromise = connection.start(TransferFormat.Text);
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-
-    //         await startPromise;
-
-    //         connection.onclose = (e) => {
-    //             oncloseCalled = true;
-    //         };
-
-    //         connection.onreconnecting = (e) => {
-    //             onreconnectingCallCount++;
-    //             reconnectingPromise.resolve();
-    //         };
-
-    //         connection.onreconnected = (connectionId) => {
-    //             reconnectedPromise.resolve();
-    //         };
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-    //         TestEventSource.eventSourceSet = new PromiseSource();
-
-    //         TestWebSocket.webSocket.onclose(new TestCloseEvent());
-
-    //         await reconnectingPromise;
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.onerror(new TestEvent());
-
-    //         await TestEventSource.eventSourceSet;
-    //         await TestEventSource.eventSource.openSet;
-    //         TestEventSource.eventSource.onopen(new TestMessageEvent());
-
-    //         await reconnectedPromise;
-
-    //         expect(onreconnectingCallCount).toBe(1);
-    //         expect(oncloseCalled).toBe(false);
-
-    //         await connection.stop();
-
-    //         expect(onreconnectingCallCount).toBe(1);
-    //         expect(oncloseCalled).toBe(true);
-    //     },
-    //     "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.",
-    //     "Failed to start the transport 'WebSockets': null");
-    // });
-
-    // it("attempts can be exhausted", async () => {
-    //     const reconnectDelays = [0, 0, 0, 0];
-    //     let negotiateCount = 0;
-
-    //     await VerifyLogger.run(async (logger) => {
-    //         const options = {
-    //             ...commonOptions,
-    //             httpClient: new TestHttpClient()
-    //                 .on("POST", () => {
-    //                     negotiateCount++;
-    //                     return defaultNegotiateResponse;
-    //                 }),
-    //             logger,
-    //             reconnectPolicy: new DefaultReconnectPolicy(reconnectDelays),
-    //         };
-
-    //         const reconnectingPromise = new PromiseSource();
-    //         const closePromise = new PromiseSource();
-    //         let onreconnectedCalled = false;
-    //         let onreconnectingCallCount = 0;
-
-    //         const connection = new HttpConnection("http://tempuri.org", options);
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         const startPromise = connection.start(TransferFormat.Text);
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-
-    //         await startPromise;
-
-    //         connection.onclose = (e) => {
-    //             closePromise.resolve();
-    //         };
-
-    //         connection.onreconnecting = (e) => {
-    //             onreconnectingCallCount++;
-    //             reconnectingPromise.resolve();
-    //         };
-
-    //         connection.onreconnected = (connectionId) => {
-    //             onreconnectedCalled = true;
-    //         };
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         TestWebSocket.webSocket.onclose(new TestCloseEvent());
-
-    //         await reconnectingPromise;
-
-    //         for (const _ of reconnectDelays) {
-    //             await TestWebSocket.webSocketSet;
-    //             await TestWebSocket.webSocket.closeSet;
-
-    //             TestWebSocket.webSocketSet = new PromiseSource();
-
-    //             TestWebSocket.webSocket.onerror(new TestEvent());
-    //         }
-
-    //         await closePromise;
-
-    //         expect(onreconnectingCallCount).toBe(1);
-    //         expect(onreconnectedCalled).toBe(false);
-
-    //         expect(negotiateCount).toBe(5);
-    //     },
-    //     "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.",
-    //     "Failed to start the transport 'WebSockets': null",
-    //     "Failed to start the transport 'ServerSentEvents': Error: 'ServerSentEvents' is disabled by the client.",
-    //     "Failed to start the transport 'LongPolling': Error: 'LongPolling' is disabled by the client.");
-    // });
-
-    // it("does not reset after hub handshake failure", async () => {
-    //     const reconnectDelays = [0, 0];
-    //     let negotiateCount = 0;
-
-    //     await VerifyLogger.run(async (logger) => {
-    //         const options = {
-    //             ...commonOptions,
-    //             httpClient: new TestHttpClient()
-    //                 .on("POST", () => {
-    //                     negotiateCount++;
-    //                     return defaultNegotiateResponse;
-    //                 }),
-    //             logger,
-    //             reconnectPolicy: new DefaultReconnectPolicy(reconnectDelays),
-    //         };
-
-    //         const reconnectingPromise = new PromiseSource();
-    //         const closePromise = new PromiseSource();
-    //         let onreconnectedCalled = false;
-    //         let onreconnectingCallCount = 0;
-
-    //         const connection = new HttpConnection("http://tempuri.org", options);
-    //         const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol());
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         const startPromise = hubConnection.start();
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.readyState = TestWebSocket.OPEN;
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-
-    //         await new Promise((resolve) => setTimeout(resolve, 100));
-
-    //         TestWebSocket.webSocket.onmessage({ data: "{}" + TextMessageFormat.RecordSeparator } as MessageEvent);
-
-    //         await startPromise;
-
-    //         hubConnection.onclose((e) => {
-    //             closePromise.resolve();
-    //         });
-
-    //         hubConnection.onreconnecting((e) => {
-    //             onreconnectingCallCount++;
-    //             reconnectingPromise.resolve();
-    //         });
-
-    //         hubConnection.onreconnected((connectionId) => {
-    //             onreconnectedCalled = true;
-    //         });
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         TestWebSocket.webSocket.onclose(new TestCloseEvent());
-
-    //         await reconnectingPromise;
-
-    //         expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocketSet = new PromiseSource();
-
-    //         TestWebSocket.webSocket.readyState = TestWebSocket.OPEN;
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-    //         await new Promise((resolve) => setTimeout(resolve, 100));
-    //         expect(() => TestWebSocket.webSocket.onmessage({ data: "invalid handshake response" } as MessageEvent)).toThrow("Error parsing handshake response: Error: Message is incomplete.");
-
-    //         expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
-
-    //         await TestWebSocket.webSocketSet;
-    //         await TestWebSocket.webSocket.closeSet;
-
-    //         TestWebSocket.webSocket.readyState = TestWebSocket.OPEN;
-    //         TestWebSocket.webSocket.onopen(new TestEvent());
-    //         await new Promise((resolve) => setTimeout(resolve, 100));
-    //         expect(() => TestWebSocket.webSocket.onmessage({ data: "invalid handshake response" } as MessageEvent)).toThrow("Error parsing handshake response: Error: Message is incomplete.");
-
-    //         await closePromise;
-
-    //         expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
-    //         expect(onreconnectingCallCount).toBe(1);
-    //         expect(onreconnectedCalled).toBe(false);
-
-    //         expect(negotiateCount).toBe(3);
-    //     },
-    //     "Connection disconnected with error 'Error: WebSocket closed with status code: 0 ().'.",
-    //     "Error parsing handshake response: Error: Message is incomplete.",
-    //     "Connection disconnected with error 'Error: Error parsing handshake response: Error: Message is incomplete.'.");
-    // });
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+            expect(lastRetryCount).toBe(0);
+            expect(lastElapsedMs).toBe(0);
+            expect(onreconnectingCount).toBe(2);
+            expect(onreconnectedCount).toBe(1);
+            expect(closeCount).toBe(0);
+
+            await reconnectedPromise;
+
+            expect(hubConnection.state).toBe(HubConnectionState.Connected);
+            expect(lastRetryCount).toBe(0);
+            expect(lastElapsedMs).toBe(0);
+            expect(onreconnectingCount).toBe(2);
+            expect(onreconnectedCount).toBe(2);
+            expect(closeCount).toBe(0);
+
+            await hubConnection.stop();
+
+            expect(lastRetryCount).toBe(0);
+            expect(lastElapsedMs).toBe(0);
+            expect(onreconnectingCount).toBe(2);
+            expect(onreconnectedCount).toBe(2);
+            expect(closeCount).toBe(1);
+        });
+    });
+
+    it("does not transition into the reconnecting state if the first retry delay is null", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const closePromise = new PromiseSource();
+
+            let onreconnectingCount = 0;
+            let onreconnectedCount = 0;
+            let closeCount = 0;
+
+            const connection = new TestConnection();
+            // Note the [] parameter to the DefaultReconnectPolicy.
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), new DefaultReconnectPolicy([]));
+
+            hubConnection.onreconnecting(() => {
+                onreconnectingCount++;
+            });
+
+            hubConnection.onreconnected(() => {
+                onreconnectedCount++;
+            });
+
+            hubConnection.onclose(() => {
+                closeCount++;
+                closePromise.resolve();
+            });
+
+            await hubConnection.start();
+
+            // Typically this would be called by the transport
+            connection.onclose!(new Error("Connection lost"));
+
+            await closePromise;
+
+            expect(hubConnection.state).toBe(HubConnectionState.Disconnected);
+            expect(onreconnectingCount).toBe(0);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(1);
+        });
+    });
+
+    it("does not transition into the reconnecting state if the connection is lost during initial handshake", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let onreconnectingCount = 0;
+            let onreconnectedCount = 0;
+            let closeCount = 0;
+
+            // Disable autoHandshake in TestConnection
+            const connection = new TestConnection(false);
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), new DefaultReconnectPolicy());
+
+            hubConnection.onreconnecting(() => {
+                onreconnectingCount++;
+            });
+
+            hubConnection.onreconnected(() => {
+                onreconnectedCount++;
+            });
+
+            hubConnection.onclose(() => {
+                closeCount++;
+            });
+
+            const startPromise = hubConnection.start();
+
+            expect(hubConnection.state).toBe(HubConnectionState.Connecting);
+
+            // Typically this would be called by the transport
+            connection.onclose!(new Error("Connection lost"));
+
+            await expect(startPromise).rejects.toThrow("Connection lost");
+
+            expect(onreconnectingCount).toBe(0);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(0);
+        });
+    });
+
+    it("continues reconnecting state if the connection is lost during a reconnecting handshake", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let nextRetryDelayCalledPromise = new PromiseSource();
+            const reconnectedPromise = new PromiseSource();
+
+            let lastRetryCount = 0;
+            let onreconnectingCount = 0;
+            let onreconnectedCount = 0;
+            let closeCount = 0;
+
+            // Disable autoHandshake in TestConnection
+            const connection = new TestConnection(false);
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
+                    nextRetryDelayInMilliseconds(previousRetryCount: number) {
+                        lastRetryCount = previousRetryCount;
+                        nextRetryDelayCalledPromise.resolve();
+                        return 0;
+                    },
+                });
+
+            hubConnection.onreconnecting(() => {
+                onreconnectingCount++;
+            });
+
+            hubConnection.onreconnected(() => {
+                onreconnectedCount++;
+                reconnectedPromise.resolve();
+            });
+
+            hubConnection.onclose(() => {
+                closeCount++;
+            });
+
+            const startPromise = hubConnection.start();
+            // Manually complete handshake.
+            connection.receive({});
+            await startPromise;
+
+            let replacedStartCalledPromise = new PromiseSource();
+            connection.start = () => {
+                replacedStartCalledPromise.resolve();
+                return Promise.resolve();
+            };
+
+            // Typically this would be called by the transport
+            connection.onclose!(new Error("Connection lost"));
+
+            await nextRetryDelayCalledPromise;
+            nextRetryDelayCalledPromise = new PromiseSource();
+
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+            expect(lastRetryCount).toBe(0);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(0);
+
+            await replacedStartCalledPromise;
+            replacedStartCalledPromise = new PromiseSource();
+
+            // Fail underlying connection during reconnect during handshake
+            connection.onclose!(new Error("Connection lost"));
+
+            await nextRetryDelayCalledPromise;
+
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+            expect(lastRetryCount).toBe(1);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(0);
+
+            await replacedStartCalledPromise;
+
+            // Manually complete handshake.
+            connection.receive({});
+
+            await reconnectedPromise;
+
+            expect(hubConnection.state).toBe(HubConnectionState.Connected);
+            expect(lastRetryCount).toBe(1);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(1);
+            expect(closeCount).toBe(0);
+
+            await hubConnection.stop();
+
+            expect(lastRetryCount).toBe(1);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(1);
+            expect(closeCount).toBe(1);
+        });
+    });
+
+    it("continues reconnecting state if invalid handshake response received", async () => {
+        await VerifyLogger.run(async (logger) => {
+            let nextRetryDelayCalledPromise = new PromiseSource();
+            const reconnectedPromise = new PromiseSource();
+
+            let lastRetryCount = 0;
+            let onreconnectingCount = 0;
+            let onreconnectedCount = 0;
+            let closeCount = 0;
+
+            // Disable autoHandshake in TestConnection
+            const connection = new TestConnection(false);
+            const hubConnection = HubConnection.create(connection, logger, new JsonHubProtocol(), {
+                    nextRetryDelayInMilliseconds(previousRetryCount: number) {
+                        lastRetryCount = previousRetryCount;
+                        nextRetryDelayCalledPromise.resolve();
+                        return 0;
+                    },
+                });
+
+            hubConnection.onreconnecting(() => {
+                onreconnectingCount++;
+            });
+
+            hubConnection.onreconnected(() => {
+                onreconnectedCount++;
+                reconnectedPromise.resolve();
+            });
+
+            hubConnection.onclose(() => {
+                closeCount++;
+            });
+
+            const startPromise = hubConnection.start();
+            // Manually complete handshake.
+            connection.receive({});
+            await startPromise;
+
+            let replacedStartCalledPromise = new PromiseSource();
+            connection.start = () => {
+                replacedStartCalledPromise.resolve();
+                return Promise.resolve();
+            };
+
+            // Typically this would be called by the transport
+            connection.onclose!(new Error("Connection lost"));
+
+            await nextRetryDelayCalledPromise;
+            nextRetryDelayCalledPromise = new PromiseSource();
+
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+            expect(lastRetryCount).toBe(0);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(0);
+
+            await replacedStartCalledPromise;
+            replacedStartCalledPromise = new PromiseSource();
+
+            // Manually fail handshake
+            expect(() => connection.receive({ error: "invalid" })).toThrow("invalid");
+
+            await nextRetryDelayCalledPromise;
+
+            expect(hubConnection.state).toBe(HubConnectionState.Reconnecting);
+            expect(lastRetryCount).toBe(1);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(0);
+            expect(closeCount).toBe(0);
+
+            await replacedStartCalledPromise;
+
+            // Manually complete handshake.
+            connection.receive({});
+
+            await reconnectedPromise;
+
+            expect(hubConnection.state).toBe(HubConnectionState.Connected);
+            expect(lastRetryCount).toBe(1);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(1);
+            expect(closeCount).toBe(0);
+
+            await hubConnection.stop();
+
+            expect(lastRetryCount).toBe(1);
+            expect(onreconnectingCount).toBe(1);
+            expect(onreconnectedCount).toBe(1);
+            expect(closeCount).toBe(1);
+        },
+        "Server returned handshake error: invalid");
+    });
 });
