@@ -426,28 +426,61 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [MemberData(nameof(KnownRequestHeaders))]
         public void ValueReuseLatin1NotConfusedForUtf16AndStillRejected(bool reuseValue, KnownHeader header)
         {
-            const string HeaderValueUtf16Latin1CrossOver = "Hello \u00a3";
-
             var headers = new HttpRequestHeaders(reuseHeaderValues: reuseValue);
-            headers.Reset();
 
-            var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
-            var prevSpan = Encoding.UTF8.GetBytes(HeaderValueUtf16Latin1CrossOver).AsSpan();
+            var headerValue = new char[127]; // 64 + 32 + 16 + 8 + 4 + 2 + 1
+            for (var i = 0; i < headerValue.Length; i++)
+            {
+                headerValue[i] = 'a';
+            }
 
-            headers.Append(headerName, prevSpan);
-            headers.OnHeadersComplete();
-            var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+            for (var i = 0; i < headerValue.Length; i++)
+            {
+                // Set non-ascii Latin char that is valid Utf16 when widened; but not a valid utf8 -> utf16 conversion.
+                headerValue[i] = '\u00a3';
 
-            Assert.Equal(HeaderValueUtf16Latin1CrossOver, prevHeaderValue);
-            Assert.NotSame(HeaderValueUtf16Latin1CrossOver, prevHeaderValue);
+                for (var mode = 0; mode <= 1; mode++)
+                {
+                    string headerValueUtf16Latin1CrossOver;
+                    if (mode == 0)
+                    {
+                        // Full length
+                        headerValueUtf16Latin1CrossOver = new string(headerValue);
+                    }
+                    else
+                    {
+                        // Truncated length (to ensure different paths from changing lengths in matching)
+                        headerValueUtf16Latin1CrossOver = new string(headerValue.AsSpan().Slice(0, i + 1));
+                    }
 
-            headers.Reset();
+                    headers.Reset();
 
-            Assert.Throws<InvalidOperationException>(() => {
-                var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
-                var nextSpan = Encoding.GetEncoding("iso-8859-1").GetBytes(HeaderValueUtf16Latin1CrossOver).AsSpan();
-                headers.Append(headerName, nextSpan);
-            });
+                    var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                    var prevSpan = Encoding.UTF8.GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
+
+                    headers.Append(headerName, prevSpan);
+                    headers.OnHeadersComplete();
+                    var prevHeaderValue = ((IHeaderDictionary)headers)[header.Name].ToString();
+
+                    Assert.Equal(headerValueUtf16Latin1CrossOver, prevHeaderValue);
+                    Assert.NotSame(headerValueUtf16Latin1CrossOver, prevHeaderValue);
+
+                    headers.Reset();
+
+                    Assert.Throws<InvalidOperationException>(() =>
+                    {
+                        var headerName = Encoding.ASCII.GetBytes(header.Name).AsSpan();
+                        var nextSpan = Encoding.GetEncoding("iso-8859-1").GetBytes(headerValueUtf16Latin1CrossOver).AsSpan();
+
+                        Assert.False(nextSpan.SequenceEqual(Encoding.ASCII.GetBytes(headerValueUtf16Latin1CrossOver)));
+
+                        headers.Append(headerName, nextSpan);
+                    });
+                }
+
+                // Reset back to Ascii
+                headerValue[i] = 'a';
+            }
         }
 
         [Fact]
