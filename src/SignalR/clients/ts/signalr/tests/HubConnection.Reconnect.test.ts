@@ -601,7 +601,7 @@ describe("auto reconnect", () => {
                         nextRetryDelayCalledPromise.resolve();
                         return 0;
                     },
-                })
+                });
 
             hubConnection.onreconnecting(() => {
                 onreconnectingCount++;
@@ -664,7 +664,7 @@ describe("auto reconnect", () => {
                         // 60s is hopefully longer than this test could ever take.
                         return 60 * 1000;
                     },
-                })
+                });
 
             hubConnection.onreconnecting(() => {
                 onreconnectingCount++;
