@@ -19,10 +19,76 @@ namespace Microsoft.AspNetCore.Http.Internal
         public static StringValues GetHeaderSplit(IHeaderDictionary headers, string key)
         {
             var values = GetHeaderUnmodified(headers, key);
-            return new StringValues(GetHeaderSplitImplementation(values).ToArray());
+            return new StringValues(GetHeaderSplitImplementation(values).ToArray() ?? Array.Empty<string>());
         }
 
-        private static IEnumerable<string> GetHeaderSplitImplementation(StringValues values)
+        public static StringValues GetHeaderSplitExperimental(IHeaderDictionary headers, string key)
+        {
+            var values = GetHeaderUnmodified(headers, key);
+            return new StringValues(GetHeaderSplitImplementationExperimental(values) ?? Array.Empty<string>());
+        }
+
+        private static List<string> GetHeaderSplitImplementation(StringValues values)
+        {
+            List<string> listValues = null;
+
+            foreach (var segment in new HeaderSegmentCollection(values))
+            {
+                if (!StringSegment.IsNullOrEmpty(segment.Data))
+                {
+                    var value = DeQuote(segment.Data.Value);
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        if (listValues == null)
+                        {
+                            listValues = new List<string>();
+                        }
+                        listValues.Add(value);
+                    }
+                }
+            }
+
+            return listValues;
+        }
+
+        private static string[] GetHeaderSplitImplementationExperimental(StringValues values)
+        {
+            string[] listValues = null;
+            var count = 0;
+            foreach (var v in values)
+            {
+                count++;
+                foreach (var c in v)
+                {
+                    if (c == ',' || c == (char)0)
+                        count++;
+                }
+            }
+            listValues = new string[count];
+            var index = 0;
+            foreach (var segment in new HeaderSegmentCollection(values))
+            {
+                if (!StringSegment.IsNullOrEmpty(segment.Data))
+                {
+                    var value = DeQuote(segment.Data.Value);
+                    if (!string.IsNullOrEmpty(value))
+                    {
+                        listValues[index] = value;
+                        index++;
+                    }
+                }
+            }
+
+            return listValues;
+        }
+
+        public static StringValues GetHeaderSplitOriginal(IHeaderDictionary headers, string key)
+        {
+            var values = GetHeaderUnmodified(headers, key);
+            return new StringValues(GetHeaderSplitImplementationOriginal(values)?.ToArray());
+        }
+
+        private static IEnumerable<string> GetHeaderSplitImplementationOriginal(StringValues values)
         {
             foreach (var segment in new HeaderSegmentCollection(values))
             {
