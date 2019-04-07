@@ -137,7 +137,7 @@ export class HubConnection {
         }
     }
 
-    public async startInternal() {
+    private async startInternal() {
         this.receivedHandshakeResponse = false;
         // Set up the promise before any connection is (re)started otherwise it could race with received messages
         const handshakePromise = new Promise((resolve, reject) => {
@@ -429,7 +429,7 @@ export class HubConnection {
 
     /** Registers a handler that will be invoked when the connection starts reconnecting.
      *
-     * @param {Function} callback The handler that will be invoked when the connection start reconnecting. Optionally receives a single argument containing the error that caused the connection to start reconnecting (if any).
+     * @param {Function} callback The handler that will be invoked when the connection starts reconnecting. Optionally receives a single argument containing the error that caused the connection to start reconnecting (if any).
      */
     public onreconnecting(callback: (error?: Error) => void) {
         if (callback) {
@@ -560,7 +560,7 @@ export class HubConnection {
             try {
                 methods.forEach((m) => m.apply(this, invocationMessage.arguments));
             } catch (e) {
-                this.logger.log(LogLevel.Error, `An callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
+                this.logger.log(LogLevel.Error, `A callback for the method ${invocationMessage.target.toLowerCase()} threw error '${e}'.`);
             }
 
             if (invocationMessage.invocationId) {
@@ -578,12 +578,12 @@ export class HubConnection {
     }
 
     private connectionClosed(error?: Error) {
-        this.logger.log(LogLevel.Debug, `HubConnection.connectionClosed(${error}) called while in sate ${this.connectionState}.`);
+        this.logger.log(LogLevel.Debug, `HubConnection.connectionClosed(${error}) called while in state ${this.connectionState}.`);
 
         // If the handshake is in progress, start will be waiting for the handshake promise, so we complete it.
         // If it has already completed, this should just noop.
         if (this.handshakeRejecter) {
-            this.handshakeRejecter(error || new Error("The underlying connection closed before the hub handshake could complete."));
+            this.handshakeRejecter(error || new Error("The underlying connection was closed before the hub handshake could complete."));
         }
 
         this.cancelCallbacksWithError(error || new Error("Invocation canceled due to the underlying connection being closed."));

@@ -64,7 +64,7 @@ describe("HubConnectionBuilder", () => {
                 })
                 .build();
 
-            await expect(connection.start()).rejects.toThrow("The underlying connection closed before the hub handshake could complete.");
+            await expect(connection.start()).rejects.toThrow("The underlying connection was closed before the hub handshake could complete.");
             expect(connection.state).toBe(HubConnectionState.Disconnected);
 
             expect((await pollSent.promise).url).toMatch(/http:\/\/example.com\?id=abc123.*/);
@@ -104,7 +104,7 @@ describe("HubConnectionBuilder", () => {
                 .withHubProtocol(protocol)
                 .build();
 
-            await expect(connection.start()).rejects.toThrow("The underlying connection closed before the hub handshake could complete.");
+            await expect(connection.start()).rejects.toThrow("The underlying connection was closed before the hub handshake could complete.");
             expect(connection.state).toBe(HubConnectionState.Disconnected);
 
             expect(negotiateRequest.content).toBe(`{"protocol":"${protocol.name}","version":1}\x1E`);
