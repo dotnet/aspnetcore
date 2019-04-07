@@ -45,10 +45,10 @@
       Targets="Publish" />
 
     <ItemGroup>
-      <MvcRazorExtenionOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+      <MvcRazorExtensionOutput Include="$(ArtifactsBinDir)Microsoft.AspNetCore.Mvc.Razor.Extensions\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(MvcRazorExtenionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" SkipUnchangedFiles="true">
+    <Copy SourceFiles="@(MvcRazorExtensionOutput)" DestinationFolder="$(SdkOutputPath)extensions\mvc-3-0\" SkipUnchangedFiles="true">
       <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
     </Copy>
 
@@ -62,24 +62,13 @@
     </Copy>
   </Target>
 
-  <Target Name="PopulateNuspec" AfterTargets="InitializeStandardNuspecProperties" DependsOnTargets="LayoutDependencies">
+  <Target Name="PopulateNuspec" BeforeTargets="InitializeStandardNuspecProperties" DependsOnTargets="LayoutDependencies">
     <PropertyGroup>
-      <NuspecProperties>
-        id=$(MSBuildProjectName);
-        version=$(PackageVersion);
-        authors=$(Authors);
-        licenseUrl=$(PackageLicenseUrl);
-        projectUrl=$(PackageProjectUrl);
-        iconUrl=$(PackageIconUrl);
-        copyright=$(Copyright);
-        description=$(Description);
-        tags=$([MSBuild]::Escape($(PackageTags)));
-        serviceable=$(Serviceable);
-        repositoryUrl=$(RepositoryUrl);
-        repositoryCommit=$(RepositoryCommit);
-        targetframework=$(TargetFramework);
-        outputpath=$(OutputPath)\sdk-output;
-      </NuspecProperties>
+      <PackageTags>$(PackageTags.Replace(';',' '))</PackageTags>
     </PropertyGroup>
+
+    <ItemGroup>
+      <NuspecProperty Include="outputPath=$(OutputPath)\sdk-output" />
+    </ItemGroup>
   </Target>
 </Project>
