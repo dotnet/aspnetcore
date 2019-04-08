@@ -44,6 +44,7 @@ namespace TestServer
             {
                 policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
                     .AllowAnyHeader()
+                    .WithExposedHeaders("MyCustomHeader")
                     .AllowAnyMethod()
                     .AllowCredentials();
             });
