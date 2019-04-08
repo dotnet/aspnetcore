@@ -36,9 +36,10 @@ else
 }
 
 @code {
-    [Parameter] public DateTime StartDate { get; set; }
+    [Parameter]
+    public DateTime StartDate { get; set; }
 
-    WeatherForecast[] forecasts;
+    private WeatherForecast[] forecasts;
 
     protected override async Task OnParametersSetAsync()
     {
