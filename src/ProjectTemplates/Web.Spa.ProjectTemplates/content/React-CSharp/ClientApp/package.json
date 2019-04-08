@@ -11,17 +11,17 @@
     "react-dom": "^16.0.0",
     "react-router-bootstrap": "^0.24.4",
     "react-router-dom": "^4.2.2",
-    "react-scripts": "^1.1.5",
+    "react-scripts": "^2.1.8",
     "reactstrap": "^6.3.0",
     "rimraf": "^2.6.2"
   },
   "devDependencies": {
-    "ajv": "^6.0.0",
-    "babel-eslint": "^7.2.3",
+    "ajv": "^6.9.1",
+    "babel-eslint": "^9.0.0",
     "cross-env": "^5.2.0",
-    "eslint": "^4.1.1",
-    "eslint-config-react-app": "^2.1.0",
-    "eslint-plugin-flowtype": "^2.50.3",
+    "eslint": "^5.12.0",
+    "eslint-config-react-app": "^3.0.8",
+    "eslint-plugin-flowtype": "^3.5.1",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^5.1.1",
     "eslint-plugin-react": "^7.11.1"

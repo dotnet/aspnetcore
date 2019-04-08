@@ -21,6 +21,11 @@
       "auth": "None",
       "authenticationType": "NoAuth",
       "allowUnsecured": true
+    },
+    {
+      "auth": "Individual",
+      "authenticationType": "IndividualAuth",
+      "b2cAuthenticationOptions": "Local"
     }
   ],
   "ports": [

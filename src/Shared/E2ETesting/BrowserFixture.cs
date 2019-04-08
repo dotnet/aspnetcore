@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -14,8 +16,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 {
     public class BrowserFixture : IDisposable
     {
-        private RemoteWebDriver _browser;
-        private RemoteLogs _logs;
+        private ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
+        private List<IWebDriver> _browsersToDispose = new List<IWebDriver>();
 
         public BrowserFixture(IMessageSink diagnosticsMessageSink)
         {
@@ -52,22 +54,25 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public void Dispose()
         {
-            _browser?.Dispose();
+            foreach (var browser in _browsersToDispose)
+            {
+                browser.Dispose();
+            }
         }
 
-        public async Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output)
+        public Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output, string isolationContext = "")
         {
             if (!IsHostAutomationSupported())
             {
                 output.WriteLine($"{nameof(BrowserFixture)}: Host does not support browser automation.");
-                return default;
+                return Task.FromResult<(IWebDriver, ILogs)>(default);
             }
 
-            if ((_browser, _logs) != (null, null))
-            {
-                return (_browser, _logs);
-            }
+            return _browsers.GetOrAdd(isolationContext, CreateBrowserAsync, output);
+        }
 
+        private async Task<(IWebDriver browser, ILogs log)> CreateBrowserAsync(string context, ITestOutputHelper output)
+        {
             var opts = new ChromeOptions();
 
             // Comment this out if you want to watch or interact with the browser (e.g., for debugging)
@@ -110,10 +115,8 @@ namespace Microsoft.AspNetCore.E2ETesting
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
                     var logs = new RemoteLogs(driver);
 
-                    _browser = driver;
-                    _logs = logs;
-
-                    return (_browser, _logs);
+                    _browsersToDispose.Add(driver);
+                    return (driver, logs);
                 }
                 catch
                 {
