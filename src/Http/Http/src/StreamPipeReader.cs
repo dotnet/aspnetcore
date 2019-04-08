@@ -37,7 +37,7 @@ namespace System.IO.Pipelines
         /// </summary>
         /// <param name="readingStream">The stream to read from.</param>
         public StreamPipeReader(Stream readingStream)
-            : this(readingStream, StreamPipeReaderOptions.DefaultOptions)
+            : this(readingStream, StreamPipeReader2Options.DefaultOptions)
         {
         }
 
@@ -46,7 +46,7 @@ namespace System.IO.Pipelines
         /// </summary>
         /// <param name="readingStream">The stream to read from.</param>
         /// <param name="options">The options to use.</param>
-        public StreamPipeReader(Stream readingStream, StreamPipeReaderOptions options)
+        public StreamPipeReader(Stream readingStream, StreamPipeReader2Options options)
         {
             InnerStream = readingStream ?? throw new ArgumentNullException(nameof(readingStream));
 

@@ -24,7 +24,7 @@ namespace System.IO.Pipelines.Tests
             Pool = new TestMemoryPool();
             Stream = new MemoryStream();
             Writer = new StreamPipeWriter(Stream, MinimumSegmentSize, Pool);
-            Reader = new StreamPipeReader(Stream, new StreamPipeReaderOptions(MinimumSegmentSize, minimumReadThreshold: 256, Pool));
+            Reader = new StreamPipeReader(Stream, new StreamPipeReader2Options(MinimumSegmentSize, minimumReadThreshold: 256, Pool));
         }
 
         public void Dispose()

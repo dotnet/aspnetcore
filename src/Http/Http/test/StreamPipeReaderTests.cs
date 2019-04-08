@@ -532,7 +532,7 @@ namespace System.IO.Pipelines.Tests
         public void SetMinimumReadThresholdOfZeroThrows()
         {
             Assert.Throws<ArgumentOutOfRangeException>(() => new StreamPipeReader(Stream,
-                new StreamPipeReaderOptions(minimumSegmentSize: 4096, minimumReadThreshold: 0, new TestMemoryPool())));
+                new StreamPipeReader2Options(minimumSegmentSize: 4096, minimumReadThreshold: 0, new TestMemoryPool())));
         }
 
         [Fact]
@@ -686,7 +686,7 @@ namespace System.IO.Pipelines.Tests
         private void CreateReader(int minimumSegmentSize = 16, int minimumReadThreshold = 4, MemoryPool<byte> memoryPool = null)
         {
             Reader = new StreamPipeReader(Stream,
-                new StreamPipeReaderOptions(
+                new StreamPipeReader2Options(
                     minimumSegmentSize,
                     minimumReadThreshold,
                     memoryPool ?? new TestMemoryPool()));

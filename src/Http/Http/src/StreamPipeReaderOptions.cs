@@ -8,17 +8,17 @@ using System.Text;
 
 namespace System.IO.Pipelines
 {
-    public class StreamPipeReaderOptions
+    public class StreamPipeReader2Options
     {
-        public static StreamPipeReaderOptions DefaultOptions = new StreamPipeReaderOptions();
+        public static StreamPipeReader2Options DefaultOptions = new StreamPipeReader2Options();
         public const int DefaultMinimumSegmentSize = 4096;
         public const int DefaultMinimumReadThreshold = 256;
 
-        public StreamPipeReaderOptions()
+        public StreamPipeReader2Options()
         {
         }
 
-        public StreamPipeReaderOptions(int minimumSegmentSize, int minimumReadThreshold, MemoryPool<byte> memoryPool)
+        public StreamPipeReader2Options(int minimumSegmentSize, int minimumReadThreshold, MemoryPool<byte> memoryPool)
         {
             MinimumSegmentSize = minimumSegmentSize;
             MinimumReadThreshold = minimumReadThreshold;
