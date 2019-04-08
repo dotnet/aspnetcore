@@ -577,7 +577,7 @@ export class HubConnection {
 
     private serverTimeout() {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
-        // Terminate the connection, but we don't need to wait on the promise.
+        // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.
         // tslint:disable-next-line:no-floating-promises
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     }
