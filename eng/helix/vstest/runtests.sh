@@ -16,11 +16,11 @@ fi
 # Call "sync" between "chmod" and execution to prevent "text file busy" error in Docker (aufs)
 chmod +x "dotnet-install.sh"; sync
 
-./dotnet-install.sh --version $2 --install-dir $HELIX_CORRELATION_PAYLOAD/sdk
+./dotnet-install.sh --version $2 --install-dir $HELIX_WORKITEM_ROOT/sdk
 if [ $? -ne 0 ]; then
     sdk_retries=3
     while [ $sdk_retries -gt 0 ]; do
-        ./dotnet-install.sh --version $2 --install-dir $HELIX_CORRELATION_PAYLOAD/sdk
+        ./dotnet-install.sh --version $2 --install-dir $HELIX_WORKITEM_ROOT/sdk
         if [ $? -ne 0 ]; then
             let sdk_retries=sdk_retries-1
             echo -e "${YELLOW}Failed to install .NET Core SDK $version. Retries left: $sdk_retries.${RESET}"
@@ -30,11 +30,11 @@ if [ $? -ne 0 ]; then
     done
 fi
 
-./dotnet-install.sh --runtime dotnet --version $3 --install-dir $HELIX_CORRELATION_PAYLOAD/sdk
+./dotnet-install.sh --runtime dotnet --version $3 --install-dir $HELIX_WORKITEM_ROOT/sdk
 if [ $? -ne 0 ]; then
     runtime_retries=3
     while [ $runtime_retries -gt 0 ]; do
-        ./dotnet-install.sh --runtime dotnet --version $3 --install-dir $HELIX_CORRELATION_PAYLOAD/sdk
+        ./dotnet-install.sh --runtime dotnet --version $3 --install-dir $HELIX_WORKITEM_ROOT/sdk
         if [ $? -ne 0 ]; then
             let runtime_retries=runtime_retries-1
             echo -e "${YELLOW}Failed to install .NET Core runtime $version. Retries left: $runtime_retries.${RESET}"
@@ -47,7 +47,7 @@ fi
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Ensures every invocation of dotnet apps uses the same dotnet.exe
-export DOTNET_ROOT="$HELIX_CORRELATION_PAYLOAD/sdk"
+export DOTNET_ROOT="$HELIX_WORKITEM_ROOT/sdk"
 
 # Ensure dotnet comes first on PATH
 export PATH="$DOTNET_ROOT:$PATH"
