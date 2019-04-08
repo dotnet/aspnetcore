@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Buffers;
 using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Internal
 {
@@ -104,25 +101,6 @@ namespace Microsoft.AspNetCore.Internal
             }
 
             return reader.GetInt32();
-        }
-
-        public static object ReadAsType(this ref Utf8JsonReader reader, Type type)
-        {
-            if (type == typeof(DateTime) || type == typeof(DateTime?))
-            {
-                return reader.GetDateTime();
-            }
-            else if (type == typeof(DateTimeOffset) || type == typeof(DateTimeOffset?))
-            {
-                return reader.GetDateTimeOffset();
-            }
-            else
-            {
-                reader.Read();
-
-                var bytes = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-                return JsonSerializer.Parse(bytes, type);
-            }
         }
     }
 }

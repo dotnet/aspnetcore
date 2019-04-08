@@ -5,20 +5,18 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using System.Runtime.ExceptionServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
     /// <summary>
     /// Implements the SignalR Hub Protocol using System.Text.Json.
     /// </summary>
-    public class JsonHubProtocol : IHubProtocol
+    public sealed class JsonHubProtocol : IHubProtocol
     {
         // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ResultPropertyName = "result";
@@ -47,15 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
         /// </summary>
-        public JsonHubProtocol() : this(Options.Create(new JsonHubProtocolOptions()))
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
-        /// </summary>
-        /// <param name="options">The options used to initialize the protocol.</param>
-        public JsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
+        public JsonHubProtocol()
         {
         }
 
@@ -197,10 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 {
                                     // If we have an invocation id already we can parse the end result
                                     var returnType = binder.GetReturnType(invocationId);
-                                    if (reader.TokenType == JsonTokenType.Null)
-                                    {
-                                    }
-                                    else
+                                    if (reader.TokenType != JsonTokenType.Null)
                                     {
                                         using var token = JsonDocument.ParseValue(ref reader);
                                         result = BindType(token.RootElement, returnType);
@@ -228,10 +215,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 try
                                 {
                                     var itemType = binder.GetStreamItemType(id);
-                                    if (reader.TokenType == JsonTokenType.Null)
-                                    {
-                                    }
-                                    else
+                                    if (reader.TokenType != JsonTokenType.Null)
                                     {
                                         using var token = JsonDocument.ParseValue(ref reader);
                                         item = BindType(token.RootElement, itemType);
@@ -264,10 +248,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     try
                                     {
                                         var paramTypes = binder.GetParameterTypes(target);
-                                        if (reader.TokenType == JsonTokenType.Null)
-                                        {
-                                        }
-                                        else
+                                        if (reader.TokenType != JsonTokenType.Null)
                                         {
                                             using var token = JsonDocument.ParseValue(ref reader);
                                             arguments = BindTypes(token.RootElement, paramTypes);
@@ -705,11 +686,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             if (type == typeof(DateTime))
             {
-                // TODO: return jsonObject.GetDateTime();
+                return jsonObject.GetDateTime();
             }
             else if (type == typeof(DateTimeOffset))
             {
-                // TODO: return jsonObject.GetDateTimeOffset();
+                return jsonObject.GetDateTimeOffset();
             }
 
             if (jsonObject.Type == JsonValueType.Null)

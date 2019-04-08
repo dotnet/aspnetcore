@@ -80,8 +80,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
             }, NullLogger<DefaultHubProtocolResolver>.Instance);
 
             var resolvedProtocol = resolver.GetProtocol(jsonProtocol2.Name, null);
-            Assert.NotEqual(jsonProtocol1, resolvedProtocol);
-            Assert.Equal(jsonProtocol2, resolvedProtocol);
+            Assert.NotSame(jsonProtocol1, resolvedProtocol);
+            Assert.Same(jsonProtocol2, resolvedProtocol);
         }
 
         public static IEnumerable<object[]> HubProtocolNames => HubProtocolHelpers.AllProtocols.Select(p => new object[] {p.Name});
