@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -13,9 +14,10 @@ using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.E2ETesting
 {
-    public class BrowserFixture : IAsyncDisposable
+    public class BrowserFixture : IDisposable
     {
         private ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
+        private List<IWebDriver> _browsersToDispose = new List<IWebDriver>();
 
         public BrowserFixture(IMessageSink diagnosticsMessageSink)
         {
@@ -50,12 +52,11 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public void Dispose()
         {
-            var browsers = await Task.WhenAll(_browsers.Values);
-            foreach (var browserLogPair in browsers)
+            foreach (var browser in _browsersToDispose)
             {
-                browserLogPair.browser.Dispose();
+                browser.Dispose();
             }
         }
 
@@ -114,6 +115,7 @@ namespace Microsoft.AspNetCore.E2ETesting
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
                     var logs = new RemoteLogs(driver);
 
+                    _browsersToDispose.Add(driver);
                     return (driver, logs);
                 }
                 catch
