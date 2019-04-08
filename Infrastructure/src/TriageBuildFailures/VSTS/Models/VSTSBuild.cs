@@ -64,6 +64,8 @@ namespace TriageBuildFailures.VSTS.Models
 
         public Uri Uri => _build.Uri;
 
+        public IEnumerable<string> Tags => _build.Tags;
+
         public Uri WebURL => _build._Links.Web.Href;
 
         public CIConfigBase GetCIConfig(Config config)
@@ -72,6 +74,8 @@ namespace TriageBuildFailures.VSTS.Models
         }
 
         public GitHubPR PRSource { get; set; }
+
+        public bool Deleted => _build.Deleted ?? false;
 
         public IEnumerable<ValidationResults> ValidationResults => _build.ValidationResults;
     }
@@ -86,9 +90,10 @@ namespace TriageBuildFailures.VSTS.Models
         public VSTSProject Project { get; set; }
         public VSTSBuildResult Result { get; set; }
         public IDictionary<string, string> TriggerInfo { get; set; }
-
+        public IEnumerable<string> Tags { get; set; }
         public Links _Links { get; set; }
         public IEnumerable<ValidationResults> ValidationResults { get; set; }
+        public bool? Deleted { get; set; }
     }
 
     public class ValidationResults

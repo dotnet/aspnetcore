@@ -30,7 +30,7 @@ namespace TriageBuildFailures.VSTS
         public async Task<IEnumerable<ICIBuild>> GetBuildsAsync(DateTime startDate, VSTSBuildResult result)
         {
             var projects = await GetProjects();
-            var results = new List<ICIBuild>();
+            var results = new List<VSTSBuild>();
             foreach (var project in projects)
             {
                 var builds = await GetBuildsForProject(project, result, VSTSBuildStatus.Completed, startDate);
@@ -38,7 +38,7 @@ namespace TriageBuildFailures.VSTS
                 results.AddRange(builds.Select(b => new VSTSBuild(b)));
             }
 
-            return results;
+            return results.Where(b => !b.Deleted);
         }
 
         public async Task<IEnumerable<string>> GetTagsAsync(ICIBuild build)

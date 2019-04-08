@@ -49,15 +49,24 @@ namespace TriageBuildFailures.GitHub
                     var build = await _vstsClient.GetBuild(url);
 
                     // Probably the url format was bad. Ignore it.
-                    if(build == null)
+                    if (build == null)
                     {
+                        _reporter.Output($"     {url} is an invalid format.");
                         continue;
                     }
 
                     build.Branch = "PR";
                     build.CIType = typeof(PullRequestClient);
                     build.PRSource = pr;
-                    builds.Add(build);
+
+                    if (!build.Deleted)
+                    {
+                        builds.Add(build);
+                    }
+                    else
+                    {
+                        _reporter.Output($"     {url} has been deleted, ignoring it.");
+                    }
                 }
             }
 
