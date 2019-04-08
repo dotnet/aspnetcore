@@ -1,8 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -11,6 +14,9 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal sealed class EndpointMiddleware
     {
+        internal const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareInvoked";
+        internal const string CorsMiddlewareInvokedKey = "__CorsMiddlewareInvoked";
+
         private readonly ILogger _logger;
         private readonly RequestDelegate _next;
 
@@ -35,6 +41,8 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
             if (endpoint?.RequestDelegate != null)
             {
+                EnsureRequisiteMiddlewares(httpContext, endpoint);
+
                 Log.ExecutingEndpoint(_logger, endpoint);
 
                 try
@@ -50,6 +58,34 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             await _next(httpContext);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private static void EnsureRequisiteMiddlewares(HttpContext httpContext, Endpoint endpoint)
+        {
+            if (endpoint.Metadata.GetMetadata<IAuthorizeData>() != null &&
+                !httpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
+            {
+                ThrowMissingAuthMiddlewareException(endpoint);
+            }
+
+            if (endpoint.Metadata.GetMetadata<ICorsMetadata>() != null &&
+                !httpContext.Items.ContainsKey(CorsMiddlewareInvokedKey))
+            {
+                ThrowMissingCorsMiddlewareException(endpoint);
+            }
+        }
+
+        private static void ThrowMissingAuthMiddlewareException(Endpoint endpoint)
+        {
+            throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains authorization metadata, " +
+                "but a middleware was not found that supports authorization.");
+        }
+
+        private static void ThrowMissingCorsMiddlewareException(Endpoint endpoint)
+        {
+            throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains CORS metadata, " +
+                "but a middleware was not found that supports CORS.");
         }
 
         private static class Log
