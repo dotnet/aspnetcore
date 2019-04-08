@@ -347,6 +347,27 @@ namespace Templates.Test.Helpers
             }
         }
 
+        public void AssertFileExists(string path, bool shouldExist)
+        {
+            var fullPath = Path.Combine(TemplateOutputDir, path);
+            var doesExist = File.Exists(fullPath);
+
+            if (shouldExist)
+            {
+                Assert.True(doesExist, "Expected file to exist, but it doesn't: " + path);
+            }
+            else
+            {
+                Assert.False(doesExist, "Expected file not to exist, but it does: " + path);
+            }
+        }
+
+        public string ReadFile(string path)
+        {
+            AssertFileExists(path, shouldExist: true);
+            return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
+        }
+
         internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)
         {
             await DotNetNewLock.WaitAsync();
