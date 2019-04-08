@@ -173,10 +173,9 @@
     <BenchmarkDotNetPackageVersion>0.10.13</BenchmarkDotNetPackageVersion>
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
-    <GoogleProtobufPackageVersion>3.6.1</GoogleProtobufPackageVersion>
+    <GoogleProtobufPackageVersion>3.7.0</GoogleProtobufPackageVersion>
     <GrpcAspNetCoreServerPackageVersion>0.1.19-pre2</GrpcAspNetCoreServerPackageVersion>
-    <GrpcCorePackageVersion>1.19.0-pre1</GrpcCorePackageVersion>
-    <GrpcToolsPackageVersion>1.19.0-pre1</GrpcToolsPackageVersion>
+    <GrpcToolsPackageVersion>1.20.0-pre1</GrpcToolsPackageVersion>
     <IdentityServer4AspNetIdentityPackageVersion>2.3.0</IdentityServer4AspNetIdentityPackageVersion>
     <IdentityServer4EntityFrameworkPackageVersion>2.3.0</IdentityServer4EntityFrameworkPackageVersion>
     <IdentityServer4PackageVersion>2.3.0</IdentityServer4PackageVersion>
