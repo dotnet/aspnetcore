@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Params(Message.NoArguments, Message.FewArguments, Message.ManyArguments, Message.LargeArguments)]
         public Message Input { get; set; }
 
-        [Params(Protocol.MsgPack, Protocol.Json)]
+        [Params(Protocol.MsgPack, Protocol.Json, Protocol.NewtonsoftJson)]
         public Protocol HubProtocol { get; set; }
 
         [GlobalSetup]

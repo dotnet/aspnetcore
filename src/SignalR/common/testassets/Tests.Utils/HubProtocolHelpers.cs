@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -11,21 +12,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public static class HubProtocolHelpers
     {
         private static readonly IHubProtocol NewtonsoftJsonHubProtocol = new NewtonsoftJsonHubProtocol();
-        private static readonly IHubProtocol JsonHubProtocol = new JsonHubProtocol();
 
         private static readonly IHubProtocol MessagePackHubProtocol = new MessagePackHubProtocol();
 
-        // TODO: Add NewtonsoftJsonHubProtocol
         public static readonly List<string> AllProtocolNames = new List<string>
         {
-            MessagePackHubProtocol.Name,
-            JsonHubProtocol.Name
+            NewtonsoftJsonHubProtocol.Name,
+            MessagePackHubProtocol.Name
         };
 
         public static readonly IList<IHubProtocol> AllProtocols = new List<IHubProtocol>()
         {
-            MessagePackHubProtocol,
-            JsonHubProtocol
+            NewtonsoftJsonHubProtocol,
+            MessagePackHubProtocol
         };
 
         public static IHubProtocol GetHubProtocol(string name)

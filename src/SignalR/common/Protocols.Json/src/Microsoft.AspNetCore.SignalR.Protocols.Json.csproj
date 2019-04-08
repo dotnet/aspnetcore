@@ -1,9 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Implements the SignalR Hub Protocol using System.Text.Json.</Description>
     <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
-    <IsAspNetCoreApp>true</IsAspNetCoreApp>
+    <IsAspNetCoreApp>false</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsShippingPackage>true</IsShippingPackage>
