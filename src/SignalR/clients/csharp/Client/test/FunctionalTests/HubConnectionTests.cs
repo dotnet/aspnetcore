@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var cts = new CancellationTokenSource();
 
-                    var stream = connection.StreamAsync<int>("Stream", 5, cts.Token);
+                    var stream = connection.StreamAsync<int>("Stream", 1000, cts.Token);
                     var results = new List<int>();
 
                     var enumerator = stream.GetAsyncEnumerator();
@@ -462,8 +462,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                         }
                     });
 
-                    Assert.Single(results);
-                    Assert.Equal(0, results[0]);
+                    Assert.True(results.Count > 0 && results.Count < 1000);
                 }
                 catch (Exception ex)
                 {
