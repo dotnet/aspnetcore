@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 RequestBody = value;
-                var requestPipeReader = new StreamPipeReader(RequestBody, new StreamPipeReader2Options(
+                var requestPipeReader = new StreamPipeReader(RequestBody, new StreamPipeReaderAdapterOptions(
                     minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize,
                     minimumReadThreshold: KestrelMemoryPool.MinimumSegmentSize / 4,
                     _context.MemoryPool));
