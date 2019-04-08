@@ -422,10 +422,7 @@ export class HttpConnection implements IConnection {
     private stopConnection(error?: Error): void {
         this.logger.log(LogLevel.Debug, `HttpConnection.stopConnection(${error}) called while in state ${this.connectionState}.`);
 
-        const connectionStarted = this.connectionStarted;
-
         this.transport = undefined;
-        this.connectionStarted = false;
 
         // If we have a stopError, it takes precedence over the error from the transport
         error = this.stopError || error;
@@ -455,7 +452,9 @@ export class HttpConnection implements IConnection {
 
         this.connectionState = ConnectionState.Disconnected;
 
-        if (this.onclose && connectionStarted) {
+        if (this.onclose && this.connectionStarted) {
+            this.connectionStarted = false;
+
             try {
                 this.onclose(error);
             } catch (e) {

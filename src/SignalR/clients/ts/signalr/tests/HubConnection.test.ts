@@ -1095,12 +1095,13 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
+                await hubConnection.start();
+
                 try {
                     let invocations = 0;
                     hubConnection.onclose((e) => invocations++);
                     hubConnection.onclose((e) => invocations++);
                     // Typically this would be called by the transport
-                    (hubConnection as any).connectionState = HubConnectionState.Connected;
                     connection.onclose!();
                     expect(invocations).toBe(2);
                 } finally {
@@ -1113,12 +1114,13 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
+                await hubConnection.start();
+
                 try {
                     let error: Error | undefined;
                     hubConnection.onclose((e) => error = e);
 
                     // Typically this would be called by the transport
-                    (hubConnection as any).connectionState = HubConnectionState.Connected;
                     connection.onclose!(new Error("Test error."));
                     expect(error!.message).toBe("Test error.");
                 } finally {
@@ -1148,9 +1150,10 @@ describe("HubConnection", () => {
             await VerifyLogger.run(async (logger) => {
                 const connection = new TestConnection();
                 const hubConnection = createHubConnection(connection, logger);
+                await hubConnection.start();
+
                 try {
                     let state: HubConnectionState | undefined;
-                    (hubConnection as any).connectionState = HubConnectionState.Connected;
                     hubConnection.onclose((e) => state = hubConnection.state);
                     // Typically this would be called by the transport
                     connection.onclose!();

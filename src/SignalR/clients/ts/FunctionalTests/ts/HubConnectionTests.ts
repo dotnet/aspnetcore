@@ -424,16 +424,25 @@ describe("hubConnection", () => {
                     });
             });
 
-            it("closed with error if hub cannot be created", (done) => {
+            it("closed with error or start fails if hub cannot be created", async (done) => {
                 const hubConnection = getConnectionBuilder(transportType, ENDPOINT_BASE_URL + "/uncreatable")
                     .withHubProtocol(protocol)
                     .build();
 
+                const expectedErrorMessage = "Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.";
+
+                // Either start will fail or onclose will be called. Never both.
                 hubConnection.onclose((error) => {
-                    expect(error!.message).toEqual("Server returned an error on close: Connection closed with an error. InvalidOperationException: Unable to resolve service for type 'System.Object' while attempting to activate 'FunctionalTests.UncreatableHub'.");
+                    expect(error!.message).toEqual(expectedErrorMessage);
                     done();
                 });
-                hubConnection.start();
+
+                try {
+                    await hubConnection.start();
+                } catch (error) {
+                    expect(error!.message).toEqual(expectedErrorMessage);
+                    done();
+                }
             });
 
             it("can handle different types", (done) => {
