@@ -67,10 +67,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     {
                         // This one is OK, we implement this in endpoint routing.
                     }
-                    else if (actionConstraint.GetType().FullName == "Microsoft.AspNetCore.Mvc.Cors.CorsHttpMethodActionConstraint")
-                    {
-                        // This one is OK, we implement this in endpoint routing.
-                    }
                     else if (actionConstraint.GetType() == typeof(ConsumesAttribute))
                     {
                         // This one is OK, we implement this in endpoint routing.

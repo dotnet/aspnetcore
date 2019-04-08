@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
             // Assert
             var statusCodeResult = Assert.IsType<StatusCodeResult>(authorizationFilterContext.Result);
-            Assert.Equal(StatusCodes.Status200OK, statusCodeResult.StatusCode);
+            Assert.Equal(StatusCodes.Status204NoContent, statusCodeResult.StatusCode);
         }
     }
 }

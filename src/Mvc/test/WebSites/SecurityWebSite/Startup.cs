@@ -21,7 +21,8 @@ namespace SecurityWebSite
             {
                 options.LoginPath = "/Home/Login";
                 options.LogoutPath = "/Home/Logout";
-            }).AddCookie("Cookie2");
+            })
+            .AddCookie("Cookie2");
 
             services.AddScoped<IPolicyEvaluator, CountingPolicyEvaluator>();
         }

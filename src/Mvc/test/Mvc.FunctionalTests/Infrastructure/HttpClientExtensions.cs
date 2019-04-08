@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 return response;
             }
 
-            string responseContent = null;
+            string responseContent = string.Join(Environment.NewLine, response.Headers);
             try
             {
                 responseContent = await response.Content.ReadAsStringAsync();

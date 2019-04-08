@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Xunit;
@@ -21,11 +20,5 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             builder.UseStartup<SecurityWebSite.StartupWithGlobalDenyAnonymousFilter>();
 
         public WebApplicationFactory<SecurityWebSite.StartupWithGlobalDenyAnonymousFilter> Factory { get; }
-
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8387")]
-        public override Task DeniesAnonymousUsers_ByDefault()
-        {
-            return Task.CompletedTask;
-        }
     }
 }
