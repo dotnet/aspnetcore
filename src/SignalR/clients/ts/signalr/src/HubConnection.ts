@@ -124,11 +124,7 @@ export class HubConnection {
      *  in the disconnected state or if the negotiation step was skipped.
      */
     get connectionId(): string | null {
-        if (this.connection.connectionId) {
-            return this.connection.connectionId;
-        } else {
-            return null;
-        }
+        return this.connection ? (this.connection.connectionId || null) : null;
     }
 
     /** Starts the connection.
