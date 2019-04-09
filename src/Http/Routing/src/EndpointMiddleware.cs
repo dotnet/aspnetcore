@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -19,21 +19,16 @@ namespace Microsoft.AspNetCore.Routing
 
         private readonly ILogger _logger;
         private readonly RequestDelegate _next;
+        private readonly RouteOptions _routeOptions;
 
-        public EndpointMiddleware(ILogger<EndpointMiddleware> logger, RequestDelegate next)
+        public EndpointMiddleware(
+            ILogger<EndpointMiddleware> logger,
+            RequestDelegate next,
+            IOptions<RouteOptions> routeOptions)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-            
-            _logger = logger;
-            _next = next;
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _routeOptions = routeOptions?.Value ?? throw new ArgumentNullException(nameof(routeOptions));
         }
 
         public async Task Invoke(HttpContext httpContext)
@@ -41,7 +36,23 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
             if (endpoint?.RequestDelegate != null)
             {
-                EnsureRequisiteMiddlewares(httpContext, endpoint);
+                if (_routeOptions.SuppressCheckForUnevaluatedEndpointMetadata)
+                {
+                    // User opted out of this check.
+                    return;
+                }
+
+                if (endpoint.Metadata.GetMetadata<IAuthorizeData>() != null &&
+                    !httpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
+                {
+                    ThrowMissingAuthMiddlewareException(endpoint);
+                }
+
+                if (endpoint.Metadata.GetMetadata<ICorsMetadata>() != null &&
+                    !httpContext.Items.ContainsKey(CorsMiddlewareInvokedKey))
+                {
+                    ThrowMissingCorsMiddlewareException(endpoint);
+                }
 
                 Log.ExecutingEndpoint(_logger, endpoint);
 
@@ -60,32 +71,20 @@ namespace Microsoft.AspNetCore.Routing
             await _next(httpContext);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private static void EnsureRequisiteMiddlewares(HttpContext httpContext, Endpoint endpoint)
-        {
-            if (endpoint.Metadata.GetMetadata<IAuthorizeData>() != null &&
-                !httpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
-            {
-                ThrowMissingAuthMiddlewareException(endpoint);
-            }
-
-            if (endpoint.Metadata.GetMetadata<ICorsMetadata>() != null &&
-                !httpContext.Items.ContainsKey(CorsMiddlewareInvokedKey))
-            {
-                ThrowMissingCorsMiddlewareException(endpoint);
-            }
-        }
-
         private static void ThrowMissingAuthMiddlewareException(Endpoint endpoint)
         {
             throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains authorization metadata, " +
-                "but a middleware was not found that supports authorization.");
+                "but a middleware was not found that supports authorization." +
+                Environment.NewLine +
+                "Configure your application startup by adding app.UseAuthorization() inside the call to Configure(..) in the application startup code.");
         }
 
         private static void ThrowMissingCorsMiddlewareException(Endpoint endpoint)
         {
             throw new InvalidOperationException($"Endpoint {endpoint.DisplayName} contains CORS metadata, " +
-                "but a middleware was not found that supports CORS.");
+                "but a middleware was not found that supports CORS." +
+                Environment.NewLine +
+                "Configure your application startup by adding app.UseCors() inside the call to Configure(..) in the application startup code.");
         }
 
         private static class Log

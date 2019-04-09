@@ -13,7 +13,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
@@ -47,6 +49,8 @@ namespace FunctionalTests
             })
             .AddMessagePackProtocol();
 
+            services.AddCors();
+
             services.AddAuthorization(options =>
             {
                 options.AddPolicy(JwtBearerDefaults.AuthenticationScheme, policy =>
@@ -73,17 +77,33 @@ namespace FunctionalTests
                     {
                         OnMessageReceived = context =>
                         {
-                            var signalRTokenHeader = context.Request.Query["access_token"];
-
-                            if (!string.IsNullOrEmpty(signalRTokenHeader) &&
-                                (context.HttpContext.WebSockets.IsWebSocketRequest || context.Request.Headers["Accept"] == "text/event-stream"))
+                            var endpoint = context.HttpContext.Features.Get<IEndpointFeature>()?.Endpoint;
+                            if (endpoint != null && endpoint.Metadata.GetMetadata<HubMetadata>() != null)
                             {
-                                context.Token = context.Request.Query["access_token"];
+                                var request = context.HttpContext.Request;
+                                string token = request.Headers["Authorization"];
+
+                                if (!string.IsNullOrEmpty(token))
+                            {
+                                    if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        token = token.Substring("Bearer ".Length).Trim();
                             }
+                                }
+                                else
+                                {
+                                    token = context.Request.Query["access_token"];
+                                }
+
+                                context.Token = token;
+                            }
+
                             return Task.CompletedTask;
                         }
                     };
                 });
+
+            services.AddAuthorizationPolicyEvaluator();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -94,40 +114,6 @@ namespace FunctionalTests
             }
 
             app.UseFileServer();
-
-            // Custom CORS to allow any origin + credentials (which isn't allowed by the CORS spec)
-            // This is for testing purposes only (karma hosts the client on its own server), never do this in production
-            app.Use((context, next) =>
-            {
-                var originHeader = context.Request.Headers[HeaderNames.Origin];
-                if (!StringValues.IsNullOrEmpty(originHeader))
-                {
-                    context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = originHeader;
-                    context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
-
-                    var requestMethod = context.Request.Headers[HeaderNames.AccessControlRequestMethod];
-                    if (!StringValues.IsNullOrEmpty(requestMethod))
-                    {
-                        context.Response.Headers[HeaderNames.AccessControlAllowMethods] = requestMethod;
-                    }
-
-                    var requestHeaders = context.Request.Headers[HeaderNames.AccessControlRequestHeaders];
-                    if (!StringValues.IsNullOrEmpty(requestHeaders))
-                    {
-                        context.Response.Headers[HeaderNames.AccessControlAllowHeaders] = requestHeaders;
-                    }
-                }
-
-                if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
-                {
-                    context.Response.StatusCode = StatusCodes.Status204NoContent;
-                    return Task.CompletedTask;
-                }
-
-                return next.Invoke();
-            });
-
-            app.UseRouting();
 
             app.Use((context, next) =>
             {
@@ -148,8 +134,23 @@ namespace FunctionalTests
                     context.Response.Cookies.Append("testCookie2", "testValue2");
                     context.Response.Cookies.Append("expiredCookie", "doesntmatter", new CookieOptions() { Expires = DateTimeOffset.Now.AddHours(-1) });
                 }
+
                 await next.Invoke();
             });
+
+            app.UseRouting();
+
+            // Custom CORS to allow any origin + credentials (which isn't allowed by the CORS spec)
+            // This is for testing purposes only (karma hosts the client on its own server), never do this in production
+            app.UseCors(policy =>
+            {
+                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

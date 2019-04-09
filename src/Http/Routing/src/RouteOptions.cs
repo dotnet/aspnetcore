@@ -28,6 +28,22 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         public bool AppendTrailingSlash { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value that indicates if the check for unevaluated endpoint metadata is suppressed.
+        /// <para>
+        /// Endpoints can be associated with metadata such as authorization, or CORS, that needs to be
+        /// evaluated by a specific middleware to be actionable. If the middleware is not configured, such
+        /// metadata will go unevaluated.
+        /// </para>
+        /// <para>
+        /// When <see langword="false"/>, prior to the execution of the endpoint, routing will verify that
+        /// all unevaluated metadata has been accounted for. Setting this property to <see langword="true"/>
+        /// suppresses this check.
+        /// </para>
+        /// </summary>
+        /// <value>Defaults to <see langword="true"/>.</value>
+        public bool SuppressCheckForUnevaluatedEndpointMetadata { get; set; }
+
         private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
 
         public IDictionary<string, Type> ConstraintMap

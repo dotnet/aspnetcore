@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -15,6 +16,8 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class EndpointMiddlewareTest
     {
+        private readonly IOptions<RouteOptions> RouteOptions = Options.Create(new RouteOptions());
+
         [Fact]
         public async Task Invoke_NoFeature_NoOps()
         {
@@ -27,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing
                 return Task.CompletedTask;
             };
 
-            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next);
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next, RouteOptions);
 
             // Act
             await middleware.Invoke(httpContext);
@@ -52,7 +55,7 @@ namespace Microsoft.AspNetCore.Routing
                 return Task.CompletedTask;
             };
 
-            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next);
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next, RouteOptions);
 
             // Act
             await middleware.Invoke(httpContext);
@@ -84,7 +87,7 @@ namespace Microsoft.AspNetCore.Routing
                 return Task.CompletedTask;
             };
 
-            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next);
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, next, RouteOptions);
 
             // Act
             await middleware.Invoke(httpContext);
@@ -97,6 +100,9 @@ namespace Microsoft.AspNetCore.Routing
         public async Task Invoke_WithEndpoint_ThrowsIfAuthAttributesWereFound_ButAuthMiddlewareNotInvoked()
         {
             // Arrange
+            var expected = "Endpoint Test contains authorization metadata, but a middleware was not found that supports authorization." +
+                Environment.NewLine +
+                "Configure your application startup by adding app.UseAuthorization() inside the call to Configure(..) in the application startup code.";
             var httpContext = new DefaultHttpContext
             {
                 RequestServices = new ServiceProvider()
@@ -107,13 +113,13 @@ namespace Microsoft.AspNetCore.Routing
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
             });
 
-            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask);
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, RouteOptions);
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
 
             // Assert
-            Assert.Equal("Endpoint Test contains authorization metadata, but a middleware was not found that supports authorization.", ex.Message);
+            Assert.Equal(expected, ex.Message);
         }
 
         [Fact]
@@ -132,7 +138,7 @@ namespace Microsoft.AspNetCore.Routing
 
             httpContext.Items[EndpointMiddleware.AuthorizationMiddlewareInvokedKey] = true;
 
-            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask);
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, RouteOptions);
 
             // Act & Assert
             await middleware.Invoke(httpContext);
@@ -141,9 +147,32 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public async Task Invoke_WithEndpoint_DoesNotThrowIfUnevaluatedAuthAttributesWereFound_ButSuppressedViaOptions()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = new ServiceProvider()
+            };
+
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
+            {
+                Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
+            });
+            var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnevaluatedEndpointMetadata = true });
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, routeOptions);
+
+            // Act & Assert
+            await middleware.Invoke(httpContext);
+        }
+
+        [Fact]
         public async Task Invoke_WithEndpoint_ThrowsIfCorsMetadataWasFound_ButCorsMiddlewareNotInvoked()
         {
             // Arrange
+            var expected = "Endpoint Test contains CORS metadata, but a middleware was not found that supports CORS." +
+                Environment.NewLine +
+                "Configure your application startup by adding app.UseCors() inside the call to Configure(..) in the application startup code.";
             var httpContext = new DefaultHttpContext
             {
                 RequestServices = new ServiceProvider()
@@ -154,13 +183,13 @@ namespace Microsoft.AspNetCore.Routing
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<ICorsMetadata>()), "Test"),
             });
 
-            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask);
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, RouteOptions);
 
             // Act & Assert
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => middleware.Invoke(httpContext));
 
             // Assert
-            Assert.Equal("Endpoint Test contains CORS metadata, but a middleware was not found that supports CORS.", ex.Message);
+            Assert.Equal(expected, ex.Message);
         }
 
         [Fact]
@@ -179,12 +208,32 @@ namespace Microsoft.AspNetCore.Routing
 
             httpContext.Items[EndpointMiddleware.CorsMiddlewareInvokedKey] = true;
 
-            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask);
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, RouteOptions);
 
             // Act & Assert
             await middleware.Invoke(httpContext);
 
             // If we got this far, we can sound the everything's OK alarm.
+        }
+
+        [Fact]
+        public async Task Invoke_WithEndpoint_DoesNotThrowIfUnevaluatedCorsAttributesWereFound_ButSuppressedViaOptions()
+        {
+            // Arrange
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = new ServiceProvider()
+            };
+
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
+            {
+                Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
+            });
+            var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnevaluatedEndpointMetadata = true });
+            var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, routeOptions);
+
+            // Act & Assert
+            await middleware.Invoke(httpContext);
         }
 
         private class ServiceProvider : IServiceProvider
