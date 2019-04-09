@@ -120,7 +120,7 @@ export class HubConnection {
         return this.connectionState;
     }
 
-    /** Represents the connection id of the {@link HubConnection} on the server. The connection id will be null when the connection either
+    /** Represents the connection id of the {@link HubConnection} on the server. The connection id will be null when the connection is either
      *  in the disconnected state or if the negotiation step was skipped.
      */
     get connectionId(): string | null {
