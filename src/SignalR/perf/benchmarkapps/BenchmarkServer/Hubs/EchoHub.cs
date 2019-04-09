@@ -11,6 +11,7 @@ namespace BenchmarkServer.Hubs
     public class EchoHub : Hub
     {
         static int connectionCount = 0;
+        static int peakConnectionCount = 0;
         public async Task Broadcast(int duration)
         {
             var sent = 0;
@@ -31,15 +32,20 @@ namespace BenchmarkServer.Hubs
             Console.WriteLine("Broadcast exited: Sent {0} messages", sent);
         }
 
+        public static string Status => $"{connectionCount} current, {peakConnectionCount} peak.";
+
         public override Task OnConnectedAsync() {
             connectionCount++;
-            Console.WriteLine($"Connected: {connectionCount} total");
+            peakConnectionCount = Math.Max(connectionCount, peakConnectionCount);
+            if (connectionCount < 1000 || connectionCount % 100 == 0)
+                Console.WriteLine($"Connected: {Status}");
             return Task.CompletedTask;
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
             connectionCount--;
-            Console.WriteLine($"Disconnected: {connectionCount} total");
+            if (connectionCount < 1000 || connectionCount % 100 == 0)
+                Console.WriteLine($"Disconnected: {Status}");
             return Task.CompletedTask;
         }
 
