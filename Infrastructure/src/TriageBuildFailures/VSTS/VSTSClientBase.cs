@@ -32,7 +32,7 @@ namespace TriageBuildFailures.VSTS
             Default = V4_1_Preview2,
         }
 
-        private readonly VSTSConfig Config;
+        protected readonly VSTSConfig Config;
         private readonly IReporter _reporter;
 
         public VSTSClientBase(VSTSConfig vstsConfig, IReporter reporter)

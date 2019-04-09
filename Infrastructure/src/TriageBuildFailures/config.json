@@ -92,6 +92,12 @@
       // aspnet/websdk. Owned by @vijay's team. We don't track issues for that.
       "266",
       "281"
+    ],
+    "ReleaseIdIgnoreList": [
+      { // .NET Core Releases"
+        "Id": "5",
+        "Project": "internal"
+      }
     ]
   }
 }

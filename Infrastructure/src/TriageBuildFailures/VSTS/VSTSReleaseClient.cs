@@ -87,7 +87,7 @@ namespace TriageBuildFailures.VSTS
         public Task<string> GetTestFailureTextAsync(ICITestOccurrence failure)
         {
             // No tests in releases, so we should never hit this.
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build, BuildStatus? buildStatus = null)
@@ -174,7 +174,12 @@ namespace TriageBuildFailures.VSTS
             var releases = new List<Release>();
             foreach (var thin in thinReleases)
             {
-                releases.Add(await GetReleaseAsync(thin));
+                if (!Config.ReleaseIdIgnoreList.Any(r =>
+                     string.Equals(r.Id, thin.ReleaseDefinition.Id, StringComparison.OrdinalCulture)
+                     && string.Equals(r.Project, project.Name, StringComparison.OrdinalCulture)))
+                {
+                    releases.Add(await GetReleaseAsync(thin));
+                }
             }
 
             return releases.Where(r => r.Environments.Any(e => statuses.Contains(e.Status)));
