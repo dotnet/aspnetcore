@@ -175,8 +175,8 @@ namespace TriageBuildFailures.VSTS
             foreach (var thin in thinReleases)
             {
                 if (!Config.ReleaseIdIgnoreList.Any(r =>
-                     string.Equals(r.Id, thin.ReleaseDefinition.Id, StringComparison.OrdinalCulture)
-                     && string.Equals(r.Project, project.Name, StringComparison.OrdinalCulture)))
+                     string.Equals(r.Id, thin.ReleaseDefinition.Id, StringComparison.Ordinal)
+                     && string.Equals(r.Project, project.Name, StringComparison.Ordinal)))
                 {
                     releases.Add(await GetReleaseAsync(thin));
                 }
