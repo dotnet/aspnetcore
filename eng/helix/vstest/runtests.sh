@@ -56,7 +56,7 @@ export PATH="$DOTNET_ROOT:$PATH"
 export DOTNET_MULTILEVEL_LOOKUP=0
 
 # Avoid contaminating userprofiles
-export DOTNET_CLI_HOME="$HELIX_CORRELATION_PAYLOAD/home"
+export DOTNET_CLI_HOME="$HELIX_WORKITEM_ROOT/home"
 
 export helix="$4"
 
