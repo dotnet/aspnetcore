@@ -110,7 +110,7 @@ namespace Templates.Test.SpaTemplateTest
                 {
                     var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, $"{Project.ProjectName}.build");
                     aspNetProcess.VisitInBrowser(browser);
-                    TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser);
+                    TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser, logs);
                 }
             }
 
@@ -132,7 +132,7 @@ namespace Templates.Test.SpaTemplateTest
                 {
                     var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, $"{Project.ProjectName}.publish");
                     aspNetProcess.VisitInBrowser(browser);
-                    TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser);
+                    TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser, logs);
                 }
             }
         }
@@ -179,7 +179,7 @@ namespace Templates.Test.SpaTemplateTest
             File.WriteAllText(Path.Combine(Project.TemplatePublishDir, "appsettings.json"), testAppSettings);
         }
 
-        private void TestBasicNavigation(bool visitFetchData, bool usesAuth, IWebDriver browser)
+        private void TestBasicNavigation(bool visitFetchData, bool usesAuth, IWebDriver browser, ILogs logs)
         {
             browser.Exists(By.TagName("ul"));
             // <title> element gets project ID injected into it during template execution
@@ -225,6 +225,14 @@ namespace Templates.Test.SpaTemplateTest
                 // Asynchronously loads and displays the table of weather forecasts
                 browser.Exists(By.CssSelector("table>tbody>tr"));
                 browser.Equal(5, () => browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
+            }
+
+            foreach(var logKind in logs.AvailableLogTypes)
+            {
+                var entries = logs.GetLog(logKind);
+                var badEntries = entries.Where(e => new LogLevel[] { LogLevel.Warning, LogLevel.Severe }.Contains(e.Level));
+
+                Assert.True(badEntries.Count() == 0, "There were Warnings or Errors from the browser." + Environment.NewLine + string.Join(Environment.NewLine, badEntries));
             }
         }
 

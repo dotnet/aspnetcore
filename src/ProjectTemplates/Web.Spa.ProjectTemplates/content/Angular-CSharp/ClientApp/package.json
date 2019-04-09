@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "ng serve --disableHostCheck=true",
     "build": "ng build",
     "build:ssr": "ng run Company.WebApplication1:server:dev",
     "test": "ng test",

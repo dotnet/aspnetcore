@@ -179,6 +179,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.ApiAut
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Components.Prerendering", "..\Mvc\Mvc.Components.Prerendering\src\Microsoft.AspNetCore.Mvc.Components.Prerendering.csproj", "{706DBAF7-0BB4-4B4F-9B44-E7C3372ECDF2}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions", "..\Middleware\SpaServices.Extensions\src\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1233,6 +1235,18 @@ Global
 		{706DBAF7-0BB4-4B4F-9B44-E7C3372ECDF2}.Release|x64.Build.0 = Release|Any CPU
 		{706DBAF7-0BB4-4B4F-9B44-E7C3372ECDF2}.Release|x86.ActiveCfg = Release|Any CPU
 		{706DBAF7-0BB4-4B4F-9B44-E7C3372ECDF2}.Release|x86.Build.0 = Release|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Debug|x64.Build.0 = Debug|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Debug|x86.Build.0 = Debug|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|x64.ActiveCfg = Release|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|x64.Build.0 = Release|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|x86.ActiveCfg = Release|Any CPU
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1320,6 +1334,7 @@ Global
 		{81B96508-D920-45F6-9534-0D348B11DFAB} = {D64F966A-B33B-4554-BA8C-A1AF91265996}
 		{6012D544-32B4-4F5C-B335-A224AA4F661D} = {D64F966A-B33B-4554-BA8C-A1AF91265996}
 		{706DBAF7-0BB4-4B4F-9B44-E7C3372ECDF2} = {D64F966A-B33B-4554-BA8C-A1AF91265996}
+		{06D0D7B2-EDA3-45A2-A060-AB791ED1DB80} = {D64F966A-B33B-4554-BA8C-A1AF91265996}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {D2F122BA-928C-4179-B503-6744DB64BA13}
