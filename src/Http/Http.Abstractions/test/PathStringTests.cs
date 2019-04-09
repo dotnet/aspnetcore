@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -47,6 +47,22 @@ namespace Microsoft.AspNetCore.Http
 
             // Act and Assert
             Assert.NotEqual(pathString, PathString.Empty);
+        }
+
+        [Fact]
+        public void AlwaysFails()
+        {
+            Assert.True(false);
+        }
+
+        [Fact]
+        public void SometimesFails()
+        {
+            var random = new Random();
+            if (random.Next(0, 2) == 0)
+            {
+                throw new Exception();
+            }
         }
 
         [Fact]
