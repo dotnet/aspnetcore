@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, Exception> _contentResultExecuting;
 
         private static readonly Action<ILogger, string, ModelValidationState, Exception> _actionMethodExecuting;
-        private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _actionMethodExecutingWithArguments;
         private static readonly Action<ILogger, string, string, double, Exception> _actionMethodExecuted;
 
         private static readonly Action<ILogger, string, string[], Exception> _logFilterExecutionPlan;
@@ -172,11 +171,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Information,
                 1,
                 "Executing action method {ActionName} - Validation state: {ValidationState}");
-
-            _actionMethodExecutingWithArguments = LoggerMessage.Define<string, string[], ModelValidationState>(
-                LogLevel.Information,
-                1,
-                "Executing action method {ActionName} with arguments ({Arguments}) - Validation state: {ValidationState}");
 
             _actionMethodExecuted = LoggerMessage.Define<string, string, double>(
                 LogLevel.Information,
@@ -814,22 +808,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var actionName = context.ActionDescriptor.DisplayName;
 
                 var validationState = context.ModelState.ValidationState;
-
-                string[] convertedArguments;
-                if (arguments == null)
-                {
-                    _actionMethodExecuting(logger, actionName, validationState, null);
-                }
-                else
-                {
-                    convertedArguments = new string[arguments.Length];
-                    for (var i = 0; i < arguments.Length; i++)
-                    {
-                        convertedArguments[i] = Convert.ToString(arguments[i]);
-                    }
-
-                    _actionMethodExecutingWithArguments(logger, actionName, convertedArguments, validationState, null);
-                }
+                _actionMethodExecuting(logger, actionName, validationState, null);
             }
         }
 

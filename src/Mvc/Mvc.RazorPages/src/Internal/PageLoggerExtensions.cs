@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         public const string PageFilter = "Page Filter";
 
-        private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _handlerMethodExecuting;
+        private static readonly Action<ILogger, string, ModelValidationState, Exception> _handlerMethodExecuting;
         private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
         private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
@@ -28,10 +28,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // These numbers start at 101 intentionally to avoid conflict with the IDs used by ResourceInvoker.
 
-            _handlerMethodExecuting = LoggerMessage.Define<string, string[], ModelValidationState>(
+            _handlerMethodExecuting = LoggerMessage.Define<string, ModelValidationState>(
                 LogLevel.Information,
                 101,
-                "Executing handler method {HandlerName} with arguments ({Arguments}) - ModelState is {ValidationState}");
+                "Executing handler method {HandlerName} - ModelState is {ValidationState}");
 
             _handlerMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
@@ -75,23 +75,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 var handlerName = handler.MethodInfo.Name;
 
-                string[] convertedArguments;
-                if (arguments == null)
-                {
-                    convertedArguments = null;
-                }
-                else
-                {
-                    convertedArguments = new string[arguments.Length];
-                    for (var i = 0; i < arguments.Length; i++)
-                    {
-                        convertedArguments[i] = Convert.ToString(arguments[i]);
-                    }
-                }
-
                 var validationState = context.ModelState.ValidationState;
-
-                _handlerMethodExecuting(logger, handlerName, convertedArguments, validationState, null);
+                _handlerMethodExecuting(logger, handlerName, validationState, null);
             }
         }
 
