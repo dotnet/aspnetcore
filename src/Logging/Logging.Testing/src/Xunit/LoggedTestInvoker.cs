@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Logging.Testing
     public class LoggedTestInvoker : XunitTestInvoker
     {
         private readonly ITestOutputHelper _output;
-        private readonly RetryContext _retryContext;
+        private readonly RepeatContext _repeatContext; 
         private readonly bool _collectDumpOnFailure;
 
         public LoggedTestInvoker(
@@ -30,12 +30,12 @@ namespace Microsoft.Extensions.Logging.Testing
             ExceptionAggregator aggregator,
             CancellationTokenSource cancellationTokenSource,
             ITestOutputHelper output,
-            RetryContext retryContext,
+            RepeatContext repeatContext,
             bool collectDumpOnFailure)
             : base(test, messageBus, testClass, constructorArguments, testMethod, testMethodArguments, beforeAfterAttributes, aggregator, cancellationTokenSource)
         {
             _output = output;
-            _retryContext = retryContext;
+            _repeatContext = repeatContext;
             _collectDumpOnFailure = collectDumpOnFailure;
         }
 
@@ -51,19 +51,7 @@ namespace Microsoft.Extensions.Logging.Testing
             if (testClass is LoggedTestBase loggedTestBase)
             {
                 // Used for testing
-                loggedTestBase.RetryContext = _retryContext;
-
-                if (_retryContext != null)
-                {
-                    // Log retry attempt as warning
-                    if (_retryContext.CurrentIteration > 0)
-                    {
-                        loggedTestBase.Logger.LogWarning($"{TestMethod.Name} failed and retry conditions are met, re-executing. The reason for failure is {_retryContext.Reason}.");
-                    }
-
-                    // Save the test class instance for non-static predicates
-                    _retryContext.TestClassInstance = testClass;
-                }
+                loggedTestBase.RepeatContext = _repeatContext;
             }
 
             return testClass;

@@ -3,13 +3,9 @@
 
 namespace Microsoft.Extensions.Logging.Testing
 {
-    public class RetryContext
+    public class RepeatContext
     {
         internal int Limit { get; set; }
-
-        internal object TestClassInstance { get; set; }
-
-        internal string Reason { get; set; }
 
         internal int CurrentIteration { get; set; }
     }
