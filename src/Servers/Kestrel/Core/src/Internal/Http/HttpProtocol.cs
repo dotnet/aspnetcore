@@ -25,9 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal abstract partial class HttpProtocol : IDefaultHttpContextContainer, IHttpResponseControl
     {
-        private const string DisableStringReuseSwitch = "Switch.Microsoft.AspNetCore.Kestrel.DisableStringReuse";
-        protected static readonly bool DisableStringReuse = GetDisableStringReuseSwitch();
-
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
         private static readonly byte[] _bytesTransferEncodingChunked = Encoding.ASCII.GetBytes("\r\nTransfer-Encoding: chunked");
@@ -77,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
-            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !DisableStringReuse);
+            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !ServerOptions.DisableStringReuse);
             HttpResponseControl = this;
         }
 
@@ -1503,16 +1500,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 HandleNonBodyResponseWrite();
                 return await Output.FlushAsync(cancellationToken);
             }
-        }
-
-        private static bool GetDisableStringReuseSwitch()
-        {
-            if (AppContext.TryGetSwitch(DisableStringReuseSwitch, out var disableStringReuse))
-            {
-                return disableStringReuse;
-            }
-
-            return false;
         }
     }
 }

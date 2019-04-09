@@ -288,9 +288,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             try
             {
+                var disableStringReuse = ServerOptions.DisableStringReuse;
                 // Read raw target before mutating memory.
                 var previousValue = _parsedRawTarget;
-                if (DisableStringReuse || previousValue == null || previousValue.Length != target.Length ||
+                if (disableStringReuse ||
+                    previousValue == null || previousValue.Length != target.Length ||
                     !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
                 {
                     // The previous string does not match what the bytes would convert to,
@@ -298,7 +300,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
 
                     previousValue = _parsedQueryString;
-                    if (DisableStringReuse || previousValue == null || previousValue.Length != query.Length ||
+                    if (disableStringReuse ||
+                        previousValue == null || previousValue.Length != query.Length ||
                         !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
                     {
                         // The previous string does not match what the bytes would convert to,
@@ -362,8 +365,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             //
             // Allowed characters in the 'host + port' section of authority.
             // See https://tools.ietf.org/html/rfc3986#section-3.2
+
             var previousValue = _parsedRawTarget;
-            if (DisableStringReuse || previousValue == null || previousValue.Length != target.Length ||
+            if (ServerOptions.DisableStringReuse ||
+                previousValue == null || previousValue.Length != target.Length ||
                 !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
                 // The previous string does not match what the bytes would convert to,
@@ -415,8 +420,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             //    a server MUST accept the absolute-form in requests, even though
             //    HTTP/1.1 clients will only send them in requests to proxies.
 
+            var disableStringReuse = ServerOptions.DisableStringReuse;
             var previousValue = _parsedRawTarget;
-            if (DisableStringReuse || previousValue == null || previousValue.Length != target.Length ||
+            if (disableStringReuse ||
+                previousValue == null || previousValue.Length != target.Length ||
                 !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
                 // The previous string does not match what the bytes would convert to,
@@ -436,7 +443,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Path = _parsedPath = uri.LocalPath;
                 // don't use uri.Query because we need the unescaped version
                 previousValue = _parsedQueryString;
-                if (DisableStringReuse || previousValue == null || previousValue.Length != query.Length ||
+                if (disableStringReuse ||
+                    previousValue == null || previousValue.Length != query.Length ||
                     !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
                 {
                     // The previous string does not match what the bytes would convert to,
