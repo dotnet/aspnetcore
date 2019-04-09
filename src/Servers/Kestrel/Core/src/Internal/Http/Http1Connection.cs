@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else
                     {
-                        // Same as pervious
+                        // Same as previous
                         QueryString = _parsedQueryString;
                     }
 
