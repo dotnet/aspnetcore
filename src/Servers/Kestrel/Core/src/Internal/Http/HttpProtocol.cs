@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal abstract partial class HttpProtocol : IDefaultHttpContextContainer, IHttpResponseControl
     {
-        private const string DisableHeaderReuseSwitch = "Switch.Microsoft.AspNetCore.Kestrel.DisableHeaderReuse";
-        private static readonly bool DisableHeaderReuse = GetDisableHeaderReuseSwitch();
+        private const string DisableHeaderStringSwitch = "Switch.Microsoft.AspNetCore.Kestrel.DisableStringReuse";
+        protected static readonly bool DisableStringReuse = GetDisableHeaderStringSwitch();
 
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
-            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !DisableHeaderReuse);
+            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !DisableStringReuse);
             HttpResponseControl = this;
         }
 
@@ -1505,9 +1505,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        private static bool GetDisableHeaderReuseSwitch()
+        private static bool GetDisableHeaderStringSwitch()
         {
-            if (AppContext.TryGetSwitch(DisableHeaderReuseSwitch, out var disableHeaderReuse))
+            if (AppContext.TryGetSwitch(DisableHeaderStringSwitch, out var disableHeaderReuse))
             {
                 return disableHeaderReuse;
             }

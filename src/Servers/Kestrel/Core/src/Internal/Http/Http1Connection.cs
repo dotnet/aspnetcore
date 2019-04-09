@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // Read raw target before mutating memory.
                 var previousValue = _parsedRawTarget;
-                if (previousValue == null || previousValue.Length != target.Length ||
+                if (DisableStringReuse || previousValue == null || previousValue.Length != target.Length ||
                     !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
                 {
                     // The previous string does not match what the bytes would convert to,
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     RawTarget = _parsedRawTarget = target.GetAsciiStringNonNullCharacters();
 
                     previousValue = _parsedQueryString;
-                    if (previousValue == null || previousValue.Length != query.Length ||
+                    if (DisableStringReuse || previousValue == null || previousValue.Length != query.Length ||
                         !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
                     {
                         // The previous string does not match what the bytes would convert to,
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // Allowed characters in the 'host + port' section of authority.
             // See https://tools.ietf.org/html/rfc3986#section-3.2
             var previousValue = _parsedRawTarget;
-            if (previousValue == null || previousValue.Length != target.Length ||
+            if (DisableStringReuse || previousValue == null || previousValue.Length != target.Length ||
                 !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
                 // The previous string does not match what the bytes would convert to,
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             //    HTTP/1.1 clients will only send them in requests to proxies.
 
             var previousValue = _parsedRawTarget;
-            if (previousValue == null || previousValue.Length != target.Length ||
+            if (DisableStringReuse || previousValue == null || previousValue.Length != target.Length ||
                 !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, target))
             {
                 // The previous string does not match what the bytes would convert to,
@@ -436,12 +436,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 Path = _parsedPath = uri.LocalPath;
                 // don't use uri.Query because we need the unescaped version
                 previousValue = _parsedQueryString;
-                if (previousValue == null || previousValue.Length != query.Length ||
+                if (DisableStringReuse || previousValue == null || previousValue.Length != query.Length ||
                     !StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, query))
                 {
                     // The previous string does not match what the bytes would convert to,
                     // so we will need to generate a new string.
                     QueryString = _parsedQueryString = query.GetAsciiStringNonNullCharacters();
+                }
+                else
+                {
+                    QueryString = _parsedQueryString;
                 }
             }
             else
