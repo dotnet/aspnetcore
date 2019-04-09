@@ -23,6 +23,8 @@ namespace Templates.Test
 
         public Project Project { get; private set; }
 
+        public override string BrowserIsolationContext => GetType().Name;
+
         [Fact]
         public async Task RazorComponentsTemplateWorks()
         {

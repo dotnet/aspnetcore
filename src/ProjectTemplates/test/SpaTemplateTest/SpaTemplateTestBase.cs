@@ -32,6 +32,8 @@ namespace Templates.Test.SpaTemplateTest
 
         public Project Project { get; set; }
 
+        public override string BrowserIsolationContext => GetType().Name;
+
         // Rather than using [Theory] to pass each of the different values for 'template',
         // it's important to distribute the SPA template tests over different test classes
         // so they can be run in parallel. Xunit doesn't parallelize within a test class.
