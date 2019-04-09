@@ -450,6 +450,7 @@ export class HttpConnection implements IConnection {
             this.logger.log(LogLevel.Information, "Connection disconnected.");
         }
 
+        this.connectionId = undefined;
         this.connectionState = ConnectionState.Disconnected;
 
         if (this.onclose && this.connectionStarted) {

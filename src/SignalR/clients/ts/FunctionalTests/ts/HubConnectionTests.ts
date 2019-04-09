@@ -879,6 +879,33 @@ describe("hubConnection", () => {
             expect(newConnectionId).toBe(serverConnectionId);
 
             await hubConnection.stop();
+            expect(hubConnection.connectionId).toBeNull();
+
+            done();
+        } catch (err) {
+            fail(err);
+            done();
+        }
+    });
+
+    it("connection id is alwys null is negotiation is skipped", async (done) => {
+        try {
+            const hubConnection = getConnectionBuilder(
+                    HttpTransportType.WebSockets,
+                    undefined,
+                    { skipNegotiation: true },
+                )
+                .build();
+
+            expect(hubConnection.connectionId).toBeNull();
+
+            await hubConnection.start();
+
+            expect(hubConnection.connectionId).toBeNull();
+
+            await hubConnection.stop();
+
+            expect(hubConnection.connectionId).toBeNull();
 
             done();
         } catch (err) {
