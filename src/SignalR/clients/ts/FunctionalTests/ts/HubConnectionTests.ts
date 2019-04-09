@@ -782,6 +782,9 @@ describe("hubConnection", () => {
 
             expect(newConnectionId).not.toBe(initialConnectionId);
 
+            const serverConnectionId = await hubConnection.invoke<string>("GetCallerConnectionId");
+            expect(newConnectionId).toBe(serverConnectionId);
+
             const postReconnectRedirects = await hubConnection.invoke<number>("GetNumRedirects");
 
             expect(postReconnectRedirects).toBeGreaterThan(preReconnectRedirects);
@@ -828,6 +831,52 @@ describe("hubConnection", () => {
             const response = await hubConnection.invoke("Echo", "test");
 
             expect(response).toEqual("test");
+
+            await hubConnection.stop();
+
+            done();
+        } catch (err) {
+            fail(err);
+            done();
+        }
+    });
+
+    it("connection id matches server side connection id", async (done) => {
+        try {
+            const reconnectingPromise = new PromiseSource();
+            const reconnectedPromise = new PromiseSource<string | undefined>();
+            const hubConnection = getConnectionBuilder(undefined, TESTHUB_REDIRECT_ENDPOINT_URL)
+                .withAutomaticReconnect()
+                .build();
+
+            hubConnection.onreconnecting(() => {
+                reconnectingPromise.resolve();
+            });
+
+            hubConnection.onreconnected((connectionId?) => {
+                reconnectedPromise.resolve(connectionId);
+            });
+
+            expect(hubConnection.connectionId).toBeNull();
+
+            await hubConnection.start();
+
+            expect(hubConnection.connectionId).not.toBeNull();
+            let serverConnectionId = await hubConnection.invoke<string>("GetCallerConnectionId");
+            expect(hubConnection.connectionId).toBe(serverConnectionId);
+
+            const initialConnectionId = hubConnection.connectionId!;
+
+            // Induce reconnect
+            (hubConnection as any).serverTimeout();
+
+            await reconnectingPromise;
+            const newConnectionId = await reconnectedPromise;
+
+            expect(newConnectionId).not.toBe(initialConnectionId);
+
+            serverConnectionId = await hubConnection.invoke<string>("GetCallerConnectionId");
+            expect(newConnectionId).toBe(serverConnectionId);
 
             await hubConnection.stop();
 
