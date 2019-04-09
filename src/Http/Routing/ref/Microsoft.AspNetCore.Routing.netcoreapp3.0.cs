@@ -322,6 +322,7 @@ namespace Microsoft.AspNetCore.Routing
         public System.Collections.Generic.ICollection<Microsoft.AspNetCore.Routing.EndpointDataSource> EndpointDataSources { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool LowercaseQueryStrings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool LowercaseUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool SuppressCheckForUnevaluatedEndpointMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class RouteValueEqualityComparer : System.Collections.Generic.IEqualityComparer<object>
     {
