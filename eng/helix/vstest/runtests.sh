@@ -73,41 +73,19 @@ fi
 # Filter syntax: https://github.com/Microsoft/vstest-docs/blob/master/docs/filter.md
 NONFLAKY_FILTER="Flaky:All!=true&Flaky:Helix:All!=true&Flaky:Helix:Queue:All!=true&Flaky:Helix:Queue:$HELIX!=true"
 echo "Running non-flaky tests."
-
-retries=1
-
-if [ "$1" = "InMemory.FunctionalTests.dll" ]; then
-    let retries=10
-fi
-
-while [ $retries -gt 0 ]; do
-    let retries=retries-1
-    $DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
-done
-
+$DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$NONFLAKY_FILTER"
 nonflaky_exitcode=$?
 if [ $nonflaky_exitcode != 0 ]; then
     echo "Non-flaky tests failed!" 1>&2
     # DO NOT EXIT
 fi
 
-retries=1
-
-if [ "$1" = "InMemory.FunctionalTests.dll" ]; then
-    let retries=10
-fi
-
 FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$HELIX=true"
 echo "Running known-flaky tests."
-while [ $retries -gt 0 ]; do
-    let retries=retries-1
-    $DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$FLAKY_FILTER"
-done
-
+$DOTNET_ROOT/dotnet vstest $1 --logger:trx --TestCaseFilter:"$FLAKY_FILTER"
 if [ $? != 0 ]; then
     echo "Flaky tests failed!" 1>&2
     # DO NOT EXIT
 fi
-
 
 exit $nonflaky_exitcode
