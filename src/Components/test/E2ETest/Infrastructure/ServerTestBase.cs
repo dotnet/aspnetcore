@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
             _serverFixture = serverFixture;
         }
 
+        public override string BrowserIsolationContext => GetType().Name;
+
         public void Navigate(string relativeUrl, bool noReload = false)
         {
             var absoluteUrl = new Uri(_serverFixture.RootUri, relativeUrl);

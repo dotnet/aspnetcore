@@ -10,7 +10,7 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.E2ETesting
 {
     [CaptureSeleniumLogs]
-    public class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
+    public abstract class BrowserTestBase : IClassFixture<BrowserFixture>, IAsyncLifetime
     {
         private static readonly AsyncLocal<IWebDriver> _asyncBrowser = new AsyncLocal<IWebDriver>();
         private static readonly AsyncLocal<ILogs> _logs = new AsyncLocal<ILogs>();
@@ -32,6 +32,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public BrowserFixture BrowserFixture { get; }
 
+        public abstract string BrowserIsolationContext { get; }
+
         public Task DisposeAsync()
         {
             return Task.CompletedTask;
@@ -39,7 +41,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
         public virtual async Task InitializeAsync()
         {
-            var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output);
+            var (browser, logs) = await BrowserFixture.GetOrCreateBrowserAsync(Output, BrowserIsolationContext);
             _asyncBrowser.Value = browser;
             _logs.Value = logs;
 

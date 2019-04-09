@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 {
     public class BrowserFixture : IDisposable
     {
-        private ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
-        private List<IWebDriver> _browsersToDispose = new List<IWebDriver>();
+        private readonly ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
+        private readonly List<IWebDriver> _browsersToDispose = new List<IWebDriver>();
 
         public BrowserFixture(IMessageSink diagnosticsMessageSink)
         {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
         }
 
-        public Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output, string isolationContext = "")
+        public Task<(IWebDriver, ILogs)> GetOrCreateBrowserAsync(ITestOutputHelper output, string isolationContext)
         {
             if (!IsHostAutomationSupported())
             {
