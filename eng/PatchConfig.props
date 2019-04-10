@@ -53,4 +53,5 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
+
 </Project>
