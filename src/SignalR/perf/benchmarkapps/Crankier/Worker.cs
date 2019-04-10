@@ -140,10 +140,9 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
                         case ConnectionState.Reconnecting:
                             reconnectingCount++;
                             break;
-                        case ConnectionState.Faulted: {
+                        case ConnectionState.Faulted:
                             faultedCount++;
                             break;
-                        }
                     }
                 }
 
