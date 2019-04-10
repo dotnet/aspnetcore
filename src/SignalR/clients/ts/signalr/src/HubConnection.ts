@@ -120,6 +120,13 @@ export class HubConnection {
         return this.connectionState;
     }
 
+    /** Represents the connection id of the {@link HubConnection} on the server. The connection id will be null when the connection is either
+     *  in the disconnected state or if the negotiation step was skipped.
+     */
+    get connectionId(): string | null {
+        return this.connection ? (this.connection.connectionId || null) : null;
+    }
+
     /** Starts the connection.
      *
      * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.

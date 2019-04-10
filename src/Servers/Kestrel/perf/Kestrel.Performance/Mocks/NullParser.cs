@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             handler.OnHeader(new Span<byte>(_hostHeaderName), new Span<byte>(_hostHeaderValue));
             handler.OnHeader(new Span<byte>(_acceptHeaderName), new Span<byte>(_acceptHeaderValue));
             handler.OnHeader(new Span<byte>(_connectionHeaderName), new Span<byte>(_connectionHeaderValue));
+            handler.OnHeadersComplete();
 
             consumedBytes = 0;
             consumed = buffer.Start;

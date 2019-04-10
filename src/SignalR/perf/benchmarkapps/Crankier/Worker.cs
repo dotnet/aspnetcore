@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Crankier
             _targetConnectionCount += numberOfConnections;
             for (var count = 0; count < numberOfConnections; count++)
             {
-                var client = new Client();
+                var client = new Client(_processId, _agent);
                 _clients.Add(client);
 
                 await client.CreateAndStartConnectionAsync(targetAddress, transportType);
