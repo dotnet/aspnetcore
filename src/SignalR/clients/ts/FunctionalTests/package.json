@@ -5,8 +5,8 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@aspnet/signalr": "link:../signalr",
-    "@aspnet/signalr-protocol-msgpack": "link:../signalr-protocol-msgpack",
+    "@aspnet/signalr": "file:../signalr",
+    "@aspnet/signalr-protocol-msgpack": "file:../signalr-protocol-msgpack",
     "msgpack5": "^4.0.2"
   },
   "devDependencies": {
@@ -32,16 +32,17 @@
     "karma-summary-reporter": "^1.5.0",
     "rxjs": "^6.3.3",
     "ts-node": "^4.1.0",
-    "typescript": "^3.0.1",
+    "typescript": "^2.7.1",
     "ws": " ^6.0.0"
   },
   "scripts": {
+    "preclean": "cd .. && npm run build",
     "clean": "node ../common/node_modules/rimraf/bin.js ./wwwroot/dist ./obj/js",
-    "build": "npm run clean && npm run build:lint && npm run build:webpack",
+    "prebuild": "npm run clean && npm install",
+    "build": "npm run build:lint && npm run build:webpack",
     "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
     "build:webpack": "node ../common/node_modules/webpack-cli/bin/cli.js",
-    "build:parent": "cd .. && npm run build",
-    "pretest": "npm run build:parent && npm run build && dotnet build --no-restore FunctionalTests.csproj",
+    "pretest": "npm run build && dotnet build FunctionalTests.csproj",
     "test": "tsc --noEmit && npm run test:local --",
     "test:inner": "npm run build && dotnet build FunctionalTests.csproj && npm run test:local --",
     "test:local": "ts-node --project ./scripts/tsconfig.json ./scripts/run-tests.ts",
