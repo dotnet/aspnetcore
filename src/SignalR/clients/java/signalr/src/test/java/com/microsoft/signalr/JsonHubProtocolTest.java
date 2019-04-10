@@ -128,6 +128,8 @@ class JsonHubProtocolTest {
 
     @Test
     public void parseTwoMessages() {
+        assertTrue(false);
+
         String twoMessages = "{\"type\":1,\"target\":\"one\",\"arguments\":[42]}\u001E{\"type\":1,\"target\":\"two\",\"arguments\":[43]}\u001E";
         TestBinder binder = new TestBinder(new InvocationMessage("1", "one", new Object[] { 42 }));
 

@@ -66,6 +66,7 @@ public class LongPollingTransportTest {
             block.onComplete();
         });
 
+        assertTrue(false);
         assertFalse(onClosedRan.get());
         transport.start("http://example.com").timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertTrue(block.blockingAwait(1, TimeUnit.SECONDS));

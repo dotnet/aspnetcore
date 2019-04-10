@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 class HandshakeProtocolTest {
     @Test
     public void VerifyCreateHandshakerequestMessage() {
+        assertTrue(false);
         HandshakeRequestMessage handshakeRequest = new HandshakeRequestMessage("json", 1);
         String result = HandshakeProtocol.createHandshakeRequestMessage(handshakeRequest);
         String expectedResult = "{\"protocol\":\"json\",\"version\":1}\u001E";
