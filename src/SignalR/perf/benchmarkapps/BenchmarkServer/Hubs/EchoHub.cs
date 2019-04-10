@@ -10,8 +10,11 @@ namespace BenchmarkServer.Hubs
 {
     public class EchoHub : Hub
     {
-        static int connectionCount = 0;
-        static int peakConnectionCount = 0;
+        static int _connectionCount = 0;
+        static int _peakConnectionCount = 0;
+
+        static DateTime _serverStart = DateTime.Now;
+
         public async Task Broadcast(int duration)
         {
             var sent = 0;
@@ -32,20 +35,26 @@ namespace BenchmarkServer.Hubs
             Console.WriteLine("Broadcast exited: Sent {0} messages", sent);
         }
 
-        public static string Status => $"{connectionCount} current, {peakConnectionCount} peak.";
+        public static string Status => $"{_connectionCount} current, {_peakConnectionCount} peak.";
+
+        public void LogConnections(string label) {
+            if (_connectionCount < 1000 || _connectionCount % 100 == 0)
+            {
+                var timeSinceServerStart = DateTime.Now.Subtract(_serverStart).ToString(@"hh\:mm\:ss");
+                Console.WriteLine($"[{timeSinceServerStart}] {label}: {Status}");
+            }
+        }
 
         public override Task OnConnectedAsync() {
-            connectionCount++;
-            peakConnectionCount = Math.Max(connectionCount, peakConnectionCount);
-            if (connectionCount < 1000 || connectionCount % 100 == 0)
-                Console.WriteLine($"Connected: {Status}");
+            _connectionCount++;
+            _peakConnectionCount = Math.Max(_connectionCount, _peakConnectionCount);
+            LogConnections("Connected");
             return Task.CompletedTask;
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
-            connectionCount--;
-            if (connectionCount < 1000 || connectionCount % 100 == 0)
-                Console.WriteLine($"Disconnected: {Status}");
+            _connectionCount--;
+            LogConnections("Disconnected");
             return Task.CompletedTask;
         }
 
