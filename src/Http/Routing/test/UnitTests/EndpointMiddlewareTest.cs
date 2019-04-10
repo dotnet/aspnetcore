@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public async Task Invoke_WithEndpoint_DoesNotThrowIfUnevaluatedAuthAttributesWereFound_ButSuppressedViaOptions()
+        public async Task Invoke_WithEndpoint_DoesNotThrowIfUnhandledAuthAttributesWereFound_ButSuppressedViaOptions()
         {
             // Arrange
             var httpContext = new DefaultHttpContext
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
             });
-            var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnevaluatedEndpointMetadata = true });
+            var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnhandledSecurityMetadata = true });
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, routeOptions);
 
             // Act & Assert
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public async Task Invoke_WithEndpoint_DoesNotThrowIfUnevaluatedCorsAttributesWereFound_ButSuppressedViaOptions()
+        public async Task Invoke_WithEndpoint_DoesNotThrowIfUnhandledCorsAttributesWereFound_ButSuppressedViaOptions()
         {
             // Arrange
             var httpContext = new DefaultHttpContext
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
             });
-            var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnevaluatedEndpointMetadata = true });
+            var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnhandledSecurityMetadata = true });
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, routeOptions);
 
             // Act & Assert

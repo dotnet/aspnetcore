@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
             if (endpoint?.RequestDelegate != null)
             {
-                if (_routeOptions.SuppressCheckForUnevaluatedEndpointMetadata)
+                if (_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
                 {
                     // User opted out of this check.
                     return;
