@@ -31,7 +31,7 @@ namespace BenchmarkDotNet.Attributes
 #if NETCOREAPP2_1
                 .With(CsProjCoreToolchain.From(NetCoreAppSettings.NetCoreApp21))
 #else
-                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp2.2", null, ".NET Core 2.2")))
+                .With(CsProjCoreToolchain.From(new NetCoreAppSettings("netcoreapp3.0", null, ".NET Core 3.0")))
 #endif
                 .With(new GcMode { Server = true })
                 .With(RunStrategy.Throughput));

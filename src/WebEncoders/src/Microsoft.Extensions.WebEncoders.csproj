@@ -4,9 +4,9 @@
     <Description>Contains registration and configuration APIs to add the core framework encoders to a dependency injection container.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>

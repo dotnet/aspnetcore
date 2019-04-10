@@ -6,7 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
@@ -373,6 +375,113 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                     Assert.Equal("Test", actual.Key);
                     Assert.Equal(HealthStatus.Healthy, actual.Value.Status);
                 });
+        }
+
+        [Fact]
+        public async Task CheckHealthAsync_ChecksAreRunInParallel()
+        {
+            // Arrange
+            var input1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var input2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var output1 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var output2 = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddAsyncCheck("test1",
+                    async () =>
+                    {
+                        output1.SetResult(null);
+                        await input1.Task;
+                        return HealthCheckResult.Healthy();
+                    });
+                b.AddAsyncCheck("test2",
+                    async () =>
+                    {
+                        output2.SetResult(null);
+                        await input2.Task;
+                        return HealthCheckResult.Healthy();
+                    });
+            });
+
+            // Act
+            var checkHealthTask = service.CheckHealthAsync();
+            await Task.WhenAll(output1.Task, output2.Task).TimeoutAfter(TimeSpan.FromSeconds(10));
+            input1.SetResult(null);
+            input2.SetResult(null);
+            await checkHealthTask;
+
+            // Assert
+            Assert.Collection(checkHealthTask.Result.Entries,
+                entry =>
+                {
+                    Assert.Equal("test1", entry.Key);
+                    Assert.Equal(HealthStatus.Healthy, entry.Value.Status);
+                },
+                entry =>
+                {
+                    Assert.Equal("test2", entry.Key);
+                    Assert.Equal(HealthStatus.Healthy, entry.Value.Status);
+                });
+        }
+
+        [Fact]
+        public async Task CheckHealthAsync_TimeoutReturnsUnhealthy()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddAsyncCheck("timeout", async (ct) =>
+                {
+                    await Task.Delay(2000, ct);
+                    return HealthCheckResult.Healthy();
+                }, timeout: TimeSpan.FromMilliseconds(100));
+            });
+
+            // Act
+            var results = await service.CheckHealthAsync();
+
+            // Assert
+            Assert.Collection(
+                results.Entries,
+                actual =>
+                {
+                    Assert.Equal("timeout", actual.Key);
+                    Assert.Equal(HealthStatus.Unhealthy, actual.Value.Status);
+                });
+        }
+
+        [Fact]
+        public void CheckHealthAsync_WorksInSingleThreadedSyncContext()
+        {
+            // Arrange
+            var service = CreateHealthChecksService(b =>
+            {
+                b.AddAsyncCheck("test", async () =>
+                {
+                    await Task.Delay(1).ConfigureAwait(false);
+                    return HealthCheckResult.Healthy();
+                });
+            });
+
+            var hangs = true;
+
+            // Act
+            using (var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3)))
+            {
+                var token = cts.Token;
+                token.Register(() => throw new OperationCanceledException(token));
+
+                SingleThreadedSynchronizationContext.Run(() =>
+                {
+                    // Act
+                    service.CheckHealthAsync(token).GetAwaiter().GetResult();
+                    hangs = false;
+                });
+            }
+
+            // Assert
+            Assert.False(hangs);
         }
 
         private static DefaultHealthCheckService CreateHealthChecksService(Action<IHealthChecksBuilder> configure)

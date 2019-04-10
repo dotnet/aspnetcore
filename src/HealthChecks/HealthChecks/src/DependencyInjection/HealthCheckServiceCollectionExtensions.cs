@@ -26,7 +26,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IHealthChecksBuilder AddHealthChecks(this IServiceCollection services)
         {
             services.TryAddSingleton<HealthCheckService, DefaultHealthCheckService>();
-            services.TryAddSingleton<IHostedService, HealthCheckPublisherHostedService>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, HealthCheckPublisherHostedService>());
             return new HealthChecksBuilder(services);
         }
     }

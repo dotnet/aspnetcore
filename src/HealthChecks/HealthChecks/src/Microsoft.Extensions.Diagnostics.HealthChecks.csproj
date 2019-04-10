@@ -10,7 +10,12 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthChecksBuilder
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Diagnostics.HealthChecks.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)NonCapturingTimer\**\*.cs" />

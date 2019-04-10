@@ -5,9 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <_FileProviderTaskFolder Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard1.5</_FileProviderTaskFolder>
-    <_FileProviderTaskFolder Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_FileProviderTaskFolder>
-    <_FileProviderTaskAssembly>$(MSBuildThisFileDirectory)..\..\tasks\$(_FileProviderTaskFolder)\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
+    <_FileProviderTaskAssembly>$(MSBuildThisFileDirectory)..\..\tasks\netstandard2.0\Microsoft.Extensions.FileProviders.Embedded.Manifest.Task.dll</_FileProviderTaskAssembly>
   </PropertyGroup>
 
   <UsingTask
