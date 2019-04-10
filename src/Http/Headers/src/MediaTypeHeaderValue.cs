@@ -650,6 +650,7 @@ namespace Microsoft.Net.Http.Headers
             {
                 return true;
             }
+
             if (set.Suffix.HasValue)
             {
                 if (Suffix.HasValue)
@@ -663,7 +664,10 @@ namespace Microsoft.Net.Http.Headers
             }
             else
             {
-                return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase);
+                // If this subtype or suffix matches the subtype of the set,
+                // it is considered a subtype.
+                // Ex: application/json > application/val+json
+                return MatchesEitherSubtypeOrSuffix(set);
             }
         }
 
@@ -671,6 +675,12 @@ namespace Microsoft.Net.Http.Headers
         {
             return set.MatchesAllSubTypesWithoutSuffix ||
                 set.SubTypeWithoutSuffix.Equals(SubTypeWithoutSuffix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool MatchesEitherSubtypeOrSuffix(MediaTypeHeaderValue set)
+        {
+            return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase) ||
+                set.SubType.Equals(Suffix, StringComparison.OrdinalIgnoreCase);
         }
 
         private bool MatchesParameters(MediaTypeHeaderValue set)

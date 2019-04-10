@@ -1,0 +1,5 @@
+Markup block - Gen<None> - 33 - (0:0,0)
+    Tag block - Gen<TagHelper> - 33 - (0:0,0) - div - CatchAllTagHelper
+        StartTagAndEndTag - <div bound #localminimized> ... </div>
+        bound - Minimized
+        #localminimized - Minimized

@@ -13,15 +13,6 @@ namespace E2ETests
             return Path.GetFullPath(Path.Combine(solutionDirectory, "samples", "MusicStore"));
         }
 
-        public static string GetCurrentBuildConfiguration()
-        {
-#if DEBUG
-            return "Debug";
-#else
-            return "Release";
-#endif
-        }
-
         public static bool PreservePublishedApplicationForDebugging
         {
             get
@@ -40,18 +31,17 @@ namespace E2ETests
             }
         }
 
-        public static string GetTargetFramework(RuntimeFlavor flavor)
+        public static string GetConfigContent(ServerType serverType, string iisConfig)
         {
-            if (flavor == RuntimeFlavor.Clr)
+            var applicationBasePath = AppContext.BaseDirectory;
+
+            string content = null;
+            if (serverType == ServerType.IISExpress)
             {
-                return "net461";
-            }
-            else if (flavor == RuntimeFlavor.CoreClr)
-            {
-                return "netcoreapp2.1";
+                content = File.ReadAllText(Path.Combine(applicationBasePath, iisConfig));
             }
 
-            throw new ArgumentException($"Unknown runtime flavor '{flavor}.");
+            return content;
         }
     }
 }

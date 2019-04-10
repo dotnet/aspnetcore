@@ -109,34 +109,20 @@ namespace Microsoft.AspNetCore.TestHost
             var registration = cancellationToken.Register(Cancel);
             try
             {
-                // TODO: Usability issue. dotnet/corefx#27732 Flush or zero byte write causes ReadAsync to complete without data so I have to call ReadAsync in a loop.
-                while (true)
+                var result = await _pipe.Reader.ReadAsync(cancellationToken);
+
+                if (result.Buffer.IsEmpty && result.IsCompleted)
                 {
-                    var result = await _pipe.Reader.ReadAsync(cancellationToken);
-
-                    var readableBuffer = result.Buffer;
-                    if (!readableBuffer.IsEmpty)
-                    {
-                        var actual = Math.Min(readableBuffer.Length, count);
-                        readableBuffer = readableBuffer.Slice(0, actual);
-                        readableBuffer.CopyTo(new Span<byte>(buffer, offset, count));
-                        _pipe.Reader.AdvanceTo(readableBuffer.End, readableBuffer.End);
-                        return (int)actual;
-                    }
-
-                    if (result.IsCompleted)
-                    {
-                        _pipe.Reader.AdvanceTo(readableBuffer.End, readableBuffer.End); // TODO: Remove after https://github.com/dotnet/corefx/pull/27596
-                        _pipe.Reader.Complete();
-                        return 0;
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
-                    Debug.Assert(!result.IsCanceled); // It should only be canceled by cancellationToken.
-
-                    // Try again. TODO: dotnet/corefx#27732 I shouldn't need to do this, there wasn't any data.
-                    _pipe.Reader.AdvanceTo(readableBuffer.End, readableBuffer.End);
+                    _pipe.Reader.Complete();
+                    return 0;
                 }
+
+                var readableBuffer = result.Buffer;
+                var actual = Math.Min(readableBuffer.Length, count);
+                readableBuffer = readableBuffer.Slice(0, actual);
+                readableBuffer.CopyTo(new Span<byte>(buffer, offset, count));
+                _pipe.Reader.AdvanceTo(readableBuffer.End, readableBuffer.End);
+                return (int)actual;
             }
             finally
             {

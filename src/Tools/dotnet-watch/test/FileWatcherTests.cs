@@ -304,42 +304,44 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
         private void AssertFileChangeRaisesEvent(string directory, IFileSystemWatcher watcher)
         {
-            var semaphoreSlim = new SemaphoreSlim(0);
-            var expectedPath = Path.Combine(directory, Path.GetRandomFileName());
-            EventHandler<string> handler = (object _, string f) =>
+            using (var semaphoreSlim = new SemaphoreSlim(0))
             {
-                _output.WriteLine("File changed: " + f);
+                var expectedPath = Path.Combine(directory, Path.GetRandomFileName());
+                EventHandler<string> handler = (object _, string f) =>
+                {
+                    _output.WriteLine("File changed: " + f);
+                    try
+                    {
+                        if (string.Equals(f, expectedPath, StringComparison.OrdinalIgnoreCase))
+                        {
+                            semaphoreSlim.Release();
+                        }
+                    }
+                    catch (ObjectDisposedException)
+                    {
+                        // There's a known race condition here:
+                        // even though we tell the watcher to stop raising events and we unsubscribe the handler
+                        // there might be in-flight events that will still process. Since we dispose the reset
+                        // event, this code will fail if the handler executes after Dispose happens.
+                    }
+                };
+
+                File.AppendAllText(expectedPath, " ");
+
+                watcher.OnFileChange += handler;
                 try
                 {
-                    if (string.Equals(f, expectedPath, StringComparison.OrdinalIgnoreCase))
-                    {
-                        semaphoreSlim.Release();
-                    }
+                    // On Unix the file write time is in 1s increments;
+                    // if we don't wait, there's a chance that the polling
+                    // watcher will not detect the change
+                    Thread.Sleep(1000);
+                    File.AppendAllText(expectedPath, " ");
+                    Assert.True(semaphoreSlim.Wait(DefaultTimeout), "Expected a file change event for " + expectedPath);
                 }
-                catch (ObjectDisposedException)
+                finally
                 {
-                    // There's a known race condition here:
-                    // even though we tell the watcher to stop raising events and we unsubscribe the handler
-                    // there might be in-flight events that will still process. Since we dispose the reset
-                    // event, this code will fail if the handler executes after Dispose happens.
+                    watcher.OnFileChange -= handler;
                 }
-            };
-
-            File.AppendAllText(expectedPath, " ");
-
-            watcher.OnFileChange += handler;
-            try
-            {
-                // On Unix the file write time is in 1s increments;
-                // if we don't wait, there's a chance that the polling
-                // watcher will not detect the change
-                Thread.Sleep(1000);
-                File.AppendAllText(expectedPath, " ");
-                Assert.True(semaphoreSlim.Wait(DefaultTimeout), "Expected a file change event for " + expectedPath);
-            }
-            finally
-            {
-                watcher.OnFileChange -= handler;
             }
         }
 

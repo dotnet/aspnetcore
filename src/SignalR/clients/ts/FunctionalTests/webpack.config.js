@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 const path = require("path");
-const webpack = require("../common/node_modules/webpack");
 
 module.exports = {
     entry: path.resolve(__dirname, "ts", "index.ts"),
@@ -38,5 +37,6 @@ module.exports = {
     externals: {
         "@aspnet/signalr": "signalR",
         "@aspnet/signalr-protocol-msgpack": "signalR.protocols.msgpack",
+        "request": "request",
     },
 };

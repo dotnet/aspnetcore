@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        internal int StatusCode { get; }
+        public int StatusCode { get; }
 
         internal StringValues AllowedHeader { get; }
 
@@ -42,8 +42,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         [StackTraceHidden]
+#pragma warning disable PUB0001 // Pubternal type in public API
         public static void Throw(RequestRejectionReason reason, HttpMethod method)
             => throw GetException(reason, method.ToString().ToUpperInvariant());
+#pragma warning restore PUB0001 // Pubternal type in public API
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static BadHttpRequestException GetException(RequestRejectionReason reason)

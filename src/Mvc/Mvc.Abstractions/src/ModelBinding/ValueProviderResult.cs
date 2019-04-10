@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// regardless of whether a single value or multiple values were submitted.
     /// </para>
     /// </remarks>
-    public struct ValueProviderResult : IEquatable<ValueProviderResult>, IEnumerable<string>
+    public readonly struct ValueProviderResult : IEquatable<ValueProviderResult>, IEnumerable<string>
     {
         private static readonly CultureInfo _invariantCulture = CultureInfo.InvariantCulture;
 

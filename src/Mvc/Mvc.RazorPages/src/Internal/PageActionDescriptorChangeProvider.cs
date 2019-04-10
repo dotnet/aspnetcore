@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.FileProviders;
@@ -18,11 +19,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly IFileProvider _fileProvider;
         private readonly string[] _searchPatterns;
         private readonly string[] _additionalFilesToTrack;
+        private readonly bool _watchForChanges;
 
         public PageActionDescriptorChangeProvider(
             RazorTemplateEngine templateEngine,
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
-            IOptions<RazorPagesOptions> razorPagesOptions)
+            IOptions<RazorPagesOptions> razorPagesOptions,
+            IOptions<RazorViewEngineOptions> razorViewEngineOptions)
         {
             if (templateEngine == null)
             {
@@ -37,6 +40,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             if (razorPagesOptions == null)
             {
                 throw new ArgumentNullException(nameof(razorPagesOptions));
+            }
+
+            _watchForChanges = razorViewEngineOptions.Value.AllowRecompilingViewsOnFileChange;
+            if (!_watchForChanges)
+            {
+                // No need to do any additional work if we aren't going to be watching for file changes.
+                return;
             }
 
             _fileProvider = fileProviderAccessor.FileProvider;
@@ -84,6 +94,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         public IChangeToken GetChangeToken()
         {
+            if (!_watchForChanges)
+            {
+                return NullChangeToken.Singleton;
+            }
+
             var changeTokens = new IChangeToken[_additionalFilesToTrack.Length + _searchPatterns.Length];
             for (var i = 0; i < _additionalFilesToTrack.Length; i++)
             {

@@ -1,0 +1,6 @@
+(1,3): Error RZ2004: Namespace imports and type aliases cannot be placed within code blocks.  They must immediately follow an "@" character in markup.  It is recommended that you put them at the top of the page, as in the following example:
+
+@using System.Drawing;
+@{
+    // OK here to use types from System.Drawing in the page.
+}

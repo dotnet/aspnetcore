@@ -1,0 +1,7 @@
+Markup block - Gen<None> - 46 - (0:0,0)
+    Tag block - Gen<TagHelper> - 46 - (0:0,0) - template - CatchAllTagHelper
+        StartTagAndEndTag - <template bound *something='value'> ... </template>
+        bound - Minimized
+        *something - SingleQuotes
+            Markup span - Gen<Markup> - [value] - SpanEditHandler;Accepts:Any - (28:0,28) - Tokens:1
+                HtmlTokenType.Text;[value];

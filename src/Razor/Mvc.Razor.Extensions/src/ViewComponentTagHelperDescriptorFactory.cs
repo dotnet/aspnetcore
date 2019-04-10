@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var descriptorBuilder = TagHelperDescriptorBuilder.Create(ViewComponentTagHelperConventions.Kind, typeName, assemblyName);
             descriptorBuilder.SetTypeName(typeName);
             descriptorBuilder.DisplayName = displayName;
-            
+
             if (TryFindInvokeMethod(type, out var method, out var diagnostic))
             {
                 var methodParameters = method.Parameters;
@@ -84,21 +84,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private bool TryFindInvokeMethod(INamedTypeSymbol type, out IMethodSymbol method, out RazorDiagnostic diagnostic)
         {
-            var methods = type.GetMembers()
-                .OfType<IMethodSymbol>()
-                .Where(m =>
-                    m.DeclaredAccessibility == Accessibility.Public &&
-                    (string.Equals(m.Name, ViewComponentTypes.AsyncMethodName, StringComparison.Ordinal) ||
-                    string.Equals(m.Name, ViewComponentTypes.SyncMethodName, StringComparison.Ordinal)))
-                .ToArray();
+            var methods = GetInvokeMethods(type);
 
-            if (methods.Length == 0)
+            if (methods.Count == 0)
             {
-                diagnostic =  RazorExtensionsDiagnosticFactory.CreateViewComponent_CannotFindMethod(type.ToDisplayString(FullNameTypeDisplayFormat));
+                diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_CannotFindMethod(type.ToDisplayString(FullNameTypeDisplayFormat));
                 method = null;
                 return false;
             }
-            else if (methods.Length > 1)
+            else if (methods.Count > 1)
             {
                 diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_AmbiguousMethods(type.ToDisplayString(FullNameTypeDisplayFormat));
                 method = null;
@@ -153,6 +147,27 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return true;
         }
 
+        private static IReadOnlyList<IMethodSymbol> GetInvokeMethods(INamedTypeSymbol type)
+        {
+            var methods = new List<IMethodSymbol>();
+            while (type != null)
+            {
+                var currentTypeMethods = type.GetMembers()
+                    .OfType<IMethodSymbol>()
+                    .Where(m =>
+                        m.DeclaredAccessibility == Accessibility.Public &&
+                        !m.IsStatic &&
+                        (string.Equals(m.Name, ViewComponentTypes.AsyncMethodName, StringComparison.Ordinal) ||
+                        string.Equals(m.Name, ViewComponentTypes.SyncMethodName, StringComparison.Ordinal)));
+
+                methods.AddRange(currentTypeMethods);
+
+                type = type.BaseType;
+            }
+
+            return methods;
+        }
+
         private void AddRequiredAttributes(ImmutableArray<IParameterSymbol> methodParameters, TagMatchingRuleDescriptorBuilder builder)
         {
             foreach (var parameter in methodParameters)
@@ -164,7 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     builder.Attribute(attributeBuilder =>
                     {
                         var lowerKebabName = HtmlConventions.ToHtmlCase(parameter.Name);
-                        attributeBuilder.Name =lowerKebabName;
+                        attributeBuilder.Name = lowerKebabName;
                     });
                 }
             }

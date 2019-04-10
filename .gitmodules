@@ -1,4 +1,7 @@
 [submodule "modules/EntityFrameworkCore"]
-       path = modules/EntityFrameworkCore
-       url = https://github.com/aspnet/EntityFrameworkCore.git
-       branch = release/2.1
+	path = modules/EntityFrameworkCore
+	url = https://github.com/aspnet/EntityFrameworkCore.git
+	branch = release/2.2
+[submodule "googletest"]
+	path = src/submodules/googletest
+	url = https://github.com/google/googletest

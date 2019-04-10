@@ -16,13 +16,19 @@ namespace Microsoft.AspNetCore.ResponseCompression
         public IEnumerable<string> MimeTypes { get; set; }
 
         /// <summary>
+        /// Response Content-Type MIME types to not compress.
+        /// </summary>
+        public IEnumerable<string> ExcludedMimeTypes { get; set; }
+
+        /// <summary>
         /// Indicates if responses over HTTPS connections should be compressed. The default is 'false'.
-        /// Enable compression on HTTPS connections may expose security problems.
+        /// Enabling compression on HTTPS connections may expose security problems.
         /// </summary>
         public bool EnableForHttps { get; set; } = false;
 
         /// <summary>
-        /// The ICompressionProviders to use for responses.
+        /// The <see cref="ICompressionProvider"/> types to use for responses.
+        /// Providers are prioritized based on the order they are added.
         /// </summary>
         public CompressionProviderCollection Providers { get; } = new CompressionProviderCollection();
     }

@@ -14,16 +14,10 @@ namespace Microsoft.AspNetCore.Testing
             var request = httpContext.Request;
             var response = httpContext.Response;
             var buffer = new byte[httpContext.Request.ContentLength ?? 0];
-            var bytesRead = 0;
-
-            while (bytesRead < buffer.Length)
-            {
-                var count = await request.Body.ReadAsync(buffer, bytesRead, buffer.Length - bytesRead);
-                bytesRead += count;
-            }
 
             if (buffer.Length > 0)
             {
+                await request.Body.ReadUntilEndAsync(buffer).DefaultTimeout();
                 await response.Body.WriteAsync(buffer, 0, buffer.Length);
             }
         }

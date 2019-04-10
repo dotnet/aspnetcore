@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.MvcServiceCollectionExtensionsTestControllers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -110,6 +111,33 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Single(collection, d => d.ServiceType.Equals(typeof(ControllerTwo)));
         }
 
+        [Fact]
+        public void ConfigureApiBehaviorOptions_InvokesSetupAction()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection()
+                .AddOptions();
+
+            var builder = new MvcBuilder(
+                serviceCollection,
+                new ApplicationPartManager());
+
+            var part = new TestApplicationPart();
+
+            // Act
+            var result = builder.ConfigureApiBehaviorOptions(o =>
+            {
+                o.SuppressMapClientErrors = true;
+            });
+
+            // Assert
+            var options = serviceCollection.
+                BuildServiceProvider()
+                .GetRequiredService<IOptions<ApiBehaviorOptions>>()
+                .Value;
+            Assert.True(options.SuppressMapClientErrors);
+        }
+
         private class ControllerOne
         {
         }
@@ -136,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc
 // independent.
 namespace Microsoft.AspNetCore.Mvc.MvcServiceCollectionExtensionsTestControllers
 {
-    public class ControllerTypeA : Microsoft.AspNetCore.Mvc.Controller
+    public class ControllerTypeA : ControllerBase
     {
 
     }

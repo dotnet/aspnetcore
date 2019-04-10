@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Antiforgery;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -174,6 +173,33 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.True(response.Headers.CacheControl.NoCache);
             var pragmaValue = Assert.Single(response.Headers.Pragma.ToArray());
             Assert.Equal("no-cache", pragmaValue.Name);
+        }
+
+        [Fact]
+        public async Task RequestWithoutAntiforgeryToken_SendsBadRequest()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Antiforgery/Login");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task RequestWithoutAntiforgeryToken_ExecutesResultFilter()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost/Antiforgery/LoginWithRedirectResultFilter");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("http://example.com/antiforgery-redirect", response.Headers.Location.AbsoluteUri);
         }
     }
 }

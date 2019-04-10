@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -186,7 +187,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private static RazorViewEngineOptions GetViewEngineOptions()
         {
-            var defaultSetup = new RazorViewEngineOptionsSetup(Mock.Of<IHostingEnvironment>());
+            var defaultSetup = new RazorViewEngineOptionsSetup(
+                Mock.Of<IHostingEnvironment>(),
+                NullLoggerFactory.Instance,
+                Options.Create(new MvcCompatibilityOptions()));
             var options = new RazorViewEngineOptions();
             defaultSetup.Configure(options);
 

@@ -173,8 +173,8 @@
   <data name="LayoutHasCircularReference" xml:space="preserve">
     <value>A circular layout reference was detected when rendering '{0}'. The layout page '{1}' has already been rendered.</value>
   </data>
-  <data name="Compilation_DependencyContextIsNotSpecified" xml:space="preserve">
-    <value>One or more compilation references are missing. Ensure that your project is referencing '{0}' and the '{1}' property is not set to false.</value>
+  <data name="Compilation_MissingReferences" xml:space="preserve">
+    <value>One or more compilation references may be missing. If you're seeing this in a published application, set '{0}' to true in your project file to ensure files in the refs directory are published.</value>
   </data>
   <data name="ViewLocationFormatsIsRequired" xml:space="preserve">
     <value>'{0}' cannot be empty. These locations are required to locate a view for rendering.</value>

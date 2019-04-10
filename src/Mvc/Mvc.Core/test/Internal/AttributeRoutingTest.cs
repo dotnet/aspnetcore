@@ -175,8 +175,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .SetupGet(o => o.Value)
                 .Returns(new RouteOptions());
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            var inlineConstraintResolver = new DefaultInlineConstraintResolver(routeOptions.Object);
+#pragma warning restore CS0618 // Type or member is obsolete
+
             var services = new ServiceCollection()
-                .AddSingleton<IInlineConstraintResolver>(new DefaultInlineConstraintResolver(routeOptions.Object))
+                .AddSingleton<IInlineConstraintResolver>(inlineConstraintResolver)
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
 
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();

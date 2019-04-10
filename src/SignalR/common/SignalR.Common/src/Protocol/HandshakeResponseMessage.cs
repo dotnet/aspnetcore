@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <summary>
         /// Initializes a new instance of the <see cref="HandshakeResponseMessage"/> class.
         /// </summary>
-        /// <param name="error">An optional response error message. A <c>null</c> error message indicates a succesful handshake.</param>
+        /// <param name="error">An optional response error message. A <c>null</c> error message indicates a successful handshake.</param>
         public HandshakeResponseMessage(string error)
         {
             // Note that a response with an empty string for error in the JSON is considered an errored response

@@ -51,7 +51,8 @@
 
     <PropertyGroup>
       <MvcRazorRunCommand Condition="'$(MvcRazorRunCommand)'==''">dotnet</MvcRazorRunCommand>
-      <_MvcViewCompilationBinaryPath Condition="'$(_MvcViewCompilationBinaryPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName).dll</_MvcViewCompilationBinaryPath>
+      <_MvcViewCompilationBinariesDir Condition="'$(_MvcViewCompilationBinariesDir)' == ''">$(MSBuildThisFileDirectory)</_MvcViewCompilationBinariesDir>
+      <_MvcViewCompilationBinaryPath>$(_MvcViewCompilationBinariesDir)netcoreapp2.0\$(MSBuildThisFileName).dll</_MvcViewCompilationBinaryPath>
 
       <ExecArgs>&quot;$(MvcRazorRunCommand)&quot; exec</ExecArgs>
       <ExecArgs>$(ExecArgs) --runtimeconfig &quot;$(ProjectRuntimeConfigFilePath)&quot;</ExecArgs>
@@ -79,17 +80,19 @@
       Targets="Build;MvcRazorPrecompile" />
   </Target>
 
+  <Target Name="_ResolveBinaryPath">
+    <PropertyGroup>
+      <_MvcViewCompilationBinariesDir Condition="'$(_MvcViewCompilationBinariesDir)' == ''">$(MSBuildThisFileDirectory)</_MvcViewCompilationBinariesDir>
+
+      <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x86'">$(_MvcViewCompilationBinariesDir)net461\$(MSBuildThisFileName)-x86.exe</_MvcViewCompilationBinaryPath>
+      <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'!='x86'">$(_MvcViewCompilationBinariesDir)net461\$(MSBuildThisFileName).exe</_MvcViewCompilationBinaryPath>
+    </PropertyGroup>
+  </Target>
+
   <Target
     Name="_AddDesktopReferences"
     AfterTargets="ResolveLockFileReferences"
-    Condition="'$(MvcRazorCompileOnPublish)'=='true' AND '$(_MvcViewCompilationAddDesktopReferences)'!='false' AND '$(TargetFrameworkIdentifier)'=='.NETFramework'">
-
-    <PropertyGroup Condition="'$(_MvcViewCompilationBinaryPath)'==''">
-      <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x86'">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x86.exe</_MvcViewCompilationBinaryPath>
-
-      <!-- For PlatformTarget = AnyCPU or x64, we will use the x64 binary -->
-      <_MvcViewCompilationBinaryPath Condition="'$(_MvcViewCompilationBinaryPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x64.exe</_MvcViewCompilationBinaryPath>
-    </PropertyGroup>
+    Condition="'$(MvcRazorCompileOnPublish)'=='true' AND '$(ResolvedRazorCompileToolset)'=='PrecompilationTool' AND '$(TargetFrameworkIdentifier)'=='.NETFramework'">
 
     <ItemGroup Condition="'$(_MvcViewCompilationBinaryPath)'!=''">
       <Reference Include="$(_MvcViewCompilationBinaryPath)" Private="false" Visible="false" />
@@ -98,7 +101,7 @@
 
   <Target
     Name="_RunForDesktop"
-    DependsOnTargets="_AddDesktopReferences;_CreateResponseFileForMvcRazorPrecompile"
+    DependsOnTargets="_ResolveBinaryPath;_AddDesktopReferences;_CreateResponseFileForMvcRazorPrecompile"
     Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
 
     <PropertyGroup>
@@ -165,11 +168,11 @@
      Name="_MvcRazorPrecompileOnPublish"
      DependsOnTargets="MvcRazorPrecompile"
      AfterTargets="PrepareForPublish"
-     Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool'and '$(MvcRazorCompileOnPublish)'=='true'" />
+     Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool' and '$(MvcRazorCompileOnPublish)'=='true'" />
 
   <Target Name="_MvcRazorResolveFilesToCompute"
     AfterTargets="ComputeRefAssembliesToPublish"
-    Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool'and '$(MvcRazorCompileOnPublish)'=='true'">
+    Condition="'$(ResolvedRazorCompileToolset)'=='PrecompilationTool' and '$(MvcRazorCompileOnPublish)'=='true'">
 
     <PropertyGroup>
       <_MvcRazorOutputPdbFullPath>$([System.IO.Path]::ChangeExtension('$(_MvcRazorOutputFullPath)', '.pdb'))</_MvcRazorOutputPdbFullPath>

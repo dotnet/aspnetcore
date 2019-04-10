@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -29,6 +30,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         // See: (http://www.w3.org/TR/html5/forms.html#the-input-element)
         private static readonly string[] _placeholderInputTypes =
             new[] { "text", "search", "url", "tel", "email", "password", "number" };
+
+        // See: (http://www.w3.org/TR/html5/sec-forms.html#apply)
+        private static readonly string[] _maxLengthInputTypes =
+            new[] { "text", "search", "url", "tel", "email", "password" };
 
         private readonly IAntiforgery _antiforgery;
         private readonly IModelMetadataProvider _metadataProvider;
@@ -92,7 +97,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Underscores are fine characters in id's.
             IdAttributeDotReplacement = optionsAccessor.Value.HtmlHelperOptions.IdAttributeDotReplacement;
+
+            AllowRenderingMaxLengthAttribute = optionsAccessor.Value.AllowRenderingMaxLengthAttribute;
         }
+
+        /// <summary> 
+        /// Gets or sets a value that indicates whether the maxlength attribute should be rendered for compatible HTML input elements, 
+        /// when they're bound to models marked with either 
+        /// <see cref="StringLengthAttribute"/> or <see cref="MaxLengthAttribute"/> attributes. 
+        /// </summary>
+        /// <remarks>If both attributes are specified, the one with the smaller value will be used for the rendered `maxlength` attribute.</remarks>
+        protected bool AllowRenderingMaxLengthAttribute { get; }
 
         /// <inheritdoc />
         public string IdAttributeDotReplacement { get; }
@@ -724,6 +739,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             AddPlaceholderAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
+            if (AllowRenderingMaxLengthAttribute)
+            {
+                AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
+            }
+
             AddValidationAttributes(viewContext, tagBuilder, modelExplorer, expression);
 
             // If there are any errors for a named field, we add this CSS attribute.
@@ -1239,6 +1259,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 AddPlaceholderAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
             }
 
+            if (AllowRenderingMaxLengthAttribute && _maxLengthInputTypes.Contains(suppliedTypeString))
+            {
+                AddMaxLengthAttribute(viewContext.ViewData, tagBuilder, modelExplorer, expression);
+            }
+
             var valueParameter = FormatValue(value, format);
             var usedModelState = false;
             switch (inputType)
@@ -1370,6 +1395,43 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             if (!string.IsNullOrEmpty(placeholder))
             {
                 tagBuilder.MergeAttribute("placeholder", placeholder);
+            }
+        }
+
+        /// <summary>
+        /// Adds a maxlength attribute to the <paramref name="tagBuilder" />.
+        /// </summary>
+        /// <param name="viewData">A <see cref="ViewDataDictionary"/> instance for the current scope.</param>
+        /// <param name="tagBuilder">A <see cref="TagBuilder"/> instance.</param>
+        /// <param name="modelExplorer">The <see cref="ModelExplorer"/> for the <paramref name="expression"/>.</param>
+        /// <param name="expression">Expression name, relative to the current model.</param>
+        protected virtual void AddMaxLengthAttribute(
+            ViewDataDictionary viewData,
+            TagBuilder tagBuilder,
+            ModelExplorer modelExplorer,
+            string expression)
+        {
+            modelExplorer = modelExplorer ?? ExpressionMetadataProvider.FromStringExpression(
+                expression,
+                viewData,
+                _metadataProvider);
+
+            int? maxLengthValue = null;
+            foreach (var attribute in modelExplorer.Metadata.ValidatorMetadata)
+            {
+                if (attribute is MaxLengthAttribute maxLengthAttribute && (!maxLengthValue.HasValue || maxLengthValue.Value > maxLengthAttribute.Length))
+                {
+                    maxLengthValue = maxLengthAttribute.Length;
+                }
+                else if (attribute is StringLengthAttribute stringLengthAttribute && (!maxLengthValue.HasValue || maxLengthValue.Value > stringLengthAttribute.MaximumLength))
+                {
+                    maxLengthValue = stringLengthAttribute.MaximumLength;
+                }
+            }
+
+            if (maxLengthValue.HasValue)
+            {
+                tagBuilder.MergeAttribute("maxlength", maxLengthValue.Value.ToString());
             }
         }
 

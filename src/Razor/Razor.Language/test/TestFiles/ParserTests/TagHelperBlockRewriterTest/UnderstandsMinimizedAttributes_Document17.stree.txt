@@ -1,0 +1,5 @@
+Markup block - Gen<None> - 30 - (0:0,0)
+    Tag block - Gen<TagHelper> - 30 - (0:0,0) - p - PTagHelper
+        StartTagAndEndTag - <p bound-int bound-string> ... </p>
+        bound-int - Minimized
+        bound-string - Minimized

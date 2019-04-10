@@ -28,6 +28,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     values[nameof(MvcViewOptions.SuppressTempDataAttributePrefix)] = true;
                 }
 
+                if (Version >= CompatibilityVersion.Version_2_2)
+                {
+                    values[nameof(MvcViewOptions.AllowRenderingMaxLengthAttribute)] = true;
+                }
+
                 return values;
             }
         }

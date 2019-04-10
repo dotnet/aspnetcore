@@ -39,7 +39,10 @@ module.exports = function (modulePath, browserBaseName, options) {
         },
         resolve: {
             extensions: [".ts", ".js"],
-            alias: options.alias,
+            alias: {
+                "./NodeHttpClient": path.resolve(__dirname, "signalr/src/EmptyNodeHttpClient.ts"),
+                ...options.alias,
+            }
         },
         output: {
             filename: `${browserBaseName}.js`,
@@ -72,6 +75,7 @@ module.exports = function (modulePath, browserBaseName, options) {
             }),
             // ES6 Promise uses this module in certain circumstances but we don't need it.
             new webpack.IgnorePlugin(/vertx/),
+            new webpack.IgnorePlugin(/eventsource/),
         ],
         externals: options.externals,
     };

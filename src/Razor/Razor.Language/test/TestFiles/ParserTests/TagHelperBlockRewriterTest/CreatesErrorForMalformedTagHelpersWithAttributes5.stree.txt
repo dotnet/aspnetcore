@@ -1,0 +1,6 @@
+Markup block - Gen<None> - 13 - (0:0,0)
+    Tag block - Gen<TagHelper> - 13 - (0:0,0) - p - ptaghelper
+        StartTagAndEndTag - <p bar=false'
+        bar - NoQuotes
+            Markup span - Gen<Markup> - [false] - SpanEditHandler;Accepts:Any - (7:0,7) - Tokens:1
+                HtmlTokenType.Text;[false];

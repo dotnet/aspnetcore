@@ -1,0 +1,21 @@
+Statement block - Gen<None> - 54 - (0:0,0)
+    Code span - Gen<Stmt> - [if(foo) {LF    /* bar } " */ ' baz } 'LF    zoop();LF}] - SpanEditHandler;Accepts:Any - (0:0,0) - Tokens:19
+        CSharpTokenType.Keyword;[if];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.Identifier;[foo];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.WhiteSpace;[    ];
+        CSharpTokenType.Comment;[/* bar } " */];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.CharacterLiteral;[' baz } '];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.WhiteSpace;[    ];
+        CSharpTokenType.Identifier;[zoop];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.RightBrace;[}];

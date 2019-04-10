@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
@@ -219,7 +220,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                     break;
                 case ActionType.CustomResponse:
                     int statusCode;
-                    if (!int.TryParse(urlAction.Attribute(RewriteTags.StatusCode)?.Value, out statusCode))
+                    if (!int.TryParse(urlAction.Attribute(RewriteTags.StatusCode)?.Value, NumberStyles.None, CultureInfo.InvariantCulture, out statusCode))
                     {
                         throw new InvalidUrlRewriteFormatException(urlAction, "A valid status code is required");
                     }

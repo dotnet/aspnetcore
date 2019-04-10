@@ -25,6 +25,10 @@ try {
     # Solutions
     #
 
+    if ($ci) {
+        & $repoRoot/build.cmd /t:InstallDotNet
+    }
+
     Write-Host "Checking that solutions are up to date"
 
     Get-ChildItem "$repoRoot/*.sln" -Recurse | % {

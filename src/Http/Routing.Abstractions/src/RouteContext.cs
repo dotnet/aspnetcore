@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing
         private RouteData _routeData;
 
         /// <summary>
-        /// Creates a new <see cref="RouteContext"/> for the provided <paramref name="httpContext"/>.
+        /// Creates a new instance of <see cref="RouteContext"/> for the provided <paramref name="httpContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="Http.HttpContext"/> associated with the current request.</param>
         public RouteContext(HttpContext httpContext)

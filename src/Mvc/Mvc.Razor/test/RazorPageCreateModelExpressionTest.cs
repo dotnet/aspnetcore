@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private static IModelExpressionProvider CreateModelExpressionProvider()
         {
-            var provider = new TestModelMetadataProvider();
+            var provider = new EmptyModelMetadataProvider();
             var modelExpressionProvider = new ModelExpressionProvider(
                 provider,
                 new ExpressionTextCache());
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
         private static ViewContext CreateViewContext()
         {
-            var provider = new TestModelMetadataProvider();
+            var provider = new EmptyModelMetadataProvider();
             var viewData = new ViewDataDictionary<RazorPageCreateModelExpressionModel>(provider, new ModelStateDictionary());
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton<IModelMetadataProvider>(provider);

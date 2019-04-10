@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Moq;
 using Xunit;
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
-        public void ObjectTemplate_HonoursHideSurroundingHtml()
+        public void ObjectTemplate_HonorsHideSurroundingHtml()
         {
             // Arrange
             var expected =
@@ -232,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         }
 
         [Fact]
-        public void HiddenInputTemplate_HonoursHideSurroundingHtml()
+        public void HiddenInputTemplate_HonorsHideSurroundingHtml()
         {
             // Arrange
             var model = "Model string";

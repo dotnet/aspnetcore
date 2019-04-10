@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Microsoft.AspNetCore.Rewrite.Internal.PatternSegments;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
@@ -181,7 +182,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 
             var res = context.Capture();
             int index;
-            if (!int.TryParse(res, out index))
+            if (!int.TryParse(res, NumberStyles.None, CultureInfo.InvariantCulture, out index))
             {
                 throw new FormatException(Resources.FormatError_InputParserInvalidInteger(res, context.Index));
             }
