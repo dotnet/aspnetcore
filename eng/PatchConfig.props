@@ -49,4 +49,8 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.AspNetCoreModuleV2;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.2.5' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
 </Project>

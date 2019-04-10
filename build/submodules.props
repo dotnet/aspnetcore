@@ -37,6 +37,6 @@
 
   <ItemGroup>
     <Repository Include="Templating" RootPath="$(RepositoryRoot)src\Templating\" PatchPolicy="AlwaysUpdateAndCascadeVersions" />
-    <Repository Include="EntityFrameworkCore" />
+    <ShippedRepository Include="EntityFrameworkCore" />
   </ItemGroup>
 </Project>
