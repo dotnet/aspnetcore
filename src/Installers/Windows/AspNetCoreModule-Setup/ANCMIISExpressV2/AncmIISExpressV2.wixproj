@@ -59,7 +59,6 @@
     <ItemGroup>
       <BuildContentForAncm Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(TempPlatform)\*.*" />
     </ItemGroup>
-
     <Copy SourceFiles="@(BuildContentForAncm)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
   </Target>
 
