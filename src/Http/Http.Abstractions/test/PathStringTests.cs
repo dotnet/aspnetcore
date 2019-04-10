@@ -50,22 +50,6 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void AlwaysFails()
-        {
-            Assert.True(false);
-        }
-
-        [Fact]
-        public void SometimesFails()
-        {
-            var random = new Random();
-            if (random.Next(0, 2) == 0)
-            {
-                throw new Exception();
-            }
-        }
-
-        [Fact]
         public void HashCode_CheckNullAndEmptyHaveSameHashcodes()
         {
             Assert.Equal(PathString.Empty.GetHashCode(), default(PathString).GetHashCode());
