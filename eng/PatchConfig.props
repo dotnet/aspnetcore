@@ -18,14 +18,17 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Authentication.Google;
     </PackagesInPatch>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.9' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.10' ">
     <PackagesInPatch>
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.11' ">
+    <PackagesInPatch>
+    </PackagesInPatch>
+  </PropertyGroup>
+
 </Project>
