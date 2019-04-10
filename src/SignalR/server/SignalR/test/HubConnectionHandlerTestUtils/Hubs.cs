@@ -230,9 +230,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 await source.WaitToReadAsync();
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                Console.WriteLine(ex.ToString());
                 return "error identified and caught";
             }
 
