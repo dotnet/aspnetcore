@@ -25,6 +25,10 @@
     "prepack": "node ../build/embed-version.js",
     "test": "echo \"Run 'npm test' in the 'clients/ts' folder to test this package\" && exit 1"
   },
+  "keywords": [
+    "signalr",
+    "aspnetcore"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aspnet/AspNetCore.git"
