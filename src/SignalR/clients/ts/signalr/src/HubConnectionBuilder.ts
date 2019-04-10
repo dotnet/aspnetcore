@@ -13,6 +13,32 @@ import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
 import { Arg, ConsoleLogger } from "./Utils";
 
+// This is exported from this module but NOT from index, so it's "internal" for testing purposes
+export const LogLevelNameMapping = {
+    // TS Lint prefers alphabetical sorting...
+    critical: LogLevel.Critical,
+    debug: LogLevel.Debug,
+    error: LogLevel.Error,
+    info: LogLevel.Information,
+    information: LogLevel.Information,
+    none: LogLevel.None,
+    trace: LogLevel.Trace,
+    warn: LogLevel.Warning,
+    warning: LogLevel.Warning,
+};
+
+function parseLogLevel(name: keyof typeof LogLevelNameMapping): LogLevel {
+    // Case-insensitive matching via lower-casing
+    // Yes, I know case-folding is a complicated problem in Unicode, but we only support
+    // the ASCII strings defined in LogLevelNameMapping anyway, so it's fine -anurse.
+    const mapping = LogLevelNameMapping[name.toLowerCase()];
+    if (typeof mapping !== "undefined") {
+        return mapping;
+    } else {
+        throw new Error(`Unknown log level: ${name}`);
+    }
+}
+
 /** A builder for configuring {@link @aspnet/signalr.HubConnection} instances. */
 export class HubConnectionBuilder {
     /** @internal */
@@ -47,12 +73,15 @@ export class HubConnectionBuilder {
      * @param {LogLevel | ILogger} logging An object implementing the {@link @aspnet/signalr.ILogger} interface or {@link @aspnet/signalr.LogLevel}.
      * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
      */
-    public configureLogging(logging: LogLevel | ILogger): HubConnectionBuilder;
-    public configureLogging(logging: LogLevel | ILogger): HubConnectionBuilder {
+    public configureLogging(logging: LogLevel | keyof typeof LogLevelNameMapping | ILogger): HubConnectionBuilder;
+    public configureLogging(logging: LogLevel | keyof typeof LogLevelNameMapping | ILogger): HubConnectionBuilder {
         Arg.isRequired(logging, "logging");
 
         if (isLogger(logging)) {
             this.logger = logging;
+        } else if (typeof logging === "string") {
+            const logLevel = parseLogLevel(logging);
+            this.logger = new ConsoleLogger(logLevel);
         } else {
             this.logger = new ConsoleLogger(logging);
         }
@@ -92,7 +121,7 @@ export class HubConnectionBuilder {
         // Flow-typing knows where it's at. Since HttpTransportType is a number and IHttpConnectionOptions is guaranteed
         // to be an object, we know (as does TypeScript) this comparison is all we need to figure out which overload was called.
         if (typeof transportTypeOrOptions === "object") {
-            this.httpConnectionOptions = {...this.httpConnectionOptions, ...transportTypeOrOptions};
+            this.httpConnectionOptions = { ...this.httpConnectionOptions, ...transportTypeOrOptions };
         } else {
             this.httpConnectionOptions = {
                 ...this.httpConnectionOptions,

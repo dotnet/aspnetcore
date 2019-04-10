@@ -4,12 +4,13 @@
 import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
 import { HttpRequest, HttpResponse } from "../src/HttpClient";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
-import { HubConnectionBuilder } from "../src/HubConnectionBuilder";
+import { HubConnectionBuilder, LogLevelNameMapping } from "../src/HubConnectionBuilder";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HubMessage, IHubProtocol } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
 import { HttpTransportType, TransferFormat } from "../src/ITransport";
 import { NullLogger } from "../src/Loggers";
+import { ConsoleLogger } from "../src/Utils";
 
 import { VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
@@ -26,15 +27,37 @@ const commonHttpOptions: IHttpConnectionOptions = {
     logMessageContent: true,
 };
 
+class CapturingConsole {
+    public messages: any[] = [];
+
+    public error(message: any) {
+        this.messages.push(CapturingConsole.stripPrefix(message));
+    }
+
+    public warn(message: any) {
+        this.messages.push(CapturingConsole.stripPrefix(message));
+    }
+
+    public info(message: any) {
+        this.messages.push(CapturingConsole.stripPrefix(message));
+    }
+
+    public log(message: any) {
+        this.messages.push(CapturingConsole.stripPrefix(message));
+    }
+
+    private static stripPrefix(input: any): any {
+        if (typeof input === "string") {
+            input = input.replace(/\[.*\]\s+/, "");
+        }
+        return input;
+    }
+}
+
 registerUnhandledRejectionHandler();
 
 describe("HubConnectionBuilder", () => {
     eachMissingValue((val, name) => {
-        it(`configureLogging throws if logger is ${name}`, () => {
-            const builder = new HubConnectionBuilder();
-            expect(() => builder.configureLogging(val!)).toThrow("The 'logging' argument is required.");
-        });
-
         it(`withUrl throws if url is ${name}`, () => {
             const builder = new HubConnectionBuilder();
             expect(() => builder.withUrl(val!)).toThrow("The 'url' argument is required.");
@@ -111,98 +134,160 @@ describe("HubConnectionBuilder", () => {
         });
     });
 
-    it("allows logger to be replaced", async () => {
-        let loggedMessages = 0;
-        const logger = {
-            log() {
-                loggedMessages += 1;
-            },
-        };
-        const pollSent = new PromiseSource<HttpRequest>();
-        const pollCompleted = new PromiseSource<HttpResponse>();
-        const testClient = createTestClient(pollSent, pollCompleted.promise)
-            .on("POST", "http://example.com?id=abc123", (req) => {
-                // Respond from the poll with the handshake response
-                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
-                return new HttpResponse(202);
-            });
-        const connection = createConnectionBuilder(logger)
-            .withUrl("http://example.com", {
-                ...commonHttpOptions,
-                httpClient: testClient,
-            })
-            .build();
+    describe("configureLogging", async () => {
+        function testLogLevels(logger: ILogger, minLevel: LogLevel) {
+            const capturingConsole = new CapturingConsole();
+            (logger as ConsoleLogger).outputConsole = capturingConsole;
 
-        try {
-            await connection.start();
-        } catch {
-            // Ignore failures
+            for (let level = LogLevel.Trace; level < LogLevel.None; level++) {
+                const message = `Message at LogLevel.${LogLevel[level]}`;
+                const expectedMessage = `${LogLevel[level]}: Message at LogLevel.${LogLevel[level]}`;
+                logger.log(level, message);
+
+                if (level >= minLevel) {
+                    expect(capturingConsole.messages).toContain(expectedMessage);
+                } else {
+                    expect(capturingConsole.messages).not.toContain(expectedMessage);
+                }
+            }
         }
 
-        expect(loggedMessages).toBeGreaterThan(0);
-    });
-
-    it("uses logger for both HttpConnection and HubConnection", async () => {
-        const pollSent = new PromiseSource<HttpRequest>();
-        const pollCompleted = new PromiseSource<HttpResponse>();
-        const testClient = createTestClient(pollSent, pollCompleted.promise)
-            .on("POST", "http://example.com?id=abc123", (req) => {
-                // Respond from the poll with the handshake response
-                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
-                return new HttpResponse(202);
+        eachMissingValue((val, name) => {
+            it(`throws if logger is ${name}`, () => {
+                const builder = new HubConnectionBuilder();
+                expect(() => builder.configureLogging(val!)).toThrow("The 'logging' argument is required.");
             });
-        const logger = new CaptureLogger();
-        const connection = createConnectionBuilder(logger)
-            .withUrl("http://example.com", {
-                ...commonHttpOptions,
-                httpClient: testClient,
-            })
-            .build();
+        });
 
-        try {
-            await connection.start();
-        } catch {
-            // Ignore failures
+        [
+            LogLevel.None,
+            LogLevel.Critical,
+            LogLevel.Error,
+            LogLevel.Warning,
+            LogLevel.Information,
+            LogLevel.Debug,
+            LogLevel.Trace,
+        ].forEach((minLevel) => {
+            const levelName = LogLevel[minLevel];
+            it(`accepts LogLevel.${levelName}`, async () => {
+                const builder = new HubConnectionBuilder()
+                    .configureLogging(minLevel);
+
+                expect(builder.logger).toBeDefined();
+                expect(builder.logger).toBeInstanceOf(ConsoleLogger);
+
+                testLogLevels(builder.logger!, minLevel);
+            });
+        });
+
+        const levelNames = Object.keys(LogLevelNameMapping) as Array<keyof typeof LogLevelNameMapping>;
+        for (const str of levelNames) {
+            const mapped = LogLevelNameMapping[str];
+            const mappedName = LogLevel[mapped];
+            it(`accepts "${str}" as an alias for LogLevel.${mappedName}`, async () => {
+                const builder = new HubConnectionBuilder()
+                    .configureLogging(str);
+
+                expect(builder.logger).toBeDefined();
+                expect(builder.logger).toBeInstanceOf(ConsoleLogger);
+
+                testLogLevels(builder.logger!, mapped);
+            });
         }
 
-        // A HubConnection message
-        expect(logger.messages).toContain("Starting HubConnection.");
+        it("allows logger to be replaced", async () => {
+            let loggedMessages = 0;
+            const logger = {
+                log() {
+                    loggedMessages += 1;
+                },
+            };
+            const pollSent = new PromiseSource<HttpRequest>();
+            const pollCompleted = new PromiseSource<HttpResponse>();
+            const testClient = createTestClient(pollSent, pollCompleted.promise)
+                .on("POST", "http://example.com?id=abc123", (req) => {
+                    // Respond from the poll with the handshake response
+                    pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                    return new HttpResponse(202);
+                });
+            const connection = createConnectionBuilder(logger)
+                .withUrl("http://example.com", {
+                    ...commonHttpOptions,
+                    httpClient: testClient,
+                })
+                .build();
 
-        // An HttpConnection message
-        expect(logger.messages).toContain("Starting connection with transfer format 'Text'.");
-    });
+            try {
+                await connection.start();
+            } catch {
+                // Ignore failures
+            }
 
-    it("does not replace HttpConnectionOptions logger if provided", async () => {
-        const pollSent = new PromiseSource<HttpRequest>();
-        const pollCompleted = new PromiseSource<HttpResponse>();
-        const testClient = createTestClient(pollSent, pollCompleted.promise)
-            .on("POST", "http://example.com?id=abc123", (req) => {
-                // Respond from the poll with the handshake response
-                pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
-                return new HttpResponse(202);
-            });
-        const hubConnectionLogger = new CaptureLogger();
-        const httpConnectionLogger = new CaptureLogger();
-        const connection = createConnectionBuilder(hubConnectionLogger)
-            .withUrl("http://example.com", {
-                httpClient: testClient,
-                logger: httpConnectionLogger,
-            })
-            .build();
+            expect(loggedMessages).toBeGreaterThan(0);
+        });
 
-        try {
-            await connection.start();
-        } catch {
-            // Ignore failures
-        }
+        it("configures logger for both HttpConnection and HubConnection", async () => {
+            const pollSent = new PromiseSource<HttpRequest>();
+            const pollCompleted = new PromiseSource<HttpResponse>();
+            const testClient = createTestClient(pollSent, pollCompleted.promise)
+                .on("POST", "http://example.com?id=abc123", (req) => {
+                    // Respond from the poll with the handshake response
+                    pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                    return new HttpResponse(202);
+                });
+            const logger = new CaptureLogger();
+            const connection = createConnectionBuilder(logger)
+                .withUrl("http://example.com", {
+                    ...commonHttpOptions,
+                    httpClient: testClient,
+                })
+                .build();
 
-        // A HubConnection message
-        expect(hubConnectionLogger.messages).toContain("Starting HubConnection.");
-        expect(httpConnectionLogger.messages).not.toContain("Starting HubConnection.");
+            try {
+                await connection.start();
+            } catch {
+                // Ignore failures
+            }
 
-        // An HttpConnection message
-        expect(httpConnectionLogger.messages).toContain("Starting connection with transfer format 'Text'.");
-        expect(hubConnectionLogger.messages).not.toContain("Starting connection with transfer format 'Text'.");
+            // A HubConnection message
+            expect(logger.messages).toContain("Starting HubConnection.");
+
+            // An HttpConnection message
+            expect(logger.messages).toContain("Starting connection with transfer format 'Text'.");
+        });
+
+        it("does not replace HttpConnectionOptions logger if provided", async () => {
+            const pollSent = new PromiseSource<HttpRequest>();
+            const pollCompleted = new PromiseSource<HttpResponse>();
+            const testClient = createTestClient(pollSent, pollCompleted.promise)
+                .on("POST", "http://example.com?id=abc123", (req) => {
+                    // Respond from the poll with the handshake response
+                    pollCompleted.resolve(new HttpResponse(204, "No Content", "{}"));
+                    return new HttpResponse(202);
+                });
+            const hubConnectionLogger = new CaptureLogger();
+            const httpConnectionLogger = new CaptureLogger();
+            const connection = createConnectionBuilder(hubConnectionLogger)
+                .withUrl("http://example.com", {
+                    httpClient: testClient,
+                    logger: httpConnectionLogger,
+                })
+                .build();
+
+            try {
+                await connection.start();
+            } catch {
+                // Ignore failures
+            }
+
+            // A HubConnection message
+            expect(hubConnectionLogger.messages).toContain("Starting HubConnection.");
+            expect(httpConnectionLogger.messages).not.toContain("Starting HubConnection.");
+
+            // An HttpConnection message
+            expect(httpConnectionLogger.messages).toContain("Starting connection with transfer format 'Text'.");
+            expect(hubConnectionLogger.messages).not.toContain("Starting connection with transfer format 'Text'.");
+        });
     });
 
     it("reconnectPolicy undefined by default", () => {
@@ -228,7 +313,7 @@ describe("HubConnectionBuilder", () => {
     });
 
     it("withAutomaticReconnect uses custom retryDelays when provided", () => {
-        const customRetryDelays = [ 3, 1, 4, 1, 5, 9 ];
+        const customRetryDelays = [3, 1, 4, 1, 5, 9];
         const builder = new HubConnectionBuilder()
             .withAutomaticReconnect(customRetryDelays);
 
@@ -241,7 +326,7 @@ describe("HubConnectionBuilder", () => {
     });
 
     it("withAutomaticReconnect uses a custom IReconnectPolicy when provided", () => {
-        const customRetryDelays = [ 127, 0, 0, 1 ];
+        const customRetryDelays = [127, 0, 0, 1];
         const builder = new HubConnectionBuilder()
             .withAutomaticReconnect(new DefaultReconnectPolicy(customRetryDelays));
 
