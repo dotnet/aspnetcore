@@ -115,6 +115,38 @@ namespace FunctionalTests
 
             app.UseFileServer();
 
+            // Custom CORS to allow any origin + credentials (which isn't allowed by the CORS spec)
+            // This is for testing purposes only (karma hosts the client on its own server), never do this in production
+            app.Use((context, next) =>
+            {
+                var originHeader = context.Request.Headers[HeaderNames.Origin];
+                if (!StringValues.IsNullOrEmpty(originHeader))
+                {
+                    context.Response.Headers[HeaderNames.AccessControlAllowOrigin] = originHeader;
+                    context.Response.Headers[HeaderNames.AccessControlAllowCredentials] = "true";
+
+                    var requestMethod = context.Request.Headers[HeaderNames.AccessControlRequestMethod];
+                    if (!StringValues.IsNullOrEmpty(requestMethod))
+                    {
+                        context.Response.Headers[HeaderNames.AccessControlAllowMethods] = requestMethod;
+                    }
+
+                    var requestHeaders = context.Request.Headers[HeaderNames.AccessControlRequestHeaders];
+                    if (!StringValues.IsNullOrEmpty(requestHeaders))
+                    {
+                        context.Response.Headers[HeaderNames.AccessControlAllowHeaders] = requestHeaders;
+                    }
+                }
+
+                if (string.Equals(context.Request.Method, "OPTIONS", StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status204NoContent;
+                    return Task.CompletedTask;
+                }
+
+                return next.Invoke();
+            });
+
             app.Use((context, next) =>
             {
                 if (context.Request.Path.StartsWithSegments("/redirect"))
