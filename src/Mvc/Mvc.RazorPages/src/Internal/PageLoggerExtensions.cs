@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         public const string PageFilter = "Page Filter";
 
         private static readonly Action<ILogger, string, ModelValidationState, Exception> _handlerMethodExecuting;
+        private static readonly Action<ILogger, string, string[], Exception> _handlerMethodExecutingWithArguments;
         private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
         private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
@@ -32,6 +33,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 LogLevel.Information,
                 101,
                 "Executing handler method {HandlerName} - ModelState is {ValidationState}");
+
+            _handlerMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
+                LogLevel.Debug,
+                103,
+                "Executing handler method {HandlerName} with arguments ({Arguments})");
+            "Executing handler method {HandlerName} - ModelState is {ValidationState}");
 
             _handlerMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
@@ -77,6 +84,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
                 var validationState = context.ModelState.ValidationState;
                 _handlerMethodExecuting(logger, handlerName, validationState, null);
+
+                if (arguments != null && logger.IsEnabled(LogLevel.Debug))
+                {
+                    var convertedArguments = new string[arguments.Length];
+                    for (var i = 0; i < arguments.Length; i++)
+                    {
+                        convertedArguments[i] = Convert.ToString(arguments[i]);
+                    }
+
+                    _handlerMethodExecutingWithArguments(logger, handlerName, convertedArguments, null);
+                }
             }
         }
 
