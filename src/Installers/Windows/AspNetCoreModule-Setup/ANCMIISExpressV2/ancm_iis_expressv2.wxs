@@ -173,7 +173,7 @@
                 <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
               </RegistryKey>
             </Component>
-            <Directory Id="HandlerVersionDir" Name="$(var.ANCMMsiVersion)" >
+            <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)" >
               <Component Id="AspNetCoreModuleHandler" Guid="559EF726-B25C-480F-AFA4-32D0BA8B2376" Win64="$(var.IsWin64)">
                 <File Id="AspNetCoreModuleHandlerDll"
                       Name="aspnetcorev2_outofprocess.dll"
@@ -216,7 +216,7 @@
                     <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
                   </RegistryKey>
                 </Component>
-                <Directory Id="HandlerVersionDir32" Name="$(var.ANCMMsiVersion)" >
+                <Directory Id="HandlerVersionDir32" Name="$(var.ANCMFolderVersion)" >
                   <Component Id="AspNetCoreModuleHandler.wow" Guid="0A8EDB50-7D85-4825-8010-D27EFAF061B6" Win64="no">
                     <File Id="AspNetCoreModuleHandlerDll.wow"
                           Name="aspnetcorev2_outofprocess.dll"
