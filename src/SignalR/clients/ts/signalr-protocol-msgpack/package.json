@@ -41,7 +41,7 @@
     "src/**/*"
   ],
   "peerDependencies": {
-    "@aspnet/signalr": "file:../signalr"
+    "@aspnet/signalr": "link:../signalr"
   },
   "dependencies": {
     "msgpack5": "^4.0.2"

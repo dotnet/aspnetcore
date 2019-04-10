@@ -5,7 +5,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@aspnet/signalr": "file:../signalr",
+    "@aspnet/signalr": "link:../signalr",
     "@aspnet/signalr-protocol-msgpack": "link:../signalr-protocol-msgpack",
     "msgpack5": "^4.0.2"
   },
