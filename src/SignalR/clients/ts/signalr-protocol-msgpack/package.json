@@ -11,7 +11,8 @@
     "test": "spec"
   },
   "scripts": {
-    "prebuild": "cd ../common && npm install && cd ../signalr-protocol-msgpack && npm install && node ../common/node_modules/rimraf/bin.js ./dist",
+    "clean": "node ../common/node_modules/rimraf/bin.js ./dist",
+    "prebuild": "cd ../common && npm install && cd ../signalr-protocol-msgpack && npm install && npm run clean",
     "build": "npm run build:lint && npm run build:esm && npm run build:cjs && npm run build:browser && npm run build:uglify",
     "build:lint": "node ../common/node_modules/tslint/bin/tslint -c ../tslint.json -p ./tsconfig.json",
     "build:esm": "node ../common/node_modules/typescript/bin/tsc --project ./tsconfig.json --module es2015 --outDir ./dist/esm -d",
