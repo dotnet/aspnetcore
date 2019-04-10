@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var cts = new CancellationTokenSource();
 
-                    var stream = connection.StreamAsync<int>("Stream", 5, cts.Token);
+                    var stream = connection.StreamAsync<int>("Stream", 1000, cts.Token);
                     var results = new List<int>();
 
                     var enumerator = stream.GetAsyncEnumerator();
@@ -462,8 +462,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                         }
                     });
 
-                    Assert.Single(results);
-                    Assert.Equal(0, results[0]);
+                    Assert.True(results.Count > 0 && results.Count < 1000);
                 }
                 catch (Exception ex)
                 {
@@ -665,7 +664,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
-        public async Task StreamAsyncCanBeCanceledThroughGetEnumerator(string protocolName, HttpTransportType transportType, string path)
+        public async Task StreamAsyncCanBeCanceledThroughGetAsyncEnumerator(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];
             using (StartServer<Startup>(out var server))
@@ -674,7 +673,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 try
                 {
                     await connection.StartAsync().OrTimeout();
-                    var stream = connection.StreamAsync<int>("Stream", 5 );
+                    var stream = connection.StreamAsync<int>("Stream", 1000 );
                     var results = new List<int>();
 
                     var cts = new CancellationTokenSource();
@@ -689,8 +688,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                         }
                     });
 
-                    Assert.Single(results);
-                    Assert.Equal(0, results[0]);
+                    Assert.True(results.Count > 0 && results.Count < 1000);
                 }
                 catch (Exception ex)
                 {
