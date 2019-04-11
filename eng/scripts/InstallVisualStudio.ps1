@@ -133,7 +133,7 @@ foreach ($i in 0, 1, 2) {
         $bootstrapperLogs = Get-ChildItem $env:Temp\dd_bootstrapper_*.log |Sort-Object CreationTime
         if ($bootstrapperLogs.Count -ne 0) {
             $bootstrapperLog = $bootstrapperLogs[$bootstrapperLogs.Count - 1]
-            Write-Host "$bootstraperLog:"
+            Write-Host "${bootstraperLog}:"
             Get-Content "$bootstrapperLog"
             Write-Host ""
         }
@@ -141,7 +141,7 @@ foreach ($i in 0, 1, 2) {
         $clientLogs = Get-ChildItem $env:Temp\dd_client_*.log |Sort-Object CreationTime
         if ($clientLogs.Count -ne 0) {
             $clientLog = $clientLogs[$clientLogs.Count - 1]
-            Write-Host "$clientLog:"
+            Write-Host "${clientLog}:"
             Get-Content "$clientLog"
             Write-Host ""
         }
@@ -149,7 +149,7 @@ foreach ($i in 0, 1, 2) {
         $setupLogs = Get-ChildItem $env:Temp\dd_setup_*.log |Sort-Object CreationTime
         if ($setupLogs.Count -ne 0) {
             $setupLog = $setupLogs[$bootstrapperLogs.Count - 1]
-            Write-Host "$setupLog:"
+            Write-Host "${setupLog}:"
             Get-Content "$setupLog"
             Write-Host ""
         }
