@@ -170,5 +170,25 @@ namespace Microsoft.Build.OOB.ESRP
                 OperationCode = OperationCode.JavaVerify,
             }
         };
+
+        public static Operations[] MicrosoftJavaSha2 => new Operations[]
+        {
+            new Operations
+            {
+                // No constant for this one :(
+                KeyCode = "CP-447347-Java",
+                OperationCode = OperationCode.JavaSign,
+                Parameters = new JObject
+                {
+                    { "SigAlg", "SHA256withRSA" },
+                    { "Timestamp", "-tsa http://sha256timestamp.ws.symantec.com/sha256/timestamp" },
+                },
+            },
+            new Operations
+            {
+                KeyCode = "CP-447347-Java",
+                OperationCode = OperationCode.JavaVerify,
+            }
+        };
     }
 }

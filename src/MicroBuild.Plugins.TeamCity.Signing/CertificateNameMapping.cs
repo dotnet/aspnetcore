@@ -16,6 +16,11 @@ namespace MicroBuild.Plugins.TeamCity.Signing
                 throw new NotSupportedException("Using the Microsoft (dual SHA1/SHA2) certificate is no longer supported. Use Microsoft400 instead. Contact the Project K Runtime Engineering Team <projectk-runtime-eng@microsoft.com> if you have questions.");
             }
 
+            if (string.Equals("MicrosoftJAR", friendlyName, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new NotSupportedException("Using the Microsoft Java SHA-1 certificate is no longer supported. Use MicrosoftJARSHA2 instead. Contact the Project K Runtime Engineering Team <projectk-runtime-eng@microsoft.com> if you have questions.");
+            }
+
             if (!_mapping.TryGetValue(friendlyName, out var retVal))
             {
                 throw new KeyNotFoundException($"Certificate name '{friendlyName}' is not recognized.");
@@ -29,7 +34,7 @@ namespace MicroBuild.Plugins.TeamCity.Signing
             ["VsixSHA2"] = OperationsJson.MicrosoftOpc2,
             ["3PartySHA2"] = OperationsJson.Microsoft3rdPartyAppComponent,
             ["NuGet"] = OperationsJson.MicrosoftNuGet,
-            ["MicrosoftJAR"] = OperationsJson.MicrosoftJava,
+            ["MicrosoftJARSHA2"] = OperationsJson.MicrosoftJavaSha2,
         };
     }
 }
