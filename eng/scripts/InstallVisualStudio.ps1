@@ -43,6 +43,11 @@ if ($Passive -and $Quiet) {
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 1
 
+if ($env:TF_BUILD) {
+    Write-Error 'This script is not intended for use on CI. It is only meant to be used to install a local developer environment. If you need to change Visual Studio requirements in CI agents, contact the @aspnet/build team.'
+    exit 1
+}
+
 $intermedateDir = "$PSScriptRoot\obj"
 mkdir $intermedateDir -ErrorAction Ignore | Out-Null
 
