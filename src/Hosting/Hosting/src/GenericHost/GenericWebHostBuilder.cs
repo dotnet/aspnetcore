@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     throw new NotSupportedException($"ConfigureServices returning an {typeof(IServiceProvider)} isn't supported.");
                 }
 
-                instance = ActivatorUtilities.CreateInstance(new HostServiceProvider(webHostBuilderContext), startupType);
+                instance = ActivatorUtilities.CreateInstance(new HostServiceProvider(webHostBuilderContext, services.BuildServiceProvider()), startupType);
                 context.Properties[_startupKey] = instance;
 
                 // Startup.ConfigureServices
@@ -354,10 +354,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private class HostServiceProvider : IServiceProvider
         {
             private readonly WebHostBuilderContext _context;
+            private readonly IServiceProvider _serviceProvider;
 
-            public HostServiceProvider(WebHostBuilderContext context)
+            public HostServiceProvider(WebHostBuilderContext context, IServiceProvider serviceProvider)
             {
                 _context = context;
+                _serviceProvider = serviceProvider;
             }
 
             public object GetService(Type serviceType)
@@ -379,7 +381,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     return _context.Configuration;
                 }
 
-                return null;
+                return _serviceProvider.GetService(serviceType);
             }
         }
     }
