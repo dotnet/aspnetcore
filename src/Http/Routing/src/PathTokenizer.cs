@@ -8,9 +8,9 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Routing
 {
-    public struct PathTokenizer : IReadOnlyList<StringSegment>
+    internal struct PathTokenizer : IReadOnlyList<StringSegment>
     {
         private readonly string _path;
         private int _count;

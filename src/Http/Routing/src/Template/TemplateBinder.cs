@@ -19,7 +19,9 @@ namespace Microsoft.AspNetCore.Routing.Template
     public class TemplateBinder
     {
         private readonly UrlEncoder _urlEncoder;
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly ObjectPool<UriBuildingContext> _pool;
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private readonly (string parameterName, IRouteConstraint constraint)[] _constraints;
         private readonly RouteValueDictionary _defaults;
@@ -40,6 +42,9 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="pool">The <see cref="ObjectPool{T}"/>.</param>
         /// <param name="template">The <see cref="RouteTemplate"/> to bind values to.</param>
         /// <param name="defaults">The default values for <paramref name="template"/>.</param>
+        [Obsolete(
+            "This constructor is obsolete and will be marked internal in a furture release. Use the TemplateBinderFactory service " +
+            "to create TemplateBinder instances.")]
         public TemplateBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
@@ -60,6 +65,9 @@ namespace Microsoft.AspNetCore.Routing.Template
         /// <param name="parameterPolicies">
         /// A list of (<see cref="string"/>, <see cref="IParameterPolicy"/>) pairs to evalute when producing a URI.
         /// </param>
+        [Obsolete(
+            "This constructor is obsolete and will be marked internal in a future release. Use the TemplateBinderFactory service " +
+            "to create TemplateBinder instances.")]
         public TemplateBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
@@ -88,6 +96,58 @@ namespace Microsoft.AspNetCore.Routing.Template
             _pattern = pattern;
             _defaults = defaults;
             _requiredKeys = requiredKeys?.ToArray() ?? Array.Empty<string>();
+
+            // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
+            // is provided for that 'filter' it must match the value in defaults.
+            var filters = new RouteValueDictionary(_defaults);
+            for (var i = 0; i < pattern.Parameters.Count; i++)
+            {
+                filters.Remove(pattern.Parameters[i].Name);
+            }
+            _filters = filters.ToArray();
+
+            _constraints = parameterPolicies
+                ?.Where(p => p.policy is IRouteConstraint)
+                .Select(p => (p.parameterName, (IRouteConstraint)p.policy))
+                .ToArray() ?? Array.Empty<(string, IRouteConstraint)>();
+            _parameterTransformers = parameterPolicies
+                ?.Where(p => p.policy is IOutboundParameterTransformer)
+                .Select(p => (p.parameterName, (IOutboundParameterTransformer)p.policy))
+                .ToArray() ?? Array.Empty<(string, IOutboundParameterTransformer)>();
+
+            _slots = AssignSlots(_pattern, _filters);
+        }
+
+        internal TemplateBinder(
+            UrlEncoder urlEncoder,
+#pragma warning disable CS0618 // Type or member is obsolete
+            ObjectPool<UriBuildingContext> pool,
+#pragma warning restore CS0618 // Type or member is obsolete
+            RoutePattern pattern,
+            IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
+        {
+            if (urlEncoder == null)
+            {
+                throw new ArgumentNullException(nameof(urlEncoder));
+            }
+
+            if (pool == null)
+            {
+                throw new ArgumentNullException(nameof(pool));
+            }
+
+            if (pattern == null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            // Parameter policies can be null.
+
+            _urlEncoder = urlEncoder;
+            _pool = pool;
+            _pattern = pattern;
+            _defaults = new RouteValueDictionary(pattern.Defaults);
+            _requiredKeys = pattern.RequiredValues.Keys.ToArray();
 
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
             // is provided for that 'filter' it must match the value in defaults.
@@ -442,6 +502,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private bool TryBindValuesCore(UriBuildingContext context, RouteValueDictionary acceptedValues)
         {
             // If we have any output parameter transformers, allow them a chance to influence the parameter values
@@ -578,6 +639,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
             return false;
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         /// <summary>
         /// Compares two objects for equality as parts of a case-insensitive path.
