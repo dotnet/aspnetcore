@@ -129,9 +129,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public DefaultCorsPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Cors.Infrastructure.CorsOptions> options) { }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy> GetPolicyAsync(Microsoft.AspNetCore.Http.HttpContext context, string policyName) { throw null; }
     }
-    public partial interface ICorsMetadata
-    {
-    }
     public partial interface ICorsPolicyMetadata : Microsoft.AspNetCore.Cors.Infrastructure.ICorsMetadata
     {
         Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicy Policy { get; }
