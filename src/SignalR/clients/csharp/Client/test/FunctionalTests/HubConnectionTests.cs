@@ -664,6 +664,53 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
+        public async Task CanStreamToServerWithIAsyncEnumerable(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    async IAsyncEnumerable<string> clientStreamData()
+                    {
+                        var items = new string[] { "A", "B", "C", "D" };
+                        foreach (var item in items)
+                        {
+                            await Task.Delay(10);
+                            yield return item;
+                        }
+                    }
+
+                    await connection.StartAsync().OrTimeout();
+
+                    var stream = clientStreamData();
+
+                    var channel = await connection.StreamAsChannelAsync<string>("StreamEcho", stream).OrTimeout();
+
+                    Assert.Equal("A", await channel.ReadAsync().AsTask().OrTimeout());
+                    Assert.Equal("B", await channel.ReadAsync().AsTask().OrTimeout());
+                    Assert.Equal("C", await channel.ReadAsync().AsTask().OrTimeout());
+                    Assert.Equal("D", await channel.ReadAsync().AsTask().OrTimeout());
+
+                    var results = await channel.ReadAndCollectAllAsync().OrTimeout();
+                    Assert.Empty(results);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
         public async Task StreamAsyncCanBeCanceledThroughGetAsyncEnumerator(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];

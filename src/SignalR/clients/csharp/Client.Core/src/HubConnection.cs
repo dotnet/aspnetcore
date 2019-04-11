@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
 
         private static readonly MethodInfo _sendStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals("SendStreamItems"));
+        private static readonly MethodInfo _sendIAsyncStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals("SendIAsyncEnumerableStreamItems"));
 
         // Persistent across all connections
         private readonly ILoggerFactory _loggerFactory;
@@ -508,6 +509,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             var readers = PackageStreamingParams(ref args, out var streamIds);
 
+#if NETCOREAPP3_0
+            var moreReaders = PackageIAsyncEnumerableParams(ref args, out var secondStreamIds);
+            if (streamIds != null)
+            {
+                streamIds.AddRange(secondStreamIds);
+            } else
+            {
+                streamIds = secondStreamIds;
+            }
+#endif
+
+
             CheckDisposed();
             await WaitConnectionLockAsync();
 
@@ -534,6 +547,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             LaunchStreams(readers, cancellationToken);
 
+#if NETCOREAPP3_0
+            LaunchStreamsUsingIAsyncEnumerable(moreReaders, cancellationToken);
+#endif
             return channel;
         }
 
@@ -624,6 +640,94 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.CompletingStream(_logger, streamId);
             await SendWithLock(CompletionMessage.WithError(streamId, responseError));
         }
+
+#if NETCOREAPP3_0
+        private Dictionary<string, object> PackageIAsyncEnumerableParams(ref object[] args, out List<string> streamIds)
+        {
+            // lazy initialized, to avoid allocating unecessary dictionaries
+            Dictionary<string, object> readers = null;
+            streamIds = null;
+            var newArgs = new List<object>(args.Length);
+
+            for (var i = 0; i < args.Length; i++)
+            {
+                var type = args[i].GetType();
+                if (type.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>)))
+                {
+                    if (readers == null)
+                    {
+                        readers = new Dictionary<string, object>();
+                    }
+
+                    var id = _connectionState.GetNextId();
+                    readers[id] = args[i];
+
+                    if (streamIds == null)
+                    {
+                        streamIds = new List<string>();
+                    }
+
+                    streamIds.Add(id);
+
+                    Log.StartingStream(_logger, id);
+                }
+                else
+                {
+                    newArgs.Add(args[i]);
+                }
+            }
+
+            args = newArgs.ToArray();
+
+            return readers;
+        }
+
+        private void LaunchStreamsUsingIAsyncEnumerable(Dictionary<string, object> readers, CancellationToken cancellationToken)
+        {
+            if (readers == null)
+            {
+                // if there were no streaming parameters then readers is never initialized
+                return;
+            }
+            foreach (var kvp in readers)
+            {
+                var reader = kvp.Value;
+
+                // For each stream that needs to be sent, run a "send items" task in the background.
+                // This reads from the channel, attaches streamId, and sends to server.
+                // A single background thread here quickly gets messy.
+                _ = _sendIAsyncStreamItemsMethod
+                    .MakeGenericMethod(reader.GetType().GetInterface("IAsyncEnumerable`1").GetGenericArguments())
+                    .Invoke(this, new object[] { kvp.Key.ToString(), reader, cancellationToken });
+            }
+        }
+
+        // this is called via reflection using the `_sendStreamItems` field
+        private async Task SendIAsyncEnumerableStreamItems<T>(string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
+        {
+            Log.StartingStream(_logger, streamId);
+
+            var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token).Token;
+
+            string responseError = null;
+            try
+            {
+                await foreach (var streamValue in stream)
+                {
+                    await SendWithLock(new StreamItemMessage(streamId, streamValue));
+                    Log.SendingStreamItem(_logger, streamId);
+                }
+            }
+            catch (OperationCanceledException)
+            {
+                Log.CancelingStream(_logger, streamId);
+                responseError = $"Stream canceled by client.";
+            }
+
+            Log.CompletingStream(_logger, streamId);
+            await SendWithLock(CompletionMessage.WithError(streamId, responseError));
+        }
+#endif
 
         private async Task<object> InvokeCoreAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
