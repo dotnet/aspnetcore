@@ -13,18 +13,17 @@ import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
 import { Arg, ConsoleLogger } from "./Utils";
 
-// This is exported from this module but NOT from index, so it's "internal" for testing purposes
-export const LogLevelNameMapping = {
-    // TS Lint prefers alphabetical sorting...
-    critical: LogLevel.Critical,
+// tslint:disable:object-literal-sort-keys
+const LogLevelNameMapping = {
+    trace: LogLevel.Trace,
     debug: LogLevel.Debug,
-    error: LogLevel.Error,
     info: LogLevel.Information,
     information: LogLevel.Information,
-    none: LogLevel.None,
-    trace: LogLevel.Trace,
     warn: LogLevel.Warning,
     warning: LogLevel.Warning,
+    error: LogLevel.Error,
+    critical: LogLevel.Critical,
+    none: LogLevel.None,
 };
 
 function parseLogLevel(name: keyof typeof LogLevelNameMapping): LogLevel {

@@ -27,6 +27,20 @@ const commonHttpOptions: IHttpConnectionOptions = {
     logMessageContent: true,
 };
 
+// We use a different mapping table here to help catch any unintentional breaking changes.
+// tslint:disable:object-literal-sort-keys
+const ExpectedLogLevelMappings = {
+    trace: LogLevel.Trace,
+    debug: LogLevel.Debug,
+    info: LogLevel.Information,
+    information: LogLevel.Information,
+    warn: LogLevel.Warning,
+    warning: LogLevel.Warning,
+    error: LogLevel.Error,
+    critical: LogLevel.Critical,
+    none: LogLevel.None,
+};
+
 class CapturingConsole {
     public messages: any[] = [];
 
@@ -180,9 +194,9 @@ describe("HubConnectionBuilder", () => {
             });
         });
 
-        const levelNames = Object.keys(LogLevelNameMapping) as Array<keyof typeof LogLevelNameMapping>;
+        const levelNames = Object.keys(ExpectedLogLevelMappings) as Array<keyof typeof ExpectedLogLevelMappings>;
         for (const str of levelNames) {
-            const mapped = LogLevelNameMapping[str];
+            const mapped = ExpectedLogLevelMappings[str];
             const mappedName = LogLevel[mapped];
             it(`accepts "${str}" as an alias for LogLevel.${mappedName}`, async () => {
                 const builder = new HubConnectionBuilder()
