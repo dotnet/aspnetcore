@@ -58,7 +58,7 @@
     <PowerShellSigningCertName>Microsoft400</PowerShellSigningCertName>
     <PackageSigningCertName>NuGet</PackageSigningCertName>
     <VsixSigningCertName>VsixSHA2</VsixSigningCertName>
-    <JarSigningCertName>MicrosoftJAR</JarSigningCertName>
+    <JarSigningCertName>MicrosoftJARSHA2</JarSigningCertName>
   </PropertyGroup>
 
   <Import Project="build\external-dependencies.props" />
