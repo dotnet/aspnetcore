@@ -149,8 +149,8 @@ foreach ($i in 0, 1, 2) {
         $setupLogs = Get-ChildItem $env:Temp\dd_setup_*.log |Sort-Object CreationTime
         if ($setupLogs.Count -ne 0) {
             $setupLog = $setupLogs[$bootstrapperLogs.Count - 1]
-            Write-Host "$setupLogs:"
-            Get-Content "$setupLogs"
+            Write-Host "$setupLog:"
+            Get-Content "$setupLog"
             Write-Host ""
         }
 
