@@ -25,7 +25,6 @@
 
         .\InstallVisualStudio.ps1
 #>
-[CmdletBinding(DefaultParameterSetName = 'Default')]
 param(
     [ValidateSet('BuildTools','Community', 'Professional', 'Enterprise')]
     [string]$Edition = 'Enterprise',
@@ -103,10 +102,60 @@ Write-Host "Installing Visual Studio 2019 $Edition" -f Magenta
 Write-Host ""
 Write-Host "Running '$bootstrapper $arguments'"
 
-$process = Start-Process -FilePath "$bootstrapper" -ArgumentList $arguments `
-    -PassThru -RedirectStandardError "$intermedateDir\errors.txt" -Verbose -Wait
-if ($process.ExitCode -ne 0) {
-    Get-Content "$intermedateDir\errors.txt" | Write-Error
+foreach ($i in 0, 1, 2) {
+    $process = Start-Process -FilePath "$bootstrapper" -ArgumentList $arguments -ErrorAction Continue -PassThru `
+        -RedirectStandardError "$intermedateDir\errors.txt" -Verbose -Wait
+    Write-Host "Exit code = $($process.ExitCode)."
+    if ($process.ExitCode -eq 0) {
+        break
+    } else {
+        # https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio#error-codes
+        if ($process.ExitCode -eq 3010) {
+            Write-Error "Installation requires restart to finish the VS update."
+            break
+        }
+        elseif ($process.ExitCode -eq 5007) {
+            Write-Error "Operation was blocked - the computer does not meet the requirements."
+            break
+        }
+        elseif (($process.ExitCode -eq 5004) -or ($process.ExitCode -eq 1602)) {
+            Write-Error "Operation was canceled."
+        }
+        else {
+            Write-Error "Installation failed for an unknown reason."
+        }
+
+        Write-Host ""
+        WriteHost "Errors:"
+        Get-Content "$intermedateDir\errors.txt" | Write-Error
+        Write-Host ""
+
+        $bootstrapperLogs = Get-ChildItem $env:Temp\dd_bootstrapper_*.log |Sort-Object CreationTime
+        if ($bootstrapperLogs.Count -ne 0) {
+            $bootstrapperLog = $bootstrapperLogs[$bootstrapperLogs.Count - 1]
+            Write-Host "$bootstraperLog:"
+            Get-Content "$bootstrapperLog"
+            Write-Host ""
+        }
+
+        $clientLogs = Get-ChildItem $env:Temp\dd_client_*.log |Sort-Object CreationTime
+        if ($clientLogs.Count -ne 0) {
+            $clientLog = $clientLogs[$clientLogs.Count - 1]
+            Write-Host "$clientLog:"
+            Get-Content "$clientLog"
+            Write-Host ""
+        }
+
+        $setupLogs = Get-ChildItem $env:Temp\dd_setup_*.log |Sort-Object CreationTime
+        if ($setupLogs.Count -ne 0) {
+            $setupLog = $setupLogs[$bootstrapperLogs.Count - 1]
+            Write-Host "$setupLogs:"
+            Get-Content "$setupLogs"
+            Write-Host ""
+        }
+
+        Write-Host "Retrying..."
+    }
 }
 
 Remove-Item "$intermedateDir\errors.txt" -errorAction SilentlyContinue
