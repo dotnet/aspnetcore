@@ -227,10 +227,12 @@ namespace Templates.Test.SpaTemplateTest
                 browser.Equal(5, () => browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
             }
 
-            foreach(var logKind in logs.AvailableLogTypes)
+            foreach (var logKind in logs.AvailableLogTypes)
             {
                 var entries = logs.GetLog(logKind);
                 var badEntries = entries.Where(e => new LogLevel[] { LogLevel.Warning, LogLevel.Severe }.Contains(e.Level));
+
+                badEntries = badEntries.Where(e => !e.Message.EndsWith("failed: WebSocket is closed before the connection is established."));
 
                 Assert.True(badEntries.Count() == 0, "There were Warnings or Errors from the browser." + Environment.NewLine + string.Join(Environment.NewLine, badEntries));
             }
