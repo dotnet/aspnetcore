@@ -35,10 +35,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 "Executing handler method {HandlerName} - ModelState is {ValidationState}");
 
             _handlerMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
-                LogLevel.Debug,
+                LogLevel.Trace,
                 103,
                 "Executing handler method {HandlerName} with arguments ({Arguments})");
-            "Executing handler method {HandlerName} - ModelState is {ValidationState}");
 
             _handlerMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
@@ -85,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 var validationState = context.ModelState.ValidationState;
                 _handlerMethodExecuting(logger, handlerName, validationState, null);
 
-                if (arguments != null && logger.IsEnabled(LogLevel.Debug))
+                if (arguments != null && logger.IsEnabled(LogLevel.Trace))
                 {
                     var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)

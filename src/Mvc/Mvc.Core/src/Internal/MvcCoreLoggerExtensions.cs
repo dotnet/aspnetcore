@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 "Executing action method {ActionName} - Validation state: {ValidationState}");
 
             _actionMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
-                LogLevel.Debug,
+                LogLevel.Trace,
                 3,
                 "Executing action method {ActionName} with arguments ({Arguments})");
 
@@ -816,7 +816,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var validationState = context.ModelState.ValidationState;
                 _actionMethodExecuting(logger, actionName, validationState, null);
 
-                if (arguments != null && logger.IsEnabled(LogLevel.Debug))
+                if (arguments != null && logger.IsEnabled(LogLevel.Trace))
                 {
                     var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)
