@@ -11,114 +11,11 @@ namespace CodeGenerator
 {
     public class KnownHeaders
     {
-        static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
-        {
-            return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
-        }
+        public readonly static KnownHeader[] RequestHeaders;
+        public readonly static KnownHeader[] ResponseHeaders;
+        public readonly static KnownHeader[] ResponseTrailers;
 
-        static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values, string className) =>
-             $@"var pUL = (ulong*)pUB;
-                var pUI = (uint*)pUB;
-                var pUS = (ushort*)pUB;
-                var stringValue = new StringValues(value);
-                switch (keyLength)
-                {{{Each(values, byLength => $@"
-                    case {byLength.Key}:
-                        {{{Each(byLength, header => $@"
-                            if ({header.EqualIgnoreCaseBytes()})
-                            {{{(header.Identifier == "ContentLength" ? $@"
-                                if (_contentLength.HasValue)
-                                {{
-                                    BadHttpRequestException.Throw(RequestRejectionReason.MultipleContentLengths);
-                                }}
-                                else
-                                {{
-                                    _contentLength = ParseContentLength(value);
-                                }}
-                                return;" : $@"
-                                if ({header.TestBit()})
-                                {{
-                                    _headers._{header.Identifier} = AppendValue(_headers._{header.Identifier}, value);
-                                }}
-                                else
-                                {{
-                                    {header.SetBit()};
-                                    _headers._{header.Identifier} = stringValue;{(header.EnhancedSetter == false ? "" : $@"
-                                    _headers._raw{header.Identifier} = null;")}
-                                }}
-                                return;")}
-                            }}
-                        ")}}}
-                        break;
-                ")}}}";
-
-        class KnownHeader
-        {
-            public string Name { get; set; }
-            public int Index { get; set; }
-            public string Identifier => Name.Replace("-", "");
-
-            public byte[] Bytes => Encoding.ASCII.GetBytes($"\r\n{Name}: ");
-            public int BytesOffset { get; set; }
-            public int BytesCount { get; set; }
-            public bool ExistenceCheck { get; set; }
-            public bool FastCount { get; set; }
-            public bool EnhancedSetter { get; set; }
-            public bool PrimaryHeader { get; set; }
-            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) != 0";
-            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x")}L) != 0";
-            public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x")}L) == 0";
-            public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) == 0";
-            public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
-            public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
-
-            public string EqualIgnoreCaseBytes()
-            {
-                var result = "";
-                var delim = "";
-                var index = 0;
-                while (index != Name.Length)
-                {
-                    if (Name.Length - index >= 8)
-                    {
-                        result += delim + Term(Name, index, 8, "pUL", "uL");
-                        index += 8;
-                    }
-                    else if (Name.Length - index >= 4)
-                    {
-                        result += delim + Term(Name, index, 4, "pUI", "u");
-                        index += 4;
-                    }
-                    else if (Name.Length - index >= 2)
-                    {
-                        result += delim + Term(Name, index, 2, "pUS", "u");
-                        index += 2;
-                    }
-                    else
-                    {
-                        result += delim + Term(Name, index, 1, "pUB", "u");
-                        index += 1;
-                    }
-                    delim = " && ";
-                }
-                return $"({result})";
-            }
-            protected string Term(string name, int offset, int count, string array, string suffix)
-            {
-                ulong mask = 0;
-                ulong comp = 0;
-                for (var scan = 0; scan < count; scan++)
-                {
-                    var ch = (byte)name[offset + count - scan - 1];
-                    var isAlpha = (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
-                    comp = (comp << 8) + (ch & (isAlpha ? 0xdfu : 0xffu));
-                    mask = (mask << 8) + (isAlpha ? 0xdfu : 0xffu);
-                }
-                return $"(({array}[{offset / count}] & {mask}{suffix}) == {comp}{suffix})";
-            }
-        }
-
-        public static string GeneratedFile()
+        static KnownHeaders()
         {
             var requestPrimaryHeaders = new[]
             {
@@ -173,7 +70,7 @@ namespace CodeGenerator
             {
                 "Host"
             };
-            var requestHeaders = commonHeaders.Concat(new[]
+            RequestHeaders = commonHeaders.Concat(new[]
             {
                 "Accept",
                 "Accept-Charset",
@@ -196,6 +93,8 @@ namespace CodeGenerator
                 "TE",
                 "Translate",
                 "User-Agent",
+                "DNT",
+                "Upgrade-Insecure-Requests"
             })
             .Concat(corsRequestHeaders)
             .Select((header, index) => new KnownHeader
@@ -213,8 +112,6 @@ namespace CodeGenerator
                 PrimaryHeader = requestPrimaryHeaders.Contains("Content-Length")
             }})
             .ToArray();
-            Debug.Assert(requestHeaders.Length <= 64);
-            Debug.Assert(requestHeaders.Max(x => x.Index) <= 62);
 
             var responseHeadersExistence = new[]
             {
@@ -240,7 +137,7 @@ namespace CodeGenerator
                 "Access-Control-Expose-Headers",
                 "Access-Control-Max-Age",
             };
-            var responseHeaders = commonHeaders.Concat(new[]
+            ResponseHeaders = commonHeaders.Concat(new[]
             {
                 "Accept-Ranges",
                 "Age",
@@ -271,7 +168,7 @@ namespace CodeGenerator
             }})
             .ToArray();
 
-            var responseTrailers = new[]
+            ResponseTrailers = new[]
             {
                 "ETag",
             }
@@ -284,10 +181,358 @@ namespace CodeGenerator
                 PrimaryHeader = responsePrimaryHeaders.Contains(header)
             })
             .ToArray();
+        }
+
+        static string Each<T>(IEnumerable<T> values, Func<T, string> formatter)
+        {
+            return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
+        }
+
+        static string Each<T>(IEnumerable<T> values, Func<T, int, string> formatter)
+        {
+            return values.Any() ? values.Select(formatter).Aggregate((a, b) => a + b) : "";
+        }
+
+        static string AppendSwitch(IEnumerable<IGrouping<int, KnownHeader>> values) =>
+             $@"switch (name.Length)
+            {{{Each(values, byLength => $@"
+                case {byLength.Key}:{AppendSwitchSection(byLength.Key, byLength.OrderBy(h => (h.PrimaryHeader ? "_" : "") + h.Name))}
+                    break;")}
+            }}";
+
+        static string AppendSwitchSection(int length, IOrderedEnumerable<KnownHeader> values)
+        {
+            var useVarForFirstTerm = values.Count() > 1 && values.Select(h => h.FirstNameIgnoreCaseSegment()).Distinct().Count() == 1;
+            var firstTermVarExpression = values.Select(h => h.FirstNameIgnoreCaseSegment()).FirstOrDefault();
+            var firstTermVar = $"firstTerm{length}";
+
+            var start = "";
+            if (useVarForFirstTerm)
+            {
+                start = $@"
+                    var {firstTermVar} = {firstTermVarExpression};";
+            }
+            else
+            {
+                firstTermVar = "";
+            }
+
+            var groups = values.GroupBy(header => header.EqualIgnoreCaseBytesFirstTerm());
+            return start + $@"{Each(groups,  (byFirstTerm, i) => $@"{(byFirstTerm.Count() == 1 ? $@"{Each(byFirstTerm, header => $@"
+                    {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytes(firstTermVar)})
+                    {{{(header.Identifier == "ContentLength" ? $@"
+                        AppendContentLength(value);
+                        return;" : $@"
+                        flag = {header.FlagBit()};
+                        values = ref _headers._{header.Identifier};")}
+                    }}")}" : $@"
+                    if ({byFirstTerm.Key.Replace(firstTermVarExpression, firstTermVar)})
+                    {{{Each(byFirstTerm, (header, i) => $@"
+                        {(i > 0 ? "else " : "")}if ({header.EqualIgnoreCaseBytesSecondTermOnwards()})
+                        {{{(header.Identifier == "ContentLength" ? $@"
+                            AppendContentLength(value);
+                            return;" : $@"
+                            flag = {header.FlagBit()};
+                            values = ref _headers._{header.Identifier};")}
+                        }}")}
+                    }}")}")}";
+        }
+
+        public class KnownHeader
+        {
+            public string Name { get; set; }
+            public int Index { get; set; }
+            public string Identifier => Name.Replace("-", "");
+
+            public byte[] Bytes => Encoding.ASCII.GetBytes($"\r\n{Name}: ");
+            public int BytesOffset { get; set; }
+            public int BytesCount { get; set; }
+            public bool ExistenceCheck { get; set; }
+            public bool FastCount { get; set; }
+            public bool EnhancedSetter { get; set; }
+            public bool PrimaryHeader { get; set; }
+            public string FlagBit() => $"{"0x" + (1L << Index).ToString("x")}L";
+            public string TestBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) != 0";
+            public string TestTempBit() => $"(tempBits & {"0x" + (1L << Index).ToString("x")}L) != 0";
+            public string TestNotTempBit() => $"(tempBits & ~{"0x" + (1L << Index).ToString("x")}L) == 0";
+            public string TestNotBit() => $"(_bits & {"0x" + (1L << Index).ToString("x")}L) == 0";
+            public string SetBit() => $"_bits |= {"0x" + (1L << Index).ToString("x")}L";
+            public string ClearBit() => $"_bits &= ~{"0x" + (1L << Index).ToString("x")}L";
+
+            private void GetMaskAndComp(string name, int offset, int count, out ulong mask, out ulong comp)
+            {
+                mask = 0;
+                comp = 0;
+                for (var scan = 0; scan < count; scan++)
+                {
+                    var ch = (byte)name[offset + count - scan - 1];
+                    var isAlpha = (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+                    comp = (comp << 8) + (ch & (isAlpha ? 0xdfu : 0xffu));
+                    mask = (mask << 8) + (isAlpha ? 0xdfu : 0xffu);
+                }
+            }
+
+            private string NameTerm(string name, int offset, int count, string type, string suffix)
+            {
+                GetMaskAndComp(name, offset, count, out var mask, out var comp);
+
+                if (offset == 0)
+                {
+                    if (type == "byte")
+                    {
+                        return $"(nameStart & 0x{mask:x}{suffix})";
+                    }
+                    else
+                    {
+                        return $"(Unsafe.ReadUnaligned<{type}>(ref nameStart) & 0x{mask:x}{suffix})";
+                    }
+                }
+                else
+                {
+                    if (type == "byte")
+                    {
+                        return $"(Unsafe.AddByteOffset(ref nameStart, (IntPtr){offset / count}) & 0x{mask:x}{suffix})";
+                    }
+                    else if ((offset / count) == 1)
+                    {
+                        return $"(Unsafe.ReadUnaligned<{type}>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof({type}))) & 0x{mask:x}{suffix})";
+                    }
+                    else
+                    {
+                        return $"(Unsafe.ReadUnaligned<{type}>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)({offset / count} * sizeof({type})))) & 0x{mask:x}{suffix})";
+                    }
+                }
+
+            }
+
+            private string EqualityTerm(string name, int offset, int count, string type, string suffix)
+            {
+                GetMaskAndComp(name, offset, count, out var mask, out var comp);
+
+                return $"0x{comp:x}{suffix}";
+            }
+
+            private string Term(string name, int offset, int count, string type, string suffix)
+            {
+                GetMaskAndComp(name, offset, count, out var mask, out var comp);
+
+                return $"({NameTerm(name, offset, count, type, suffix)} == {EqualityTerm(name, offset, count, type, suffix)})";
+            }
+
+            public string FirstNameIgnoreCaseSegment()
+            {
+                var result = "";
+                if (Name.Length >= 8)
+                {
+                    result = NameTerm(Name, 0, 8, "ulong", "uL");
+                }
+                else if (Name.Length >= 4)
+                {
+                    result = NameTerm(Name, 0, 4, "uint", "u");
+                }
+                else if (Name.Length >= 2)
+                {
+                    result = NameTerm(Name, 0, 2, "ushort", "u");
+                }
+                else
+                {
+                    result = NameTerm(Name, 0, 1, "byte", "u");
+                }
+
+                return result;
+            }
+
+            public string EqualIgnoreCaseBytes(string firstTermVar = "")
+            {
+                if (!string.IsNullOrEmpty(firstTermVar))
+                {
+                    return EqualIgnoreCaseBytesWithVar(firstTermVar);
+                }
+
+                var result = "";
+                var delim = "";
+                var index = 0;
+                while (index != Name.Length)
+                {
+                    if (Name.Length - index >= 8)
+                    {
+                        result += delim + Term(Name, index, 8, "ulong", "uL");
+                        index += 8;
+                    }
+                    else if (Name.Length - index >= 4)
+                    {
+                        result += delim + Term(Name, index, 4, "uint", "u");
+                        index += 4;
+                    }
+                    else if (Name.Length - index >= 2)
+                    {
+                        result += delim + Term(Name, index, 2, "ushort", "u");
+                        index += 2;
+                    }
+                    else
+                    {
+                        result += delim + Term(Name, index, 1, "byte", "u");
+                        index += 1;
+                    }
+                    delim = " && ";
+                }
+                return result;
+
+                string EqualIgnoreCaseBytesWithVar(string firstTermVar)
+                {
+                    var result = "";
+                    var delim = " && ";
+                    var index = 0;
+                    var isFirst = true;
+                    while (index != Name.Length)
+                    {
+                        if (Name.Length - index >= 8)
+                        {
+                            if (isFirst)
+                            {
+                                result = $"({firstTermVar} == {EqualityTerm(Name, index, 8, "ulong", "uL")})";
+                            }
+                            else
+                            {
+                                result += delim + Term(Name, index, 8, "ulong", "uL");
+                            }
+
+                            index += 8;
+                        }
+                        else if (Name.Length - index >= 4)
+                        {
+                            if (isFirst)
+                            {
+                                result = $"({firstTermVar} == {EqualityTerm(Name, index, 4, "uint", "u")})";
+                            }
+                            else
+                            {
+                                result += delim + Term(Name, index, 4, "uint", "u");
+                            }
+                            index += 4;
+                        }
+                        else if (Name.Length - index >= 2)
+                        {
+                            if (isFirst)
+                            {
+                                result = $"({firstTermVar} == {EqualityTerm(Name, index, 2, "ushort", "u")})";
+                            }
+                            else
+                            {
+                                result += delim + Term(Name, index, 2, "ushort", "u");
+                            }
+                            index += 2;
+                        }
+                        else
+                        {
+                            if (isFirst)
+                            {
+                                result = $"({firstTermVar} == {EqualityTerm(Name, index, 1, "byte", "u")})";
+                            }
+                            else
+                            {
+                                result += delim + Term(Name, index, 1, "byte", "u");
+                            }
+                            index += 1;
+                        }
+
+                        isFirst = false;
+                    }
+                    return result;
+                }
+            }
+
+            public string EqualIgnoreCaseBytesFirstTerm()
+            {
+                var result = "";
+                if (Name.Length >= 8)
+                {
+                    result = Term(Name, 0, 8, "ulong", "uL");
+                }
+                else if (Name.Length >= 4)
+                {
+                    result = Term(Name, 0, 4, "uint", "u");
+                }
+                else if (Name.Length >= 2)
+                {
+                    result = Term(Name, 0, 2, "ushort", "u");
+                }
+                else
+                {
+                    result = Term(Name, 0, 1, "byte", "u");
+                }
+
+                return result;
+            }
+
+            public string EqualIgnoreCaseBytesSecondTermOnwards()
+            {
+                var result = "";
+                var delim = "";
+                var index = 0;
+                var isFirst = true;
+                while (index != Name.Length)
+                {
+                    if (Name.Length - index >= 8)
+                    {
+                        if (!isFirst)
+                        {
+                            result += delim + Term(Name, index, 8, "ulong", "uL");
+                        }
+
+                        index += 8;
+                    }
+                    else if (Name.Length - index >= 4)
+                    {
+                        if (!isFirst)
+                        {
+                            result += delim + Term(Name, index, 4, "uint", "u");
+                        }
+                        index += 4;
+                    }
+                    else if (Name.Length - index >= 2)
+                    {
+                        if (!isFirst)
+                        {
+                            result += delim + Term(Name, index, 2, "ushort", "u");
+                        }
+                        index += 2;
+                    }
+                    else
+                    {
+                        if (!isFirst)
+                        {
+                            result += delim + Term(Name, index, 1, "byte", "u");
+                        }
+                        index += 1;
+                    }
+
+                    if (isFirst)
+                    {
+                        isFirst = false;
+                    }
+                    else
+                    {
+                        delim = " && ";
+                    }
+                }
+                return result;
+            }
+        }
+
+        public static string GeneratedFile()
+        {
+
+            var requestHeaders = RequestHeaders;
+            Debug.Assert(requestHeaders.Length <= 64);
+            Debug.Assert(requestHeaders.Max(x => x.Index) <= 62);
 
             // 63 for responseHeaders as it steals one bit for Content-Length in CopyTo(ref MemoryPoolIterator output)
+            var responseHeaders = ResponseHeaders;
             Debug.Assert(responseHeaders.Length <= 63);
             Debug.Assert(responseHeaders.Count(x => x.Index == 63) == 1);
+
+            var responseTrailers = ResponseTrailers;
 
             var loops = new[]
             {
@@ -331,8 +576,10 @@ using System.Collections.Generic;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {{
@@ -345,8 +592,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {Each(loop.Bytes, b => $"{b},")}
         }};"
         : "")}
-
-        private long _bits = 0;
         private HeaderReferences _headers;
 {Each(loop.Headers.Where(header => header.ExistenceCheck), header => $@"
         public bool Has{header.Identifier} => {header.TestBit()};")}
@@ -510,8 +755,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return MaybeUnknown?.Remove(key) ?? false;
         }}
-
-        protected override void ClearFast()
+{(loop.ClassName != "HttpRequestHeaders" ?
+ $@"        protected override void ClearFast()
         {{
             MaybeUnknown?.Clear();
             _contentLength = null;
@@ -534,7 +779,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }}
             ")}
         }}
-
+" :
+$@"        private void Clear(long bitsToClear)
+        {{
+            var tempBits = bitsToClear;
+            {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
+            if ({header.TestTempBit()})
+            {{
+                _headers._{header.Identifier} = default(StringValues);
+                if({header.TestNotTempBit()})
+                {{
+                    return;
+                }}
+                tempBits &= ~{"0x" + (1L << header.Index).ToString("x")}L;
+            }}
+            ")}
+        }}
+")}
         protected override bool CopyToFast(KeyValuePair<string, StringValues>[] array, int arrayIndex)
         {{
             if (arrayIndex < 0)
@@ -625,22 +886,63 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}
                 }}
             }} while (tempBits != 0);
-        }}" : "")}
-        {(loop.ClassName == "HttpRequestHeaders" ? $@"
-        public unsafe void Append(byte* pKeyBytes, int keyLength, string value)
+        }}" : "")}{(loop.ClassName == "HttpRequestHeaders" ? $@"
+        [MethodImpl(MethodImplOptions.AggressiveOptimization)]
+        public unsafe void Append(Span<byte> name, Span<byte> value)
         {{
-            var pUB = pKeyBytes;
-            {AppendSwitch(loop.Headers.Where(h => h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
+            ref byte nameStart = ref MemoryMarshal.GetReference(name);
+            ref StringValues values = ref Unsafe.AsRef<StringValues>(null);
+            var flag = 0L;
 
-            AppendNonPrimaryHeaders(pKeyBytes, keyLength, value);
-        }}
+            // Does the name matched any ""known"" headers
+            {AppendSwitch(loop.Headers.GroupBy(x => x.Name.Length).OrderBy(x => x.Key))}
 
-        private unsafe void AppendNonPrimaryHeaders(byte* pKeyBytes, int keyLength, string value)
-        {{
-                var pUB = pKeyBytes;
-                {AppendSwitch(loop.Headers.Where(h => !h.PrimaryHeader).GroupBy(x => x.Name.Length), loop.ClassName)}
+            if (flag != 0)
+            {{
+                // Matched a known header
+                if ((_previousBits & flag) != 0)
+                {{
+                    // Had a previous string for this header, mark it as used so we don't clear it OnHeadersComplete or consider it if we get a second header
+                    _previousBits ^= flag;
 
-                AppendUnknownHeaders(pKeyBytes, keyLength, value);
+                    // We will only reuse this header if there was only one previous header
+                    if (values.Count == 1)
+                    {{
+                        var previousValue = values.ToString();
+                        // Check lengths are the same, then if the bytes were converted to an ascii string if they would be the same.
+                        // We do not consider Utf8 headers for reuse.
+                        if (previousValue.Length == value.Length &&
+                            StringUtilities.BytesOrdinalEqualsStringAndAscii(previousValue, value))
+                        {{
+                            // The previous string matches what the bytes would convert to, so we will just use that one.
+                            _bits |= flag;
+                            return;
+                        }}
+                    }}
+                }}
+
+                // We didn't have a previous matching header value, or have already added a header, so get the string for this value.
+                var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+                if ((_bits & flag) == 0)
+                {{
+                    // We didn't already have a header set, so add a new one.
+                    _bits |= flag;
+                    values = new StringValues(valueStr);
+                }}
+                else
+                {{
+                    // We already had a header set, so concatenate the new one.
+                    values = AppendValue(values, valueStr);
+                }}
+            }}
+            else
+            {{
+                // The header was not one of the ""known"" headers.
+                // Convert value to string first, because passing two spans causes 8 bytes stack zeroing in 
+                // this method with rep stosd, which is slower than necessary.
+                var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+                AppendUnknownHeaders(name, valueStr);
+            }}
         }}" : "")}
 
         private struct HeaderReferences
