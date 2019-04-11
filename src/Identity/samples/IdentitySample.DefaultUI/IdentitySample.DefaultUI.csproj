@@ -31,4 +31,8 @@
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>
