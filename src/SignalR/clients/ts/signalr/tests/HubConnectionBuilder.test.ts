@@ -4,7 +4,7 @@
 import { DefaultReconnectPolicy } from "../src/DefaultReconnectPolicy";
 import { HttpRequest, HttpResponse } from "../src/HttpClient";
 import { HubConnection, HubConnectionState } from "../src/HubConnection";
-import { HubConnectionBuilder, LogLevelNameMapping } from "../src/HubConnectionBuilder";
+import { HubConnectionBuilder } from "../src/HubConnectionBuilder";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HubMessage, IHubProtocol } from "../src/IHubProtocol";
 import { ILogger, LogLevel } from "../src/ILogger";
