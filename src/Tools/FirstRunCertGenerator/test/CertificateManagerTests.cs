@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e is X509KeyUsageExtension keyUsage &&
                         keyUsage.Critical == true &&
-                        keyUsage.KeyUsages == X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature);
+                        keyUsage.KeyUsages == (X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature));
 
                 Assert.Contains(
                     httpsCertificate.Extensions.OfType<X509Extension>(),
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e is X509KeyUsageExtension keyUsage &&
                         keyUsage.Critical == true &&
-                        keyUsage.KeyUsages == X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature);
+                        keyUsage.KeyUsages == (X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature));
 
                 Assert.Contains(
                     httpsCertificate.Extensions.OfType<X509Extension>(),
