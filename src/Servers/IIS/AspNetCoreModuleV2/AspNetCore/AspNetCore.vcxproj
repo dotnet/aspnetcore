@@ -305,4 +305,12 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
+  <Target Name="AfterBuild">
+    <!-- Drop a file in the artifacts directory containing the ANCM version number -->
+    <ItemGroup>
+      <VersionFileContents Include="$(AspNetCoreModuleVersionMajor).$(AspNetCoreMinorVersion).$(AssemblyBuild).$(AspNetCorePatchVersion)" />
+      <VersionFileContents Include="$(CommitHash)" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(InstallersOutputPath)aspnetcoremodule.version" Lines="@(VersionFileContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
+  </Target>
 </Project>
