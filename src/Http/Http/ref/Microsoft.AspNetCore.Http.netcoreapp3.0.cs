@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         public ItemsDictionary() { }
         public ItemsDictionary(System.Collections.Generic.IDictionary<object, object> items) { }
-        public System.Collections.Generic.IDictionary<object, object> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } }
         int System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Count { get { throw null; } }
         bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.IsReadOnly { get { throw null; } }
         object System.Collections.Generic.IDictionary<System.Object,System.Object>.this[object key] { get { throw null; } set { } }
