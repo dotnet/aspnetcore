@@ -23,8 +23,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
     {
         private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
             new UriBuilderContextPooledObjectPolicy());
+#pragma warning restore CS0618 // Type or member is obsolete
 
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
@@ -2073,6 +2075,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             return new DefaultInlineConstraintResolver(optionsMock.Object, new TestServiceProvider());
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private static TreeRouteBuilder CreateBuilder()
         {
             var objectPoolProvider = new DefaultObjectPoolProvider();
@@ -2086,6 +2089,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 constraintResolver);
             return builder;
         }
+#pragma warning restore CS0618 // Type or member is obsolete
 
         private static TreeRouter CreateTreeRouter(
             string firstTemplate,

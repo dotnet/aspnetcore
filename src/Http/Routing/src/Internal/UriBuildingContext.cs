@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
+    [Obsolete("This type will be marked as internal in a future release.")]
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public class UriBuildingContext
     {
@@ -320,6 +322,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private string DebuggerToString()
         {
             return string.Format("{{Accepted: '{0}' Buffered: '{1}'}}", _path, string.Join("", _buffer));
+        }
+
+        private readonly struct BufferValue
+        {
+            public BufferValue(string value, bool requiresEncoding)
+            {
+                Value = value;
+                RequiresEncoding = requiresEncoding;
+            }
+
+            public bool RequiresEncoding { get; }
+
+            public string Value { get; }
         }
     }
 }
