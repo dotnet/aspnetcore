@@ -29,15 +29,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks
             _dictionary = new HeaderDictionary(dict);
         }
 
-        [BenchmarkCategory("Single"), Benchmark(Baseline = true)]
-        public void SplitSingleHeaderOriginal()
-        {
-            var values = ParsingHelpers.GetHeaderSplitOriginal(_dictionary, "singleValue");
-            if (values.Count != 1)
-                throw new Exception();
-        }
-
-        [BenchmarkCategory("Single"), Benchmark]
+        [Benchmark]
         public void SplitSingleHeader()
         {
             var values = ParsingHelpers.GetHeaderSplit(_dictionary, "singleValue");
@@ -45,23 +37,7 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks
                 throw new Exception();
         }
 
-        [BenchmarkCategory("Single"), Benchmark]
-        public void SplitSingleHeaderExperimental()
-        {
-            var values = ParsingHelpers.GetHeaderSplitExperimental(_dictionary, "singleValue");
-            if (values.Count != 1)
-                throw new Exception();
-        }
-
-        [BenchmarkCategory("SingleQuoted"), Benchmark(Baseline = true)]
-        public void SplitSingleQuotedHeaderOriginal()
-        {
-            var values = ParsingHelpers.GetHeaderSplitOriginal(_dictionary, "singleValueQuoted");
-            if (values.Count != 1)
-                throw new Exception();
-        }
-
-        [BenchmarkCategory("SingleQuoted"), Benchmark]
+        [Benchmark]
         public void SplitSingleQuotedHeader()
         {
             var values = ParsingHelpers.GetHeaderSplit(_dictionary, "singleValueQuoted");
@@ -69,44 +45,20 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks
                 throw new Exception();
         }
 
-        [BenchmarkCategory("SingleQuoted"), Benchmark]
-        public void SplitSingleQuotedHeaderExperimental()
+        [Benchmark]
+        public void SplitDoubleHeader()
         {
-            var values = ParsingHelpers.GetHeaderSplitExperimental(_dictionary, "singleValueQuoted");
-            if (values.Count != 1)
+            var values = ParsingHelpers.GetHeaderSplit(_dictionary, "doubleValue");
+            if (values.Count != 2)
                 throw new Exception();
         }
 
-        // [BenchmarkCategory("Double"), Benchmark(Baseline = true)]
-        // public void SplitDoubleHeaderOriginal()
-        // {
-        //     var values = ParsingHelpers.GetHeaderSplitOriginal(_dictionary, "doubleValue");
-        //     if (values.Count != 2)
-        //         throw new Exception();
-        // }
-
-        // [BenchmarkCategory("Double"), Benchmark]
-        // public void SplitDoubleHeader()
-        // {
-        //     var values = ParsingHelpers.GetHeaderSplit(_dictionary, "doubleValue");
-        //     if (values.Count != 2)
-        //         throw new Exception();
-        // }
-
-        // [BenchmarkCategory("Many"), Benchmark(Baseline = true)]
-        // public void SplitManyHeaderOriginal()
-        // {
-        //     var values = ParsingHelpers.GetHeaderSplitOriginal(_dictionary, "manyValue");
-        //     if (values.Count != 6)
-        //         throw new Exception();
-        // }
-
-        // [BenchmarkCategory("Many"), Benchmark]
-        // public void SplitManyHeader()
-        // {
-        //     var values = ParsingHelpers.GetHeaderSplit(_dictionary, "manyValue");
-        //     if (values.Count != 6)
-        //         throw new Exception();
-        // }
+        [Benchmark]
+        public void SplitManyHeaders()
+        {
+            var values = ParsingHelpers.GetHeaderSplit(_dictionary, "manyValue");
+            if (values.Count != 6)
+                throw new Exception();
+        }
     }
 }
