@@ -3,21 +3,20 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using OpenQA.Selenium.Remote;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.E2ETesting
 {
-    public class BrowserFixture : IDisposable
+    public class BrowserFixture : IAsyncLifetime
     {
         private ConcurrentDictionary<string, Task<(IWebDriver browser, ILogs log)>> _browsers = new ConcurrentDictionary<string, Task<(IWebDriver, ILogs)>>();
-        private List<IWebDriver> _browsersToDispose = new List<IWebDriver>();
 
         public BrowserFixture(IMessageSink diagnosticsMessageSink)
         {
@@ -52,9 +51,10 @@ namespace Microsoft.AspNetCore.E2ETesting
             }
         }
 
-        public void Dispose()
+        public async Task DisposeAsync()
         {
-            foreach (var browser in _browsersToDispose)
+            var browsers = await Task.WhenAll(_browsers.Values);
+            foreach (var (browser, log) in browsers)
             {
                 browser.Dispose();
             }
@@ -70,6 +70,8 @@ namespace Microsoft.AspNetCore.E2ETesting
 
             return _browsers.GetOrAdd(isolationContext, CreateBrowserAsync, output);
         }
+
+        public Task InitializeAsync() => Task.CompletedTask;
 
         private async Task<(IWebDriver browser, ILogs log)> CreateBrowserAsync(string context, ITestOutputHelper output)
         {
@@ -115,7 +117,6 @@ namespace Microsoft.AspNetCore.E2ETesting
                     driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
                     var logs = new RemoteLogs(driver);
 
-                    _browsersToDispose.Add(driver);
                     return (driver, logs);
                 }
                 catch

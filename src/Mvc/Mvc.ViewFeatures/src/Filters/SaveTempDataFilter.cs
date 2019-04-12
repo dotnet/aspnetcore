@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
     /// </summary>
     internal class SaveTempDataFilter : IResourceFilter, IResultFilter
     {
+        private static readonly Func<object, Task> OnStartingCallback = (state) => OnStarting((HttpContext)state);
         // Internal for unit testing
         internal static readonly object SaveTempDataFilterContextKey = new object();
 
@@ -43,36 +44,37 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
 
             if (!context.HttpContext.Response.HasStarted)
             {
-                context.HttpContext.Response.OnStarting((state) =>
-                {
-                    var httpContext = (HttpContext)state;
-
-                    var saveTempDataContext = GetTempDataContext(context.HttpContext);
-                    if (saveTempDataContext.RequestHasUnhandledException)
-                    {
-                        return Task.CompletedTask;
-                    }
-
-                    // If temp data was already saved, skip trying to save again as the calls here would potentially fail
-                    // because the session feature might not be available at this point.
-                    // Example: An action returns NoContentResult and since NoContentResult does not write anything to
-                    // the body of the response, this delegate would get executed way late in the pipeline at which point
-                    // the session feature would have been removed.
-                    if (saveTempDataContext.TempDataSaved)
-                    {
-                        return Task.CompletedTask;
-                    }
-
-                    SaveTempData(
-                        result: null,
-                        factory: saveTempDataContext.TempDataDictionaryFactory,
-                        filters: saveTempDataContext.Filters,
-                        httpContext: httpContext);
-
-                    return Task.CompletedTask;
-                },
-                state: context.HttpContext);
+                context.HttpContext.Response.OnStarting(
+                    callback: OnStartingCallback,
+                    state: context.HttpContext);
             }
+        }
+
+        private static Task OnStarting(HttpContext httpContext)
+        {
+            var saveTempDataContext = GetTempDataContext(httpContext);
+            if (saveTempDataContext.RequestHasUnhandledException)
+            {
+                return Task.CompletedTask;
+            }
+
+            // If temp data was already saved, skip trying to save again as the calls here would potentially fail
+            // because the session feature might not be available at this point.
+            // Example: An action returns NoContentResult and since NoContentResult does not write anything to
+            // the body of the response, this delegate would get executed way late in the pipeline at which point
+            // the session feature would have been removed.
+            if (saveTempDataContext.TempDataSaved)
+            {
+                return Task.CompletedTask;
+            }
+
+            SaveTempData(
+                result: null,
+                factory: saveTempDataContext.TempDataDictionaryFactory,
+                filters: saveTempDataContext.Filters,
+                httpContext: httpContext);
+
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
@@ -115,7 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Filters
             }
         }
 
-        private SaveTempDataContext GetTempDataContext(HttpContext httpContext)
+        private static SaveTempDataContext GetTempDataContext(HttpContext httpContext)
         {
             SaveTempDataContext saveTempDataContext = null;
             if (httpContext.Items.TryGetValue(SaveTempDataFilterContextKey, out var value))

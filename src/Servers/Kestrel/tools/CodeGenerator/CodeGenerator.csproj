@@ -8,6 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(KestrelSharedSourceRoot)KnownHeaders.cs" />
+  </ItemGroup>
+    
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
   </ItemGroup>

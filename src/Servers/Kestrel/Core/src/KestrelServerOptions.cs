@@ -55,6 +55,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public bool AllowSynchronousIO { get; set; } = false;
 
         /// <summary>
+        /// Gets or sets a value that controls whether the string values materialized
+        /// will be reused across requests; if they match, or if the strings will always be reallocated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
+        public bool DisableStringReuse { get; set; } = false;
+
+        /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.
         /// Typically initialized by UseKestrel()"/>.
         /// </summary>

@@ -103,6 +103,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _decodedHeaders[name.GetAsciiStringNonNullCharacters()] = value.GetAsciiStringNonNullCharacters();
         }
 
+        void IHttpHeadersHandler.OnHeadersComplete() { }
+
         [Fact]
         public void DecodesIndexedHeaderField_StaticTable()
         {
