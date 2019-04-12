@@ -102,8 +102,13 @@ Write-Host "Installing Visual Studio 2019 $Edition" -f Magenta
 Write-Host ""
 Write-Host "Running '$bootstrapper $arguments'"
 
+$ErrorActionPreference = 'Continue'
 foreach ($i in 0, 1, 2) {
-    $process = Start-Process -FilePath "$bootstrapper" -ArgumentList $arguments -ErrorAction Continue -PassThru `
+    if ($i -ne 0) {
+        Write-Host "Retrying..."
+    }
+
+    $process = Start-Process -FilePath "$bootstrapper" -ArgumentList $arguments -PassThru `
         -RedirectStandardError "$intermedateDir\errors.txt" -Verbose -Wait
     Write-Host "Exit code = $($process.ExitCode)."
     if ($process.ExitCode -eq 0) {
@@ -126,7 +131,7 @@ foreach ($i in 0, 1, 2) {
         }
 
         Write-Host ""
-        WriteHost "Errors:"
+        Write-Host "Errors:"
         Get-Content "$intermedateDir\errors.txt" | Write-Error
         Write-Host ""
 
@@ -153,8 +158,6 @@ foreach ($i in 0, 1, 2) {
             Get-Content "$setupLog"
             Write-Host ""
         }
-
-        Write-Host "Retrying..."
     }
 }
 
