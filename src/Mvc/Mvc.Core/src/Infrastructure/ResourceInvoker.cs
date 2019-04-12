@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             filter);
 
                         var task = filter.OnAuthorizationAsync(authorizationContext);
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.AuthorizationAsyncEnd;
                             return task;
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             filter);
 
                         var task = filter.OnResourceExecutionAsync(resourceExecutingContext, InvokeNextResourceFilterAwaitedAsync);
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceAsyncEnd;
                             return task;
@@ -418,7 +418,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         var task = InvokeNextResourceFilter();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceSyncEnd;
                             return task;
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                         _result = _resourceExecutingContext.Result;
                         var task = InvokeAlwaysRunResultFilters();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceEnd;
                             return task;
@@ -512,7 +512,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 case State.ExceptionAsyncBegin:
                     {
                         var task = InvokeNextExceptionFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ExceptionAsyncResume;
                             return task;
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                                 filter);
 
                             var task = filter.OnExceptionAsync(exceptionContext);
-                            if (task.Status != TaskStatus.RanToCompletion)
+                            if (!task.IsCompletedSuccessfully)
                             {
                                 next = State.ExceptionAsyncEnd;
                                 return task;
@@ -579,7 +579,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 case State.ExceptionSyncBegin:
                     {
                         var task = InvokeNextExceptionFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ExceptionSyncEnd;
                             return task;
@@ -650,7 +650,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         _result = _exceptionContext.Result;
 
                         var task = InvokeAlwaysRunResultFilters();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceInsideEnd;
                             return task;
@@ -683,7 +683,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         var task = InvokeResultFilters();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceInsideEnd;
                             return task;
@@ -694,7 +694,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 case State.ActionBegin:
                     {
                         var task = InvokeInnerFilterAsync();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ActionEnd;
                             return task;
@@ -715,7 +715,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                         Debug.Assert(scope == Scope.Invoker || scope == Scope.Resource);
                         var task = InvokeResultFilters();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResourceInsideEnd;
                             return task;
@@ -916,7 +916,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             filter);
 
                         var task = filter.OnResultExecutionAsync(resultExecutingContext, InvokeNextResultFilterAwaitedAsync<TFilter, TFilterAsync>);
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResultAsyncEnd;
                             return task;
@@ -998,7 +998,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         var task = InvokeNextResultFilterAsync<TFilter, TFilterAsync>();
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResultSyncEnd;
                             return task;
@@ -1048,7 +1048,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         }
 
                         var task = InvokeResultAsync(_result);
-                        if (task.Status != TaskStatus.RanToCompletion)
+                        if (!task.IsCompletedSuccessfully)
                         {
                             next = State.ResultEnd;
                             return task;
