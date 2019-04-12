@@ -2,25 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using BasicWebSite;
 using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ClientValidationOptionsTests : IClassFixture<MvcTestFixture<BasicWebSite.StartupClientValidationSettings>>
+    public class ClientValidationOptionsTests : IClassFixture<MvcTestFixture<RazorPagesWebSite.Startup>>
     {
-        public ClientValidationOptionsTests(MvcTestFixture<StartupClientValidationSettings> fixture) => 
+        public ClientValidationOptionsTests(MvcTestFixture<RazorPagesWebSite.Startup> fixture) => 
             Fixture = fixture;
 
-        public MvcTestFixture<StartupClientValidationSettings> Fixture { get; }
+        public MvcTestFixture<RazorPagesWebSite.Startup> Fixture { get; }
 
         [Fact]
         public async Task DisablingClientValidation_DisablesItForPagesAndViews()
         {
             // Arrange
             var client = Fixture
-                .WithWebHostBuilder(whb => whb.UseStartup<StartupClientValidationSettings>())
+                .WithWebHostBuilder(whb => whb.UseStartup<RazorPagesWebSite.StartupWithClientValidationDisabled>())
                 .CreateClient();
 
             // Act
