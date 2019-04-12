@@ -114,7 +114,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <LangVersion Condition="'$(LangVersion)' == '' AND
         (('$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(TargetFrameworkVersion)' == 'v3.0') OR
-         ('$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.1'))">8.0</LangVersion>
+         ('$(TargetFrameworkIdentifier)' == '.NETStandard' AND '$(TargetFrameworkVersion)' == 'v2.1'))">preview</LangVersion>
     </PropertyGroup>
 
     <Csc

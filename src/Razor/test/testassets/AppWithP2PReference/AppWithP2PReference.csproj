@@ -5,17 +5,13 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.NETCore.App" />
+    <!-- Avoid referencing the AspNetCore framework since we want the ability to target work-in-progress shims -->
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
   </ItemGroup>
-
-  <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
-  </PropertyGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
     <!-- We don't want to run build server when not running as tests. -->

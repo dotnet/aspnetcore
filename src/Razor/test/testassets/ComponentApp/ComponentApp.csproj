@@ -2,17 +2,15 @@
 
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.NETCore.App" />
+    <!-- Avoid referencing the AspNetCore framework since we want the ability to target work-in-progress shims -->
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">

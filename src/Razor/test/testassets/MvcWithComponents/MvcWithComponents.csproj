@@ -2,21 +2,16 @@
 
   <PropertyGroup>
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
-    <_RazorComponentInclude>Components\**\*.cshtml</_RazorComponentInclude>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.NETCore.App" />
-  </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Avoid referencing the AspNetCore framework since we want the ability to target work-in-progress shims -->
+    <FrameworkReference Remove="Microsoft.AspNetCore.App" />
+  </ItemGroup>
 
   <PropertyGroup Condition="'$(RunningAsTest)' == ''">
     <!-- We don't want to run build server when not running as tests. -->

@@ -77,8 +77,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             var filePaths = new string[]
             {
-                Path.Combine("MyComponent.cshtml"),
                 Path.Combine("GenericComponent.razor"),
+                Path.Combine("MyComponent.razor"),
             };
 
             foreach (var filePath in filePaths)

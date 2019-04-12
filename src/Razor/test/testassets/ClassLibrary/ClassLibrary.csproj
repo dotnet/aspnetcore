@@ -4,18 +4,9 @@
     <RazorSdkDirectoryRoot>$(RazorSdkArtifactsDirectory)$(Configuration)\sdk-output\</RazorSdkDirectoryRoot>
   </PropertyGroup>
 
-  <!--
-  The AspNetCore repo depends on AspNetCore-Tooling, and we want to avoid creating a cylical dependency between the two
-  by adding a reference to Microsoft.AspNetCore.App. We'll instead simulate the presence of the reference.
-  -->
   <PropertyGroup>
-    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
-
-  <ItemGroup>
-    <FrameworkReference Include="Microsoft.NETCore.App" />
-  </ItemGroup>
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
