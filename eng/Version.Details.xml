@@ -380,9 +380,9 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>17cb5265d011311233c2795727532d5c8eb22b5f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19210.7">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19211.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>4f645e4a5385eb96cad3f72f5ded239761c7d075</Sha>
+      <Sha>e7b5230799a6db9121d90cf548d5a2313bd682dd</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview5.19210.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
