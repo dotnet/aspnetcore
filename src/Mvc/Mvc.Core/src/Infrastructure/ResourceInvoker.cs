@@ -890,13 +890,35 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task<ResourceExecutedContext> InvokeNextResourceFilterAwaitedAsync()
+        private Task<ResourceExecutedContext> InvokeNextResourceFilterAwaitedAsync()
         {
             Debug.Assert(_resourceExecutingContext != null);
 
             if (_resourceExecutingContext.Result != null)
             {
                 // If we get here, it means that an async filter set a result AND called next(). This is forbidden.
+                return Throw();
+            }
+
+            var task = InvokeNextResourceFilter();
+            if (!task.IsCompletedSuccessfully)
+            {
+                return Awaited(this, task);
+            }
+
+            Debug.Assert(_resourceExecutedContext != null);
+            return Task.FromResult(_resourceExecutedContext);
+
+            static async Task<ResourceExecutedContext> Awaited(ResourceInvoker invoker, Task task)
+            {
+                await task;
+
+                Debug.Assert(invoker._resourceExecutedContext != null);
+                return invoker._resourceExecutedContext;
+            }
+#pragma warning disable CS1998
+            static async Task<ResourceExecutedContext> Throw()
+            {
                 var message = Resources.FormatAsyncResourceFilter_InvalidShortCircuit(
                     typeof(IAsyncResourceFilter).Name,
                     nameof(ResourceExecutingContext.Result),
@@ -904,11 +926,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     typeof(ResourceExecutionDelegate).Name);
                 throw new InvalidOperationException(message);
             }
-
-            await InvokeNextResourceFilter();
-
-            Debug.Assert(_resourceExecutedContext != null);
-            return _resourceExecutedContext;
+#pragma warning restore CS1998
         }
 
         private Task InvokeNextResourceFilter()
