@@ -2,16 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Configs;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
 using Microsoft.Extensions.Primitives;
-using BenchmarkDotNet.Configs;
 
 namespace Microsoft.AspNetCore.Http.Abstractions.Microbenchmarks
 {
-    [GroupBenchmarksBy(BenchmarkLogicalGroupRule.ByCategory)]
     public class GetHeaderSplitBenchmark
     {
         HeaderDictionary _dictionary;
