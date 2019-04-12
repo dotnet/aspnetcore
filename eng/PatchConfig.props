@@ -54,6 +54,9 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.AspNetCoreModule;
       Microsoft.AspNetCore.AspNetCoreModuleV2;
       java:signalr;
+      Microsoft.AspNetCore.SignalR.Protocols.MessagePack;
+      Microsoft.AspNetCore.SignalR.Redis;
+      Microsoft.AspNetCore.SignalR.StackExchangeRedis;
     </PackagesInPatch>
   </PropertyGroup>
 

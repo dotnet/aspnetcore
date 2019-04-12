@@ -138,7 +138,7 @@
     <IdentityServer4PackageVersion>2.3.0</IdentityServer4PackageVersion>
     <GoogleProtobufPackageVersion>3.1.0</GoogleProtobufPackageVersion>
     <LibuvPackageVersion>1.10.0</LibuvPackageVersion>
-    <MessagePackPackageVersion>1.7.3.4</MessagePackPackageVersion>
+    <MessagePackPackageVersion>1.7.3.7</MessagePackPackageVersion>
     <MicrosoftApplicationInsightsAspNetCorePackageVersion>2.1.1</MicrosoftApplicationInsightsAspNetCorePackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModuleStablePackageVersion>
     <MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>2.2.0</MicrosoftAspNetCoreAspNetCoreModuleV2StablePackageVersion>
