@@ -446,33 +446,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             try
             {
                 CancellationTokenSource localAbortCts = null;
-                var shouldDispose = false;
                 var shouldCancel = false;
                 lock (_abortLock)
                 {
-                    if (_abortedCts != null)
+                    if (_abortedCts != null && !_preventRequestAbortedCancellation)
                     {
                         localAbortCts = _abortedCts;
                         _abortedCts = null;
-
-                        if (_preventRequestAbortedCancellation)
-                        {
-                            shouldDispose = true;
-                        }
-                        else
-                        {
-                            shouldCancel = true;
-                        }
+                        shouldCancel = true;
                     }
                 }
 
                 // If we cancel the cts, we don't dispose as people may still be using
                 // the cts. It also isn't necessary to dispose a canceled cts.
-                if (shouldDispose)
-                {
-                    localAbortCts.Dispose();
-                }
-                else if (shouldCancel)
+                if (shouldCancel)
                 {
                     localAbortCts.Cancel();
                 }
