@@ -98,6 +98,35 @@
 
   </ItemGroup>
 
+  <!-- Copied from https://github.com/dotnet/arcade/blob/9d0fd805448082c8d55e2434607b481bca70a146/src/Microsoft.DotNet.Arcade.Sdk/tools/RepositoryInfo.targets#L12-L38 -->
+  <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"
+          DependsOnTargets="$(SourceControlManagerUrlTranslationTargets)"
+          BeforeTargets="SourceControlManagerPublishTranslatedUrls">
+
+    <!-- The convention for names of Azure DevOps repositories mirrored from GitHub is "{GitHub org name}-{GitHub repository name}" -->
+    <PropertyGroup>
+      <!-- There are quite a few git repo forms:
+        https://dnceng@dev.azure.com/dnceng/internal/_git/dotnet-arcade-services
+        https://dev.azure.com/dnceng/internal/_git/dotnet-arcade-services
+        https://dnceng.visualstudio.com/internal/_git/dotnet-arcade-services
+        dnceng@vs-ssh.visualstudio.com:v3/dnceng/internal/dotnet-arcade-services
+        git@ssh.dev.azure.com:v3/dnceng/internal/dotnet-arcade-services
+      -->
+      <_Pattern>(https://dnceng%40dev\.azure\.com/dnceng/internal/_git|https://dev\.azure\.com/dnceng/internal/_git|https://dnceng\.visualstudio\.com/internal/_git|dnceng%40vs-ssh\.visualstudio\.com:v3/dnceng/internal|git%40ssh\.dev\.azure\.com:v3/dnceng/internal)/([^/-]+)-(.+)</_Pattern>
+      <_Replacement>https://github.com/$2/$3</_Replacement>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <ScmRepositoryUrl>$([System.Text.RegularExpressions.Regex]::Replace($(ScmRepositoryUrl), $(_Pattern), $(_Replacement)))</ScmRepositoryUrl>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <SourceRoot Update="@(SourceRoot)">
+        <ScmRepositoryUrl>$([System.Text.RegularExpressions.Regex]::Replace(%(SourceRoot.ScmRepositoryUrl), $(_Pattern), $(_Replacement)))</ScmRepositoryUrl>
+      </SourceRoot>
+    </ItemGroup>
+  </Target>
+
   <Import Project="eng\Workarounds.targets" />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />
   <Import Project="eng\targets\Cpp.Common.targets"  Condition="'$(MSBuildProjectExtension)' == '.vcxproj'" />
