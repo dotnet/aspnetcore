@@ -730,6 +730,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void RequestAbortedTokenIsFullyUsableAfterCancellation()
+        {
+            var originalToken = _http1Connection.RequestAborted;
+            var originalRegistration = originalToken.Register(() => { });
+
+            _http1Connection.Abort(new ConnectionAbortedException());
+
+            Assert.True(originalToken.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+            Assert.True(_http1Connection.RequestAborted.WaitHandle.WaitOne(TestConstants.DefaultTimeout));
+
+            Assert.Equal(originalToken, originalRegistration.Token);
+        }
+
+        [Fact]
         public void RequestAbortedTokenIsUsableAfterCancellation()
         {
             var originalToken = _http1Connection.RequestAborted;

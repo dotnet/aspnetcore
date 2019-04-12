@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         private object _abortLock = new object();
-        private volatile bool _requestAborted;
+        private volatile bool _connectionAborted;
         private bool _preventRequestAbortedCancellation;
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         return new CancellationToken(false);
                     }
 
-                    if (_requestAborted)
+                    if (_connectionAborted)
                     {
                         return new CancellationToken(true);
                     }
@@ -378,14 +378,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _preventRequestAbortedCancellation = false;
 
             // Lock to prevent CancelRequestAbortedToken from attempting to cancel an disposed CTS.
+            CancellationTokenSource cts = null;
             lock (_abortLock)
             {
-                if (!_requestAborted)
+                if (_abortedCts != null)
                 {
-                    _abortedCts?.Dispose();
+                    cts = _abortedCts;
                     _abortedCts = null;
                 }
             }
+
+            cts?.Dispose();
 
             if (_wrapperObjectsToDispose != null)
             {
@@ -442,9 +445,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             try
             {
-                _abortedCts.Cancel();
-                _abortedCts.Dispose();
-                _abortedCts = null;
+                CancellationTokenSource cts = null;
+                lock (_abortLock)
+                {
+                    if (_abortedCts != null)
+                    {
+                        cts = _abortedCts;
+                        _abortedCts = null;
+                    }
+                }
+
+                cts?.Cancel();
             }
             catch (Exception ex)
             {
@@ -456,15 +467,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_abortLock)
             {
-                if (_requestAborted)
+                if (_connectionAborted)
                 {
                     return;
                 }
 
-                _requestAborted = true;
+                _connectionAborted = true;
             }
 
-            if (_abortedCts != null)
+            // The check to _hasAborted is an optimization to not schedule a cancellation if the context is already disposed.
+            // In CancelRequestAbortedToken, we will relock to check again.
+            if (_abortedCts != null && !_preventRequestAbortedCancellation)
             {
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
                 ServiceContext.Scheduler.Schedule(state => ((HttpProtocol)state).CancelRequestAbortedToken(), this);
@@ -481,14 +494,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             lock (_abortLock)
             {
-                if (_requestAborted)
+                if (_connectionAborted)
                 {
                     return;
                 }
 
                 _preventRequestAbortedCancellation = true;
-                _abortedCts?.Dispose();
-                _abortedCts = null;
             }
         }
 
@@ -594,7 +605,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     // Run the application code for this request
                     await application.ProcessRequestAsync(context);
 
-                    if (!_requestAborted)
+                    if (!_connectionAborted)
                     {
                         VerifyResponseContentLength();
                     }
@@ -630,7 +641,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // 4XX responses are written by TryProduceInvalidRequestResponse during connection tear down.
                 if (_requestRejectedException == null)
                 {
-                    if (!_requestAborted)
+                    if (!_connectionAborted)
                     {
                         // Call ProduceEnd() before consuming the rest of the request body to prevent
                         // delaying clients waiting for the chunk terminator:
@@ -662,7 +673,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 application.DisposeContext(context, _applicationException);
 
                 // Even for non-keep-alive requests, try to consume the entire body to avoid RSTs.
-                if (!_requestAborted && _requestRejectedException == null && !messageBody.IsEmpty)
+                if (!_connectionAborted && _requestRejectedException == null && !messageBody.IsEmpty)
                 {
                     await messageBody.ConsumeAsync();
                 }
@@ -964,7 +975,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected Task TryProduceInvalidRequestResponse()
         {
             // If _requestAborted is set, the connection has already been closed.
-            if (_requestRejectedException != null && !_requestAborted)
+            if (_requestRejectedException != null && !_connectionAborted)
             {
                 return ProduceEnd();
             }
