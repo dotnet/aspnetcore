@@ -98,6 +98,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="AngleSharp" Version="$(AngleSharpPackageVersion)" />
     <LatestPackageReference Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <LatestPackageReference Include="FSharp.Core" Version="$(FSharpCorePackageVersion)" />
+    <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
     <LatestPackageReference Include="Moq" Version="$(MoqPackageVersion)" />
     <LatestPackageReference Include="Google.ProtoBuf" Version="$(GoogleProtoBufPackageVersion)" />
