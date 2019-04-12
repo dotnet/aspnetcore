@@ -42,14 +42,15 @@ namespace TriageBuildFailures.GitHub
         /// <param name="repo">The repo to retrieve issues for.</param>
         /// <returns>The issues which apply to the given repo.</returns>
         /// <remarks>We take care of repos which keep their issues on the home repo within this function.</remarks>
-        public async Task<IEnumerable<GitHubIssue>> GetIssues(string owner, string repo)
+        public async Task<IEnumerable<GitHubIssue>> GetIssues(string owner, string repo, ItemStateFilter itemState, DateTime? since)
         {
             var key = GetIssueCacheKey(owner, repo);
             if (!MemoryCache.Default.Contains(key))
             {
                 var request = new RepositoryIssueRequest
                 {
-                    State = ItemStateFilter.Open
+                    State = itemState,
+                    Since = since?.AddDays(-1),
                 };
 
                 var issues = await RetryHelpers.RetryAsync(async () => await Client.Issue.GetAllForRepository(owner, repo, request), _reporter);
@@ -72,9 +73,9 @@ namespace TriageBuildFailures.GitHub
         /// </summary>
         /// <param name="repo">The repo to search.</param>
         /// <returns>The list of flaky issues.</returns>
-        public async Task<IEnumerable<GitHubIssue>> GetFlakyIssues(string owner, string repo)
+        public async Task<IEnumerable<GitHubIssue>> GetFlakyIssues(string owner, string repo, DateTime? since)
         {
-            var issues = await GetIssues(owner, repo);
+            var issues = await GetIssues(owner, repo, ItemStateFilter.Open, since);
 
             return issues.Where(i =>
                 i.Title.StartsWith("Flaky", StringComparison.OrdinalIgnoreCase)

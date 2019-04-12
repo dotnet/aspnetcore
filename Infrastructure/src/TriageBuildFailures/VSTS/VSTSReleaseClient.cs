@@ -109,7 +109,7 @@ namespace TriageBuildFailures.VSTS
 
             foreach (var release in releases)
             {
-                var issues = await _gitHubClient.GetIssues("aspnet", GitHubUtils.PrivateRepo);
+                var issues = await _gitHubClient.GetIssues("aspnet", GitHubUtils.PrivateRepo, Octokit.ItemStateFilter.All, release.StartDate?.DateTime);
                 var applicable = issues.Where(i => string.Equals(i.Title, $"{release.BuildName} failed"));
                 if (applicable.Count() > 0)
                 {

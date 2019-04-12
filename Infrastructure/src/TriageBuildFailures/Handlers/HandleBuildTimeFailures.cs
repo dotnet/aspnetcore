@@ -58,7 +58,7 @@ namespace TriageBuildFailures.Handlers
             var log = await GetClient(build).GetBuildLogAsync(build);
             var owner = "aspnet";
             var repo = GitHubUtils.PrivateRepo;
-            var issues = await GHClient.GetIssues(owner, repo);
+            var issues = await GHClient.GetIssues(owner, repo, Octokit.ItemStateFilter.Open, build.StartDate.Value.DateTime);
 
             var subject = $"{build.BuildName} failed";
             var applicableIssues = GetApplicableIssues(issues, subject);

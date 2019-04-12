@@ -55,7 +55,7 @@ namespace TriageBuildFailures.Handlers
                 var owner = "aspnet";
                 var repo = "AspNetCore-Internal";
 
-                var flakyIssues = await GHClient.GetFlakyIssues(owner, repo);
+                var flakyIssues = await GHClient.GetFlakyIssues(owner, repo, since: null);
                 var client = GetClient(build);
                 var errors = await client.GetTestFailureTextAsync(failure);
 
