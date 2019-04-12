@@ -513,8 +513,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var moreReaders = PackageIAsyncEnumerableParams(ref args, out var secondStreamIds);
             if (streamIds != null)
             {
-                streamIds.AddRange(secondStreamIds);
-            } else
+                if (secondStreamIds != null)
+                {
+                    streamIds.AddRange(secondStreamIds);
+                }
+            }
+            else
             {
                 streamIds = secondStreamIds;
             }
@@ -652,7 +656,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
             for (var i = 0; i < args.Length; i++)
             {
                 var type = args[i].GetType();
-                if (type.GetInterfaces().Any(t => t.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>)))
+                var isStreamType = type.GetInterfaces().Any(t =>
+                {
+                    if (t.IsGenericType)
+                    {
+                        return t.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>);
+                    }
+                    else
+                    {
+                        return false;
+                    }
+                });
+                if (isStreamType)
                 {
                     if (readers == null)
                     {
