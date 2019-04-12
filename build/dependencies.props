@@ -76,6 +76,7 @@
     <MicrosoftExtensionsLocalizationAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsLocalizationAbstractionsPackageVersion>
     <MicrosoftExtensionsLocalizationPackageVersion>2.2.0</MicrosoftExtensionsLocalizationPackageVersion>
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
+    <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>2.2.5-servicing-19212-04</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
     <MicrosoftExtensionsLoggingConfigurationPackageVersion>2.2.0</MicrosoftExtensionsLoggingConfigurationPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.2.0</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>2.2.0</MicrosoftExtensionsLoggingDebugPackageVersion>
