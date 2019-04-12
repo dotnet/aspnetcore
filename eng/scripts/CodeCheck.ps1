@@ -32,7 +32,7 @@ try {
         $slnDir = Split-Path -Parent $_
         $sln = $_
         & dotnet sln $_ list `
-            | ? { $_ -ne 'Project(s)' -and $_ -ne '----------' } `
+            | ? { $_ -like '*proj' } `
             | % {
                 $proj = Join-Path $slnDir $_
                 if (-not (Test-Path $proj)) {

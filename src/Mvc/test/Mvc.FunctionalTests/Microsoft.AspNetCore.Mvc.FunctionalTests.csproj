@@ -31,6 +31,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
+
     <ProjectReference Include="..\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj" />
     <ProjectReference Include="..\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj" />
     <ProjectReference Include="..\WebSites\BasicWebSite\BasicWebSite.csproj" />
