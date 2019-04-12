@@ -182,12 +182,11 @@ namespace Microsoft.Extensions.Localization
             var resourceManager = new TestResourceManager(baseName, resourceAssembly);
             var logger = Logger;
 
-            var localizer = new ResourceManagerWithCultureStringLocalizer(
+            var localizer = new ResourceManagerStringLocalizer(
                 resourceManager,
                 resourceAssembly.Assembly,
                 baseName,
                 resourceNamesCache,
-                CultureInfo.CurrentCulture,
                 logger);
 
             // Act & Assert
@@ -291,7 +290,7 @@ namespace Microsoft.Extensions.Localization
             public override Stream GetManifestResourceStream(string name)
             {
                 ManifestResourceStreamCallCount++;
-                
+
                 return HasResources ? MakeResourceStream() : null;
             }
         }

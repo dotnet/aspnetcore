@@ -4,7 +4,6 @@
 using System;
 using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class HttpClientSlimTest
     {
-        private static byte[] _defaultResponse = Encoding.ASCII.GetBytes("test");
+        private static readonly byte[] _defaultResponse = Encoding.ASCII.GetBytes("test");
 
         [Fact]
         public async Task GetStringAsyncHttp()
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.Testing
                     // HttpListener doesn't support requesting port 0 (dynamic).
                     // Requesting port 0 from Sockets and then passing that to HttpListener is racy.
                     // Just keep trying until we find a free one.
-                    address = $"http://127.0.0.1:{random.Next(1024, ushort.MaxValue)}/";
+                    address = $"http://localhost:{random.Next(1024, ushort.MaxValue)}/";
                     listener.Prefixes.Add(address);
                     listener.Start();
                     break;

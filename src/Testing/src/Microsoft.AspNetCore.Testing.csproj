@@ -6,15 +6,30 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
+    <!-- This is actually a library for test projects, not a test project. -->
+    <IsUnitTestProject>false</IsUnitTestProject>
     <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
     <!-- This package is internal, so we don't generate a package baseline. Always build against the latest dependencies. -->
     <UseLatestPackageReferences>true</UseLatestPackageReferences>
   </PropertyGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.AspNetCore.Testing.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.Win32.Registry" />
     <Reference Include="System.ValueTuple" />
+
+    <!--
+      This intentionally does not reference 'xunit', 'xunit.core', or any runner packages.
+      XUnit recommends only using xunit.extensibility.*, xunit.assert, and xunit.abstractions for packages which "extend" xunit.
+      This allows consumers to decide which type of xunit runner they want to use to run these tests,
+      and avoids problems with `dotnet pack`.
+
+      See https://xunit.github.io/docs/nuget-packages and the special note in https://xunit.github.io/releases/2.3.
+    -->
     <Reference Include="xunit.assert" />
     <Reference Include="xunit.extensibility.execution" />
   </ItemGroup>

@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,10 +13,11 @@ namespace Microsoft.AspNetCore.Testing
     {
         public static async Task<T> TimeoutAfter<T>(this Task<T> task, TimeSpan timeout,
             [CallerFilePath] string filePath = null,
-            [CallerLineNumber] int lineNumber = default(int))
+            [CallerLineNumber] int lineNumber = default)
         {
             // Don't create a timer if the task is already completed
-            if (task.IsCompleted)
+            // or the debugger is attached
+            if (task.IsCompleted || Debugger.IsAttached)
             {
                 return await task;
             }
@@ -28,17 +30,17 @@ namespace Microsoft.AspNetCore.Testing
             }
             else
             {
-                throw new TimeoutException(
-                    CreateMessage(timeout, filePath, lineNumber));
+                throw new TimeoutException(CreateMessage(timeout, filePath, lineNumber));
             }
         }
 
         public static async Task TimeoutAfter(this Task task, TimeSpan timeout,
             [CallerFilePath] string filePath = null,
-            [CallerLineNumber] int lineNumber = default(int))
+            [CallerLineNumber] int lineNumber = default)
         {
             // Don't create a timer if the task is already completed
-            if (task.IsCompleted)
+            // or the debugger is attached
+            if (task.IsCompleted || Debugger.IsAttached)
             {
                 await task;
                 return;

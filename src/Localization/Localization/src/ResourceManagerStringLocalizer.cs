@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
@@ -151,6 +151,7 @@ namespace Microsoft.Extensions.Localization
         /// </summary>
         /// <param name="culture">The <see cref="CultureInfo"/> to use.</param>
         /// <returns>A culture-specific <see cref="ResourceManagerStringLocalizer"/>.</returns>
+        [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
         public IStringLocalizer WithCulture(CultureInfo culture)
         {
             return culture == null
