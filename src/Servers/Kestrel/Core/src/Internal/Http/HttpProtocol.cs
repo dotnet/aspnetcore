@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _manuallySetRequestAbortToken = null;
             _preventRequestAbortedCancellation = false;
 
-            // Lock to prevent CancelRequestAbortedToken from attempting to cancel an disposed CTS.
+            // Lock to prevent CancelRequestAbortedToken from attempting to cancel a disposed CTS.
             CancellationTokenSource localAbortCts = null;
             lock (_abortLock)
             {
