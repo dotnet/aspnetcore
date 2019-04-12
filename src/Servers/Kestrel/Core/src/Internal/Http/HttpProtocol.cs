@@ -378,17 +378,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _preventRequestAbortedCancellation = false;
 
             // Lock to prevent CancelRequestAbortedToken from attempting to cancel an disposed CTS.
-            CancellationTokenSource cts = null;
+            CancellationTokenSource localAbortCts = null;
             lock (_abortLock)
             {
                 if (_abortedCts != null)
                 {
-                    cts = _abortedCts;
+                    localAbortCts = _abortedCts;
                     _abortedCts = null;
                 }
             }
 
-            cts?.Dispose();
+            localAbortCts?.Dispose();
 
             if (_wrapperObjectsToDispose != null)
             {
@@ -445,14 +445,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             try
             {
-                CancellationTokenSource cts = null;
+                CancellationTokenSource localAbortCts = null;
                 lock (_abortLock)
                 {
                     if (_abortedCts != null)
                     {
                         if (!_preventRequestAbortedCancellation)
                         {
-                            cts = _abortedCts;
+                            localAbortCts = _abortedCts;
                         }
                         _abortedCts = null;
                     }
@@ -464,7 +464,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // the _preventRequestAbortedCancellation is set to true.
                 // _preventRequestAbortedCancellation is mostly a heuristic rather than a guarantee
                 // we need to follow.
-                cts?.Cancel();
+                localAbortCts?.Cancel();
             }
             catch (Exception ex)
             {
