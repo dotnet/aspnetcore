@@ -911,7 +911,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return _resourceExecutedContext;
         }
 
-        private async Task InvokeNextResourceFilter()
+        private Task InvokeNextResourceFilter()
         {
             try
             {
@@ -919,9 +919,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var next = State.ResourceNext;
                 var state = (object)null;
                 var isCompleted = false;
+
                 while (!isCompleted)
                 {
-                    await Next(ref next, ref scope, ref state, ref isCompleted);
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
                 }
             }
             catch (Exception exception)
@@ -933,6 +938,29 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             Debug.Assert(_resourceExecutedContext != null);
+            return Task.CompletedTask;
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                try
+                {
+                    await lastTask;
+
+                    while (!isCompleted)
+                    {
+                        await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    invoker._resourceExecutedContext = new ResourceExecutedContext(invoker._resourceExecutingContext, invoker._filters)
+                    {
+                        ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
+                    };
+                }
+
+                Debug.Assert(invoker._resourceExecutedContext != null);
+            }
         }
 
         private async Task InvokeNextExceptionFilterAsync()
