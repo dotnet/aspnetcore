@@ -19,11 +19,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         public static StringValues GetHeaderSplit(IHeaderDictionary headers, string key)
         {
             var values = GetHeaderUnmodified(headers, key);
-            return GetHeaderSplitImplementation(values);
-        }
 
-        private static StringValues GetHeaderSplitImplementation(StringValues values)
-        {
             StringValues result = default;
 
             foreach (var segment in new HeaderSegmentCollection(values))
