@@ -382,11 +382,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             lock (_abortLock)
             {
                 _preventRequestAbortedCancellation = false;
-                if (_abortedCts != null)
-                {
-                    localAbortCts = _abortedCts;
-                    _abortedCts = null;
-                }
+                localAbortCts = _abortedCts;
+                _abortedCts = null;
             }
 
             localAbortCts?.Dispose();
@@ -459,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // If we cancel the cts, we don't dispose as people may still be using
                 // the cts. It also isn't necessary to dispose a canceled cts.
-                localAbortedCts?.Cancel()
+                localAbortedCts?.Cancel();
             }
             catch (Exception ex)
             {
