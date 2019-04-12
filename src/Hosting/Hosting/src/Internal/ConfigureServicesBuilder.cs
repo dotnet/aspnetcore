@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 arguments[0] = services;
             }
 
-            return MethodInfo.Invoke(instance, arguments) as IServiceProvider;
+            return MethodInfo.InvokeWithoutWrappingExceptions(instance, arguments) as IServiceProvider;
         }
     }
 }

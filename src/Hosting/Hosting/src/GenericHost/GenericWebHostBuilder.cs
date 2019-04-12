@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     // _builder.ConfigureContainer<T>(ConfigureContainer);
                     typeof(IHostBuilder).GetMethods().First(m => m.Name == nameof(IHostBuilder.ConfigureContainer))
                         .MakeGenericMethod(containerType)
-                        .Invoke(_builder, new object[] { configureCallback });
+                        .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
                 }
 
                 // Resolve Configure after calling ConfigureServices and ConfigureContainer
