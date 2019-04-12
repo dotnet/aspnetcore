@@ -1366,7 +1366,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task<ResultExecutedContext> InvokeNextResultFilterAwaitedAsync<TFilter, TFilterAsync>()
+        private Task<ResultExecutedContext> InvokeNextResultFilterAwaitedAsync<TFilter, TFilterAsync>()
             where TFilter : class, IResultFilter
             where TFilterAsync : class, IAsyncResultFilter
         {
@@ -1375,6 +1375,28 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 // If we get here, it means that an async filter set cancel == true AND called next().
                 // This is forbidden.
+                return Throw();
+            }
+
+            var task = InvokeNextResultFilterAsync<TFilter, TFilterAsync>();
+            if (!task.IsCompletedSuccessfully)
+            {
+                return Awaited(this, task);
+            }
+
+            Debug.Assert(_resultExecutedContext != null);
+            return Task.FromResult(_resultExecutedContext);
+
+            static async Task<ResultExecutedContext> Awaited(ResourceInvoker invoker, Task task)
+            {
+                await task;
+
+                Debug.Assert(invoker._resultExecutedContext != null);
+                return invoker._resultExecutedContext;
+            }
+#pragma warning disable CS1998
+            static async Task<ResultExecutedContext> Throw()
+            {
                 var message = Resources.FormatAsyncResultFilter_InvalidShortCircuit(
                     typeof(IAsyncResultFilter).Name,
                     nameof(ResultExecutingContext.Cancel),
@@ -1383,12 +1405,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 throw new InvalidOperationException(message);
             }
-
-            await InvokeNextResultFilterAsync<TFilter, TFilterAsync>();
-
-            Debug.Assert(_resultExecutedContext != null);
-            return _resultExecutedContext;
+#pragma warning restore CS1998
         }
+
 
         private static void Rethrow(ResourceExecutedContext context)
         {
