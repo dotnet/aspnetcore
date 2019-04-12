@@ -15,6 +15,6 @@
 
   <!-- Workaround https://developercommunity.visualstudio.com/content/problem/434385/vs2019-preview-2-targetframeworkversion-or-platfor.html -->
   <PropertyGroup>
-    <VCToolsVersion Condition = "'$(VCToolsVersion)' == ''" >14.16.27023</VCToolsVersion>
+    <VCToolsVersion Condition = "'$(VCToolsVersion)' == ''" >Default</VCToolsVersion>
   </PropertyGroup>
 </Project>
