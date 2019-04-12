@@ -13,7 +13,11 @@ If you want to download the latest daily build and use it in a project, then you
   <configuration>
       <packageSources>
           <clear />
-          <add key="dotnet-core" value="https://dotnet.myget.org/F/dotnet-core/api/v3/index.json" />
+          <add key="dotnet-core" value="https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json" />
+          <add key="extensions" value="https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json" />
+          <add key="entityframeworkcore" value="https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json" />
+          <add key="aspnetcore-tooling" value="https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json" />
+          <add key="aspnetcore" value="https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json" />
           <add key="NuGet.org" value="https://api.nuget.org/v3/index.json" />
       </packageSources>
   </configuration>

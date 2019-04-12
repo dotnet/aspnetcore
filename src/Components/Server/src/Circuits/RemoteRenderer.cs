@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,18 +20,12 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
 {
     internal class RemoteRenderer : HtmlRenderer
     {
-        // The purpose of the timeout is just to ensure server resources are released at some
-        // point if the client disconnects without sending back an ACK after a render
-        private const int TimeoutMilliseconds = 60 * 1000;
-
-        private readonly int _id;
         private readonly IJSRuntime _jsRuntime;
         private readonly CircuitClientProxy _client;
         private readonly RendererRegistry _rendererRegistry;
-        private readonly ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>> _pendingRenders
-            = new ConcurrentDictionary<long, AutoCancelTaskCompletionSource<object>>();
         private readonly ILogger _logger;
         private long _nextRenderId = 1;
+        private bool _disposing = false;
 
         /// <summary>
         /// Notifies when a rendering exception occured.
@@ -53,11 +49,13 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             _jsRuntime = jsRuntime;
             _client = client;
 
-            _id = _rendererRegistry.Add(this);
+            Id = _rendererRegistry.Add(this);
             _logger = logger;
         }
 
-        internal ConcurrentQueue<byte[]> OfflineRenderBatches = new ConcurrentQueue<byte[]>();
+        internal ConcurrentQueue<PendingRender> PendingRenderBatches = new ConcurrentQueue<PendingRender>();
+
+        public int Id { get; }
 
         /// <summary>
         /// Associates the <see cref="IComponent"/> with the <see cref="RemoteRenderer"/>,
@@ -72,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
 
             var attachComponentTask = _jsRuntime.InvokeAsync<object>(
                 "Blazor._internal.attachRootComponentToElement",
-                _id,
+                Id,
                 domElementSelector,
                 componentId);
             CaptureAsyncExceptions(attachComponentTask);
@@ -94,97 +92,154 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             {
                 Log.UnhandledExceptionRenderingComponent(_logger, exception);
             }
+
+            UnhandledException?.Invoke(this, exception);
         }
 
         /// <inheritdoc />
         protected override void Dispose(bool disposing)
         {
+            _disposing = true;
             base.Dispose(true);
-            _rendererRegistry.TryRemove(_id);
+            while (PendingRenderBatches.TryDequeue(out var entry))
+            {
+                entry.CompletionSource.TrySetCanceled();
+            }
+            _rendererRegistry.TryRemove(Id);
         }
 
         /// <inheritdoc />
         protected override Task UpdateDisplayAsync(in RenderBatch batch)
         {
+            if (_disposing)
+            {
+                // We are being disposed, so do no work.
+                return Task.FromCanceled<object>(CancellationToken.None);
+            }
+
             // Note that we have to capture the data as a byte[] synchronously here, because
             // SignalR's SendAsync can wait an arbitrary duration before serializing the params.
             // The RenderBatch buffer will get reused by subsequent renders, so we need to
             // snapshot its contents now.
             // TODO: Consider using some kind of array pool instead of allocating a new
             //       buffer on every render.
-            var batchBytes = MessagePackSerializer.Serialize(batch, RenderBatchFormatterResolver.Instance);
-
-            if (!_client.Connected)
+            byte[] batchBytes;
+            using (var memoryStream = new MemoryStream())
             {
-                // Buffer the rendered batches while the client is disconnected. We'll send it down once the client reconnects.
-                OfflineRenderBatches.Enqueue(batchBytes);
-                return Task.CompletedTask;
+                using (var renderBatchWriter = new RenderBatchWriter(memoryStream, false))
+                {
+                    renderBatchWriter.Write(in batch);
+                }
+
+                batchBytes = memoryStream.ToArray();
             }
 
-            Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId);
-            return WriteBatchBytes(batchBytes);
-        }
-
-        public async Task ProcessBufferedRenderBatches()
-        {
-            // The server may discover that the client disconnected while we're attempting to write empty rendered batches.
-            // Discontinue writing in this event.
-            while (_client.Connected && OfflineRenderBatches.TryDequeue(out var renderBatch))
-            {
-                await WriteBatchBytes(renderBatch);
-            }
-        }
-
-        private Task WriteBatchBytes(byte[] batchBytes)
-        {
             var renderId = Interlocked.Increment(ref _nextRenderId);
 
-            var pendingRenderInfo = new AutoCancelTaskCompletionSource<object>(TimeoutMilliseconds);
-            _pendingRenders[renderId] = pendingRenderInfo;
+            var pendingRender = new PendingRender(
+                renderId,
+                batchBytes,
+                new TaskCompletionSource<object>());
 
-            // Send the render batch to the client
-            // If the "send" operation fails (synchronously or asynchronously), abort
-            // the whole render with that exception
-            try
-            {
-                _client.SendAsync("JS.RenderBatch", _id, renderId, batchBytes).ContinueWith(sendTask =>
-                {
-                    if (sendTask.IsFaulted)
-                    {
-                        pendingRenderInfo.TrySetException(sendTask.Exception);
-                    }
-                });
-            }
-            catch (Exception syncException)
-            {
-                pendingRenderInfo.TrySetException(syncException);
-            }
+            // Buffer the rendered batches no matter what. We'll send it down immediately when the client
+            // is connected or right after the client reconnects.
 
-            // When the render is completed (success, fail, or timeout), stop tracking it
-            return pendingRenderInfo.Task.ContinueWith(task =>
-            {
-                _pendingRenders.TryRemove(renderId, out var ignored);
-                if (task.IsFaulted)
-                {
-                    UnhandledException?.Invoke(this, task.Exception);
-                }
-            });
+            PendingRenderBatches.Enqueue(pendingRender);
+
+            // Fire and forget the initial send for this batch (if connected). Otherwise it will be sent
+            // as soon as the client reconnects.
+            var _ = WriteBatchBytesAsync(pendingRender);
+
+            return pendingRender.CompletionSource.Task;
         }
 
-        public void OnRenderCompleted(long renderId, string errorMessageOrNull)
+        public Task ProcessBufferedRenderBatches()
         {
-            if (_pendingRenders.TryGetValue(renderId, out var pendingRenderInfo))
+            // All the batches are sent in order based on the fact that SignalR
+            // provides ordering for the underlying messages and that the batches
+            // are always in order.
+            return Task.WhenAll(PendingRenderBatches.Select(b => WriteBatchBytesAsync(b)));
+        }
+
+        private async Task WriteBatchBytesAsync(PendingRender pending)
+        {
+            // Send the render batch to the client
+            // If the "send" operation fails (synchronously or asynchronously) or the client
+            // gets disconected simply give up. This likely means that
+            // the circuit went offline while sending the data, so simply wait until the
+            // client reconnects back or the circuit gets evicted because it stayed
+            // disconnected for too long.
+
+            try
             {
-                if (errorMessageOrNull == null)
+                if (!_client.Connected)
                 {
-                    pendingRenderInfo.TrySetResult(null);
+                    // If we detect that the client is offline. Simply stop trying to send the payload.
+                    // When the client reconnects we'll resend it.
+                    return;
                 }
-                else
-                {
-                    pendingRenderInfo.TrySetException(
-                        new RemoteRendererException(errorMessageOrNull));
-                }
+
+                Log.BeginUpdateDisplayAsync(_logger, _client.ConnectionId);
+                await _client.SendAsync("JS.RenderBatch", Id, pending.BatchId, pending.Data);
             }
+            catch (Exception e)
+            {
+                Log.SendBatchDataFailed(_logger, e);
+            }
+
+            // We don't have to remove the entry from the list of pending batches if we fail to send it or the client fails to
+            // acknowledge that it received it. We simply keep it in the queue until we receive another ack from the client for
+            // a later batch (clientBatchId > thisBatchId) or the circuit becomes disconnected and we ultimately get evicted and
+            // disposed.
+        }
+
+        public void OnRenderCompleted(long incomingBatchId, string errorMessageOrNull)
+        {
+            if (_disposing)
+            {
+                // Disposing so don't do work.
+                return;
+            }
+
+            if (!PendingRenderBatches.TryDequeue(out var entry) || entry.BatchId != incomingBatchId)
+            {
+                HandleException(
+                    new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
+            }
+            else
+            {
+                var message = $"Completing batch {entry.BatchId} " +
+                    (errorMessageOrNull == null ? "without error." : "with error.");
+
+                _logger.LogDebug(message);
+                CompleteRender(entry.CompletionSource, errorMessageOrNull);
+            }
+        }
+
+        private void CompleteRender(TaskCompletionSource<object> pendingRenderInfo, string errorMessageOrNull)
+        {
+            if (errorMessageOrNull == null)
+            {
+                pendingRenderInfo.TrySetResult(null);
+            }
+            else
+            {
+                pendingRenderInfo.TrySetException(new RemoteRendererException(errorMessageOrNull));
+            }
+        }
+
+        internal readonly struct PendingRender
+        {
+            public PendingRender(long batchId, byte[] data, TaskCompletionSource<object> completionSource)
+            {
+                BatchId = batchId;
+                Data = data;
+                CompletionSource = completionSource;
+            }
+
+            public long BatchId { get; }
+            public byte[] Data { get; }
+            public TaskCompletionSource<object> CompletionSource { get; }
         }
 
         private void CaptureAsyncExceptions(Task task)
@@ -203,12 +258,14 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             private static readonly Action<ILogger, string, Exception> _unhandledExceptionRenderingComponent;
             private static readonly Action<ILogger, string, Exception> _beginUpdateDisplayAsync;
             private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
+            private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
 
             private static class EventIds
             {
                 public static readonly EventId UnhandledExceptionRenderingComponent = new EventId(100, "ExceptionRenderingComponent");
                 public static readonly EventId BeginUpdateDisplayAsync = new EventId(101, "BeginUpdateDisplayAsync");
                 public static readonly EventId SkipUpdateDisplayAsync = new EventId(102, "SkipUpdateDisplayAsync");
+                public static readonly EventId SendBatchDataFailed = new EventId(103, "SendBatchDataFailed");
             }
 
             static Log()
@@ -227,6 +284,16 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                     LogLevel.Trace,
                     EventIds.SkipUpdateDisplayAsync,
                     "Buffering remote render because the client on connection {ConnectionId} is disconnected.");
+
+                _sendBatchDataFailed = LoggerMessage.Define<string>(
+                    LogLevel.Information,
+                    EventIds.SendBatchDataFailed,
+                    "Sending data for batch failed: {Message}");
+            }
+
+            public static void SendBatchDataFailed(ILogger logger, Exception exception)
+            {
+                _sendBatchDataFailed(logger, exception.Message, exception);
             }
 
             public static void UnhandledExceptionRenderingComponent(ILogger logger, Exception exception)

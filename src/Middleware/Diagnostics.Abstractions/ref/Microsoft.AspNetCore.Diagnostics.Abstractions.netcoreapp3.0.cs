@@ -24,9 +24,19 @@ namespace Microsoft.AspNetCore.Diagnostics
         public int StartColumn { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int StartLine { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    public partial class ErrorContext
+    {
+        public ErrorContext(Microsoft.AspNetCore.Http.HttpContext httpContext, System.Exception exception) { }
+        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public partial interface ICompilationException
     {
         System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Diagnostics.CompilationFailure> CompilationFailures { get; }
+    }
+    public partial interface IDeveloperPageExceptionFilter
+    {
+        System.Threading.Tasks.Task HandleExceptionAsync(Microsoft.AspNetCore.Diagnostics.ErrorContext errorContext, System.Func<Microsoft.AspNetCore.Diagnostics.ErrorContext, System.Threading.Tasks.Task> next);
     }
     public partial interface IExceptionHandlerFeature
     {

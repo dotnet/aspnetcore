@@ -8,8 +8,8 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -53,6 +53,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to false.
         /// </remarks>
         public bool AllowSynchronousIO { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value that controls whether the string values materialized
+        /// will be reused across requests; if they match, or if the strings will always be reallocated.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to false.
+        /// </remarks>
+        public bool DisableStringReuse { get; set; } = false;
 
         /// <summary>
         /// Enables the Listen options callback to resolve and use services registered by the application during startup.

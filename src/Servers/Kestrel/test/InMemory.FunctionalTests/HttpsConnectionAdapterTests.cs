@@ -16,8 +16,8 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 var result = await server.HttpClientSlim.PostAsync($"https://localhost:{server.Port}/",
                     new FormUrlEncodedContent(new[] {
@@ -51,7 +51,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     validateCertificate: false);
 
                 Assert.Equal("content=Hello+World%3F", result);
-                await server.StopAsync();
             }
         }
 
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
             {
                 var tlsFeature = context.Features.Get<ITlsHandshakeFeature>();
                 Assert.NotNull(tlsFeature);
@@ -83,7 +82,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("hello world", result);
-                await server.StopAsync();
             }
         }
 
@@ -103,11 +101,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             };
 
 
-            using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(App, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 await Assert.ThrowsAnyAsync<Exception>(
                     () => server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/"));
-                await server.StopAsync();
             }
         }
 
@@ -126,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
                 {
                     var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
                     Assert.NotNull(tlsFeature);
@@ -136,7 +133,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("hello world", result);
-                await server.StopAsync();
             }
         }
 
@@ -159,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -170,7 +166,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                 }
-                await server.StopAsync();
             }
         }
 
@@ -195,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     })
                 }
             };
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -207,7 +202,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -236,7 +230,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     })
                 }
             };
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -258,7 +252,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2NoExt));
                     Assert.Equal(2, selectorCalled);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -280,7 +273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     })
                 }
             };
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -292,7 +285,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false));
                     Assert.Equal(1, selectorCalled);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -318,7 +310,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     })
                 }
             };
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -330,7 +322,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     Assert.True(stream.RemoteCertificate.Equals(_x509Certificate2));
                     Assert.Equal(1, selectorCalled);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -352,7 +343,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     })
                 }
             };
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -364,7 +355,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false));
                     Assert.Equal(1, selectorCalled);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -387,7 +377,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context =>
+            await using (var server = new TestServer(context =>
                 {
                     var tlsFeature = context.Features.Get<ITlsConnectionFeature>();
                     Assert.NotNull(tlsFeature);
@@ -405,7 +395,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     await AssertConnectionResult(stream, true);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -420,11 +409,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => context.Response.WriteAsync(context.Request.Scheme), new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => context.Response.WriteAsync(context.Request.Scheme), new TestServiceContext(LoggerFactory), listenOptions))
             {
                 var result = await server.HttpClientSlim.GetStringAsync($"https://localhost:{server.Port}/", validateCertificate: false);
                 Assert.Equal("https", result);
-                await server.StopAsync();
             }
         }
 
@@ -444,7 +432,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => context.Response.WriteAsync("hello world"), new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => context.Response.WriteAsync("hello world"), new TestServiceContext(LoggerFactory), listenOptions))
             {
                 // SslStream is used to ensure the certificate is actually passed to the server
                 // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -455,11 +443,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     var ex = await Assert.ThrowsAsync<IOException>(
                         async () => await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls, false));
                 }
-                await server.StopAsync();
             }
         }
 
-        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/7265")]
+        [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/7265", FlakyOn.All)]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [InlineData(ClientCertificateMode.RequireCertificate)]
         public async Task ClientCertificateValidationGetsCalledWithNotNullParameters(ClientCertificateMode mode)
@@ -484,7 +472,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -493,11 +481,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await AssertConnectionResult(stream, true);
                     Assert.True(clientCertificateValidationCalled);
                 }
-                await server.StopAsync();
             }
         }
 
-        [Theory]
+        [ConditionalTheory]
         [SkipOnHelix]
         [InlineData(ClientCertificateMode.AllowCertificate)]
         [InlineData(ClientCertificateMode.RequireCertificate)]
@@ -516,7 +503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -524,7 +511,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     await AssertConnectionResult(stream, false);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -545,7 +531,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -553,7 +539,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     await AssertConnectionResult(stream, false);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -583,7 +568,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 return context.Response.WriteAsync("hello world");
             };
 
-            using (var server = new TestServer(app, new TestServiceContext(LoggerFactory), listenOptions))
+            await using (var server = new TestServer(app, new TestServiceContext(LoggerFactory), listenOptions))
             {
                 // SslStream is used to ensure the certificate is actually passed to the server
                 // HttpClient might not send the certificate because it is invalid or it doesn't match any
@@ -594,7 +579,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await stream.AuthenticateAsClientAsync("localhost", new X509CertificateCollection(), SslProtocols.Tls12 | SslProtocols.Tls11, false);
                     await AssertConnectionResult(stream, true);
                 }
-                await server.StopAsync();
             }
         }
 

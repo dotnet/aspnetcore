@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server;
+using Microsoft.AspNetCore.Components.Server.BlazorPack;
 using Microsoft.AspNetCore.Components.Server.Circuits;
-using Microsoft.AspNetCore.Components.Services;
+using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -21,9 +23,17 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddRazorComponents(this IServiceCollection services)
+        public static IServiceCollection AddServerSideBlazor(this IServiceCollection services)
         {
-            services.AddSignalR().AddMessagePackProtocol();
+            services.AddSignalR()
+                .AddHubOptions<ComponentHub>(options =>
+            {
+                options.SupportedProtocols.Clear();
+                options.SupportedProtocols.Add(BlazorPackHubProtocol.ProtocolName);
+            });
+
+            // Register the Blazor specific hub protocol
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHubProtocol, BlazorPackHubProtocol>());
 
             // Here we add a bunch of services that don't vary in any way based on the
             // user's configuration. So even if the user has multiple independent server-side
@@ -44,6 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
             // Standard razor component services implementations
             services.AddScoped<IUriHelper, RemoteUriHelper>();
             services.AddScoped<IJSRuntime, RemoteJSRuntime>();
+            services.AddScoped<IComponentContext, RemoteComponentContext>();
 
             return services;
         }

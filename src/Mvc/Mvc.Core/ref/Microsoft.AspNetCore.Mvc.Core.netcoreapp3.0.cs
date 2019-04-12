@@ -5,14 +5,14 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class ControllerEndpointRouteBuilderExtensions
     {
-        public static void MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string areaName, string template, object defaults = null, object constraints = null, object dataTokens = null) { }
-        public static void MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string name, string template, object defaults = null, object constraints = null, object dataTokens = null) { }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes) { throw null; }
-        public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string action, string controller, string area) { }
-        public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string action, string controller, string area) { }
-        public static void MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string action, string controller) { }
-        public static void MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder routes, string pattern, string action, string controller) { }
+        public static void MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string areaName, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { }
+        public static void MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
+        public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string action, string controller, string area) { }
+        public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string action, string controller, string area) { }
+        public static void MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string action, string controller) { }
+        public static void MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string action, string controller) { }
     }
     public static partial class MvcApplicationBuilderExtensions
     {
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Assembly | System.AttributeTargets.Class, AllowMultiple=false, Inherited=true)]
-    public partial class ApiControllerAttribute : Microsoft.AspNetCore.Mvc.ControllerAttribute, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+    public partial class ApiControllerAttribute : Microsoft.AspNetCore.Mvc.ControllerAttribute, Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata, Microsoft.AspNetCore.Mvc.Infrastructure.IApiBehaviorMetadata
     {
         public ApiControllerAttribute() { }
     }
@@ -876,6 +876,7 @@ namespace Microsoft.AspNetCore.Mvc
         public bool RequireHttpsPermanent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool RespectBrowserAcceptHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool ReturnHttpNotAcceptable { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Text.Json.Serialization.JsonSerializerOptions SerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int? SslPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressAsyncSuffixInActionNames { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressInputFormatterBuffering { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -1855,6 +1856,21 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public override bool CanWriteResult(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterCanWriteContext context) { throw null; }
         public override System.Threading.Tasks.Task WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.Text.Encoding encoding) { throw null; }
     }
+    public partial class SystemTextJsonInputFormatter : Microsoft.AspNetCore.Mvc.Formatters.TextInputFormatter, Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy
+    {
+        public SystemTextJsonInputFormatter(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+        Microsoft.AspNetCore.Mvc.Formatters.InputFormatterExceptionPolicy Microsoft.AspNetCore.Mvc.Formatters.IInputFormatterExceptionPolicy.ExceptionPolicy { get { throw null; } }
+        public System.Text.Json.Serialization.JsonSerializerOptions SerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public sealed override System.Threading.Tasks.Task<Microsoft.AspNetCore.Mvc.Formatters.InputFormatterResult> ReadRequestBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.InputFormatterContext context, System.Text.Encoding encoding) { throw null; }
+    }
+    public partial class SystemTextJsonOutputFormatter : Microsoft.AspNetCore.Mvc.Formatters.TextOutputFormatter
+    {
+        public SystemTextJsonOutputFormatter(Microsoft.AspNetCore.Mvc.MvcOptions options) { }
+        public System.Text.Json.Serialization.JsonSerializerOptions SerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public sealed override System.Threading.Tasks.Task WriteResponseBodyAsync(Microsoft.AspNetCore.Mvc.Formatters.OutputFormatterWriteContext context, System.Text.Encoding selectedEncoding) { throw null; }
+    }
     public abstract partial class TextInputFormatter : Microsoft.AspNetCore.Mvc.Formatters.InputFormatter
     {
         protected static readonly System.Text.Encoding UTF16EncodingLittleEndian;
@@ -1979,6 +1995,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor SelectBestCandidate(Microsoft.AspNetCore.Routing.RouteContext context, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor> candidates);
         System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Mvc.Abstractions.ActionDescriptor> SelectCandidates(Microsoft.AspNetCore.Routing.RouteContext context);
+    }
+    public partial interface IApiBehaviorMetadata : Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata
+    {
     }
     public partial interface IClientErrorActionResult : Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult
     {

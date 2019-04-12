@@ -5,7 +5,7 @@ const nativeDecoder = typeof TextDecoder === 'function'
 export const decodeUtf8: (bytes: Uint8Array) => string
   = nativeDecoder ? nativeDecoder.decode.bind(nativeDecoder) : decodeImpl;
 
-/*!
+/* !
 Logic in decodeImpl is derived from fast-text-encoding
 https://github.com/samthor/fast-text-encoding
 
@@ -22,12 +22,12 @@ function decodeImpl(bytes: Uint8Array): string {
   while (pos < len) {
     const byte1 = bytes[pos++];
     if (byte1 === 0) {
-      break;  // NULL
+      break; // NULL
     }
 
-    if ((byte1 & 0x80) === 0) {  // 1-byte
+    if ((byte1 & 0x80) === 0) { // 1-byte
       out.push(byte1);
-    } else if ((byte1 & 0xe0) === 0xc0) {  // 2-byte
+    } else if ((byte1 & 0xe0) === 0xc0) { // 2-byte
       const byte2 = bytes[pos++] & 0x3f;
       out.push(((byte1 & 0x1f) << 6) | byte2);
     } else if ((byte1 & 0xf0) === 0xe0) {
@@ -44,7 +44,7 @@ function decodeImpl(bytes: Uint8Array): string {
       if (codepoint > 0xffff) {
         // codepoint &= ~0x10000;
         codepoint -= 0x10000;
-        out.push((codepoint >>> 10) & 0x3ff | 0xd800)
+        out.push((codepoint >>> 10) & 0x3ff | 0xd800);
         codepoint = 0xdc00 | codepoint & 0x3ff;
       }
       out.push(codepoint);

@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
             // Act & Assert
             var parseOptions = compiler.ParseOptions;
-            Assert.Equal(LanguageVersion.CSharp7, parseOptions.LanguageVersion);
+            Assert.Equal(LanguageVersion.CSharp8, parseOptions.LanguageVersion);
             Assert.Equal(new[] { "DEBUG" }, parseOptions.PreprocessorSymbolNames);
         }
 

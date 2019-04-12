@@ -8,8 +8,8 @@ let allocateArrayMethod: MethodHandle;
 
 // These are the functions we're making available for invocation from .NET
 export const internalFunctions = {
-  sendAsync
-}
+  sendAsync,
+};
 
 async function sendAsync(id: number, body: System_Array<any>, jsonFetchArgs: System_String) {
   let response: Response;
@@ -37,7 +37,7 @@ function dispatchSuccessResponse(id: number, response: Response, responseData: A
   const responseDescriptor: ResponseDescriptor = {
     statusCode: response.status,
     statusText: response.statusText,
-    headers: []
+    headers: [],
   };
   response.headers.forEach((value, name) => {
     responseDescriptor.headers.push([name, value]);

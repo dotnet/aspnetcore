@@ -53,12 +53,14 @@ namespace Microsoft.AspNetCore.Components.Forms
             }
         }
 
-        [Parameter] string ParsingErrorMessage { get; set; } = "The {0} field must be a number.";
+        /// <summary>
+        /// Gets or sets the error message used when displaying an a parsing error.
+        /// </summary>
+        [Parameter] public string ParsingErrorMessage { get; private set; } = "The {0} field must be a number.";
 
         /// <inheritdoc />
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            base.BuildRenderTree(builder);
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "number");
             builder.AddAttribute(2, "step", _stepAttributeValue);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +37,36 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Assert
             serviceScope.Verify(s => s.Dispose(), Times.Once());
             Assert.True(remoteRenderer.Disposed);
+        }
+
+        [Fact]
+        public async Task DisposeAsync_DisposesRendererWithinSynchronizationContext()
+        {
+            // Arrange
+            var serviceScope = new Mock<IServiceScope>();
+            var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
+            var circuitHost = TestCircuitHost.Create(
+                serviceScope.Object,
+                remoteRenderer);
+
+            var component = new DispatcherComponent(circuitHost.Dispatcher);
+            circuitHost.Renderer.AssignRootComponentId(component);
+            var original = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(null);
+
+            // Act & Assert
+            try
+            {
+                Assert.Null(SynchronizationContext.Current);
+                await circuitHost.DisposeAsync();
+                Assert.True(component.Called);
+                Assert.Null(SynchronizationContext.Current);
+            }
+            finally
+            {
+                // Not sure if the line above messes up the xunit sync context, so just being cautious here.
+                SynchronizationContext.SetSynchronizationContext(original);
+            }
         }
 
         [Fact]
@@ -79,6 +110,46 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // Assert
             handler1.VerifyAll();
             handler2.VerifyAll();
+        }
+
+        [Fact]
+        public async Task InitializeAsync_ReportsOwnAsyncExceptions()
+        {
+            // Arrange
+            var handler = new Mock<CircuitHandler>(MockBehavior.Strict);
+            var tcs = new TaskCompletionSource<object>();
+            var reportedErrors = new List<UnhandledExceptionEventArgs>();
+
+            handler
+                .Setup(h => h.OnCircuitOpenedAsync(It.IsAny<Circuit>(), It.IsAny<CancellationToken>()))
+                .Returns(tcs.Task)
+                .Verifiable();
+
+            var circuitHost = TestCircuitHost.Create(handlers: new[] { handler.Object });
+            circuitHost.UnhandledException += (sender, errorInfo) =>
+            {
+                Assert.Same(circuitHost, sender);
+                reportedErrors.Add(errorInfo);
+            };
+
+            // Act
+            var initializeAsyncTask = circuitHost.InitializeAsync(new CancellationToken());
+
+            // Assert: No synchronous exceptions
+            handler.VerifyAll();
+            Assert.Empty(reportedErrors);
+
+            // Act: Trigger async exception
+            var ex = new InvalidTimeZoneException();
+            tcs.SetException(ex);
+
+            // Assert: The top-level task still succeeds, because the intended usage
+            // pattern is fire-and-forget.
+            await initializeAsyncTask;
+
+            // Assert: The async exception was reported via the side-channel
+            Assert.Same(ex, reportedErrors.Single().ExceptionObject);
+            Assert.False(reportedErrors.Single().IsTerminating);
         }
 
         [Fact]
@@ -147,6 +218,23 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 base.Dispose(disposing);
                 Disposed = true;
+            }
+        }
+
+        private class DispatcherComponent : ComponentBase, IDisposable
+        {
+            public DispatcherComponent(IDispatcher dispatcher)
+            {
+                Dispatcher = dispatcher;
+            }
+
+            public IDispatcher Dispatcher { get; }
+            public bool Called { get; private set; }
+
+            public void Dispose()
+            {
+                Called = true;
+                Assert.Same(Dispatcher, SynchronizationContext.Current);
             }
         }
     }

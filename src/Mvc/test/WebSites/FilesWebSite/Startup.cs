@@ -14,16 +14,17 @@ namespace FilesWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
+            services.AddControllers()
                 .AddNewtonsoftJson()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

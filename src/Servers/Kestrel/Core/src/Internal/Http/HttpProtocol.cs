@@ -23,7 +23,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public abstract partial class HttpProtocol : IDefaultHttpContextContainer, IHttpResponseControl
+    internal abstract partial class HttpProtocol : IDefaultHttpContextContainer, IHttpResponseControl
     {
         private static readonly byte[] _bytesConnectionClose = Encoding.ASCII.GetBytes("\r\nConnection: close");
         private static readonly byte[] _bytesConnectionKeepAlive = Encoding.ASCII.GetBytes("\r\nConnection: keep-alive");
@@ -74,6 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _context = context;
 
             ServerOptions = ServiceContext.ServerOptions;
+            HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !ServerOptions.DisableStringReuse);
             HttpResponseControl = this;
         }
 
@@ -124,8 +125,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public string Scheme { get; set; }
         public HttpMethod Method { get; set; }
         public string PathBase { get; set; }
+
+        protected string _parsedPath = null;
         public string Path { get; set; }
+
+        protected string _parsedQueryString = null;
         public string QueryString { get; set; }
+
+        protected string _parsedRawTarget = null;
         public string RawTarget { get; set; }
 
         public string HttpVersion
@@ -275,7 +282,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool HasFlushedHeaders => _requestProcessingStatus == RequestProcessingStatus.HeadersFlushed;
 
-        protected HttpRequestHeaders HttpRequestHeaders { get; } = new HttpRequestHeaders();
+        protected HttpRequestHeaders HttpRequestHeaders { get; }
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
@@ -492,9 +499,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
             }
-            var valueString = value.GetAsciiOrUTF8StringNonNullCharacters();
 
-            HttpRequestHeaders.Append(name, valueString);
+            HttpRequestHeaders.Append(name, value);
+        }
+
+        public void OnHeadersComplete()
+        {
+            HttpRequestHeaders.OnHeadersComplete();
         }
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)

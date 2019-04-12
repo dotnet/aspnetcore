@@ -96,6 +96,8 @@ namespace Microsoft.AspNetCore.StaticFiles
                 var server = StaticFilesTestServer.Create(
                     app =>
                     {
+                        app.UseRouting();
+
                         app.Use(next => context =>
                         {
                             // Assign an endpoint, this will make the directory browser noop
@@ -115,8 +117,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                             RequestPath = new PathString(""),
                             FileProvider = fileProvider
                         });
+
+                        app.UseEndpoints(endpoints => {});
                     },
-                    services => services.AddDirectoryBrowser());
+                    services => { services.AddDirectoryBrowser(); services.AddRouting(); });
 
                 var response = await server.CreateRequest("/").GetAsync();
                 Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);

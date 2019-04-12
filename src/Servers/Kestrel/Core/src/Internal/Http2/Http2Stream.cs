@@ -18,7 +18,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
+    internal abstract partial class Http2Stream : HttpProtocol, IThreadPoolWorkItem
     {
         private readonly Http2StreamContext _context;
         private readonly Http2OutputProducer _http2Output;

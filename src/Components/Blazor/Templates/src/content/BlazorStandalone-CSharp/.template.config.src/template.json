@@ -5,9 +5,10 @@
     "Blazor",
     "Standalone"
   ],
+  "description": "A project template for creating a standalone Blazor application that runs on WebAssembly.",
   "groupIdentity": "Microsoft.Web.Blazor.Standalone",
   "identity": "Microsoft.Web.Blazor.Standalone.CSharp",
-  "name": "Blazor (standalone)",
+  "name": "Blazor (client-side)",
   "preferNameDirectory": true,
   "primaryOutputs": [
     {

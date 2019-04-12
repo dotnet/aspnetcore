@@ -131,16 +131,6 @@
           }
         }
       },
-      "Microsoft.AspNetCore.Blazor.Cli": {
-        "Exclusions": {
-          "SIGN_STRONGNAME": {
-            "lib/netcoreapp3.0/dotnet-blazor.dll": "See comments in Microsoft.AspNetCore.Blazor.Cli.csproj"
-          },
-          "WRONG_PUBLICKEYTOKEN": {
-            "lib/netcoreapp3.0/dotnet-blazor.dll": "See comments in Microsoft.AspNetCore.Blazor.Cli.csproj"
-          }
-        }
-      },
       "Microsoft.AspNetCore.Blazor.Templates": {
         "Exclusions": {
           "PACKAGE_MISSING_REPO_COMMIT": {

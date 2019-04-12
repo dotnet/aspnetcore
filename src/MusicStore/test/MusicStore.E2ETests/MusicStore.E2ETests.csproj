@@ -11,6 +11,9 @@
     <NoWarn>$(NoWarn);NU1605</NoWarn>
     <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <IsTestProject>false</IsTestProject>
+    <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 
   <ItemGroup>

@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private const string RequestIdHeaderName = "Request-Id";
         private const string CorrelationContextHeaderName = "Correlation-Context";
+        private const string TraceParentHeaderName = "traceparent";
+        private const string TraceStateHeaderName = "tracestate";
 
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
@@ -49,19 +51,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-            // If logging is enabled or the diagnostic listener is enabled, try to get the correlation
-            // id from the header
-            StringValues correlationId = default;
-            if (diagnosticListenerEnabled || loggingEnabled)
-            {
-                httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
-            }
 
             if (diagnosticListenerEnabled)
             {
                 if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
                 {
-                    context.Activity = StartActivity(httpContext, correlationId);
+                    context.Activity = StartActivity(httpContext);
                 }
                 if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
                 {
@@ -73,6 +68,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // To avoid allocation, return a null scope if the logger is not on at least to some degree.
             if (loggingEnabled)
             {
+                // Get the request ID (first try TraceParent header otherwise Request-ID header
+                if (!httpContext.Request.Headers.TryGetValue(TraceParentHeaderName, out var correlationId))
+                {
+                    httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
+                }
+
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
@@ -240,12 +241,22 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext, StringValues requestId)
+        private Activity StartActivity(HttpContext httpContext)
         {
             var activity = new Activity(ActivityName);
+
+            if (!httpContext.Request.Headers.TryGetValue(TraceParentHeaderName, out var requestId))
+            {
+                httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out requestId);
+            }
+
             if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
+                if (httpContext.Request.Headers.TryGetValue(TraceStateHeaderName, out var traceState))
+                {
+                    activity.TraceStateString = traceState;
+                }
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)

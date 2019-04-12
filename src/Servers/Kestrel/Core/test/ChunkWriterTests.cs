@@ -43,5 +43,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.Equal(Encoding.ASCII.GetBytes(expected), span.Slice(0, count).ToArray());
         }
+
+        [Theory]
+        [InlineData(20, false)]
+        [InlineData(21, true)]
+        [InlineData(22, false)]
+        [InlineData(261, false)]
+        [InlineData(262, true)]
+        [InlineData(263, false)]
+        [InlineData(4102, false)]
+        [InlineData(4103, true)]
+        [InlineData(4104, false)]
+        [InlineData(65543, false)]
+        [InlineData(65544, true)]
+        [InlineData(65545, false)]
+        [InlineData(1048584, false)]
+        [InlineData(1048585, true)]
+        [InlineData(1048586, false)]
+        [InlineData(16777225, false)]
+        [InlineData(16777226, true)]
+        [InlineData(16777227, false)]
+        [InlineData(268435466, false)]
+        [InlineData(268435467, true)]
+        [InlineData(268435468, false)]
+        public void ChunkedPrefixReturnsSegmentThatDoesNotNeedToMove(int dataCount, bool expectSlice)
+        {
+            // Will call GetMemory on at least 5 bytes from the Http1OutputProducer
+            var prefixLength = ChunkWriter.GetPrefixBytesForChunk(dataCount, out var actualSliceOneByte);
+            if (actualSliceOneByte)
+            {
+                dataCount--;
+            }
+
+            var fakeMemory = new Memory<byte>(new byte[16]);
+
+            var actualLength = ChunkWriter.BeginChunkBytes(dataCount - prefixLength - 2, fakeMemory.Span);
+
+            Assert.Equal(prefixLength, actualLength);
+            Assert.Equal(expectSlice, actualSliceOneByte);
+        }
     }
 }

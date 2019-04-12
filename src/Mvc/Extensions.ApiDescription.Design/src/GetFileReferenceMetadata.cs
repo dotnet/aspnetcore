@@ -66,10 +66,6 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                     {
                         type = "ServiceProjectReference";
                     }
-                    else if (!string.IsNullOrEmpty(item.GetMetadata("SourceUri")))
-                    {
-                        type = "ServiceUriReference";
-                    }
                     else
                     {
                         type = "ServiceFileReference";

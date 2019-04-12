@@ -82,11 +82,17 @@ namespace Microsoft.AspNetCore.Builder.Internal
         {
             RequestDelegate app = context =>
             {
-                // Implicitly execute matched endpoint at the end of the pipeline instead of returning 404
-                var endpointRequestDelegate = context.GetEndpoint()?.RequestDelegate;
+                // If we reach the end of the pipeline, but we have an endpoint, then something unexpected has happened.
+                // This could happen if user code sets an endpoint, but they forgot to add the UseEndpoint middleware.
+                var endpoint = context.GetEndpoint();
+                var endpointRequestDelegate = endpoint?.RequestDelegate;
                 if (endpointRequestDelegate != null)
                 {
-                    return endpointRequestDelegate(context);
+                    var message =
+                        $"The request reached the end of the pipeline without executing the endpoint: '{endpoint.DisplayName}'. " +
+                        $"Please register the EndpointMiddleware using '{nameof(IApplicationBuilder)}.UseEndpoints(...)' if using " +
+                        $"routing, or '{nameof(IApplicationBuilder)}.UseEndpointExecutor()' if not using routing.";
+                    throw new InvalidOperationException(message);
                 }
 
                 context.Response.StatusCode = 404;

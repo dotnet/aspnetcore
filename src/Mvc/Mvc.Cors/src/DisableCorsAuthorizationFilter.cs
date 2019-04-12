@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))
             {
                 // Short circuit if the request is preflight as that should not result in action execution.
-                context.Result = new StatusCodeResult(StatusCodes.Status200OK);
+                context.Result = new StatusCodeResult(StatusCodes.Status204NoContent);
             }
 
             // Let the action be executed.

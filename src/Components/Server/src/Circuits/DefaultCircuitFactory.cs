@@ -8,7 +8,6 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,16 +40,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var scope = _scopeFactory.CreateScope();
             var encoder = scope.ServiceProvider.GetRequiredService<HtmlEncoder>();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
+            var componentContext = (RemoteComponentContext)scope.ServiceProvider.GetRequiredService<IComponentContext>();
             jsRuntime.Initialize(client);
+            componentContext.Initialize(client);
 
             var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
-            if (client != CircuitClientProxy.OfflineClient)
+            if (client.Connected)
             {
-                uriHelper.Initialize(uriAbsolute, baseUriAbsolute, jsRuntime);
+                uriHelper.AttachJsRuntime(jsRuntime);
+                uriHelper.InitializeState(
+                    uriAbsolute,
+                    baseUriAbsolute);
             }
             else
             {
-                uriHelper.Initialize(uriAbsolute, baseUriAbsolute);
+                uriHelper.InitializeState(uriAbsolute, baseUriAbsolute);
             }
 
             var rendererRegistry = new RendererRegistry();
@@ -85,12 +89,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return circuitHost;
         }
 
-        private static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, CircuitClientProxy client)
+        internal static IList<ComponentDescriptor> ResolveComponentMetadata(HttpContext httpContext, CircuitClientProxy client)
         {
-            if (client == CircuitClientProxy.OfflineClient)
+            if (!client.Connected)
             {
-                // This is the prerendering case.
-                return Array.Empty<ComponentDescriptor>();
+                // This is the prerendering case. Descriptors will be registered by the prerenderer.
+                return new List<ComponentDescriptor>();
             }
             else
             {
@@ -100,14 +104,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 {
                     throw new InvalidOperationException(
                         $"{nameof(ComponentHub)} doesn't have an associated endpoint. " +
-                        "Use 'app.UseRouting(routes => routes.MapComponentHub<App>(\"app\"))' to register your hub.");
+                        "Use 'app.UseEndpoints(endpoints => endpoints.MapBlazorHub<App>(\"app\"))' to register your hub.");
                 }
 
                 var componentsMetadata = endpoint.Metadata.OfType<ComponentDescriptor>().ToList();
-                if (componentsMetadata.Count == 0)
-                {
-                    throw new InvalidOperationException("No component was registered with the component hub.");
-                }
 
                 return componentsMetadata;
             }

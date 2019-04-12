@@ -43,17 +43,21 @@ namespace SignalRSamples
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<DynamicChat>("/dynamic");
-                routes.MapHub<Chat>("/default");
-                routes.MapHub<Streaming>("/streaming");
-                routes.MapHub<UploadHub>("/uploading");
-                routes.MapHub<HubTChat>("/hubT");
+                endpoints.MapHub<DynamicChat>("/dynamic");
+                endpoints.MapHub<Chat>("/default");
+                endpoints.MapHub<Streaming>("/streaming");
+                endpoints.MapHub<UploadHub>("/uploading");
+                endpoints.MapHub<HubTChat>("/hubT");
 
-                routes.MapConnectionHandler<MessagesConnectionHandler>("/chat");
+                endpoints.MapConnectionHandler<MessagesConnectionHandler>("/chat");
 
-                routes.MapGet("/deployment", context =>
+                endpoints.MapGet("/deployment", context =>
                 {
                     var attributes = Assembly.GetAssembly(typeof(Startup)).GetCustomAttributes<AssemblyMetadataAttribute>();
 
@@ -85,8 +89,6 @@ namespace SignalRSamples
                     return Task.CompletedTask;
                 });
             });
-
-            app.UseAuthorization();
         }
     }
 }

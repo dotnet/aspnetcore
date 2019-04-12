@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -51,11 +52,16 @@ namespace Identity.DefaultUI.WebSite
 
             services.AddMvc()
                 .AddNewtonsoftJson();
+                
+            services.AddSingleton<IFileVersionProvider, FileVersionProvider>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // This prevents running out of file watchers on some linux machines
+            ((PhysicalFileProvider)env.WebRootFileProvider).UseActivePolling = false;
+        
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -71,9 +77,16 @@ namespace Identity.DefaultUI.WebSite
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseMvc();
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

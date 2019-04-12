@@ -380,7 +380,6 @@ namespace Microsoft.AspNetCore.Components.Test
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                base.BuildRenderTree(builder);
                 builder.OpenElement(0, "p");
                 builder.AddContent(1, Counter);
                 builder.CloseElement();

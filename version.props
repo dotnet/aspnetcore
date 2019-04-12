@@ -3,7 +3,7 @@
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleasePreviewNumber>4</PreReleasePreviewNumber>
+    <PreReleasePreviewNumber>5</PreReleasePreviewNumber>
     <PreReleaseLabel>preview$(PreReleasePreviewNumber)</PreReleaseLabel>
     <PreReleaseBrandingLabel>Preview $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>

@@ -2,7 +2,8 @@
   <PropertyGroup>
     <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
     <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
-    <IsShippingPackage>true</IsShippingPackage>
+     <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
+    <IsShippingPackage>false</IsShippingPackage>
 
     <TargetFramework>netstandard1.3</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -15,7 +16,7 @@
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="All" />
   </ItemGroup>
 
-  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec" DependsOnTargets="Build">
+  <Target Name="PopulateNuspec" BeforeTargets="GenerateNuspec">
 
     <PropertyGroup>
       <NuspecProperties>

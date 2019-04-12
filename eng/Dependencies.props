@@ -26,7 +26,9 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Google.ProtoBuf" Version="$(GoogleProtoBufPackageVersion)" />
     <LatestPackageReference Include="IdentityServer4.AspNetIdentity" Version="$(IdentityServer4AspNetIdentityPackageVersion)" />
     <LatestPackageReference Include="IdentityServer4.EntityFramework" Version="$(IdentityServer4EntityFrameworkPackageVersion)" />
+    <LatestPackageReference Include="IdentityServer4.EntityFramework.Storage" Version="$(IdentityServer4EntityFrameworkStoragePackageVersion)" />
     <LatestPackageReference Include="IdentityServer4" Version="$(IdentityServer4PackageVersion)" />
+    <LatestPackageReference Include="IdentityServer4.Storage" Version="$(IdentityServer4StoragePackageVersion)" />
     <LatestPackageReference Include="Libuv" Version="$(LibuvPackageVersion)" />
     <LatestPackageReference Include="MessagePack" Version="$(MessagePackPackageVersion)" />
     <LatestPackageReference Include="Microsoft.AspNet.WebApi.Client" Version="$(MicrosoftAspNetWebApiClientPackageVersion)" />
@@ -112,6 +114,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(MicrosoftIdentityModelProtocolsOpenIdConnectPackageVersion)" />
     <LatestPackageReference Include="Microsoft.IdentityModel.Protocols.WsFederation" Version="$(MicrosoftIdentityModelProtocolsWsFederationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Internal.AspNetCore.H2Spec.All" Version="$(MicrosoftInternalAspNetCoreH2SpecAllPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Internal.Extensions.Refs" Version="$(MicrosoftInternalExtensionsRefsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.JSInterop" Version="$(MicrosoftJSInteropPackageVersion)" />
     <LatestPackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
     <LatestPackageReference Include="Microsoft.NETCore.Windows.ApiSets" Version="$(MicrosoftNETCoreWindowsApiSetsPackageVersion)" />
@@ -165,6 +168,16 @@ and are generated based on the last package release.
     <LatestPackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsolePackageVersion)" />
     <LatestPackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
     <LatestPackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+
+    <!-- Runtime packages required for crossgen -->
+    <LatestPackageReference Include="runtime.win-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="runtime.win-x86.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="runtime.win-arm.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="runtime.osx-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="runtime.linux-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="runtime.linux-arm.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="runtime.linux-arm64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="runtime.linux-musl-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 
 </Project>

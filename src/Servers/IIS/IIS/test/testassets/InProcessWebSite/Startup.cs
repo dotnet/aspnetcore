@@ -284,6 +284,28 @@ namespace TestSite
             {
                 result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
             }
+
+        }
+
+        private int _requestsInFlight = 0;
+        private async Task ReadAndCountRequestBody(HttpContext ctx)
+        {
+            Interlocked.Increment(ref _requestsInFlight);
+            await ctx.Response.WriteAsync(_requestsInFlight.ToString());
+
+            var readBuffer = new byte[1];
+            await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
+
+            await ctx.Response.WriteAsync("done");
+            Interlocked.Decrement(ref _requestsInFlight);
+        }
+
+        private async Task WaitForAppToStartShuttingDown(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("test1");
+            var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
+            lifetime.ApplicationStopping.WaitHandle.WaitOne();
+            await ctx.Response.WriteAsync("test2");
         }
 
         private async Task ReadFullBody(HttpContext ctx)

@@ -20,7 +20,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.jar" Certificate="MicrosoftJAR" />
+      <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.jar" Certificate="MicrosoftJARSHA2" />
       <FilesToSign Include="$(ArtifactsShippingPackagesDir)*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)*.symbols.nupkg" Certificate="NuGet" />
       <FilesToSign Include="$(ArtifactsNonShippingPackagesDir)*.nupkg" Exclude="$(ArtifactsNonShippingPackagesDir)*.symbols.nupkg" Certificate="NuGet" />
       <FilesToSign Include="$(VisualStudioSetupOutputPath)*.vsix" Certificate="VsixSHA2" />

@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +67,69 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
 
             Assert.Equal(2, authCount);
+        }
+
+        [Fact]
+        public void MapConnectionHandlerEndPointRoutingFindsAttributesOnHub()
+        {
+            var authCount = 0;
+            using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapConnectionHandler<AuthConnectionHandler>("/path", options =>
+            {
+                authCount += options.AuthorizationData.Count;
+            })))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<IAuthorizeData>());
+                Assert.NotNull(dataSource.Endpoints[1].Metadata.GetMetadata<IAuthorizeData>());
+            }
+
+            Assert.Equal(1, authCount);
+        }
+
+        [Fact]
+        public void MapConnectionHandlerEndPointRoutingAppliesAttributesBeforeConventions()
+        {
+            void ConfigureRoutes(IEndpointRouteBuilder endpoints)
+            {
+                // This "Foo" policy should override the default auth attribute
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/path")
+                      .RequireAuthorization(new AuthorizeAttribute("Foo"));
+            }
+
+            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal("Foo", dataSource.Endpoints[0].Metadata.GetMetadata<IAuthorizeData>()?.Policy);
+                Assert.Equal("Foo", dataSource.Endpoints[1].Metadata.GetMetadata<IAuthorizeData>()?.Policy);
+            }
+        }
+
+        [Fact]
+        public void MapConnectionHandlerEndPointRoutingAppliesNegotiateMetadata()
+        {
+            void ConfigureRoutes(IEndpointRouteBuilder endpoints)
+            {
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/path");
+            }
+
+            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<NegotiateMetadata>());
+                Assert.Null(dataSource.Endpoints[1].Metadata.GetMetadata<NegotiateMetadata>());
+            }
         }
 
         [ConditionalFact]
@@ -133,6 +197,23 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             {
                 throw new NotImplementedException();
             }
+        }
+
+        private IWebHost BuildWebHostWithEndPointRouting(Action<IEndpointRouteBuilder> configure)
+        {
+            return new WebHostBuilder()
+                .UseKestrel()
+                .ConfigureServices(services =>
+                {
+                    services.AddConnections();
+                })
+                .Configure(app =>
+                {
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints => configure(endpoints));
+                })
+                .UseUrls("http://127.0.0.1:0")
+                .Build();
         }
 
         private IWebHost BuildWebHost<TConnectionHandler>(string path, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler

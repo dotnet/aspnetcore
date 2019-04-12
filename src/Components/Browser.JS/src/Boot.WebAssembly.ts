@@ -6,9 +6,17 @@ import { getAssemblyNameFromUrl } from './Platform/Url';
 import { renderBatch } from './Rendering/Renderer';
 import { SharedMemoryRenderBatch } from './Rendering/RenderBatch/SharedMemoryRenderBatch';
 import { Pointer } from './Platform/Platform';
-import { fetchBootConfigAsync, loadEmbeddedResourcesAsync } from './BootCommon';
+import { fetchBootConfigAsync, loadEmbeddedResourcesAsync, shouldAutoStart } from './BootCommon';
 
-async function boot() {
+let started = false;
+
+async function boot(options?: any) {
+
+  if (started) {
+    throw new Error('Blazor has already started.');
+  }
+  started = true;
+
   // Configure environment for execution under Mono WebAssembly with shared-memory rendering
   const platform = Environment.setPlatform(monoPlatform);
   window['Blazor'].platform = platform;
@@ -43,4 +51,7 @@ async function boot() {
   platform.callEntryPoint(mainAssemblyName, bootConfig.entryPoint, []);
 }
 
-boot();
+window['Blazor'].start = boot;
+if (shouldAutoStart()) {
+  boot();
+}

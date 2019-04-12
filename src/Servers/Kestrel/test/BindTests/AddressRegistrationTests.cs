@@ -100,6 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [ConditionalTheory]
         [MemberData(nameof(IPEndPointRegistrationDataDynamicPort))]
         [IPv6SupportedCondition]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2074", FlakyOn.AzP.macOS)]
         public async Task RegisterIPEndPoint_DynamicPort_Success(IPEndPoint endPoint, string testUrl)
         {
             await RegisterIPEndPoint_Success(endPoint, testUrl);
@@ -153,6 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2179", FlakyOn.Helix.All)]
         [MemberData(nameof(AddressRegistrationDataIPv6ScopeId))]
         [IPv6SupportedCondition]
         [IPv6ScopeIdPresentCondition]
@@ -447,6 +449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [IPv6SupportedCondition]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1756", FlakyOn.AzP.macOS)]
         public Task DefaultsServerAddress_BindsToIPv6WithHttps()
         {
             if (!CanBindToEndpoint(IPAddress.Loopback, 5000) || !CanBindToEndpoint(IPAddress.IPv6Loopback, 5000)
@@ -587,6 +590,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2178", FlakyOn.All)]
         public async Task DoesNotOverrideDirectConfigurationWithIServerAddressesFeature_IfPreferHostingUrlsFalse()
         {
             var useUrlsAddress = $"http://127.0.0.1:0";

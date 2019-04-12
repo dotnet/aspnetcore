@@ -1,0 +1,27 @@
+<Project>
+  <PropertyGroup>
+    <_DefaultProjectFilter>$(MSBuildProjectDirectory)\..\..</_DefaultProjectFilter>
+    <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**</DefaultItemExcludes>
+    <SeleniumProcessTrackingFolder Condition="'$(SeleniumProcessTrackingFolder)' == ''">$([MSBuild]::EnsureTrailingSlash('$(RepositoryRoot)'))obj\selenium\</SeleniumProcessTrackingFolder>
+    <SeleniumE2ETestsSupported Condition="'$(SeleniumE2ETestsSupported)' == '' and '$(TargetArchitecture)' != 'arm' and '$(OS)' == 'Windows_NT'">true</SeleniumE2ETestsSupported>
+    <EnforcePrerequisites Condition="'$(SeleniumE2ETestsSupported)' == 'true' and '$(EnforcePrerequisites)' == ''">true</EnforcePrerequisites>
+
+    <!-- WebDriver is not strong-named, so this test project cannot be strong named either. -->
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)E2ETesting\**\*.cs" LinkBase="Selenium" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(SharedSourceRoot)E2ETesting\E2ETesting.props" Link="Selenium\E2ETesting.props" />
+    <None Include="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" Link="Selenium\E2ETesting.targets" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Selenium.Support" />
+    <Reference Include="Selenium.WebDriver" />
+  </ItemGroup>
+
+</Project>

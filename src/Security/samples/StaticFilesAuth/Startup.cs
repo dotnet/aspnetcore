@@ -107,11 +107,14 @@ namespace StaticFilesAuth
                 SetupFileServer(branch, files);
             });
 
-            app.UseMvc(routes =>
+            app.UseRouting();
+
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

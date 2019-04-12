@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class KestrelConnection
+    internal class KestrelConnection
     {
         private TaskCompletionSource<object> _executionTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 

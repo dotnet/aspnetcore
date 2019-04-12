@@ -1,4 +1,4 @@
-﻿@page
+@page
 @addTagHelper *, Microsoft.AspNetCore.ApiAuthorization.IdentityServer
 
 @model ApiAuthSample.Pages.IndexModel
@@ -9,6 +9,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <base href="~/" />
     <title>@ViewData["Title"]</title>
 </head>
 <body>
@@ -18,7 +19,7 @@
     <button id="call-api" disabled>Call API</button>
     <div id="login-result"></div>
     <div id="api-result"></div>
-    <script src="js/oidc-client.js"></script>
+    <script src="/js/oidc-client.js"></script>
     <script id="apiauth" type="text/javascript" asp-apiauth-parameters="ApiAuthSampleSPA">
         let $data = document.querySelector("#apiauth");
         let configuration = {};

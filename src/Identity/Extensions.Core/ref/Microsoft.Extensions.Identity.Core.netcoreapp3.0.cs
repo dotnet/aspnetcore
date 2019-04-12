@@ -26,6 +26,12 @@ namespace Microsoft.AspNetCore.Identity
         public virtual string Protect(string data) { throw null; }
         public virtual string Unprotect(string data) { throw null; }
     }
+    public partial class DefaultUserConfirmation<TUser> : Microsoft.AspNetCore.Identity.IUserConfirmation<TUser> where TUser : class
+    {
+        public DefaultUserConfirmation() { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public virtual System.Threading.Tasks.Task<bool> IsConfirmedAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) { throw null; }
+    }
     public partial class EmailTokenProvider<TUser> : Microsoft.AspNetCore.Identity.TotpSecurityStampBasedTokenProvider<TUser> where TUser : class
     {
         public EmailTokenProvider() { }
@@ -109,7 +115,8 @@ namespace Microsoft.AspNetCore.Identity
     }
     public partial interface ILookupNormalizer
     {
-        string Normalize(string key);
+        string NormalizeEmail(string email);
+        string NormalizeName(string name);
     }
     public partial interface ILookupProtector
     {
@@ -192,6 +199,10 @@ namespace Microsoft.AspNetCore.Identity
         System.Threading.Tasks.Task<System.Collections.Generic.IList<TUser>> GetUsersForClaimAsync(System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task RemoveClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken);
         System.Threading.Tasks.Task ReplaceClaimAsync(TUser user, System.Security.Claims.Claim claim, System.Security.Claims.Claim newClaim, System.Threading.CancellationToken cancellationToken);
+    }
+    public partial interface IUserConfirmation<TUser> where TUser : class
+    {
+        System.Threading.Tasks.Task<bool> IsConfirmedAsync(Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user);
     }
     public partial interface IUserEmailStore<TUser> : Microsoft.AspNetCore.Identity.IUserStore<TUser>, System.IDisposable where TUser : class
     {
@@ -395,6 +406,7 @@ namespace Microsoft.AspNetCore.Identity
     public partial class SignInOptions
     {
         public SignInOptions() { }
+        public bool RequireConfirmedAccount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool RequireConfirmedEmail { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool RequireConfirmedPhoneNumber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
@@ -450,10 +462,11 @@ namespace Microsoft.AspNetCore.Identity
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<bool> ValidateAsync(string purpose, string token, Microsoft.AspNetCore.Identity.UserManager<TUser> manager, TUser user) { throw null; }
     }
-    public partial class UpperInvariantLookupNormalizer : Microsoft.AspNetCore.Identity.ILookupNormalizer
+    public sealed partial class UpperInvariantLookupNormalizer : Microsoft.AspNetCore.Identity.ILookupNormalizer
     {
         public UpperInvariantLookupNormalizer() { }
-        public virtual string Normalize(string key) { throw null; }
+        public string NormalizeEmail(string email) { throw null; }
+        public string NormalizeName(string name) { throw null; }
     }
     public partial class UserClaimsPrincipalFactory<TUser> : Microsoft.AspNetCore.Identity.IUserClaimsPrincipalFactory<TUser> where TUser : class
     {
@@ -600,7 +613,8 @@ namespace Microsoft.AspNetCore.Identity
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<bool> IsLockedOutAsync(TUser user) { throw null; }
         public virtual System.Threading.Tasks.Task<bool> IsPhoneNumberConfirmedAsync(TUser user) { throw null; }
-        public virtual string NormalizeKey(string key) { throw null; }
+        public virtual string NormalizeEmail(string email) { throw null; }
+        public virtual string NormalizeName(string name) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Identity.IdentityResult> RedeemTwoFactorRecoveryCodeAsync(TUser user, string code) { throw null; }
         public virtual void RegisterTokenProvider(string providerName, Microsoft.AspNetCore.Identity.IUserTwoFactorTokenProvider<TUser> provider) { }

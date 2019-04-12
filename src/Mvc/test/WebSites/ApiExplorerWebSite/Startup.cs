@@ -22,7 +22,7 @@ namespace ApiExplorerWebSite
             services.AddTransient<ILoggerFactory, LoggerFactory>();
 
             var wellKnownChangeToken = new WellKnownChangeToken();
-            services.AddMvc(options =>
+            services.AddControllers(options =>
             {
                 options.Filters.AddService(typeof(ApiExplorerDataFilter));
 
@@ -46,9 +46,10 @@ namespace ApiExplorerWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

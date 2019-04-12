@@ -2455,6 +2455,50 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void CallsAfterRenderAfterTheUIHasFinishedUpdatingAsynchronously()
+        {
+            // Arrange
+            var tcs = new TaskCompletionSource<object>();
+            var afterRenderTcs = new TaskCompletionSource<object>();
+            var onAfterRenderCallCountLog = new List<int>();
+            var component = new AsyncAfterRenderComponent(afterRenderTcs.Task);
+            var renderer = new AsyncUpdateTestRenderer()
+            {
+                OnUpdateDisplayAsync = _ => tcs.Task
+            };
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            component.TriggerRender();
+            tcs.SetResult(null);
+            afterRenderTcs.SetResult(null);
+
+            // Assert
+            Assert.True(component.Called);
+        }
+
+        [Fact]
+        public void CallsAfterRenderAfterTheUIHasFinishedUpdatingSynchronously()
+        {
+            // Arrange
+            var afterRenderTcs = new TaskCompletionSource<object>();
+            var onAfterRenderCallCountLog = new List<int>();
+            var component = new AsyncAfterRenderComponent(afterRenderTcs.Task);
+            var renderer = new AsyncUpdateTestRenderer()
+            {
+                OnUpdateDisplayAsync = _ => Task.CompletedTask
+            };
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            component.TriggerRender();
+            afterRenderTcs.SetResult(null);
+
+            // Assert
+            Assert.True(component.Called);
+        }
+
+        [Fact]
         public void DoesNotCallOnAfterRenderForComponentsNotRendered()
         {
             // Arrange
@@ -2505,6 +2549,31 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(2, childComponents[0].OnAfterRenderCallCount); // Retained and re-rendered
             Assert.Equal(1, childComponents[1].OnAfterRenderCallCount); // Retained and not re-rendered
             Assert.Equal(1, childComponents[2].OnAfterRenderCallCount); // Disposed
+        }
+
+        [Fact]
+        public void CanTriggerRenderingSynchronouslyFromInsideAfterRenderCallback()
+        {
+            // Arrange
+            AfterRenderCaptureComponent component = null;
+            component = new AfterRenderCaptureComponent
+            {
+                OnAfterRenderLogic = () =>
+                {
+                    if (component.OnAfterRenderCallCount < 10)
+                    {
+                        component.TriggerRender();
+                    }
+                }
+            };
+            var renderer = new TestRenderer();
+            renderer.AssignRootComponentId(component);
+
+            // Act
+            component.TriggerRender();
+
+            // Assert
+            Assert.Equal(10, component.OnAfterRenderCallCount);
         }
 
         [ConditionalFact]
@@ -3414,11 +3483,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
         private class AfterRenderCaptureComponent : AutoRenderComponent, IComponent, IHandleAfterRender
         {
+            public Action OnAfterRenderLogic { get; set; }
+
             public int OnAfterRenderCallCount { get; private set; }
 
             public Task OnAfterRenderAsync()
             {
                 OnAfterRenderCallCount++;
+                OnAfterRenderLogic?.Invoke();
                 return Task.CompletedTask;
             }
 
@@ -3655,7 +3727,6 @@ namespace Microsoft.AspNetCore.Components.Test
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                base.BuildRenderTree(builder);
                 var renderFactory = WhatToRender[TestId];
                 renderFactory(this)(builder);
             }
@@ -3734,6 +3805,40 @@ namespace Microsoft.AspNetCore.Components.Test
             protected override async Task OnParametersSetAsync()
             {
                 await TaskToAwait;
+            }
+        }
+
+        private class AsyncUpdateTestRenderer : TestRenderer
+        {
+            public Func<RenderBatch, Task> OnUpdateDisplayAsync { get; set; }
+
+            protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
+            {
+                return OnUpdateDisplayAsync(renderBatch);
+            }
+        }
+
+        private class AsyncAfterRenderComponent : AutoRenderComponent, IHandleAfterRender
+        {
+            private readonly Task _task;
+
+            public AsyncAfterRenderComponent(Task task)
+            {
+                _task = task;
+            }
+
+            public bool Called { get; private set; }
+
+            public async Task OnAfterRenderAsync()
+            {
+                await _task;
+                Called = true;
+            }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, "p");
+                builder.CloseElement();
             }
         }
     }

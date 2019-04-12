@@ -8,6 +8,7 @@
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
     <RuntimeIdentifiers>win-x86;win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <InProcessTestSite>true</InProcessTestSite>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,6 +24,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <Reference Include="Microsoft.AspNetCore.Identity" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.Server.HttpSys" />

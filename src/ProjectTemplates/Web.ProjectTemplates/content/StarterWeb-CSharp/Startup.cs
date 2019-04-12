@@ -21,11 +21,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
-using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth)
 using Microsoft.AspNetCore.Mvc.Authorization;
 #endif
@@ -104,7 +102,7 @@ namespace Company.WebApplication1
                         context.HandleResponse(); // Suppress the exception
                          return Task.CompletedTask;
                     },
-                    // If your application needs to do authenticate single users, add your user validation below.
+                    // If your application needs to authenticate single users, add your user validation below.
                     //OnTokenValidated = context =>
                     //{
                     //    return myUserValidationLogic(context.Ticket.Principal);
@@ -118,7 +116,7 @@ namespace Company.WebApplication1
 #endif
 
 #if (OrganizationalAuth)
-            services.AddMvc(options =>
+            services.AddControllersWithViews(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
@@ -127,9 +125,10 @@ namespace Company.WebApplication1
             })
             .AddNewtonsoftJson();
 #else
-            services.AddMvc()
+            services.AddControllersWithViews()
                 .AddNewtonsoftJson();
 #endif
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -157,20 +156,22 @@ namespace Company.WebApplication1
 #endif
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
-            {
-                routes.MapControllerRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-                routes.MapRazorPages();
-            });
-
             app.UseCookiePolicy();
+
+            app.UseRouting();
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

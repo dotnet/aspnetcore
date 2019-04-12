@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,8 +43,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             {
                 // There are three possible cases here:
                 // 1. Required value is null-ish
-                // 2. Required value corresponds to a parameter
-                // 3. Required value corresponds to a matching default value
+                // 2. Required value is *any*
+                // 3. Required value corresponds to a parameter
+                // 4. Required value corresponds to a matching default value
                 //
                 // If none of these are true then we can reject this substitution.
                 RoutePatternParameterPart parameter;
@@ -76,9 +77,28 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     // Ex: {controller=Home}/{action=Index}/{id?} - with required values: { area = "", ... }
                     continue;
                 }
+                else if (RoutePattern.IsRequiredValueAny(kvp.Value))
+                {
+                    // 2. Required value is *any* - this is allowed for a parameter with a default, but not
+                    // a non-parameter default.
+                    if (original.GetParameter(kvp.Key) == null &&
+                        original.Defaults.TryGetValue(kvp.Key, out var defaultValue) &&
+                        !RouteValueEqualityComparer.Default.Equals(string.Empty, defaultValue))
+                    {
+                        // Fail: this route as a non-parameter default that is stricter than *any*.
+                        //
+                        // Ex: Admin/{controller=Home}/{action=Index}/{id?} defaults: { area = "Admin" } - with required values: { area = *any* }
+                        return null;
+                    }
+
+                    // Success: (for this parameter at least)
+                    //
+                    // Ex: {controller=Home}/{action=Index}/{id?} - with required values: { controller = *any*, ... }
+                    continue;
+                }
                 else if ((parameter = original.GetParameter(kvp.Key)) != null)
                 {
-                    // 2. Required value corresponds to a parameter - check to make sure that this value matches
+                    // 3. Required value corresponds to a parameter - check to make sure that this value matches
                     // any IRouteConstraint implementations.
                     if (!MatchesConstraints(original, parameter, kvp.Key, requiredValues))
                     {
@@ -96,7 +116,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 else if (original.Defaults.TryGetValue(kvp.Key, out var defaultValue) &&
                     RouteValueEqualityComparer.Default.Equals(kvp.Value, defaultValue))
                 {
-                    // 3. Required value corresponds to a matching default value - check to make sure that this value matches
+                    // 4. Required value corresponds to a matching default value - check to make sure that this value matches
                     // any IRouteConstraint implementations. It's unlikely that this would happen in practice but it doesn't
                     // hurt for us to check.
                     if (!MatchesConstraints(original, parameter: null, kvp.Key, requiredValues))
@@ -142,7 +162,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 // We only need to handle the case where the required value maps to a parameter. That's the only
                 // case where we allow a default and a required value to disagree, and we already validated the
                 // other cases.
-                if (parameter != null && 
+                //
+                // If the required value is *any* then don't remove the default.
+                if (parameter != null &&
+                    !RoutePattern.IsRequiredValueAny(kvp.Value) &&
                     original.Defaults.TryGetValue(kvp.Key, out var defaultValue) && 
                     !RouteValueEqualityComparer.Default.Equals(kvp.Value, defaultValue))
                 {

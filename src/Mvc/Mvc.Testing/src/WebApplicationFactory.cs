@@ -80,6 +80,18 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         }
 
         /// <summary>
+        /// Gets the <see cref="IServiceProvider"/> created by the server associated with this <see cref="WebApplicationFactory{TEntryPoint}"/>.
+        /// </summary>
+        public virtual IServiceProvider Services
+        {
+            get
+            {
+                EnsureServer();
+                return _host?.Services ?? _server.Host.Services;
+            }
+        }
+
+        /// <summary>
         /// Gets the <see cref="IReadOnlyList{WebApplicationFactory}"/> of factories created from this factory
         /// by further customizing the <see cref="IWebHostBuilder"/> when calling 
         /// <see cref="WebApplicationFactory{TEntryPoint}.WithWebHostBuilder(Action{IWebHostBuilder})"/>.

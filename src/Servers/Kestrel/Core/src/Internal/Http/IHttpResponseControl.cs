@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    public interface IHttpResponseControl
+    internal interface IHttpResponseControl
     {
         void ProduceContinue();
         Memory<byte> GetMemory(int sizeHint = 0);

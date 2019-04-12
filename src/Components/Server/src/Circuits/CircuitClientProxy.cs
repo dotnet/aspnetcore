@@ -10,9 +10,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitClientProxy : IClientProxy
     {
-        public static readonly CircuitClientProxy OfflineClient = new CircuitClientProxy();
-
-        private CircuitClientProxy()
+        public CircuitClientProxy()
         {
             Connected = false;
         }

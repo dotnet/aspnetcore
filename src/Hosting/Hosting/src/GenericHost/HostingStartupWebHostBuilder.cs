@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             return _builder.UseDefaultServiceProvider(configure);
         }
 
-        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
         {
             return _builder.Configure(configure);
         }

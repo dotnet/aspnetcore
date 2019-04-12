@@ -22,7 +22,7 @@ type Startup private () =
     // This method gets called by the runtime. Use this method to add services to the container.
     member this.ConfigureServices(services: IServiceCollection) =
         // Add framework services.
-        services.AddMvc().AddNewtonsoftJson() |> ignore
+        services.AddControllers().AddNewtonsoftJson() |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
     member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
@@ -37,10 +37,12 @@ type Startup private () =
 #else
 
 #endif
-        app.UseRouting(fun routes ->
-            routes.MapControllers() |> ignore
-            ) |> ignore
+        app.UseRouting() |> ignore
 
         app.UseAuthorization() |> ignore
+
+        app.UseEndpoints(fun endpoints ->
+            endpoints.MapControllers() |> ignore
+            ) |> ignore
 
     member val Configuration : IConfiguration = null with get, set

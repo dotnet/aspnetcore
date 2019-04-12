@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,13 +39,13 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// current route matches the NavLink href.
         /// </summary>
         [Parameter]
-        string ActiveClass { get; set; }
+        public string ActiveClass { get; private set; }
 
         /// <summary>
         /// Gets or sets a value representing the URL matching behavior.
         /// </summary>
         [Parameter]
-        NavLinkMatch Match { get; set; }
+        public NavLinkMatch Match { get; private set; }
 
         [Inject] private IUriHelper UriHelper { get; set; }
 

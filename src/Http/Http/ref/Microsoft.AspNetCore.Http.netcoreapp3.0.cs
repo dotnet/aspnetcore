@@ -523,7 +523,7 @@ namespace System.IO.Pipelines
     public partial class StreamPipeReader : System.IO.Pipelines.PipeReader, System.IDisposable
     {
         public StreamPipeReader(System.IO.Stream readingStream) { }
-        public StreamPipeReader(System.IO.Stream readingStream, System.IO.Pipelines.StreamPipeReaderOptions options) { }
+        public StreamPipeReader(System.IO.Stream readingStream, System.IO.Pipelines.StreamPipeReaderAdapterOptions options) { }
         public System.IO.Stream InnerStream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override void AdvanceTo(System.SequencePosition consumed) { }
         public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
@@ -535,13 +535,13 @@ namespace System.IO.Pipelines
         public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override bool TryRead(out System.IO.Pipelines.ReadResult result) { throw null; }
     }
-    public partial class StreamPipeReaderOptions
+    public partial class StreamPipeReaderAdapterOptions
     {
         public const int DefaultMinimumReadThreshold = 256;
         public const int DefaultMinimumSegmentSize = 4096;
-        public static System.IO.Pipelines.StreamPipeReaderOptions DefaultOptions;
-        public StreamPipeReaderOptions() { }
-        public StreamPipeReaderOptions(int minimumSegmentSize, int minimumReadThreshold, System.Buffers.MemoryPool<byte> memoryPool) { }
+        public static System.IO.Pipelines.StreamPipeReaderAdapterOptions DefaultOptions;
+        public StreamPipeReaderAdapterOptions() { }
+        public StreamPipeReaderAdapterOptions(int minimumSegmentSize, int minimumReadThreshold, System.Buffers.MemoryPool<byte> memoryPool) { }
         public System.Buffers.MemoryPool<byte> MemoryPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int MinimumReadThreshold { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int MinimumSegmentSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }

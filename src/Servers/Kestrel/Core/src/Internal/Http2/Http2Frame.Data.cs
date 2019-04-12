@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         |                           Padding (*)                       ...
         +---------------------------------------------------------------+
     */
-    public partial class Http2Frame
+    internal partial class Http2Frame
     {
         public Http2DataFrameFlags DataFlags
         {

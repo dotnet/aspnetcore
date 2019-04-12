@@ -20,7 +20,7 @@ class InvocationMessage extends HubMessage {
         this.invocationId = invocationId;
         this.target = target;
         this.arguments = args;
-        if(streamIds != null && !streamIds.isEmpty()) {
+        if (streamIds != null && !streamIds.isEmpty()) {
             this.streamIds = streamIds;
         }
     }

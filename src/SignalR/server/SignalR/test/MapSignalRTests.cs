@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -78,9 +79,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var ex = Assert.Throws<InvalidOperationException>(() =>
                     {
-                        app.UseRouting(routes =>
+                        app.UseRouting();
+                        app.UseEndpoints(endpoints =>
                         {
-                            routes.MapHub<AuthHub>("/overloads");
+                            endpoints.MapHub<AuthHub>("/overloads");
                         });
                     });
 
@@ -166,10 +168,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubEndPointRoutingAppliesAttributesBeforeConventions()
         {
-            void ConfigureRoutes(IEndpointRouteBuilder routes)
+            void ConfigureRoutes(IEndpointRouteBuilder endpoints)
             {
                 // This "Foo" policy should override the default auth attribute
-                routes.MapHub<AuthHub>("/path")
+                endpoints.MapHub<AuthHub>("/path")
                       .RequireAuthorization(new AuthorizeAttribute("Foo"));
             }
 
@@ -182,6 +184,29 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal(2, dataSource.Endpoints.Count);
                 Assert.Equal("Foo", dataSource.Endpoints[0].Metadata.GetMetadata<IAuthorizeData>()?.Policy);
                 Assert.Equal("Foo", dataSource.Endpoints[1].Metadata.GetMetadata<IAuthorizeData>()?.Policy);
+            }
+        }
+
+        [Fact]
+        public void MapHubEndPointRoutingAppliesHubMetadata()
+        {
+            void ConfigureRoutes(IEndpointRouteBuilder endpoints)
+            {
+                // This "Foo" policy should override the default auth attribute
+                endpoints.MapHub<AuthHub>("/path");
+            }
+
+            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[0].Metadata.GetMetadata<HubMetadata>()?.HubType);
+                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[1].Metadata.GetMetadata<HubMetadata>()?.HubType);
+                Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<NegotiateMetadata>());
+                Assert.Null(dataSource.Endpoints[1].Metadata.GetMetadata<NegotiateMetadata>());
             }
         }
 
@@ -220,7 +245,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 })
                 .Configure(app =>
                 {
-                    app.UseRouting(routes => configure(routes));
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints => configure(endpoints));
                 })
                 .UseUrls("http://127.0.0.1:0")
                 .Build();

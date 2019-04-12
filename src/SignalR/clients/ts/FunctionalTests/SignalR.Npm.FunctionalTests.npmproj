@@ -26,9 +26,6 @@
 
   <Target Name="RunBrowserTests">
     <Message Text="Running JavaScript client Browser tests" Importance="high" />
-    <Yarn Command="run test:inner -- --no-color --configuration $(Configuration)" WorkingDirectory="$(RepositoryRoot)src/SignalR/clients/ts/FunctionalTests" />
-    <Message Text="Running JavaScript tests" Importance="high" />
-
     <!-- Skip the "inner" test run when we're running DailyTests -->
     <Yarn Command="run test:inner -- --no-color --configuration $(Configuration)"
           Condition="'$(DailyTests)' != 'true'"

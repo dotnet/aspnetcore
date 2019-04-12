@@ -21,7 +21,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Company.WebApplication1
 {
@@ -44,7 +43,7 @@ namespace Company.WebApplication1
             services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
                 .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
 #endif
-            services.AddMvc()
+            services.AddControllers()
                 .AddNewtonsoftJson();
         }
 
@@ -65,15 +64,17 @@ namespace Company.WebApplication1
             app.UseHttpsRedirection();
 #endif
 
-            app.UseRouting(routes =>
-            {
-                routes.MapControllers();
-            });
+            app.UseRouting();
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

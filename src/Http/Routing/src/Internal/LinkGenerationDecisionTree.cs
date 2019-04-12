@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Routing.DecisionTree;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Tree;
 
 namespace Microsoft.AspNetCore.Routing.Internal
@@ -21,38 +22,57 @@ namespace Microsoft.AspNetCore.Routing.Internal
         private static readonly RouteValueDictionary EmptyAmbientValues = new RouteValueDictionary();
 
         private readonly DecisionTreeNode<OutboundMatch> _root;
-        private readonly Dictionary<string, HashSet<object>> _knownValues;
+        private readonly List<OutboundMatch> _conventionalEntries;
 
         public LinkGenerationDecisionTree(IReadOnlyList<OutboundMatch> entries)
         {
-            _root = DecisionTreeBuilder<OutboundMatch>.GenerateTree(
-                entries,
-                new OutboundMatchClassifier());
+            // We split up the entries into:
+            // 1. attribute routes - these go into the tree
+            // 2. conventional routes - these are a list
+            var attributedEntries = new List<OutboundMatch>();
+            _conventionalEntries = new List<OutboundMatch>();
 
-            _knownValues = new Dictionary<string, HashSet<object>>(StringComparer.OrdinalIgnoreCase);
+            // Anything with a RoutePattern.RequiredValueAny as a RequiredValue is a conventional route.
+            // This is because RequiredValueAny acts as a wildcard, whereas an attribute route entry
+            // is denormalized to contain an exact set of required values.
+            //
+            // We will only see conventional routes show up here for endpoint routing.
             for (var i = 0; i < entries.Count; i++)
             {
+                var isAttributeRoute = true;
                 var entry = entries[i];
                 foreach (var kvp in entry.Entry.RequiredLinkValues)
                 {
-                    if (!_knownValues.TryGetValue(kvp.Key, out var values))
+                    if (RoutePattern.IsRequiredValueAny(kvp.Value))
                     {
-                        values = new HashSet<object>(RouteValueEqualityComparer.Default);
-                        _knownValues.Add(kvp.Key, values);
+                        isAttributeRoute = false;
+                        break;
                     }
+                }
 
-                    values.Add(kvp.Value ?? string.Empty);
+                if (isAttributeRoute)
+                {
+                    attributedEntries.Add(entry);
+                }
+                else
+                {
+                    _conventionalEntries.Add(entry);
                 }
             }
+
+            _root = DecisionTreeBuilder<OutboundMatch>.GenerateTree(
+                attributedEntries,
+                new OutboundMatchClassifier());
         }
 
         public IList<OutboundMatchResult> GetMatches(RouteValueDictionary values, RouteValueDictionary ambientValues)
         {
             // Perf: Avoid allocation for List if there aren't any Matches or Criteria
-            if (_root.Matches.Count > 0 || _root.Criteria.Count > 0)
+            if (_root.Matches.Count > 0 || _root.Criteria.Count > 0 || _conventionalEntries.Count > 0)
             {
                 var results = new List<OutboundMatchResult>();
                 Walk(results, values, ambientValues ?? EmptyAmbientValues, _root, isFallbackPath: false);
+                ProcessConventionalEntries(results, values, ambientValues ?? EmptyAmbientValues);
                 results.Sort(OutboundMatchResultComparer.Instance);
                 return results;
             }
@@ -110,19 +130,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     {
                         Walk(results, values, ambientValues, branch, isFallbackPath);
                     }
-                    else
-                    {
-                        // If an explicitly specified value doesn't match any branch, then speculatively walk the
-                        // "null" path if the value doesn't match any known value.
-                        //
-                        // This can happen when linking from a page <-> action. We want to be
-                        // able to use "page" and "action" as normal route parameters.
-                        var knownValues = _knownValues[key];
-                        if (!knownValues.Contains(value ?? string.Empty) && criterion.Branches.TryGetValue(string.Empty, out branch))
-                        {
-                            Walk(results, values, ambientValues, branch, isFallbackPath: true);
-                        }
-                    }
                 }
                 else
                 {
@@ -144,6 +151,17 @@ namespace Microsoft.AspNetCore.Routing.Internal
                         Walk(results, values, ambientValues, branch, isFallbackPath: true);
                     }
                 }
+            }
+        }
+
+        private void ProcessConventionalEntries(
+            List<OutboundMatchResult> results,
+            RouteValueDictionary values,
+            RouteValueDictionary ambientvalues)
+        {
+            for (var i = 0; i < _conventionalEntries.Count; i++)
+            {
+                results.Add(new OutboundMatchResult(_conventionalEntries[i], isFallbackMatch: false));
             }
         }
 

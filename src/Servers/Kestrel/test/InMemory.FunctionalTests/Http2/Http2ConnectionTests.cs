@@ -683,6 +683,100 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task DATA_BufferRequestBodyLargerThanStreamSizeSmallerThanConnectionPipe_Works()
+        {
+            var initialStreamWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialStreamWindowSize;
+            var framesInStreamWindow = initialStreamWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
+            var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
+            var framesInConnectionWindow = initialConnectionWindowSize / Http2PeerSettings.DefaultMaxFrameSize;
+
+            // Grow the client stream windows so no stream WINDOW_UPDATEs need to be sent.
+            _clientSettings.InitialWindowSize = int.MaxValue;
+
+            await InitializeConnectionAsync(async context =>
+            {
+                await context.Response.BodyWriter.FlushAsync();
+                var readResult = await context.Request.BodyReader.ReadAsync();
+                while (readResult.Buffer.Length != _maxData.Length * 4)
+                {
+                    context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+                    readResult = await context.Request.BodyReader.ReadAsync();
+                }
+
+                context.Request.BodyReader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
+
+                readResult = await context.Request.BodyReader.ReadAsync();
+                Assert.Equal(readResult.Buffer.Length, _maxData.Length * 5);
+
+                await context.Response.BodyWriter.WriteAsync(readResult.Buffer.ToArray());
+
+                context.Request.BodyReader.AdvanceTo(readResult.Buffer.End);
+            });
+
+            // Grow the client connection windows so no connection WINDOW_UPDATEs need to be sent.
+            await SendWindowUpdateAsync(0, int.MaxValue - (int)Http2PeerSettings.DefaultInitialWindowSize);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+
+            // Rounds down so we don't go over the half window size and trigger an update
+            for (var i = 0; i < framesInStreamWindow / 2; i++)
+            {
+                await SendDataAsync(1, _maxData, endStream: false);
+            }
+
+            // trip over the update size.
+            await SendDataAsync(1, _maxData, endStream: false);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            var dataFrames = new List<Http2FrameWithPayload>();
+
+            var streamWindowUpdateFrame1 = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Writing over half the initial window size induces both a connection-level and stream-level window update.
+
+            await SendDataAsync(1, _maxData, endStream: true);
+
+            for (var i = 0; i < framesInStreamWindow / 2 + 2; i++)
+            {
+                var dataFrame3 = await ExpectAsync(Http2FrameType.DATA,
+                    withLength: _maxData.Length,
+                    withFlags: (byte)Http2DataFrameFlags.NONE,
+                    withStreamId: 1);
+                dataFrames.Add(dataFrame3);
+            }
+
+            var connectionWindowUpdateFrame = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
+                withLength: 4,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 0);
+            // End
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            foreach (var frame in dataFrames)
+            {
+                Assert.True(_maxData.AsSpan().SequenceEqual(frame.PayloadSequence.ToArray()));
+            }
+
+            var updateSize = ((framesInStreamWindow / 2) + 1) * _maxData.Length;
+            Assert.Equal(updateSize, streamWindowUpdateFrame1.WindowUpdateSizeIncrement);
+            updateSize = ((framesInConnectionWindow / 2) + 1) * _maxData.Length;
+            Assert.Equal(updateSize, connectionWindowUpdateFrame.WindowUpdateSizeIncrement);
+        }
+
+        [Fact]
         public async Task DATA_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1520,10 +1614,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2HeadersFrameFlags.NONE)]
-        [InlineData(Http2HeadersFrameFlags.END_HEADERS)]
-        public async Task HEADERS_Received_WithTrailers_EndStreamNotSet_ConnectionError(Http2HeadersFrameFlags flags)
+        [InlineData((int)Http2HeadersFrameFlags.NONE)]
+        [InlineData((int)Http2HeadersFrameFlags.END_HEADERS)]
+        public async Task HEADERS_Received_WithTrailers_EndStreamNotSet_ConnectionError(int intFlags)
         {
+            var flags = (Http2HeadersFrameFlags)intFlags;
             await InitializeConnectionAsync(_readTrailersApplication);
 
             await SendHeadersAsync(1, Http2HeadersFrameFlags.END_HEADERS, _browserRequestHeaders);
@@ -2368,17 +2463,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2SettingsParameter.SETTINGS_ENABLE_PUSH, 2, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_ENABLE_PUSH, uint.MaxValue, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE, (uint)int.MaxValue + 1, Http2ErrorCode.FLOW_CONTROL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE, uint.MaxValue, Http2ErrorCode.FLOW_CONTROL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 0, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 1, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 16 * 1024 - 1, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, 16 * 1024 * 1024, Http2ErrorCode.PROTOCOL_ERROR)]
-        [InlineData(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE, uint.MaxValue, Http2ErrorCode.PROTOCOL_ERROR)]
-        public async Task SETTINGS_Received_InvalidParameterValue_ConnectionError(Http2SettingsParameter parameter, uint value, Http2ErrorCode expectedErrorCode)
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_ENABLE_PUSH), 2, (int)(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_ENABLE_PUSH), uint.MaxValue, (int)(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE), (uint)int.MaxValue + 1, (int)(Http2ErrorCode.FLOW_CONTROL_ERROR))]
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE), uint.MaxValue, (int)(Http2ErrorCode.FLOW_CONTROL_ERROR))]
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), 0, (int)(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), 1, (int)(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), 16 * 1024 - 1, (int)(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), 16 * 1024 * 1024, (int)(Http2ErrorCode.PROTOCOL_ERROR))]
+        [InlineData((int)(Http2SettingsParameter.SETTINGS_MAX_FRAME_SIZE), uint.MaxValue, (int)(Http2ErrorCode.PROTOCOL_ERROR))]
+        public async Task SETTINGS_Received_InvalidParameterValue_ConnectionError(int intParameter, uint value, int intExpectedErrorCode)
         {
+            var parameter = (Http2SettingsParameter)intParameter;
+            var expectedErrorCode = (Http2ErrorCode)intExpectedErrorCode;
+
             await InitializeConnectionAsync(_noopApplication);
 
             await SendSettingsWithInvalidParameterValueAsync(parameter, value);
@@ -3757,12 +3855,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.WINDOW_UPDATE)]
-        [InlineData(Http2FrameType.HEADERS)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AppDoesNotReadRequestBody_ResetsAndDrainsRequest(Http2FrameType finalFrameType)
+        [InlineData((int)(Http2FrameType.DATA))]
+        [InlineData((int)(Http2FrameType.WINDOW_UPDATE))]
+        [InlineData((int)(Http2FrameType.HEADERS))]
+        [InlineData((int)(Http2FrameType.CONTINUATION))]
+        public async Task AppDoesNotReadRequestBody_ResetsAndDrainsRequest(int intFinalFrameType)
         {
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -3810,12 +3910,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.WINDOW_UPDATE)]
-        [InlineData(Http2FrameType.HEADERS)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AbortedStream_ResetsAndDrainsRequest(Http2FrameType finalFrameType)
+        [InlineData((int)(Http2FrameType.DATA))]
+        [InlineData((int)(Http2FrameType.WINDOW_UPDATE))]
+        [InlineData((int)(Http2FrameType.HEADERS))]
+        [InlineData((int)(Http2FrameType.CONTINUATION))]
+        public async Task AbortedStream_ResetsAndDrainsRequest(int intFinalFrameType)
         {
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -3852,11 +3954,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.HEADERS)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(Http2FrameType finalFrameType)
+        [InlineData((int)(Http2FrameType.DATA))]
+        [InlineData((int)(Http2FrameType.HEADERS))]
+        [InlineData((int)(Http2FrameType.CONTINUATION))]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterEndOfStream(int intFinalFrameType)
         {
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),
@@ -3925,10 +4029,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.HEADERS)]
-        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(Http2FrameType finalFrameType)
+        [InlineData((int)(Http2FrameType.DATA))]
+        [InlineData((int)(Http2FrameType.HEADERS))]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterClientReset(int intFinalFrameType)
         {
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
+
             var headers = new[]
             {
                 new KeyValuePair<string, string>(HeaderNames.Method, "POST"),

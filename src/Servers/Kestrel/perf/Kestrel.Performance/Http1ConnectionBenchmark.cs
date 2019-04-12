@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private ReadOnlySequence<byte> _buffer;
 
-        public Http1Connection Connection { get; set; }
+        internal Http1Connection Connection { get; set; }
 
         [GlobalSetup]
         public void Setup()
@@ -106,6 +106,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             public void OnHeader(Span<byte> name, Span<byte> value)
                 => RequestHandler.Connection.OnHeader(name, value);
+
+            public void OnHeadersComplete()
+                => RequestHandler.Connection.OnHeadersComplete();
 
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.Connection.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);

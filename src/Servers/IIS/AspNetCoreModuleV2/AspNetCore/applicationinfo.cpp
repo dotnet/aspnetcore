@@ -155,8 +155,8 @@ APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOpt
             }
             LOG_LAST_ERROR_IF(WaitForSingleObject(eventHandle, INFINITE) != WAIT_OBJECT_0);
         }
-
     }
+
     RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), m_pApplicationFactory, options));
     LOG_INFO(L"Creating handler application");
 

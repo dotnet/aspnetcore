@@ -1,20 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Components.Server
-{
-    public partial class ComponentPrerenderingContext
-    {
-        public ComponentPrerenderingContext() { }
-        public System.Type ComponentType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Http.HttpContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public Microsoft.AspNetCore.Components.ParameterCollection Parameters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-    public partial interface IComponentPrerenderer
-    {
-        System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>> PrerenderComponentAsync(Microsoft.AspNetCore.Components.Server.ComponentPrerenderingContext context);
-    }
-}
 namespace Microsoft.AspNetCore.Mvc
 {
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=true)]
@@ -393,6 +379,12 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         public static System.Threading.Tasks.Task RenderPartialAsync(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, string partialViewName) { throw null; }
         public static System.Threading.Tasks.Task RenderPartialAsync(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, string partialViewName, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary viewData) { throw null; }
         public static System.Threading.Tasks.Task RenderPartialAsync(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, string partialViewName, object model) { throw null; }
+    }
+    public static partial class HtmlHelperRazorComponentExtensions
+    {
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderStaticComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderStaticComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, object parameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
     }
     public static partial class HtmlHelperSelectExtensions
     {
@@ -990,12 +982,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public string IdAttributeDotReplacement { get { throw null; } set { } }
         public string ValidationMessageElement { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ValidationSummaryMessageElement { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-    public static partial class HtmlHelperRazorComponentExtensions
-    {
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.Task<Microsoft.AspNetCore.Html.IHtmlContent> RenderComponentAsync<TComponent>(this Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper htmlHelper, object parameters) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
     }
     public partial class HtmlHelper<TModel> : Microsoft.AspNetCore.Mvc.ViewFeatures.HtmlHelper, Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper, Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
     {

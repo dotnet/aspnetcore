@@ -1,12 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
-using System;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,11 +26,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             _serverFixture.Environment = AspNetEnvironment.Development;
             _serverFixture.BuildWebHostMethod = ComponentsApp.Server.Program.BuildWebHost;
-
-            Navigate("/", noReload: false);
-            WaitUntilLoaded();
         }
 
+        public DateTime LastLogTimeStamp { get; set; } = DateTime.MinValue;
+
+        public override async Task InitializeAsync()
+        {
+            await base.InitializeAsync();
+
+            // Capture the last log timestamp so that we can filter logs when we
+            // check for duplicate connections.
+            var lastLog = Browser.Manage().Logs.GetLog(LogType.Browser).LastOrDefault();
+            if (lastLog != null)
+            {
+                LastLogTimeStamp = lastLog.Timestamp;
+            }
+
+            Navigate("/", noReload: false);
+            Browser.True(() => ((IJavaScriptExecutor)Browser)
+                .ExecuteScript("return window['__aspnetcore__testing__blazor__started__'];") == null ? false : true);
+        }
 
         [Fact]
         public void HasTitle()
@@ -35,9 +54,21 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         }
 
         [Fact]
+        public void DoesNotStartTwoConnections()
+        {
+            Browser.True(() =>
+            {
+                var logs = Browser.Manage().Logs.GetLog(LogType.Browser).ToArray();
+                var curatedLogs = logs.Where(l => l.Timestamp > LastLogTimeStamp);
+
+                return curatedLogs.Count(e => e.Message.Contains("blazorpack")) == 1;
+            });
+        }
+
+        [Fact]
         public void HasHeading()
         {
-            Assert.Equal("Hello, world!", Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Hello, world!", () => Browser.FindElement(By.CssSelector("h1#index")).Text);
         }
 
         [Fact]
@@ -55,13 +86,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Browser.FindElement(By.LinkText("Counter")).Click();
 
             // Verify we're now on the counter page, with that nav link (only) highlighted
-            WaitAssert.Equal("Counter", () => Browser.FindElement(mainHeaderSelector).Text);
+            Browser.Equal("Counter", () => Browser.FindElement(mainHeaderSelector).Text);
             Assert.Collection(Browser.FindElements(activeNavLinksSelector),
                 item => Assert.Equal("Counter", item.Text));
 
             // Verify we can navigate back to home too
             Browser.FindElement(By.LinkText("Home")).Click();
-            WaitAssert.Equal("Hello, world!", () => Browser.FindElement(mainHeaderSelector).Text);
+            Browser.Equal("Hello, world!", () => Browser.FindElement(mainHeaderSelector).Text);
             Assert.Collection(Browser.FindElements(activeNavLinksSelector),
                 item => Assert.Equal("Home", item.Text));
         }
@@ -71,7 +102,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Navigate to "Counter"
             Browser.FindElement(By.LinkText("Counter")).Click();
-            WaitAssert.Equal("Counter", () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Counter", () => Browser.FindElement(By.TagName("h1")).Text);
 
             // Observe the initial value is zero
             var countDisplayElement = Browser.FindElement(By.CssSelector("h1 + p"));
@@ -80,11 +111,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             // Click the button; see it counts
             var button = Browser.FindElement(By.CssSelector(".main button"));
             button.Click();
-            WaitAssert.Equal("Current count: 1", () => countDisplayElement.Text);
+            Browser.Equal("Current count: 1", () => countDisplayElement.Text);
             button.Click();
-            WaitAssert.Equal("Current count: 2", () => countDisplayElement.Text);
+            Browser.Equal("Current count: 2", () => countDisplayElement.Text);
             button.Click();
-            WaitAssert.Equal("Current count: 3", () => countDisplayElement.Text);
+            Browser.Equal("Current count: 3", () => countDisplayElement.Text);
         }
 
         [Fact]
@@ -92,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
         {
             // Navigate to "Fetch Data"
             Browser.FindElement(By.LinkText("Fetch data")).Click();
-            WaitAssert.Equal("Weather forecast", () => Browser.FindElement(By.TagName("h1")).Text);
+            Browser.Equal("Weather forecast", () => Browser.FindElement(By.CssSelector("h1#fetch-data")).Text);
 
             // Wait until loaded
             var tableSelector = By.CssSelector("table.table");
@@ -158,10 +189,23 @@ window.Blazor._internal.forceCloseConnection();");
                 _ => element.Text != currentValue);
         }
 
-        private void WaitUntilLoaded()
+        [Fact]
+        public void RendersContinueAfterPrerendering()
         {
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+            Browser.FindElement(By.LinkText("Greeter")).Click();
+            Browser.Equal("Hello Guest", () => Browser.FindElement(By.ClassName("greeting")).Text);
         }
+
+        [Fact]
+        public void ErrorsStopTheRenderingProcess()
+        {
+            Browser.FindElement(By.LinkText("Error")).Click();
+            Browser.Equal("Error", () => Browser.FindElement(By.CssSelector("h1")).Text);
+
+            Browser.FindElement(By.Id("cause-error")).Click();
+            Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
+                .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
+        }
+
     }
 }

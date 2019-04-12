@@ -95,33 +95,74 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public IDispatcher Dispatcher { get; }
 
-        public Task<IEnumerable<string>> PrerenderComponentAsync(Type componentType, ParameterCollection parameters)
+        public Task<ComponentRenderedText> PrerenderComponentAsync(Type componentType, ParameterCollection parameters)
         {
             return Dispatcher.InvokeAsync(async () =>
             {
                 var result = await Renderer.RenderComponentAsync(componentType, parameters);
+
+                // When we prerender we start the circuit in a disconnected state. As such, we only call
+                // OnCircuitOpenenedAsync here and when the client reconnects we run OnConnectionUpAsync
+                await OnCircuitOpenedAsync(CancellationToken.None);
+
                 return result;
             });
+        }
+
+        internal void InitializeCircuitAfterPrerender(UnhandledExceptionEventHandler unhandledException)
+        {
+            if (!_initialized)
+            {
+                _initialized = true;
+                UnhandledException += unhandledException;
+                var uriHelper = (RemoteUriHelper)Services.GetRequiredService<IUriHelper>();
+                if (!uriHelper.HasAttachedJSRuntime)
+                {
+                    uriHelper.AttachJsRuntime(JSRuntime);
+                }
+            }
+        }
+
+        internal void SendPendingBatches()
+        {
+            // Dispatch any buffered renders we accumulated during a disconnect.
+            // Note that while the rendering is async, we cannot await it here. The Task returned by ProcessBufferedRenderBatches relies on
+            // OnRenderCompleted to be invoked to complete, and SignalR does not allow concurrent hub method invocations.
+            var _ = Renderer.InvokeAsync(() => Renderer.ProcessBufferedRenderBatches());
         }
 
         public async Task InitializeAsync(CancellationToken cancellationToken)
         {
             await Renderer.InvokeAsync(async () =>
             {
-                SetCurrentCircuitHost(this);
-
-                for (var i = 0; i < Descriptors.Count; i++)
+                try
                 {
-                    var (componentType, domElementSelector) = Descriptors[i];
-                    await Renderer.AddComponentAsync(componentType, domElementSelector);
+                    SetCurrentCircuitHost(this);
+                    _initialized = true; // We're ready to accept incoming JSInterop calls from here on
+
+                    await OnCircuitOpenedAsync(cancellationToken);
+                    await OnConnectionUpAsync(cancellationToken);
+
+                    // We add the root components *after* the circuit is flagged as open.
+                    // That's because AddComponentAsync waits for quiescence, which can take
+                    // arbitrarily long. In the meantime we might need to be receiving and
+                    // processing incoming JSInterop calls or similar.
+                    for (var i = 0; i < Descriptors.Count; i++)
+                    {
+                        var (componentType, domElementSelector, prerendered) = Descriptors[i];
+                        if (!prerendered)
+                        {
+                            await Renderer.AddComponentAsync(componentType, domElementSelector);
+                        }
+                    }
                 }
-
-                await OnCircuitOpenedAsync(cancellationToken);
-
-                await OnConnectionUpAsync(cancellationToken);
+                catch (Exception ex)
+                {
+                    // We have to handle all our own errors here, because the upstream caller
+                    // has to fire-and-forget this
+                    Renderer_UnhandledException(this, ex);
+                }
             });
-
-            _initialized = true;
         }
 
         public async void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson)
@@ -237,10 +278,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 await OnConnectionDownAsync(CancellationToken.None);
                 await OnCircuitDownAsync();
+                Renderer.Dispose();
+                _scope.Dispose();
             }));
-
-            _scope.Dispose();
-            Renderer.Dispose();
         }
 
         private void AssertInitialized()

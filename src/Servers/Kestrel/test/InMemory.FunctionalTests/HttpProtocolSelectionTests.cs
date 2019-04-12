@@ -63,14 +63,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Protocols = serverProtocols
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
                     await connection.Send(request);
                     await connection.Receive(expectedResponse);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -83,13 +82,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 Protocols = serverProtocols
             };
 
-            using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
+            await using (var server = new TestServer(context => Task.CompletedTask, testContext, listenOptions))
             {
                 using (var connection = server.CreateConnection())
                 {
                     await connection.WaitForConnectionClose();
                 }
-                await server.StopAsync();
             }
 
             Assert.Single(TestApplicationErrorLogger.Messages, message => message.LogLevel == LogLevel.Error

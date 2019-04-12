@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public static readonly System.TimeSpan DefaultServerTimeout;
         public HubConnection(Microsoft.AspNetCore.SignalR.Client.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public HubConnection(Microsoft.AspNetCore.SignalR.Client.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public string ConnectionId { get { throw null; } }
         public System.TimeSpan HandshakeTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan ServerTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -37,8 +38,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public System.Threading.Tasks.Task<object> InvokeCoreAsync(string methodName, System.Type returnType, object[] args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.IDisposable On(string methodName, System.Type[] parameterTypes, System.Func<object[], object, System.Threading.Tasks.Task> handler, object state) { throw null; }
         public void Remove(string methodName) { }
-        public void ResetSendPing() { }
-        public void ResetTimeout() { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task SendCoreAsync(string methodName, object[] args, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]

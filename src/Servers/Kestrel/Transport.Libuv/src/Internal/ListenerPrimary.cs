@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     /// A primary listener waits for incoming connections on a specified socket. Incoming
     /// connections may be passed to a secondary listener to handle.
     /// </summary>
-    public class ListenerPrimary : Listener
+    internal class ListenerPrimary : Listener
     {
         // The list of pipes that can be dispatched to (where we've confirmed the _pipeMessage)
         private readonly List<UvPipeHandle> _dispatchPipes = new List<UvPipeHandle>();

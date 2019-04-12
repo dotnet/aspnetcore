@@ -112,8 +112,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
 
-    <RuntimePackageRoot>$(NuGetPackageRoot)/runtime.$(RuntimeIdentifier).microsoft.netcore.app/$(MicrosoftNETCoreAppPackageVersion)/</RuntimePackageRoot>
-    <CrossgenToolPath>$(RuntimePackageRoot)tools/$(CrossgenToolPackagePath)</CrossgenToolPath>
+    <RuntimePackageRoot>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'runtime.$(RuntimeIdentifier).microsoft.netcore.app', '$(MicrosoftNETCoreAppPackageVersion)'))</RuntimePackageRoot>
+    <RuntimePackageRoot>$([MSBuild]::EnsureTrailingSlash('$(RuntimePackageRoot)'))</RuntimePackageRoot>
+    <CrossgenToolPath>$([System.IO.Path]::Combine('$(RuntimePackageRoot)', 'tools', '$(CrossgenToolPackagePath)'))</CrossgenToolPath>
     <AssetTargetFallback>$(AssetTargetFallback);native,Version=0.0</AssetTargetFallback>
   </PropertyGroup>
 
@@ -123,7 +124,9 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <IncludeAssets>Runtime;Native</IncludeAssets>
     </Reference>
 
-    <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false'" Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
+    <Reference Include="runtime.$(RuntimeIdentifier).microsoft.netcore.app" ExcludeAssets="All" PrivateAssets="All" />
+
+    <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false' AND '$(VCTargetsPath)' != ''" Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(TargetArchitecture)</SetPlatform>
       <SetPlatform Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</SetPlatform>
       <!-- Custom attribute used to distinguish managed from native references. -->

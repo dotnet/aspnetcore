@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class KestrelTrace : IKestrelTrace
+    internal class KestrelTrace : IKestrelTrace
     {
         private static readonly Action<ILogger, string, Exception> _connectionStart =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, nameof(ConnectionStart)), @"Connection id ""{ConnectionId}"" started.");

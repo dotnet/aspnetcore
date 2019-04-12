@@ -48,7 +48,7 @@ try {
                 reporters: [...defaultReporters, ...(config.reporters || [])],
 
                 junitReporter: {
-                    outputDir: "../../../artifacts/logs",
+                    outputDir: "../../../../../artifacts/logs",
                     outputFile: `${process.platform}` + ".functionaltest.junit.xml",
                 },
             });

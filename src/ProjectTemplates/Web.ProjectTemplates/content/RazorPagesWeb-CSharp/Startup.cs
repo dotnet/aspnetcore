@@ -21,11 +21,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
-using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth)
 using Microsoft.AspNetCore.Mvc.Authorization;
 #endif
@@ -72,7 +70,6 @@ namespace Company.WebApplication1
             services.AddDefaultIdentity<IdentityUser>()
                 .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-
 #elif (OrganizationalAuth)
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
                 .AddAzureAD(options => Configuration.Bind("AzureAd", options));
@@ -119,7 +116,7 @@ namespace Company.WebApplication1
 #endif
 
 #if (OrganizationalAuth)
-            services.AddMvc(options =>
+            services.AddRazorPages().AddMvcOptions(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
@@ -128,7 +125,7 @@ namespace Company.WebApplication1
             })
             .AddNewtonsoftJson();
 #else
-            services.AddMvc()
+            services.AddRazorPages()
                 .AddNewtonsoftJson();
 #endif
         }
@@ -158,17 +155,22 @@ namespace Company.WebApplication1
 #endif
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
-            {
-                routes.MapRazorPages();
-            });
-
             app.UseCookiePolicy();
+
+            app.UseRouting();
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapRazorPages();
+#if (IndividualB2CAuth || OrganizationalAuth)
+                endpoints.MapControllers();
+#endif
+            });
         }
     }
 }

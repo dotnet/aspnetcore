@@ -34,9 +34,11 @@ namespace SocialWeather
 
             app.UseFileServer();
 
-            app.UseRouting(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapConnectionHandler<SocialWeatherConnectionHandler>("/weather");
+                endpoints.MapConnectionHandler<SocialWeatherConnectionHandler>("/weather");
             });
 
             var formatterResolver = app.ApplicationServices.GetRequiredService<FormatterResolver>();

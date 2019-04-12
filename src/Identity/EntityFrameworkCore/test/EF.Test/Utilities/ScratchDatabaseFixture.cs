@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class ScratchDatabaseFixture : IDisposable
     {
-        private LazyRef<SqlServerTestStore> _testStore;
+#pragma warning disable EF1001 // Internal EF Core API usage.
+        private readonly LazyRef<SqlServerTestStore> _testStore;
 
         public ScratchDatabaseFixture()
         {
@@ -25,5 +26,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 _testStore.Value?.Dispose();
             }
         }
+#pragma warning restore EF1001 // Internal EF Core API usage.
     }
 }

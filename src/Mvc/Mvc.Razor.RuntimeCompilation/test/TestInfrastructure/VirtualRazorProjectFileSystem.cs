@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -19,8 +18,17 @@ namespace Microsoft.AspNetCore.Razor.Language
             return directory?.EnumerateItems() ?? Enumerable.Empty<RazorProjectItem>();
         }
 
+        [Obsolete("Use GetItem(string path, string fileKind) instead.")]
         public override RazorProjectItem GetItem(string path)
         {
+            return GetItem(path, fileKind: null);
+        }
+
+        public override RazorProjectItem GetItem(string path, string fileKind)
+        {
+            // We ignore fileKind here because the _root is pre-filled with project items that already have fileKinds defined. This is
+            // a unique circumstance where the RazorProjectFileSystem is actually pre-filled with all of its project items on construction.
+
             path = NormalizeAndEnsureValidPath(path);
             return _root.GetItem(path) ?? new NotFoundProjectItem(string.Empty, path);
         }

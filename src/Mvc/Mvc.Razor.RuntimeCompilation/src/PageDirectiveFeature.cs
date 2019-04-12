@@ -77,17 +77,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
                 return Enumerable.Empty<RazorProjectItem>();
             }
 
+            [Obsolete("Use GetItem(string path, string fileKind) instead.")]
             public override RazorProjectItem GetItem(string path)
             {
-                return new NotFoundProjectItem(string.Empty, path);
+                return GetItem(path, fileKind: null);
+            }
+
+            public override RazorProjectItem GetItem(string path, string fileKind)
+            {
+                return new NotFoundProjectItem(string.Empty, path, fileKind);
             }
 
             private class NotFoundProjectItem : RazorProjectItem
             {
-                public NotFoundProjectItem(string basePath, string path)
+                public NotFoundProjectItem(string basePath, string path, string fileKind)
                 {
                     BasePath = basePath;
                     FilePath = path;
+                    FileKind = fileKind ?? FileKinds.GetFileKindFromFilePath(FilePath);
                 }
 
                 /// <inheritdoc />
@@ -95,6 +102,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 
                 /// <inheritdoc />
                 public override string FilePath { get; }
+
+                /// <inheritdoc />
+                public override string FileKind { get; }
 
                 /// <inheritdoc />
                 public override bool Exists => false;

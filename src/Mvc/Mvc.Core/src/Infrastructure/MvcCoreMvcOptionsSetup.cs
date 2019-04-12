@@ -65,10 +65,14 @@ namespace Microsoft.AspNetCore.Mvc
             // Set up filters
             options.Filters.Add(new UnsupportedContentTypeFilter());
 
+            // Set up default input formatters.
+            options.InputFormatters.Add(new SystemTextJsonInputFormatter(options));
+
             // Set up default output formatters.
             options.OutputFormatters.Add(new HttpNoContentOutputFormatter());
             options.OutputFormatters.Add(new StringOutputFormatter());
             options.OutputFormatters.Add(new StreamOutputFormatter());
+            options.OutputFormatters.Add(new SystemTextJsonOutputFormatter(options));
 
             // Set up ValueProviders
             options.ValueProviderFactories.Add(new FormValueProviderFactory());

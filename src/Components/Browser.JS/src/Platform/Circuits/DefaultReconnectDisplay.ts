@@ -1,27 +1,31 @@
-import { ReconnectDisplay } from "./ReconnectDisplay";
-import { AutoReconnectCircuitHandler } from "./AutoReconnectCircuitHandler";
+import { ReconnectDisplay } from './ReconnectDisplay';
+import { AutoReconnectCircuitHandler } from './AutoReconnectCircuitHandler';
 export class DefaultReconnectDisplay implements ReconnectDisplay {
   modal: HTMLDivElement;
+
   message: HTMLHeadingElement;
+
   button: HTMLButtonElement;
+
   addedToDom: boolean = false;
+
   constructor(private document: Document) {
     this.modal = this.document.createElement('div');
     this.modal.id = AutoReconnectCircuitHandler.DialogId;
 
     const modalStyles = [
-      "position: fixed",
-      "top: 0",
-      "right: 0",
-      "bottom: 0",
-      "left: 0",
-      "z-index: 1000",
-      "display: none",
-      "overflow: hidden",
-      "background-color: #fff",
-      "opacity: 0.8",
-      "text-align: center",
-      "font-weight: bold"
+      'position: fixed',
+      'top: 0',
+      'right: 0',
+      'bottom: 0',
+      'left: 0',
+      'z-index: 1000',
+      'display: none',
+      'overflow: hidden',
+      'background-color: #fff',
+      'opacity: 0.8',
+      'text-align: center',
+      'font-weight: bold',
     ];
 
     this.modal.style.cssText = modalStyles.join(';');
@@ -31,6 +35,7 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
 
     this.button.addEventListener('click', () => window['Blazor'].reconnect());
   }
+
   show(): void {
     if (!this.addedToDom) {
       this.addedToDom = true;
@@ -40,9 +45,11 @@ export class DefaultReconnectDisplay implements ReconnectDisplay {
     this.button.style.display = 'none';
     this.message.textContent = 'Attempting to reconnect to the server...';
   }
+
   hide(): void {
     this.modal.style.display = 'none';
   }
+
   failed(): void {
     this.button.style.display = 'block';
     this.message.textContent = 'Failed to reconnect to the server.';

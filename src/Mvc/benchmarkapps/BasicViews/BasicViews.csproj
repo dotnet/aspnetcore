@@ -9,6 +9,7 @@
     <!-- Pomelo.EntityFrameworkCore.MySql is not strong named, so this test assembly cannot be strong-named signed either. -->
     <SignAssembly>false</SignAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,7 +37,7 @@
     These references are used when running on the Benchmarks Server.
   -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)" />
-    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)" />
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>

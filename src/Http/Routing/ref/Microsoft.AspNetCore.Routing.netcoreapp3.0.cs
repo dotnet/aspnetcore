@@ -5,30 +5,24 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class EndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, Microsoft.AspNetCore.Routing.Patterns.RoutePattern pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, Microsoft.AspNetCore.Routing.Patterns.RoutePattern pattern, string displayName, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string displayName, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDelete(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDelete(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string displayName, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapGet(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapGet(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string displayName, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapPost(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapPost(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string displayName, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapPut(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapPut(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string displayName, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapVerbs(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, System.Collections.Generic.IList<string> httpMethods, params object[] metadata) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapVerbs(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, string displayName, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate, System.Collections.Generic.IList<string> httpMethods, params object[] metadata) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, Microsoft.AspNetCore.Routing.Patterns.RoutePattern pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder Map(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDelete(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapGet(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapMethods(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, System.Collections.Generic.IEnumerable<string> httpMethods, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapPost(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapPut(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
     }
     public static partial class EndpointRoutingApplicationBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseEndpoint(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseRouting(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, System.Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseEndpointExecutor(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseEndpoints(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, System.Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseRouting(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) { throw null; }
     }
     public static partial class FallbackEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallback(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallback(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallback(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallback(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
     }
     public static partial class MapRouteRouteBuilderExtensions
     {
@@ -51,6 +45,9 @@ namespace Microsoft.AspNetCore.Builder
     public static partial class RoutingEndpointConventionBuilderExtensions
     {
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireHost(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params string[] hosts) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithDisplayName(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, System.Func<Microsoft.AspNetCore.Builder.EndpointBuilder, string> func) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithDisplayName(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, string displayName) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithMetadata(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params object[] items) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Routing
@@ -325,6 +322,7 @@ namespace Microsoft.AspNetCore.Routing
         public System.Collections.Generic.ICollection<Microsoft.AspNetCore.Routing.EndpointDataSource> EndpointDataSources { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool LowercaseQueryStrings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool LowercaseUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool SuppressCheckForUnhandledSecurityMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class RouteValueEqualityComparer : System.Collections.Generic.IEqualityComparer<object>
     {
@@ -674,6 +672,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     public sealed partial class RoutePattern
     {
         internal RoutePattern() { }
+        public static readonly object RequiredValueAny;
         public System.Collections.Generic.IReadOnlyDictionary<string, object> Defaults { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public decimal InboundPrecedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public decimal OutboundPrecedence { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }

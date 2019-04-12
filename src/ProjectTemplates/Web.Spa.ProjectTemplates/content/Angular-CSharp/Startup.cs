@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Identity.UI;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
@@ -55,7 +54,7 @@ namespace Company.WebApplication1
             services.AddAuthentication()
                 .AddIdentityServerJwt();
 #endif
-            services.AddMvc()
+            services.AddMvc(options => options.EnableEndpointRouting = false)
                 .AddNewtonsoftJson();
 
             // In production, the Angular files will be served from this directory

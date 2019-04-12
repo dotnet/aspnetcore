@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <RazorLangVersion>3.0</RazorLangVersion>
 
     <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
     <!-- Must be defined before ReferenceFromSource.props is imported -->

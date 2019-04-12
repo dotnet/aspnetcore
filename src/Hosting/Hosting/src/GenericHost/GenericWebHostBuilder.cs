@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     // _builder.ConfigureContainer<T>(ConfigureContainer);
                     typeof(IHostBuilder).GetMethods().First(m => m.Name == nameof(IHostBuilder.ConfigureContainer))
                         .MakeGenericMethod(containerType)
-                        .Invoke(_builder, new object[] { configureCallback });
+                        .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
                 }
 
                 // Resolve Configure after calling ConfigureServices and ConfigureContainer
@@ -303,13 +303,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             builder.Build(instance)(container);
         }
 
-        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
         {
             _builder.ConfigureServices((context, services) =>
             {
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
-                    options.ConfigureApplication = configure;
+                    var webhostBuilderContext = GetWebHostBuilderContext(context);
+                    options.ConfigureApplication = app => configure(webhostBuilderContext, app);
                 });
             });
 

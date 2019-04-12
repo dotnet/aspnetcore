@@ -235,7 +235,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
             var id = ConvertIdFromString(userId);
-            return UsersSet.FindAsync(new object[] { id }, cancellationToken);
+            return UsersSet.FindAsync(new object[] { id }, cancellationToken).AsTask();
         }
 
         /// <summary>
@@ -511,7 +511,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="claim">The claim whose users should be retrieved.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>
-        /// The <see cref="Task"/> contains a list of users, if any, that contain the specified claim. 
+        /// The <see cref="Task"/> contains a list of users, if any, that contain the specified claim.
         /// </returns>
         public async override Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken))
         {
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The user token if it exists.</returns>
         protected override Task<TUserToken> FindTokenAsync(TUser user, string loginProvider, string name, CancellationToken cancellationToken)
-            => UserTokens.FindAsync(new object[] { user.Id, loginProvider, name }, cancellationToken);
+            => UserTokens.FindAsync(new object[] { user.Id, loginProvider, name }, cancellationToken).AsTask();
 
         /// <summary>
         /// Add a new user token.

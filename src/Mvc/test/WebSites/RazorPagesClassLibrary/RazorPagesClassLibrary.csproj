@@ -2,11 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <!--  Workaround https://github.com/dotnet/core-setup/issues/3726 -->
-    <GenerateDependencyFile>false</GenerateDependencyFile>
-
-    <_EnableAllInclusiveRazorSdk>true</_EnableAllInclusiveRazorSdk>
     <IsTestAssetProject>true</IsTestAssetProject>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>

@@ -121,6 +121,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Debug.Assert(result, "This operation operates inside of a lock. We expect the previously inspected value to be still here.");
 
             circuitHost.Client.SetDisconnected();
+            RegisterDisconnectedCircuit(circuitHost);
+            return true;
+        }
+
+        public void RegisterDisconnectedCircuit(CircuitHost circuitHost)
+        {
             var entryOptions = new MemoryCacheEntryOptions
             {
                 AbsoluteExpiration = DateTimeOffset.UtcNow.Add(_options.DisconnectedCircuitRetentionPeriod),
@@ -129,7 +135,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             };
 
             DisconnectedCircuits.Set(circuitHost.CircuitId, circuitHost, entryOptions);
-            return true;
         }
 
         public virtual async Task<CircuitHost> ConnectAsync(string circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)

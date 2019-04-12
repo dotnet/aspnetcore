@@ -258,7 +258,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            TestSink.MessageLogged += context => {
+            TestSink.MessageLogged += context =>
+            {
                 if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
@@ -341,6 +342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/7342", FlakyOn.All)]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
         {
@@ -808,10 +810,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             => e is IOException && e.Message.Contains("Unable to read data from the transport connection: The I/O operation has been aborted because of either a thread exit or an application request");
 
         [Fact]
-        [RetryTest(nameof(ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeadersRetryPredicate),
-            "Active investigation into potential corefx sockets bug: https://github.com/dotnet/corefx/issues/30691",
-            OperatingSystems.Windows,
-            5)]
+        [Flaky("https://github.com/dotnet/corefx/issues/30691", FlakyOn.AzP.Windows)]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
         {
             var headerSize = 1024 * 1024; // 1 MB for each header value

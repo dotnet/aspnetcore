@@ -8,6 +8,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -28,7 +30,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         private static void ConfigureWebHostBuilder(IWebHostBuilder builder) =>
             builder.UseStartup<BasicWebSite.StartupWithCookieTempDataProviderAndCookieConsent>();
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1803")]
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1803", FlakyOn.AzP.Windows)]
         public async Task CookieTempDataProviderCookie_SetInResponse_OnGrantingConsent()
         {
             // Arrange
@@ -61,7 +64,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1803")]
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1803", FlakyOn.AzP.Windows)]
         public async Task CookieTempDataProviderCookie_NotSetInResponse_OnNoConsent()
         {
             // Arrange

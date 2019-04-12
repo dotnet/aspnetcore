@@ -65,14 +65,10 @@ describe("HttpConnection", () => {
 
     it("cannot start a running connection", async () => {
         await VerifyLogger.run(async (logger) => {
-            const negotiating = new PromiseSource();
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", () => {
-                        negotiating.resolve();
-                        return defaultNegotiateResponse;
-                    }),
+                    .on("POST", () => defaultNegotiateResponse),
                 logger,
                 transport: {
                     connect() {
@@ -95,8 +91,9 @@ describe("HttpConnection", () => {
 
                 await expect(connection.start(TransferFormat.Text))
                     .rejects
-                    .toThrow("Cannot start a connection that is not in the 'Disconnected' state.");
+                    .toThrow("Cannot start an HttpConnection that is not in the 'Disconnected' state.");
             } finally {
+                (options.transport as ITransport).onclose!();
                 await connection.stop();
             }
         });
@@ -146,8 +143,77 @@ describe("HttpConnection", () => {
 
             const connection = new HttpConnection("http://tempuri.org", options);
 
-            await connection.start(TransferFormat.Text);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("The connection was stopped during negotiation.");
+        },
+        "Failed to start the connection: Error: The connection was stopped during negotiation.");
+    });
+
+    it("cannot send with an un-started connection", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connection = new HttpConnection("http://tempuri.org");
+
+            await expect(connection.send("LeBron James"))
+                .rejects
+                .toThrow("Cannot send data if the connection is not in the 'Connected' State.");
         });
+    });
+
+    it("sending before start doesn't throw synchronously", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const connection = new HttpConnection("http://tempuri.org");
+
+            try {
+                connection.send("test").catch((e) => {});
+            } catch (e) {
+                expect(false).toBe(true);
+            }
+
+        });
+    });
+
+    it("cannot be started if negotiate returns non 200 response", async () => {
+        await VerifyLogger.run(async (logger) => {
+            const options: IHttpConnectionOptions = {
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => new HttpResponse(999))
+                    .on("GET", () => ""),
+                logger,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Unexpected status code returned from negotiate 999");
+        },
+        "Failed to start the connection: Error: Unexpected status code returned from negotiate 999");
+    });
+
+    it("all transport failure error get aggregated", async () => {
+        await VerifyLogger.run(async (loggerImpl) => {
+            const options: IHttpConnectionOptions = {
+                WebSocket: false,
+                ...commonOptions,
+                httpClient: new TestHttpClient()
+                    .on("POST", () => defaultNegotiateResponse)
+                    .on("GET", () => new HttpResponse(200))
+                    .on("DELETE", () => new HttpResponse(202)),
+
+                logger: loggerImpl,
+                transport: HttpTransportType.WebSockets,
+            } as IHttpConnectionOptions;
+
+            const connection = new HttpConnection("http://tempuri.org", options);
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
+        },
+        "Failed to start the transport 'WebSockets': null",
+        "Failed to start the transport 'ServerSentEvents': Error: 'ServerSentEvents' is disabled by the client.",
+        "Failed to start the transport 'LongPolling': Error: 'LongPolling' is disabled by the client.",
+        "Failed to start the connection: Error: Unable to connect to the server with any of the available transports. WebSockets failed: null ServerSentEvents failed: Error: 'ServerSentEvents' is disabled by the client. LongPolling failed: Error: 'LongPolling' is disabled by the client.");
     });
 
     it("can stop a non-started connection", async () => {
@@ -211,6 +277,7 @@ describe("HttpConnection", () => {
 
                 await startPromise;
             } finally {
+                (options.transport as ITransport).onclose!();
                 await connection.stop();
             }
         });
@@ -240,7 +307,7 @@ describe("HttpConnection", () => {
 
                     expect(await negotiateUrl).toBe(expectedUrl);
 
-                    await expect(startPromise).rejects;
+                    await expect(startPromise).rejects.toThrow("We don't care how this turns out");
                 } finally {
                     await connection.stop();
                 }
@@ -739,7 +806,7 @@ describe("HttpConnection", () => {
                 // Force TypeScript to let us call start incorrectly
                 const connection: any = new HttpConnection("http://tempuri.org", { ...commonOptions, logger });
 
-                expect(() => connection.start(42)).toThrowError("Unknown transferFormat value: 42.");
+                await expect(connection.start(42)).rejects.toThrow("Unknown transferFormat value: 42.");
             });
         });
 

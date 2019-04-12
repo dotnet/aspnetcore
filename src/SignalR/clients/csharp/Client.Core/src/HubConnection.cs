@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -54,22 +55,57 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private long _nextActivationSendPing;
         private bool _disposed;
         private bool _hasInherentKeepAlive;
+        private string _connectionId;
 
         private CancellationToken _uploadStreamToken;
 
         private readonly ConnectionLogScope _logScope;
 
+        // The receive loop has a single reader and single writer at a time so optimize the channel for that
+        private static readonly UnboundedChannelOptions _receiveLoopOptions = new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = true
+        };
+
         // Transient state to a connection
         private ConnectionState _connectionState;
         private int _serverProtocolMinorVersion;
 
+        /// <summary>
+        /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
+        /// closing the connection without error.
+        /// </summary>
+        /// <remarks>
+        /// If this event was triggered from a connection error, the <see cref="Exception"/> that occurred will be passed in as the
+        /// sole argument to this handler. If this event was triggered intentionally by either the client or server, then
+        /// the argument will be <see langword="null"/>.
+        /// </remarks>
+        /// <example>
+        /// The following example attaches a handler to the <see cref="Closed"/> event, and checks the provided argument to determine
+        /// if there was an error:
+        ///
+        /// <code>
+        /// connection.Closed += (exception) =>
+        /// {
+        ///     if (exception == null)
+        ///     {
+        ///         Console.WriteLine("Connection closed without error.");
+        ///     }
+        ///     else
+        ///     {
+        ///         Console.WriteLine($"Connection closed due to an error: {exception.Message}");
+        ///     }
+        /// };
+        /// </code>
+        /// </example>
         public event Func<Exception, Task> Closed;
 
         // internal for testing purposes
         internal TimeSpan TickRate { get; set; } = TimeSpan.FromSeconds(1);
 
         /// <summary>
-        /// Gets or sets the server timeout interval for the connection. 
+        /// Gets or sets the server timeout interval for the connection.
         /// </summary>
         /// <remarks>
         /// The client times out if it hasn't heard from the server for `this` long.
@@ -88,6 +124,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// Gets or sets the timeout for the initial handshake.
         /// </summary>
         public TimeSpan HandshakeTimeout { get; set; } = DefaultHandshakeTimeout;
+
+        /// <summary>
+        /// Gets the connection's current Id. This value will be cleared when the connection is stopped and will have a new value every time the connection is (re)established.
+        /// This value will be null if the negotiation step is skipped via HttpConnectionOptions or if the WebSockets transport is explicitly specified because the
+        /// client skips negotiation in that case as well.
+        /// </summary>
+        public string ConnectionId => _connectionId;
 
         /// <summary>
         /// Indicates the state of the <see cref="HubConnection"/> to the server.
@@ -311,6 +354,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
                 // Start the connection
                 var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat);
+                _connectionId = connection.ConnectionId;
                 var startingConnectionState = new ConnectionState(connection, this);
                 _hasInherentKeepAlive = connection.Features.Get<IConnectionInherentKeepAliveFeature>()?.HasInherentKeepAlive ?? false;
 
@@ -378,6 +422,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     (_serviceProvider as IDisposable)?.Dispose();
                     _disposed = true;
                 }
+
+                _connectionId = null;
             }
             finally
             {
@@ -390,6 +436,46 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 await connectionState.StopAsync();
             }
         }
+
+#if NETCOREAPP3_0
+
+        /// <summary>
+        /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
+        /// </summary>
+        /// <typeparam name="TResult">The return type of the streaming server method.</typeparam>
+        /// <param name="methodName">The name of the server method to invoke.</param>
+        /// <param name="args">The arguments used to invoke the server method.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>
+        /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
+        /// </returns>
+        public IAsyncEnumerable<TResult> StreamAsyncCore<TResult>(string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            var cts = cancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken) : new CancellationTokenSource();
+            var stream = CastIAsyncEnumerable<TResult>(methodName, args, cts);
+            var cancelableStream = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, cts);
+            return cancelableStream;
+        }
+
+        private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(string methodName, object[] args, CancellationTokenSource cts)
+        {
+            var reader = await StreamAsChannelCoreAsync(methodName, typeof(T), args, cts.Token);
+            try
+            {
+                while (await reader.WaitToReadAsync(cts.Token))
+                {
+                    while (reader.TryRead(out var item))
+                    {
+                        yield return (T)item;
+                    }
+                }
+            }
+            finally
+            {
+                cts.Dispose();
+            }
+        }
+#endif
 
         private async Task<ChannelReader<object>> StreamAsChannelCoreAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
@@ -510,7 +596,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        // this is called via reflection using the `_sendStreamItems` field 
+        // this is called via reflection using the `_sendStreamItems` field
         private async Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
         {
             Log.StartingStream(_logger, streamId);
@@ -661,7 +747,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState)
+        private async Task<(bool close, Exception exception)> ProcessMessagesAsync(HubMessage message, ConnectionState connectionState, ChannelWriter<InvocationMessage> invocationMessageWriter)
         {
             Log.ResettingKeepAliveTimer(_logger);
             ResetTimeout();
@@ -676,7 +762,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     break;
                 case InvocationMessage invocation:
                     Log.ReceivedInvocation(_logger, invocation.InvocationId, invocation.Target, invocation.Arguments);
-                    await DispatchInvocationAsync(invocation);
+                    await invocationMessageWriter.WriteAsync(invocation);
                     break;
                 case CompletionMessage completion:
                     if (!connectionState.TryRemoveInvocation(completion.InvocationId, out irq))
@@ -796,6 +882,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new InvalidOperationException("The server disconnected before the handshake was completed");
             }
 
+            var input = startingConnectionState.Connection.Transport.Input;
+
             try
             {
                 using (var handshakeCts = new CancellationTokenSource(HandshakeTimeout))
@@ -803,7 +891,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     while (true)
                     {
-                        var result = await startingConnectionState.Connection.Transport.Input.ReadAsync(cts.Token);
+                        var result = await input.ReadAsync(cts.Token);
 
                         var buffer = result.Buffer;
                         var consumed = buffer.Start;
@@ -844,12 +932,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         }
                         finally
                         {
-                            startingConnectionState.Connection.Transport.Input.AdvanceTo(consumed, examined);
+                            input.AdvanceTo(consumed, examined);
                         }
                     }
                 }
             }
-            
+
             // shutdown if we're unable to read handshake
             // Ignore HubException because we throw it when we receive a handshake response with an error
             // And because we already have the error, we don't need to log that the handshake failed
@@ -872,16 +960,31 @@ namespace Microsoft.AspNetCore.SignalR.Client
             // Performs periodic tasks -- here sending pings and checking timeout
             // Disposed with `timer.Stop()` in the finally block below
             var timer = new TimerAwaitable(TickRate, TickRate);
-            _ = TimerLoop(timer);
+            var timerTask = TimerLoop(timer);
 
             var uploadStreamSource = new CancellationTokenSource();
             _uploadStreamToken = uploadStreamSource.Token;
+            var invocationMessageChannel = Channel.CreateUnbounded<InvocationMessage>(_receiveLoopOptions);
+            var invocationMessageReceiveTask = StartProcessingInvocationMessages(invocationMessageChannel.Reader);
+
+            async Task StartProcessingInvocationMessages(ChannelReader<InvocationMessage> invocationMessageChannelReader)
+            {
+                while (await invocationMessageChannelReader.WaitToReadAsync())
+                {
+                    while (invocationMessageChannelReader.TryRead(out var invocationMessage))
+                    {
+                        await DispatchInvocationAsync(invocationMessage);
+                    }
+                }
+            }
+
+            var input = connectionState.Connection.Transport.Input;
 
             try
             {
                 while (true)
                 {
-                    var result = await connectionState.Connection.Transport.Input.ReadAsync();
+                    var result = await input.ReadAsync();
                     var buffer = result.Buffer;
 
                     try
@@ -902,7 +1005,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                 Exception exception;
 
                                 // We have data, process it
-                                (close, exception) = await ProcessMessagesAsync(message, connectionState);
+                                (close, exception) = await ProcessMessagesAsync(message, connectionState, invocationMessageChannel.Writer);
                                 if (close)
                                 {
                                     // Closing because we got a close frame, possibly with an error in it.
@@ -932,7 +1035,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         // The buffer was sliced up to where it was consumed, so we can just advance to the start.
                         // We mark examined as `buffer.End` so that if we didn't receive a full frame, we'll wait for more data
                         // before yielding the read again.
-                        connectionState.Connection.Transport.Input.AdvanceTo(buffer.Start, buffer.End);
+                        input.AdvanceTo(buffer.Start, buffer.End);
                     }
                 }
             }
@@ -943,7 +1046,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
             finally
             {
+                invocationMessageChannel.Writer.TryComplete();
+                await invocationMessageReceiveTask;
                 timer.Stop();
+                await timerTask;
                 uploadStreamSource.Cancel();
             }
 
@@ -985,12 +1091,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        public void ResetSendPing()
+        private void ResetSendPing()
         {
             Volatile.Write(ref _nextActivationSendPing, (DateTime.UtcNow + KeepAliveInterval).Ticks);
         }
 
-        public void ResetTimeout()
+        private void ResetTimeout()
         {
             Volatile.Write(ref _nextActivationServerTimeout, (DateTime.UtcNow + ServerTimeout).Ticks);
         }
@@ -1139,7 +1245,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private class InvocationHandlerList
         {
             private readonly List<InvocationHandler> _invocationHandlers;
-            // A lazy cached copy of the handlers that doesn't change for thread safety. 
+            // A lazy cached copy of the handlers that doesn't change for thread safety.
             // Adding or removing a handler sets this to null.
             private InvocationHandler[] _copiedHandlers;
 
@@ -1206,8 +1312,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        // Represents all the transient state about a connection
-        // This includes binding information because return type binding depends upon _pendingCalls
+        //TODO: Refactor all transient state about the connection into the ConnectionState class.
         private class ConnectionState : IInvocationBinder
         {
             private volatile bool _stopping;

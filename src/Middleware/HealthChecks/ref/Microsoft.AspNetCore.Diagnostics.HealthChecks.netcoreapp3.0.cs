@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class HealthCheckEndpointRouteBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapHealthChecks(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapHealthChecks(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder builder, string pattern, Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapHealthChecks(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapHealthChecks(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions options) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Diagnostics.HealthChecks

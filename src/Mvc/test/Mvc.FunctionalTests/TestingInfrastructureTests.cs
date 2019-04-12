@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.Mvc.Testing.Handlers;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using RazorPagesClassLibrary;
 using Xunit;
@@ -129,6 +130,42 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await factory.CreateClient().GetStringAsync("Testing/Builder");
 
             Assert.Equal("GenericTest", response);
+        }
+
+        [Fact]
+        public void TestingInfrastructure_HasServicesUsingWebHostProgram()
+        {
+            var factory = new WebApplicationFactory<BasicWebSite.Program>();
+
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+        }
+
+        [Fact]
+        public void TestingInfrastructure_HasServicesUsingWebHostStartup()
+        {
+            var factory = new WebApplicationFactory<BasicWebSite.Startup>();
+
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+        }
+
+        [Fact]
+        public void TestingInfrastructure_HasServicesUsingGenericHostProgram()
+        {
+            var factory = new WebApplicationFactory<GenericHostWebSite.Program>();
+
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
+        }
+
+        [Fact]
+        public void TestingInfrastructure_HasServicesUsingGenericHostStartup()
+        {
+            var factory = new WebApplicationFactory<GenericHostWebSite.Startup>();
+
+            Assert.NotNull(factory.Services);
+            Assert.NotNull(factory.Services.GetService(typeof(IConfiguration)));
         }
 
         private class OverridenService : TestService

@@ -1,11 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -25,18 +22,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie();
+
+            services.AddAuthorizationPolicyEvaluator();
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
-            {
-                routes.MapHub<UncreatableHub>("/uncreatable");
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
 
-                routes.MapConnectionHandler<EchoConnectionHandler>("/echo");
-                routes.MapConnectionHandler<WriteThenCloseConnectionHandler>("/echoAndClose");
-                routes.MapConnectionHandler<HttpHeaderConnectionHandler>("/httpheader");
-                routes.MapConnectionHandler<AuthConnectionHandler>("/auth");
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapHub<UncreatableHub>("/uncreatable");
+
+                endpoints.MapConnectionHandler<EchoConnectionHandler>("/echo");
+                endpoints.MapConnectionHandler<WriteThenCloseConnectionHandler>("/echoAndClose");
+                endpoints.MapConnectionHandler<HttpHeaderConnectionHandler>("/httpheader");
+                endpoints.MapConnectionHandler<AuthConnectionHandler>("/auth");
             });
         }
     }

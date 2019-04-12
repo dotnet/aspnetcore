@@ -14,15 +14,16 @@ namespace TagHelpersWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
+            services.AddControllersWithViews()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapDefaultControllerRoute();
+                endpoints.MapDefaultControllerRoute();
             });
         }
 

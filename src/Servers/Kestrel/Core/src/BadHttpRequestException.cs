@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
@@ -42,10 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         [StackTraceHidden]
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public static void Throw(RequestRejectionReason reason, HttpMethod method)
+        internal static void Throw(RequestRejectionReason reason, HttpMethod method)
             => throw GetException(reason, method.ToString().ToUpperInvariant());
-#pragma warning restore PUB0001 // Pubternal type in public API
 
         [MethodImpl(MethodImplOptions.NoInlining)]
         internal static BadHttpRequestException GetException(RequestRejectionReason reason)
@@ -130,7 +128,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         [StackTraceHidden]
-        internal static void Throw(RequestRejectionReason reason, in StringValues detail)
+        internal static void Throw(RequestRejectionReason reason, StringValues detail)
         {
             throw GetException(reason, detail.ToString());
         }

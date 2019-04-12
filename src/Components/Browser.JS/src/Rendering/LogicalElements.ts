@@ -1,4 +1,4 @@
-﻿/*
+/*
   A LogicalElement plays the same role as an Element instance from the point of view of the
   API consumer. Inserting and removing logical elements updates the browser DOM just the same.
 
@@ -27,8 +27,40 @@
 
 const logicalChildrenPropname = createSymbolOrFallback('_blazorLogicalChildren');
 const logicalParentPropname = createSymbolOrFallback('_blazorLogicalParent');
+const logicalEndSiblingPropname = createSymbolOrFallback('_blazorLogicalEnd');
 
-export function toLogicalElement(element: Element, allowExistingContents?: boolean) {
+export function toLogicalRootCommentElement(start: Comment, end: Comment): LogicalElement {
+  // Now that we support start/end comments as component delimiters we are going to be setting up
+  // adding the components rendered output as siblings of the start/end tags (between).
+  // For that to work, we need to appropriately configure the parent element to be a logical element
+  // with all their children being the child elements.
+  // For example, imagine you have
+  // <app>
+  // <div><p>Static content</p></div>
+  // <!-- start component
+  // <!-- end component
+  // <footer>Some other content</footer>
+  // <app>
+  // We want the parent element to be something like
+  // *app
+  // |- *div
+  // |- *component
+  // |- *footer
+  if (!start.parentNode){
+    throw new Error(`Comment not connected to the DOM ${start.textContent}`);
+  }
+
+  const parent = start.parentNode;
+  const parentLogicalElement = toLogicalElement(parent, /* allow existing contents */ true);
+  const children = getLogicalChildrenArray(parentLogicalElement);
+  Array.from(parent.childNodes).forEach(n => children.push(n as unknown as LogicalElement));
+  start[logicalParentPropname] = parentLogicalElement;
+  start[logicalEndSiblingPropname] = end;
+  toLogicalElement(end, /* allowExistingcontents */ true);
+  return toLogicalElement(start, /* allowExistingContents */ true);
+}
+
+export function toLogicalElement(element: Node, allowExistingContents?: boolean): LogicalElement {
   // Normally it's good to assert that the element has started empty, because that's the usual
   // situation and we probably have a bug if it's not. But for the element that contain prerendered
   // root components, we want to let them keep their content until we replace it.
@@ -37,7 +69,7 @@ export function toLogicalElement(element: Element, allowExistingContents?: boole
   }
 
   element[logicalChildrenPropname] = [];
-  return element as any as LogicalElement;
+  return element as unknown as LogicalElement;
 }
 
 export function createAndInsertLogicalContainer(parent: LogicalElement, childIndex: number): LogicalElement {
@@ -107,6 +139,10 @@ export function getLogicalParent(element: LogicalElement): LogicalElement | null
   return (element[logicalParentPropname] as LogicalElement) || null;
 }
 
+export function getLogicalSiblingEnd(element: LogicalElement): LogicalElement | null {
+  return (element[logicalEndSiblingPropname] as LogicalElement) || null;
+}
+
 export function getLogicalChild(parent: LogicalElement, childIndex: number): LogicalElement {
   return getLogicalChildrenArray(parent)[childIndex];
 }
@@ -115,7 +151,7 @@ export function isSvgElement(element: LogicalElement) {
   return getClosestDomElement(element).namespaceURI === 'http://www.w3.org/2000/svg';
 }
 
-function getLogicalChildrenArray(element: LogicalElement) {
+export function getLogicalChildrenArray(element: LogicalElement) {
   return element[logicalChildrenPropname] as LogicalElement[];
 }
 
@@ -161,4 +197,4 @@ function createSymbolOrFallback(fallback: string): symbol | string {
 }
 
 // Nominal type to represent a logical element without needing to allocate any object for instances
-export interface LogicalElement { LogicalElement__DO_NOT_IMPLEMENT: any };
+export interface LogicalElement { LogicalElement__DO_NOT_IMPLEMENT: any }

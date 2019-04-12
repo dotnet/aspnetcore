@@ -14,7 +14,7 @@ namespace ErrorPageMiddlewareWebSite
         // Set up application services
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc()
+            services.AddControllersWithViews()
                 .AddRazorRuntimeCompilation()
                 .SetCompatibilityVersion(CompatibilityVersion.Latest);
         }
@@ -22,9 +22,10 @@ namespace ErrorPageMiddlewareWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
-            app.UseRouting(routes =>
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapControllers();
+                endpoints.MapControllers();
             });
         }
 

@@ -14,16 +14,19 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public readonly RoutePattern Pattern;
         public readonly string RouteName;
         public readonly RouteValueDictionary DataTokens;
+        public readonly int Order;
 
         public ConventionalRouteEntry(
             string routeName,
             string pattern,
             RouteValueDictionary defaults,
             IDictionary<string, object> constraints,
-            RouteValueDictionary dataTokens)
+            RouteValueDictionary dataTokens,
+            int order)
         {
             RouteName = routeName;
             DataTokens = dataTokens;
+            Order = order;
 
             try
             {
@@ -39,18 +42,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     routeName, 
                     pattern), exception);
             }
-        }
-
-        public ConventionalRouteEntry(RoutePattern pattern, string routeName, RouteValueDictionary dataTokens)
-        {
-            if (pattern == null)
-            {
-                throw new ArgumentNullException(nameof(pattern));
-            }
-
-            Pattern = pattern;
-            RouteName = routeName;
-            DataTokens = dataTokens;
         }
     }
 }
