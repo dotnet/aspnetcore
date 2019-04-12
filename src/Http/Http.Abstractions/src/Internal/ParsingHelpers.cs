@@ -19,11 +19,9 @@ namespace Microsoft.AspNetCore.Http.Internal
         public static StringValues GetHeaderSplit(IHeaderDictionary headers, string key)
         {
             var values = GetHeaderUnmodified(headers, key);
-            return new StringValues(GetHeaderSplitImplementation(values).ToArray());
-        }
 
-        private static IEnumerable<string> GetHeaderSplitImplementation(StringValues values)
-        {
+            StringValues result = default;
+
             foreach (var segment in new HeaderSegmentCollection(values))
             {
                 if (!StringSegment.IsNullOrEmpty(segment.Data))
@@ -31,10 +29,12 @@ namespace Microsoft.AspNetCore.Http.Internal
                     var value = DeQuote(segment.Data.Value);
                     if (!string.IsNullOrEmpty(value))
                     {
-                        yield return value;
+                        result = StringValues.Concat(in result, value);
                     }
                 }
             }
+
+            return result;
         }
 
         public static StringValues GetHeaderUnmodified(IHeaderDictionary headers, string key)
