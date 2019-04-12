@@ -21,12 +21,15 @@
 
   <Target Name="YarnInstall">
     <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-    <Yarn Command="install" ContinueOnError="true">
-      <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode"/>
-    </Yarn>
-    <Yarn Command="install" Condition="'$(_YarnExitCode)' != '0'">
-      <Output TaskParameter="ExitCode" PropertyName="_YarnExitCode"/>
-    </Yarn>
+    <Yarn Command="install" />
+  </Target>
+
+  <Target Name="_RequiresCustomRestore" Returns="@(CustomRestoreTargets)">
+    <ItemGroup>
+      <CustomRestoreTargets Include="$(MSBuildProjectFullPath)">
+        <Targets>YarnInstall</Targets>
+      </CustomRestoreTargets>
+    </ItemGroup>
   </Target>
 
   <Target Name="PrepublishScript" DependsOnTargets="YarnInstall" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
