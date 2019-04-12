@@ -18,7 +18,7 @@
     <SignCheckExclusionsFile>$(RepositoryRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
     <SharedSourcesFolder>$(RepositoryRoot)src\Shared\</SharedSourcesFolder>
     <SharedFxArchitecture Condition="'$(SharedFxArchitecture)' == ''">$(SharedFxRid.Substring($([MSBuild]::Add($(SharedFxRid.LastIndexOf('-')), 1))))</SharedFxArchitecture>
-    <BuildSiteExtensions>true</BuildSiteExtensions>
+    <BuildSiteExtensions Condition=" '$(VersionPrefix)' == '2.2.5' " >true</BuildSiteExtensions>
     <BuildSiteExtensions Condition="'$(BuildSiteExtensions)' == 'true' AND '$(OS)' != 'Windows_NT'">false</BuildSiteExtensions>
   </PropertyGroup>
 
