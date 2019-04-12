@@ -186,26 +186,42 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         internal void AbortIO(bool clientDisconnect)
         {
-            if (Interlocked.CompareExchange(ref _requestAborted, 1, 0) != 0)
-            {
-                return;
-            }
+            var shouldScheduleCancellation = false;
 
-            if (clientDisconnect)
+            lock (_abortLock)
             {
-                Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
+                shouldScheduleCancellation = _abortedCts != null && !_preventRequestAbortedCancellation;
+                _connectionAborted = true;
             }
 
             _bodyOutput.Dispose();
 
-            var cts = _abortedCts;
-            if (cts != null)
+            if (shouldScheduleCancellation)
             {
+                // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
                 ThreadPool.QueueUserWorkItem(t =>
                 {
                     try
                     {
-                        cts.Cancel();
+                        CancellationTokenSource localAbortCts = null;
+
+                        lock (_abortLock)
+                        {
+                            if (_abortedCts != null && !_preventRequestAbortedCancellation)
+                            {
+                                localAbortCts = _abortedCts;
+                                _abortedCts = null;
+                            }
+                        }
+
+                        // If we cancel the cts, we don't dispose as people may still be using
+                        // the cts. It also isn't necessary to dispose a canceled cts.
+                        localAbortCts?.Cancel();
                     }
                     catch (Exception ex)
                     {

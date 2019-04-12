@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
 
-            if (Volatile.Read(ref _requestAborted) == 0)
+            if (_connectionAborted)
             {
                 await ProduceEnd();
             }
