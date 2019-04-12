@@ -450,11 +450,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (_abortedCts != null)
                     {
-                        cts = _abortedCts;
+                        if (!_preventRequestAbortedCancellation)
+                        {
+                            cts = _abortedCts;
+                        }
                         _abortedCts = null;
                     }
                 }
 
+                // There is technically a race here where _preventRequestAbortCancellation
+                // changes to true right here and then we call cts.Cancel.
+                // However, this race already existed, where the cts was canceled just before
+                // the _preventRequestAbortedCancellation is set to true.
+                // _preventRequestAbortedCancellation is mostly a heuristic rather than a guarantee
+                // we need to follow.
                 cts?.Cancel();
             }
             catch (Exception ex)
@@ -475,8 +484,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _connectionAborted = true;
             }
 
-            // The check to _hasAborted is an optimization to not schedule a cancellation if the context is already disposed.
-            // In CancelRequestAbortedToken, we will relock to check again.
             if (_abortedCts != null && !_preventRequestAbortedCancellation)
             {
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
