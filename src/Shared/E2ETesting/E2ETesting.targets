@@ -14,7 +14,7 @@
     <Yarn Command="install" />
   </Target>
 
-  <Target Name="_IsCustomRestoreTargetSupported" Returns="@(CustomRestoreTargets)">
+  <Target Name="_IsCustomRestoreTargetSupported" Returns="@(CustomRestoreTargets)" Condition="'$(BuildNodeJs)' == 'true'">
     <ItemGroup>
       <CustomRestoreTargets Include="$(MSBuildProjectFullPath)">
         <Targets>EnsureNodeJSRestored</Targets>
