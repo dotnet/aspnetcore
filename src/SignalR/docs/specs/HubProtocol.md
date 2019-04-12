@@ -887,7 +887,7 @@ Below are some sample type mappings between JSON types and the .NET client. This
 |                  .NET Type                      |          JSON Type           |   MsgPack format family   |
 | ----------------------------------------------- | ---------------------------- |---------------------------|
 | `System.Byte`, `System.UInt16`, `System.UInt32` | `Number`                     | `positive fixint`, `uint` |
-| `System.SByte`, `System.Int16`, `System.Int32`  | `Number`                     | `fixit`, `int`            |
+| `System.SByte`, `System.Int16`, `System.Int32`  | `Number`                     | `fixint`, `int`           |
 | `System.UInt64`                                 | `Number`                     | `positive fixint`, `uint` |
 | `System.Int64`                                  | `Number`                     | `fixint`, `int`           |
 | `System.Single`                                 | `Number`                     | `float`                   |
