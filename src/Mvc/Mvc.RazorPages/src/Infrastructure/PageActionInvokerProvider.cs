@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly MvcOptions _mvcOptions;
-        private readonly HtmlHelperOptions _htmlHelperOptions;
+        private readonly MvcViewOptions _mvcViewOptions;
         private readonly IPageHandlerMethodSelector _selector;
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger<PageActionInvoker> _logger;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IModelBinderFactory modelBinderFactory,
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<MvcOptions> mvcOptions,
-            IOptions<HtmlHelperOptions> htmlHelperOptions,
+            IOptions<MvcViewOptions> mvcViewOptions,
             IPageHandlerMethodSelector selector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                   modelBinderFactory,
                   tempDataFactory,
                   mvcOptions,
-                  htmlHelperOptions,
+                  mvcViewOptions,
                   selector,
                   diagnosticListener,
                   loggerFactory,
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             IModelBinderFactory modelBinderFactory,
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<MvcOptions> mvcOptions,
-            IOptions<HtmlHelperOptions> htmlHelperOptions,
+            IOptions<MvcViewOptions> mvcViewOptions,
             IPageHandlerMethodSelector selector,
             DiagnosticListener diagnosticListener,
             ILoggerFactory loggerFactory,
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataFactory = tempDataFactory;
             _mvcOptions = mvcOptions.Value;
-            _htmlHelperOptions = htmlHelperOptions.Value;
+            _mvcViewOptions = mvcViewOptions.Value;
             _selector = selector;
             _diagnosticListener = diagnosticListener;
             _logger = loggerFactory.CreateLogger<PageActionInvoker>();
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 cacheEntry,
                 _parameterBinder,
                 _tempDataFactory,
-                _htmlHelperOptions);
+                _mvcViewOptions.HtmlHelperOptions);
         }
 
         private PageActionInvokerCacheEntry CreateCacheEntry(
