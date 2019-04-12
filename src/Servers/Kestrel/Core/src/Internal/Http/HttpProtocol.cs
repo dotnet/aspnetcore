@@ -456,7 +456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // If we cancel the cts, we don't dispose as people may still be using
                 // the cts. It also isn't necessary to dispose a canceled cts.
-                localAbortedCts?.Cancel();
+                localAbortCts?.Cancel();
             }
             catch (Exception ex)
             {
