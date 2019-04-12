@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                 validationState)
             {
                 MaxValidationDepth = _mvcOptions.MaxValidationDepth,
+                ValidateComplexTypesIfChildValidationFails = _mvcOptions.ValidateComplexTypesIfChildValidationFails,
             };
 
             return visitor;

@@ -221,6 +221,16 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Gets or sets a value that determines whether the validation visitor will perform validation of a complex type
+        /// if validation fails for any of its children.
+        /// <seealso cref="ValidationVisitor.ValidateComplexTypesIfChildValidationFails"/>
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="false"/>.
+        /// </value>
+        public bool ValidateComplexTypesIfChildValidationFails { get; set; }
+
+        /// <summary>
         /// Gets or sets a value that determines if MVC will remove the suffix "Async" applied to
         /// controller action names.
         /// <para>

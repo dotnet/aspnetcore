@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using FormatterWebSite;
+using FormatterWebSite.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
@@ -353,6 +354,67 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                     Assert.Empty(error.Key);
                     Assert.Equal(new[] { "An error occurred while deserializing input data." }, error.Value);
                 });
+        }
+
+        [Fact]
+        public async Task ParentObjectIsNotValidated_WhenChildIsInvalid()
+        {
+            // Arrange
+            var content = CreateManagerContent(12, "Too Short");
+
+            var expectedErrors = new Dictionary<string, string[]>()
+            {
+                { "DirectReports[0].Name", new string[] { "The field Name must be a string or array type with a minimum length of '15'." } }
+            };
+
+            // Act
+            var response = await Client.PostAsync("http://localhost/Validation/CreateManager", content);
+
+            // Assert
+            Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var actualErrors = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(responseContent);
+
+            Assert.Equal(expectedErrors, actualErrors);
+        }
+
+        [Fact]
+        public async Task ParentObjectIsValidated_WhenChildIsValid()
+        {
+            // Arrange
+            var content = CreateManagerContent(12, "Long Enough To Be Valid");
+
+            var expectedErrors = new Dictionary<string, string[]>()
+            {
+                { string.Empty, new string[] { "A manager must have at least one direct report whose Id is greater than 20." } }
+            };
+
+            // Act
+            var response = await Client.PostAsync("http://localhost/Validation/CreateManager", content);
+
+            // Assert
+            Assert.Equal(StatusCodes.Status400BadRequest, (int)response.StatusCode);
+
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var actualErrors = JsonConvert.DeserializeObject<Dictionary<string, string[]>>(responseContent);
+
+            Assert.Equal(expectedErrors, actualErrors);
+        }
+
+        private StringContent CreateManagerContent(int reportId, string reportName)
+        {
+            var manager = new Manager()
+            {
+                Id = 11,
+                Name = "A. Long Enough Name",
+                DirectReports = new List<Employee>()
+                {
+                    new Employee() { Id = reportId, Name = reportName }
+                }
+            };
+
+            return new StringContent(JsonConvert.SerializeObject(manager), Encoding.UTF8, "application/json");
         }
     }
 }
