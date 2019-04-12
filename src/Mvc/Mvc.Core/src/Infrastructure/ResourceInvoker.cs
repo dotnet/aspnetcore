@@ -247,21 +247,31 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         protected abstract Task InvokeInnerFilterAsync();
 
-        protected virtual async Task InvokeResultAsync(IActionResult result)
+        protected virtual Task InvokeResultAsync(IActionResult result)
         {
-            var actionContext = _actionContext;
-
-            _diagnosticListener.BeforeActionResult(actionContext, result);
-            _logger.BeforeExecutingActionResult(result);
-
-            try
+            if (_diagnosticListener.IsEnabled() || _logger.IsEnabled(LogLevel.Trace))
             {
-                await result.ExecuteResultAsync(actionContext);
+                return Logged(this, result);
             }
-            finally
+
+            return result.ExecuteResultAsync(_actionContext);
+
+            static async Task Logged(ResourceInvoker invoker, IActionResult result)
             {
-                _diagnosticListener.AfterActionResult(actionContext, result);
-                _logger.AfterExecutingActionResult(result);
+                var actionContext = invoker._actionContext;
+
+                invoker._diagnosticListener.BeforeActionResult(actionContext, result);
+                invoker._logger.BeforeExecutingActionResult(result);
+
+                try
+                {
+                    await result.ExecuteResultAsync(actionContext);
+                }
+                finally
+                {
+                    invoker._diagnosticListener.AfterActionResult(actionContext, result);
+                    invoker._logger.AfterExecutingActionResult(result);
+                }
             }
         }
 
