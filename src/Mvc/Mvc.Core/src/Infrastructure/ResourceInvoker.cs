@@ -1312,7 +1312,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task InvokeNextResultFilterAsync<TFilter, TFilterAsync>()
+        private Task InvokeNextResultFilterAsync<TFilter, TFilterAsync>()
             where TFilter : class, IResultFilter
             where TFilterAsync : class, IAsyncResultFilter
         {
@@ -1324,7 +1324,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var isCompleted = false;
                 while (!isCompleted)
                 {
-                    await ResultNext<TFilter, TFilterAsync>(ref next, ref scope, ref state, ref isCompleted);
+                    var lastTask = ResultNext<TFilter, TFilterAsync>(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
                 }
             }
             catch (Exception exception)
@@ -1336,6 +1340,30 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             Debug.Assert(_resultExecutedContext != null);
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                try
+                {
+                    await lastTask;
+
+                    while (!isCompleted)
+                    {
+                        await invoker.ResultNext<TFilter, TFilterAsync>(ref next, ref scope, ref state, ref isCompleted);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    invoker._resultExecutedContext = new ResultExecutedContext(invoker._actionContext, invoker._filters, invoker._result, invoker._instance)
+                    {
+                        ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
+                    };
+                }
+
+                Debug.Assert(invoker._resultExecutedContext != null);
+            }
         }
 
         private async Task<ResultExecutedContext> InvokeNextResultFilterAwaitedAsync<TFilter, TFilterAsync>()
