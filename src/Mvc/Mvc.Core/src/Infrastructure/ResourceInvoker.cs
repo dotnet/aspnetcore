@@ -1011,16 +1011,41 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task InvokeAlwaysRunResultFilters()
+        private Task InvokeAlwaysRunResultFilters()
         {
-            var next = State.ResultBegin;
-            var scope = Scope.Invoker;
-            var state = (object)null;
-            var isCompleted = false;
-
-            while (!isCompleted)
+            try
             {
-                await ResultNext<IAlwaysRunResultFilter, IAsyncAlwaysRunResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                var next = State.ResultBegin;
+                var scope = Scope.Invoker;
+                var state = (object)null;
+                var isCompleted = false;
+
+                while (!isCompleted)
+                {
+                    var lastTask = ResultNext<IAlwaysRunResultFilter, IAsyncAlwaysRunResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                // Wrap non task-wrapped exceptions in a Task, 
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
+            }
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                await lastTask;
+
+                while (!isCompleted)
+                {
+                    await invoker.ResultNext<IAlwaysRunResultFilter, IAsyncAlwaysRunResultFilter>(ref next, ref scope, ref state, ref isCompleted);
+                }
             }
         }
 
