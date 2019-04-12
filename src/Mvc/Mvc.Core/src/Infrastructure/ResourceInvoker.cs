@@ -57,46 +57,139 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _cursor = new FilterCursor(filters);
         }
 
-        public virtual async Task InvokeAsync()
+        public virtual Task InvokeAsync()
         {
+            if (_diagnosticListener.IsEnabled() || _logger.IsEnabled(LogLevel.Information))
+            {
+                return Logged(this);
+            }
+
+            _actionContextAccessor.ActionContext = _actionContext;
+            var scope = _logger.ActionScope(_actionContext.ActionDescriptor);
+
+            Exception invokeException = null;
+            Task task = null;
             try
             {
-                _actionContextAccessor.ActionContext = _actionContext;
+                task = InvokeFilterPipelineAsync();
+            }
+            catch (Exception ex)
+            {
+                invokeException = ex;
+            }
 
-                _diagnosticListener.BeforeAction(
-                    _actionContext.ActionDescriptor,
-                    _actionContext.HttpContext,
-                    _actionContext.RouteData);
+            if (invokeException != null)
+            {
+                return Awaited(this, Task.FromException(invokeException), scope);
+            }
 
-                using (_logger.ActionScope(_actionContext.ActionDescriptor))
+            Debug.Assert(task != null);
+            if (!task.IsCompletedSuccessfully)
+            {
+                return Awaited(this, task, scope);
+            }
+
+            Exception releaseException = null;
+            try
+            {
+                ReleaseResources();
+            }
+            catch (Exception ex)
+            {
+                releaseException = ex;
+            }
+
+            Exception scopeException = null;
+            try
+            {
+                scope.Dispose();
+            }
+            catch (Exception ex)
+            {
+                scopeException = ex;
+            }
+
+            if (releaseException == null && scopeException == null)
+            {
+                return Task.CompletedTask;
+            }
+            else if (releaseException != null && scopeException != null)
+            {
+                return Task.FromException(new AggregateException(releaseException, scopeException));
+            }
+            else if (releaseException != null)
+            {
+                return Task.FromException(releaseException);
+            }
+            else
+            {
+                return Task.FromException(scopeException);
+            }
+
+            static async Task Awaited(ResourceInvoker invoker, Task task, IDisposable scope)
+            {
+                try
                 {
-                    _logger.ExecutingAction(_actionContext.ActionDescriptor);
-
-                    _logger.AuthorizationFiltersExecutionPlan(_filters);
-                    _logger.ResourceFiltersExecutionPlan(_filters);
-                    _logger.ActionFiltersExecutionPlan(_filters);
-                    _logger.ExceptionFiltersExecutionPlan(_filters);
-                    _logger.ResultFiltersExecutionPlan(_filters);
-
-                    var stopwatch = ValueStopwatch.StartNew();
-
                     try
                     {
-                        await InvokeFilterPipelineAsync();
+                        await task;
                     }
                     finally
                     {
-                        ReleaseResources();
-                        _logger.ExecutedAction(_actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
+                        invoker.ReleaseResources();
                     }
                 }
+                finally
+                {
+                    scope.Dispose();
+                }
             }
-            finally
+
+            static async Task Logged(ResourceInvoker invoker)
             {
-                _diagnosticListener.AfterAction(
-                    _actionContext.ActionDescriptor,
-                    _actionContext.HttpContext,
-                    _actionContext.RouteData);
+                var actionContext = invoker._actionContext;
+                invoker._actionContextAccessor.ActionContext = actionContext;
+
+                try
+                {
+                    var logger = invoker._logger;
+
+                    invoker._diagnosticListener.BeforeAction(
+                        actionContext.ActionDescriptor,
+                        actionContext.HttpContext,
+                        actionContext.RouteData);
+
+                    using (logger.ActionScope(actionContext.ActionDescriptor))
+                    {
+                        logger.ExecutingAction(actionContext.ActionDescriptor);
+
+                        var filters = invoker._filters;
+                        logger.AuthorizationFiltersExecutionPlan(filters);
+                        logger.ResourceFiltersExecutionPlan(filters);
+                        logger.ActionFiltersExecutionPlan(filters);
+                        logger.ExceptionFiltersExecutionPlan(filters);
+                        logger.ResultFiltersExecutionPlan(filters);
+
+                        var stopwatch = ValueStopwatch.StartNew();
+
+                        try
+                        {
+                            await invoker.InvokeFilterPipelineAsync();
+                        }
+                        finally
+                        {
+                            invoker.ReleaseResources();
+                            logger.ExecutedAction(actionContext.ActionDescriptor, stopwatch.GetElapsedTime());
+                        }
+                    }
+                }
+                finally
+                {
+                    invoker._diagnosticListener.AfterAction(
+                        actionContext.ActionDescriptor,
+                        actionContext.HttpContext,
+                        actionContext.RouteData);
+                }
             }
         }
 
