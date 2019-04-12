@@ -72,7 +72,6 @@ export class HubConnectionBuilder {
      * @param {LogLevel | string | ILogger} logging A {@link @aspnet/signalr.LogLevel}, a string representing a LogLevel, or an object implementing the {@link @aspnet/signalr.ILogger} interface. See {@link https://docs.microsoft.com/en-us/aspnet/core/signalr/configuration#configure-logging|the documentation for client logging configuration} for more details.
      * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
      */
-    public configureLogging(logging: LogLevel | keyof typeof LogLevelNameMapping | ILogger): HubConnectionBuilder;
     public configureLogging(logging: LogLevel | string | ILogger): HubConnectionBuilder {
         Arg.isRequired(logging, "logging");
 
