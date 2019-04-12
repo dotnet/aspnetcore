@@ -963,7 +963,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task InvokeNextExceptionFilterAsync()
+        private Task InvokeNextExceptionFilterAsync()
         {
             try
             {
@@ -971,17 +971,43 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var state = (object)null;
                 var scope = Scope.Exception;
                 var isCompleted = false;
+
                 while (!isCompleted)
                 {
-                    await Next(ref next, ref scope, ref state, ref isCompleted);
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
                 }
+
+                return Task.CompletedTask;
             }
-            catch (Exception exception)
+            catch (Exception ex)
             {
-                _exceptionContext = new ExceptionContext(_actionContext, _filters)
+                // Wrap non task-wrapped exceptions in a Task, 
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
+            }
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                try
                 {
-                    ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
-                };
+                    await lastTask;
+
+                    while (!isCompleted)
+                    {
+                        await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    invoker._exceptionContext = new ExceptionContext(invoker._actionContext, invoker._filters)
+                    {
+                        ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
+                    };
+                }
             }
         }
 
