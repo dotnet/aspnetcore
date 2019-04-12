@@ -112,8 +112,8 @@ namespace TriageBuildFailures.Commands
                 if (await handler.CanHandleFailure(build))
                 {
                     _reporter.Output($"{handler.GetType().Name} will handle {build.WebURL}");
-                    await handler.HandleFailure(build);
-                    await MarkTriaged(build);
+                    var result = await handler.HandleFailure(build);
+                    await MarkTriaged(result);
                     return;
                 }
             }
@@ -168,9 +168,11 @@ namespace TriageBuildFailures.Commands
             }
         }
 
-        private async Task MarkTriaged(ICIBuild build)
+        private async Task MarkTriaged(IFailureHandlerResult result)
         {
-            await _ciClients[build.CIType].SetTagAsync(build, TriagedTag);
+            var client = _ciClients[result.Build.CIType];
+            await client.SetTagAsync(result.Build, TriagedTag);
+            await client.ReportHandledAsync(result);
         }
 
         private GitHubClientWrapper GetGitHubClient(Config config)

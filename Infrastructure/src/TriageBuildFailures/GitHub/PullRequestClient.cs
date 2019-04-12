@@ -90,13 +90,27 @@ namespace TriageBuildFailures.GitHub
 
         public async Task SetTagAsync(ICIBuild build, string tag)
         {
-            var vstsBuild = (VSTSBuild)build;
-            if (vstsBuild.PRSource != null && string.Equals(tag, Triage.TriagedTag))
+            await _vstsClient.SetTagAsync(build, tag);
+        }
+
+        public async Task ReportHandledAsync(IFailureHandlerResult result)
+        {
+            var vstsBuild = (VSTSBuild)result.Build;
+            if (vstsBuild.PRSource != null)
             {
                 var comment = "I've triaged the above build.";
+                if (result.ApplicableIssues.Count() > 0)
+                {
+                    comment += " I've created/commented on the following issue(s)";
+                }
+                foreach (var issue in result.ApplicableIssues)
+                {
+                    comment += $@"
+{issue.DisplayUrl}";
+                }
+
                 await _gitHubClient.CreateComment(vstsBuild.PRSource, comment);
             }
-            await _vstsClient.SetTagAsync(build, tag);
         }
     }
 }

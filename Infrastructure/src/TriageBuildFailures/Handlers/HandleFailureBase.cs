@@ -27,7 +27,7 @@ namespace TriageBuildFailures.Handlers
         protected const string _ReadyLabel = "1 - Ready";
 
         public abstract Task<bool> CanHandleFailure(ICIBuild build);
-        public abstract Task HandleFailure(ICIBuild build);
+        public abstract Task<IFailureHandlerResult> HandleFailure(ICIBuild build);
 
         protected ICIClient GetClient(ICIBuild build)
         {

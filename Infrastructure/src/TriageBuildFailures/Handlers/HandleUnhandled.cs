@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using TriageBuildFailures.Abstractions;
 
@@ -16,7 +17,7 @@ namespace TriageBuildFailures.Handlers
             return Task.FromResult(true);
         }
 
-        public override async Task HandleFailure(ICIBuild build)
+        public override async Task<IFailureHandlerResult> HandleFailure(ICIBuild build)
         {
             var subject = $"{build.BuildName} failed in an unhandled way";
 
@@ -26,6 +27,8 @@ namespace TriageBuildFailures.Handlers
                 subject: subject,
                 body: message,
                 to: EmailClient.Config.BuildBuddyEmail);
+
+            return new FailureHandlerResult(build, Array.Empty<ICIIssue>());
         }
     }
 }

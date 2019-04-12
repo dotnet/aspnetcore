@@ -234,5 +234,11 @@ namespace TriageBuildFailures.TeamCity
 
             return File.ReadAllText(buildLogFile);
         }
+
+        public Task ReportHandledAsync(IFailureHandlerResult result)
+        {
+            // We're not doing any reporting for this client yet.
+            return Task.CompletedTask;
+        }
     }
 }

@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TriageBuildFailures.Abstractions;
@@ -24,10 +25,11 @@ namespace TriageBuildFailures.Commands
             return false;
         }
 
-        public override Task HandleFailure(ICIBuild build)
+        public override Task<IFailureHandlerResult> HandleFailure(ICIBuild build)
         {
             Reporter.Output($"{build.WebURL} only contained tests which are actively ignored. We'll do nothing with it.");
-            return Task.CompletedTask;
+            return Task.FromResult<IFailureHandlerResult>(
+                new FailureHandlerResult(build, applicableIssues: Array.Empty<ICIIssue>()));
         }
     }
 }

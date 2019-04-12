@@ -53,7 +53,7 @@ namespace TriageBuildFailures.Handlers
         private const string _BrokenBuildLabel = "Broken Build";
         private static readonly string[] _Notifiers = new string[] { "Eilon", "mkArtakMSFT", "anurse" };
 
-        public override async Task HandleFailure(ICIBuild build)
+        public override async Task<IFailureHandlerResult> HandleFailure(ICIBuild build)
         {
             var log = await GetClient(build).GetBuildLogAsync(build);
             var owner = "aspnet";
@@ -65,7 +65,10 @@ namespace TriageBuildFailures.Handlers
 
             if (applicableIssues.Count() > 0)
             {
-                await GHClient.CommentOnBuild(build, applicableIssues.First(), build.BuildName);
+                var applicableIssue = applicableIssues.First();
+                await GHClient.CommentOnBuild(build, applicableIssue, build.BuildName);
+
+                return new FailureHandlerResult(build, applicableIssues: new[] { applicableIssue });
             }
             else
             {
@@ -103,6 +106,8 @@ CC {GitHubUtils.GetAtMentions(_Notifiers)}";
                 var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: null, hiddenData: hiddenData);
                 await GHClient.AddIssueToProject(issue, GHClient.Config.ActiveFailuresColumn);
                 Reporter.Output($"Created issue {issue.HtmlUrl}");
+
+                return new FailureHandlerResult(build, applicableIssues: new[] { issue });
             }
         }
 

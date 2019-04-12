@@ -37,7 +37,7 @@ namespace TriageBuildFailures.Handlers
             return tests.Any(s => s.Status == BuildStatus.FAILURE);
         }
 
-        public override async Task HandleFailure(ICIBuild build)
+        public override async Task<IFailureHandlerResult> HandleFailure(ICIBuild build)
         {
             var tests = await GetTestsAsync(build);
 
@@ -118,6 +118,8 @@ CC {GetOwnerMentions(failureArea)}";
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees, hiddenData: hiddenData);
                     await GHClient.AddIssueToProject(issue, GHClient.Config.ActiveFailuresColumn);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
+
+                    return new FailureHandlerResult(build, applicableIssues: new[] { issue });
                 }
                 // The issue already exists, comment on it if we haven't already done so for this build.
                 else
@@ -139,6 +141,8 @@ CC {GetOwnerMentions(failureArea)}";
                 Reporter.Output($"Adding test failure comment to issue {test.Key.HtmlUrl}");
                 await GHClient.CommentOnTest(build, test.Key, test.Value);
             }
+
+            return new FailureHandlerResult(build, applicableIssues: testAggregates.Keys);
         }
 
         public static string GetTestName(ICITestOccurrence testOccurrence)

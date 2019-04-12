@@ -20,5 +20,7 @@ namespace TriageBuildFailures.Abstractions
         Task<IEnumerable<ICITestOccurrence>> GetTestsAsync(ICIBuild build, BuildStatus? buildStatus = null);
 
         Task<string> GetTestFailureTextAsync(ICITestOccurrence failure);
+
+        Task ReportHandledAsync(IFailureHandlerResult result);
     }
 }

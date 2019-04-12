@@ -193,8 +193,13 @@ namespace TriageBuildFailures.VSTS
                     return "Passed";
                 default:
                     throw new NotImplementedException($"We don't know what to do with {Enum.GetName(typeof(BuildStatus), status)}");
-
             }
+        }
+
+        public Task ReportHandledAsync(IFailureHandlerResult result)
+        {
+            // We're not doing any reporting for this client yet.
+            return Task.CompletedTask;
         }
     }
 }

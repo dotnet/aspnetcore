@@ -192,5 +192,11 @@ namespace TriageBuildFailures.VSTS
                 $"{thinRelease.ProjectReference.Id}/_apis/release/releases/{thinRelease.Id}",
                 apiType: ApiType.VSRM);
         }
+
+        public Task ReportHandledAsync(IFailureHandlerResult result)
+        {
+            // We're not doing any reporting for this client yet.
+            return Task.CompletedTask;
+        }
     }
 }

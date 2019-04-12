@@ -22,10 +22,11 @@ namespace TriageBuildFailures.Handlers
             return Task.FromResult(config.BuildIdIgnoreList.Contains(build.BuildTypeID));
         }
 
-        public override Task HandleFailure(ICIBuild build)
+        public override Task<IFailureHandlerResult> HandleFailure(ICIBuild build)
         {
             // Do nothing. We don't watch builds on these lists.
-            return Task.CompletedTask;
+            return Task.FromResult<IFailureHandlerResult>(
+                new FailureHandlerResult(build, applicableIssues: Array.Empty<ICIIssue>()));
         }
     }
 }

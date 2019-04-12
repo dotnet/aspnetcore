@@ -3,18 +3,24 @@
 
 using System;
 using Octokit;
+using TriageBuildFailures.Abstractions;
 
 namespace TriageBuildFailures.GitHub
 {
-    public class GitHubIssue : Issue
+    public class GitHubIssue : Issue, ICIIssue
     {
+        private readonly Issue _inner;
+
         public GitHubIssue(Issue issue)
             : base(issue.Url, issue.HtmlUrl, issue.CommentsUrl, issue.EventsUrl, issue.Number, issue.State.Value, issue.Title,
                   issue.Body, issue.ClosedBy, issue.User, issue.Labels, issue.Assignee, issue.Assignees, issue.Milestone,
                   issue.Comments, issue.PullRequest, issue.ClosedAt, issue.CreatedAt, issue.UpdatedAt, issue.Id, issue.Locked,
                   issue.Repository)
         {
+            _inner = issue;
         }
+
+        public string DisplayUrl => _inner.HtmlUrl;
 
         public string RepositoryName
         {
