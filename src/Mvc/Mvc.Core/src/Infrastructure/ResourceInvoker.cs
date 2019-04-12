@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// </summary>
         protected abstract void ReleaseResources();
 
-        private async Task InvokeFilterPipelineAsync()
+        private Task InvokeFilterPipelineAsync()
         {
             var next = State.InvokeBegin;
 
@@ -214,10 +214,34 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             // `isCompleted` will be set to true when we've reached a terminal state.
             var isCompleted = false;
-
-            while (!isCompleted)
+            try
             {
-                await Next(ref next, ref scope, ref state, ref isCompleted);
+                while (!isCompleted)
+                {
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                // Wrap non task-wrapped exceptions in a Task, 
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
+            }
+
+            static async Task Awaited(ResourceInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                await lastTask;
+
+                while (!isCompleted)
+                {
+                    await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                }
             }
         }
 
