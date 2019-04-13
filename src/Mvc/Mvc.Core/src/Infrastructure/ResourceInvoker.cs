@@ -67,20 +67,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             _actionContextAccessor.ActionContext = _actionContext;
             var scope = _logger.ActionScope(_actionContext.ActionDescriptor);
 
-            Exception invokeException = null;
             Task task = null;
             try
             {
                 task = InvokeFilterPipelineAsync();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                invokeException = ex;
-            }
-
-            if (invokeException != null)
-            {
-                return Awaited(this, Task.FromException(invokeException), scope);
+                return Awaited(this, Task.FromException(exception), scope);
             }
 
             Debug.Assert(task != null);
@@ -94,9 +88,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 ReleaseResources();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                releaseException = ex;
+                releaseException = exception;
             }
 
             Exception scopeException = null;
@@ -104,9 +98,9 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             {
                 scope.Dispose();
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                scopeException = ex;
+                scopeException = exception;
             }
 
             if (releaseException == null && scopeException == null)
