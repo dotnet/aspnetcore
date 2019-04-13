@@ -27,14 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             _hubProtocols = availableProtocols.ToList();
             foreach (var protocol in _hubProtocols)
             {
-                if (_availableProtocols.ContainsKey(protocol.Name))
-                {
-                    Log.OverwroteSignalRProtocol(_logger, protocol.Name, protocol.GetType());
-                }
-                else
-                {
-                    Log.RegisteredSignalRProtocol(_logger, protocol.Name, protocol.GetType());
-                }
+                Log.RegisteredSignalRProtocol(_logger, protocol.Name, protocol.GetType());
                 _availableProtocols[protocol.Name] = protocol;
             }
         }
@@ -63,9 +56,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             private static readonly Action<ILogger, string, Exception> _foundImplementationForProtocol =
                 LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, "FoundImplementationForProtocol"), "Found protocol implementation for requested protocol: {ProtocolName}.");
 
-            private static readonly Action<ILogger, string, Type, Exception> _overwroteSignalRProtocol =
-                LoggerMessage.Define<string, Type>(LogLevel.Debug, new EventId(3, "OverwroteSignalRProtocol"), "Overwrote SignalR Protocol: {ProtocolName}, with implemention by {ImplementationType}.");
-
             public static void RegisteredSignalRProtocol(ILogger logger, string protocolName, Type implementationType)
             {
                 _registeredSignalRProtocol(logger, protocolName, implementationType, null);
@@ -74,11 +64,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             public static void FoundImplementationForProtocol(ILogger logger, string protocolName)
             {
                 _foundImplementationForProtocol(logger, protocolName, null);
-            }
-
-            public static void OverwroteSignalRProtocol(ILogger logger, string protocolName, Type implementationType)
-            {
-                _overwroteSignalRProtocol(logger, protocolName, implementationType, null);
             }
         }
     }

@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             if (message.Headers != null && message.Headers.Count > 0)
             {
-                writer.WriteStartObject(HeadersPropertyNameBytes, escape: true);
+                writer.WriteStartObject(HeadersPropertyNameBytes, escape: false);
                 foreach (var value in message.Headers)
                 {
                     writer.WriteString(value.Key, value.Value);
@@ -724,7 +724,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 try
                 {
                     arguments[paramIndex] = BindType(element, paramTypes[paramIndex]);
-                    ++paramIndex;
+                    paramIndex++;
                 }
                 catch (Exception ex)
                 {
