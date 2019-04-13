@@ -17,6 +17,7 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
@@ -127,13 +128,22 @@ namespace Microsoft.AspNetCore.Diagnostics
         // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
         private Task DisplayException(ErrorContext errorContext)
         {
-            var compilationException = errorContext.Exception as ICompilationException;
-            if (compilationException != null)
+            var httpContext = errorContext.HttpContext;
+            var acceptHeader = httpContext.Request.Headers[HeaderNames.Accept].ToString();
+
+            // If the client does not ask for HTML just format the exception as plain text
+            if (acceptHeader != null && !acceptHeader.Contains("text/html", StringComparison.OrdinalIgnoreCase))
             {
-                return DisplayCompilationException(errorContext.HttpContext, compilationException);
+                httpContext.Response.ContentType = "text/plain";
+                return httpContext.Response.WriteAsync(errorContext.Exception.ToString());
             }
 
-            return DisplayRuntimeException(errorContext.HttpContext, errorContext.Exception);
+            if (errorContext.Exception is ICompilationException compilationException)
+            {
+                return DisplayCompilationException(httpContext, compilationException);
+            }
+
+            return DisplayRuntimeException(httpContext, errorContext.Exception);
         }
 
         private Task DisplayCompilationException(
