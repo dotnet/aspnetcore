@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             if (message.Headers != null && message.Headers.Count > 0)
             {
-                writer.WriteStartObject(HeadersPropertyNameBytes);
+                writer.WriteStartObject(HeadersPropertyNameBytes, escape: true);
                 foreach (var value in message.Headers)
                 {
                     writer.WriteString(value.Key, value.Value);
