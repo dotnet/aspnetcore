@@ -737,12 +737,80 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _headers._UpgradeInsecureRequests = value; 
             }
         }
-        public StringValues HeaderOrigin
+        public StringValues HeaderRequestId
         {
             get
             {
                 StringValues value = default;
                 if ((_bits & 0x40000000000L) != 0)
+                {
+                    value = _headers._RequestId;
+                }
+                return value;
+            }
+            set
+            {
+                _bits |= 0x40000000000L;
+                _headers._RequestId = value; 
+            }
+        }
+        public StringValues HeaderCorrelationContext
+        {
+            get
+            {
+                StringValues value = default;
+                if ((_bits & 0x80000000000L) != 0)
+                {
+                    value = _headers._CorrelationContext;
+                }
+                return value;
+            }
+            set
+            {
+                _bits |= 0x80000000000L;
+                _headers._CorrelationContext = value; 
+            }
+        }
+        public StringValues HeaderTraceParent
+        {
+            get
+            {
+                StringValues value = default;
+                if ((_bits & 0x100000000000L) != 0)
+                {
+                    value = _headers._TraceParent;
+                }
+                return value;
+            }
+            set
+            {
+                _bits |= 0x100000000000L;
+                _headers._TraceParent = value; 
+            }
+        }
+        public StringValues HeaderTraceState
+        {
+            get
+            {
+                StringValues value = default;
+                if ((_bits & 0x200000000000L) != 0)
+                {
+                    value = _headers._TraceState;
+                }
+                return value;
+            }
+            set
+            {
+                _bits |= 0x200000000000L;
+                _headers._TraceState = value; 
+            }
+        }
+        public StringValues HeaderOrigin
+        {
+            get
+            {
+                StringValues value = default;
+                if ((_bits & 0x400000000000L) != 0)
                 {
                     value = _headers._Origin;
                 }
@@ -750,7 +818,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x40000000000L;
+                _bits |= 0x400000000000L;
                 _headers._Origin = value; 
             }
         }
@@ -759,7 +827,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x80000000000L) != 0)
+                if ((_bits & 0x800000000000L) != 0)
                 {
                     value = _headers._AccessControlRequestMethod;
                 }
@@ -767,7 +835,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x80000000000L;
+                _bits |= 0x800000000000L;
                 _headers._AccessControlRequestMethod = value; 
             }
         }
@@ -776,7 +844,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             get
             {
                 StringValues value = default;
-                if ((_bits & 0x100000000000L) != 0)
+                if ((_bits & 0x1000000000000L) != 0)
                 {
                     value = _headers._AccessControlRequestHeaders;
                 }
@@ -784,7 +852,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             set
             {
-                _bits |= 0x100000000000L;
+                _bits |= 0x1000000000000L;
                 _headers._AccessControlRequestHeaders = value; 
             }
         }
@@ -815,864 +883,1713 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             value = default;
             switch (key.Length)
             {
-                case 13:
-                    {
-                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1L) != 0)
-                            {
-                                value = _headers._CacheControl;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000L) != 0)
-                            {
-                                value = _headers._ContentRange;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000L) != 0)
-                            {
-                                value = _headers._LastModified;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Authorization".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800000L) != 0)
-                            {
-                                value = _headers._Authorization;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-None-Match".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000000L) != 0)
-                            {
-                                value = _headers._IfNoneMatch;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 10:
-                    {
-                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2L) != 0)
-                            {
-                                value = _headers._Connection;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8L) != 0)
-                            {
-                                value = _headers._KeepAlive;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("User-Agent".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000000L) != 0)
-                            {
-                                value = _headers._UserAgent;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 4:
-                    {
-                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4L) != 0)
-                            {
-                                value = _headers._Date;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("From".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000000L) != 0)
-                            {
-                                value = _headers._From;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Host".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000L) != 0)
-                            {
-                                value = _headers._Host;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 6:
-                    {
-                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10L) != 0)
-                            {
-                                value = _headers._Pragma;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000L) != 0)
-                            {
-                                value = _headers._Accept;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Cookie".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000L) != 0)
-                            {
-                                value = _headers._Cookie;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expect".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000000L) != 0)
-                            {
-                                value = _headers._Expect;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000000000L) != 0)
-                            {
-                                value = _headers._Origin;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 7:
-                    {
-                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20L) != 0)
-                            {
-                                value = _headers._Trailer;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80L) != 0)
-                            {
-                                value = _headers._Upgrade;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200L) != 0)
-                            {
-                                value = _headers._Warning;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000L) != 0)
-                            {
-                                value = _headers._Expires;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Referer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800000000L) != 0)
-                            {
-                                value = _headers._Referer;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 17:
-                    {
-                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40L) != 0)
-                            {
-                                value = _headers._TransferEncoding;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-Modified-Since".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000000L) != 0)
-                            {
-                                value = _headers._IfModifiedSince;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 3:
-                    {
-                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100L) != 0)
-                            {
-                                value = _headers._Via;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("DNT".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000000000L) != 0)
-                            {
-                                value = _headers._DNT;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 5:
-                    {
-                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400L) != 0)
-                            {
-                                value = _headers._Allow;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000000L) != 0)
-                            {
-                                value = _headers._Range;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 12:
-                    {
-                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800L) != 0)
-                            {
-                                value = _headers._ContentType;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Max-Forwards".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000000L) != 0)
-                            {
-                                value = _headers._MaxForwards;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 16:
-                    {
-                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000L) != 0)
-                            {
-                                value = _headers._ContentEncoding;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000L) != 0)
-                            {
-                                value = _headers._ContentLanguage;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000L) != 0)
-                            {
-                                value = _headers._ContentLocation;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 11:
-                    {
-                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000L) != 0)
-                            {
-                                value = _headers._ContentMD5;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 14:
-                    {
-                        if ("Accept-Charset".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100000L) != 0)
-                            {
-                                value = _headers._AcceptCharset;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (_contentLength.HasValue)
-                            {
-                                value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 15:
-                    {
-                        if ("Accept-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000L) != 0)
-                            {
-                                value = _headers._AcceptEncoding;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000L) != 0)
-                            {
-                                value = _headers._AcceptLanguage;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 8:
-                    {
-                        if ("If-Match".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000000L) != 0)
-                            {
-                                value = _headers._IfMatch;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000000L) != 0)
-                            {
-                                value = _headers._IfRange;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 19:
-                    {
-                        if ("If-Unmodified-Since".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100000000L) != 0)
-                            {
-                                value = _headers._IfUnmodifiedSince;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Proxy-Authorization".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000000L) != 0)
-                            {
-                                value = _headers._ProxyAuthorization;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
                 case 2:
+                {
+                    if (ReferenceEquals(HeaderNames.TE, key))
                     {
-                        if ("TE".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2000000000L) != 0)
                         {
-                            if ((_bits & 0x2000000000L) != 0)
-                            {
-                                value = _headers._TE;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._TE;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.TE.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000000L) != 0)
+                        {
+                            value = _headers._TE;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 3:
+                {
+                    if (ReferenceEquals(HeaderNames.Via, key))
+                    {
+                        if ((_bits & 0x100L) != 0)
+                        {
+                            value = _headers._Via;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.DNT, key))
+                    {
+                        if ((_bits & 0x10000000000L) != 0)
+                        {
+                            value = _headers._DNT;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100L) != 0)
+                        {
+                            value = _headers._Via;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.DNT.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000000L) != 0)
+                        {
+                            value = _headers._DNT;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.Host, key))
+                    {
+                        if ((_bits & 0x8000000L) != 0)
+                        {
+                            value = _headers._Host;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Date, key))
+                    {
+                        if ((_bits & 0x4L) != 0)
+                        {
+                            value = _headers._Date;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.From, key))
+                    {
+                        if ((_bits & 0x4000000L) != 0)
+                        {
+                            value = _headers._From;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Host.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000L) != 0)
+                        {
+                            value = _headers._Host;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4L) != 0)
+                        {
+                            value = _headers._Date;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.From.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000L) != 0)
+                        {
+                            value = _headers._From;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 5:
+                {
+                    if (ReferenceEquals(HeaderNames.Allow, key))
+                    {
+                        if ((_bits & 0x400L) != 0)
+                        {
+                            value = _headers._Allow;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Range, key))
+                    {
+                        if ((_bits & 0x1000000000L) != 0)
+                        {
+                            value = _headers._Range;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Allow.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400L) != 0)
+                        {
+                            value = _headers._Allow;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Range.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000000L) != 0)
+                        {
+                            value = _headers._Range;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 6:
+                {
+                    if (ReferenceEquals(HeaderNames.Accept, key))
+                    {
+                        if ((_bits & 0x80000L) != 0)
+                        {
+                            value = _headers._Accept;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key))
+                    {
+                        if ((_bits & 0x10L) != 0)
+                        {
+                            value = _headers._Pragma;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Cookie, key))
+                    {
+                        if ((_bits & 0x1000000L) != 0)
+                        {
+                            value = _headers._Cookie;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expect, key))
+                    {
+                        if ((_bits & 0x2000000L) != 0)
+                        {
+                            value = _headers._Expect;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Origin, key))
+                    {
+                        if ((_bits & 0x400000000000L) != 0)
+                        {
+                            value = _headers._Origin;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Accept.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000L) != 0)
+                        {
+                            value = _headers._Accept;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10L) != 0)
+                        {
+                            value = _headers._Pragma;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Cookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000L) != 0)
+                        {
+                            value = _headers._Cookie;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expect.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000L) != 0)
+                        {
+                            value = _headers._Expect;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000000L) != 0)
+                        {
+                            value = _headers._Origin;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 7:
+                {
+                    if (ReferenceEquals(HeaderNames.Trailer, key))
+                    {
+                        if ((_bits & 0x20L) != 0)
+                        {
+                            value = _headers._Trailer;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key))
+                    {
+                        if ((_bits & 0x80L) != 0)
+                        {
+                            value = _headers._Upgrade;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key))
+                    {
+                        if ((_bits & 0x200L) != 0)
+                        {
+                            value = _headers._Warning;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expires, key))
+                    {
+                        if ((_bits & 0x20000L) != 0)
+                        {
+                            value = _headers._Expires;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Referer, key))
+                    {
+                        if ((_bits & 0x800000000L) != 0)
+                        {
+                            value = _headers._Referer;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Trailer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20L) != 0)
+                        {
+                            value = _headers._Trailer;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80L) != 0)
+                        {
+                            value = _headers._Upgrade;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200L) != 0)
+                        {
+                            value = _headers._Warning;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000L) != 0)
+                        {
+                            value = _headers._Expires;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Referer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000000L) != 0)
+                        {
+                            value = _headers._Referer;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 8:
+                {
+                    if (ReferenceEquals(HeaderNames.IfMatch, key))
+                    {
+                        if ((_bits & 0x10000000L) != 0)
+                        {
+                            value = _headers._IfMatch;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfRange, key))
+                    {
+                        if ((_bits & 0x80000000L) != 0)
+                        {
+                            value = _headers._IfRange;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000L) != 0)
+                        {
+                            value = _headers._IfMatch;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000L) != 0)
+                        {
+                            value = _headers._IfRange;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 9:
+                {
+                    if (ReferenceEquals(HeaderNames.Translate, key))
                     {
-                        if ("Translate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x4000000000L) != 0)
                         {
-                            if ((_bits & 0x4000000000L) != 0)
-                            {
-                                value = _headers._Translate;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Translate;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.Translate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000000L) != 0)
+                        {
+                            value = _headers._Translate;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 10:
+                {
+                    if (ReferenceEquals(HeaderNames.Connection, key))
+                    {
+                        if ((_bits & 0x2L) != 0)
+                        {
+                            value = _headers._Connection;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.UserAgent, key))
+                    {
+                        if ((_bits & 0x8000000000L) != 0)
+                        {
+                            value = _headers._UserAgent;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key))
+                    {
+                        if ((_bits & 0x8L) != 0)
+                        {
+                            value = _headers._KeepAlive;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.RequestId, key))
+                    {
+                        if ((_bits & 0x40000000000L) != 0)
+                        {
+                            value = _headers._RequestId;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceState, key))
+                    {
+                        if ((_bits & 0x200000000000L) != 0)
+                        {
+                            value = _headers._TraceState;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2L) != 0)
+                        {
+                            value = _headers._Connection;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.UserAgent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000000L) != 0)
+                        {
+                            value = _headers._UserAgent;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8L) != 0)
+                        {
+                            value = _headers._KeepAlive;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000000L) != 0)
+                        {
+                            value = _headers._RequestId;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000000L) != 0)
+                        {
+                            value = _headers._TraceState;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 11:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentMD5, key))
+                    {
+                        if ((_bits & 0x8000L) != 0)
+                        {
+                            value = _headers._ContentMD5;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceParent, key))
+                    {
+                        if ((_bits & 0x100000000000L) != 0)
+                        {
+                            value = _headers._TraceParent;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.ContentMD5.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000L) != 0)
+                        {
+                            value = _headers._ContentMD5;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000000L) != 0)
+                        {
+                            value = _headers._TraceParent;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 12:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentType, key))
+                    {
+                        if ((_bits & 0x800L) != 0)
+                        {
+                            value = _headers._ContentType;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.MaxForwards, key))
+                    {
+                        if ((_bits & 0x200000000L) != 0)
+                        {
+                            value = _headers._MaxForwards;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800L) != 0)
+                        {
+                            value = _headers._ContentType;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.MaxForwards.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000L) != 0)
+                        {
+                            value = _headers._MaxForwards;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 13:
+                {
+                    if (ReferenceEquals(HeaderNames.CacheControl, key))
+                    {
+                        if ((_bits & 0x1L) != 0)
+                        {
+                            value = _headers._CacheControl;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentRange, key))
+                    {
+                        if ((_bits & 0x10000L) != 0)
+                        {
+                            value = _headers._ContentRange;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.LastModified, key))
+                    {
+                        if ((_bits & 0x40000L) != 0)
+                        {
+                            value = _headers._LastModified;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Authorization, key))
+                    {
+                        if ((_bits & 0x800000L) != 0)
+                        {
+                            value = _headers._Authorization;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfNoneMatch, key))
+                    {
+                        if ((_bits & 0x40000000L) != 0)
+                        {
+                            value = _headers._IfNoneMatch;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) != 0)
+                        {
+                            value = _headers._CacheControl;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000L) != 0)
+                        {
+                            value = _headers._ContentRange;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.LastModified.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000L) != 0)
+                        {
+                            value = _headers._LastModified;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Authorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000L) != 0)
+                        {
+                            value = _headers._Authorization;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfNoneMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000L) != 0)
+                        {
+                            value = _headers._IfNoneMatch;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 14:
+                {
+                    if (ReferenceEquals(HeaderNames.AcceptCharset, key))
+                    {
+                        if ((_bits & 0x100000L) != 0)
+                        {
+                            value = _headers._AcceptCharset;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLength, key))
+                    {
+                        if (_contentLength.HasValue)
+                        {
+                            value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.AcceptCharset.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000L) != 0)
+                        {
+                            value = _headers._AcceptCharset;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (_contentLength.HasValue)
+                        {
+                            value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 15:
+                {
+                    if (ReferenceEquals(HeaderNames.AcceptEncoding, key))
+                    {
+                        if ((_bits & 0x200000L) != 0)
+                        {
+                            value = _headers._AcceptEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptLanguage, key))
+                    {
+                        if ((_bits & 0x400000L) != 0)
+                        {
+                            value = _headers._AcceptLanguage;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.AcceptEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000L) != 0)
+                        {
+                            value = _headers._AcceptEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AcceptLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000L) != 0)
+                        {
+                            value = _headers._AcceptLanguage;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 16:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentEncoding, key))
+                    {
+                        if ((_bits & 0x1000L) != 0)
+                        {
+                            value = _headers._ContentEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLanguage, key))
+                    {
+                        if ((_bits & 0x2000L) != 0)
+                        {
+                            value = _headers._ContentLanguage;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLocation, key))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            value = _headers._ContentLocation;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.ContentEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000L) != 0)
+                        {
+                            value = _headers._ContentEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000L) != 0)
+                        {
+                            value = _headers._ContentLanguage;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLocation.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            value = _headers._ContentLocation;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key))
+                    {
+                        if ((_bits & 0x40L) != 0)
+                        {
+                            value = _headers._TransferEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfModifiedSince, key))
+                    {
+                        if ((_bits & 0x20000000L) != 0)
+                        {
+                            value = _headers._IfModifiedSince;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40L) != 0)
+                        {
+                            value = _headers._TransferEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfModifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000L) != 0)
+                        {
+                            value = _headers._IfModifiedSince;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 19:
+                {
+                    if (ReferenceEquals(HeaderNames.IfUnmodifiedSince, key))
+                    {
+                        if ((_bits & 0x100000000L) != 0)
+                        {
+                            value = _headers._IfUnmodifiedSince;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ProxyAuthorization, key))
+                    {
+                        if ((_bits & 0x400000000L) != 0)
+                        {
+                            value = _headers._ProxyAuthorization;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.CorrelationContext, key))
+                    {
+                        if ((_bits & 0x80000000000L) != 0)
+                        {
+                            value = _headers._CorrelationContext;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.IfUnmodifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000L) != 0)
+                        {
+                            value = _headers._IfUnmodifiedSince;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ProxyAuthorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000L) != 0)
+                        {
+                            value = _headers._ProxyAuthorization;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000000L) != 0)
+                        {
+                            value = _headers._CorrelationContext;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 25:
+                {
+                    if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key))
                     {
-                        if ("Upgrade-Insecure-Requests".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x20000000000L) != 0)
                         {
-                            if ((_bits & 0x20000000000L) != 0)
-                            {
-                                value = _headers._UpgradeInsecureRequests;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._UpgradeInsecureRequests;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000000L) != 0)
+                        {
+                            value = _headers._UpgradeInsecureRequests;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
                 case 29:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key))
                     {
-                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x800000000000L) != 0)
                         {
-                            if ((_bits & 0x80000000000L) != 0)
-                            {
-                                value = _headers._AccessControlRequestMethod;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._AccessControlRequestMethod;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000000000L) != 0)
+                        {
+                            value = _headers._AccessControlRequestMethod;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
                 case 30:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key))
                     {
-                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1000000000000L) != 0)
                         {
-                            if ((_bits & 0x100000000000L) != 0)
-                            {
-                                value = _headers._AccessControlRequestHeaders;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._AccessControlRequestHeaders;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000000000L) != 0)
+                        {
+                            value = _headers._AccessControlRequestHeaders;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
             }
 
-            return MaybeUnknown?.TryGetValue(key, out value) ?? false;
+            return TryGetUnknown(key, ref value);
         }
 
         protected override void SetValueFast(string key, StringValues value)
         {
             switch (key.Length)
             {
-                case 13:
-                    {
-                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x1L;
-                            _headers._CacheControl = value;
-                            return;
-                        }
-                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x10000L;
-                            _headers._ContentRange = value;
-                            return;
-                        }
-                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x40000L;
-                            _headers._LastModified = value;
-                            return;
-                        }
-                        if ("Authorization".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x800000L;
-                            _headers._Authorization = value;
-                            return;
-                        }
-                        if ("If-None-Match".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x40000000L;
-                            _headers._IfNoneMatch = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 10:
-                    {
-                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x2L;
-                            _headers._Connection = value;
-                            return;
-                        }
-                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x8L;
-                            _headers._KeepAlive = value;
-                            return;
-                        }
-                        if ("User-Agent".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x8000000000L;
-                            _headers._UserAgent = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 4:
-                    {
-                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x4L;
-                            _headers._Date = value;
-                            return;
-                        }
-                        if ("From".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x4000000L;
-                            _headers._From = value;
-                            return;
-                        }
-                        if ("Host".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x8000000L;
-                            _headers._Host = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 6:
-                    {
-                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x10L;
-                            _headers._Pragma = value;
-                            return;
-                        }
-                        if ("Accept".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x80000L;
-                            _headers._Accept = value;
-                            return;
-                        }
-                        if ("Cookie".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x1000000L;
-                            _headers._Cookie = value;
-                            return;
-                        }
-                        if ("Expect".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x2000000L;
-                            _headers._Expect = value;
-                            return;
-                        }
-                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x40000000000L;
-                            _headers._Origin = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 7:
-                    {
-                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x20L;
-                            _headers._Trailer = value;
-                            return;
-                        }
-                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x80L;
-                            _headers._Upgrade = value;
-                            return;
-                        }
-                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x200L;
-                            _headers._Warning = value;
-                            return;
-                        }
-                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x20000L;
-                            _headers._Expires = value;
-                            return;
-                        }
-                        if ("Referer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x800000000L;
-                            _headers._Referer = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 17:
-                    {
-                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x40L;
-                            _headers._TransferEncoding = value;
-                            return;
-                        }
-                        if ("If-Modified-Since".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x20000000L;
-                            _headers._IfModifiedSince = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 3:
-                    {
-                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x100L;
-                            _headers._Via = value;
-                            return;
-                        }
-                        if ("DNT".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x10000000000L;
-                            _headers._DNT = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 5:
-                    {
-                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x400L;
-                            _headers._Allow = value;
-                            return;
-                        }
-                        if ("Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x1000000000L;
-                            _headers._Range = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 12:
-                    {
-                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x800L;
-                            _headers._ContentType = value;
-                            return;
-                        }
-                        if ("Max-Forwards".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x200000000L;
-                            _headers._MaxForwards = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 16:
-                    {
-                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x1000L;
-                            _headers._ContentEncoding = value;
-                            return;
-                        }
-                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x2000L;
-                            _headers._ContentLanguage = value;
-                            return;
-                        }
-                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x4000L;
-                            _headers._ContentLocation = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 11:
-                    {
-                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x8000L;
-                            _headers._ContentMD5 = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 14:
-                    {
-                        if ("Accept-Charset".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x100000L;
-                            _headers._AcceptCharset = value;
-                            return;
-                        }
-                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _contentLength = ParseContentLength(value.ToString());
-                            return;
-                        }
-                    }
-                    break;
-                case 15:
-                    {
-                        if ("Accept-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x200000L;
-                            _headers._AcceptEncoding = value;
-                            return;
-                        }
-                        if ("Accept-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x400000L;
-                            _headers._AcceptLanguage = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 8:
-                    {
-                        if ("If-Match".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x10000000L;
-                            _headers._IfMatch = value;
-                            return;
-                        }
-                        if ("If-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x80000000L;
-                            _headers._IfRange = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 19:
-                    {
-                        if ("If-Unmodified-Since".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x100000000L;
-                            _headers._IfUnmodifiedSince = value;
-                            return;
-                        }
-                        if ("Proxy-Authorization".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x400000000L;
-                            _headers._ProxyAuthorization = value;
-                            return;
-                        }
-                    }
-                    break;
                 case 2:
+                {
+                    if (ReferenceEquals(HeaderNames.TE, key))
                     {
-                        if ("TE".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x2000000000L;
-                            _headers._TE = value;
-                            return;
-                        }
+                        _bits |= 0x2000000000L;
+                        _headers._TE = value;
+                        return;
+                    }
+
+                    if (HeaderNames.TE.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x2000000000L;
+                        _headers._TE = value;
+                        return;
                     }
                     break;
+                }
+                case 3:
+                {
+                    if (ReferenceEquals(HeaderNames.Via, key))
+                    {
+                        _bits |= 0x100L;
+                        _headers._Via = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.DNT, key))
+                    {
+                        _bits |= 0x10000000000L;
+                        _headers._DNT = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x100L;
+                        _headers._Via = value;
+                        return;
+                    }
+                    if (HeaderNames.DNT.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x10000000000L;
+                        _headers._DNT = value;
+                        return;
+                    }
+                    break;
+                }
+                case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.Host, key))
+                    {
+                        _bits |= 0x8000000L;
+                        _headers._Host = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Date, key))
+                    {
+                        _bits |= 0x4L;
+                        _headers._Date = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.From, key))
+                    {
+                        _bits |= 0x4000000L;
+                        _headers._From = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Host.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x8000000L;
+                        _headers._Host = value;
+                        return;
+                    }
+                    if (HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x4L;
+                        _headers._Date = value;
+                        return;
+                    }
+                    if (HeaderNames.From.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x4000000L;
+                        _headers._From = value;
+                        return;
+                    }
+                    break;
+                }
+                case 5:
+                {
+                    if (ReferenceEquals(HeaderNames.Allow, key))
+                    {
+                        _bits |= 0x400L;
+                        _headers._Allow = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Range, key))
+                    {
+                        _bits |= 0x1000000000L;
+                        _headers._Range = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Allow.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x400L;
+                        _headers._Allow = value;
+                        return;
+                    }
+                    if (HeaderNames.Range.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1000000000L;
+                        _headers._Range = value;
+                        return;
+                    }
+                    break;
+                }
+                case 6:
+                {
+                    if (ReferenceEquals(HeaderNames.Accept, key))
+                    {
+                        _bits |= 0x80000L;
+                        _headers._Accept = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key))
+                    {
+                        _bits |= 0x10L;
+                        _headers._Pragma = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Cookie, key))
+                    {
+                        _bits |= 0x1000000L;
+                        _headers._Cookie = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expect, key))
+                    {
+                        _bits |= 0x2000000L;
+                        _headers._Expect = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Origin, key))
+                    {
+                        _bits |= 0x400000000000L;
+                        _headers._Origin = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Accept.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x80000L;
+                        _headers._Accept = value;
+                        return;
+                    }
+                    if (HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x10L;
+                        _headers._Pragma = value;
+                        return;
+                    }
+                    if (HeaderNames.Cookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1000000L;
+                        _headers._Cookie = value;
+                        return;
+                    }
+                    if (HeaderNames.Expect.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x2000000L;
+                        _headers._Expect = value;
+                        return;
+                    }
+                    if (HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x400000000000L;
+                        _headers._Origin = value;
+                        return;
+                    }
+                    break;
+                }
+                case 7:
+                {
+                    if (ReferenceEquals(HeaderNames.Trailer, key))
+                    {
+                        _bits |= 0x20L;
+                        _headers._Trailer = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key))
+                    {
+                        _bits |= 0x80L;
+                        _headers._Upgrade = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key))
+                    {
+                        _bits |= 0x200L;
+                        _headers._Warning = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expires, key))
+                    {
+                        _bits |= 0x20000L;
+                        _headers._Expires = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Referer, key))
+                    {
+                        _bits |= 0x800000000L;
+                        _headers._Referer = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Trailer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x20L;
+                        _headers._Trailer = value;
+                        return;
+                    }
+                    if (HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x80L;
+                        _headers._Upgrade = value;
+                        return;
+                    }
+                    if (HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x200L;
+                        _headers._Warning = value;
+                        return;
+                    }
+                    if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x20000L;
+                        _headers._Expires = value;
+                        return;
+                    }
+                    if (HeaderNames.Referer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x800000000L;
+                        _headers._Referer = value;
+                        return;
+                    }
+                    break;
+                }
+                case 8:
+                {
+                    if (ReferenceEquals(HeaderNames.IfMatch, key))
+                    {
+                        _bits |= 0x10000000L;
+                        _headers._IfMatch = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfRange, key))
+                    {
+                        _bits |= 0x80000000L;
+                        _headers._IfRange = value;
+                        return;
+                    }
+
+                    if (HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x10000000L;
+                        _headers._IfMatch = value;
+                        return;
+                    }
+                    if (HeaderNames.IfRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x80000000L;
+                        _headers._IfRange = value;
+                        return;
+                    }
+                    break;
+                }
                 case 9:
+                {
+                    if (ReferenceEquals(HeaderNames.Translate, key))
                     {
-                        if ("Translate".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x4000000000L;
-                            _headers._Translate = value;
-                            return;
-                        }
+                        _bits |= 0x4000000000L;
+                        _headers._Translate = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Translate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x4000000000L;
+                        _headers._Translate = value;
+                        return;
                     }
                     break;
+                }
+                case 10:
+                {
+                    if (ReferenceEquals(HeaderNames.Connection, key))
+                    {
+                        _bits |= 0x2L;
+                        _headers._Connection = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.UserAgent, key))
+                    {
+                        _bits |= 0x8000000000L;
+                        _headers._UserAgent = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key))
+                    {
+                        _bits |= 0x8L;
+                        _headers._KeepAlive = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.RequestId, key))
+                    {
+                        _bits |= 0x40000000000L;
+                        _headers._RequestId = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceState, key))
+                    {
+                        _bits |= 0x200000000000L;
+                        _headers._TraceState = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x2L;
+                        _headers._Connection = value;
+                        return;
+                    }
+                    if (HeaderNames.UserAgent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x8000000000L;
+                        _headers._UserAgent = value;
+                        return;
+                    }
+                    if (HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x8L;
+                        _headers._KeepAlive = value;
+                        return;
+                    }
+                    if (HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x40000000000L;
+                        _headers._RequestId = value;
+                        return;
+                    }
+                    if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x200000000000L;
+                        _headers._TraceState = value;
+                        return;
+                    }
+                    break;
+                }
+                case 11:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentMD5, key))
+                    {
+                        _bits |= 0x8000L;
+                        _headers._ContentMD5 = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceParent, key))
+                    {
+                        _bits |= 0x100000000000L;
+                        _headers._TraceParent = value;
+                        return;
+                    }
+
+                    if (HeaderNames.ContentMD5.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x8000L;
+                        _headers._ContentMD5 = value;
+                        return;
+                    }
+                    if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x100000000000L;
+                        _headers._TraceParent = value;
+                        return;
+                    }
+                    break;
+                }
+                case 12:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentType, key))
+                    {
+                        _bits |= 0x800L;
+                        _headers._ContentType = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.MaxForwards, key))
+                    {
+                        _bits |= 0x200000000L;
+                        _headers._MaxForwards = value;
+                        return;
+                    }
+
+                    if (HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x800L;
+                        _headers._ContentType = value;
+                        return;
+                    }
+                    if (HeaderNames.MaxForwards.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x200000000L;
+                        _headers._MaxForwards = value;
+                        return;
+                    }
+                    break;
+                }
+                case 13:
+                {
+                    if (ReferenceEquals(HeaderNames.CacheControl, key))
+                    {
+                        _bits |= 0x1L;
+                        _headers._CacheControl = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentRange, key))
+                    {
+                        _bits |= 0x10000L;
+                        _headers._ContentRange = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.LastModified, key))
+                    {
+                        _bits |= 0x40000L;
+                        _headers._LastModified = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Authorization, key))
+                    {
+                        _bits |= 0x800000L;
+                        _headers._Authorization = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfNoneMatch, key))
+                    {
+                        _bits |= 0x40000000L;
+                        _headers._IfNoneMatch = value;
+                        return;
+                    }
+
+                    if (HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1L;
+                        _headers._CacheControl = value;
+                        return;
+                    }
+                    if (HeaderNames.ContentRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x10000L;
+                        _headers._ContentRange = value;
+                        return;
+                    }
+                    if (HeaderNames.LastModified.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x40000L;
+                        _headers._LastModified = value;
+                        return;
+                    }
+                    if (HeaderNames.Authorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x800000L;
+                        _headers._Authorization = value;
+                        return;
+                    }
+                    if (HeaderNames.IfNoneMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x40000000L;
+                        _headers._IfNoneMatch = value;
+                        return;
+                    }
+                    break;
+                }
+                case 14:
+                {
+                    if (ReferenceEquals(HeaderNames.AcceptCharset, key))
+                    {
+                        _bits |= 0x100000L;
+                        _headers._AcceptCharset = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLength, key))
+                    {
+                        _contentLength = ParseContentLength(value.ToString());
+                        return;
+                    }
+
+                    if (HeaderNames.AcceptCharset.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x100000L;
+                        _headers._AcceptCharset = value;
+                        return;
+                    }
+                    if (HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _contentLength = ParseContentLength(value.ToString());
+                        return;
+                    }
+                    break;
+                }
+                case 15:
+                {
+                    if (ReferenceEquals(HeaderNames.AcceptEncoding, key))
+                    {
+                        _bits |= 0x200000L;
+                        _headers._AcceptEncoding = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptLanguage, key))
+                    {
+                        _bits |= 0x400000L;
+                        _headers._AcceptLanguage = value;
+                        return;
+                    }
+
+                    if (HeaderNames.AcceptEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x200000L;
+                        _headers._AcceptEncoding = value;
+                        return;
+                    }
+                    if (HeaderNames.AcceptLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x400000L;
+                        _headers._AcceptLanguage = value;
+                        return;
+                    }
+                    break;
+                }
+                case 16:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentEncoding, key))
+                    {
+                        _bits |= 0x1000L;
+                        _headers._ContentEncoding = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLanguage, key))
+                    {
+                        _bits |= 0x2000L;
+                        _headers._ContentLanguage = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLocation, key))
+                    {
+                        _bits |= 0x4000L;
+                        _headers._ContentLocation = value;
+                        return;
+                    }
+
+                    if (HeaderNames.ContentEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1000L;
+                        _headers._ContentEncoding = value;
+                        return;
+                    }
+                    if (HeaderNames.ContentLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x2000L;
+                        _headers._ContentLanguage = value;
+                        return;
+                    }
+                    if (HeaderNames.ContentLocation.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x4000L;
+                        _headers._ContentLocation = value;
+                        return;
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key))
+                    {
+                        _bits |= 0x40L;
+                        _headers._TransferEncoding = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfModifiedSince, key))
+                    {
+                        _bits |= 0x20000000L;
+                        _headers._IfModifiedSince = value;
+                        return;
+                    }
+
+                    if (HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x40L;
+                        _headers._TransferEncoding = value;
+                        return;
+                    }
+                    if (HeaderNames.IfModifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x20000000L;
+                        _headers._IfModifiedSince = value;
+                        return;
+                    }
+                    break;
+                }
+                case 19:
+                {
+                    if (ReferenceEquals(HeaderNames.IfUnmodifiedSince, key))
+                    {
+                        _bits |= 0x100000000L;
+                        _headers._IfUnmodifiedSince = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ProxyAuthorization, key))
+                    {
+                        _bits |= 0x400000000L;
+                        _headers._ProxyAuthorization = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.CorrelationContext, key))
+                    {
+                        _bits |= 0x80000000000L;
+                        _headers._CorrelationContext = value;
+                        return;
+                    }
+
+                    if (HeaderNames.IfUnmodifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x100000000L;
+                        _headers._IfUnmodifiedSince = value;
+                        return;
+                    }
+                    if (HeaderNames.ProxyAuthorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x400000000L;
+                        _headers._ProxyAuthorization = value;
+                        return;
+                    }
+                    if (HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x80000000000L;
+                        _headers._CorrelationContext = value;
+                        return;
+                    }
+                    break;
+                }
                 case 25:
+                {
+                    if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key))
                     {
-                        if ("Upgrade-Insecure-Requests".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x20000000000L;
-                            _headers._UpgradeInsecureRequests = value;
-                            return;
-                        }
+                        _bits |= 0x20000000000L;
+                        _headers._UpgradeInsecureRequests = value;
+                        return;
+                    }
+
+                    if (HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x20000000000L;
+                        _headers._UpgradeInsecureRequests = value;
+                        return;
                     }
                     break;
+                }
                 case 29:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key))
                     {
-                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x80000000000L;
-                            _headers._AccessControlRequestMethod = value;
-                            return;
-                        }
+                        _bits |= 0x800000000000L;
+                        _headers._AccessControlRequestMethod = value;
+                        return;
+                    }
+
+                    if (HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x800000000000L;
+                        _headers._AccessControlRequestMethod = value;
+                        return;
                     }
                     break;
+                }
                 case 30:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key))
                     {
-                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x100000000000L;
-                            _headers._AccessControlRequestHeaders = value;
-                            return;
-                        }
+                        _bits |= 0x1000000000000L;
+                        _headers._AccessControlRequestHeaders = value;
+                        return;
+                    }
+
+                    if (HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1000000000000L;
+                        _headers._AccessControlRequestHeaders = value;
+                        return;
                     }
                     break;
+                }
             }
 
             SetValueUnknown(key, value);
@@ -1682,1098 +2599,2214 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             switch (key.Length)
             {
-                case 13:
-                    {
-                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1L) == 0)
-                            {
-                                _bits |= 0x1L;
-                                _headers._CacheControl = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000L) == 0)
-                            {
-                                _bits |= 0x10000L;
-                                _headers._ContentRange = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000L) == 0)
-                            {
-                                _bits |= 0x40000L;
-                                _headers._LastModified = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Authorization".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800000L) == 0)
-                            {
-                                _bits |= 0x800000L;
-                                _headers._Authorization = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-None-Match".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000000L) == 0)
-                            {
-                                _bits |= 0x40000000L;
-                                _headers._IfNoneMatch = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 10:
-                    {
-                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2L) == 0)
-                            {
-                                _bits |= 0x2L;
-                                _headers._Connection = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8L) == 0)
-                            {
-                                _bits |= 0x8L;
-                                _headers._KeepAlive = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("User-Agent".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000000L) == 0)
-                            {
-                                _bits |= 0x8000000000L;
-                                _headers._UserAgent = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 4:
-                    {
-                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4L) == 0)
-                            {
-                                _bits |= 0x4L;
-                                _headers._Date = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("From".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000000L) == 0)
-                            {
-                                _bits |= 0x4000000L;
-                                _headers._From = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Host".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000L) == 0)
-                            {
-                                _bits |= 0x8000000L;
-                                _headers._Host = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 6:
-                    {
-                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10L) == 0)
-                            {
-                                _bits |= 0x10L;
-                                _headers._Pragma = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000L) == 0)
-                            {
-                                _bits |= 0x80000L;
-                                _headers._Accept = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Cookie".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000L) == 0)
-                            {
-                                _bits |= 0x1000000L;
-                                _headers._Cookie = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expect".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000000L) == 0)
-                            {
-                                _bits |= 0x2000000L;
-                                _headers._Expect = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000000000L) == 0)
-                            {
-                                _bits |= 0x40000000000L;
-                                _headers._Origin = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 7:
-                    {
-                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20L) == 0)
-                            {
-                                _bits |= 0x20L;
-                                _headers._Trailer = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80L) == 0)
-                            {
-                                _bits |= 0x80L;
-                                _headers._Upgrade = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200L) == 0)
-                            {
-                                _bits |= 0x200L;
-                                _headers._Warning = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000L) == 0)
-                            {
-                                _bits |= 0x20000L;
-                                _headers._Expires = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Referer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800000000L) == 0)
-                            {
-                                _bits |= 0x800000000L;
-                                _headers._Referer = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 17:
-                    {
-                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40L) == 0)
-                            {
-                                _bits |= 0x40L;
-                                _headers._TransferEncoding = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-Modified-Since".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000000L) == 0)
-                            {
-                                _bits |= 0x20000000L;
-                                _headers._IfModifiedSince = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 3:
-                    {
-                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100L) == 0)
-                            {
-                                _bits |= 0x100L;
-                                _headers._Via = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("DNT".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000000000L) == 0)
-                            {
-                                _bits |= 0x10000000000L;
-                                _headers._DNT = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 5:
-                    {
-                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400L) == 0)
-                            {
-                                _bits |= 0x400L;
-                                _headers._Allow = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000000L) == 0)
-                            {
-                                _bits |= 0x1000000000L;
-                                _headers._Range = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 12:
-                    {
-                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800L) == 0)
-                            {
-                                _bits |= 0x800L;
-                                _headers._ContentType = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Max-Forwards".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000000L) == 0)
-                            {
-                                _bits |= 0x200000000L;
-                                _headers._MaxForwards = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 16:
-                    {
-                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000L) == 0)
-                            {
-                                _bits |= 0x1000L;
-                                _headers._ContentEncoding = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000L) == 0)
-                            {
-                                _bits |= 0x2000L;
-                                _headers._ContentLanguage = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000L) == 0)
-                            {
-                                _bits |= 0x4000L;
-                                _headers._ContentLocation = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 11:
-                    {
-                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000L) == 0)
-                            {
-                                _bits |= 0x8000L;
-                                _headers._ContentMD5 = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 14:
-                    {
-                        if ("Accept-Charset".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100000L) == 0)
-                            {
-                                _bits |= 0x100000L;
-                                _headers._AcceptCharset = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (!_contentLength.HasValue)
-                            {
-                                _contentLength = ParseContentLength(value);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 15:
-                    {
-                        if ("Accept-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000L) == 0)
-                            {
-                                _bits |= 0x200000L;
-                                _headers._AcceptEncoding = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000L) == 0)
-                            {
-                                _bits |= 0x400000L;
-                                _headers._AcceptLanguage = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 8:
-                    {
-                        if ("If-Match".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000000L) == 0)
-                            {
-                                _bits |= 0x10000000L;
-                                _headers._IfMatch = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000000L) == 0)
-                            {
-                                _bits |= 0x80000000L;
-                                _headers._IfRange = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 19:
-                    {
-                        if ("If-Unmodified-Since".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100000000L) == 0)
-                            {
-                                _bits |= 0x100000000L;
-                                _headers._IfUnmodifiedSince = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Proxy-Authorization".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000000L) == 0)
-                            {
-                                _bits |= 0x400000000L;
-                                _headers._ProxyAuthorization = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
                 case 2:
+                {
+                    if (ReferenceEquals(HeaderNames.TE, key))
                     {
-                        if ("TE".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2000000000L) == 0)
                         {
-                            if ((_bits & 0x2000000000L) == 0)
-                            {
-                                _bits |= 0x2000000000L;
-                                _headers._TE = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x2000000000L;
+                            _headers._TE = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.TE.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000000L) == 0)
+                        {
+                            _bits |= 0x2000000000L;
+                            _headers._TE = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 3:
+                {
+                    if (ReferenceEquals(HeaderNames.Via, key))
+                    {
+                        if ((_bits & 0x100L) == 0)
+                        {
+                            _bits |= 0x100L;
+                            _headers._Via = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.DNT, key))
+                    {
+                        if ((_bits & 0x10000000000L) == 0)
+                        {
+                            _bits |= 0x10000000000L;
+                            _headers._DNT = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100L) == 0)
+                        {
+                            _bits |= 0x100L;
+                            _headers._Via = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.DNT.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000000L) == 0)
+                        {
+                            _bits |= 0x10000000000L;
+                            _headers._DNT = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.Host, key))
+                    {
+                        if ((_bits & 0x8000000L) == 0)
+                        {
+                            _bits |= 0x8000000L;
+                            _headers._Host = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Date, key))
+                    {
+                        if ((_bits & 0x4L) == 0)
+                        {
+                            _bits |= 0x4L;
+                            _headers._Date = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.From, key))
+                    {
+                        if ((_bits & 0x4000000L) == 0)
+                        {
+                            _bits |= 0x4000000L;
+                            _headers._From = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Host.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000L) == 0)
+                        {
+                            _bits |= 0x8000000L;
+                            _headers._Host = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4L) == 0)
+                        {
+                            _bits |= 0x4L;
+                            _headers._Date = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.From.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000L) == 0)
+                        {
+                            _bits |= 0x4000000L;
+                            _headers._From = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 5:
+                {
+                    if (ReferenceEquals(HeaderNames.Allow, key))
+                    {
+                        if ((_bits & 0x400L) == 0)
+                        {
+                            _bits |= 0x400L;
+                            _headers._Allow = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Range, key))
+                    {
+                        if ((_bits & 0x1000000000L) == 0)
+                        {
+                            _bits |= 0x1000000000L;
+                            _headers._Range = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Allow.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400L) == 0)
+                        {
+                            _bits |= 0x400L;
+                            _headers._Allow = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Range.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000000L) == 0)
+                        {
+                            _bits |= 0x1000000000L;
+                            _headers._Range = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 6:
+                {
+                    if (ReferenceEquals(HeaderNames.Accept, key))
+                    {
+                        if ((_bits & 0x80000L) == 0)
+                        {
+                            _bits |= 0x80000L;
+                            _headers._Accept = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key))
+                    {
+                        if ((_bits & 0x10L) == 0)
+                        {
+                            _bits |= 0x10L;
+                            _headers._Pragma = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Cookie, key))
+                    {
+                        if ((_bits & 0x1000000L) == 0)
+                        {
+                            _bits |= 0x1000000L;
+                            _headers._Cookie = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expect, key))
+                    {
+                        if ((_bits & 0x2000000L) == 0)
+                        {
+                            _bits |= 0x2000000L;
+                            _headers._Expect = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Origin, key))
+                    {
+                        if ((_bits & 0x400000000000L) == 0)
+                        {
+                            _bits |= 0x400000000000L;
+                            _headers._Origin = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Accept.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000L) == 0)
+                        {
+                            _bits |= 0x80000L;
+                            _headers._Accept = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10L) == 0)
+                        {
+                            _bits |= 0x10L;
+                            _headers._Pragma = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Cookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000L) == 0)
+                        {
+                            _bits |= 0x1000000L;
+                            _headers._Cookie = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expect.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000L) == 0)
+                        {
+                            _bits |= 0x2000000L;
+                            _headers._Expect = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000000L) == 0)
+                        {
+                            _bits |= 0x400000000000L;
+                            _headers._Origin = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 7:
+                {
+                    if (ReferenceEquals(HeaderNames.Trailer, key))
+                    {
+                        if ((_bits & 0x20L) == 0)
+                        {
+                            _bits |= 0x20L;
+                            _headers._Trailer = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key))
+                    {
+                        if ((_bits & 0x80L) == 0)
+                        {
+                            _bits |= 0x80L;
+                            _headers._Upgrade = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key))
+                    {
+                        if ((_bits & 0x200L) == 0)
+                        {
+                            _bits |= 0x200L;
+                            _headers._Warning = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expires, key))
+                    {
+                        if ((_bits & 0x20000L) == 0)
+                        {
+                            _bits |= 0x20000L;
+                            _headers._Expires = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Referer, key))
+                    {
+                        if ((_bits & 0x800000000L) == 0)
+                        {
+                            _bits |= 0x800000000L;
+                            _headers._Referer = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Trailer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20L) == 0)
+                        {
+                            _bits |= 0x20L;
+                            _headers._Trailer = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80L) == 0)
+                        {
+                            _bits |= 0x80L;
+                            _headers._Upgrade = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200L) == 0)
+                        {
+                            _bits |= 0x200L;
+                            _headers._Warning = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000L) == 0)
+                        {
+                            _bits |= 0x20000L;
+                            _headers._Expires = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Referer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000000L) == 0)
+                        {
+                            _bits |= 0x800000000L;
+                            _headers._Referer = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 8:
+                {
+                    if (ReferenceEquals(HeaderNames.IfMatch, key))
+                    {
+                        if ((_bits & 0x10000000L) == 0)
+                        {
+                            _bits |= 0x10000000L;
+                            _headers._IfMatch = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfRange, key))
+                    {
+                        if ((_bits & 0x80000000L) == 0)
+                        {
+                            _bits |= 0x80000000L;
+                            _headers._IfRange = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000L) == 0)
+                        {
+                            _bits |= 0x10000000L;
+                            _headers._IfMatch = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000L) == 0)
+                        {
+                            _bits |= 0x80000000L;
+                            _headers._IfRange = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 9:
+                {
+                    if (ReferenceEquals(HeaderNames.Translate, key))
                     {
-                        if ("Translate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x4000000000L) == 0)
                         {
-                            if ((_bits & 0x4000000000L) == 0)
-                            {
-                                _bits |= 0x4000000000L;
-                                _headers._Translate = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x4000000000L;
+                            _headers._Translate = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Translate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000000L) == 0)
+                        {
+                            _bits |= 0x4000000000L;
+                            _headers._Translate = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 10:
+                {
+                    if (ReferenceEquals(HeaderNames.Connection, key))
+                    {
+                        if ((_bits & 0x2L) == 0)
+                        {
+                            _bits |= 0x2L;
+                            _headers._Connection = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.UserAgent, key))
+                    {
+                        if ((_bits & 0x8000000000L) == 0)
+                        {
+                            _bits |= 0x8000000000L;
+                            _headers._UserAgent = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key))
+                    {
+                        if ((_bits & 0x8L) == 0)
+                        {
+                            _bits |= 0x8L;
+                            _headers._KeepAlive = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.RequestId, key))
+                    {
+                        if ((_bits & 0x40000000000L) == 0)
+                        {
+                            _bits |= 0x40000000000L;
+                            _headers._RequestId = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceState, key))
+                    {
+                        if ((_bits & 0x200000000000L) == 0)
+                        {
+                            _bits |= 0x200000000000L;
+                            _headers._TraceState = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2L) == 0)
+                        {
+                            _bits |= 0x2L;
+                            _headers._Connection = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.UserAgent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000000L) == 0)
+                        {
+                            _bits |= 0x8000000000L;
+                            _headers._UserAgent = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8L) == 0)
+                        {
+                            _bits |= 0x8L;
+                            _headers._KeepAlive = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000000L) == 0)
+                        {
+                            _bits |= 0x40000000000L;
+                            _headers._RequestId = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000000L) == 0)
+                        {
+                            _bits |= 0x200000000000L;
+                            _headers._TraceState = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 11:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentMD5, key))
+                    {
+                        if ((_bits & 0x8000L) == 0)
+                        {
+                            _bits |= 0x8000L;
+                            _headers._ContentMD5 = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceParent, key))
+                    {
+                        if ((_bits & 0x100000000000L) == 0)
+                        {
+                            _bits |= 0x100000000000L;
+                            _headers._TraceParent = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentMD5.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000L) == 0)
+                        {
+                            _bits |= 0x8000L;
+                            _headers._ContentMD5 = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000000L) == 0)
+                        {
+                            _bits |= 0x100000000000L;
+                            _headers._TraceParent = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 12:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentType, key))
+                    {
+                        if ((_bits & 0x800L) == 0)
+                        {
+                            _bits |= 0x800L;
+                            _headers._ContentType = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.MaxForwards, key))
+                    {
+                        if ((_bits & 0x200000000L) == 0)
+                        {
+                            _bits |= 0x200000000L;
+                            _headers._MaxForwards = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800L) == 0)
+                        {
+                            _bits |= 0x800L;
+                            _headers._ContentType = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.MaxForwards.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000L) == 0)
+                        {
+                            _bits |= 0x200000000L;
+                            _headers._MaxForwards = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 13:
+                {
+                    if (ReferenceEquals(HeaderNames.CacheControl, key))
+                    {
+                        if ((_bits & 0x1L) == 0)
+                        {
+                            _bits |= 0x1L;
+                            _headers._CacheControl = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentRange, key))
+                    {
+                        if ((_bits & 0x10000L) == 0)
+                        {
+                            _bits |= 0x10000L;
+                            _headers._ContentRange = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.LastModified, key))
+                    {
+                        if ((_bits & 0x40000L) == 0)
+                        {
+                            _bits |= 0x40000L;
+                            _headers._LastModified = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Authorization, key))
+                    {
+                        if ((_bits & 0x800000L) == 0)
+                        {
+                            _bits |= 0x800000L;
+                            _headers._Authorization = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfNoneMatch, key))
+                    {
+                        if ((_bits & 0x40000000L) == 0)
+                        {
+                            _bits |= 0x40000000L;
+                            _headers._IfNoneMatch = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) == 0)
+                        {
+                            _bits |= 0x1L;
+                            _headers._CacheControl = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000L) == 0)
+                        {
+                            _bits |= 0x10000L;
+                            _headers._ContentRange = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.LastModified.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000L) == 0)
+                        {
+                            _bits |= 0x40000L;
+                            _headers._LastModified = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Authorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000L) == 0)
+                        {
+                            _bits |= 0x800000L;
+                            _headers._Authorization = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfNoneMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000L) == 0)
+                        {
+                            _bits |= 0x40000000L;
+                            _headers._IfNoneMatch = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 14:
+                {
+                    if (ReferenceEquals(HeaderNames.AcceptCharset, key))
+                    {
+                        if ((_bits & 0x100000L) == 0)
+                        {
+                            _bits |= 0x100000L;
+                            _headers._AcceptCharset = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLength, key))
+                    {
+                        if (!_contentLength.HasValue)
+                        {
+                            _contentLength = ParseContentLength(value);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AcceptCharset.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000L) == 0)
+                        {
+                            _bits |= 0x100000L;
+                            _headers._AcceptCharset = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!_contentLength.HasValue)
+                        {
+                            _contentLength = ParseContentLength(value);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 15:
+                {
+                    if (ReferenceEquals(HeaderNames.AcceptEncoding, key))
+                    {
+                        if ((_bits & 0x200000L) == 0)
+                        {
+                            _bits |= 0x200000L;
+                            _headers._AcceptEncoding = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptLanguage, key))
+                    {
+                        if ((_bits & 0x400000L) == 0)
+                        {
+                            _bits |= 0x400000L;
+                            _headers._AcceptLanguage = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AcceptEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000L) == 0)
+                        {
+                            _bits |= 0x200000L;
+                            _headers._AcceptEncoding = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AcceptLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000L) == 0)
+                        {
+                            _bits |= 0x400000L;
+                            _headers._AcceptLanguage = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 16:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentEncoding, key))
+                    {
+                        if ((_bits & 0x1000L) == 0)
+                        {
+                            _bits |= 0x1000L;
+                            _headers._ContentEncoding = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLanguage, key))
+                    {
+                        if ((_bits & 0x2000L) == 0)
+                        {
+                            _bits |= 0x2000L;
+                            _headers._ContentLanguage = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLocation, key))
+                    {
+                        if ((_bits & 0x4000L) == 0)
+                        {
+                            _bits |= 0x4000L;
+                            _headers._ContentLocation = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000L) == 0)
+                        {
+                            _bits |= 0x1000L;
+                            _headers._ContentEncoding = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000L) == 0)
+                        {
+                            _bits |= 0x2000L;
+                            _headers._ContentLanguage = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLocation.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) == 0)
+                        {
+                            _bits |= 0x4000L;
+                            _headers._ContentLocation = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key))
+                    {
+                        if ((_bits & 0x40L) == 0)
+                        {
+                            _bits |= 0x40L;
+                            _headers._TransferEncoding = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfModifiedSince, key))
+                    {
+                        if ((_bits & 0x20000000L) == 0)
+                        {
+                            _bits |= 0x20000000L;
+                            _headers._IfModifiedSince = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40L) == 0)
+                        {
+                            _bits |= 0x40L;
+                            _headers._TransferEncoding = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfModifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000L) == 0)
+                        {
+                            _bits |= 0x20000000L;
+                            _headers._IfModifiedSince = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 19:
+                {
+                    if (ReferenceEquals(HeaderNames.IfUnmodifiedSince, key))
+                    {
+                        if ((_bits & 0x100000000L) == 0)
+                        {
+                            _bits |= 0x100000000L;
+                            _headers._IfUnmodifiedSince = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ProxyAuthorization, key))
+                    {
+                        if ((_bits & 0x400000000L) == 0)
+                        {
+                            _bits |= 0x400000000L;
+                            _headers._ProxyAuthorization = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.CorrelationContext, key))
+                    {
+                        if ((_bits & 0x80000000000L) == 0)
+                        {
+                            _bits |= 0x80000000000L;
+                            _headers._CorrelationContext = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.IfUnmodifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000L) == 0)
+                        {
+                            _bits |= 0x100000000L;
+                            _headers._IfUnmodifiedSince = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ProxyAuthorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000L) == 0)
+                        {
+                            _bits |= 0x400000000L;
+                            _headers._ProxyAuthorization = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000000L) == 0)
+                        {
+                            _bits |= 0x80000000000L;
+                            _headers._CorrelationContext = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 25:
+                {
+                    if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key))
                     {
-                        if ("Upgrade-Insecure-Requests".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x20000000000L) == 0)
                         {
-                            if ((_bits & 0x20000000000L) == 0)
-                            {
-                                _bits |= 0x20000000000L;
-                                _headers._UpgradeInsecureRequests = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x20000000000L;
+                            _headers._UpgradeInsecureRequests = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000000L) == 0)
+                        {
+                            _bits |= 0x20000000000L;
+                            _headers._UpgradeInsecureRequests = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
                 case 29:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key))
                     {
-                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x800000000000L) == 0)
                         {
-                            if ((_bits & 0x80000000000L) == 0)
-                            {
-                                _bits |= 0x80000000000L;
-                                _headers._AccessControlRequestMethod = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x800000000000L;
+                            _headers._AccessControlRequestMethod = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000000000L) == 0)
+                        {
+                            _bits |= 0x800000000000L;
+                            _headers._AccessControlRequestMethod = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
                 case 30:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key))
                     {
-                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1000000000000L) == 0)
                         {
-                            if ((_bits & 0x100000000000L) == 0)
-                            {
-                                _bits |= 0x100000000000L;
-                                _headers._AccessControlRequestHeaders = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x1000000000000L;
+                            _headers._AccessControlRequestHeaders = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000000000L) == 0)
+                        {
+                            _bits |= 0x1000000000000L;
+                            _headers._AccessControlRequestHeaders = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
             }
 
-            Unknown.Add(key, value);
-            // Return true, above will throw and exit for false
-            return true;
+            return AddValueUnknown(key, value);
         }
 
         protected override bool RemoveFast(string key)
         {
             switch (key.Length)
             {
-                case 13:
-                    {
-                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1L) != 0)
-                            {
-                                _bits &= ~0x1L;
-                                _headers._CacheControl = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000L) != 0)
-                            {
-                                _bits &= ~0x10000L;
-                                _headers._ContentRange = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000L) != 0)
-                            {
-                                _bits &= ~0x40000L;
-                                _headers._LastModified = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Authorization".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800000L) != 0)
-                            {
-                                _bits &= ~0x800000L;
-                                _headers._Authorization = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-None-Match".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000000L) != 0)
-                            {
-                                _bits &= ~0x40000000L;
-                                _headers._IfNoneMatch = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 10:
-                    {
-                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2L) != 0)
-                            {
-                                _bits &= ~0x2L;
-                                _headers._Connection = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8L) != 0)
-                            {
-                                _bits &= ~0x8L;
-                                _headers._KeepAlive = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("User-Agent".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000000L) != 0)
-                            {
-                                _bits &= ~0x8000000000L;
-                                _headers._UserAgent = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 4:
-                    {
-                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4L) != 0)
-                            {
-                                _bits &= ~0x4L;
-                                _headers._Date = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("From".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000000L) != 0)
-                            {
-                                _bits &= ~0x4000000L;
-                                _headers._From = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Host".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000L) != 0)
-                            {
-                                _bits &= ~0x8000000L;
-                                _headers._Host = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 6:
-                    {
-                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10L) != 0)
-                            {
-                                _bits &= ~0x10L;
-                                _headers._Pragma = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000L) != 0)
-                            {
-                                _bits &= ~0x80000L;
-                                _headers._Accept = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Cookie".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000L) != 0)
-                            {
-                                _bits &= ~0x1000000L;
-                                _headers._Cookie = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expect".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000000L) != 0)
-                            {
-                                _bits &= ~0x2000000L;
-                                _headers._Expect = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000000000L) != 0)
-                            {
-                                _bits &= ~0x40000000000L;
-                                _headers._Origin = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 7:
-                    {
-                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20L) != 0)
-                            {
-                                _bits &= ~0x20L;
-                                _headers._Trailer = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80L) != 0)
-                            {
-                                _bits &= ~0x80L;
-                                _headers._Upgrade = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200L) != 0)
-                            {
-                                _bits &= ~0x200L;
-                                _headers._Warning = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000L) != 0)
-                            {
-                                _bits &= ~0x20000L;
-                                _headers._Expires = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Referer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800000000L) != 0)
-                            {
-                                _bits &= ~0x800000000L;
-                                _headers._Referer = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 17:
-                    {
-                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40L) != 0)
-                            {
-                                _bits &= ~0x40L;
-                                _headers._TransferEncoding = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-Modified-Since".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000000L) != 0)
-                            {
-                                _bits &= ~0x20000000L;
-                                _headers._IfModifiedSince = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 3:
-                    {
-                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100L) != 0)
-                            {
-                                _bits &= ~0x100L;
-                                _headers._Via = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("DNT".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000000000L) != 0)
-                            {
-                                _bits &= ~0x10000000000L;
-                                _headers._DNT = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 5:
-                    {
-                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400L) != 0)
-                            {
-                                _bits &= ~0x400L;
-                                _headers._Allow = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000000L) != 0)
-                            {
-                                _bits &= ~0x1000000000L;
-                                _headers._Range = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 12:
-                    {
-                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x800L) != 0)
-                            {
-                                _bits &= ~0x800L;
-                                _headers._ContentType = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Max-Forwards".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000000L) != 0)
-                            {
-                                _bits &= ~0x200000000L;
-                                _headers._MaxForwards = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 16:
-                    {
-                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000L) != 0)
-                            {
-                                _bits &= ~0x1000L;
-                                _headers._ContentEncoding = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000L) != 0)
-                            {
-                                _bits &= ~0x2000L;
-                                _headers._ContentLanguage = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000L) != 0)
-                            {
-                                _bits &= ~0x4000L;
-                                _headers._ContentLocation = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 11:
-                    {
-                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000L) != 0)
-                            {
-                                _bits &= ~0x8000L;
-                                _headers._ContentMD5 = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 14:
-                    {
-                        if ("Accept-Charset".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100000L) != 0)
-                            {
-                                _bits &= ~0x100000L;
-                                _headers._AcceptCharset = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (_contentLength.HasValue)
-                            {
-                                _contentLength = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 15:
-                    {
-                        if ("Accept-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000L) != 0)
-                            {
-                                _bits &= ~0x200000L;
-                                _headers._AcceptEncoding = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000L) != 0)
-                            {
-                                _bits &= ~0x400000L;
-                                _headers._AcceptLanguage = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 8:
-                    {
-                        if ("If-Match".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000000L) != 0)
-                            {
-                                _bits &= ~0x10000000L;
-                                _headers._IfMatch = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("If-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000000L) != 0)
-                            {
-                                _bits &= ~0x80000000L;
-                                _headers._IfRange = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 19:
-                    {
-                        if ("If-Unmodified-Since".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x100000000L) != 0)
-                            {
-                                _bits &= ~0x100000000L;
-                                _headers._IfUnmodifiedSince = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Proxy-Authorization".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000000L) != 0)
-                            {
-                                _bits &= ~0x400000000L;
-                                _headers._ProxyAuthorization = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
                 case 2:
+                {
+                    if (ReferenceEquals(HeaderNames.TE, key))
                     {
-                        if ("TE".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2000000000L) != 0)
                         {
-                            if ((_bits & 0x2000000000L) != 0)
-                            {
-                                _bits &= ~0x2000000000L;
-                                _headers._TE = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x2000000000L;
+                            _headers._TE = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.TE.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000000L) != 0)
+                        {
+                            _bits &= ~0x2000000000L;
+                            _headers._TE = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 3:
+                {
+                    if (ReferenceEquals(HeaderNames.Via, key))
+                    {
+                        if ((_bits & 0x100L) != 0)
+                        {
+                            _bits &= ~0x100L;
+                            _headers._Via = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.DNT, key))
+                    {
+                        if ((_bits & 0x10000000000L) != 0)
+                        {
+                            _bits &= ~0x10000000000L;
+                            _headers._DNT = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100L) != 0)
+                        {
+                            _bits &= ~0x100L;
+                            _headers._Via = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.DNT.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000000L) != 0)
+                        {
+                            _bits &= ~0x10000000000L;
+                            _headers._DNT = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.Host, key))
+                    {
+                        if ((_bits & 0x8000000L) != 0)
+                        {
+                            _bits &= ~0x8000000L;
+                            _headers._Host = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Date, key))
+                    {
+                        if ((_bits & 0x4L) != 0)
+                        {
+                            _bits &= ~0x4L;
+                            _headers._Date = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.From, key))
+                    {
+                        if ((_bits & 0x4000000L) != 0)
+                        {
+                            _bits &= ~0x4000000L;
+                            _headers._From = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Host.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000L) != 0)
+                        {
+                            _bits &= ~0x8000000L;
+                            _headers._Host = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4L) != 0)
+                        {
+                            _bits &= ~0x4L;
+                            _headers._Date = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.From.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000L) != 0)
+                        {
+                            _bits &= ~0x4000000L;
+                            _headers._From = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 5:
+                {
+                    if (ReferenceEquals(HeaderNames.Allow, key))
+                    {
+                        if ((_bits & 0x400L) != 0)
+                        {
+                            _bits &= ~0x400L;
+                            _headers._Allow = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Range, key))
+                    {
+                        if ((_bits & 0x1000000000L) != 0)
+                        {
+                            _bits &= ~0x1000000000L;
+                            _headers._Range = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Allow.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400L) != 0)
+                        {
+                            _bits &= ~0x400L;
+                            _headers._Allow = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Range.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000000L) != 0)
+                        {
+                            _bits &= ~0x1000000000L;
+                            _headers._Range = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 6:
+                {
+                    if (ReferenceEquals(HeaderNames.Accept, key))
+                    {
+                        if ((_bits & 0x80000L) != 0)
+                        {
+                            _bits &= ~0x80000L;
+                            _headers._Accept = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key))
+                    {
+                        if ((_bits & 0x10L) != 0)
+                        {
+                            _bits &= ~0x10L;
+                            _headers._Pragma = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Cookie, key))
+                    {
+                        if ((_bits & 0x1000000L) != 0)
+                        {
+                            _bits &= ~0x1000000L;
+                            _headers._Cookie = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expect, key))
+                    {
+                        if ((_bits & 0x2000000L) != 0)
+                        {
+                            _bits &= ~0x2000000L;
+                            _headers._Expect = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Origin, key))
+                    {
+                        if ((_bits & 0x400000000000L) != 0)
+                        {
+                            _bits &= ~0x400000000000L;
+                            _headers._Origin = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Accept.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000L) != 0)
+                        {
+                            _bits &= ~0x80000L;
+                            _headers._Accept = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10L) != 0)
+                        {
+                            _bits &= ~0x10L;
+                            _headers._Pragma = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Cookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000L) != 0)
+                        {
+                            _bits &= ~0x1000000L;
+                            _headers._Cookie = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expect.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000L) != 0)
+                        {
+                            _bits &= ~0x2000000L;
+                            _headers._Expect = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Origin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000000L) != 0)
+                        {
+                            _bits &= ~0x400000000000L;
+                            _headers._Origin = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 7:
+                {
+                    if (ReferenceEquals(HeaderNames.Trailer, key))
+                    {
+                        if ((_bits & 0x20L) != 0)
+                        {
+                            _bits &= ~0x20L;
+                            _headers._Trailer = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key))
+                    {
+                        if ((_bits & 0x80L) != 0)
+                        {
+                            _bits &= ~0x80L;
+                            _headers._Upgrade = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key))
+                    {
+                        if ((_bits & 0x200L) != 0)
+                        {
+                            _bits &= ~0x200L;
+                            _headers._Warning = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expires, key))
+                    {
+                        if ((_bits & 0x20000L) != 0)
+                        {
+                            _bits &= ~0x20000L;
+                            _headers._Expires = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Referer, key))
+                    {
+                        if ((_bits & 0x800000000L) != 0)
+                        {
+                            _bits &= ~0x800000000L;
+                            _headers._Referer = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Trailer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20L) != 0)
+                        {
+                            _bits &= ~0x20L;
+                            _headers._Trailer = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80L) != 0)
+                        {
+                            _bits &= ~0x80L;
+                            _headers._Upgrade = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200L) != 0)
+                        {
+                            _bits &= ~0x200L;
+                            _headers._Warning = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000L) != 0)
+                        {
+                            _bits &= ~0x20000L;
+                            _headers._Expires = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Referer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000000L) != 0)
+                        {
+                            _bits &= ~0x800000000L;
+                            _headers._Referer = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 8:
+                {
+                    if (ReferenceEquals(HeaderNames.IfMatch, key))
+                    {
+                        if ((_bits & 0x10000000L) != 0)
+                        {
+                            _bits &= ~0x10000000L;
+                            _headers._IfMatch = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfRange, key))
+                    {
+                        if ((_bits & 0x80000000L) != 0)
+                        {
+                            _bits &= ~0x80000000L;
+                            _headers._IfRange = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.IfMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000L) != 0)
+                        {
+                            _bits &= ~0x10000000L;
+                            _headers._IfMatch = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000L) != 0)
+                        {
+                            _bits &= ~0x80000000L;
+                            _headers._IfRange = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 9:
+                {
+                    if (ReferenceEquals(HeaderNames.Translate, key))
                     {
-                        if ("Translate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x4000000000L) != 0)
                         {
-                            if ((_bits & 0x4000000000L) != 0)
-                            {
-                                _bits &= ~0x4000000000L;
-                                _headers._Translate = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x4000000000L;
+                            _headers._Translate = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Translate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000000L) != 0)
+                        {
+                            _bits &= ~0x4000000000L;
+                            _headers._Translate = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 10:
+                {
+                    if (ReferenceEquals(HeaderNames.Connection, key))
+                    {
+                        if ((_bits & 0x2L) != 0)
+                        {
+                            _bits &= ~0x2L;
+                            _headers._Connection = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.UserAgent, key))
+                    {
+                        if ((_bits & 0x8000000000L) != 0)
+                        {
+                            _bits &= ~0x8000000000L;
+                            _headers._UserAgent = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key))
+                    {
+                        if ((_bits & 0x8L) != 0)
+                        {
+                            _bits &= ~0x8L;
+                            _headers._KeepAlive = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.RequestId, key))
+                    {
+                        if ((_bits & 0x40000000000L) != 0)
+                        {
+                            _bits &= ~0x40000000000L;
+                            _headers._RequestId = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceState, key))
+                    {
+                        if ((_bits & 0x200000000000L) != 0)
+                        {
+                            _bits &= ~0x200000000000L;
+                            _headers._TraceState = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2L) != 0)
+                        {
+                            _bits &= ~0x2L;
+                            _headers._Connection = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.UserAgent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000000L) != 0)
+                        {
+                            _bits &= ~0x8000000000L;
+                            _headers._UserAgent = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8L) != 0)
+                        {
+                            _bits &= ~0x8L;
+                            _headers._KeepAlive = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.RequestId.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000000L) != 0)
+                        {
+                            _bits &= ~0x40000000000L;
+                            _headers._RequestId = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.TraceState.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000000L) != 0)
+                        {
+                            _bits &= ~0x200000000000L;
+                            _headers._TraceState = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 11:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentMD5, key))
+                    {
+                        if ((_bits & 0x8000L) != 0)
+                        {
+                            _bits &= ~0x8000L;
+                            _headers._ContentMD5 = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.TraceParent, key))
+                    {
+                        if ((_bits & 0x100000000000L) != 0)
+                        {
+                            _bits &= ~0x100000000000L;
+                            _headers._TraceParent = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentMD5.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000L) != 0)
+                        {
+                            _bits &= ~0x8000L;
+                            _headers._ContentMD5 = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.TraceParent.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000000L) != 0)
+                        {
+                            _bits &= ~0x100000000000L;
+                            _headers._TraceParent = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 12:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentType, key))
+                    {
+                        if ((_bits & 0x800L) != 0)
+                        {
+                            _bits &= ~0x800L;
+                            _headers._ContentType = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.MaxForwards, key))
+                    {
+                        if ((_bits & 0x200000000L) != 0)
+                        {
+                            _bits &= ~0x200000000L;
+                            _headers._MaxForwards = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800L) != 0)
+                        {
+                            _bits &= ~0x800L;
+                            _headers._ContentType = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.MaxForwards.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000L) != 0)
+                        {
+                            _bits &= ~0x200000000L;
+                            _headers._MaxForwards = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 13:
+                {
+                    if (ReferenceEquals(HeaderNames.CacheControl, key))
+                    {
+                        if ((_bits & 0x1L) != 0)
+                        {
+                            _bits &= ~0x1L;
+                            _headers._CacheControl = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentRange, key))
+                    {
+                        if ((_bits & 0x10000L) != 0)
+                        {
+                            _bits &= ~0x10000L;
+                            _headers._ContentRange = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.LastModified, key))
+                    {
+                        if ((_bits & 0x40000L) != 0)
+                        {
+                            _bits &= ~0x40000L;
+                            _headers._LastModified = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Authorization, key))
+                    {
+                        if ((_bits & 0x800000L) != 0)
+                        {
+                            _bits &= ~0x800000L;
+                            _headers._Authorization = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfNoneMatch, key))
+                    {
+                        if ((_bits & 0x40000000L) != 0)
+                        {
+                            _bits &= ~0x40000000L;
+                            _headers._IfNoneMatch = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) != 0)
+                        {
+                            _bits &= ~0x1L;
+                            _headers._CacheControl = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000L) != 0)
+                        {
+                            _bits &= ~0x10000L;
+                            _headers._ContentRange = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.LastModified.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000L) != 0)
+                        {
+                            _bits &= ~0x40000L;
+                            _headers._LastModified = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Authorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000L) != 0)
+                        {
+                            _bits &= ~0x800000L;
+                            _headers._Authorization = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfNoneMatch.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000L) != 0)
+                        {
+                            _bits &= ~0x40000000L;
+                            _headers._IfNoneMatch = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 14:
+                {
+                    if (ReferenceEquals(HeaderNames.AcceptCharset, key))
+                    {
+                        if ((_bits & 0x100000L) != 0)
+                        {
+                            _bits &= ~0x100000L;
+                            _headers._AcceptCharset = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLength, key))
+                    {
+                        if (_contentLength.HasValue)
+                        {
+                            _contentLength = null;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AcceptCharset.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000L) != 0)
+                        {
+                            _bits &= ~0x100000L;
+                            _headers._AcceptCharset = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (_contentLength.HasValue)
+                        {
+                            _contentLength = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 15:
+                {
+                    if (ReferenceEquals(HeaderNames.AcceptEncoding, key))
+                    {
+                        if ((_bits & 0x200000L) != 0)
+                        {
+                            _bits &= ~0x200000L;
+                            _headers._AcceptEncoding = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptLanguage, key))
+                    {
+                        if ((_bits & 0x400000L) != 0)
+                        {
+                            _bits &= ~0x400000L;
+                            _headers._AcceptLanguage = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AcceptEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000L) != 0)
+                        {
+                            _bits &= ~0x200000L;
+                            _headers._AcceptEncoding = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AcceptLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000L) != 0)
+                        {
+                            _bits &= ~0x400000L;
+                            _headers._AcceptLanguage = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 16:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentEncoding, key))
+                    {
+                        if ((_bits & 0x1000L) != 0)
+                        {
+                            _bits &= ~0x1000L;
+                            _headers._ContentEncoding = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLanguage, key))
+                    {
+                        if ((_bits & 0x2000L) != 0)
+                        {
+                            _bits &= ~0x2000L;
+                            _headers._ContentLanguage = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLocation, key))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            _bits &= ~0x4000L;
+                            _headers._ContentLocation = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000L) != 0)
+                        {
+                            _bits &= ~0x1000L;
+                            _headers._ContentEncoding = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000L) != 0)
+                        {
+                            _bits &= ~0x2000L;
+                            _headers._ContentLanguage = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLocation.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            _bits &= ~0x4000L;
+                            _headers._ContentLocation = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key))
+                    {
+                        if ((_bits & 0x40L) != 0)
+                        {
+                            _bits &= ~0x40L;
+                            _headers._TransferEncoding = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.IfModifiedSince, key))
+                    {
+                        if ((_bits & 0x20000000L) != 0)
+                        {
+                            _bits &= ~0x20000000L;
+                            _headers._IfModifiedSince = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40L) != 0)
+                        {
+                            _bits &= ~0x40L;
+                            _headers._TransferEncoding = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.IfModifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000L) != 0)
+                        {
+                            _bits &= ~0x20000000L;
+                            _headers._IfModifiedSince = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 19:
+                {
+                    if (ReferenceEquals(HeaderNames.IfUnmodifiedSince, key))
+                    {
+                        if ((_bits & 0x100000000L) != 0)
+                        {
+                            _bits &= ~0x100000000L;
+                            _headers._IfUnmodifiedSince = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ProxyAuthorization, key))
+                    {
+                        if ((_bits & 0x400000000L) != 0)
+                        {
+                            _bits &= ~0x400000000L;
+                            _headers._ProxyAuthorization = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.CorrelationContext, key))
+                    {
+                        if ((_bits & 0x80000000000L) != 0)
+                        {
+                            _bits &= ~0x80000000000L;
+                            _headers._CorrelationContext = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.IfUnmodifiedSince.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000L) != 0)
+                        {
+                            _bits &= ~0x100000000L;
+                            _headers._IfUnmodifiedSince = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ProxyAuthorization.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000L) != 0)
+                        {
+                            _bits &= ~0x400000000L;
+                            _headers._ProxyAuthorization = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.CorrelationContext.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000000L) != 0)
+                        {
+                            _bits &= ~0x80000000000L;
+                            _headers._CorrelationContext = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 25:
+                {
+                    if (ReferenceEquals(HeaderNames.UpgradeInsecureRequests, key))
                     {
-                        if ("Upgrade-Insecure-Requests".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x20000000000L) != 0)
                         {
-                            if ((_bits & 0x20000000000L) != 0)
-                            {
-                                _bits &= ~0x20000000000L;
-                                _headers._UpgradeInsecureRequests = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x20000000000L;
+                            _headers._UpgradeInsecureRequests = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.UpgradeInsecureRequests.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000000L) != 0)
+                        {
+                            _bits &= ~0x20000000000L;
+                            _headers._UpgradeInsecureRequests = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
                 case 29:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestMethod, key))
                     {
-                        if ("Access-Control-Request-Method".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x800000000000L) != 0)
                         {
-                            if ((_bits & 0x80000000000L) != 0)
-                            {
-                                _bits &= ~0x80000000000L;
-                                _headers._AccessControlRequestMethod = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x800000000000L;
+                            _headers._AccessControlRequestMethod = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlRequestMethod.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000000000L) != 0)
+                        {
+                            _bits &= ~0x800000000000L;
+                            _headers._AccessControlRequestMethod = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
                 case 30:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlRequestHeaders, key))
                     {
-                        if ("Access-Control-Request-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1000000000000L) != 0)
                         {
-                            if ((_bits & 0x100000000000L) != 0)
-                            {
-                                _bits &= ~0x100000000000L;
-                                _headers._AccessControlRequestHeaders = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x1000000000000L;
+                            _headers._AccessControlRequestHeaders = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlRequestHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000000000L) != 0)
+                        {
+                            _bits &= ~0x1000000000000L;
+                            _headers._AccessControlRequestHeaders = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
             }
 
-            return MaybeUnknown?.Remove(key) ?? false;
+            return RemoveUnknown(key);
         }
         private void Clear(long bitsToClear)
         {
@@ -2781,7 +4814,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x2L) != 0)
             {
-                _headers._Connection = default(StringValues);
+                _headers._Connection = default;
                 if((tempBits & ~0x2L) == 0)
                 {
                     return;
@@ -2791,7 +4824,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x80000L) != 0)
             {
-                _headers._Accept = default(StringValues);
+                _headers._Accept = default;
                 if((tempBits & ~0x80000L) == 0)
                 {
                     return;
@@ -2801,7 +4834,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8000000L) != 0)
             {
-                _headers._Host = default(StringValues);
+                _headers._Host = default;
                 if((tempBits & ~0x8000000L) == 0)
                 {
                     return;
@@ -2811,7 +4844,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8000000000L) != 0)
             {
-                _headers._UserAgent = default(StringValues);
+                _headers._UserAgent = default;
                 if((tempBits & ~0x8000000000L) == 0)
                 {
                     return;
@@ -2821,7 +4854,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1L) != 0)
             {
-                _headers._CacheControl = default(StringValues);
+                _headers._CacheControl = default;
                 if((tempBits & ~0x1L) == 0)
                 {
                     return;
@@ -2831,7 +4864,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4L) != 0)
             {
-                _headers._Date = default(StringValues);
+                _headers._Date = default;
                 if((tempBits & ~0x4L) == 0)
                 {
                     return;
@@ -2841,7 +4874,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8L) != 0)
             {
-                _headers._KeepAlive = default(StringValues);
+                _headers._KeepAlive = default;
                 if((tempBits & ~0x8L) == 0)
                 {
                     return;
@@ -2851,7 +4884,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10L) != 0)
             {
-                _headers._Pragma = default(StringValues);
+                _headers._Pragma = default;
                 if((tempBits & ~0x10L) == 0)
                 {
                     return;
@@ -2861,7 +4894,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20L) != 0)
             {
-                _headers._Trailer = default(StringValues);
+                _headers._Trailer = default;
                 if((tempBits & ~0x20L) == 0)
                 {
                     return;
@@ -2871,7 +4904,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40L) != 0)
             {
-                _headers._TransferEncoding = default(StringValues);
+                _headers._TransferEncoding = default;
                 if((tempBits & ~0x40L) == 0)
                 {
                     return;
@@ -2881,7 +4914,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x80L) != 0)
             {
-                _headers._Upgrade = default(StringValues);
+                _headers._Upgrade = default;
                 if((tempBits & ~0x80L) == 0)
                 {
                     return;
@@ -2891,7 +4924,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x100L) != 0)
             {
-                _headers._Via = default(StringValues);
+                _headers._Via = default;
                 if((tempBits & ~0x100L) == 0)
                 {
                     return;
@@ -2901,7 +4934,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x200L) != 0)
             {
-                _headers._Warning = default(StringValues);
+                _headers._Warning = default;
                 if((tempBits & ~0x200L) == 0)
                 {
                     return;
@@ -2911,7 +4944,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x400L) != 0)
             {
-                _headers._Allow = default(StringValues);
+                _headers._Allow = default;
                 if((tempBits & ~0x400L) == 0)
                 {
                     return;
@@ -2921,7 +4954,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x800L) != 0)
             {
-                _headers._ContentType = default(StringValues);
+                _headers._ContentType = default;
                 if((tempBits & ~0x800L) == 0)
                 {
                     return;
@@ -2931,7 +4964,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1000L) != 0)
             {
-                _headers._ContentEncoding = default(StringValues);
+                _headers._ContentEncoding = default;
                 if((tempBits & ~0x1000L) == 0)
                 {
                     return;
@@ -2941,7 +4974,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x2000L) != 0)
             {
-                _headers._ContentLanguage = default(StringValues);
+                _headers._ContentLanguage = default;
                 if((tempBits & ~0x2000L) == 0)
                 {
                     return;
@@ -2951,7 +4984,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4000L) != 0)
             {
-                _headers._ContentLocation = default(StringValues);
+                _headers._ContentLocation = default;
                 if((tempBits & ~0x4000L) == 0)
                 {
                     return;
@@ -2961,7 +4994,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8000L) != 0)
             {
-                _headers._ContentMD5 = default(StringValues);
+                _headers._ContentMD5 = default;
                 if((tempBits & ~0x8000L) == 0)
                 {
                     return;
@@ -2971,7 +5004,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10000L) != 0)
             {
-                _headers._ContentRange = default(StringValues);
+                _headers._ContentRange = default;
                 if((tempBits & ~0x10000L) == 0)
                 {
                     return;
@@ -2981,7 +5014,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20000L) != 0)
             {
-                _headers._Expires = default(StringValues);
+                _headers._Expires = default;
                 if((tempBits & ~0x20000L) == 0)
                 {
                     return;
@@ -2991,7 +5024,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40000L) != 0)
             {
-                _headers._LastModified = default(StringValues);
+                _headers._LastModified = default;
                 if((tempBits & ~0x40000L) == 0)
                 {
                     return;
@@ -3001,7 +5034,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x100000L) != 0)
             {
-                _headers._AcceptCharset = default(StringValues);
+                _headers._AcceptCharset = default;
                 if((tempBits & ~0x100000L) == 0)
                 {
                     return;
@@ -3011,7 +5044,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x200000L) != 0)
             {
-                _headers._AcceptEncoding = default(StringValues);
+                _headers._AcceptEncoding = default;
                 if((tempBits & ~0x200000L) == 0)
                 {
                     return;
@@ -3021,7 +5054,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x400000L) != 0)
             {
-                _headers._AcceptLanguage = default(StringValues);
+                _headers._AcceptLanguage = default;
                 if((tempBits & ~0x400000L) == 0)
                 {
                     return;
@@ -3031,7 +5064,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x800000L) != 0)
             {
-                _headers._Authorization = default(StringValues);
+                _headers._Authorization = default;
                 if((tempBits & ~0x800000L) == 0)
                 {
                     return;
@@ -3041,7 +5074,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1000000L) != 0)
             {
-                _headers._Cookie = default(StringValues);
+                _headers._Cookie = default;
                 if((tempBits & ~0x1000000L) == 0)
                 {
                     return;
@@ -3051,7 +5084,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x2000000L) != 0)
             {
-                _headers._Expect = default(StringValues);
+                _headers._Expect = default;
                 if((tempBits & ~0x2000000L) == 0)
                 {
                     return;
@@ -3061,7 +5094,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4000000L) != 0)
             {
-                _headers._From = default(StringValues);
+                _headers._From = default;
                 if((tempBits & ~0x4000000L) == 0)
                 {
                     return;
@@ -3071,7 +5104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10000000L) != 0)
             {
-                _headers._IfMatch = default(StringValues);
+                _headers._IfMatch = default;
                 if((tempBits & ~0x10000000L) == 0)
                 {
                     return;
@@ -3081,7 +5114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20000000L) != 0)
             {
-                _headers._IfModifiedSince = default(StringValues);
+                _headers._IfModifiedSince = default;
                 if((tempBits & ~0x20000000L) == 0)
                 {
                     return;
@@ -3091,7 +5124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40000000L) != 0)
             {
-                _headers._IfNoneMatch = default(StringValues);
+                _headers._IfNoneMatch = default;
                 if((tempBits & ~0x40000000L) == 0)
                 {
                     return;
@@ -3101,7 +5134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x80000000L) != 0)
             {
-                _headers._IfRange = default(StringValues);
+                _headers._IfRange = default;
                 if((tempBits & ~0x80000000L) == 0)
                 {
                     return;
@@ -3111,7 +5144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x100000000L) != 0)
             {
-                _headers._IfUnmodifiedSince = default(StringValues);
+                _headers._IfUnmodifiedSince = default;
                 if((tempBits & ~0x100000000L) == 0)
                 {
                     return;
@@ -3121,7 +5154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x200000000L) != 0)
             {
-                _headers._MaxForwards = default(StringValues);
+                _headers._MaxForwards = default;
                 if((tempBits & ~0x200000000L) == 0)
                 {
                     return;
@@ -3131,7 +5164,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x400000000L) != 0)
             {
-                _headers._ProxyAuthorization = default(StringValues);
+                _headers._ProxyAuthorization = default;
                 if((tempBits & ~0x400000000L) == 0)
                 {
                     return;
@@ -3141,7 +5174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x800000000L) != 0)
             {
-                _headers._Referer = default(StringValues);
+                _headers._Referer = default;
                 if((tempBits & ~0x800000000L) == 0)
                 {
                     return;
@@ -3151,7 +5184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1000000000L) != 0)
             {
-                _headers._Range = default(StringValues);
+                _headers._Range = default;
                 if((tempBits & ~0x1000000000L) == 0)
                 {
                     return;
@@ -3161,7 +5194,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x2000000000L) != 0)
             {
-                _headers._TE = default(StringValues);
+                _headers._TE = default;
                 if((tempBits & ~0x2000000000L) == 0)
                 {
                     return;
@@ -3171,7 +5204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4000000000L) != 0)
             {
-                _headers._Translate = default(StringValues);
+                _headers._Translate = default;
                 if((tempBits & ~0x4000000000L) == 0)
                 {
                     return;
@@ -3181,7 +5214,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10000000000L) != 0)
             {
-                _headers._DNT = default(StringValues);
+                _headers._DNT = default;
                 if((tempBits & ~0x10000000000L) == 0)
                 {
                     return;
@@ -3191,7 +5224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20000000000L) != 0)
             {
-                _headers._UpgradeInsecureRequests = default(StringValues);
+                _headers._UpgradeInsecureRequests = default;
                 if((tempBits & ~0x20000000000L) == 0)
                 {
                     return;
@@ -3201,7 +5234,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40000000000L) != 0)
             {
-                _headers._Origin = default(StringValues);
+                _headers._RequestId = default;
                 if((tempBits & ~0x40000000000L) == 0)
                 {
                     return;
@@ -3211,7 +5244,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x80000000000L) != 0)
             {
-                _headers._AccessControlRequestMethod = default(StringValues);
+                _headers._CorrelationContext = default;
                 if((tempBits & ~0x80000000000L) == 0)
                 {
                     return;
@@ -3221,12 +5254,52 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x100000000000L) != 0)
             {
-                _headers._AccessControlRequestHeaders = default(StringValues);
+                _headers._TraceParent = default;
                 if((tempBits & ~0x100000000000L) == 0)
                 {
                     return;
                 }
                 tempBits &= ~0x100000000000L;
+            }
+            
+            if ((tempBits & 0x200000000000L) != 0)
+            {
+                _headers._TraceState = default;
+                if((tempBits & ~0x200000000000L) == 0)
+                {
+                    return;
+                }
+                tempBits &= ~0x200000000000L;
+            }
+            
+            if ((tempBits & 0x400000000000L) != 0)
+            {
+                _headers._Origin = default;
+                if((tempBits & ~0x400000000000L) == 0)
+                {
+                    return;
+                }
+                tempBits &= ~0x400000000000L;
+            }
+            
+            if ((tempBits & 0x800000000000L) != 0)
+            {
+                _headers._AccessControlRequestMethod = default;
+                if((tempBits & ~0x800000000000L) == 0)
+                {
+                    return;
+                }
+                tempBits &= ~0x800000000000L;
+            }
+            
+            if ((tempBits & 0x1000000000000L) != 0)
+            {
+                _headers._AccessControlRequestHeaders = default;
+                if((tempBits & ~0x1000000000000L) == 0)
+                {
+                    return;
+                }
+                tempBits &= ~0x1000000000000L;
             }
             
         }
@@ -3244,7 +5317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Cache-Control", _headers._CacheControl);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.CacheControl, _headers._CacheControl);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x2L) != 0)
@@ -3253,7 +5326,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Connection", _headers._Connection);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Connection, _headers._Connection);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x4L) != 0)
@@ -3262,7 +5335,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Date", _headers._Date);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Date, _headers._Date);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8L) != 0)
@@ -3271,7 +5344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Keep-Alive", _headers._KeepAlive);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.KeepAlive, _headers._KeepAlive);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10L) != 0)
@@ -3280,7 +5353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Pragma", _headers._Pragma);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Pragma, _headers._Pragma);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20L) != 0)
@@ -3289,7 +5362,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Trailer", _headers._Trailer);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Trailer, _headers._Trailer);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40L) != 0)
@@ -3298,7 +5371,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Transfer-Encoding", _headers._TransferEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TransferEncoding, _headers._TransferEncoding);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x80L) != 0)
@@ -3307,7 +5380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Upgrade", _headers._Upgrade);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Upgrade, _headers._Upgrade);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x100L) != 0)
@@ -3316,7 +5389,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Via", _headers._Via);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Via, _headers._Via);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x200L) != 0)
@@ -3325,7 +5398,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Warning", _headers._Warning);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Warning, _headers._Warning);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x400L) != 0)
@@ -3334,7 +5407,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Allow", _headers._Allow);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Allow, _headers._Allow);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x800L) != 0)
@@ -3343,7 +5416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Type", _headers._ContentType);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentType, _headers._ContentType);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x1000L) != 0)
@@ -3352,7 +5425,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Encoding", _headers._ContentEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentEncoding, _headers._ContentEncoding);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x2000L) != 0)
@@ -3361,7 +5434,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Language", _headers._ContentLanguage);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLanguage, _headers._ContentLanguage);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x4000L) != 0)
@@ -3370,7 +5443,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Location", _headers._ContentLocation);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLocation, _headers._ContentLocation);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8000L) != 0)
@@ -3379,7 +5452,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-MD5", _headers._ContentMD5);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentMD5, _headers._ContentMD5);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10000L) != 0)
@@ -3388,7 +5461,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Range", _headers._ContentRange);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentRange, _headers._ContentRange);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20000L) != 0)
@@ -3397,7 +5470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Expires", _headers._Expires);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Expires, _headers._Expires);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40000L) != 0)
@@ -3406,7 +5479,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Last-Modified", _headers._LastModified);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.LastModified, _headers._LastModified);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x80000L) != 0)
@@ -3415,7 +5488,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept", _headers._Accept);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Accept, _headers._Accept);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x100000L) != 0)
@@ -3424,7 +5497,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Charset", _headers._AcceptCharset);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AcceptCharset, _headers._AcceptCharset);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x200000L) != 0)
@@ -3433,7 +5506,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Encoding", _headers._AcceptEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AcceptEncoding, _headers._AcceptEncoding);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x400000L) != 0)
@@ -3442,7 +5515,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Language", _headers._AcceptLanguage);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AcceptLanguage, _headers._AcceptLanguage);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x800000L) != 0)
@@ -3451,7 +5524,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Authorization", _headers._Authorization);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Authorization, _headers._Authorization);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x1000000L) != 0)
@@ -3460,7 +5533,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Cookie", _headers._Cookie);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Cookie, _headers._Cookie);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x2000000L) != 0)
@@ -3469,7 +5542,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Expect", _headers._Expect);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Expect, _headers._Expect);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x4000000L) != 0)
@@ -3478,7 +5551,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("From", _headers._From);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.From, _headers._From);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8000000L) != 0)
@@ -3487,7 +5560,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Host", _headers._Host);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Host, _headers._Host);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10000000L) != 0)
@@ -3496,7 +5569,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Match", _headers._IfMatch);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.IfMatch, _headers._IfMatch);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20000000L) != 0)
@@ -3505,7 +5578,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Modified-Since", _headers._IfModifiedSince);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.IfModifiedSince, _headers._IfModifiedSince);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40000000L) != 0)
@@ -3514,7 +5587,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-None-Match", _headers._IfNoneMatch);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.IfNoneMatch, _headers._IfNoneMatch);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x80000000L) != 0)
@@ -3523,7 +5596,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Range", _headers._IfRange);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.IfRange, _headers._IfRange);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x100000000L) != 0)
@@ -3532,7 +5605,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("If-Unmodified-Since", _headers._IfUnmodifiedSince);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.IfUnmodifiedSince, _headers._IfUnmodifiedSince);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x200000000L) != 0)
@@ -3541,7 +5614,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Max-Forwards", _headers._MaxForwards);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.MaxForwards, _headers._MaxForwards);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x400000000L) != 0)
@@ -3550,7 +5623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Proxy-Authorization", _headers._ProxyAuthorization);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ProxyAuthorization, _headers._ProxyAuthorization);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x800000000L) != 0)
@@ -3559,7 +5632,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Referer", _headers._Referer);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Referer, _headers._Referer);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x1000000000L) != 0)
@@ -3568,7 +5641,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Range", _headers._Range);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Range, _headers._Range);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x2000000000L) != 0)
@@ -3577,7 +5650,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("TE", _headers._TE);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TE, _headers._TE);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x4000000000L) != 0)
@@ -3586,7 +5659,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Translate", _headers._Translate);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Translate, _headers._Translate);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8000000000L) != 0)
@@ -3595,7 +5668,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("User-Agent", _headers._UserAgent);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.UserAgent, _headers._UserAgent);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10000000000L) != 0)
@@ -3604,7 +5677,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("DNT", _headers._DNT);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.DNT, _headers._DNT);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20000000000L) != 0)
@@ -3613,7 +5686,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Upgrade-Insecure-Requests", _headers._UpgradeInsecureRequests);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.UpgradeInsecureRequests, _headers._UpgradeInsecureRequests);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40000000000L) != 0)
@@ -3622,7 +5695,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Origin", _headers._Origin);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.RequestId, _headers._RequestId);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x80000000000L) != 0)
@@ -3631,7 +5704,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _headers._AccessControlRequestMethod);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.CorrelationContext, _headers._CorrelationContext);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x100000000000L) != 0)
@@ -3640,7 +5713,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _headers._AccessControlRequestHeaders);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _headers._TraceParent);
+                    ++arrayIndex;
+                }
+                if ((_bits & 0x200000000000L) != 0)
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        return false;
+                    }
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _headers._TraceState);
+                    ++arrayIndex;
+                }
+                if ((_bits & 0x400000000000L) != 0)
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        return false;
+                    }
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Origin, _headers._Origin);
+                    ++arrayIndex;
+                }
+                if ((_bits & 0x800000000000L) != 0)
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        return false;
+                    }
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestMethod, _headers._AccessControlRequestMethod);
+                    ++arrayIndex;
+                }
+                if ((_bits & 0x1000000000000L) != 0)
+                {
+                    if (arrayIndex == array.Length)
+                    {
+                        return false;
+                    }
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestHeaders, _headers._AccessControlRequestHeaders);
                     ++arrayIndex;
                 }
                 if (_contentLength.HasValue)
@@ -3649,7 +5758,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
@@ -3737,7 +5846,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     else if ((firstTerm6 == 0x4749524fu) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x4e49u))
                     {
-                        flag = 0x40000000000L;
+                        flag = 0x400000000000L;
                         values = ref _headers._Origin;
                     }
                     else if ((firstTerm6 == 0x47415250u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ushort)))) & 0xdfdfu) == 0x414du))
@@ -3810,12 +5919,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         flag = 0x8L;
                         values = ref _headers._KeepAlive;
                     }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d54534555514552uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4449u))
+                    {
+                        flag = 0x40000000000L;
+                        values = ref _headers._RequestId;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x4154534543415254uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4554u))
+                    {
+                        flag = 0x200000000000L;
+                        values = ref _headers._TraceState;
+                    }
                     break;
                 case 11:
                     if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xffdfdfdfdfdfdfdfuL) == 0x2d544e45544e4f43uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x444du) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)10) & 0xffu) == 0x35u))
                     {
                         flag = 0x8000L;
                         values = ref _headers._ContentMD5;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x5241504543415254uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(4 * sizeof(ushort)))) & 0xdfdfu) == 0x4e45u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)10) & 0xdfu) == 0x54u))
+                    {
+                        flag = 0x100000000000L;
+                        values = ref _headers._TraceParent;
                     }
                     break;
                 case 12:
@@ -3916,7 +6040,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }
                     break;
                 case 19:
-                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x444f4d4e552d4649uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfffdfdfdfdfdfuL) == 0x49532d4445494649uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x434eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x45u))
+                    if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfdfdfdfuL) == 0x54414c4552524f43uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfdfdfffdfdfdfuL) == 0x544e4f432d4e4f49uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x5845u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x54u))
+                    {
+                        flag = 0x80000000000L;
+                        values = ref _headers._CorrelationContext;
+                    }
+                    else if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfdfdfdfdfffdfdfuL) == 0x444f4d4e552d4649uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfdfffdfdfdfdfdfuL) == 0x49532d4445494649uL) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(8 * sizeof(ushort)))) & 0xdfdfu) == 0x434eu) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)18) & 0xdfu) == 0x45u))
                     {
                         flag = 0x100000000L;
                         values = ref _headers._IfUnmodifiedSince;
@@ -3937,14 +6066,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 case 29:
                     if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x4d2d545345555145uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x4f485445u) && ((Unsafe.AddByteOffset(ref nameStart, (IntPtr)28) & 0xdfu) == 0x44u))
                     {
-                        flag = 0x80000000000L;
+                        flag = 0x800000000000L;
                         values = ref _headers._AccessControlRequestMethod;
                     }
                     break;
                 case 30:
                     if (((Unsafe.ReadUnaligned<ulong>(ref nameStart) & 0xdfffdfdfdfdfdfdfuL) == 0x432d535345434341uL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)sizeof(ulong))) & 0xdfffdfdfdfdfdfdfuL) == 0x522d4c4f52544e4fuL) && ((Unsafe.ReadUnaligned<ulong>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(2 * sizeof(ulong)))) & 0xdfffdfdfdfdfdfdfuL) == 0x482d545345555145uL) && ((Unsafe.ReadUnaligned<uint>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(6 * sizeof(uint)))) & 0xdfdfdfdfu) == 0x45444145u) && ((Unsafe.ReadUnaligned<ushort>(ref Unsafe.AddByteOffset(ref nameStart, (IntPtr)(14 * sizeof(ushort)))) & 0xdfdfu) == 0x5352u))
                     {
-                        flag = 0x100000000000L;
+                        flag = 0x1000000000000L;
                         values = ref _headers._AccessControlRequestHeaders;
                     }
                     break;
@@ -4042,6 +6171,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             public StringValues _UserAgent;
             public StringValues _DNT;
             public StringValues _UpgradeInsecureRequests;
+            public StringValues _RequestId;
+            public StringValues _CorrelationContext;
+            public StringValues _TraceParent;
+            public StringValues _TraceState;
             public StringValues _Origin;
             public StringValues _AccessControlRequestMethod;
             public StringValues _AccessControlRequestHeaders;
@@ -4140,12 +6273,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     case 41:
                         goto HeaderUpgradeInsecureRequests;
                     case 42:
-                        goto HeaderOrigin;
+                        goto HeaderRequestId;
                     case 43:
-                        goto HeaderAccessControlRequestMethod;
+                        goto HeaderCorrelationContext;
                     case 44:
-                        goto HeaderAccessControlRequestHeaders;
+                        goto HeaderTraceParent;
                     case 45:
+                        goto HeaderTraceState;
+                    case 46:
+                        goto HeaderOrigin;
+                    case 47:
+                        goto HeaderAccessControlRequestMethod;
+                    case 48:
+                        goto HeaderAccessControlRequestHeaders;
+                    case 49:
                         goto HeaderContentLength;
                     default:
                         goto ExtraHeaders;
@@ -4154,323 +6295,351 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 HeaderCacheControl: // case 0
                     if ((_bits & 0x1L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Cache-Control", _collection._headers._CacheControl);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.CacheControl, _collection._headers._CacheControl);
                         _next = 1;
                         return true;
                     }
                 HeaderConnection: // case 1
                     if ((_bits & 0x2L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Connection", _collection._headers._Connection);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Connection, _collection._headers._Connection);
                         _next = 2;
                         return true;
                     }
                 HeaderDate: // case 2
                     if ((_bits & 0x4L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Date", _collection._headers._Date);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Date, _collection._headers._Date);
                         _next = 3;
                         return true;
                     }
                 HeaderKeepAlive: // case 3
                     if ((_bits & 0x8L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Keep-Alive", _collection._headers._KeepAlive);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.KeepAlive, _collection._headers._KeepAlive);
                         _next = 4;
                         return true;
                     }
                 HeaderPragma: // case 4
                     if ((_bits & 0x10L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Pragma", _collection._headers._Pragma);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Pragma, _collection._headers._Pragma);
                         _next = 5;
                         return true;
                     }
                 HeaderTrailer: // case 5
                     if ((_bits & 0x20L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Trailer", _collection._headers._Trailer);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Trailer, _collection._headers._Trailer);
                         _next = 6;
                         return true;
                     }
                 HeaderTransferEncoding: // case 6
                     if ((_bits & 0x40L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Transfer-Encoding", _collection._headers._TransferEncoding);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.TransferEncoding, _collection._headers._TransferEncoding);
                         _next = 7;
                         return true;
                     }
                 HeaderUpgrade: // case 7
                     if ((_bits & 0x80L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Upgrade", _collection._headers._Upgrade);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Upgrade, _collection._headers._Upgrade);
                         _next = 8;
                         return true;
                     }
                 HeaderVia: // case 8
                     if ((_bits & 0x100L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Via", _collection._headers._Via);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Via, _collection._headers._Via);
                         _next = 9;
                         return true;
                     }
                 HeaderWarning: // case 9
                     if ((_bits & 0x200L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Warning", _collection._headers._Warning);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Warning, _collection._headers._Warning);
                         _next = 10;
                         return true;
                     }
                 HeaderAllow: // case 10
                     if ((_bits & 0x400L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Allow", _collection._headers._Allow);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Allow, _collection._headers._Allow);
                         _next = 11;
                         return true;
                     }
                 HeaderContentType: // case 11
                     if ((_bits & 0x800L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Type", _collection._headers._ContentType);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentType, _collection._headers._ContentType);
                         _next = 12;
                         return true;
                     }
                 HeaderContentEncoding: // case 12
                     if ((_bits & 0x1000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Encoding", _collection._headers._ContentEncoding);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentEncoding, _collection._headers._ContentEncoding);
                         _next = 13;
                         return true;
                     }
                 HeaderContentLanguage: // case 13
                     if ((_bits & 0x2000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Language", _collection._headers._ContentLanguage);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLanguage, _collection._headers._ContentLanguage);
                         _next = 14;
                         return true;
                     }
                 HeaderContentLocation: // case 14
                     if ((_bits & 0x4000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Location", _collection._headers._ContentLocation);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLocation, _collection._headers._ContentLocation);
                         _next = 15;
                         return true;
                     }
                 HeaderContentMD5: // case 15
                     if ((_bits & 0x8000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-MD5", _collection._headers._ContentMD5);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentMD5, _collection._headers._ContentMD5);
                         _next = 16;
                         return true;
                     }
                 HeaderContentRange: // case 16
                     if ((_bits & 0x10000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Range", _collection._headers._ContentRange);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentRange, _collection._headers._ContentRange);
                         _next = 17;
                         return true;
                     }
                 HeaderExpires: // case 17
                     if ((_bits & 0x20000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Expires", _collection._headers._Expires);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Expires, _collection._headers._Expires);
                         _next = 18;
                         return true;
                     }
                 HeaderLastModified: // case 18
                     if ((_bits & 0x40000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Last-Modified", _collection._headers._LastModified);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.LastModified, _collection._headers._LastModified);
                         _next = 19;
                         return true;
                     }
                 HeaderAccept: // case 19
                     if ((_bits & 0x80000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Accept", _collection._headers._Accept);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Accept, _collection._headers._Accept);
                         _next = 20;
                         return true;
                     }
                 HeaderAcceptCharset: // case 20
                     if ((_bits & 0x100000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Accept-Charset", _collection._headers._AcceptCharset);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptCharset, _collection._headers._AcceptCharset);
                         _next = 21;
                         return true;
                     }
                 HeaderAcceptEncoding: // case 21
                     if ((_bits & 0x200000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Accept-Encoding", _collection._headers._AcceptEncoding);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptEncoding, _collection._headers._AcceptEncoding);
                         _next = 22;
                         return true;
                     }
                 HeaderAcceptLanguage: // case 22
                     if ((_bits & 0x400000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Accept-Language", _collection._headers._AcceptLanguage);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptLanguage, _collection._headers._AcceptLanguage);
                         _next = 23;
                         return true;
                     }
                 HeaderAuthorization: // case 23
                     if ((_bits & 0x800000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Authorization", _collection._headers._Authorization);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Authorization, _collection._headers._Authorization);
                         _next = 24;
                         return true;
                     }
                 HeaderCookie: // case 24
                     if ((_bits & 0x1000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Cookie", _collection._headers._Cookie);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Cookie, _collection._headers._Cookie);
                         _next = 25;
                         return true;
                     }
                 HeaderExpect: // case 25
                     if ((_bits & 0x2000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Expect", _collection._headers._Expect);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Expect, _collection._headers._Expect);
                         _next = 26;
                         return true;
                     }
                 HeaderFrom: // case 26
                     if ((_bits & 0x4000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("From", _collection._headers._From);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.From, _collection._headers._From);
                         _next = 27;
                         return true;
                     }
                 HeaderHost: // case 27
                     if ((_bits & 0x8000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Host", _collection._headers._Host);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Host, _collection._headers._Host);
                         _next = 28;
                         return true;
                     }
                 HeaderIfMatch: // case 28
                     if ((_bits & 0x10000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("If-Match", _collection._headers._IfMatch);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.IfMatch, _collection._headers._IfMatch);
                         _next = 29;
                         return true;
                     }
                 HeaderIfModifiedSince: // case 29
                     if ((_bits & 0x20000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("If-Modified-Since", _collection._headers._IfModifiedSince);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.IfModifiedSince, _collection._headers._IfModifiedSince);
                         _next = 30;
                         return true;
                     }
                 HeaderIfNoneMatch: // case 30
                     if ((_bits & 0x40000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("If-None-Match", _collection._headers._IfNoneMatch);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.IfNoneMatch, _collection._headers._IfNoneMatch);
                         _next = 31;
                         return true;
                     }
                 HeaderIfRange: // case 31
                     if ((_bits & 0x80000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("If-Range", _collection._headers._IfRange);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.IfRange, _collection._headers._IfRange);
                         _next = 32;
                         return true;
                     }
                 HeaderIfUnmodifiedSince: // case 32
                     if ((_bits & 0x100000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("If-Unmodified-Since", _collection._headers._IfUnmodifiedSince);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.IfUnmodifiedSince, _collection._headers._IfUnmodifiedSince);
                         _next = 33;
                         return true;
                     }
                 HeaderMaxForwards: // case 33
                     if ((_bits & 0x200000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Max-Forwards", _collection._headers._MaxForwards);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.MaxForwards, _collection._headers._MaxForwards);
                         _next = 34;
                         return true;
                     }
                 HeaderProxyAuthorization: // case 34
                     if ((_bits & 0x400000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Proxy-Authorization", _collection._headers._ProxyAuthorization);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ProxyAuthorization, _collection._headers._ProxyAuthorization);
                         _next = 35;
                         return true;
                     }
                 HeaderReferer: // case 35
                     if ((_bits & 0x800000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Referer", _collection._headers._Referer);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Referer, _collection._headers._Referer);
                         _next = 36;
                         return true;
                     }
                 HeaderRange: // case 36
                     if ((_bits & 0x1000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Range", _collection._headers._Range);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Range, _collection._headers._Range);
                         _next = 37;
                         return true;
                     }
                 HeaderTE: // case 37
                     if ((_bits & 0x2000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("TE", _collection._headers._TE);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.TE, _collection._headers._TE);
                         _next = 38;
                         return true;
                     }
                 HeaderTranslate: // case 38
                     if ((_bits & 0x4000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Translate", _collection._headers._Translate);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Translate, _collection._headers._Translate);
                         _next = 39;
                         return true;
                     }
                 HeaderUserAgent: // case 39
                     if ((_bits & 0x8000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("User-Agent", _collection._headers._UserAgent);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.UserAgent, _collection._headers._UserAgent);
                         _next = 40;
                         return true;
                     }
                 HeaderDNT: // case 40
                     if ((_bits & 0x10000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("DNT", _collection._headers._DNT);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.DNT, _collection._headers._DNT);
                         _next = 41;
                         return true;
                     }
                 HeaderUpgradeInsecureRequests: // case 41
                     if ((_bits & 0x20000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Upgrade-Insecure-Requests", _collection._headers._UpgradeInsecureRequests);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.UpgradeInsecureRequests, _collection._headers._UpgradeInsecureRequests);
                         _next = 42;
                         return true;
                     }
-                HeaderOrigin: // case 42
+                HeaderRequestId: // case 42
                     if ((_bits & 0x40000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Origin", _collection._headers._Origin);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.RequestId, _collection._headers._RequestId);
                         _next = 43;
                         return true;
                     }
-                HeaderAccessControlRequestMethod: // case 43
+                HeaderCorrelationContext: // case 43
                     if ((_bits & 0x80000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Method", _collection._headers._AccessControlRequestMethod);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.CorrelationContext, _collection._headers._CorrelationContext);
                         _next = 44;
                         return true;
                     }
-                HeaderAccessControlRequestHeaders: // case 44
+                HeaderTraceParent: // case 44
                     if ((_bits & 0x100000000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Request-Headers", _collection._headers._AccessControlRequestHeaders);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceParent, _collection._headers._TraceParent);
                         _next = 45;
                         return true;
                     }
-                HeaderContentLength: // case 45
+                HeaderTraceState: // case 45
+                    if ((_bits & 0x200000000000L) != 0)
+                    {
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.TraceState, _collection._headers._TraceState);
+                        _next = 46;
+                        return true;
+                    }
+                HeaderOrigin: // case 46
+                    if ((_bits & 0x400000000000L) != 0)
+                    {
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Origin, _collection._headers._Origin);
+                        _next = 47;
+                        return true;
+                    }
+                HeaderAccessControlRequestMethod: // case 47
+                    if ((_bits & 0x800000000000L) != 0)
+                    {
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestMethod, _collection._headers._AccessControlRequestMethod);
+                        _next = 48;
+                        return true;
+                    }
+                HeaderAccessControlRequestHeaders: // case 48
+                    if ((_bits & 0x1000000000000L) != 0)
+                    {
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlRequestHeaders, _collection._headers._AccessControlRequestHeaders);
+                        _next = 49;
+                        return true;
+                    }
+                HeaderContentLength: // case 49
                     if (_collection._contentLength.HasValue)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
-                        _next = 46;
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
+                        _next = 50;
                         return true;
                     }
                 ExtraHeaders:
@@ -5149,409 +7318,752 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             value = default;
             switch (key.Length)
             {
-                case 13:
-                    {
-                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1L) != 0)
-                            {
-                                value = _headers._CacheControl;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000L) != 0)
-                            {
-                                value = _headers._ContentRange;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000L) != 0)
-                            {
-                                value = _headers._LastModified;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept-Ranges".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000L) != 0)
-                            {
-                                value = _headers._AcceptRanges;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 10:
-                    {
-                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2L) != 0)
-                            {
-                                value = _headers._Connection;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8L) != 0)
-                            {
-                                value = _headers._KeepAlive;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Set-Cookie".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000000L) != 0)
-                            {
-                                value = _headers._SetCookie;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 4:
-                    {
-                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4L) != 0)
-                            {
-                                value = _headers._Date;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000L) != 0)
-                            {
-                                value = _headers._ETag;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Vary".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000L) != 0)
-                            {
-                                value = _headers._Vary;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 6:
-                    {
-                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10L) != 0)
-                            {
-                                value = _headers._Pragma;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Server".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000000L) != 0)
-                            {
-                                value = _headers._Server;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 7:
-                    {
-                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20L) != 0)
-                            {
-                                value = _headers._Trailer;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80L) != 0)
-                            {
-                                value = _headers._Upgrade;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200L) != 0)
-                            {
-                                value = _headers._Warning;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000L) != 0)
-                            {
-                                value = _headers._Expires;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 17:
-                    {
-                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40L) != 0)
-                            {
-                                value = _headers._TransferEncoding;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
                 case 3:
+                {
+                    if (ReferenceEquals(HeaderNames.Via, key))
                     {
-                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x100L) != 0)
                         {
-                            if ((_bits & 0x100L) != 0)
-                            {
-                                value = _headers._Via;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Via;
+                            return true;
                         }
-                        if ("Age".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Age, key))
+                    {
+                        if ((_bits & 0x100000L) != 0)
                         {
-                            if ((_bits & 0x100000L) != 0)
-                            {
-                                value = _headers._Age;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Age;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100L) != 0)
+                        {
+                            value = _headers._Via;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Age.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000L) != 0)
+                        {
+                            value = _headers._Age;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.Date, key))
+                    {
+                        if ((_bits & 0x4L) != 0)
+                        {
+                            value = _headers._Date;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ETag, key))
+                    {
+                        if ((_bits & 0x200000L) != 0)
+                        {
+                            value = _headers._ETag;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Vary, key))
+                    {
+                        if ((_bits & 0x8000000L) != 0)
+                        {
+                            value = _headers._Vary;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4L) != 0)
+                        {
+                            value = _headers._Date;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ETag.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000L) != 0)
+                        {
+                            value = _headers._ETag;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Vary.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000L) != 0)
+                        {
+                            value = _headers._Vary;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 5:
+                {
+                    if (ReferenceEquals(HeaderNames.Allow, key))
                     {
-                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x400L) != 0)
                         {
-                            if ((_bits & 0x400L) != 0)
-                            {
-                                value = _headers._Allow;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Allow;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.Allow.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400L) != 0)
+                        {
+                            value = _headers._Allow;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 12:
+                }
+                case 6:
+                {
+                    if (ReferenceEquals(HeaderNames.Server, key))
                     {
-                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2000000L) != 0)
                         {
-                            if ((_bits & 0x800L) != 0)
-                            {
-                                value = _headers._ContentType;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Server;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key))
+                    {
+                        if ((_bits & 0x10L) != 0)
+                        {
+                            value = _headers._Pragma;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Server.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000L) != 0)
+                        {
+                            value = _headers._Server;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10L) != 0)
+                        {
+                            value = _headers._Pragma;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 16:
+                }
+                case 7:
+                {
+                    if (ReferenceEquals(HeaderNames.Trailer, key))
                     {
-                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x20L) != 0)
                         {
-                            if ((_bits & 0x1000L) != 0)
-                            {
-                                value = _headers._ContentEncoding;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Trailer;
+                            return true;
                         }
-                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key))
+                    {
+                        if ((_bits & 0x80L) != 0)
                         {
-                            if ((_bits & 0x2000L) != 0)
-                            {
-                                value = _headers._ContentLanguage;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Upgrade;
+                            return true;
                         }
-                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key))
+                    {
+                        if ((_bits & 0x200L) != 0)
                         {
-                            if ((_bits & 0x4000L) != 0)
-                            {
-                                value = _headers._ContentLocation;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Warning;
+                            return true;
                         }
-                        if ("WWW-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expires, key))
+                    {
+                        if ((_bits & 0x20000L) != 0)
                         {
-                            if ((_bits & 0x10000000L) != 0)
-                            {
-                                value = _headers._WWWAuthenticate;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Expires;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.Trailer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20L) != 0)
+                        {
+                            value = _headers._Trailer;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80L) != 0)
+                        {
+                            value = _headers._Upgrade;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200L) != 0)
+                        {
+                            value = _headers._Warning;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000L) != 0)
+                        {
+                            value = _headers._Expires;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 11:
-                    {
-                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000L) != 0)
-                            {
-                                value = _headers._ContentMD5;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Retry-After".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000L) != 0)
-                            {
-                                value = _headers._RetryAfter;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
+                }
                 case 8:
+                {
+                    if (ReferenceEquals(HeaderNames.Location, key))
                     {
-                        if ("Location".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x400000L) != 0)
                         {
-                            if ((_bits & 0x400000L) != 0)
-                            {
-                                value = _headers._Location;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Location;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.Location.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000L) != 0)
+                        {
+                            value = _headers._Location;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 18:
+                }
+                case 10:
+                {
+                    if (ReferenceEquals(HeaderNames.Connection, key))
                     {
-                        if ("Proxy-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2L) != 0)
                         {
-                            if ((_bits & 0x800000L) != 0)
-                            {
-                                value = _headers._ProxyAuthenticate;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._Connection;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key))
+                    {
+                        if ((_bits & 0x8L) != 0)
+                        {
+                            value = _headers._KeepAlive;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.SetCookie, key))
+                    {
+                        if ((_bits & 0x4000000L) != 0)
+                        {
+                            value = _headers._SetCookie;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2L) != 0)
+                        {
+                            value = _headers._Connection;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8L) != 0)
+                        {
+                            value = _headers._KeepAlive;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.SetCookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000L) != 0)
+                        {
+                            value = _headers._SetCookie;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 32:
+                }
+                case 11:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentMD5, key))
                     {
-                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x8000L) != 0)
                         {
-                            if ((_bits & 0x20000000L) != 0)
-                            {
-                                value = _headers._AccessControlAllowCredentials;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._ContentMD5;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.RetryAfter, key))
+                    {
+                        if ((_bits & 0x1000000L) != 0)
+                        {
+                            value = _headers._RetryAfter;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.ContentMD5.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000L) != 0)
+                        {
+                            value = _headers._ContentMD5;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.RetryAfter.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000L) != 0)
+                        {
+                            value = _headers._RetryAfter;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 28:
+                }
+                case 12:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentType, key))
                     {
-                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x800L) != 0)
                         {
-                            if ((_bits & 0x40000000L) != 0)
-                            {
-                                value = _headers._AccessControlAllowHeaders;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._ContentType;
+                            return true;
                         }
-                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+
+                    if (HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800L) != 0)
                         {
-                            if ((_bits & 0x80000000L) != 0)
-                            {
-                                value = _headers._AccessControlAllowMethods;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._ContentType;
+                            return true;
                         }
+                        return false;
                     }
                     break;
-                case 27:
+                }
+                case 13:
+                {
+                    if (ReferenceEquals(HeaderNames.CacheControl, key))
                     {
-                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1L) != 0)
                         {
-                            if ((_bits & 0x100000000L) != 0)
-                            {
-                                value = _headers._AccessControlAllowOrigin;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._CacheControl;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentRange, key))
+                    {
+                        if ((_bits & 0x10000L) != 0)
+                        {
+                            value = _headers._ContentRange;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.LastModified, key))
+                    {
+                        if ((_bits & 0x40000L) != 0)
+                        {
+                            value = _headers._LastModified;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptRanges, key))
+                    {
+                        if ((_bits & 0x80000L) != 0)
+                        {
+                            value = _headers._AcceptRanges;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) != 0)
+                        {
+                            value = _headers._CacheControl;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000L) != 0)
+                        {
+                            value = _headers._ContentRange;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.LastModified.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000L) != 0)
+                        {
+                            value = _headers._LastModified;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AcceptRanges.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000L) != 0)
+                        {
+                            value = _headers._AcceptRanges;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 29:
-                    {
-                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000000L) != 0)
-                            {
-                                value = _headers._AccessControlExposeHeaders;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 22:
-                    {
-                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000000L) != 0)
-                            {
-                                value = _headers._AccessControlMaxAge;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
+                }
                 case 14:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentLength, key))
                     {
-                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if (_contentLength.HasValue)
                         {
-                            if (_contentLength.HasValue)
-                            {
-                                value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
-                                return true;
-                            }
-                            return false;
+                            value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (_contentLength.HasValue)
+                        {
+                            value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 16:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentEncoding, key))
+                    {
+                        if ((_bits & 0x1000L) != 0)
+                        {
+                            value = _headers._ContentEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLanguage, key))
+                    {
+                        if ((_bits & 0x2000L) != 0)
+                        {
+                            value = _headers._ContentLanguage;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLocation, key))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            value = _headers._ContentLocation;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.WWWAuthenticate, key))
+                    {
+                        if ((_bits & 0x10000000L) != 0)
+                        {
+                            value = _headers._WWWAuthenticate;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.ContentEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000L) != 0)
+                        {
+                            value = _headers._ContentEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000L) != 0)
+                        {
+                            value = _headers._ContentLanguage;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLocation.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            value = _headers._ContentLocation;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.WWWAuthenticate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000L) != 0)
+                        {
+                            value = _headers._WWWAuthenticate;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key))
+                    {
+                        if ((_bits & 0x40L) != 0)
+                        {
+                            value = _headers._TransferEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40L) != 0)
+                        {
+                            value = _headers._TransferEncoding;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 18:
+                {
+                    if (ReferenceEquals(HeaderNames.ProxyAuthenticate, key))
+                    {
+                        if ((_bits & 0x800000L) != 0)
+                        {
+                            value = _headers._ProxyAuthenticate;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.ProxyAuthenticate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000L) != 0)
+                        {
+                            value = _headers._ProxyAuthenticate;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 22:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlMaxAge, key))
+                    {
+                        if ((_bits & 0x400000000L) != 0)
+                        {
+                            value = _headers._AccessControlMaxAge;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.AccessControlMaxAge.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000L) != 0)
+                        {
+                            value = _headers._AccessControlMaxAge;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 27:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowOrigin, key))
+                    {
+                        if ((_bits & 0x100000000L) != 0)
+                        {
+                            value = _headers._AccessControlAllowOrigin;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.AccessControlAllowOrigin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000L) != 0)
+                        {
+                            value = _headers._AccessControlAllowOrigin;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 28:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowHeaders, key))
+                    {
+                        if ((_bits & 0x40000000L) != 0)
+                        {
+                            value = _headers._AccessControlAllowHeaders;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowMethods, key))
+                    {
+                        if ((_bits & 0x80000000L) != 0)
+                        {
+                            value = _headers._AccessControlAllowMethods;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.AccessControlAllowHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000L) != 0)
+                        {
+                            value = _headers._AccessControlAllowHeaders;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AccessControlAllowMethods.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000L) != 0)
+                        {
+                            value = _headers._AccessControlAllowMethods;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 29:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlExposeHeaders, key))
+                    {
+                        if ((_bits & 0x200000000L) != 0)
+                        {
+                            value = _headers._AccessControlExposeHeaders;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.AccessControlExposeHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000L) != 0)
+                        {
+                            value = _headers._AccessControlExposeHeaders;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 32:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowCredentials, key))
+                    {
+                        if ((_bits & 0x20000000L) != 0)
+                        {
+                            value = _headers._AccessControlAllowCredentials;
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    if (HeaderNames.AccessControlAllowCredentials.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000L) != 0)
+                        {
+                            value = _headers._AccessControlAllowCredentials;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
             }
 
-            return MaybeUnknown?.TryGetValue(key, out value) ?? false;
+            return TryGetUnknown(key, ref value);
         }
 
         protected override void SetValueFast(string key, StringValues value)
@@ -5559,301 +8071,539 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ValidateHeaderValueCharacters(value);
             switch (key.Length)
             {
-                case 13:
-                    {
-                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x1L;
-                            _headers._CacheControl = value;
-                            return;
-                        }
-                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x10000L;
-                            _headers._ContentRange = value;
-                            return;
-                        }
-                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x40000L;
-                            _headers._LastModified = value;
-                            return;
-                        }
-                        if ("Accept-Ranges".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x80000L;
-                            _headers._AcceptRanges = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 10:
-                    {
-                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x2L;
-                            _headers._Connection = value;
-                            _headers._rawConnection = null;
-                            return;
-                        }
-                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x8L;
-                            _headers._KeepAlive = value;
-                            return;
-                        }
-                        if ("Set-Cookie".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x4000000L;
-                            _headers._SetCookie = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 4:
-                    {
-                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x4L;
-                            _headers._Date = value;
-                            _headers._rawDate = null;
-                            return;
-                        }
-                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x200000L;
-                            _headers._ETag = value;
-                            return;
-                        }
-                        if ("Vary".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x8000000L;
-                            _headers._Vary = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 6:
-                    {
-                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x10L;
-                            _headers._Pragma = value;
-                            return;
-                        }
-                        if ("Server".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x2000000L;
-                            _headers._Server = value;
-                            _headers._rawServer = null;
-                            return;
-                        }
-                    }
-                    break;
-                case 7:
-                    {
-                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x20L;
-                            _headers._Trailer = value;
-                            return;
-                        }
-                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x80L;
-                            _headers._Upgrade = value;
-                            return;
-                        }
-                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x200L;
-                            _headers._Warning = value;
-                            return;
-                        }
-                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x20000L;
-                            _headers._Expires = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 17:
-                    {
-                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x40L;
-                            _headers._TransferEncoding = value;
-                            _headers._rawTransferEncoding = null;
-                            return;
-                        }
-                    }
-                    break;
                 case 3:
+                {
+                    if (ReferenceEquals(HeaderNames.Via, key))
                     {
-                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x100L;
-                            _headers._Via = value;
-                            return;
-                        }
-                        if ("Age".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x100000L;
-                            _headers._Age = value;
-                            return;
-                        }
+                        _bits |= 0x100L;
+                        _headers._Via = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Age, key))
+                    {
+                        _bits |= 0x100000L;
+                        _headers._Age = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x100L;
+                        _headers._Via = value;
+                        return;
+                    }
+                    if (HeaderNames.Age.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x100000L;
+                        _headers._Age = value;
+                        return;
                     }
                     break;
+                }
+                case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.Date, key))
+                    {
+                        _bits |= 0x4L;
+                        _headers._Date = value;
+                        _headers._rawDate = null;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ETag, key))
+                    {
+                        _bits |= 0x200000L;
+                        _headers._ETag = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Vary, key))
+                    {
+                        _bits |= 0x8000000L;
+                        _headers._Vary = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x4L;
+                        _headers._Date = value;
+                        _headers._rawDate = null;
+                        return;
+                    }
+                    if (HeaderNames.ETag.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x200000L;
+                        _headers._ETag = value;
+                        return;
+                    }
+                    if (HeaderNames.Vary.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x8000000L;
+                        _headers._Vary = value;
+                        return;
+                    }
+                    break;
+                }
                 case 5:
+                {
+                    if (ReferenceEquals(HeaderNames.Allow, key))
                     {
-                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x400L;
-                            _headers._Allow = value;
-                            return;
-                        }
+                        _bits |= 0x400L;
+                        _headers._Allow = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Allow.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x400L;
+                        _headers._Allow = value;
+                        return;
                     }
                     break;
-                case 12:
+                }
+                case 6:
+                {
+                    if (ReferenceEquals(HeaderNames.Server, key))
                     {
-                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x800L;
-                            _headers._ContentType = value;
-                            return;
-                        }
+                        _bits |= 0x2000000L;
+                        _headers._Server = value;
+                        _headers._rawServer = null;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key))
+                    {
+                        _bits |= 0x10L;
+                        _headers._Pragma = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Server.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x2000000L;
+                        _headers._Server = value;
+                        _headers._rawServer = null;
+                        return;
+                    }
+                    if (HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x10L;
+                        _headers._Pragma = value;
+                        return;
                     }
                     break;
-                case 16:
+                }
+                case 7:
+                {
+                    if (ReferenceEquals(HeaderNames.Trailer, key))
                     {
-                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x1000L;
-                            _headers._ContentEncoding = value;
-                            return;
-                        }
-                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x2000L;
-                            _headers._ContentLanguage = value;
-                            return;
-                        }
-                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x4000L;
-                            _headers._ContentLocation = value;
-                            return;
-                        }
-                        if ("WWW-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x10000000L;
-                            _headers._WWWAuthenticate = value;
-                            return;
-                        }
+                        _bits |= 0x20L;
+                        _headers._Trailer = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key))
+                    {
+                        _bits |= 0x80L;
+                        _headers._Upgrade = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key))
+                    {
+                        _bits |= 0x200L;
+                        _headers._Warning = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expires, key))
+                    {
+                        _bits |= 0x20000L;
+                        _headers._Expires = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Trailer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x20L;
+                        _headers._Trailer = value;
+                        return;
+                    }
+                    if (HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x80L;
+                        _headers._Upgrade = value;
+                        return;
+                    }
+                    if (HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x200L;
+                        _headers._Warning = value;
+                        return;
+                    }
+                    if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x20000L;
+                        _headers._Expires = value;
+                        return;
                     }
                     break;
-                case 11:
-                    {
-                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x8000L;
-                            _headers._ContentMD5 = value;
-                            return;
-                        }
-                        if ("Retry-After".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x1000000L;
-                            _headers._RetryAfter = value;
-                            return;
-                        }
-                    }
-                    break;
+                }
                 case 8:
+                {
+                    if (ReferenceEquals(HeaderNames.Location, key))
                     {
-                        if ("Location".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x400000L;
-                            _headers._Location = value;
-                            return;
-                        }
+                        _bits |= 0x400000L;
+                        _headers._Location = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Location.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x400000L;
+                        _headers._Location = value;
+                        return;
                     }
                     break;
-                case 18:
+                }
+                case 10:
+                {
+                    if (ReferenceEquals(HeaderNames.Connection, key))
                     {
-                        if ("Proxy-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x800000L;
-                            _headers._ProxyAuthenticate = value;
-                            return;
-                        }
+                        _bits |= 0x2L;
+                        _headers._Connection = value;
+                        _headers._rawConnection = null;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key))
+                    {
+                        _bits |= 0x8L;
+                        _headers._KeepAlive = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.SetCookie, key))
+                    {
+                        _bits |= 0x4000000L;
+                        _headers._SetCookie = value;
+                        return;
+                    }
+
+                    if (HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x2L;
+                        _headers._Connection = value;
+                        _headers._rawConnection = null;
+                        return;
+                    }
+                    if (HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x8L;
+                        _headers._KeepAlive = value;
+                        return;
+                    }
+                    if (HeaderNames.SetCookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x4000000L;
+                        _headers._SetCookie = value;
+                        return;
                     }
                     break;
-                case 32:
+                }
+                case 11:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentMD5, key))
                     {
-                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x20000000L;
-                            _headers._AccessControlAllowCredentials = value;
-                            return;
-                        }
+                        _bits |= 0x8000L;
+                        _headers._ContentMD5 = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.RetryAfter, key))
+                    {
+                        _bits |= 0x1000000L;
+                        _headers._RetryAfter = value;
+                        return;
+                    }
+
+                    if (HeaderNames.ContentMD5.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x8000L;
+                        _headers._ContentMD5 = value;
+                        return;
+                    }
+                    if (HeaderNames.RetryAfter.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1000000L;
+                        _headers._RetryAfter = value;
+                        return;
                     }
                     break;
-                case 28:
+                }
+                case 12:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentType, key))
                     {
-                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x40000000L;
-                            _headers._AccessControlAllowHeaders = value;
-                            return;
-                        }
-                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x80000000L;
-                            _headers._AccessControlAllowMethods = value;
-                            return;
-                        }
+                        _bits |= 0x800L;
+                        _headers._ContentType = value;
+                        return;
+                    }
+
+                    if (HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x800L;
+                        _headers._ContentType = value;
+                        return;
                     }
                     break;
-                case 27:
+                }
+                case 13:
+                {
+                    if (ReferenceEquals(HeaderNames.CacheControl, key))
                     {
-                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x100000000L;
-                            _headers._AccessControlAllowOrigin = value;
-                            return;
-                        }
+                        _bits |= 0x1L;
+                        _headers._CacheControl = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentRange, key))
+                    {
+                        _bits |= 0x10000L;
+                        _headers._ContentRange = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.LastModified, key))
+                    {
+                        _bits |= 0x40000L;
+                        _headers._LastModified = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptRanges, key))
+                    {
+                        _bits |= 0x80000L;
+                        _headers._AcceptRanges = value;
+                        return;
+                    }
+
+                    if (HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1L;
+                        _headers._CacheControl = value;
+                        return;
+                    }
+                    if (HeaderNames.ContentRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x10000L;
+                        _headers._ContentRange = value;
+                        return;
+                    }
+                    if (HeaderNames.LastModified.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x40000L;
+                        _headers._LastModified = value;
+                        return;
+                    }
+                    if (HeaderNames.AcceptRanges.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x80000L;
+                        _headers._AcceptRanges = value;
+                        return;
                     }
                     break;
-                case 29:
-                    {
-                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x200000000L;
-                            _headers._AccessControlExposeHeaders = value;
-                            return;
-                        }
-                    }
-                    break;
-                case 22:
-                    {
-                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x400000000L;
-                            _headers._AccessControlMaxAge = value;
-                            return;
-                        }
-                    }
-                    break;
+                }
                 case 14:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentLength, key))
                     {
-                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _contentLength = ParseContentLength(value.ToString());
-                            return;
-                        }
+                        _contentLength = ParseContentLength(value.ToString());
+                        return;
+                    }
+
+                    if (HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _contentLength = ParseContentLength(value.ToString());
+                        return;
                     }
                     break;
+                }
+                case 16:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentEncoding, key))
+                    {
+                        _bits |= 0x1000L;
+                        _headers._ContentEncoding = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLanguage, key))
+                    {
+                        _bits |= 0x2000L;
+                        _headers._ContentLanguage = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLocation, key))
+                    {
+                        _bits |= 0x4000L;
+                        _headers._ContentLocation = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.WWWAuthenticate, key))
+                    {
+                        _bits |= 0x10000000L;
+                        _headers._WWWAuthenticate = value;
+                        return;
+                    }
+
+                    if (HeaderNames.ContentEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1000L;
+                        _headers._ContentEncoding = value;
+                        return;
+                    }
+                    if (HeaderNames.ContentLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x2000L;
+                        _headers._ContentLanguage = value;
+                        return;
+                    }
+                    if (HeaderNames.ContentLocation.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x4000L;
+                        _headers._ContentLocation = value;
+                        return;
+                    }
+                    if (HeaderNames.WWWAuthenticate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x10000000L;
+                        _headers._WWWAuthenticate = value;
+                        return;
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key))
+                    {
+                        _bits |= 0x40L;
+                        _headers._TransferEncoding = value;
+                        _headers._rawTransferEncoding = null;
+                        return;
+                    }
+
+                    if (HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x40L;
+                        _headers._TransferEncoding = value;
+                        _headers._rawTransferEncoding = null;
+                        return;
+                    }
+                    break;
+                }
+                case 18:
+                {
+                    if (ReferenceEquals(HeaderNames.ProxyAuthenticate, key))
+                    {
+                        _bits |= 0x800000L;
+                        _headers._ProxyAuthenticate = value;
+                        return;
+                    }
+
+                    if (HeaderNames.ProxyAuthenticate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x800000L;
+                        _headers._ProxyAuthenticate = value;
+                        return;
+                    }
+                    break;
+                }
+                case 22:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlMaxAge, key))
+                    {
+                        _bits |= 0x400000000L;
+                        _headers._AccessControlMaxAge = value;
+                        return;
+                    }
+
+                    if (HeaderNames.AccessControlMaxAge.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x400000000L;
+                        _headers._AccessControlMaxAge = value;
+                        return;
+                    }
+                    break;
+                }
+                case 27:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowOrigin, key))
+                    {
+                        _bits |= 0x100000000L;
+                        _headers._AccessControlAllowOrigin = value;
+                        return;
+                    }
+
+                    if (HeaderNames.AccessControlAllowOrigin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x100000000L;
+                        _headers._AccessControlAllowOrigin = value;
+                        return;
+                    }
+                    break;
+                }
+                case 28:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowHeaders, key))
+                    {
+                        _bits |= 0x40000000L;
+                        _headers._AccessControlAllowHeaders = value;
+                        return;
+                    }
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowMethods, key))
+                    {
+                        _bits |= 0x80000000L;
+                        _headers._AccessControlAllowMethods = value;
+                        return;
+                    }
+
+                    if (HeaderNames.AccessControlAllowHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x40000000L;
+                        _headers._AccessControlAllowHeaders = value;
+                        return;
+                    }
+                    if (HeaderNames.AccessControlAllowMethods.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x80000000L;
+                        _headers._AccessControlAllowMethods = value;
+                        return;
+                    }
+                    break;
+                }
+                case 29:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlExposeHeaders, key))
+                    {
+                        _bits |= 0x200000000L;
+                        _headers._AccessControlExposeHeaders = value;
+                        return;
+                    }
+
+                    if (HeaderNames.AccessControlExposeHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x200000000L;
+                        _headers._AccessControlExposeHeaders = value;
+                        return;
+                    }
+                    break;
+                }
+                case 32:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowCredentials, key))
+                    {
+                        _bits |= 0x20000000L;
+                        _headers._AccessControlAllowCredentials = value;
+                        return;
+                    }
+
+                    if (HeaderNames.AccessControlAllowCredentials.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x20000000L;
+                        _headers._AccessControlAllowCredentials = value;
+                        return;
+                    }
+                    break;
+                }
             }
 
             SetValueUnknown(key, value);
@@ -5864,899 +8614,1660 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ValidateHeaderValueCharacters(value);
             switch (key.Length)
             {
-                case 13:
-                    {
-                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1L) == 0)
-                            {
-                                _bits |= 0x1L;
-                                _headers._CacheControl = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000L) == 0)
-                            {
-                                _bits |= 0x10000L;
-                                _headers._ContentRange = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000L) == 0)
-                            {
-                                _bits |= 0x40000L;
-                                _headers._LastModified = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept-Ranges".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000L) == 0)
-                            {
-                                _bits |= 0x80000L;
-                                _headers._AcceptRanges = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 10:
-                    {
-                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2L) == 0)
-                            {
-                                _bits |= 0x2L;
-                                _headers._Connection = value;
-                                _headers._rawConnection = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8L) == 0)
-                            {
-                                _bits |= 0x8L;
-                                _headers._KeepAlive = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Set-Cookie".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000000L) == 0)
-                            {
-                                _bits |= 0x4000000L;
-                                _headers._SetCookie = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 4:
-                    {
-                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4L) == 0)
-                            {
-                                _bits |= 0x4L;
-                                _headers._Date = value;
-                                _headers._rawDate = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000L) == 0)
-                            {
-                                _bits |= 0x200000L;
-                                _headers._ETag = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Vary".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000L) == 0)
-                            {
-                                _bits |= 0x8000000L;
-                                _headers._Vary = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 6:
-                    {
-                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10L) == 0)
-                            {
-                                _bits |= 0x10L;
-                                _headers._Pragma = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Server".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000000L) == 0)
-                            {
-                                _bits |= 0x2000000L;
-                                _headers._Server = value;
-                                _headers._rawServer = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 7:
-                    {
-                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20L) == 0)
-                            {
-                                _bits |= 0x20L;
-                                _headers._Trailer = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80L) == 0)
-                            {
-                                _bits |= 0x80L;
-                                _headers._Upgrade = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200L) == 0)
-                            {
-                                _bits |= 0x200L;
-                                _headers._Warning = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000L) == 0)
-                            {
-                                _bits |= 0x20000L;
-                                _headers._Expires = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 17:
-                    {
-                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40L) == 0)
-                            {
-                                _bits |= 0x40L;
-                                _headers._TransferEncoding = value;
-                                _headers._rawTransferEncoding = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
                 case 3:
+                {
+                    if (ReferenceEquals(HeaderNames.Via, key))
                     {
-                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x100L) == 0)
                         {
-                            if ((_bits & 0x100L) == 0)
-                            {
-                                _bits |= 0x100L;
-                                _headers._Via = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x100L;
+                            _headers._Via = value;
+                            return true;
                         }
-                        if ("Age".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Age, key))
+                    {
+                        if ((_bits & 0x100000L) == 0)
                         {
-                            if ((_bits & 0x100000L) == 0)
-                            {
-                                _bits |= 0x100000L;
-                                _headers._Age = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x100000L;
+                            _headers._Age = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100L) == 0)
+                        {
+                            _bits |= 0x100L;
+                            _headers._Via = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Age.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000L) == 0)
+                        {
+                            _bits |= 0x100000L;
+                            _headers._Age = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.Date, key))
+                    {
+                        if ((_bits & 0x4L) == 0)
+                        {
+                            _bits |= 0x4L;
+                            _headers._Date = value;
+                            _headers._rawDate = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ETag, key))
+                    {
+                        if ((_bits & 0x200000L) == 0)
+                        {
+                            _bits |= 0x200000L;
+                            _headers._ETag = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Vary, key))
+                    {
+                        if ((_bits & 0x8000000L) == 0)
+                        {
+                            _bits |= 0x8000000L;
+                            _headers._Vary = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4L) == 0)
+                        {
+                            _bits |= 0x4L;
+                            _headers._Date = value;
+                            _headers._rawDate = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ETag.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000L) == 0)
+                        {
+                            _bits |= 0x200000L;
+                            _headers._ETag = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Vary.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000L) == 0)
+                        {
+                            _bits |= 0x8000000L;
+                            _headers._Vary = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 5:
+                {
+                    if (ReferenceEquals(HeaderNames.Allow, key))
                     {
-                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x400L) == 0)
                         {
-                            if ((_bits & 0x400L) == 0)
-                            {
-                                _bits |= 0x400L;
-                                _headers._Allow = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x400L;
+                            _headers._Allow = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Allow.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400L) == 0)
+                        {
+                            _bits |= 0x400L;
+                            _headers._Allow = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 12:
+                }
+                case 6:
+                {
+                    if (ReferenceEquals(HeaderNames.Server, key))
                     {
-                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2000000L) == 0)
                         {
-                            if ((_bits & 0x800L) == 0)
-                            {
-                                _bits |= 0x800L;
-                                _headers._ContentType = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x2000000L;
+                            _headers._Server = value;
+                            _headers._rawServer = null;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key))
+                    {
+                        if ((_bits & 0x10L) == 0)
+                        {
+                            _bits |= 0x10L;
+                            _headers._Pragma = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Server.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000L) == 0)
+                        {
+                            _bits |= 0x2000000L;
+                            _headers._Server = value;
+                            _headers._rawServer = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10L) == 0)
+                        {
+                            _bits |= 0x10L;
+                            _headers._Pragma = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 16:
+                }
+                case 7:
+                {
+                    if (ReferenceEquals(HeaderNames.Trailer, key))
                     {
-                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x20L) == 0)
                         {
-                            if ((_bits & 0x1000L) == 0)
-                            {
-                                _bits |= 0x1000L;
-                                _headers._ContentEncoding = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x20L;
+                            _headers._Trailer = value;
+                            return true;
                         }
-                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key))
+                    {
+                        if ((_bits & 0x80L) == 0)
                         {
-                            if ((_bits & 0x2000L) == 0)
-                            {
-                                _bits |= 0x2000L;
-                                _headers._ContentLanguage = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x80L;
+                            _headers._Upgrade = value;
+                            return true;
                         }
-                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key))
+                    {
+                        if ((_bits & 0x200L) == 0)
                         {
-                            if ((_bits & 0x4000L) == 0)
-                            {
-                                _bits |= 0x4000L;
-                                _headers._ContentLocation = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x200L;
+                            _headers._Warning = value;
+                            return true;
                         }
-                        if ("WWW-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expires, key))
+                    {
+                        if ((_bits & 0x20000L) == 0)
                         {
-                            if ((_bits & 0x10000000L) == 0)
-                            {
-                                _bits |= 0x10000000L;
-                                _headers._WWWAuthenticate = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x20000L;
+                            _headers._Expires = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Trailer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20L) == 0)
+                        {
+                            _bits |= 0x20L;
+                            _headers._Trailer = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80L) == 0)
+                        {
+                            _bits |= 0x80L;
+                            _headers._Upgrade = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200L) == 0)
+                        {
+                            _bits |= 0x200L;
+                            _headers._Warning = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000L) == 0)
+                        {
+                            _bits |= 0x20000L;
+                            _headers._Expires = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 11:
-                    {
-                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000L) == 0)
-                            {
-                                _bits |= 0x8000L;
-                                _headers._ContentMD5 = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Retry-After".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000L) == 0)
-                            {
-                                _bits |= 0x1000000L;
-                                _headers._RetryAfter = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
+                }
                 case 8:
+                {
+                    if (ReferenceEquals(HeaderNames.Location, key))
                     {
-                        if ("Location".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x400000L) == 0)
                         {
-                            if ((_bits & 0x400000L) == 0)
-                            {
-                                _bits |= 0x400000L;
-                                _headers._Location = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x400000L;
+                            _headers._Location = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Location.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000L) == 0)
+                        {
+                            _bits |= 0x400000L;
+                            _headers._Location = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 18:
+                }
+                case 10:
+                {
+                    if (ReferenceEquals(HeaderNames.Connection, key))
                     {
-                        if ("Proxy-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2L) == 0)
                         {
-                            if ((_bits & 0x800000L) == 0)
-                            {
-                                _bits |= 0x800000L;
-                                _headers._ProxyAuthenticate = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x2L;
+                            _headers._Connection = value;
+                            _headers._rawConnection = null;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key))
+                    {
+                        if ((_bits & 0x8L) == 0)
+                        {
+                            _bits |= 0x8L;
+                            _headers._KeepAlive = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.SetCookie, key))
+                    {
+                        if ((_bits & 0x4000000L) == 0)
+                        {
+                            _bits |= 0x4000000L;
+                            _headers._SetCookie = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2L) == 0)
+                        {
+                            _bits |= 0x2L;
+                            _headers._Connection = value;
+                            _headers._rawConnection = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8L) == 0)
+                        {
+                            _bits |= 0x8L;
+                            _headers._KeepAlive = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.SetCookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000L) == 0)
+                        {
+                            _bits |= 0x4000000L;
+                            _headers._SetCookie = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 32:
+                }
+                case 11:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentMD5, key))
                     {
-                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x8000L) == 0)
                         {
-                            if ((_bits & 0x20000000L) == 0)
-                            {
-                                _bits |= 0x20000000L;
-                                _headers._AccessControlAllowCredentials = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x8000L;
+                            _headers._ContentMD5 = value;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.RetryAfter, key))
+                    {
+                        if ((_bits & 0x1000000L) == 0)
+                        {
+                            _bits |= 0x1000000L;
+                            _headers._RetryAfter = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentMD5.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000L) == 0)
+                        {
+                            _bits |= 0x8000L;
+                            _headers._ContentMD5 = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.RetryAfter.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000L) == 0)
+                        {
+                            _bits |= 0x1000000L;
+                            _headers._RetryAfter = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 28:
+                }
+                case 12:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentType, key))
                     {
-                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x800L) == 0)
                         {
-                            if ((_bits & 0x40000000L) == 0)
-                            {
-                                _bits |= 0x40000000L;
-                                _headers._AccessControlAllowHeaders = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x800L;
+                            _headers._ContentType = value;
+                            return true;
                         }
-                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800L) == 0)
                         {
-                            if ((_bits & 0x80000000L) == 0)
-                            {
-                                _bits |= 0x80000000L;
-                                _headers._AccessControlAllowMethods = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x800L;
+                            _headers._ContentType = value;
+                            return true;
                         }
+                        return false;
                     }
                     break;
-                case 27:
+                }
+                case 13:
+                {
+                    if (ReferenceEquals(HeaderNames.CacheControl, key))
                     {
-                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1L) == 0)
                         {
-                            if ((_bits & 0x100000000L) == 0)
-                            {
-                                _bits |= 0x100000000L;
-                                _headers._AccessControlAllowOrigin = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x1L;
+                            _headers._CacheControl = value;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentRange, key))
+                    {
+                        if ((_bits & 0x10000L) == 0)
+                        {
+                            _bits |= 0x10000L;
+                            _headers._ContentRange = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.LastModified, key))
+                    {
+                        if ((_bits & 0x40000L) == 0)
+                        {
+                            _bits |= 0x40000L;
+                            _headers._LastModified = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptRanges, key))
+                    {
+                        if ((_bits & 0x80000L) == 0)
+                        {
+                            _bits |= 0x80000L;
+                            _headers._AcceptRanges = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) == 0)
+                        {
+                            _bits |= 0x1L;
+                            _headers._CacheControl = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000L) == 0)
+                        {
+                            _bits |= 0x10000L;
+                            _headers._ContentRange = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.LastModified.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000L) == 0)
+                        {
+                            _bits |= 0x40000L;
+                            _headers._LastModified = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AcceptRanges.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000L) == 0)
+                        {
+                            _bits |= 0x80000L;
+                            _headers._AcceptRanges = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 29:
-                    {
-                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000000L) == 0)
-                            {
-                                _bits |= 0x200000000L;
-                                _headers._AccessControlExposeHeaders = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 22:
-                    {
-                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000000L) == 0)
-                            {
-                                _bits |= 0x400000000L;
-                                _headers._AccessControlMaxAge = value;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
+                }
                 case 14:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentLength, key))
                     {
-                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if (!_contentLength.HasValue)
                         {
-                            if (!_contentLength.HasValue)
-                            {
-                                _contentLength = ParseContentLength(value);
-                                return true;
-                            }
-                            return false;
+                            _contentLength = ParseContentLength(value);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (!_contentLength.HasValue)
+                        {
+                            _contentLength = ParseContentLength(value);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 16:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentEncoding, key))
+                    {
+                        if ((_bits & 0x1000L) == 0)
+                        {
+                            _bits |= 0x1000L;
+                            _headers._ContentEncoding = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLanguage, key))
+                    {
+                        if ((_bits & 0x2000L) == 0)
+                        {
+                            _bits |= 0x2000L;
+                            _headers._ContentLanguage = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLocation, key))
+                    {
+                        if ((_bits & 0x4000L) == 0)
+                        {
+                            _bits |= 0x4000L;
+                            _headers._ContentLocation = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.WWWAuthenticate, key))
+                    {
+                        if ((_bits & 0x10000000L) == 0)
+                        {
+                            _bits |= 0x10000000L;
+                            _headers._WWWAuthenticate = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000L) == 0)
+                        {
+                            _bits |= 0x1000L;
+                            _headers._ContentEncoding = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000L) == 0)
+                        {
+                            _bits |= 0x2000L;
+                            _headers._ContentLanguage = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLocation.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) == 0)
+                        {
+                            _bits |= 0x4000L;
+                            _headers._ContentLocation = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.WWWAuthenticate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000L) == 0)
+                        {
+                            _bits |= 0x10000000L;
+                            _headers._WWWAuthenticate = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key))
+                    {
+                        if ((_bits & 0x40L) == 0)
+                        {
+                            _bits |= 0x40L;
+                            _headers._TransferEncoding = value;
+                            _headers._rawTransferEncoding = null;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40L) == 0)
+                        {
+                            _bits |= 0x40L;
+                            _headers._TransferEncoding = value;
+                            _headers._rawTransferEncoding = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 18:
+                {
+                    if (ReferenceEquals(HeaderNames.ProxyAuthenticate, key))
+                    {
+                        if ((_bits & 0x800000L) == 0)
+                        {
+                            _bits |= 0x800000L;
+                            _headers._ProxyAuthenticate = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ProxyAuthenticate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000L) == 0)
+                        {
+                            _bits |= 0x800000L;
+                            _headers._ProxyAuthenticate = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 22:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlMaxAge, key))
+                    {
+                        if ((_bits & 0x400000000L) == 0)
+                        {
+                            _bits |= 0x400000000L;
+                            _headers._AccessControlMaxAge = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlMaxAge.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000L) == 0)
+                        {
+                            _bits |= 0x400000000L;
+                            _headers._AccessControlMaxAge = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 27:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowOrigin, key))
+                    {
+                        if ((_bits & 0x100000000L) == 0)
+                        {
+                            _bits |= 0x100000000L;
+                            _headers._AccessControlAllowOrigin = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlAllowOrigin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000L) == 0)
+                        {
+                            _bits |= 0x100000000L;
+                            _headers._AccessControlAllowOrigin = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 28:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowHeaders, key))
+                    {
+                        if ((_bits & 0x40000000L) == 0)
+                        {
+                            _bits |= 0x40000000L;
+                            _headers._AccessControlAllowHeaders = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowMethods, key))
+                    {
+                        if ((_bits & 0x80000000L) == 0)
+                        {
+                            _bits |= 0x80000000L;
+                            _headers._AccessControlAllowMethods = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlAllowHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000L) == 0)
+                        {
+                            _bits |= 0x40000000L;
+                            _headers._AccessControlAllowHeaders = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AccessControlAllowMethods.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000L) == 0)
+                        {
+                            _bits |= 0x80000000L;
+                            _headers._AccessControlAllowMethods = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 29:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlExposeHeaders, key))
+                    {
+                        if ((_bits & 0x200000000L) == 0)
+                        {
+                            _bits |= 0x200000000L;
+                            _headers._AccessControlExposeHeaders = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlExposeHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000L) == 0)
+                        {
+                            _bits |= 0x200000000L;
+                            _headers._AccessControlExposeHeaders = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 32:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowCredentials, key))
+                    {
+                        if ((_bits & 0x20000000L) == 0)
+                        {
+                            _bits |= 0x20000000L;
+                            _headers._AccessControlAllowCredentials = value;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlAllowCredentials.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000L) == 0)
+                        {
+                            _bits |= 0x20000000L;
+                            _headers._AccessControlAllowCredentials = value;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
             }
 
-            ValidateHeaderNameCharacters(key);
-            Unknown.Add(key, value);
-            // Return true, above will throw and exit for false
-            return true;
+            return AddValueUnknown(key, value);
         }
 
         protected override bool RemoveFast(string key)
         {
             switch (key.Length)
             {
-                case 13:
-                    {
-                        if ("Cache-Control".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1L) != 0)
-                            {
-                                _bits &= ~0x1L;
-                                _headers._CacheControl = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Content-Range".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10000L) != 0)
-                            {
-                                _bits &= ~0x10000L;
-                                _headers._ContentRange = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Last-Modified".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40000L) != 0)
-                            {
-                                _bits &= ~0x40000L;
-                                _headers._LastModified = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Accept-Ranges".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80000L) != 0)
-                            {
-                                _bits &= ~0x80000L;
-                                _headers._AcceptRanges = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 10:
-                    {
-                        if ("Connection".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2L) != 0)
-                            {
-                                _bits &= ~0x2L;
-                                _headers._Connection = default(StringValues);
-                                _headers._rawConnection = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Keep-Alive".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8L) != 0)
-                            {
-                                _bits &= ~0x8L;
-                                _headers._KeepAlive = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Set-Cookie".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4000000L) != 0)
-                            {
-                                _bits &= ~0x4000000L;
-                                _headers._SetCookie = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 4:
-                    {
-                        if ("Date".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x4L) != 0)
-                            {
-                                _bits &= ~0x4L;
-                                _headers._Date = default(StringValues);
-                                _headers._rawDate = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000L) != 0)
-                            {
-                                _bits &= ~0x200000L;
-                                _headers._ETag = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Vary".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000000L) != 0)
-                            {
-                                _bits &= ~0x8000000L;
-                                _headers._Vary = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 6:
-                    {
-                        if ("Pragma".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x10L) != 0)
-                            {
-                                _bits &= ~0x10L;
-                                _headers._Pragma = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Server".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x2000000L) != 0)
-                            {
-                                _bits &= ~0x2000000L;
-                                _headers._Server = default(StringValues);
-                                _headers._rawServer = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 7:
-                    {
-                        if ("Trailer".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20L) != 0)
-                            {
-                                _bits &= ~0x20L;
-                                _headers._Trailer = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Upgrade".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x80L) != 0)
-                            {
-                                _bits &= ~0x80L;
-                                _headers._Upgrade = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Warning".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200L) != 0)
-                            {
-                                _bits &= ~0x200L;
-                                _headers._Warning = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Expires".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x20000L) != 0)
-                            {
-                                _bits &= ~0x20000L;
-                                _headers._Expires = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 17:
-                    {
-                        if ("Transfer-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x40L) != 0)
-                            {
-                                _bits &= ~0x40L;
-                                _headers._TransferEncoding = default(StringValues);
-                                _headers._rawTransferEncoding = null;
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
                 case 3:
+                {
+                    if (ReferenceEquals(HeaderNames.Via, key))
                     {
-                        if ("Via".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x100L) != 0)
                         {
-                            if ((_bits & 0x100L) != 0)
-                            {
-                                _bits &= ~0x100L;
-                                _headers._Via = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x100L;
+                            _headers._Via = default(StringValues);
+                            return true;
                         }
-                        if ("Age".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Age, key))
+                    {
+                        if ((_bits & 0x100000L) != 0)
                         {
-                            if ((_bits & 0x100000L) != 0)
-                            {
-                                _bits &= ~0x100000L;
-                                _headers._Age = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x100000L;
+                            _headers._Age = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Via.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100L) != 0)
+                        {
+                            _bits &= ~0x100L;
+                            _headers._Via = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Age.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000L) != 0)
+                        {
+                            _bits &= ~0x100000L;
+                            _headers._Age = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.Date, key))
+                    {
+                        if ((_bits & 0x4L) != 0)
+                        {
+                            _bits &= ~0x4L;
+                            _headers._Date = default(StringValues);
+                            _headers._rawDate = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ETag, key))
+                    {
+                        if ((_bits & 0x200000L) != 0)
+                        {
+                            _bits &= ~0x200000L;
+                            _headers._ETag = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Vary, key))
+                    {
+                        if ((_bits & 0x8000000L) != 0)
+                        {
+                            _bits &= ~0x8000000L;
+                            _headers._Vary = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Date.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4L) != 0)
+                        {
+                            _bits &= ~0x4L;
+                            _headers._Date = default(StringValues);
+                            _headers._rawDate = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ETag.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000L) != 0)
+                        {
+                            _bits &= ~0x200000L;
+                            _headers._ETag = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Vary.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000000L) != 0)
+                        {
+                            _bits &= ~0x8000000L;
+                            _headers._Vary = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
                 case 5:
+                {
+                    if (ReferenceEquals(HeaderNames.Allow, key))
                     {
-                        if ("Allow".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x400L) != 0)
                         {
-                            if ((_bits & 0x400L) != 0)
-                            {
-                                _bits &= ~0x400L;
-                                _headers._Allow = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x400L;
+                            _headers._Allow = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Allow.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400L) != 0)
+                        {
+                            _bits &= ~0x400L;
+                            _headers._Allow = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 12:
+                }
+                case 6:
+                {
+                    if (ReferenceEquals(HeaderNames.Server, key))
                     {
-                        if ("Content-Type".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2000000L) != 0)
                         {
-                            if ((_bits & 0x800L) != 0)
-                            {
-                                _bits &= ~0x800L;
-                                _headers._ContentType = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x2000000L;
+                            _headers._Server = default(StringValues);
+                            _headers._rawServer = null;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Pragma, key))
+                    {
+                        if ((_bits & 0x10L) != 0)
+                        {
+                            _bits &= ~0x10L;
+                            _headers._Pragma = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Server.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000000L) != 0)
+                        {
+                            _bits &= ~0x2000000L;
+                            _headers._Server = default(StringValues);
+                            _headers._rawServer = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Pragma.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10L) != 0)
+                        {
+                            _bits &= ~0x10L;
+                            _headers._Pragma = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 16:
+                }
+                case 7:
+                {
+                    if (ReferenceEquals(HeaderNames.Trailer, key))
                     {
-                        if ("Content-Encoding".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x20L) != 0)
                         {
-                            if ((_bits & 0x1000L) != 0)
-                            {
-                                _bits &= ~0x1000L;
-                                _headers._ContentEncoding = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x20L;
+                            _headers._Trailer = default(StringValues);
+                            return true;
                         }
-                        if ("Content-Language".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Upgrade, key))
+                    {
+                        if ((_bits & 0x80L) != 0)
                         {
-                            if ((_bits & 0x2000L) != 0)
-                            {
-                                _bits &= ~0x2000L;
-                                _headers._ContentLanguage = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x80L;
+                            _headers._Upgrade = default(StringValues);
+                            return true;
                         }
-                        if ("Content-Location".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Warning, key))
+                    {
+                        if ((_bits & 0x200L) != 0)
                         {
-                            if ((_bits & 0x4000L) != 0)
-                            {
-                                _bits &= ~0x4000L;
-                                _headers._ContentLocation = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x200L;
+                            _headers._Warning = default(StringValues);
+                            return true;
                         }
-                        if ("WWW-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.Expires, key))
+                    {
+                        if ((_bits & 0x20000L) != 0)
                         {
-                            if ((_bits & 0x10000000L) != 0)
-                            {
-                                _bits &= ~0x10000000L;
-                                _headers._WWWAuthenticate = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x20000L;
+                            _headers._Expires = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Trailer.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20L) != 0)
+                        {
+                            _bits &= ~0x20L;
+                            _headers._Trailer = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Upgrade.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80L) != 0)
+                        {
+                            _bits &= ~0x80L;
+                            _headers._Upgrade = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Warning.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200L) != 0)
+                        {
+                            _bits &= ~0x200L;
+                            _headers._Warning = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.Expires.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000L) != 0)
+                        {
+                            _bits &= ~0x20000L;
+                            _headers._Expires = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 11:
-                    {
-                        if ("Content-MD5".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x8000L) != 0)
-                            {
-                                _bits &= ~0x8000L;
-                                _headers._ContentMD5 = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                        if ("Retry-After".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x1000000L) != 0)
-                            {
-                                _bits &= ~0x1000000L;
-                                _headers._RetryAfter = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
+                }
                 case 8:
+                {
+                    if (ReferenceEquals(HeaderNames.Location, key))
                     {
-                        if ("Location".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x400000L) != 0)
                         {
-                            if ((_bits & 0x400000L) != 0)
-                            {
-                                _bits &= ~0x400000L;
-                                _headers._Location = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x400000L;
+                            _headers._Location = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Location.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000L) != 0)
+                        {
+                            _bits &= ~0x400000L;
+                            _headers._Location = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 18:
+                }
+                case 10:
+                {
+                    if (ReferenceEquals(HeaderNames.Connection, key))
                     {
-                        if ("Proxy-Authenticate".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x2L) != 0)
                         {
-                            if ((_bits & 0x800000L) != 0)
-                            {
-                                _bits &= ~0x800000L;
-                                _headers._ProxyAuthenticate = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x2L;
+                            _headers._Connection = default(StringValues);
+                            _headers._rawConnection = null;
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.KeepAlive, key))
+                    {
+                        if ((_bits & 0x8L) != 0)
+                        {
+                            _bits &= ~0x8L;
+                            _headers._KeepAlive = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.SetCookie, key))
+                    {
+                        if ((_bits & 0x4000000L) != 0)
+                        {
+                            _bits &= ~0x4000000L;
+                            _headers._SetCookie = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.Connection.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2L) != 0)
+                        {
+                            _bits &= ~0x2L;
+                            _headers._Connection = default(StringValues);
+                            _headers._rawConnection = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.KeepAlive.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8L) != 0)
+                        {
+                            _bits &= ~0x8L;
+                            _headers._KeepAlive = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.SetCookie.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000000L) != 0)
+                        {
+                            _bits &= ~0x4000000L;
+                            _headers._SetCookie = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 32:
+                }
+                case 11:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentMD5, key))
                     {
-                        if ("Access-Control-Allow-Credentials".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x8000L) != 0)
                         {
-                            if ((_bits & 0x20000000L) != 0)
-                            {
-                                _bits &= ~0x20000000L;
-                                _headers._AccessControlAllowCredentials = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x8000L;
+                            _headers._ContentMD5 = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.RetryAfter, key))
+                    {
+                        if ((_bits & 0x1000000L) != 0)
+                        {
+                            _bits &= ~0x1000000L;
+                            _headers._RetryAfter = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentMD5.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x8000L) != 0)
+                        {
+                            _bits &= ~0x8000L;
+                            _headers._ContentMD5 = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.RetryAfter.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000000L) != 0)
+                        {
+                            _bits &= ~0x1000000L;
+                            _headers._RetryAfter = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 28:
+                }
+                case 12:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentType, key))
                     {
-                        if ("Access-Control-Allow-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x800L) != 0)
                         {
-                            if ((_bits & 0x40000000L) != 0)
-                            {
-                                _bits &= ~0x40000000L;
-                                _headers._AccessControlAllowHeaders = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x800L;
+                            _headers._ContentType = default(StringValues);
+                            return true;
                         }
-                        if ("Access-Control-Allow-Methods".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentType.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800L) != 0)
                         {
-                            if ((_bits & 0x80000000L) != 0)
-                            {
-                                _bits &= ~0x80000000L;
-                                _headers._AccessControlAllowMethods = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x800L;
+                            _headers._ContentType = default(StringValues);
+                            return true;
                         }
+                        return false;
                     }
                     break;
-                case 27:
+                }
+                case 13:
+                {
+                    if (ReferenceEquals(HeaderNames.CacheControl, key))
                     {
-                        if ("Access-Control-Allow-Origin".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1L) != 0)
                         {
-                            if ((_bits & 0x100000000L) != 0)
-                            {
-                                _bits &= ~0x100000000L;
-                                _headers._AccessControlAllowOrigin = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x1L;
+                            _headers._CacheControl = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentRange, key))
+                    {
+                        if ((_bits & 0x10000L) != 0)
+                        {
+                            _bits &= ~0x10000L;
+                            _headers._ContentRange = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.LastModified, key))
+                    {
+                        if ((_bits & 0x40000L) != 0)
+                        {
+                            _bits &= ~0x40000L;
+                            _headers._LastModified = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AcceptRanges, key))
+                    {
+                        if ((_bits & 0x80000L) != 0)
+                        {
+                            _bits &= ~0x80000L;
+                            _headers._AcceptRanges = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.CacheControl.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) != 0)
+                        {
+                            _bits &= ~0x1L;
+                            _headers._CacheControl = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentRange.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000L) != 0)
+                        {
+                            _bits &= ~0x10000L;
+                            _headers._ContentRange = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.LastModified.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000L) != 0)
+                        {
+                            _bits &= ~0x40000L;
+                            _headers._LastModified = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AcceptRanges.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000L) != 0)
+                        {
+                            _bits &= ~0x80000L;
+                            _headers._AcceptRanges = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
-                case 29:
-                    {
-                        if ("Access-Control-Expose-Headers".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x200000000L) != 0)
-                            {
-                                _bits &= ~0x200000000L;
-                                _headers._AccessControlExposeHeaders = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
-                case 22:
-                    {
-                        if ("Access-Control-Max-Age".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            if ((_bits & 0x400000000L) != 0)
-                            {
-                                _bits &= ~0x400000000L;
-                                _headers._AccessControlMaxAge = default(StringValues);
-                                return true;
-                            }
-                            return false;
-                        }
-                    }
-                    break;
+                }
                 case 14:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentLength, key))
                     {
-                        if ("Content-Length".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if (_contentLength.HasValue)
                         {
-                            if (_contentLength.HasValue)
-                            {
-                                _contentLength = null;
-                                return true;
-                            }
-                            return false;
+                            _contentLength = null;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentLength.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (_contentLength.HasValue)
+                        {
+                            _contentLength = null;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
+                case 16:
+                {
+                    if (ReferenceEquals(HeaderNames.ContentEncoding, key))
+                    {
+                        if ((_bits & 0x1000L) != 0)
+                        {
+                            _bits &= ~0x1000L;
+                            _headers._ContentEncoding = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLanguage, key))
+                    {
+                        if ((_bits & 0x2000L) != 0)
+                        {
+                            _bits &= ~0x2000L;
+                            _headers._ContentLanguage = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.ContentLocation, key))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            _bits &= ~0x4000L;
+                            _headers._ContentLocation = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.WWWAuthenticate, key))
+                    {
+                        if ((_bits & 0x10000000L) != 0)
+                        {
+                            _bits &= ~0x10000000L;
+                            _headers._WWWAuthenticate = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ContentEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1000L) != 0)
+                        {
+                            _bits &= ~0x1000L;
+                            _headers._ContentEncoding = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLanguage.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x2000L) != 0)
+                        {
+                            _bits &= ~0x2000L;
+                            _headers._ContentLanguage = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.ContentLocation.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x4000L) != 0)
+                        {
+                            _bits &= ~0x4000L;
+                            _headers._ContentLocation = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.WWWAuthenticate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x10000000L) != 0)
+                        {
+                            _bits &= ~0x10000000L;
+                            _headers._WWWAuthenticate = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 17:
+                {
+                    if (ReferenceEquals(HeaderNames.TransferEncoding, key))
+                    {
+                        if ((_bits & 0x40L) != 0)
+                        {
+                            _bits &= ~0x40L;
+                            _headers._TransferEncoding = default(StringValues);
+                            _headers._rawTransferEncoding = null;
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.TransferEncoding.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40L) != 0)
+                        {
+                            _bits &= ~0x40L;
+                            _headers._TransferEncoding = default(StringValues);
+                            _headers._rawTransferEncoding = null;
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 18:
+                {
+                    if (ReferenceEquals(HeaderNames.ProxyAuthenticate, key))
+                    {
+                        if ((_bits & 0x800000L) != 0)
+                        {
+                            _bits &= ~0x800000L;
+                            _headers._ProxyAuthenticate = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ProxyAuthenticate.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x800000L) != 0)
+                        {
+                            _bits &= ~0x800000L;
+                            _headers._ProxyAuthenticate = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 22:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlMaxAge, key))
+                    {
+                        if ((_bits & 0x400000000L) != 0)
+                        {
+                            _bits &= ~0x400000000L;
+                            _headers._AccessControlMaxAge = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlMaxAge.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x400000000L) != 0)
+                        {
+                            _bits &= ~0x400000000L;
+                            _headers._AccessControlMaxAge = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 27:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowOrigin, key))
+                    {
+                        if ((_bits & 0x100000000L) != 0)
+                        {
+                            _bits &= ~0x100000000L;
+                            _headers._AccessControlAllowOrigin = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlAllowOrigin.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x100000000L) != 0)
+                        {
+                            _bits &= ~0x100000000L;
+                            _headers._AccessControlAllowOrigin = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 28:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowHeaders, key))
+                    {
+                        if ((_bits & 0x40000000L) != 0)
+                        {
+                            _bits &= ~0x40000000L;
+                            _headers._AccessControlAllowHeaders = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowMethods, key))
+                    {
+                        if ((_bits & 0x80000000L) != 0)
+                        {
+                            _bits &= ~0x80000000L;
+                            _headers._AccessControlAllowMethods = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlAllowHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x40000000L) != 0)
+                        {
+                            _bits &= ~0x40000000L;
+                            _headers._AccessControlAllowHeaders = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    if (HeaderNames.AccessControlAllowMethods.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x80000000L) != 0)
+                        {
+                            _bits &= ~0x80000000L;
+                            _headers._AccessControlAllowMethods = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 29:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlExposeHeaders, key))
+                    {
+                        if ((_bits & 0x200000000L) != 0)
+                        {
+                            _bits &= ~0x200000000L;
+                            _headers._AccessControlExposeHeaders = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlExposeHeaders.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x200000000L) != 0)
+                        {
+                            _bits &= ~0x200000000L;
+                            _headers._AccessControlExposeHeaders = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
+                case 32:
+                {
+                    if (ReferenceEquals(HeaderNames.AccessControlAllowCredentials, key))
+                    {
+                        if ((_bits & 0x20000000L) != 0)
+                        {
+                            _bits &= ~0x20000000L;
+                            _headers._AccessControlAllowCredentials = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+    
+                    if (HeaderNames.AccessControlAllowCredentials.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x20000000L) != 0)
+                        {
+                            _bits &= ~0x20000000L;
+                            _headers._AccessControlAllowCredentials = default(StringValues);
+                            return true;
+                        }
+                        return false;
+                    }
+                    break;
+                }
             }
 
-            return MaybeUnknown?.Remove(key) ?? false;
+            return RemoveUnknown(key);
         }
         protected override void ClearFast()
         {
@@ -6772,7 +10283,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x2L) != 0)
             {
-                _headers._Connection = default(StringValues);
+                _headers._Connection = default;
                 if((tempBits & ~0x2L) == 0)
                 {
                     return;
@@ -6782,7 +10293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4L) != 0)
             {
-                _headers._Date = default(StringValues);
+                _headers._Date = default;
                 if((tempBits & ~0x4L) == 0)
                 {
                     return;
@@ -6792,7 +10303,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x800L) != 0)
             {
-                _headers._ContentType = default(StringValues);
+                _headers._ContentType = default;
                 if((tempBits & ~0x800L) == 0)
                 {
                     return;
@@ -6802,7 +10313,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x2000000L) != 0)
             {
-                _headers._Server = default(StringValues);
+                _headers._Server = default;
                 if((tempBits & ~0x2000000L) == 0)
                 {
                     return;
@@ -6812,7 +10323,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1L) != 0)
             {
-                _headers._CacheControl = default(StringValues);
+                _headers._CacheControl = default;
                 if((tempBits & ~0x1L) == 0)
                 {
                     return;
@@ -6822,7 +10333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8L) != 0)
             {
-                _headers._KeepAlive = default(StringValues);
+                _headers._KeepAlive = default;
                 if((tempBits & ~0x8L) == 0)
                 {
                     return;
@@ -6832,7 +10343,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10L) != 0)
             {
-                _headers._Pragma = default(StringValues);
+                _headers._Pragma = default;
                 if((tempBits & ~0x10L) == 0)
                 {
                     return;
@@ -6842,7 +10353,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20L) != 0)
             {
-                _headers._Trailer = default(StringValues);
+                _headers._Trailer = default;
                 if((tempBits & ~0x20L) == 0)
                 {
                     return;
@@ -6852,7 +10363,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40L) != 0)
             {
-                _headers._TransferEncoding = default(StringValues);
+                _headers._TransferEncoding = default;
                 if((tempBits & ~0x40L) == 0)
                 {
                     return;
@@ -6862,7 +10373,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x80L) != 0)
             {
-                _headers._Upgrade = default(StringValues);
+                _headers._Upgrade = default;
                 if((tempBits & ~0x80L) == 0)
                 {
                     return;
@@ -6872,7 +10383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x100L) != 0)
             {
-                _headers._Via = default(StringValues);
+                _headers._Via = default;
                 if((tempBits & ~0x100L) == 0)
                 {
                     return;
@@ -6882,7 +10393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x200L) != 0)
             {
-                _headers._Warning = default(StringValues);
+                _headers._Warning = default;
                 if((tempBits & ~0x200L) == 0)
                 {
                     return;
@@ -6892,7 +10403,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x400L) != 0)
             {
-                _headers._Allow = default(StringValues);
+                _headers._Allow = default;
                 if((tempBits & ~0x400L) == 0)
                 {
                     return;
@@ -6902,7 +10413,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1000L) != 0)
             {
-                _headers._ContentEncoding = default(StringValues);
+                _headers._ContentEncoding = default;
                 if((tempBits & ~0x1000L) == 0)
                 {
                     return;
@@ -6912,7 +10423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x2000L) != 0)
             {
-                _headers._ContentLanguage = default(StringValues);
+                _headers._ContentLanguage = default;
                 if((tempBits & ~0x2000L) == 0)
                 {
                     return;
@@ -6922,7 +10433,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4000L) != 0)
             {
-                _headers._ContentLocation = default(StringValues);
+                _headers._ContentLocation = default;
                 if((tempBits & ~0x4000L) == 0)
                 {
                     return;
@@ -6932,7 +10443,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8000L) != 0)
             {
-                _headers._ContentMD5 = default(StringValues);
+                _headers._ContentMD5 = default;
                 if((tempBits & ~0x8000L) == 0)
                 {
                     return;
@@ -6942,7 +10453,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10000L) != 0)
             {
-                _headers._ContentRange = default(StringValues);
+                _headers._ContentRange = default;
                 if((tempBits & ~0x10000L) == 0)
                 {
                     return;
@@ -6952,7 +10463,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20000L) != 0)
             {
-                _headers._Expires = default(StringValues);
+                _headers._Expires = default;
                 if((tempBits & ~0x20000L) == 0)
                 {
                     return;
@@ -6962,7 +10473,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40000L) != 0)
             {
-                _headers._LastModified = default(StringValues);
+                _headers._LastModified = default;
                 if((tempBits & ~0x40000L) == 0)
                 {
                     return;
@@ -6972,7 +10483,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x80000L) != 0)
             {
-                _headers._AcceptRanges = default(StringValues);
+                _headers._AcceptRanges = default;
                 if((tempBits & ~0x80000L) == 0)
                 {
                     return;
@@ -6982,7 +10493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x100000L) != 0)
             {
-                _headers._Age = default(StringValues);
+                _headers._Age = default;
                 if((tempBits & ~0x100000L) == 0)
                 {
                     return;
@@ -6992,7 +10503,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x200000L) != 0)
             {
-                _headers._ETag = default(StringValues);
+                _headers._ETag = default;
                 if((tempBits & ~0x200000L) == 0)
                 {
                     return;
@@ -7002,7 +10513,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x400000L) != 0)
             {
-                _headers._Location = default(StringValues);
+                _headers._Location = default;
                 if((tempBits & ~0x400000L) == 0)
                 {
                     return;
@@ -7012,7 +10523,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x800000L) != 0)
             {
-                _headers._ProxyAuthenticate = default(StringValues);
+                _headers._ProxyAuthenticate = default;
                 if((tempBits & ~0x800000L) == 0)
                 {
                     return;
@@ -7022,7 +10533,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1000000L) != 0)
             {
-                _headers._RetryAfter = default(StringValues);
+                _headers._RetryAfter = default;
                 if((tempBits & ~0x1000000L) == 0)
                 {
                     return;
@@ -7032,7 +10543,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x4000000L) != 0)
             {
-                _headers._SetCookie = default(StringValues);
+                _headers._SetCookie = default;
                 if((tempBits & ~0x4000000L) == 0)
                 {
                     return;
@@ -7042,7 +10553,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x8000000L) != 0)
             {
-                _headers._Vary = default(StringValues);
+                _headers._Vary = default;
                 if((tempBits & ~0x8000000L) == 0)
                 {
                     return;
@@ -7052,7 +10563,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x10000000L) != 0)
             {
-                _headers._WWWAuthenticate = default(StringValues);
+                _headers._WWWAuthenticate = default;
                 if((tempBits & ~0x10000000L) == 0)
                 {
                     return;
@@ -7062,7 +10573,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x20000000L) != 0)
             {
-                _headers._AccessControlAllowCredentials = default(StringValues);
+                _headers._AccessControlAllowCredentials = default;
                 if((tempBits & ~0x20000000L) == 0)
                 {
                     return;
@@ -7072,7 +10583,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x40000000L) != 0)
             {
-                _headers._AccessControlAllowHeaders = default(StringValues);
+                _headers._AccessControlAllowHeaders = default;
                 if((tempBits & ~0x40000000L) == 0)
                 {
                     return;
@@ -7082,7 +10593,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x80000000L) != 0)
             {
-                _headers._AccessControlAllowMethods = default(StringValues);
+                _headers._AccessControlAllowMethods = default;
                 if((tempBits & ~0x80000000L) == 0)
                 {
                     return;
@@ -7092,7 +10603,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x100000000L) != 0)
             {
-                _headers._AccessControlAllowOrigin = default(StringValues);
+                _headers._AccessControlAllowOrigin = default;
                 if((tempBits & ~0x100000000L) == 0)
                 {
                     return;
@@ -7102,7 +10613,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x200000000L) != 0)
             {
-                _headers._AccessControlExposeHeaders = default(StringValues);
+                _headers._AccessControlExposeHeaders = default;
                 if((tempBits & ~0x200000000L) == 0)
                 {
                     return;
@@ -7112,7 +10623,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x400000000L) != 0)
             {
-                _headers._AccessControlMaxAge = default(StringValues);
+                _headers._AccessControlMaxAge = default;
                 if((tempBits & ~0x400000000L) == 0)
                 {
                     return;
@@ -7135,7 +10646,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Cache-Control", _headers._CacheControl);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.CacheControl, _headers._CacheControl);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x2L) != 0)
@@ -7144,7 +10655,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Connection", _headers._Connection);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Connection, _headers._Connection);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x4L) != 0)
@@ -7153,7 +10664,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Date", _headers._Date);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Date, _headers._Date);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8L) != 0)
@@ -7162,7 +10673,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Keep-Alive", _headers._KeepAlive);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.KeepAlive, _headers._KeepAlive);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10L) != 0)
@@ -7171,7 +10682,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Pragma", _headers._Pragma);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Pragma, _headers._Pragma);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20L) != 0)
@@ -7180,7 +10691,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Trailer", _headers._Trailer);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Trailer, _headers._Trailer);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40L) != 0)
@@ -7189,7 +10700,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Transfer-Encoding", _headers._TransferEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.TransferEncoding, _headers._TransferEncoding);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x80L) != 0)
@@ -7198,7 +10709,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Upgrade", _headers._Upgrade);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Upgrade, _headers._Upgrade);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x100L) != 0)
@@ -7207,7 +10718,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Via", _headers._Via);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Via, _headers._Via);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x200L) != 0)
@@ -7216,7 +10727,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Warning", _headers._Warning);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Warning, _headers._Warning);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x400L) != 0)
@@ -7225,7 +10736,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Allow", _headers._Allow);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Allow, _headers._Allow);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x800L) != 0)
@@ -7234,7 +10745,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Type", _headers._ContentType);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentType, _headers._ContentType);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x1000L) != 0)
@@ -7243,7 +10754,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Encoding", _headers._ContentEncoding);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentEncoding, _headers._ContentEncoding);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x2000L) != 0)
@@ -7252,7 +10763,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Language", _headers._ContentLanguage);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLanguage, _headers._ContentLanguage);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x4000L) != 0)
@@ -7261,7 +10772,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Location", _headers._ContentLocation);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLocation, _headers._ContentLocation);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8000L) != 0)
@@ -7270,7 +10781,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-MD5", _headers._ContentMD5);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentMD5, _headers._ContentMD5);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10000L) != 0)
@@ -7279,7 +10790,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Range", _headers._ContentRange);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentRange, _headers._ContentRange);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20000L) != 0)
@@ -7288,7 +10799,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Expires", _headers._Expires);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Expires, _headers._Expires);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40000L) != 0)
@@ -7297,7 +10808,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Last-Modified", _headers._LastModified);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.LastModified, _headers._LastModified);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x80000L) != 0)
@@ -7306,7 +10817,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Accept-Ranges", _headers._AcceptRanges);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AcceptRanges, _headers._AcceptRanges);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x100000L) != 0)
@@ -7315,7 +10826,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Age", _headers._Age);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Age, _headers._Age);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x200000L) != 0)
@@ -7324,7 +10835,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("ETag", _headers._ETag);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ETag, _headers._ETag);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x400000L) != 0)
@@ -7333,7 +10844,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Location", _headers._Location);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Location, _headers._Location);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x800000L) != 0)
@@ -7342,7 +10853,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Proxy-Authenticate", _headers._ProxyAuthenticate);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ProxyAuthenticate, _headers._ProxyAuthenticate);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x1000000L) != 0)
@@ -7351,7 +10862,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Retry-After", _headers._RetryAfter);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.RetryAfter, _headers._RetryAfter);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x2000000L) != 0)
@@ -7360,7 +10871,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Server", _headers._Server);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Server, _headers._Server);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x4000000L) != 0)
@@ -7369,7 +10880,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Set-Cookie", _headers._SetCookie);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.SetCookie, _headers._SetCookie);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x8000000L) != 0)
@@ -7378,7 +10889,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Vary", _headers._Vary);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.Vary, _headers._Vary);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x10000000L) != 0)
@@ -7387,7 +10898,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("WWW-Authenticate", _headers._WWWAuthenticate);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.WWWAuthenticate, _headers._WWWAuthenticate);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x20000000L) != 0)
@@ -7396,7 +10907,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Credentials", _headers._AccessControlAllowCredentials);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowCredentials, _headers._AccessControlAllowCredentials);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x40000000L) != 0)
@@ -7405,7 +10916,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Headers", _headers._AccessControlAllowHeaders);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowHeaders, _headers._AccessControlAllowHeaders);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x80000000L) != 0)
@@ -7414,7 +10925,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Methods", _headers._AccessControlAllowMethods);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowMethods, _headers._AccessControlAllowMethods);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x100000000L) != 0)
@@ -7423,7 +10934,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", _headers._AccessControlAllowOrigin);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowOrigin, _headers._AccessControlAllowOrigin);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x200000000L) != 0)
@@ -7432,7 +10943,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Expose-Headers", _headers._AccessControlExposeHeaders);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlExposeHeaders, _headers._AccessControlExposeHeaders);
                     ++arrayIndex;
                 }
                 if ((_bits & 0x400000000L) != 0)
@@ -7441,7 +10952,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Access-Control-Max-Age", _headers._AccessControlMaxAge);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlMaxAge, _headers._AccessControlMaxAge);
                     ++arrayIndex;
                 }
                 if (_contentLength.HasValue)
@@ -7450,7 +10961,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
@@ -8046,252 +11557,252 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 HeaderCacheControl: // case 0
                     if ((_bits & 0x1L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Cache-Control", _collection._headers._CacheControl);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.CacheControl, _collection._headers._CacheControl);
                         _next = 1;
                         return true;
                     }
                 HeaderConnection: // case 1
                     if ((_bits & 0x2L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Connection", _collection._headers._Connection);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Connection, _collection._headers._Connection);
                         _next = 2;
                         return true;
                     }
                 HeaderDate: // case 2
                     if ((_bits & 0x4L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Date", _collection._headers._Date);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Date, _collection._headers._Date);
                         _next = 3;
                         return true;
                     }
                 HeaderKeepAlive: // case 3
                     if ((_bits & 0x8L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Keep-Alive", _collection._headers._KeepAlive);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.KeepAlive, _collection._headers._KeepAlive);
                         _next = 4;
                         return true;
                     }
                 HeaderPragma: // case 4
                     if ((_bits & 0x10L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Pragma", _collection._headers._Pragma);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Pragma, _collection._headers._Pragma);
                         _next = 5;
                         return true;
                     }
                 HeaderTrailer: // case 5
                     if ((_bits & 0x20L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Trailer", _collection._headers._Trailer);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Trailer, _collection._headers._Trailer);
                         _next = 6;
                         return true;
                     }
                 HeaderTransferEncoding: // case 6
                     if ((_bits & 0x40L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Transfer-Encoding", _collection._headers._TransferEncoding);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.TransferEncoding, _collection._headers._TransferEncoding);
                         _next = 7;
                         return true;
                     }
                 HeaderUpgrade: // case 7
                     if ((_bits & 0x80L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Upgrade", _collection._headers._Upgrade);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Upgrade, _collection._headers._Upgrade);
                         _next = 8;
                         return true;
                     }
                 HeaderVia: // case 8
                     if ((_bits & 0x100L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Via", _collection._headers._Via);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Via, _collection._headers._Via);
                         _next = 9;
                         return true;
                     }
                 HeaderWarning: // case 9
                     if ((_bits & 0x200L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Warning", _collection._headers._Warning);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Warning, _collection._headers._Warning);
                         _next = 10;
                         return true;
                     }
                 HeaderAllow: // case 10
                     if ((_bits & 0x400L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Allow", _collection._headers._Allow);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Allow, _collection._headers._Allow);
                         _next = 11;
                         return true;
                     }
                 HeaderContentType: // case 11
                     if ((_bits & 0x800L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Type", _collection._headers._ContentType);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentType, _collection._headers._ContentType);
                         _next = 12;
                         return true;
                     }
                 HeaderContentEncoding: // case 12
                     if ((_bits & 0x1000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Encoding", _collection._headers._ContentEncoding);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentEncoding, _collection._headers._ContentEncoding);
                         _next = 13;
                         return true;
                     }
                 HeaderContentLanguage: // case 13
                     if ((_bits & 0x2000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Language", _collection._headers._ContentLanguage);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLanguage, _collection._headers._ContentLanguage);
                         _next = 14;
                         return true;
                     }
                 HeaderContentLocation: // case 14
                     if ((_bits & 0x4000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Location", _collection._headers._ContentLocation);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLocation, _collection._headers._ContentLocation);
                         _next = 15;
                         return true;
                     }
                 HeaderContentMD5: // case 15
                     if ((_bits & 0x8000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-MD5", _collection._headers._ContentMD5);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentMD5, _collection._headers._ContentMD5);
                         _next = 16;
                         return true;
                     }
                 HeaderContentRange: // case 16
                     if ((_bits & 0x10000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Range", _collection._headers._ContentRange);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentRange, _collection._headers._ContentRange);
                         _next = 17;
                         return true;
                     }
                 HeaderExpires: // case 17
                     if ((_bits & 0x20000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Expires", _collection._headers._Expires);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Expires, _collection._headers._Expires);
                         _next = 18;
                         return true;
                     }
                 HeaderLastModified: // case 18
                     if ((_bits & 0x40000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Last-Modified", _collection._headers._LastModified);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.LastModified, _collection._headers._LastModified);
                         _next = 19;
                         return true;
                     }
                 HeaderAcceptRanges: // case 19
                     if ((_bits & 0x80000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Accept-Ranges", _collection._headers._AcceptRanges);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AcceptRanges, _collection._headers._AcceptRanges);
                         _next = 20;
                         return true;
                     }
                 HeaderAge: // case 20
                     if ((_bits & 0x100000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Age", _collection._headers._Age);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Age, _collection._headers._Age);
                         _next = 21;
                         return true;
                     }
                 HeaderETag: // case 21
                     if ((_bits & 0x200000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("ETag", _collection._headers._ETag);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ETag, _collection._headers._ETag);
                         _next = 22;
                         return true;
                     }
                 HeaderLocation: // case 22
                     if ((_bits & 0x400000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Location", _collection._headers._Location);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Location, _collection._headers._Location);
                         _next = 23;
                         return true;
                     }
                 HeaderProxyAuthenticate: // case 23
                     if ((_bits & 0x800000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Proxy-Authenticate", _collection._headers._ProxyAuthenticate);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ProxyAuthenticate, _collection._headers._ProxyAuthenticate);
                         _next = 24;
                         return true;
                     }
                 HeaderRetryAfter: // case 24
                     if ((_bits & 0x1000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Retry-After", _collection._headers._RetryAfter);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.RetryAfter, _collection._headers._RetryAfter);
                         _next = 25;
                         return true;
                     }
                 HeaderServer: // case 25
                     if ((_bits & 0x2000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Server", _collection._headers._Server);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Server, _collection._headers._Server);
                         _next = 26;
                         return true;
                     }
                 HeaderSetCookie: // case 26
                     if ((_bits & 0x4000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Set-Cookie", _collection._headers._SetCookie);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.SetCookie, _collection._headers._SetCookie);
                         _next = 27;
                         return true;
                     }
                 HeaderVary: // case 27
                     if ((_bits & 0x8000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Vary", _collection._headers._Vary);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.Vary, _collection._headers._Vary);
                         _next = 28;
                         return true;
                     }
                 HeaderWWWAuthenticate: // case 28
                     if ((_bits & 0x10000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("WWW-Authenticate", _collection._headers._WWWAuthenticate);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.WWWAuthenticate, _collection._headers._WWWAuthenticate);
                         _next = 29;
                         return true;
                     }
                 HeaderAccessControlAllowCredentials: // case 29
                     if ((_bits & 0x20000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Credentials", _collection._headers._AccessControlAllowCredentials);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowCredentials, _collection._headers._AccessControlAllowCredentials);
                         _next = 30;
                         return true;
                     }
                 HeaderAccessControlAllowHeaders: // case 30
                     if ((_bits & 0x40000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Headers", _collection._headers._AccessControlAllowHeaders);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowHeaders, _collection._headers._AccessControlAllowHeaders);
                         _next = 31;
                         return true;
                     }
                 HeaderAccessControlAllowMethods: // case 31
                     if ((_bits & 0x80000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Methods", _collection._headers._AccessControlAllowMethods);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowMethods, _collection._headers._AccessControlAllowMethods);
                         _next = 32;
                         return true;
                     }
                 HeaderAccessControlAllowOrigin: // case 32
                     if ((_bits & 0x100000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Allow-Origin", _collection._headers._AccessControlAllowOrigin);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlAllowOrigin, _collection._headers._AccessControlAllowOrigin);
                         _next = 33;
                         return true;
                     }
                 HeaderAccessControlExposeHeaders: // case 33
                     if ((_bits & 0x200000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Expose-Headers", _collection._headers._AccessControlExposeHeaders);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlExposeHeaders, _collection._headers._AccessControlExposeHeaders);
                         _next = 34;
                         return true;
                     }
                 HeaderAccessControlMaxAge: // case 34
                     if ((_bits & 0x400000000L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Access-Control-Max-Age", _collection._headers._AccessControlMaxAge);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.AccessControlMaxAge, _collection._headers._AccessControlMaxAge);
                         _next = 35;
                         return true;
                     }
                 HeaderContentLength: // case 35
                     if (_collection._contentLength.HasValue)
                     {
-                        _current = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         _next = 36;
                         return true;
                     }
@@ -8346,21 +11857,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (key.Length)
             {
                 case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.ETag, key))
                     {
-                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1L) != 0)
                         {
-                            if ((_bits & 0x1L) != 0)
-                            {
-                                value = _headers._ETag;
-                                return true;
-                            }
-                            return false;
+                            value = _headers._ETag;
+                            return true;
                         }
+                        return false;
+                    }
+
+                    if (HeaderNames.ETag.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) != 0)
+                        {
+                            value = _headers._ETag;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
             }
 
-            return MaybeUnknown?.TryGetValue(key, out value) ?? false;
+            return TryGetUnknown(key, ref value);
         }
 
         protected override void SetValueFast(string key, StringValues value)
@@ -8369,15 +11890,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (key.Length)
             {
                 case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.ETag, key))
                     {
-                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {
-                            _bits |= 0x1L;
-                            _headers._ETag = value;
-                            return;
-                        }
+                        _bits |= 0x1L;
+                        _headers._ETag = value;
+                        return;
+                    }
+
+                    if (HeaderNames.ETag.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _bits |= 0x1L;
+                        _headers._ETag = value;
+                        return;
                     }
                     break;
+                }
             }
 
             SetValueUnknown(key, value);
@@ -8389,24 +11917,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (key.Length)
             {
                 case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.ETag, key))
                     {
-                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1L) == 0)
                         {
-                            if ((_bits & 0x1L) == 0)
-                            {
-                                _bits |= 0x1L;
-                                _headers._ETag = value;
-                                return true;
-                            }
-                            return false;
+                            _bits |= 0x1L;
+                            _headers._ETag = value;
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ETag.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) == 0)
+                        {
+                            _bits |= 0x1L;
+                            _headers._ETag = value;
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
             }
 
-            Unknown.Add(key, value);
-            // Return true, above will throw and exit for false
-            return true;
+            return AddValueUnknown(key, value);
         }
 
         protected override bool RemoveFast(string key)
@@ -8414,22 +11951,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (key.Length)
             {
                 case 4:
+                {
+                    if (ReferenceEquals(HeaderNames.ETag, key))
                     {
-                        if ("ETag".Equals(key, StringComparison.OrdinalIgnoreCase))
+                        if ((_bits & 0x1L) != 0)
                         {
-                            if ((_bits & 0x1L) != 0)
-                            {
-                                _bits &= ~0x1L;
-                                _headers._ETag = default(StringValues);
-                                return true;
-                            }
-                            return false;
+                            _bits &= ~0x1L;
+                            _headers._ETag = default(StringValues);
+                            return true;
                         }
+                        return false;
+                    }
+    
+                    if (HeaderNames.ETag.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        if ((_bits & 0x1L) != 0)
+                        {
+                            _bits &= ~0x1L;
+                            _headers._ETag = default(StringValues);
+                            return true;
+                        }
+                        return false;
                     }
                     break;
+                }
             }
 
-            return MaybeUnknown?.Remove(key) ?? false;
+            return RemoveUnknown(key);
         }
         protected override void ClearFast()
         {
@@ -8445,7 +11993,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             
             if ((tempBits & 0x1L) != 0)
             {
-                _headers._ETag = default(StringValues);
+                _headers._ETag = default;
                 if((tempBits & ~0x1L) == 0)
                 {
                     return;
@@ -8468,7 +12016,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("ETag", _headers._ETag);
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ETag, _headers._ETag);
                     ++arrayIndex;
                 }
                 if (_contentLength.HasValue)
@@ -8477,7 +12025,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     {
                         return false;
                     }
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>("Content-Length", HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
@@ -8509,7 +12057,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 HeaderETag: // case 0
                     if ((_bits & 0x1L) != 0)
                     {
-                        _current = new KeyValuePair<string, StringValues>("ETag", _collection._headers._ETag);
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ETag, _collection._headers._ETag);
                         _next = 1;
                         return true;
                     }

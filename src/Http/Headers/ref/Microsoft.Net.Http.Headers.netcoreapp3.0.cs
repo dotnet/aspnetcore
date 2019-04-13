@@ -118,74 +118,82 @@ namespace Microsoft.Net.Http.Headers
     }
     public static partial class HeaderNames
     {
-        public const string Accept = "Accept";
-        public const string AcceptCharset = "Accept-Charset";
-        public const string AcceptEncoding = "Accept-Encoding";
-        public const string AcceptLanguage = "Accept-Language";
-        public const string AcceptRanges = "Accept-Ranges";
-        public const string AccessControlAllowCredentials = "Access-Control-Allow-Credentials";
-        public const string AccessControlAllowHeaders = "Access-Control-Allow-Headers";
-        public const string AccessControlAllowMethods = "Access-Control-Allow-Methods";
-        public const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
-        public const string AccessControlExposeHeaders = "Access-Control-Expose-Headers";
-        public const string AccessControlMaxAge = "Access-Control-Max-Age";
-        public const string AccessControlRequestHeaders = "Access-Control-Request-Headers";
-        public const string AccessControlRequestMethod = "Access-Control-Request-Method";
-        public const string Age = "Age";
-        public const string Allow = "Allow";
-        public const string Authority = ":authority";
-        public const string Authorization = "Authorization";
-        public const string CacheControl = "Cache-Control";
-        public const string Connection = "Connection";
-        public const string ContentDisposition = "Content-Disposition";
-        public const string ContentEncoding = "Content-Encoding";
-        public const string ContentLanguage = "Content-Language";
-        public const string ContentLength = "Content-Length";
-        public const string ContentLocation = "Content-Location";
-        public const string ContentMD5 = "Content-MD5";
-        public const string ContentRange = "Content-Range";
-        public const string ContentSecurityPolicy = "Content-Security-Policy";
-        public const string ContentSecurityPolicyReportOnly = "Content-Security-Policy-Report-Only";
-        public const string ContentType = "Content-Type";
-        public const string Cookie = "Cookie";
-        public const string Date = "Date";
-        public const string ETag = "ETag";
-        public const string Expect = "Expect";
-        public const string Expires = "Expires";
-        public const string From = "From";
-        public const string Host = "Host";
-        public const string IfMatch = "If-Match";
-        public const string IfModifiedSince = "If-Modified-Since";
-        public const string IfNoneMatch = "If-None-Match";
-        public const string IfRange = "If-Range";
-        public const string IfUnmodifiedSince = "If-Unmodified-Since";
-        public const string LastModified = "Last-Modified";
-        public const string Location = "Location";
-        public const string MaxForwards = "Max-Forwards";
-        public const string Method = ":method";
-        public const string Origin = "Origin";
-        public const string Path = ":path";
-        public const string Pragma = "Pragma";
-        public const string ProxyAuthenticate = "Proxy-Authenticate";
-        public const string ProxyAuthorization = "Proxy-Authorization";
-        public const string Range = "Range";
-        public const string Referer = "Referer";
-        public const string RetryAfter = "Retry-After";
-        public const string Scheme = ":scheme";
-        public const string Server = "Server";
-        public const string SetCookie = "Set-Cookie";
-        public const string Status = ":status";
-        public const string StrictTransportSecurity = "Strict-Transport-Security";
-        public const string TE = "TE";
-        public const string Trailer = "Trailer";
-        public const string TransferEncoding = "Transfer-Encoding";
-        public const string Upgrade = "Upgrade";
-        public const string UserAgent = "User-Agent";
-        public const string Vary = "Vary";
-        public const string Via = "Via";
-        public const string Warning = "Warning";
-        public const string WebSocketSubProtocols = "Sec-WebSocket-Protocol";
-        public const string WWWAuthenticate = "WWW-Authenticate";
+        public static string Accept { get { throw null; } }
+        public static string AcceptCharset { get { throw null; } }
+        public static string AcceptEncoding { get { throw null; } }
+        public static string AcceptLanguage { get { throw null; } }
+        public static string AcceptRanges { get { throw null; } }
+        public static string AccessControlAllowCredentials { get { throw null; } }
+        public static string AccessControlAllowHeaders { get { throw null; } }
+        public static string AccessControlAllowMethods { get { throw null; } }
+        public static string AccessControlAllowOrigin { get { throw null; } }
+        public static string AccessControlExposeHeaders { get { throw null; } }
+        public static string AccessControlMaxAge { get { throw null; } }
+        public static string AccessControlRequestHeaders { get { throw null; } }
+        public static string AccessControlRequestMethod { get { throw null; } }
+        public static string Age { get { throw null; } }
+        public static string Allow { get { throw null; } }
+        public static string Authority { get { throw null; } }
+        public static string Authorization { get { throw null; } }
+        public static string CacheControl { get { throw null; } }
+        public static string Connection { get { throw null; } }
+        public static string ContentDisposition { get { throw null; } }
+        public static string ContentEncoding { get { throw null; } }
+        public static string ContentLanguage { get { throw null; } }
+        public static string ContentLength { get { throw null; } }
+        public static string ContentLocation { get { throw null; } }
+        public static string ContentMD5 { get { throw null; } }
+        public static string ContentRange { get { throw null; } }
+        public static string ContentSecurityPolicy { get { throw null; } }
+        public static string ContentSecurityPolicyReportOnly { get { throw null; } }
+        public static string ContentType { get { throw null; } }
+        public static string Cookie { get { throw null; } }
+        public static string CorrelationContext { get { throw null; } }
+        public static string Date { get { throw null; } }
+        public static string DNT { get { throw null; } }
+        public static string ETag { get { throw null; } }
+        public static string Expect { get { throw null; } }
+        public static string Expires { get { throw null; } }
+        public static string From { get { throw null; } }
+        public static string Host { get { throw null; } }
+        public static string IfMatch { get { throw null; } }
+        public static string IfModifiedSince { get { throw null; } }
+        public static string IfNoneMatch { get { throw null; } }
+        public static string IfRange { get { throw null; } }
+        public static string IfUnmodifiedSince { get { throw null; } }
+        public static string KeepAlive { get { throw null; } }
+        public static string LastModified { get { throw null; } }
+        public static string Location { get { throw null; } }
+        public static string MaxForwards { get { throw null; } }
+        public static string Method { get { throw null; } }
+        public static string Origin { get { throw null; } }
+        public static string Path { get { throw null; } }
+        public static string Pragma { get { throw null; } }
+        public static string ProxyAuthenticate { get { throw null; } }
+        public static string ProxyAuthorization { get { throw null; } }
+        public static string Range { get { throw null; } }
+        public static string Referer { get { throw null; } }
+        public static string RequestId { get { throw null; } }
+        public static string RetryAfter { get { throw null; } }
+        public static string Scheme { get { throw null; } }
+        public static string Server { get { throw null; } }
+        public static string SetCookie { get { throw null; } }
+        public static string Status { get { throw null; } }
+        public static string StrictTransportSecurity { get { throw null; } }
+        public static string TE { get { throw null; } }
+        public static string TraceParent { get { throw null; } }
+        public static string TraceState { get { throw null; } }
+        public static string Trailer { get { throw null; } }
+        public static string TransferEncoding { get { throw null; } }
+        public static string Translate { get { throw null; } }
+        public static string Upgrade { get { throw null; } }
+        public static string UpgradeInsecureRequests { get { throw null; } }
+        public static string UserAgent { get { throw null; } }
+        public static string Vary { get { throw null; } }
+        public static string Via { get { throw null; } }
+        public static string Warning { get { throw null; } }
+        public static string WebSocketSubProtocols { get { throw null; } }
+        public static string WWWAuthenticate { get { throw null; } }
     }
     public static partial class HeaderQuality
     {

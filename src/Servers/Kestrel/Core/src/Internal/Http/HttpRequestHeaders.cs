@@ -93,6 +93,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
+        private bool AddValueUnknown(string key, StringValues value)
+        {
+            Unknown.Add(key, value);
+            // Return true, above will throw and exit for false
+            return true;
+        }
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
         private unsafe void AppendUnknownHeaders(Span<byte> name, string valueString)
         {
             string key = new string('\0', name.Length);
