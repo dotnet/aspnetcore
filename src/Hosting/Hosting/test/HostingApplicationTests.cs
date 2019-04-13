@@ -11,8 +11,6 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -302,6 +300,34 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key1" && pair.Value == "value1");
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
+        }
+
+        [Fact]
+        public void ActivityOnExportHookIsCalled()
+        {
+            var diagnosticSource = new DiagnosticListener("DummySource");
+            var hostingApplication = CreateApplication(out var features, diagnosticSource: diagnosticSource);
+
+            bool onActivityExportCalled = false;
+            diagnosticSource.Subscribe(
+                observer: new CallbackDiagnosticListener(pair => { }),
+                isEnabled: (s, o, _) => true,
+                onActivityExport: (activity, request) =>
+                {
+                    onActivityExportCalled = true;
+                    Assert.Null(Activity.Current);
+                    Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", activity.OperationName);
+                    Assert.NotNull(request);
+                    Assert.IsAssignableFrom<HttpRequest>(request);
+
+                    activity.ActivityTraceFlags = ActivityTraceFlags.Recorded;
+                });
+
+            hostingApplication.CreateContext(features);
+
+            Assert.True(onActivityExportCalled);
+            Assert.NotNull(Activity.Current);
+            Assert.True(Activity.Current.Recorded);
         }
 
 

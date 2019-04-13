@@ -273,6 +273,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 }
             }
 
+            _diagnosticListener.OnActivityExport(activity, httpContext.Request);
+
             if (_diagnosticListener.IsEnabled(ActivityStartKey))
             {
                 _diagnosticListener.StartActivity(activity, new { HttpContext = httpContext });
