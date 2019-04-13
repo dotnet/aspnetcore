@@ -2,13 +2,17 @@
 # yarn lockfile v1
 
 
-"@aspnet/signalr-protocol-msgpack@link:../signalr-protocol-msgpack":
-  version "0.0.0"
-  uid ""
+"@aspnet/signalr-protocol-msgpack@file:../signalr-protocol-msgpack":
+  version "3.0.0-preview4-t000"
+  dependencies:
+    msgpack5 "^4.0.2"
 
-"@aspnet/signalr@link:../signalr":
-  version "0.0.0"
-  uid ""
+"@aspnet/signalr@file:../signalr":
+  version "3.0.0-preview4-t000"
+  dependencies:
+    eventsource "^1.0.7"
+    request "^2.88.0"
+    ws "^6.0.0"
 
 "@types/bluebird@*":
   version "3.5.23"
@@ -2672,10 +2676,10 @@ type-is@~1.6.16:
     media-typer "0.3.0"
     mime-types "~2.1.18"
 
-typescript@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-3.0.1.tgz#43738f29585d3a87575520a4b93ab6026ef11fdb"
-  integrity sha512-zQIMOmC+372pC/CCVLqnQ0zSBiY7HHodU7mpQdjiZddek4GMj31I3dUJ7gAs9o65X7mnRma6OokOkc6f9jjfBg==
+typescript@^2.7.1:
+  version "2.9.2"
+  resolved "https://registry.yarnpkg.com/typescript/-/typescript-2.9.2.tgz#1cbf61d05d6b96269244eb6a3bce4bd914e0f00c"
+  integrity sha512-Gr4p6nFNaoufRIY4NMdpQRNmgxVIGMs4Fcu/ujdYk3nAZqk7supzBE9idmvfZIlH/Cuj//dvi+019qEue9lV0w==
 
 ultron@~1.1.0:
   version "1.1.1"
