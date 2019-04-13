@@ -187,7 +187,13 @@ export class HubConnection {
 
             await handshakePromise;
 
+            // It's important to check the stopDuringStartError instead of just relying on the handshakePromise
+            // being rejected on close, because this continuation can run after both the handshake completed successfully
+            // and the connection was closed.
             if (this.stopDuringStartError) {
+                // It's important to throw instead of returning a rejected promise, because we don't want to allow any state
+                // transitions to occur between now and the calling code observing the exceptions. Returning a rejected promise
+                // will cause the calling continuation to get scheduled to run later.
                 throw this.stopDuringStartError;
             }
         } catch (e) {

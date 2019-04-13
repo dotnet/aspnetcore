@@ -13,7 +13,7 @@
     "@types/jest": "^23.3.2",
     "@types/node": "^8.5.2",
     "@types/webpack": "^4.4.0",
-    "jest": "^23.6.0",
+    "jest": "^24.1.0",
     "jest-junit": "^5.1.0",
     "rimraf": "^2.6.2",
     "ts-jest": "^22.4.6",
