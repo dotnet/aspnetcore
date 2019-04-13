@@ -80,14 +80,14 @@ namespace Microsoft.AspNetCore.HostFiltering
                 {
                     app.Use((ctx, next) =>
                     {
-                        ctx.Request.Headers[HeaderNames.Host] = " ";
+                        ctx.Request.Headers[HeaderNames.Host] = "";
                         return next();
                     });
                     app.UseHostFiltering();
                     app.Run(c =>
                     {
-                        Assert.True(c.Request.Headers.TryGetValue(HeaderNames.Host, out var host));
-                        Assert.True(StringValues.Equals(" ", host));
+                        var host = c.Request.Headers[HeaderNames.Host];
+                        Assert.True(StringValues.Equals(new StringValues(""), host.ToString()));
                         return Task.CompletedTask;
                     });
                     app.Run(c => Task.CompletedTask);
@@ -95,6 +95,37 @@ namespace Microsoft.AspNetCore.HostFiltering
             var server = new TestServer(builder);
             var response = await server.CreateClient().GetAsync("/");
             Assert.Equal(status, (int)response.StatusCode);
+        }
+
+        [Fact]
+        public async Task WhitespaceHostRejected()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddHostFiltering(options =>
+                    {
+                        options.AllowEmptyHosts = true;
+                        options.AllowedHosts.Add("Localhost");
+                    });
+                })
+                .Configure(app =>
+                {
+                    app.Use((ctx, next) =>
+                    {
+                        ctx.Request.Headers[HeaderNames.Host] = " ";
+                        return next();
+                    });
+                    app.UseHostFiltering();
+                    app.Run(c =>
+                    {
+                        return Task.CompletedTask;
+                    });
+                    app.Run(c => Task.CompletedTask);
+                });
+            var server = new TestServer(builder);
+            var response = await server.CreateClient().GetAsync("/");
+            Assert.Equal(400, (int)response.StatusCode);
         }
 
         [Theory]
