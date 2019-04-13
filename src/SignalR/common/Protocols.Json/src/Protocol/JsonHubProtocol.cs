@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                 if (type == null)
                                 {
-                                    throw new InvalidDataException($"Missing required property '{TypePropertyName}'.");
+                                    throw new InvalidDataException($"Expected '{TypePropertyName}' to be of type {JsonTokenType.Number}.");
                                 }
                             }
                             else if (reader.TextEquals(InvocationIdPropertyNameBytes))
@@ -151,7 +151,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                 if (reader.TokenType != JsonTokenType.StartArray)
                                 {
-                                    throw new InvalidDataException($"Expected '{StreamIdsPropertyName}' to be of type {reader.GetTokenString()}.");
+                                    throw new InvalidDataException(
+                                        $"Expected '{StreamIdsPropertyName}' to be of type {SystemTextJsonExtensions.GetTokenString(JsonTokenType.StartArray)}.");
                                 }
 
                                 var newStreamIds = new List<string>();
@@ -248,11 +249,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     try
                                     {
                                         var paramTypes = binder.GetParameterTypes(target);
-                                        if (reader.TokenType != JsonTokenType.Null)
-                                        {
-                                            using var token = JsonDocument.ParseValue(ref reader);
-                                            arguments = BindTypes(token.RootElement, paramTypes);
-                                        }
+                                        using var token = JsonDocument.ParseValue(ref reader);
+                                        arguments = BindTypes(token.RootElement, paramTypes);
                                     }
                                     catch (Exception ex)
                                     {
@@ -431,7 +429,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 }
             }
 
-            throw new JsonReaderException("Unexpected end when reading message headers", 0, 0);
+            throw new InvalidDataException("Unexpected end when reading message headers");
         }
 
         private void WriteMessageCore(HubMessage message, IBufferWriter<byte> stream)
@@ -498,12 +496,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteInvocationId(message, ref writer);
             if (!string.IsNullOrEmpty(message.Error))
             {
-                writer.WriteString(ErrorPropertyNameBytes, message.Error);
+                writer.WriteString(ErrorPropertyNameBytes, message.Error, escape: false);
             }
             else if (message.HasResult)
             {
-                var bytes = JsonSerializer.ToBytes(message.Result, message.Result?.GetType());
-                using var token = JsonDocument.Parse(bytes);
+                using var token = GetParsedObject(message.Result, message.Result?.GetType());
                 token.RootElement.WriteAsProperty(ResultPropertyNameBytes, ref writer);
             }
         }
@@ -517,15 +514,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             WriteInvocationId(message, ref writer);
 
-            var bytes = JsonSerializer.ToBytes(message.Item, message.Item?.GetType());
-            using var token = JsonDocument.Parse(bytes);
+            using var token = GetParsedObject(message.Item, message.Item?.GetType());
             token.RootElement.WriteAsProperty(ItemPropertyNameBytes, ref writer);
         }
 
         private void WriteInvocationMessage(InvocationMessage message, ref Utf8JsonWriter writer)
         {
             WriteInvocationId(message, ref writer);
-            writer.WriteString(TargetPropertyNameBytes, message.Target);
+            writer.WriteString(TargetPropertyNameBytes, message.Target, escape: false);
 
             WriteArguments(message.Arguments, ref writer);
 
@@ -535,7 +531,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private void WriteStreamInvocationMessage(StreamInvocationMessage message, ref Utf8JsonWriter writer)
         {
             WriteInvocationId(message, ref writer);
-            writer.WriteString(TargetPropertyNameBytes, message.Target);
+            writer.WriteString(TargetPropertyNameBytes, message.Target, escape: false);
 
             WriteArguments(message.Arguments, ref writer);
 
@@ -546,13 +542,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             if (message.Error != null)
             {
-                writer.WriteString(ErrorPropertyNameBytes, message.Error);
+                writer.WriteString(ErrorPropertyNameBytes, message.Error, escape: false);
             }
         }
 
         private void WriteArguments(object[] arguments, ref Utf8JsonWriter writer)
         {
-            writer.WriteStartArray(ArgumentsPropertyNameBytes);
+            writer.WriteStartArray(ArgumentsPropertyNameBytes, escape: false);
             foreach (var argument in arguments)
             {
                 var type = argument?.GetType();
@@ -566,12 +562,18 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 }
                 else
                 {
-                    var bytes = JsonSerializer.ToBytes(argument, type);
-                    using var token = JsonDocument.Parse(bytes);
+                    using var token = GetParsedObject(argument, type);
                     token.RootElement.WriteAsValue(ref writer);
                 }
             }
             writer.WriteEndArray();
+        }
+
+        private JsonDocument GetParsedObject(object obj, Type type)
+        {
+            var bytes = JsonSerializer.ToBytes(obj, type);
+            var token = JsonDocument.Parse(bytes);
+            return token;
         }
 
         private void WriteStreamIds(string[] streamIds, ref Utf8JsonWriter writer)
@@ -581,7 +583,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return;
             }
 
-            writer.WriteStartArray(StreamIdsPropertyNameBytes);
+            writer.WriteStartArray(StreamIdsPropertyNameBytes, escape: false);
             foreach (var streamId in streamIds)
             {
                 writer.WriteStringValue(streamId);
@@ -593,13 +595,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         {
             if (!string.IsNullOrEmpty(message.InvocationId))
             {
-                writer.WriteString(InvocationIdPropertyNameBytes, message.InvocationId);
+                writer.WriteString(InvocationIdPropertyNameBytes, message.InvocationId, escape: false);
             }
         }
 
         private static void WriteMessageType(ref Utf8JsonWriter writer, int type)
         {
-            writer.WriteNumber(TypePropertyNameBytes, type);
+            writer.WriteNumber(TypePropertyNameBytes, type, escape: false);
         }
 
         private HubMessage BindCancelInvocationMessage(string invocationId)
