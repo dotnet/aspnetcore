@@ -34,8 +34,8 @@ param(
 )
 
 if ($Passive -and $Quiet) {
-    Write-Host "The -Passive and -Quiet options cannot be used together." -f Red
-    Write-Host "Run ``Get-Help $PSCommandPath`` for more details." -f Red
+    Write-Host -ForegroundColor Red "Error: The -Passive and -Quiet options cannot be used together."
+    Write-Host -ForegroundColor Red "Run ``Get-Help $PSCommandPath`` for more details."
     exit 1
 }
 
@@ -97,18 +97,17 @@ if ($Quiet) {
     $arguments += '--quiet', '--wait'
 }
 
-Write-Host ""
+Write-Host
 Write-Host "Installing Visual Studio 2019 $Edition" -f Magenta
-Write-Host ""
+Write-Host
 Write-Host "Running '$bootstrapper $arguments'"
 
-$ErrorActionPreference = 'Continue'
 foreach ($i in 0, 1, 2) {
     if ($i -ne 0) {
         Write-Host "Retrying..."
     }
 
-    $process = Start-Process -FilePath "$bootstrapper" -ArgumentList $arguments -PassThru `
+    $process = Start-Process -FilePath "$bootstrapper" -ArgumentList $arguments -ErrorAction Continue -PassThru `
         -RedirectStandardError "$intermedateDir\errors.txt" -Verbose -Wait
     Write-Host "Exit code = $($process.ExitCode)."
     if ($process.ExitCode -eq 0) {
@@ -116,47 +115,41 @@ foreach ($i in 0, 1, 2) {
     } else {
         # https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio#error-codes
         if ($process.ExitCode -eq 3010) {
-            Write-Error "Installation requires restart to finish the VS update."
+            Write-Host -ForegroundColor Red "Error: Installation requires restart to finish the VS update."
             break
         }
         elseif ($process.ExitCode -eq 5007) {
-            Write-Error "Operation was blocked - the computer does not meet the requirements."
+            Write-Host -ForegroundColor Red "Error: Operation was blocked - the computer does not meet the requirements."
             break
         }
         elseif (($process.ExitCode -eq 5004) -or ($process.ExitCode -eq 1602)) {
-            Write-Error "Operation was canceled."
+            Write-Host -ForegroundColor Red "Error: Operation was canceled."
         }
         else {
-            Write-Error "Installation failed for an unknown reason."
+            Write-Host -ForegroundColor Red "Error: Installation failed for an unknown reason."
         }
 
-        Write-Host ""
+        Write-Host
         Write-Host "Errors:"
-        Get-Content "$intermedateDir\errors.txt" | Write-Error
-        Write-Host ""
+        Get-Content "$intermedateDir\errors.txt" | Write-Warning
+        Write-Host
 
-        $bootstrapperLogs = Get-ChildItem $env:Temp\dd_bootstrapper_*.log |Sort-Object CreationTime
-        if ($bootstrapperLogs.Count -ne 0) {
-            $bootstrapperLog = $bootstrapperLogs[$bootstrapperLogs.Count - 1]
-            Write-Host "${bootstraperLog}:"
-            Get-Content "$bootstrapperLog"
-            Write-Host ""
+        Get-ChildItem $env:Temp\dd_bootstrapper_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
+            Write-Host "$_:"
+            Get-Content "$_"
+            Write-Host
         }
 
-        $clientLogs = Get-ChildItem $env:Temp\dd_client_*.log |Sort-Object CreationTime
-        if ($clientLogs.Count -ne 0) {
-            $clientLog = $clientLogs[$clientLogs.Count - 1]
-            Write-Host "${clientLog}:"
-            Get-Content "$clientLog"
-            Write-Host ""
+        $clientLogs = Get-ChildItem $env:Temp\dd_client_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
+            Write-Host "$_:"
+            Get-Content "$_"
+            Write-Host
         }
 
-        $setupLogs = Get-ChildItem $env:Temp\dd_setup_*.log |Sort-Object CreationTime
-        if ($setupLogs.Count -ne 0) {
-            $setupLog = $setupLogs[$bootstrapperLogs.Count - 1]
-            Write-Host "${setupLog}:"
-            Get-Content "$setupLog"
-            Write-Host ""
+        $setupLogs = Get-ChildItem $env:Temp\dd_setup_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
+            Write-Host "$_:"
+            Get-Content "$_"
+            Write-Host
         }
     }
 }
