@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.HostFiltering
         {
             var host = context.Request.Headers[HeaderNames.Host].ToString();
 
-            if (host.Length == 0)
+            if (0u >= (uint)host.Length)
             {
                 return IsEmptyHostAllowed(context);
             }
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.HostFiltering
             // Optional whitespace occurring before the first non-whitespace octet of the field value or after the last
             // non-whitespace octet of the field value ought to be excluded by
             // parsers when extracting the field value from a header field
-            if (host[0] == ' ' || host[host.Length - 1] == ' ')
+            if (char.IsWhiteSpace(host[0]) || char.IsWhiteSpace(host[host.Length - 1]))
             {
                 _logger.InvalidTrailingOrLeadingWhitespaceInHost(host);
                 return false;
