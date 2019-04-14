@@ -64,6 +64,10 @@ namespace Microsoft.Net.Http.Headers
         private readonly static string _retryAfter = "Retry-After";
         private readonly static string _requestId = "Request-Id";
         private readonly static string _scheme = ":scheme";
+        private readonly static string _secWebSocketAccept = "Sec-WebSocket-Accept";
+        private readonly static string _secWebSocketKey = "Sec-WebSocket-Key";
+        private readonly static string _secWebSocketProtocol = "Sec-WebSocket-Protocol";
+        private readonly static string _secWebSocketVersion = "Sec-WebSocket-Version";
         private readonly static string _server = "Server";
         private readonly static string _setCookie = "Set-Cookie";
         private readonly static string _status = ":status";
@@ -82,6 +86,7 @@ namespace Microsoft.Net.Http.Headers
         private readonly static string _warning = "Warning";
         private readonly static string _webSocketSubProtocols = "Sec-WebSocket-Protocol";
         private readonly static string _wWWAuthenticate = "WWW-Authenticate";
+        private readonly static string _xFrameOptions = "X-Frame-Options";
 
         // Use properties rather than constants so ReferenceEquals works
         public static string Accept => _accept;
@@ -142,6 +147,10 @@ namespace Microsoft.Net.Http.Headers
         public static string RetryAfter => _retryAfter;
         public static string RequestId => _requestId;
         public static string Scheme => _scheme;
+        public static string SecWebSocketAccept => _secWebSocketAccept;
+        public static string SecWebSocketKey => _secWebSocketKey;
+        public static string SecWebSocketProtocol => _secWebSocketProtocol;
+        public static string SecWebSocketVersion => _secWebSocketVersion;
         public static string Server => _server;
         public static string SetCookie => _setCookie;
         public static string Status => _status;
@@ -160,5 +169,6 @@ namespace Microsoft.Net.Http.Headers
         public static string Warning => _warning;
         public static string WebSocketSubProtocols => _webSocketSubProtocols;
         public static string WWWAuthenticate => _wWWAuthenticate;
+        public static string XFrameOptions => _xFrameOptions;
     }
 }

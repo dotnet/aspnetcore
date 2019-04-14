@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -274,7 +275,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     // Prevent ArgumentException from duplicate key if header already added, such as when the
                     // request is re-executed by an error handler (see https://github.com/aspnet/AspNetCore/issues/6415)
-                    context.Response.Headers["Allow"] = allow;
+                    context.Response.Headers[HeaderNames.Allow] = allow;
 
                     return Task.CompletedTask;
                 },

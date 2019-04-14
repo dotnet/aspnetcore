@@ -20,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
@@ -184,7 +185,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             return context =>
             {
                 context.Response.StatusCode = 500;
-                context.Response.Headers["Cache-Control"] = "no-cache";
+                context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
                 return errorPage.ExecuteAsync(context);
             };
         }

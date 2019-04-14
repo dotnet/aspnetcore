@@ -176,6 +176,10 @@ namespace Microsoft.Net.Http.Headers
         public static string RequestId { get { throw null; } }
         public static string RetryAfter { get { throw null; } }
         public static string Scheme { get { throw null; } }
+        public static string SecWebSocketAccept { get { throw null; } }
+        public static string SecWebSocketKey { get { throw null; } }
+        public static string SecWebSocketProtocol { get { throw null; } }
+        public static string SecWebSocketVersion { get { throw null; } }
         public static string Server { get { throw null; } }
         public static string SetCookie { get { throw null; } }
         public static string Status { get { throw null; } }
@@ -194,6 +198,7 @@ namespace Microsoft.Net.Http.Headers
         public static string Warning { get { throw null; } }
         public static string WebSocketSubProtocols { get { throw null; } }
         public static string WWWAuthenticate { get { throw null; } }
+        public static string XFrameOptions { get { throw null; } }
     }
     public static partial class HeaderQuality
     {

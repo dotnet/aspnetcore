@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Session
 {
@@ -159,9 +160,9 @@ namespace Microsoft.AspNetCore.Session
 
                 _context.Response.Cookies.Append(_options.Cookie.Name, _cookieValue, cookieOptions);
 
-                _context.Response.Headers["Cache-Control"] = "no-cache";
-                _context.Response.Headers["Pragma"] = "no-cache";
-                _context.Response.Headers["Expires"] = "-1";
+                _context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                _context.Response.Headers[HeaderNames.Pragma] = "no-cache";
+                _context.Response.Headers[HeaderNames.Expires] = "-1";
             }
 
             // Returns true if the session has already been established, or if it still can be because the response has not been sent.
