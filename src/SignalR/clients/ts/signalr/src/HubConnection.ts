@@ -120,6 +120,13 @@ export class HubConnection {
         return this.connectionState;
     }
 
+    /** Represents the connection id of the {@link HubConnection} on the server. The connection id will be null when the connection is either
+     *  in the disconnected state or if the negotiation step was skipped.
+     */
+    get connectionId(): string | null {
+        return this.connection ? (this.connection.connectionId || null) : null;
+    }
+
     /** Starts the connection.
      *
      * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.
@@ -180,7 +187,13 @@ export class HubConnection {
 
             await handshakePromise;
 
+            // It's important to check the stopDuringStartError instead of just relying on the handshakePromise
+            // being rejected on close, because this continuation can run after both the handshake completed successfully
+            // and the connection was closed.
             if (this.stopDuringStartError) {
+                // It's important to throw instead of returning a rejected promise, because we don't want to allow any state
+                // transitions to occur between now and the calling code observing the exceptions. Returning a rejected promise
+                // will cause the calling continuation to get scheduled to run later.
                 throw this.stopDuringStartError;
             }
         } catch (e) {

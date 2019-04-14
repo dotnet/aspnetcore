@@ -1092,6 +1092,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        public void OnHeadersComplete()
+            => _currentHeadersStream.OnHeadersComplete();
+
         private void ValidateHeader(Span<byte> name, Span<byte> value)
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.1

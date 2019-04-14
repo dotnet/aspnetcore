@@ -241,6 +241,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                     }
 
                                     done = true;
+                                    handler.OnHeadersComplete();
                                     return true;
                                 }
 

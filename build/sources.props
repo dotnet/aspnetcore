@@ -20,6 +20,7 @@
       https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
       https://dotnet.myget.org/F/blazor-dev/api/v3/index.json;
       https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;
+      https://dotnet.myget.org/F/nuget-build/api/v3/index.json;
       https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
       https://dotnet.myget.org/F/roslyn/api/v3/index.json;
       https://vside.myget.org/F/devcore/api/v3/index.json;

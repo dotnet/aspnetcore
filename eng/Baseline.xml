@@ -4,7 +4,7 @@ This file contains a list of all the packages and their versions which were rele
 build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
 
 -->
-<Baseline Version="2.2.3">
+<Baseline Version="2.2.4">
   <Package Id="dotnet-dev-certs" Version="2.2.0" />
   <Package Id="dotnet-sql-cache" Version="2.2.0" />
   <Package Id="dotnet-user-secrets" Version="2.2.0" />
@@ -13,7 +13,7 @@ build of ASP.NET Core 2.2.x. Update this list when preparing for a new patch.
   <Package Id="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" Version="2.2.0-preview-35687" />
   <Package Id="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.1" />
-  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.2" />
+  <Package Id="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.4" />
   <Package Id="Microsoft.AspNetCore.Authentication.Abstractions" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="2.2.0" />
   <Package Id="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="2.2.0" />

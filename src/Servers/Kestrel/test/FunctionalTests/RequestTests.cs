@@ -542,6 +542,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2181", FlakyOn.Helix.All)]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedTokenFiresOnServerFIN(ListenOptions listenOptions)
         {

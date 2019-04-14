@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2197")]
         public async Task DATA_Sent_TooSlowlyDueToOutputFlowControlOnMultipleStreams_AbortsConnectionAfterAdditiveRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
