@@ -88,9 +88,9 @@ namespace FormatterWebSite
 
         [HttpPost]
         [ModelStateValidationFilter]
-        public IActionResult CreateManager([FromBody] Manager manager)
+        public IActionResult CreateInvalidModel([FromBody] InvalidModel model)
         {
-            return Ok(manager);
+            return Ok(model);
         }
     }
 }
