@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             if (HostingEventSource.Log.IsEnabled())
             {
-                context.EventSourceEnabled = true;
+                context.EventLogEnabled = true;
                 // To keep the hot path short we defer logging in this function to non-inlines
                 RecordRequestStartEventLog(httpContext);
             }
@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     LogRequestStarting(httpContext);
                 }
             }
-
             context.StartTimestamp = startTimestamp;
         }
 
@@ -141,7 +140,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 StopActivity(httpContext, activity);
             }
 
-            if (context.EventSourceEnabled && exception != null)
+            if (context.EventLogEnabled && exception != null)
             {
                 // Non-inline
                 HostingEventSource.Log.UnhandledException();
@@ -154,7 +153,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ContextDisposed(HostingApplication.Context context)
         {
-            if (context.EventSourceEnabled)
+            if (context.EventLogEnabled)
             {
                 // Non-inline
                 HostingEventSource.Log.RequestStop();

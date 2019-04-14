@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             public HttpContext HttpContext { get; set; }
             public IDisposable Scope { get; set; }
             public long StartTimestamp { get; set; }
-            public bool EventSourceEnabled { get; set; }
+            public bool EventLogEnabled { get; set; }
             public Activity Activity { get; set; }
         }
     }
