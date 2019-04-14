@@ -135,19 +135,19 @@ foreach ($i in 0, 1, 2) {
         Write-Host
 
         Get-ChildItem $env:Temp\dd_bootstrapper_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
-            Write-Host "$_:"
+            Write-Host "${_}:"
             Get-Content "$_"
             Write-Host
         }
 
         $clientLogs = Get-ChildItem $env:Temp\dd_client_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
-            Write-Host "$_:"
+            Write-Host "${_}:"
             Get-Content "$_"
             Write-Host
         }
 
         $setupLogs = Get-ChildItem $env:Temp\dd_setup_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
-            Write-Host "$_:"
+            Write-Host "${_}:"
             Get-Content "$_"
             Write-Host
         }
