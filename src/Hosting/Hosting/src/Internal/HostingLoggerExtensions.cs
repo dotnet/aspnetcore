@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     internal static class HostingLoggerExtensions
     {
-        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, string correlationId)
+        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, string activityId)
         {
-            return logger.BeginScope(new HostingLogScope(httpContext, correlationId));
+            return logger.BeginScope(new HostingLogScope(httpContext, activityId));
         }
 
         public static void ApplicationError(this ILogger logger, Exception exception)
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             private readonly string _path;
             private readonly string _traceIdentifier;
-            private readonly string _correlationId;
+            private readonly string _activityId;
 
             private string _cachedToString;
 
@@ -122,20 +122,20 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
                     else if (index == 2)
                     {
-                        return new KeyValuePair<string, object>("CorrelationId", _correlationId);
+                        return new KeyValuePair<string, object>("ActivityId", _activityId);
                     }
 
                     throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 
-            public HostingLogScope(HttpContext httpContext, string correlationId)
+            public HostingLogScope(HttpContext httpContext, string activityId)
             {
                 _traceIdentifier = httpContext.TraceIdentifier;
                 _path = (httpContext.Request.PathBase.HasValue 
                          ? httpContext.Request.PathBase + httpContext.Request.Path 
                          : httpContext.Request.Path).ToString();
-                _correlationId = correlationId;
+                _activityId = activityId;
             }
 
             public override string ToString()

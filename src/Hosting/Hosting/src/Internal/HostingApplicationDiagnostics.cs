@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             if (HostingEventSource.Log.IsEnabled())
             {
-                context.EventLogEnabled = true;
+                context.EventSourceEnabled = true;
                 // To keep the hot path short we defer logging in this function to non-inlines
                 RecordRequestStartEventLog(httpContext);
             }
@@ -51,13 +51,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
+            if (loggingEnabled || (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext)))
+            {
+                context.Activity = StartActivity(httpContext);
+            }
 
             if (diagnosticListenerEnabled)
             {
-                if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
-                {
-                    context.Activity = StartActivity(httpContext);
-                }
                 if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
                 {
                     startTimestamp = Stopwatch.GetTimestamp();
@@ -68,16 +68,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // To avoid allocation, return a null scope if the logger is not on at least to some degree.
             if (loggingEnabled)
             {
-                // Get the request ID (first try TraceParent header otherwise Request-ID header
-                if (!httpContext.Request.Headers.TryGetValue(TraceParentHeaderName, out var correlationId))
-                {
-                    httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
-                }
-
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
-                context.Scope = _logger.RequestScope(httpContext, correlationId);
+                context.Scope = _logger.RequestScope(httpContext, context.Activity.Id);
 
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
@@ -138,16 +132,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
 
                 }
-
-                var activity = context.Activity;
-                // Always stop activity if it was started
-                if (activity != null)
-                {
-                    StopActivity(httpContext, activity);
-                }
             }
 
-            if (context.EventLogEnabled && exception != null)
+            var activity = context.Activity;
+            // Always stop activity if it was started
+            if (activity != null)
+            {
+                StopActivity(httpContext, activity);
+            }
+
+            if (context.EventSourceEnabled && exception != null)
             {
                 // Non-inline
                 HostingEventSource.Log.UnhandledException();
@@ -160,7 +154,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void ContextDisposed(HostingApplication.Context context)
         {
-            if (context.EventLogEnabled)
+            if (context.EventSourceEnabled)
             {
                 // Non-inline
                 HostingEventSource.Log.RequestStop();
@@ -261,7 +255,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
                 string[] baggage = httpContext.Request.Headers.GetCommaSeparatedValues(CorrelationContextHeaderName);
-                if (baggage != StringValues.Empty)
+                if (baggage.Length > 0)
                 {
                     foreach (var item in baggage)
                     {
