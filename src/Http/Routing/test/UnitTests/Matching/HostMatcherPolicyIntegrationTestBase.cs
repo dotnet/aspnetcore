@@ -13,8 +13,10 @@ using Xunit;
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     // End-to-end tests for the host matching functionality
-    public class HostMatcherPolicyIntegrationTest
+    public abstract class HostMatcherPolicyIntegrationTestBase
     {
+        protected abstract bool HasDynamicMetadata { get; }
+
         [Fact]
         public async Task Match_Host()
         {
@@ -308,7 +310,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return (httpContext, context);
         }
 
-        internal static RouteEndpoint CreateEndpoint(
+        internal RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
             object constraints = null,
@@ -319,6 +321,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (hosts != null)
             {
                 metadata.Add(new HostAttribute(hosts ?? Array.Empty<string>()));
+            }
+
+            if (HasDynamicMetadata)
+            {
+                metadata.Add(new DynamicEndpointMetadata());
             }
 
             var displayName = "endpoint: " + template + " " + string.Join(", ", hosts ?? new[] { "*:*" });
@@ -334,6 +341,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var endpoint = CreateEndpoint(template);
             return (CreateMatcher(endpoint), endpoint);
+        }
+
+        private class DynamicEndpointMetadata : IDynamicEndpointMetadata
+        {
+            public bool IsDynamic => true;
         }
     }
 }
