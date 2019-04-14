@@ -51,7 +51,11 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             get
             {
-                EnsureDictionary();
+                if (_items == null)
+                {
+                    return EmptyDictionary.Dictionary.Keys;
+                }
+
                 return _items.Keys;
             }
         }
@@ -69,7 +73,11 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             get
             {
-                EnsureDictionary();
+                if (_items == null)
+                {
+                    return EmptyDictionary.Dictionary.Values;
+                }
+
                 return _items.Values;
             }
         }
