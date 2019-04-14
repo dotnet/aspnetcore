@@ -144,9 +144,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 {
                     _cachedToString = string.Format(
                         CultureInfo.InvariantCulture,
-                        "RequestId:{0} RequestPath:{1}",
+                        "RequestPath:{0} RequestId:{1}, ActivityId:{2}",
+                        _path,
                         _traceIdentifier,
-                        _path);
+                        _activityId);
                 }
 
                 return _cachedToString;
