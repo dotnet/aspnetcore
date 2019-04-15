@@ -27,9 +27,9 @@ internal class StartupHook
     public static void Initialize()
     {
         // TODO make this unhandled exception
-        AppDomain.CurrentDomain.FirstChanceException += (sender, eventArgs) =>
+        AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
         {
-            var exception = eventArgs.Exception;
+            var exception = (Exception)eventArgs.ExceptionObject;
 
             // Get the content root from IIS.
             var iisConfigData = NativeMethods.HttpGetApplicationProperties();

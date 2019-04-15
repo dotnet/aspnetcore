@@ -235,13 +235,11 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        // TODO this doesn't work when running in VS and with the shared framework.
-        // We could hack it so we check if the dll exists before and after setting the current directory
-        // But the best solution would be to be able to set a specific assembly name rather than full path
-        // See: https://github.com/dotnet/core-setup/issues/5556
-        auto startupHookDll = Environment::GetCurrentDirectoryValue() + std::wstring(L"\\Microsoft.AspNetCore.Server.IIS.dll");
+        // TODO add a way to disable this.
+        auto startupHookDll = std::wstring(L"Microsoft.AspNetCore.Server.IIS");
         
         SetEnvironmentVariable(L"DOTNET_STARTUP_HOOKS", startupHookDll.c_str());
+        SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1");
 
         bool clrThreadExited;
         {
