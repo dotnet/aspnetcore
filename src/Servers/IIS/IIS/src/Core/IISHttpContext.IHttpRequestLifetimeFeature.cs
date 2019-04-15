@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private bool _preventRequestAbortedCancellation;
         protected bool _connectionAborted;
 
-        public CancellationToken RequestAborted
+        CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
             get
             {
@@ -58,7 +58,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
         }
 
-        // TODO figure out if we want to support this (probably should, but requires counting bytes.
         private void PreventRequestAbortedCancellation()
         {
             lock (_abortLock)

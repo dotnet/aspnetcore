@@ -31,8 +31,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = _application.CreateContext(this);
+
                 await _application.ProcessRequestAsync(context);
-                // TODO Verification of Response
+
                 if (!_connectionAborted)
                 {
                     VerifyResponseContentLength();
