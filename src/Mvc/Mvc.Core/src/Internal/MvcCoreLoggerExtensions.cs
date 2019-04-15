@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         private static readonly Action<ILogger, string, string, Exception> _actionExecuting;
+        private static readonly Action<ILogger, string, MethodInfo, string, string, Exception> _controllerActionExecuting;
         private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
 
         private static readonly Action<ILogger, string[], Exception> _challengeResultExecuting;
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, Exception> _contentResultExecuting;
 
         private static readonly Action<ILogger, string, ModelValidationState, Exception> _actionMethodExecuting;
-        private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _actionMethodExecutingWithArguments;
+        private static readonly Action<ILogger, string, string[], Exception> _actionMethodExecutingWithArguments;
         private static readonly Action<ILogger, string, string, double, Exception> _actionMethodExecuted;
 
         private static readonly Action<ILogger, string, string[], Exception> _logFilterExecutionPlan;
@@ -153,6 +154,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 1,
                 "Route matched with {RouteData}. Executing action {ActionName}");
 
+            _controllerActionExecuting = LoggerMessage.Define<string, MethodInfo, string, string>(
+                LogLevel.Information,
+                3,
+                "Route matched with {RouteData}. Executing controller action with signature {MethodInfo} on controller {Controller} ({AssemblyName}).");
+
             _actionExecuted = LoggerMessage.Define<string, double>(
                 LogLevel.Information,
                 2,
@@ -173,10 +179,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 1,
                 "Executing action method {ActionName} - Validation state: {ValidationState}");
 
-            _actionMethodExecutingWithArguments = LoggerMessage.Define<string, string[], ModelValidationState>(
-                LogLevel.Information,
-                1,
-                "Executing action method {ActionName} with arguments ({Arguments}) - Validation state: {ValidationState}");
+            _actionMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
+                LogLevel.Trace,
+                3,
+                "Executing action method {ActionName} with arguments ({Arguments})");
 
             _actionMethodExecuted = LoggerMessage.Define<string, string, double>(
                 LogLevel.Information,
@@ -683,7 +689,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                 }
 
-                _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                if (action is ControllerActionDescriptor controllerActionDescriptor)
+                {
+                    var controllerType = controllerActionDescriptor.ControllerTypeInfo.AsType();
+                    var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
+                    _controllerActionExecuting(
+                        logger,
+                        stringBuilder.ToString(),
+                        controllerActionDescriptor.MethodInfo,
+                        controllerName,
+                        controllerType.Assembly.GetName().Name,
+                        null);
+                }
+                else
+                {
+                    _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                }
             }
         }
 
@@ -814,21 +835,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var actionName = context.ActionDescriptor.DisplayName;
 
                 var validationState = context.ModelState.ValidationState;
+                _actionMethodExecuting(logger, actionName, validationState, null);
 
-                string[] convertedArguments;
-                if (arguments == null)
+                if (arguments != null && logger.IsEnabled(LogLevel.Trace))
                 {
-                    _actionMethodExecuting(logger, actionName, validationState, null);
-                }
-                else
-                {
-                    convertedArguments = new string[arguments.Length];
+                    var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)
                     {
                         convertedArguments[i] = Convert.ToString(arguments[i]);
                     }
 
-                    _actionMethodExecutingWithArguments(logger, actionName, convertedArguments, validationState, null);
+                    _actionMethodExecutingWithArguments(logger, actionName, convertedArguments, null);
                 }
             }
         }

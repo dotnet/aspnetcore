@@ -28,6 +28,8 @@ Later on, this will be checked using this condition:
   </PropertyGroup>
   <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.11' ">
     <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Core;
+      Microsoft.AspNetCore.Mvc.RazorPages;
     </PackagesInPatch>
   </PropertyGroup>
 
