@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
 
-
         public string GetUserIdentifier()
         {
             return Context.UserIdentifier;
