@@ -16,7 +16,6 @@
     <Reference Include="Microsoft.Extensions.Caching.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
 </Project>

@@ -118,87 +118,87 @@ namespace Microsoft.Net.Http.Headers
     }
     public static partial class HeaderNames
     {
-        public static string Accept { get { throw null; } }
-        public static string AcceptCharset { get { throw null; } }
-        public static string AcceptEncoding { get { throw null; } }
-        public static string AcceptLanguage { get { throw null; } }
-        public static string AcceptRanges { get { throw null; } }
-        public static string AccessControlAllowCredentials { get { throw null; } }
-        public static string AccessControlAllowHeaders { get { throw null; } }
-        public static string AccessControlAllowMethods { get { throw null; } }
-        public static string AccessControlAllowOrigin { get { throw null; } }
-        public static string AccessControlExposeHeaders { get { throw null; } }
-        public static string AccessControlMaxAge { get { throw null; } }
-        public static string AccessControlRequestHeaders { get { throw null; } }
-        public static string AccessControlRequestMethod { get { throw null; } }
-        public static string Age { get { throw null; } }
-        public static string Allow { get { throw null; } }
-        public static string Authority { get { throw null; } }
-        public static string Authorization { get { throw null; } }
-        public static string CacheControl { get { throw null; } }
-        public static string Connection { get { throw null; } }
-        public static string ContentDisposition { get { throw null; } }
-        public static string ContentEncoding { get { throw null; } }
-        public static string ContentLanguage { get { throw null; } }
-        public static string ContentLength { get { throw null; } }
-        public static string ContentLocation { get { throw null; } }
-        public static string ContentMD5 { get { throw null; } }
-        public static string ContentRange { get { throw null; } }
-        public static string ContentSecurityPolicy { get { throw null; } }
-        public static string ContentSecurityPolicyReportOnly { get { throw null; } }
-        public static string ContentType { get { throw null; } }
-        public static string Cookie { get { throw null; } }
-        public static string CorrelationContext { get { throw null; } }
-        public static string Date { get { throw null; } }
-        public static string DNT { get { throw null; } }
-        public static string ETag { get { throw null; } }
-        public static string Expect { get { throw null; } }
-        public static string Expires { get { throw null; } }
-        public static string From { get { throw null; } }
-        public static string Host { get { throw null; } }
-        public static string IfMatch { get { throw null; } }
-        public static string IfModifiedSince { get { throw null; } }
-        public static string IfNoneMatch { get { throw null; } }
-        public static string IfRange { get { throw null; } }
-        public static string IfUnmodifiedSince { get { throw null; } }
-        public static string KeepAlive { get { throw null; } }
-        public static string LastModified { get { throw null; } }
-        public static string Location { get { throw null; } }
-        public static string MaxForwards { get { throw null; } }
-        public static string Method { get { throw null; } }
-        public static string Origin { get { throw null; } }
-        public static string Path { get { throw null; } }
-        public static string Pragma { get { throw null; } }
-        public static string ProxyAuthenticate { get { throw null; } }
-        public static string ProxyAuthorization { get { throw null; } }
-        public static string Range { get { throw null; } }
-        public static string Referer { get { throw null; } }
-        public static string RequestId { get { throw null; } }
-        public static string RetryAfter { get { throw null; } }
-        public static string Scheme { get { throw null; } }
-        public static string SecWebSocketAccept { get { throw null; } }
-        public static string SecWebSocketKey { get { throw null; } }
-        public static string SecWebSocketProtocol { get { throw null; } }
-        public static string SecWebSocketVersion { get { throw null; } }
-        public static string Server { get { throw null; } }
-        public static string SetCookie { get { throw null; } }
-        public static string Status { get { throw null; } }
-        public static string StrictTransportSecurity { get { throw null; } }
-        public static string TE { get { throw null; } }
-        public static string TraceParent { get { throw null; } }
-        public static string TraceState { get { throw null; } }
-        public static string Trailer { get { throw null; } }
-        public static string TransferEncoding { get { throw null; } }
-        public static string Translate { get { throw null; } }
-        public static string Upgrade { get { throw null; } }
-        public static string UpgradeInsecureRequests { get { throw null; } }
-        public static string UserAgent { get { throw null; } }
-        public static string Vary { get { throw null; } }
-        public static string Via { get { throw null; } }
-        public static string Warning { get { throw null; } }
-        public static string WebSocketSubProtocols { get { throw null; } }
-        public static string WWWAuthenticate { get { throw null; } }
-        public static string XFrameOptions { get { throw null; } }
+        public static readonly string Accept;
+        public static readonly string AcceptCharset;
+        public static readonly string AcceptEncoding;
+        public static readonly string AcceptLanguage;
+        public static readonly string AcceptRanges;
+        public static readonly string AccessControlAllowCredentials;
+        public static readonly string AccessControlAllowHeaders;
+        public static readonly string AccessControlAllowMethods;
+        public static readonly string AccessControlAllowOrigin;
+        public static readonly string AccessControlExposeHeaders;
+        public static readonly string AccessControlMaxAge;
+        public static readonly string AccessControlRequestHeaders;
+        public static readonly string AccessControlRequestMethod;
+        public static readonly string Age;
+        public static readonly string Allow;
+        public static readonly string Authority;
+        public static readonly string Authorization;
+        public static readonly string CacheControl;
+        public static readonly string Connection;
+        public static readonly string ContentDisposition;
+        public static readonly string ContentEncoding;
+        public static readonly string ContentLanguage;
+        public static readonly string ContentLength;
+        public static readonly string ContentLocation;
+        public static readonly string ContentMD5;
+        public static readonly string ContentRange;
+        public static readonly string ContentSecurityPolicy;
+        public static readonly string ContentSecurityPolicyReportOnly;
+        public static readonly string ContentType;
+        public static readonly string Cookie;
+        public static readonly string CorrelationContext;
+        public static readonly string Date;
+        public static readonly string DNT;
+        public static readonly string ETag;
+        public static readonly string Expect;
+        public static readonly string Expires;
+        public static readonly string From;
+        public static readonly string Host;
+        public static readonly string IfMatch;
+        public static readonly string IfModifiedSince;
+        public static readonly string IfNoneMatch;
+        public static readonly string IfRange;
+        public static readonly string IfUnmodifiedSince;
+        public static readonly string KeepAlive;
+        public static readonly string LastModified;
+        public static readonly string Location;
+        public static readonly string MaxForwards;
+        public static readonly string Method;
+        public static readonly string Origin;
+        public static readonly string Path;
+        public static readonly string Pragma;
+        public static readonly string ProxyAuthenticate;
+        public static readonly string ProxyAuthorization;
+        public static readonly string Range;
+        public static readonly string Referer;
+        public static readonly string RequestId;
+        public static readonly string RetryAfter;
+        public static readonly string Scheme;
+        public static readonly string SecWebSocketAccept;
+        public static readonly string SecWebSocketKey;
+        public static readonly string SecWebSocketProtocol;
+        public static readonly string SecWebSocketVersion;
+        public static readonly string Server;
+        public static readonly string SetCookie;
+        public static readonly string Status;
+        public static readonly string StrictTransportSecurity;
+        public static readonly string TE;
+        public static readonly string TraceParent;
+        public static readonly string TraceState;
+        public static readonly string Trailer;
+        public static readonly string TransferEncoding;
+        public static readonly string Translate;
+        public static readonly string Upgrade;
+        public static readonly string UpgradeInsecureRequests;
+        public static readonly string UserAgent;
+        public static readonly string Vary;
+        public static readonly string Via;
+        public static readonly string Warning;
+        public static readonly string WebSocketSubProtocols;
+        public static readonly string WWWAuthenticate;
+        public static readonly string XFrameOptions;
     }
     public static partial class HeaderQuality
     {
