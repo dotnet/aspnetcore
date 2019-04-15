@@ -33,11 +33,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 context = _application.CreateContext(this);
 
                 await _application.ProcessRequestAsync(context);
-
-                if (!_requestAborted)
-                {
-                    VerifyResponseContentLength();
-                }
             }
             catch (Exception ex)
             {
