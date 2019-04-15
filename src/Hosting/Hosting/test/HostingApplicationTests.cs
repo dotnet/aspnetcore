@@ -308,24 +308,24 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var diagnosticSource = new DiagnosticListener("DummySource");
             var hostingApplication = CreateApplication(out var features, diagnosticSource: diagnosticSource);
 
-            bool onActivityExportCalled = false;
+            bool onActivityImportCalled = false;
             diagnosticSource.Subscribe(
                 observer: new CallbackDiagnosticListener(pair => { }),
                 isEnabled: (s, o, _) => true,
-                onActivityExport: (activity, request) =>
+                onActivityImport: (activity, context) =>
                 {
-                    onActivityExportCalled = true;
+                    onActivityImportCalled = true;
                     Assert.Null(Activity.Current);
                     Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", activity.OperationName);
-                    Assert.NotNull(request);
-                    Assert.IsAssignableFrom<HttpRequest>(request);
+                    Assert.NotNull(context);
+                    Assert.IsAssignableFrom<HttpContext>(context);
 
                     activity.ActivityTraceFlags = ActivityTraceFlags.Recorded;
                 });
 
             hostingApplication.CreateContext(features);
 
-            Assert.True(onActivityExportCalled);
+            Assert.True(onActivityImportCalled);
             Assert.NotNull(Activity.Current);
             Assert.True(Activity.Current.Recorded);
         }
