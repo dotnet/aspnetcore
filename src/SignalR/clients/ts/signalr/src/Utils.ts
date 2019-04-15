@@ -146,7 +146,8 @@ export class SubjectSubscription<T> implements ISubscription<T> {
 /** @private */
 export class ConsoleLogger implements ILogger {
     private readonly minimumLogLevel: LogLevel;
-	// Public for testing purposes.
+
+    // Public for testing purposes.
     public outputConsole: {
         error(message: any): void,
         warn(message: any): void,

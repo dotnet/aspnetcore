@@ -26,7 +26,7 @@ const LogLevelNameMapping = {
     none: LogLevel.None,
 };
 
-function parseLogLevel(name: keyof typeof LogLevelNameMapping): LogLevel {
+function parseLogLevel(name: string): LogLevel {
     // Case-insensitive matching via lower-casing
     // Yes, I know case-folding is a complicated problem in Unicode, but we only support
     // the ASCII strings defined in LogLevelNameMapping anyway, so it's fine -anurse.
@@ -69,7 +69,8 @@ export class HubConnectionBuilder {
 
     /** Configures custom logging for the {@link @aspnet/signalr.HubConnection}.
      *
-     * @param {LogLevel | string | ILogger} logging A {@link @aspnet/signalr.LogLevel}, a string representing a LogLevel, or an object implementing the {@link @aspnet/signalr.ILogger} interface. See {@link https://docs.microsoft.com/en-us/aspnet/core/signalr/configuration#configure-logging|the documentation for client logging configuration} for more details.
+     * @param {LogLevel | string | ILogger} logging A {@link @aspnet/signalr.LogLevel}, a string representing a LogLevel, or an object implementing the {@link @aspnet/signalr.ILogger} interface.
+     *    See {@link https://docs.microsoft.com/en-us/aspnet/core/signalr/configuration#configure-logging|the documentation for client logging configuration} for more details.
      * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public configureLogging(logging: LogLevel | string | ILogger): HubConnectionBuilder {
