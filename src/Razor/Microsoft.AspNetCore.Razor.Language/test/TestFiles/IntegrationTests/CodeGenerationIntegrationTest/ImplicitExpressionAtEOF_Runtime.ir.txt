@@ -1,0 +1,10 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ImplicitExpressionAtEOF_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                HtmlContent - (0:0,0 [18] ImplicitExpressionAtEOF.cshtml)
+                    IntermediateToken - (0:0,0 [18] ImplicitExpressionAtEOF.cshtml) - Html - This is markup\n\n
+                CSharpExpression - (19:2,1 [0] ImplicitExpressionAtEOF.cshtml)
+                    IntermediateToken - (19:2,1 [0] ImplicitExpressionAtEOF.cshtml) - CSharp - 

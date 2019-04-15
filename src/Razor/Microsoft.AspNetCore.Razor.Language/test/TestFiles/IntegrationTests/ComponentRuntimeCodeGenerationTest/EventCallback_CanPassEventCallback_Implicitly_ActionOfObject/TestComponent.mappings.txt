@@ -1,0 +1,15 @@
+Source Location: (51:2,12 [95] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private int counter;
+    private void Increment(object e) {
+        counter++;
+    }
+|
+Generated Location: (965:22,12 [95] )
+|
+    private int counter;
+    private void Increment(object e) {
+        counter++;
+    }
+|
+

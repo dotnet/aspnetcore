@@ -1,0 +1,125 @@
+Source Location: (1:0,1 [32] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|using System.Collections.Generic|
+Generated Location: (249:7,0 [32] )
+|using System.Collections.Generic|
+
+Source Location: (39:2,2 [396] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|
+    IAsyncEnumerable<bool> GetAsyncEnumerable()
+    {
+        return null;
+    }
+
+    await foreach (var val in GetAsyncEnumerable())
+    {
+
+    }
+
+    Range range = 1..5;
+    using var disposable = GetLastDisposableInRange(range);
+
+    var words = Array.Empty<string>();
+    var testEnum = GetEnum();
+    static TestEnum GetEnum()
+    {
+        return TestEnum.First;
+    }
+|
+Generated Location: (921:26,2 [396] )
+|
+    IAsyncEnumerable<bool> GetAsyncEnumerable()
+    {
+        return null;
+    }
+
+    await foreach (var val in GetAsyncEnumerable())
+    {
+
+    }
+
+    Range range = 1..5;
+    using var disposable = GetLastDisposableInRange(range);
+
+    var words = Array.Empty<string>();
+    var testEnum = GetEnum();
+    static TestEnum GetEnum()
+    {
+        return TestEnum.First;
+    }
+|
+
+Source Location: (441:24,1 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|words[1..2]|
+Generated Location: (1476:52,6 [11] )
+|words[1..2]|
+
+Source Location: (456:25,2 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|words[^2..^0]|
+Generated Location: (1649:59,6 [13] )
+|words[^2..^0]|
+
+Source Location: (476:27,2 [121] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|testEnum switch
+{
+    TestEnum.First => "The First!",
+    TestEnum.Second => "The Second!",
+    _ => "The others",
+}|
+Generated Location: (1824:66,6 [121] )
+|testEnum switch
+{
+    TestEnum.First => "The First!",
+    TestEnum.Second => "The Second!",
+    _ => "The others",
+}|
+
+Source Location: (603:34,1 [56] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|await foreach (var val in GetAsyncEnumerable())
+{
+    |
+Generated Location: (2102:78,1 [56] )
+|await foreach (var val in GetAsyncEnumerable())
+{
+    |
+
+Source Location: (660:36,5 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|val|
+Generated Location: (2319:87,6 [3] )
+|val|
+
+Source Location: (663:36,8 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|
+}|
+Generated Location: (2486:94,8 [3] )
+|
+}|
+
+Source Location: (682:39,12 [245] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CSharp8.cshtml)
+|
+    enum TestEnum
+    {
+        First,
+        Second
+    }
+
+    IDisposable GetLastDisposableInRange(Range range)
+    {
+        var disposables = (IDisposable[])ViewData["disposables"];
+        return disposables[range][^1];
+    }
+|
+Generated Location: (2705:104,12 [245] )
+|
+    enum TestEnum
+    {
+        First,
+        Second
+    }
+
+    IDisposable GetLastDisposableInRange(Range range)
+    {
+        var disposables = (IDisposable[])ViewData["disposables"];
+        return disposables[range][^1];
+    }
+|
+

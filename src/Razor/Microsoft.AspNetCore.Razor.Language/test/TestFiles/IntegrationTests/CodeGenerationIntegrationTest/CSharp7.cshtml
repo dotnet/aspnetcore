@@ -1,0 +1,43 @@
+<body>
+    @{
+        var nameLookup = new Dictionary<string, (string FirstName, string LastName, object Extra)>()
+        {
+            ["John Doe"] = ("John", "Doe", true)
+        };
+
+        @* This is all C# 7 bits that should work. *@
+
+        int Sixteen = 0b0001_0000;
+        long BillionsAndBillions = 100_000_000_000;
+        double AvogadroConstant = 6.022_140_857_747_474e23;
+        decimal GoldenRatio = 1.618_033_988_749_894_848_204_586_834_365_638_117_720_309_179M;
+    }
+
+    @if (nameLookup.TryGetValue("John Doe", out var entry))
+    {
+        if (entry.Extra is bool alive)
+        {
+            // Do Something
+        }
+    }
+    <p>
+        Here's a very unique number: @(1.618_033_988_749_894_848_204_586_834_365_638_117_720_309_179M)
+    </p>
+
+    <div>
+        @((First: "John", Last: "Doe").First) @* Value Tuples *@
+    </div>
+
+    @switch (entry.Extra)
+    {
+        case int age:
+            // Do something
+            break;
+        case IEnumerable<string> childrenNames:
+            // Do more something
+            break;
+        case null:
+            // Do even more of something
+            break;
+    }
+</body>

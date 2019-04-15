@@ -1,0 +1,155 @@
+Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|"*, TestAssembly"|
+Generated Location: (639:13,37 [17] )
+|"*, TestAssembly"|
+
+Source Location: (59:2,24 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|DateTime.Now|
+Generated Location: (1271:31,24 [12] )
+|DateTime.Now|
+
+Source Location: (96:4,17 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|if (true) { |
+Generated Location: (1577:39,17 [12] )
+|if (true) { |
+
+Source Location: (109:4,30 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|string.Empty|
+Generated Location: (1792:46,30 [12] )
+|string.Empty|
+
+Source Location: (121:4,42 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+| } else { |
+Generated Location: (2020:53,42 [10] )
+| } else { |
+
+Source Location: (132:4,53 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|false|
+Generated Location: (2256:60,53 [5] )
+|false|
+
+Source Location: (137:4,58 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+| }|
+Generated Location: (2493:67,58 [2] )
+| }|
+
+Source Location: (176:6,22 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|DateTime.Now|
+Generated Location: (2793:75,22 [12] )
+|DateTime.Now|
+
+Source Location: (214:6,60 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|DateTime.Now|
+Generated Location: (3105:83,60 [12] )
+|DateTime.Now|
+
+Source Location: (256:8,15 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|long.MinValue|
+Generated Location: (3409:91,15 [13] )
+|long.MinValue|
+
+Source Location: (271:8,30 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|if (true) { |
+Generated Location: (3626:98,30 [12] )
+|if (true) { |
+
+Source Location: (284:8,43 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|string.Empty|
+Generated Location: (3854:105,43 [12] )
+|string.Empty|
+
+Source Location: (296:8,55 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+| } else { |
+Generated Location: (4095:112,55 [10] )
+| } else { |
+
+Source Location: (307:8,66 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|false|
+Generated Location: (4344:119,66 [5] )
+|false|
+
+Source Location: (312:8,71 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+| }|
+Generated Location: (4594:126,71 [2] )
+| }|
+
+Source Location: (316:8,75 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|int.MaxValue|
+Generated Location: (4844:133,75 [12] )
+|int.MaxValue|
+
+Source Location: (348:9,17 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|long.MinValue|
+Generated Location: (5114:141,17 [13] )
+|long.MinValue|
+
+Source Location: (363:9,32 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|if (true) { |
+Generated Location: (5334:148,32 [12] )
+|if (true) { |
+
+Source Location: (376:9,45 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|string.Empty|
+Generated Location: (5565:155,45 [12] )
+|string.Empty|
+
+Source Location: (388:9,57 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+| } else { |
+Generated Location: (5809:162,57 [10] )
+| } else { |
+
+Source Location: (399:9,68 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|false|
+Generated Location: (6061:169,68 [5] )
+|false|
+
+Source Location: (404:9,73 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+| }|
+Generated Location: (6314:176,73 [2] )
+| }|
+
+Source Location: (408:9,77 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|int.MaxValue|
+Generated Location: (6567:183,77 [12] )
+|int.MaxValue|
+
+Source Location: (445:11,17 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|long.MinValue|
+Generated Location: (6874:191,17 [13] )
+|long.MinValue|
+
+Source Location: (460:11,32 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|DateTime.Now|
+Generated Location: (7094:198,32 [12] )
+|DateTime.Now|
+
+Source Location: (492:11,64 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|int.MaxValue|
+Generated Location: (7345:205,64 [12] )
+|int.MaxValue|
+
+Source Location: (529:13,17 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|if (true) { |
+Generated Location: (7652:213,17 [12] )
+|if (true) { |
+
+Source Location: (542:13,30 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|string.Empty|
+Generated Location: (7868:220,30 [12] )
+|string.Empty|
+
+Source Location: (554:13,42 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+| } else { |
+Generated Location: (8097:227,42 [10] )
+| } else { |
+
+Source Location: (565:13,53 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+|false|
+Generated Location: (8334:234,53 [5] )
+|false|
+
+Source Location: (570:13,58 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DynamicAttributeTagHelpers.cshtml)
+| }|
+Generated Location: (8572:241,58 [2] )
+| }|
+

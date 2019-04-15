@@ -1,0 +1,10 @@
+Source Location: (1:0,1 [28] x:\dir\subdir\Test\TestComponent.cshtml)
+|using System.Threading.Tasks|
+Generated Location: (285:11,0 [28] )
+|using System.Threading.Tasks|
+
+Source Location: (49:1,18 [32] x:\dir\subdir\Test\TestComponent.cshtml)
+|async () => await Task.Delay(10)|
+Generated Location: (1024:28,135 [32] )
+|async () => await Task.Delay(10)|
+

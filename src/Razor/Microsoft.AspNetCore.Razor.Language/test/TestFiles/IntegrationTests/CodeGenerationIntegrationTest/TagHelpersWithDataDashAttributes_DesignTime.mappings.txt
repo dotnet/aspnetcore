@@ -1,0 +1,20 @@
+Source Location: (14:0,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml)
+|*, TestAssembly|
+Generated Location: (678:14,38 [15] )
+|*, TestAssembly|
+
+Source Location: (111:3,15 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml)
+|foo|
+Generated Location: (1400:34,15 [3] )
+|foo|
+
+Source Location: (126:3,30 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml)
+|bar|
+Generated Location: (1613:41,30 [3] )
+|bar|
+
+Source Location: (225:4,61 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml)
+|foo|
+Generated Location: (1857:48,61 [3] )
+|foo|
+

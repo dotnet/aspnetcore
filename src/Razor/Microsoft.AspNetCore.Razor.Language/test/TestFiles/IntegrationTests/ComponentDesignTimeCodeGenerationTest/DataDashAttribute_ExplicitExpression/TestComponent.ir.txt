@@ -1,0 +1,25 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - (2:0,2 [40] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (2:0,2 [40] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  \n  var myValue = "Expression value";\n
+                MarkupElement - (45:3,0 [55] x:\dir\subdir\Test\TestComponent.cshtml) - elem
+                    HtmlAttribute - (50:3,5 [25] x:\dir\subdir\Test\TestComponent.cshtml) -  data-abc=" - "
+                        HtmlAttributeValue - (61:3,16 [13] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (61:3,16 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Literal value
+                    HtmlAttribute - (75:3,30 [22] x:\dir\subdir\Test\TestComponent.cshtml) -  data-def=" - "
+                        CSharpExpressionAttributeValue - (86:3,41 [10] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (88:3,43 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue

@@ -1,0 +1,27 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Tags_Runtime -  - 
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (2:0,2 [2] Tags.cshtml)
+                    IntermediateToken - (2:0,2 [2] Tags.cshtml) - CSharp - \n
+                HtmlContent - (4:1,0 [35] Tags.cshtml)
+                    IntermediateToken - (4:1,0 [4] Tags.cshtml) - Html -     
+                    IntermediateToken - (8:1,4 [7] Tags.cshtml) - Html - <script
+                    IntermediateToken - (15:1,11 [23] Tags.cshtml) - Html -  type="text/javascript"
+                    IntermediateToken - (38:1,34 [1] Tags.cshtml) - Html -  
+                CSharpCode - (41:1,37 [0] Tags.cshtml)
+                    IntermediateToken - (41:1,37 [0] Tags.cshtml) - CSharp - 
+                HtmlContent - (42:1,38 [19] Tags.cshtml)
+                    IntermediateToken - (42:1,38 [1] Tags.cshtml) - Html -  
+                    IntermediateToken - (43:1,39 [1] Tags.cshtml) - Html - >
+                    IntermediateToken - (44:1,40 [15] Tags.cshtml) - Html - </script @foo >
+                    IntermediateToken - (59:1,55 [2] Tags.cshtml) - Html - \n
+                CSharpCode - (61:2,0 [0] Tags.cshtml)
+                    IntermediateToken - (61:2,0 [0] Tags.cshtml) - CSharp - 
+                HtmlContent - (64:3,0 [20] Tags.cshtml)
+                    IntermediateToken - (64:3,0 [2] Tags.cshtml) - Html - \n
+                    IntermediateToken - (66:4,0 [7] Tags.cshtml) - Html - <script
+                    IntermediateToken - (73:4,7 [1] Tags.cshtml) - Html - >
+                    IntermediateToken - (74:4,8 [10] Tags.cshtml) - Html - </script @

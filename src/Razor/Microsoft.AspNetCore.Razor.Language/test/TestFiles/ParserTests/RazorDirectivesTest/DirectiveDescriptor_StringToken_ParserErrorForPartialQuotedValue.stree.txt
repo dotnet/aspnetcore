@@ -1,0 +1,17 @@
+RazorDocument - [0..16)::16 - [@custom AString"]
+    MarkupBlock - [0..16)::16
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..8)::8
+            RazorDirective - [0..8)::8 - Directive:{custom;SingleLine;Unrestricted} [RZ1016(8:0,8 [7] )]
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..8)::7
+                    RazorMetaCode - [1..7)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[custom];
+                    CSharpCodeBlock - [7..8)::1
+                        MarkupEphemeralTextLiteral - [7..8)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+        MarkupTextLiteral - [8..16)::8 - [AString"] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Text;[AString];
+            DoubleQuote;["];

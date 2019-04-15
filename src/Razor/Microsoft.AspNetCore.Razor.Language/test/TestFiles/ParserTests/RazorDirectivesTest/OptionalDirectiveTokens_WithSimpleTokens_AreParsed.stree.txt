@@ -1,0 +1,18 @@
+RazorDocument - [0..22)::22 - [@custom "simple-value"]
+    MarkupBlock - [0..22)::22
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..22)::22
+            RazorDirective - [0..22)::22 - Directive:{custom;SingleLine;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..22)::21
+                    RazorMetaCode - [1..7)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[custom];
+                    CSharpCodeBlock - [7..22)::15
+                        MarkupEphemeralTextLiteral - [7..8)::1 - [ ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[ ];
+                        CSharpStatementLiteral - [8..22)::14 - ["simple-value"] - Gen<DirectiveToken {;String;Opt:True}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            StringLiteral;["simple-value"];
+        MarkupTextLiteral - [22..22)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

@@ -1,0 +1,30 @@
+RazorDocument - [0..67)::67 - [@custom    System.Text.Encoding.ASCIIEncoding       Some_Member    ]
+    MarkupBlock - [0..67)::67
+        MarkupTextLiteral - [0..0)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];
+        CSharpCodeBlock - [0..67)::67
+            RazorDirective - [0..67)::67 - Directive:{custom;SingleLine;Unrestricted}
+                CSharpTransition - [0..1)::1 - Gen<None> - SpanEditHandler;Accepts:None
+                    Transition;[@];
+                RazorDirectiveBody - [1..67)::66
+                    RazorMetaCode - [1..7)::6 - Gen<None> - SpanEditHandler;Accepts:None
+                        Identifier;[custom];
+                    CSharpCodeBlock - [7..67)::60
+                        CSharpStatementLiteral - [7..11)::4 - [    ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[    ];
+                        CSharpStatementLiteral - [11..45)::34 - [System.Text.Encoding.ASCIIEncoding] - Gen<DirectiveToken {;Type;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[System];
+                            Dot;[.];
+                            Identifier;[Text];
+                            Dot;[.];
+                            Identifier;[Encoding];
+                            Dot;[.];
+                            Identifier;[ASCIIEncoding];
+                        CSharpStatementLiteral - [45..52)::7 - [       ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[       ];
+                        CSharpStatementLiteral - [52..63)::11 - [Some_Member] - Gen<DirectiveToken {;Member;Opt:False}> - DirectiveTokenEditHandler;Accepts:NonWhitespace
+                            Identifier;[Some_Member];
+                        UnclassifiedTextLiteral - [63..67)::4 - [    ] - Gen<None> - SpanEditHandler;Accepts:Whitespace
+                            Whitespace;[    ];
+        MarkupTextLiteral - [67..67)::0 - [] - Gen<Markup> - SpanEditHandler;Accepts:Any
+            Marker;[];

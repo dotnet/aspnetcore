@@ -1,0 +1,30 @@
+Source Location: (1:0,1 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+|using Microsoft.AspNetCore.Components.RenderTree;|
+Generated Location: (320:12,0 [49] )
+|using Microsoft.AspNetCore.Components.RenderTree;|
+
+Source Location: (56:2,2 [32] x:\dir\subdir\Test\TestComponent.cshtml)
+| RenderChildComponent(builder); |
+Generated Location: (1016:31,2 [32] )
+| RenderChildComponent(builder); |
+
+Source Location: (105:4,12 [75] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    void RenderChildComponent(RenderTreeBuilder builder)
+    {
+        |
+Generated Location: (1231:40,12 [75] )
+|
+    void RenderChildComponent(RenderTreeBuilder builder)
+    {
+        |
+
+Source Location: (195:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    }
+|
+Generated Location: (1738:60,23 [9] )
+|
+    }
+|
+

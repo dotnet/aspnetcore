@@ -1,0 +1,89 @@
+Document - 
+    RazorCompiledItemAttribute - 
+    NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
+        RazorSourceChecksumAttribute - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Markup_InCodeBlocksWithTagHelper_Runtime -  - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
+                CSharpCode - (35:1,2 [146] Markup_InCodeBlocksWithTagHelper.cshtml)
+                    IntermediateToken - (35:1,2 [146] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp - \n    var people = new Person[]\n    {\n        new Person() { Name = "Taylor", Age = 95, },\n    };\n\n    void PrintName(Person person)\n    {\n
+                HtmlContent - (181:9,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml)
+                    IntermediateToken - (181:9,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml) - Html -         
+                TagHelper - (189:9,8 [23] Markup_InCodeBlocksWithTagHelper.cshtml) - div - TagMode.StartTagAndEndTag
+                    DefaultTagHelperBody - 
+                        CSharpExpression - (195:9,14 [11] Markup_InCodeBlocksWithTagHelper.cshtml)
+                            IntermediateToken - (195:9,14 [11] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp - person.Name
+                    DefaultTagHelperCreate -  - DivTagHelper
+                    DefaultTagHelperExecute - 
+                HtmlContent - (212:9,31 [2] Markup_InCodeBlocksWithTagHelper.cshtml)
+                    IntermediateToken - (212:9,31 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n
+                CSharpCode - (214:10,0 [7] Markup_InCodeBlocksWithTagHelper.cshtml)
+                    IntermediateToken - (214:10,0 [7] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp -     }\n
+                HtmlContent - (224:12,0 [2] Markup_InCodeBlocksWithTagHelper.cshtml)
+                    IntermediateToken - (224:12,0 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n
+                CSharpCode - (228:13,2 [23] Markup_InCodeBlocksWithTagHelper.cshtml)
+                    IntermediateToken - (228:13,2 [23] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp -  PrintName(people[0]); 
+                CSharpCode - (256:14,2 [36] Markup_InCodeBlocksWithTagHelper.cshtml)
+                    IntermediateToken - (256:14,2 [36] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp -  await AnnounceBirthday(people[0]); 
+                HtmlContent - (295:15,0 [2] Markup_InCodeBlocksWithTagHelper.cshtml)
+                    IntermediateToken - (295:15,0 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n
+            CSharpCode - (309:16,12 [98] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (309:16,12 [98] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp - \n    Task AnnounceBirthday(Person person)\n    {\n        var formatted = $"Mr. {person.Name}";\n
+            HtmlContent - (407:20,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (407:20,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml) - Html -         
+            TagHelper - (415:20,8 [72] Markup_InCodeBlocksWithTagHelper.cshtml) - div - TagMode.StartTagAndEndTag
+                DefaultTagHelperBody - 
+                    HtmlContent - (420:20,13 [33] Markup_InCodeBlocksWithTagHelper.cshtml)
+                        IntermediateToken - (420:20,13 [14] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n            
+                        IntermediateToken - (434:21,12 [3] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - <h3
+                        IntermediateToken - (437:21,15 [1] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - >
+                        IntermediateToken - (438:21,16 [15] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - Happy birthday 
+                    CSharpExpression - (455:21,33 [9] Markup_InCodeBlocksWithTagHelper.cshtml)
+                        IntermediateToken - (455:21,33 [9] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp - formatted
+                    HtmlContent - (465:21,43 [16] Markup_InCodeBlocksWithTagHelper.cshtml)
+                        IntermediateToken - (465:21,43 [1] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - !
+                        IntermediateToken - (466:21,44 [5] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - </h3>
+                        IntermediateToken - (471:21,49 [10] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n        
+                DefaultTagHelperCreate -  - DivTagHelper
+                DefaultTagHelperExecute - 
+            HtmlContent - (487:22,14 [2] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (487:22,14 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n
+            CSharpCode - (489:23,0 [2] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (489:23,0 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp - \n
+            HtmlContent - (491:24,0 [14] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (491:24,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml) - Html -         
+                IntermediateToken - (499:24,8 [3] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - <ul
+                IntermediateToken - (502:24,11 [1] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - >
+                IntermediateToken - (503:24,12 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n
+            CSharpCode - (505:25,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (505:25,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp -         
+            CSharpCode - (514:25,9 [54] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (514:25,9 [54] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp - for (var i = 0; i < person.Age / 10; i++)\n        {\n
+            HtmlContent - (568:27,0 [16] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (568:27,0 [12] Markup_InCodeBlocksWithTagHelper.cshtml) - Html -             
+                IntermediateToken - (580:27,12 [3] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - <li
+                IntermediateToken - (583:27,15 [1] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - >
+            CSharpExpression - (586:27,18 [1] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (586:27,18 [1] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp - i
+            HtmlContent - (588:27,20 [23] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (588:27,20 [16] Markup_InCodeBlocksWithTagHelper.cshtml) - Html -  Happy birthday!
+                IntermediateToken - (604:27,36 [5] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - </li>
+                IntermediateToken - (609:27,41 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n
+            CSharpCode - (611:28,0 [11] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (611:28,0 [11] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp -         }\n
+            HtmlContent - (622:29,0 [15] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (622:29,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml) - Html -         
+                IntermediateToken - (630:29,8 [5] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - </ul>
+                IntermediateToken - (635:29,13 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n
+            CSharpCode - (637:30,0 [96] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (637:30,0 [96] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp - \n        if (person.Age < 20)\n        {\n            return Task.CompletedTask;\n        }\n\n
+            HtmlContent - (733:36,0 [33] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (733:36,0 [8] Markup_InCodeBlocksWithTagHelper.cshtml) - Html -         
+                IntermediateToken - (741:36,8 [3] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - <h4
+                IntermediateToken - (744:36,11 [1] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - >
+                IntermediateToken - (745:36,12 [14] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - Secret message
+                IntermediateToken - (759:36,26 [5] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - </h4>
+                IntermediateToken - (764:36,31 [2] Markup_InCodeBlocksWithTagHelper.cshtml) - Html - \n
+            CSharpCode - (766:37,0 [159] Markup_InCodeBlocksWithTagHelper.cshtml)
+                IntermediateToken - (766:37,0 [159] Markup_InCodeBlocksWithTagHelper.cshtml) - CSharp -         return Task.CompletedTask;\n    }\n\n\n    class Person\n    {\n        public string Name { get; set; }\n        public int Age { get; set; }\n    }\n

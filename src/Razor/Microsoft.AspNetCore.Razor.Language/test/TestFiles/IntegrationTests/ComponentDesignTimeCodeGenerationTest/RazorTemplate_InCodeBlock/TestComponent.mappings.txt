@@ -1,0 +1,34 @@
+Source Location: (2:0,2 [45] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    RenderFragment<Person> p = (person) => |
+Generated Location: (845:24,2 [45] )
+|
+    RenderFragment<Person> p = (person) => |
+
+Source Location: (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+|person.Name|
+Generated Location: (1091:33,50 [11] )
+|person.Name|
+
+Source Location: (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|;
+|
+Generated Location: (1307:41,67 [3] )
+|;
+|
+
+Source Location: (89:3,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    class Person
+    {
+        public string Name { get; set; }
+    }
+|
+Generated Location: (1491:50,12 [76] )
+|
+    class Person
+    {
+        public string Name { get; set; }
+    }
+|
+

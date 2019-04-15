@@ -1,0 +1,16 @@
+Source Location: (39:0,39 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+|myInstance|
+Generated Location: (1079:29,39 [10] )
+|myInstance|
+
+Source Location: (88:2,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
+|
+Generated Location: (1449:45,12 [104] )
+|
+    private Test.MyComponent myInstance;
+    public void Foo() { System.GC.KeepAlive(myInstance); }
+|
+

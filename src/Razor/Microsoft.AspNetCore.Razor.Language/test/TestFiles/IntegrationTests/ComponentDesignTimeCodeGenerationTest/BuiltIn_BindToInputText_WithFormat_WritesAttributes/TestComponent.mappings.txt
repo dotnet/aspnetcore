@@ -1,0 +1,14 @@
+Source Location: (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+|CurrentDate|
+Generated Location: (844:22,71 [11] )
+|CurrentDate|
+
+Source Location: (80:1,12 [77] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+|
+Generated Location: (1158:28,12 [77] )
+|
+    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
+|
+

@@ -1,0 +1,20 @@
+Source Location: (24:0,24 [63] x:\dir\subdir\Test\TestComponent.cshtml)
+|EventCallback.Factory.Create<UIMouseEventArgs>(this, Increment)|
+Generated Location: (1158:25,24 [63] )
+|EventCallback.Factory.Create<UIMouseEventArgs>(this, Increment)|
+
+Source Location: (107:2,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private int counter;
+    private void Increment() {
+        counter++;
+    }
+|
+Generated Location: (1720:45,12 [87] )
+|
+    private int counter;
+    private void Increment() {
+        counter++;
+    }
+|
+

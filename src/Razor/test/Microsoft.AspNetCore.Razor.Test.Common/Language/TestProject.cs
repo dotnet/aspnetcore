@@ -13,9 +13,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             var repoRoot = SearchUp(AppContext.BaseDirectory, "global.json");
             var assemblyName = type.Assembly.GetName().Name;
             var projectDirectory = Path.Combine(repoRoot, "src", "Razor", "test", assemblyName);
+            if (!Directory.Exists(projectDirectory) &&
+                string.Equals(assemblyName, "Microsoft.AspNetCore.Razor.Language.Test", StringComparison.Ordinal))
+            {
+                projectDirectory = Path.Combine(repoRoot, "src", "Razor", "test", "RazorLanguage.Test");
+            }
+
             if (!Directory.Exists(projectDirectory))
             {
-                throw new InvalidOperationException($@"Could not locate project directory for type {type.FullName}. Directory probe path: {projectDirectory}.");
+                throw new InvalidOperationException(
+                    $@"Could not locate project directory for type {type.FullName}. Directory probe path: {projectDirectory}.");
             }
 
             return projectDirectory;

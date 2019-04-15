@@ -1,0 +1,17 @@
+Source Location: (51:2,12 [123] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private int counter;
+    private Task Increment() {
+        counter++;
+        return Task.CompletedTask;
+    }
+|
+Generated Location: (1065:22,12 [123] )
+|
+    private int counter;
+    private Task Increment() {
+        counter++;
+        return Task.CompletedTask;
+    }
+|
+
