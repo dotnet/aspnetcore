@@ -210,18 +210,18 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (shouldScheduleCancellation)
             {
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                ThreadPool.UnsafeQueueUserWorkItem(t =>
+                ThreadPool.UnsafeQueueUserWorkItem(ctx =>
                 {
                     try
                     {
                         CancellationTokenSource localAbortCts = null;
 
-                        lock (_abortLock)
+                        lock (ctx._abortLock)
                         {
-                            if (_abortedCts != null)
+                            if (ctx._abortedCts != null)
                             {
-                                localAbortCts = _abortedCts;
-                                _abortedCts = null;
+                                localAbortCts = ctx._abortedCts;
+                                ctx._abortedCts = null;
                             }
                         }
 
