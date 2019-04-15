@@ -4,12 +4,12 @@
 using System;
 using System.Buffers;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.WebUtilities.Tests
+namespace Microsoft.AspNetCore.WebUtilities
 {
     public class FileBufferingWriteStreamTests : IDisposable
     {
@@ -24,38 +24,56 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
         public void Write_BuffersContentToMemory()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, tempFileDirectoryAccessor: () => TempDirectory);
+            using var bufferingStream = new FileBufferingWriteStream(tempFileDirectoryAccessor: () => TempDirectory);
             var input = Encoding.UTF8.GetBytes("Hello world");
 
             // Act
             bufferingStream.Write(input, 0, input.Length);
 
             // Assert
-            // We should have written content to the MemoryStream
-            var memoryStream = bufferingStream.MemoryStream;
-            Assert.Equal(input, memoryStream.ToArray());
+            // We should have written content to memory
+            var pagedByteBuffer = bufferingStream.PagedByteBuffer;
+            Assert.Equal(input, ReadBufferedContent(pagedByteBuffer));
 
             // No files should not have been created.
             Assert.Null(bufferingStream.FileStream);
+        }
 
-            // No content should have been written to the wrapping stream
-            Assert.Equal(0, writeStream.Length);
+        [Fact]
+        public void Write_BeforeMemoryThresholdIsReached_WritesToMemory()
+        {
+            // Arrange
+            var input = new byte[] { 1, 2, };
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, tempFileDirectoryAccessor: () => TempDirectory);
+
+            // Act
+            bufferingStream.Write(input, 0, 2);
+
+            // Assert
+            var pageBuffer = bufferingStream.PagedByteBuffer;
+            var fileStream = bufferingStream.FileStream;
+
+            // File should have been created.
+            Assert.Null(fileStream);
+
+            // No content should be in the memory stream
+            Assert.Equal(2, pageBuffer.Length);
+            Assert.Equal(input, ReadBufferedContent(pageBuffer));
         }
 
         [Fact]
         public void Write_BuffersContentToDisk_WhenMemoryThresholdIsReached()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            var input = new byte[] { 1, 2, 3, 4, 5 };
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, memoryThreshold: 2, tempFileDirectoryAccessor: () => TempDirectory);
+            var input = new byte[] { 1, 2, 3, };
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, tempFileDirectoryAccessor: () => TempDirectory);
+            bufferingStream.Write(input, 0, 2);
 
             // Act
-            bufferingStream.Write(input, 0, input.Length);
+            bufferingStream.Write(input, 2, 1);
 
             // Assert
-            var memoryStream = bufferingStream.MemoryStream;
+            var pageBuffer = bufferingStream.PagedByteBuffer;
             var fileStream = bufferingStream.FileStream;
 
             // File should have been created.
@@ -64,173 +82,186 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
             Assert.Equal(input, fileBytes);
 
             // No content should be in the memory stream
-            Assert.Equal(0, memoryStream.Length);
-
-            // No content should have been written to the wrapping stream
-            Assert.Equal(0, writeStream.Length);
+            Assert.Equal(0, pageBuffer.Length);
         }
 
         [Fact]
-        public void Write_SpoolsContentFromMemoryToDisk()
+        public void Write_BuffersContentToDisk_WhenWriteWillOverflowMemoryThreshold()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            var input = new byte[] { 1, 2, 3, 4, 5, 6, 7 };
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, memoryThreshold: 4, tempFileDirectoryAccessor: () => TempDirectory);
+            var input = new byte[] { 1, 2, 3, };
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, tempFileDirectoryAccessor: () => TempDirectory);
 
             // Act
-            bufferingStream.Write(input, 0, 3);
-            bufferingStream.Write(input, 3, 2);
-            bufferingStream.Write(input, 5, 2);
+            bufferingStream.Write(input, 0, input.Length);
 
             // Assert
-            var memoryStream = bufferingStream.MemoryStream;
+            var pageBuffer = bufferingStream.PagedByteBuffer;
             var fileStream = bufferingStream.FileStream;
 
             // File should have been created.
             Assert.NotNull(fileStream);
             var fileBytes = ReadFileContent(fileStream);
-            Assert.Equal(new byte[] { 1, 2, 3, 4, 5 }, fileBytes);
+            Assert.Equal(input, fileBytes);
 
-            Assert.Equal(new byte[] { 6, 7 }, memoryStream.ToArray());
-
-            // No content should have been written to the wrapping stream
-            Assert.Equal(0, writeStream.Length);
+            // No content should be in the memory stream
+            Assert.Equal(0, pageBuffer.Length);
         }
 
         [Fact]
-        public async Task WriteAsync_CopiesBufferedContentsFromMemoryStream()
+        public void Write_AfterMemoryThresholdIsReached_BuffersToMemory()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, tempFileDirectoryAccessor: () => TempDirectory);
-            var input = Encoding.UTF8.GetBytes("Hello world");
+            var input = new byte[] { 1, 2, 3, 4, 5, 6, 7 };
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 4, tempFileDirectoryAccessor: () => TempDirectory);
 
             // Act
             bufferingStream.Write(input, 0, 5);
-            await bufferingStream.WriteAsync(input, 5, input.Length - 5);
+            bufferingStream.Write(input, 5, 2);
 
             // Assert
-            // We should have written all content to the output.
-            Assert.Equal(input, writeStream.ToArray());
+            var pageBuffer = bufferingStream.PagedByteBuffer;
+            var fileStream = bufferingStream.FileStream;
+
+            // File should have been created.
+            Assert.NotNull(fileStream);
+            var fileBytes = ReadFileContent(fileStream);
+            Assert.Equal(new byte[] { 1, 2, 3, 4, 5, }, fileBytes);
+
+            Assert.Equal(new byte[] { 6, 7 }, ReadBufferedContent(pageBuffer));
         }
 
         [Fact]
-        public async Task WriteAsync_CopiesBufferedContentsFromFileStream()
+        public async Task WriteAsync_BuffersContentToMemory()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, memoryThreshold: 1, tempFileDirectoryAccessor: () => TempDirectory);
+            using var bufferingStream = new FileBufferingWriteStream(tempFileDirectoryAccessor: () => TempDirectory);
             var input = Encoding.UTF8.GetBytes("Hello world");
 
             // Act
-            bufferingStream.Write(input, 0, 5);
-            await bufferingStream.WriteAsync(input, 5, input.Length - 5);
+            await bufferingStream.WriteAsync(input, 0, input.Length);
 
             // Assert
-            // We should have written all content to the output.
-            Assert.Equal(0, bufferingStream.BufferedLength);
-            Assert.Equal(input, writeStream.ToArray());
+            // We should have written content to memory
+            var pagedByteBuffer = bufferingStream.PagedByteBuffer;
+            Assert.Equal(input, ReadBufferedContent(pagedByteBuffer));
+
+            // No files should not have been created.
+            Assert.Null(bufferingStream.FileStream);
         }
 
         [Fact]
-        public async Task WriteFollowedByWriteAsync()
+        public async Task WriteAsync_BeforeMemoryThresholdIsReached_WritesToMemory()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            using var bufferingStream = new FileBufferingWriteStream(writeStream);
-            var input = new byte[] { 7, 8, 9 };
+            var input = new byte[] { 1, 2, };
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, tempFileDirectoryAccessor: () => TempDirectory);
 
             // Act
-            bufferingStream.Write(input, 0, 1);
-            await bufferingStream.WriteAsync(input, 1, 1);
-            bufferingStream.Write(input, 2, 1);
+            await bufferingStream.WriteAsync(input, 0, 2);
 
             // Assert
-            Assert.Equal(new byte[] { 7, 8 }, writeStream.ToArray());
-            Assert.Equal(1, bufferingStream.BufferedLength);
-            Assert.Equal(new byte[] { 9 }, bufferingStream.MemoryStream.ToArray());
+            var pageBuffer = bufferingStream.PagedByteBuffer;
+            var fileStream = bufferingStream.FileStream;
+
+            // File should have been created.
+            Assert.Null(fileStream);
+
+            // No content should be in the memory stream
+            Assert.Equal(2, pageBuffer.Length);
+            Assert.Equal(input, ReadBufferedContent(pageBuffer));
         }
 
         [Fact]
-        public void Dispose_FlushesBufferedContent()
+        public async Task WriteAsync_BuffersContentToDisk_WhenMemoryThresholdIsReached()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            using var bufferingStream = new FileBufferingWriteStream(writeStream);
-            var input = new byte[] { 1, 2, 34 };
+            var input = new byte[] { 1, 2, 3, };
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, tempFileDirectoryAccessor: () => TempDirectory);
+            bufferingStream.Write(input, 0, 2);
 
             // Act
-            bufferingStream.Write(input, 0, input.Length);
-            bufferingStream.Dispose();
+            await bufferingStream.WriteAsync(input, 2, 1);
 
             // Assert
-            Assert.Equal(input, writeStream.ToArray());
+            var pageBuffer = bufferingStream.PagedByteBuffer;
+            var fileStream = bufferingStream.FileStream;
+
+            // File should have been created.
+            Assert.NotNull(fileStream);
+            var fileBytes = ReadFileContent(fileStream);
+            Assert.Equal(input, fileBytes);
+
+            // No content should be in the memory stream
+            Assert.Equal(0, pageBuffer.Length);
         }
 
         [Fact]
-        public void Dispose_ReturnsBuffer()
+        public async Task WriteAsync_BuffersContentToDisk_WhenWriteWillOverflowMemoryThreshold()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            var arrayPool = new Mock<ArrayPool<byte>>();
-            var bytes = new byte[10];
-            arrayPool.Setup(p => p.Rent(It.IsAny<int>())).Returns(bytes);
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, memoryThreshold: 2, null, tempFileDirectoryAccessor: () => TempDirectory, bytePool: arrayPool.Object);
+            var input = new byte[] { 1, 2, 3, };
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, tempFileDirectoryAccessor: () => TempDirectory);
 
             // Act
-            bufferingStream.Dispose();
-            bufferingStream.Dispose(); // Double disposing shouldn't be a problem
+            await bufferingStream.WriteAsync(input, 0, input.Length);
 
             // Assert
+            var pageBuffer = bufferingStream.PagedByteBuffer;
+            var fileStream = bufferingStream.FileStream;
+
+            // File should have been created.
+            Assert.NotNull(fileStream);
+            var fileBytes = ReadFileContent(fileStream);
+            Assert.Equal(input, fileBytes);
+
+            // No content should be in the memory stream
+            Assert.Equal(0, pageBuffer.Length);
+        }
+
+        [Fact]
+        public async Task WriteAsync_AfterMemoryThresholdIsReached_BuffersToMemory()
+        {
+            // Arrange
+            var input = new byte[] { 1, 2, 3, 4, 5, 6, 7 };
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 4, tempFileDirectoryAccessor: () => TempDirectory);
+
+            // Act
+            await bufferingStream.WriteAsync(input, 0, 5);
+            await bufferingStream.WriteAsync(input, 5, 2);
+
+            // Assert
+            var pageBuffer = bufferingStream.PagedByteBuffer;
+            var fileStream = bufferingStream.FileStream;
+
+            // File should have been created.
+            Assert.NotNull(fileStream);
+            var fileBytes = ReadFileContent(fileStream);
+
+            Assert.Equal(new byte[] { 1, 2, 3, 4, 5, }, fileBytes);
+            Assert.Equal(new byte[] { 6, 7 }, ReadBufferedContent(pageBuffer));
+        }
+
+        [Fact]
+        public void Write_Throws_IfSingleWriteExceedsBufferLimit()
+        {
+            // Arrange
+            var input = new byte[20];
+            var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, bufferLimit: 10, tempFileDirectoryAccessor: () => TempDirectory);
+
+            // Act
+            var exception = Assert.Throws<IOException>(() => bufferingStream.Write(input, 0, input.Length));
+            Assert.Equal("Buffer limit exceeded.", exception.Message);
+
             Assert.True(bufferingStream.Disposed);
-            arrayPool.Verify(v => v.Return(bytes, false), Times.Once());
         }
 
         [Fact]
-        public async Task DisposeAsync_FlushesBufferedContent()
+        public void Write_Throws_IfWriteCumulativeWritesExceedsBuffersLimit()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            using var bufferingStream = new FileBufferingWriteStream(writeStream);
-            var input = new byte[] { 1, 2, 34 };
-
-            // Act
-            bufferingStream.Write(input, 0, input.Length);
-            await bufferingStream.DisposeAsync();
-
-            // Assert
-            Assert.Equal(input, writeStream.ToArray());
-        }
-
-        [Fact]
-        public async Task DisposeAsync_ReturnsBuffer()
-        {
-            // Arrange
-            using var writeStream = new MemoryStream();
-            var arrayPool = new Mock<ArrayPool<byte>>();
-            var bytes = new byte[10];
-            arrayPool.Setup(p => p.Rent(It.IsAny<int>())).Returns(bytes);
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, memoryThreshold: 2, null, tempFileDirectoryAccessor: () => TempDirectory, bytePool: arrayPool.Object);
-
-            // Act
-            await bufferingStream.DisposeAsync();
-            await bufferingStream.DisposeAsync(); // Double disposing shouldn't be a problem
-
-            // Assert
-            arrayPool.Verify(v => v.Return(bytes, false), Times.Once());
-        }
-
-        [Fact]
-        public void Write_Throws_IfBufferLimitIsReached()
-        {
-            // Arrange
-            using var writeStream = new MemoryStream();
             var input = new byte[6];
-            var arrayPool = new Mock<ArrayPool<byte>>();
-            arrayPool.Setup(p => p.Rent(It.IsAny<byte>())).Returns(new byte[10]);
-
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, memoryThreshold: 2, bufferLimit: 10, tempFileDirectoryAccessor: () => TempDirectory, bytePool: arrayPool.Object);
+            var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, bufferLimit: 10, tempFileDirectoryAccessor: () => TempDirectory);
 
             // Act
             bufferingStream.Write(input, 0, input.Length);
@@ -238,27 +269,167 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
             Assert.Equal("Buffer limit exceeded.", exception.Message);
 
             // Verify we return the buffer.
-            arrayPool.Verify(v => v.Return(It.IsAny<byte[]>(), false), Times.Once());
+            Assert.True(bufferingStream.Disposed);
         }
 
         [Fact]
-        public void Write_CopiesContentOnFlush()
+        public void Write_DoesNotThrow_IfBufferLimitIsReached()
         {
             // Arrange
-            using var writeStream = new MemoryStream();
-            var input = new byte[6];
-            var arrayPool = new Mock<ArrayPool<byte>>();
-            arrayPool.Setup(p => p.Rent(It.IsAny<byte>())).Returns(new byte[10]);
-
-            using var bufferingStream = new FileBufferingWriteStream(writeStream, memoryThreshold: 2, bufferLimit: 10, tempFileDirectoryAccessor: () => TempDirectory, bytePool: arrayPool.Object);
+            var input = new byte[5];
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, bufferLimit: 10, tempFileDirectoryAccessor: () => TempDirectory);
 
             // Act
             bufferingStream.Write(input, 0, input.Length);
-            var exception = Assert.Throws<IOException>(() => bufferingStream.Write(input, 0, input.Length));
+            bufferingStream.Write(input, 0, input.Length); // Should get to exactly the buffer limit, which is fine
+
+            // If we got here, the test succeeded.
+        }
+
+        [Fact]
+        public async Task WriteAsync_Throws_IfSingleWriteExceedsBufferLimit()
+        {
+            // Arrange
+            var input = new byte[20];
+            var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, bufferLimit: 10, tempFileDirectoryAccessor: () => TempDirectory);
+
+            // Act
+            var exception = await Assert.ThrowsAsync<IOException>(() => bufferingStream.WriteAsync(input, 0, input.Length));
+            Assert.Equal("Buffer limit exceeded.", exception.Message);
+
+            Assert.True(bufferingStream.Disposed);
+        }
+
+        [Fact]
+        public async Task WriteAsync_Throws_IfWriteCumulativeWritesExceedsBuffersLimit()
+        {
+            // Arrange
+            var input = new byte[6];
+            var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, bufferLimit: 10, tempFileDirectoryAccessor: () => TempDirectory);
+
+            // Act
+            await bufferingStream.WriteAsync(input, 0, input.Length);
+            var exception = await Assert.ThrowsAsync<IOException>(() => bufferingStream.WriteAsync(input, 0, input.Length));
             Assert.Equal("Buffer limit exceeded.", exception.Message);
 
             // Verify we return the buffer.
-            arrayPool.Verify(v => v.Return(It.IsAny<byte[]>(), false), Times.Once());
+            Assert.True(bufferingStream.Disposed);
+        }
+
+        [Fact]
+        public async Task WriteAsync_DoesNotThrow_IfBufferLimitIsReached()
+        {
+            // Arrange
+            var input = new byte[5];
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 2, bufferLimit: 10, tempFileDirectoryAccessor: () => TempDirectory);
+
+            // Act
+            await bufferingStream.WriteAsync(input, 0, input.Length);
+            await bufferingStream.WriteAsync(input, 0, input.Length); // Should get to exactly the buffer limit, which is fine
+
+            // If we got here, the test succeeded.
+        }
+
+        [Fact]
+        public void CopyTo_CopiesContentFromMemoryStream()
+        {
+            // Arrange
+            var input = new byte[] { 1, 2, 3, 4, 5 };
+            using var bufferingStream = new FileBufferingWriteStream(tempFileDirectoryAccessor: () => TempDirectory);
+            bufferingStream.Write(input, 0, input.Length);
+            var memoryStream = new MemoryStream();
+
+            // Act
+            bufferingStream.CopyTo(memoryStream);
+
+            // Assert
+            Assert.Equal(input, memoryStream.ToArray());
+        }
+
+        [Fact]
+        public void CopyTo_WithContentInDisk_CopiesContentFromMemoryStream()
+        {
+            // Arrange
+            var input = Enumerable.Repeat((byte)0xca, 30).ToArray();
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 21, tempFileDirectoryAccessor: () => TempDirectory);
+            bufferingStream.Write(input, 0, input.Length);
+            var memoryStream = new MemoryStream();
+
+            // Act
+            bufferingStream.CopyTo(memoryStream);
+
+            // Assert
+            Assert.Equal(input, memoryStream.ToArray());
+        }
+
+        [Fact]
+        public void CopyTo_InvokedMultipleTimes_Works()
+        {
+            // Arrange
+            var input = Enumerable.Repeat((byte)0xca, 30).ToArray();
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 21, tempFileDirectoryAccessor: () => TempDirectory);
+            bufferingStream.Write(input, 0, input.Length);
+            var memoryStream1 = new MemoryStream();
+            var memoryStream2 = new MemoryStream();
+
+            // Act
+            bufferingStream.CopyTo(memoryStream1);
+            bufferingStream.CopyTo(memoryStream2);
+
+            // Assert
+            Assert.Equal(input, memoryStream1.ToArray());
+            Assert.Equal(input, memoryStream2.ToArray());
+        }
+
+        [Fact]
+        public async Task CopyToAsync_CopiesContentFromMemoryStream()
+        {
+            // Arrange
+            var input = new byte[] { 1, 2, 3, 4, 5 };
+            using var bufferingStream = new FileBufferingWriteStream(tempFileDirectoryAccessor: () => TempDirectory);
+            bufferingStream.Write(input, 0, input.Length);
+            var memoryStream = new MemoryStream();
+
+            // Act
+            await bufferingStream.CopyToAsync(memoryStream);
+
+            // Assert
+            Assert.Equal(input, memoryStream.ToArray());
+        }
+
+        [Fact]
+        public async Task CopyToAsync_WithContentInDisk_CopiesContentFromMemoryStream()
+        {
+            // Arrange
+            var input = Enumerable.Repeat((byte)0xca, 30).ToArray();
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 21, tempFileDirectoryAccessor: () => TempDirectory);
+            bufferingStream.Write(input, 0, input.Length);
+            var memoryStream = new MemoryStream();
+
+            // Act
+            await bufferingStream.CopyToAsync(memoryStream);
+
+            // Assert
+            Assert.Equal(input, memoryStream.ToArray());
+        }
+
+        [Fact]
+        public async Task CopyToAsync_InvokedMultipleTimes_Works()
+        {
+            // Arrange
+            var input = Enumerable.Repeat((byte)0xca, 30).ToArray();
+            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 21, tempFileDirectoryAccessor: () => TempDirectory);
+            bufferingStream.Write(input, 0, input.Length);
+            var memoryStream1 = new MemoryStream();
+            var memoryStream2 = new MemoryStream();
+
+            // Act
+            await bufferingStream.CopyToAsync(memoryStream1);
+            await bufferingStream.CopyToAsync(memoryStream2);
+
+            // Assert
+            Assert.Equal(input, memoryStream1.ToArray());
+            Assert.Equal(input, memoryStream2.ToArray());
         }
 
         public void Dispose()
@@ -275,17 +446,18 @@ namespace Microsoft.AspNetCore.WebUtilities.Tests
         private static byte[] ReadFileContent(FileStream fileStream)
         {
             fileStream.Position = 0;
-            var count = fileStream.Length;
-            var bytes = new ArraySegment<byte>(new byte[fileStream.Length]);
-            while (count > 0)
-            {
-                var read = fileStream.Read(bytes.AsSpan());
-                Assert.False(read == 0, "Should not EOF before we've read the file.");
-                bytes = bytes.Slice(read);
-                count -= read;
-            }
+            using var memoryStream = new MemoryStream();
+            fileStream.CopyTo(memoryStream);
 
-            return bytes.Array;
+            return memoryStream.ToArray();
+        }
+
+        private static byte[] ReadBufferedContent(PagedByteBuffer buffer)
+        {
+            using var memoryStream = new MemoryStream();
+            buffer.CopyTo(memoryStream, clearBuffers: false);
+
+            return memoryStream.ToArray();
         }
     }
 }

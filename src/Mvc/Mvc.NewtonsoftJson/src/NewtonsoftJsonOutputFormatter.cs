@@ -133,7 +133,13 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var response = context.HttpContext.Response;
 
-            var responseStream = GetResponseStream(response);
+            var responseStream = response.Body;
+            Stream fileBufferingWriteStream = null;
+            if (!_mvcOptions.SuppressOutputFormatterBuffering)
+            {
+                fileBufferingWriteStream = new FileBufferingWriteStream();
+                responseStream = fileBufferingWriteStream;
+            }
 
             try
             {
@@ -144,26 +150,24 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         var jsonSerializer = CreateJsonSerializer(context);
                         jsonSerializer.Serialize(jsonWriter, context.Object);
                     }
+
+                    // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
+                    // buffers. This is better than just letting dispose handle it (which would result in a synchronous write).
+                    await writer.FlushAsync();
+                }
+
+                if (fileBufferingWriteStream != null)
+                {
+                    await fileBufferingWriteStream.CopyToAsync(response.Body);
                 }
             }
             finally
             {
-                if (responseStream is FileBufferingWriteStream fileBufferingWriteStream)
+                if (fileBufferingWriteStream != null)
                 {
                     await fileBufferingWriteStream.DisposeAsync();
                 }
             }
-        }
-
-        private Stream GetResponseStream(HttpResponse response)
-        {
-            var responseStream = response.Body;
-            if (!_mvcOptions.SuppressOutputFormatterBuffering)
-            {
-                responseStream = new FileBufferingWriteStream(responseStream);
-            }
-
-            return responseStream;
         }
     }
 }

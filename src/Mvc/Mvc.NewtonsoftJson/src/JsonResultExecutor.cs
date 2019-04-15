@@ -113,41 +113,44 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             _logger.JsonResultExecuting(result.Value);
 
-            var responseStream = GetResponseStream(response);
+            var responseStream = response.Body;
+            Stream fileBufferingWriteStream = null;
+            if (!_mvcOptions.SuppressOutputFormatterBuffering)
+            {
+                fileBufferingWriteStream = new FileBufferingWriteStream();
+                responseStream = fileBufferingWriteStream;
+            }
 
             try
             {
                 await using (var writer = _writerFactory.CreateWriter(responseStream, resolvedContentTypeEncoding))
                 {
-                    using (var jsonWriter = new JsonTextWriter(writer))
-                    {
-                        jsonWriter.ArrayPool = _charPool;
-                        jsonWriter.CloseOutput = false;
-                        jsonWriter.AutoCompleteOnClose = false;
+                    using var jsonWriter = new JsonTextWriter(writer);
+                    jsonWriter.ArrayPool = _charPool;
+                    jsonWriter.CloseOutput = false;
+                    jsonWriter.AutoCompleteOnClose = false;
 
-                        var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
-                        jsonSerializer.Serialize(jsonWriter, result.Value);
-                    }
+                    var jsonSerializer = JsonSerializer.Create(jsonSerializerSettings);
+                    jsonSerializer.Serialize(jsonWriter, result.Value);
+
+                    // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
+                    // buffers. This is better than just letting dispose handle it (which would result in a synchronous
+                    // write).
+                    await writer.FlushAsync();
+                }
+
+                if (fileBufferingWriteStream != null)
+                {
+                    await fileBufferingWriteStream.CopyToAsync(response.Body);
                 }
             }
             finally
             {
-                if (responseStream is FileBufferingWriteStream fileBufferingWriteStream)
+                if (fileBufferingWriteStream != null)
                 {
                     await fileBufferingWriteStream.DisposeAsync();
                 }
             }
-        }
-
-        private Stream GetResponseStream(HttpResponse response)
-        {
-            var responseStream = response.Body;
-            if (!_mvcOptions.SuppressOutputFormatterBuffering)
-            {
-                responseStream = new FileBufferingWriteStream(responseStream);
-            }
-
-            return responseStream;
         }
 
         private JsonSerializerSettings GetSerializerSettings(JsonResult result)

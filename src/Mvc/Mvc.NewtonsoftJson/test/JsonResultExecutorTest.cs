@@ -163,10 +163,9 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         }
 
         [Fact]
-        public async Task ExecuteAsync_ErrorDuringSerialization_DoesNotCloseTheBrackets()
+        public async Task ExecuteAsync_ErrorDuringSerialization_DoesNotWriteContent()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes("{\"name\":\"Robert\"");
             var context = GetActionContext();
             var result = new JsonResult(new ModelWithSerializationError());
             var executor = CreateExecutor();
@@ -184,7 +183,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
             // Assert
             var written = GetWrittenBytes(context.HttpContext);
-            Assert.Equal(expected, written);
+            Assert.Empty(written);
         }
 
         [Fact]

@@ -235,7 +235,18 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             var xmlSerializer = GetCachedSerializer(wrappingType);
 
-            var responseStream = GetResponseStream(context.HttpContext);
+            var httpContext = context.HttpContext;
+            var response = httpContext.Response;
+
+            _mvcOptions ??= httpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
+
+            var responseStream = response.Body;
+            FileBufferingWriteStream fileBufferingWriteStream = null;
+            if (!_mvcOptions.SuppressOutputFormatterBuffering)
+            {
+                fileBufferingWriteStream = new FileBufferingWriteStream();
+                responseStream = fileBufferingWriteStream;
+            }
 
             try
             {
@@ -245,28 +256,25 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     {
                         Serialize(xmlSerializer, xmlWriter, value);
                     }
+
+                    // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
+                    // buffers. This is better than just letting dispose handle it (which would result in a synchronous
+                    // write).
+                    await textWriter.FlushAsync();
+                }
+
+                if (fileBufferingWriteStream != null)
+                {
+                    await fileBufferingWriteStream.CopyToAsync(response.Body);
                 }
             }
             finally
             {
-                if (responseStream is FileBufferingWriteStream fileBufferingWriteStream)
+                if (fileBufferingWriteStream != null)
                 {
                     await fileBufferingWriteStream.DisposeAsync();
                 }
             }
-        }
-
-        private Stream GetResponseStream(HttpContext httpContext)
-        {
-            _mvcOptions ??= httpContext.RequestServices.GetRequiredService<IOptions<MvcOptions>>().Value;
-
-            var responseStream = httpContext.Response.Body;
-            if (!_mvcOptions.SuppressOutputFormatterBuffering)
-            {
-                responseStream = new FileBufferingWriteStream(responseStream);
-            }
-
-            return responseStream;
         }
 
         /// <summary>
