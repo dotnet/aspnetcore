@@ -540,8 +540,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private void PackageStreamingParams(ref object[] args, out List<string> streamIds)
         {
-            // lazy initialized, to avoid allocating unecessary dictionaries
-            //Dictionary<string, object> readers = null;
             streamIds = null;
             var newArgs = new List<object>(args.Length);
 
