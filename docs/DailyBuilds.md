@@ -27,3 +27,10 @@ If you want to download the latest daily build and use it in a project, then you
 
 Some features, such as new target frameworks, may require prerelease tooling builds for Visual Studio.
 These are available in the [Visual Studio Preview](https://www.visualstudio.com/vs/preview/).
+
+#### To debug daily builds using Visual Studio
+
+* *Enable Source Link support* in Visual Studio should be enabled.
+* *Enable source server support* in Visual should be enabled.
+* *Enable Just My Code* should be disabled
+* Add https://dotnet.myget.org/F/aspnetcore-dev/symbols to the list of symbol servers in the Visual Studio Debugging options
