@@ -57,7 +57,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private bool _disposed;
         private bool _hasInherentKeepAlive;
         private string _connectionId;
-        private Dictionary<string, object> _readers;
 
         private CancellationToken _uploadStreamToken;
 
@@ -508,7 +507,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 irq.Dispose();
             }
 
-            PackageStreamingParams(ref args, out var streamIds);
+            var readers = PackageStreamingParams(ref args, out var streamIds);
 
             CheckDisposed();
             await WaitConnectionLockAsync();
@@ -534,12 +533,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 ReleaseConnectionLock();
             }
 
-            LaunchStreams(cancellationToken);
+            LaunchStreams(readers, cancellationToken);
             return channel;
         }
 
-        private void PackageStreamingParams(ref object[] args, out List<string> streamIds)
+        private Dictionary<string, object> PackageStreamingParams(ref object[] args, out List<string> streamIds)
         {
+            Dictionary<string, object> readers = null;
             streamIds = null;
             var newArgs = new List<object>(args.Length);
 
@@ -547,13 +547,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 if (ReflectionHelper.IsStreamingType(args[i].GetType()))
                 {
-                    if (_readers == null)
+                    if (readers == null)
                     {
-                        _readers = new Dictionary<string, object>();
+                        readers = new Dictionary<string, object>();
                     }
 
                     var id = _connectionState.GetNextId();
-                    _readers[id] = args[i];
+                    readers[id] = args[i];
 
                     if (streamIds == null)
                     {
@@ -571,16 +571,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             args = newArgs.ToArray();
+            return readers;
         }
 
-        private void LaunchStreams(CancellationToken cancellationToken)
+        private void LaunchStreams(Dictionary<string, object> readers, CancellationToken cancellationToken)
         {
-            if (_readers == null)
+            if (readers == null)
             {
                 // if there were no streaming parameters then readers is never initialized
                 return;
             }
-            foreach (var kvp in _readers)
+            foreach (var kvp in readers)
             {
                 var reader = kvp.Value;
 
@@ -637,7 +638,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             Log.StartingStream(_logger, streamId);
 
-            var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token).Token;
+            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
+
+            stream = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, combinedCts);
 
             string responseError = null;
             try
@@ -661,7 +664,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task<object> InvokeCoreAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
-            PackageStreamingParams(ref args, out var streamIds);
+            var readers = PackageStreamingParams(ref args, out var streamIds);
 
             CheckDisposed();
             await WaitConnectionLockAsync();
@@ -680,7 +683,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 ReleaseConnectionLock();
             }
 
-            LaunchStreams(cancellationToken);
+            LaunchStreams(readers, cancellationToken);
 
             // Wait for this outside the lock, because it won't complete until the server responds
             return await invocationTask;
@@ -756,13 +759,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task SendCoreAsyncCore(string methodName, object[] args, CancellationToken cancellationToken)
         {
-            PackageStreamingParams(ref args, out var streamIds);
+            var readers = PackageStreamingParams(ref args, out var streamIds);
 
             Log.PreparingNonBlockingInvocation(_logger, methodName, args.Length);
             var invocationMessage = new InvocationMessage(null, methodName, args, streamIds?.ToArray());
             await SendWithLock(invocationMessage, callerName: nameof(SendCoreAsync));
 
-            LaunchStreams(cancellationToken);
+            LaunchStreams(readers, cancellationToken);
         }
 
         private async Task SendWithLock(HubMessage message, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
