@@ -1,8 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Implements the SignalR Hub Protocol using System.Text.Json.</Description>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -21,7 +21,7 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Reference Include="Microsoft.Bcl.Json.Sources" />
     <Reference Include="System.Buffers" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe" />

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.User(userId).SendAsync("Send", message);
         }
 
-        public Task SendToMultipleUsers(List<string> userIds, string message)
+        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
         {
             return Clients.Users(userIds).SendAsync("Send", message);
         }
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.Client(connectionId).SendAsync("Send", message);
         }
 
-        public Task SendToMultipleClients(string message, List<string> connectionIds)
+        public Task SendToMultipleClients(string message, IReadOnlyList<string> connectionIds)
         {
             return Clients.Clients(connectionIds).SendAsync("Send", message);
         }
@@ -48,12 +48,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.Group(groupName).SendAsync("Send", message);
         }
 
-        public Task GroupExceptSendMethod(string groupName, string message, List<string> excludedConnectionIds)
+        public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedConnectionIds)
         {
             return Clients.GroupExcept(groupName, excludedConnectionIds).SendAsync("Send", message);
         }
 
-        public Task SendToMultipleGroups(string message, List<string> groupNames)
+        public Task SendToMultipleGroups(string message, IReadOnlyList<string> groupNames)
         {
             return Clients.Groups(groupNames).SendAsync("Send", message);
         }
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
         }
 
-        public Task SendToAllExcept(string message, List<string> excludedConnectionIds)
+        public Task SendToAllExcept(string message, IReadOnlyList<string> excludedConnectionIds)
         {
             return Clients.AllExcept(excludedConnectionIds).SendAsync("Send", message);
         }
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.Client(connectionId).Send(message);
         }
 
-        public Task SendToMultipleClients(string message, List<string> connectionIds)
+        public Task SendToMultipleClients(string message, IReadOnlyList<string> connectionIds)
         {
             return Clients.Clients(connectionIds).Send(message);
         }
@@ -328,7 +328,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.Group(groupName).Send(message);
         }
 
-        public Task GroupExceptSendMethod(string groupName, string message, List<string> excludedConnectionIds)
+        public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedConnectionIds)
         {
             return Clients.GroupExcept(groupName, excludedConnectionIds).Send(message);
         }
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.OthersInGroup(groupName).Send(message);
         }
 
-        public Task SendToMultipleGroups(string message, List<string> groupNames)
+        public Task SendToMultipleGroups(string message, IReadOnlyList<string> groupNames)
         {
             return Clients.Groups(groupNames).Send(message);
         }
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.All.Broadcast(message);
         }
 
-        public Task SendToAllExcept(string message, List<string> excludedConnectionIds)
+        public Task SendToAllExcept(string message, IReadOnlyList<string> excludedConnectionIds)
         {
             return Clients.AllExcept(excludedConnectionIds).Send(message);
         }
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.Client(connectionId).Send(message);
         }
 
-        public Task SendToMultipleClients(string message, List<string> connectionIds)
+        public Task SendToMultipleClients(string message, IReadOnlyList<string> connectionIds)
         {
             return Clients.Clients(connectionIds).Send(message);
         }
@@ -414,12 +414,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.Group(groupName).Send(message);
         }
 
-        public Task GroupExceptSendMethod(string groupName, string message, List<string> excludedConnectionIds)
+        public Task GroupExceptSendMethod(string groupName, string message, IReadOnlyList<string> excludedConnectionIds)
         {
             return Clients.GroupExcept(groupName, excludedConnectionIds).Send(message);
         }
 
-        public Task SendToMultipleGroups(string message, List<string> groupNames)
+        public Task SendToMultipleGroups(string message, IReadOnlyList<string> groupNames)
         {
             return Clients.Groups(groupNames).Send(message);
         }
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.All.Broadcast(message);
         }
 
-        public Task SendToAllExcept(string message, List<string> excludedConnectionIds)
+        public Task SendToAllExcept(string message, IReadOnlyList<string> excludedConnectionIds)
         {
             return Clients.AllExcept(excludedConnectionIds).Send(message);
         }

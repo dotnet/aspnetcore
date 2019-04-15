@@ -188,11 +188,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 {
                                     // If we have an invocation id already we can parse the end result
                                     var returnType = binder.GetReturnType(invocationId);
-                                    if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        using var token = JsonDocument.ParseValue(ref reader);
-                                        result = BindType(token.RootElement, returnType);
-                                    }
+                                    using var token = JsonDocument.ParseValue(ref reader);
+                                    result = BindType(token.RootElement, returnType);
                                 }
                             }
                             else if (reader.TextEquals(ItemPropertyNameBytes))
@@ -216,11 +213,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 try
                                 {
                                     var itemType = binder.GetStreamItemType(id);
-                                    if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        using var token = JsonDocument.ParseValue(ref reader);
-                                        item = BindType(token.RootElement, itemType);
-                                    }
+                                    using var token = JsonDocument.ParseValue(ref reader);
+                                    item = BindType(token.RootElement, itemType);
                                 }
                                 catch (Exception ex)
                                 {
@@ -695,10 +689,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return jsonObject.GetDateTimeOffset();
             }
 
-            if (jsonObject.Type == JsonValueType.Null)
-            {
-                return null;
-            }
             return JsonSerializer.Parse(jsonObject.GetRawText(), type);
         }
 
