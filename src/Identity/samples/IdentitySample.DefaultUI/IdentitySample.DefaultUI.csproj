@@ -4,7 +4,6 @@
     <Description>Identity sample MVC application on ASP.NET Core using the default UI</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <UserSecretsId>aspnetcore-2ff9bc27-5e8c-4484-90ca-e3aace89b72a</UserSecretsId>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>

@@ -5,7 +5,6 @@
     <!-- We want to validate runtime parser \ compilation exceptions -->
     <RazorCompileOnBuild>false</RazorCompileOnBuild>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
