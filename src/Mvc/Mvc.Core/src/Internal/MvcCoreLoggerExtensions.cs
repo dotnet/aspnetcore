@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly double TimestampToTicks = TimeSpan.TicksPerSecond / (double)Stopwatch.Frequency;
 
         private static readonly Action<ILogger, string, string, Exception> _actionExecuting;
+        private static readonly Action<ILogger, string, MethodInfo, string, string, Exception> _controllerActionExecuting;
         private static readonly Action<ILogger, string, double, Exception> _actionExecuted;
 
         private static readonly Action<ILogger, string[], Exception> _challengeResultExecuting;
@@ -152,6 +153,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Information,
                 1,
                 "Route matched with {RouteData}. Executing action {ActionName}");
+
+            _controllerActionExecuting = LoggerMessage.Define<string, MethodInfo, string, string>(
+                LogLevel.Information,
+                3,
+                "Route matched with {RouteData}. Executing controller action with signature {MethodInfo} on controller {Controller} ({AssemblyName}).");
 
             _actionExecuted = LoggerMessage.Define<string, double>(
                 LogLevel.Information,
@@ -683,7 +689,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     }
                 }
 
-                _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                if (action is ControllerActionDescriptor controllerActionDescriptor)
+                {
+                    var controllerType = controllerActionDescriptor.ControllerTypeInfo.AsType();
+                    var controllerName = TypeNameHelper.GetTypeDisplayName(controllerType);
+                    _controllerActionExecuting(
+                        logger,
+                        stringBuilder.ToString(),
+                        controllerActionDescriptor.MethodInfo,
+                        controllerName,
+                        controllerType.Assembly.GetName().Name,
+                        null);
+                }
+                else
+                {
+                    _actionExecuting(logger, stringBuilder.ToString(), action.DisplayName, null);
+                }
             }
         }
 
