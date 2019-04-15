@@ -7,6 +7,7 @@
     <TargetFrameworks>netcoreapp2.1;netcoreapp2.0;net461</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;azure;appservices</PackageTags>
+    <UseProjectReferences>true</UseProjectReferences>
   </PropertyGroup>
 
   <ItemGroup>

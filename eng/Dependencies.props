@@ -60,6 +60,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="Microsoft.Extensions.Localization.Abstractions" Version="$(MicrosoftExtensionsLocalizationAbstractionsPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Localization" Version="$(MicrosoftExtensionsLocalizationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(MicrosoftExtensionsLoggingAbstractionsPackageVersion)" />
+    <LatestPackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="$(MicrosoftExtensionsLoggingAzureAppServicesPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="$(MicrosoftExtensionsLoggingConfigurationPackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
     <LatestPackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)" />
