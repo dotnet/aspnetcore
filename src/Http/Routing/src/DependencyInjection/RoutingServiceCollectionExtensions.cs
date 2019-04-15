@@ -75,6 +75,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<DfaMatcherBuilder>();
             services.TryAddSingleton<DfaGraphWriter>();
             services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
+            services.TryAddSingleton<EndpointMetadataComparer>(services =>
+            {
+                // This has no public constructor. 
+                return new EndpointMetadataComparer(services);
+            });
 
             // Link generation related services
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
