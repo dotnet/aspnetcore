@@ -146,6 +146,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
             var serviceContext = new TestServiceContext(LoggerFactory);
 
+            TestApplicationErrorLogger.ThrowOnUngracefulShutdown = false;
+
             var stopTask = Task.CompletedTask;
             await using (var server = new TestServer(requestDelegate, serviceContext, listenOptions))
             using (var shutdownCts = new CancellationTokenSource(TestConstants.DefaultTimeout))

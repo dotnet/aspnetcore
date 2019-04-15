@@ -107,6 +107,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             public void OnHeader(Span<byte> name, Span<byte> value)
                 => RequestHandler.Connection.OnHeader(name, value);
 
+            public void OnHeadersComplete()
+                => RequestHandler.Connection.OnHeadersComplete();
+
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.Connection.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
         }

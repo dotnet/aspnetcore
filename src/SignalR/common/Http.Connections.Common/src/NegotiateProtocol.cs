@@ -111,21 +111,19 @@ namespace Microsoft.AspNetCore.Http.Connections
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.PropertyName:
-                            var memberName = reader.ValueSpan;
-
-                            if (memberName.SequenceEqual(UrlPropertyNameBytes))
+                            if (reader.TextEquals(UrlPropertyNameBytes))
                             {
                                 url = reader.ReadAsString(UrlPropertyName);
                             }
-                            else if (memberName.SequenceEqual(AccessTokenPropertyNameBytes))
+                            else if (reader.TextEquals(AccessTokenPropertyNameBytes))
                             {
                                 accessToken = reader.ReadAsString(AccessTokenPropertyName);
                             }
-                            else if (memberName.SequenceEqual(ConnectionIdPropertyNameBytes))
+                            else if (reader.TextEquals(ConnectionIdPropertyNameBytes))
                             {
                                 connectionId = reader.ReadAsString(ConnectionIdPropertyName);
                             }
-                            else if (memberName.SequenceEqual(AvailableTransportsPropertyNameBytes))
+                            else if (reader.TextEquals(AvailableTransportsPropertyNameBytes))
                             {
                                 reader.CheckRead();
                                 reader.EnsureArrayStart();
@@ -143,11 +141,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                                     }
                                 }
                             }
-                            else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
+                            else if (reader.TextEquals(ErrorPropertyNameBytes))
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
                             }
-                            else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
+                            else if (reader.TextEquals(ProtocolVersionPropertyNameBytes))
                             {
                                 throw new InvalidOperationException("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                             }

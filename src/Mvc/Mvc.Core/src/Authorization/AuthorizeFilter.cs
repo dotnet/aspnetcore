@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -22,9 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     /// </summary>
     public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
-        // Property key set by authorization middleware when it is run
-        private const string AuthorizationMiddlewareInvokedKey = "__AuthorizationMiddlewareInvoked";
-
         private AuthorizationPolicy _effectivePolicy;
 
         /// <summary>
@@ -116,6 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             {
                 return Task.FromResult(Policy);
             }
+
             if (PolicyProvider == null)
             {
                 throw new InvalidOperationException(
@@ -127,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             return AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
         }
 
-        private async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
+        internal async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
         {
             if (_effectivePolicy != null)
             {
@@ -154,6 +153,27 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 }
             }
 
+            var endpoint = context.HttpContext.GetEndpoint();
+            if (endpoint != null)
+            {
+                // When doing endpoint routing, MVC does not create filters for any authorization specific metadata i.e [Authorize] does not
+                // get translated into AuthorizeFilter. Consequently, there are some rough edges when an application uses a mix of AuthorizeFilter
+                // explicilty configured by the user (e.g. global auth filter), and uses endpoint metadata.
+                // To keep the behavior of AuthFilter identical to pre-endpoint routing, we will gather auth data from endpoint metadata
+                // and produce a policy using this. This would mean we would have effectively run some auth twice, but it maintains compat.
+                var policyProvider = PolicyProvider ?? context.HttpContext.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>();
+                var endpointAuthorizeData = endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
+
+                var endpointPolicy = await AuthorizationPolicy.CombineAsync(policyProvider, endpointAuthorizeData);
+                if (endpointPolicy != null)
+                {
+                    builder.Combine(endpointPolicy);
+                }
+
+                // We cannot cache the policy since it varies by endpoint metadata.
+                canCache = false;
+            }
+
             effectivePolicy = builder?.Build() ?? effectivePolicy;
 
             // We can cache the effective policy when there is no custom policy provider
@@ -173,12 +193,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.HttpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
-            {
-                // Authorization has already run in middleware. Don't re-run for performance
-                return;
-            }
-
             if (!context.IsEffectivePolicy(this))
             {
                 return;
@@ -196,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             var authenticateResult = await policyEvaluator.AuthenticateAsync(effectivePolicy, context.HttpContext);
 
             // Allow Anonymous skips all authorization
-            if (HasAllowAnonymous(context.Filters))
+            if (HasAllowAnonymous(context))
             {
                 return;
             }
@@ -226,14 +240,24 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             return AuthorizationApplicationModelProvider.GetFilter(policyProvider, AuthorizeData);
         }
 
-        private static bool HasAllowAnonymous(IList<IFilterMetadata> filters)
+        private static bool HasAllowAnonymous(AuthorizationFilterContext context)
         {
+            var filters = context.Filters;
             for (var i = 0; i < filters.Count; i++)
             {
                 if (filters[i] is IAllowAnonymousFilter)
                 {
                     return true;
                 }
+            }
+
+            // When doing endpoint routing, MVC does not add AllowAnonymousFilters for AllowAnonymousAttributes that
+            // were discovered on controllers and actions. To maintain compat with 2.x, 
+            // we'll check for the presence of IAllowAnonymous in endpoint metadata.
+            var endpoint = context.HttpContext.GetEndpoint();
+            if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)
+            {
+                return true;
             }
 
             return false;

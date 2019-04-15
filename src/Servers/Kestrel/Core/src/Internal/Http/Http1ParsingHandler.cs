@@ -17,6 +17,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public void OnHeader(Span<byte> name, Span<byte> value)
             => Connection.OnHeader(name, value);
 
+        public void OnHeadersComplete()
+            => Connection.OnHeadersComplete();
+
         public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
             => Connection.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);
     }

@@ -10,6 +10,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Components.Prerendering" />
     <Reference Include="Microsoft.AspNetCore.Components.Server" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Newtonsoft.Json" />
     <ProjectReference Include="..\ComponentsApp.App\ComponentsApp.App.csproj" />
   </ItemGroup>
 

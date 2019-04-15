@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -435,6 +436,46 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 await connectionState.StopAsync();
             }
         }
+
+#if NETCOREAPP3_0
+
+        /// <summary>
+        /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
+        /// </summary>
+        /// <typeparam name="TResult">The return type of the streaming server method.</typeparam>
+        /// <param name="methodName">The name of the server method to invoke.</param>
+        /// <param name="args">The arguments used to invoke the server method.</param>
+        /// <param name="cancellationToken">The token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None" />.</param>
+        /// <returns>
+        /// A <see cref="IAsyncEnumerable{TResult}"/> that represents the stream.
+        /// </returns>
+        public IAsyncEnumerable<TResult> StreamAsyncCore<TResult>(string methodName, object[] args, CancellationToken cancellationToken = default)
+        {
+            var cts = cancellationToken.CanBeCanceled ? CancellationTokenSource.CreateLinkedTokenSource(cancellationToken) : new CancellationTokenSource();
+            var stream = CastIAsyncEnumerable<TResult>(methodName, args, cts);
+            var cancelableStream = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, cts);
+            return cancelableStream;
+        }
+
+        private async IAsyncEnumerable<T> CastIAsyncEnumerable<T>(string methodName, object[] args, CancellationTokenSource cts)
+        {
+            var reader = await StreamAsChannelCoreAsync(methodName, typeof(T), args, cts.Token);
+            try
+            {
+                while (await reader.WaitToReadAsync(cts.Token))
+                {
+                    while (reader.TryRead(out var item))
+                    {
+                        yield return (T)item;
+                    }
+                }
+            }
+            finally
+            {
+                cts.Dispose();
+            }
+        }
+#endif
 
         private async Task<ChannelReader<object>> StreamAsChannelCoreAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {

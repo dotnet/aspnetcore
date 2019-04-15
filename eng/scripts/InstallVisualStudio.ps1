@@ -50,12 +50,26 @@ $bootstrapper = "$intermedateDir\vsinstaller.exe"
 $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 Invoke-WebRequest -Uri "https://aka.ms/vs/16/release/vs_$($Edition.ToLowerInvariant()).exe" -OutFile $bootstrapper
 
+$responseFile = "$PSScriptRoot\vs.json"
+if ("$Edition" -eq "BuildTools") {
+    $responseFile = "$PSScriptRoot\vs.buildtools.json"
+}
+
+$channelId = (Get-Content $responseFile | ConvertFrom-Json).channelId
+
 $productId = "Microsoft.VisualStudio.Product.$Edition"
 if (-not $InstallPath) {
     $vsWhere = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
     if (Test-Path $vsWhere)
     {
-        $InstallPath = &$vsWhere -version '[16,17)' -latest -prerelease -products $productId -property installationPath
+        $installations = & $vsWhere -version '[16,17)' -format json -sort -prerelease -products $productId | ConvertFrom-Json
+        foreach ($installation in $installations) {
+            Write-Host "Found '$($installation.installationName)' in '$($installation.installationPath)', channel = '$($installation.channelId)'"
+            if ($installation.channelId -eq $channelId) {
+                $InstallPath = $installation.installationPath
+                break
+            }
+        }
     }
 }
 
@@ -69,11 +83,6 @@ $InstallPath = $InstallPath.TrimEnd('\')
 [string[]] $arguments = @()
 if (Test-path $InstallPath) {
     $arguments += 'modify'
-}
-
-$responseFile = "$PSScriptRoot\vs.json"
-if ("$Edition" -eq "BuildTools") {
-    $responseFile = "$PSScriptRoot\vs.buildtools.json"
 }
 
 $arguments += `

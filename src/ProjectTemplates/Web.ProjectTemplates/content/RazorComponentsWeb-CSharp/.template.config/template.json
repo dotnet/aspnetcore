@@ -3,9 +3,9 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "RazorComponents"
+    "Blazor"
   ],
-  "name": "ASP.NET Core Web App (Razor Components)",
+  "name": "Blazor (server-side)",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating a Blazor application that runs server-side inside an ASP.NET Core application. This template can be used for web applications with rich dynamic user interfaces (UIs).",
   "groupIdentity": "Microsoft.Web.RazorComponents",

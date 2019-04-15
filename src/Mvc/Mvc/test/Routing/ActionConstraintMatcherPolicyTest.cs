@@ -360,13 +360,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         new ConsumesAttribute("text/json"),
                     },
                 },
-                new ActionDescriptor()
-                {
-                    ActionConstraints = new List<IActionConstraintMetadata>()
-                    {
-                        new CorsHttpMethodActionConstraint(new HttpMethodActionConstraint(new[]{ "GET", })),
-                    },
-                },
             };
             var endpoints = actions.Select(CreateEndpoint).ToArray();
 

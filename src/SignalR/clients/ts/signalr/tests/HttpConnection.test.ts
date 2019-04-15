@@ -65,14 +65,10 @@ describe("HttpConnection", () => {
 
     it("cannot start a running connection", async () => {
         await VerifyLogger.run(async (logger) => {
-            const negotiating = new PromiseSource();
             const options: IHttpConnectionOptions = {
                 ...commonOptions,
                 httpClient: new TestHttpClient()
-                    .on("POST", () => {
-                        negotiating.resolve();
-                        return defaultNegotiateResponse;
-                    }),
+                    .on("POST", () => defaultNegotiateResponse),
                 logger,
                 transport: {
                     connect() {
@@ -95,8 +91,9 @@ describe("HttpConnection", () => {
 
                 await expect(connection.start(TransferFormat.Text))
                     .rejects
-                    .toThrow("Cannot start a connection that is not in the 'Disconnected' state.");
+                    .toThrow("Cannot start an HttpConnection that is not in the 'Disconnected' state.");
             } finally {
+                (options.transport as ITransport).onclose!();
                 await connection.stop();
             }
         });
@@ -146,8 +143,11 @@ describe("HttpConnection", () => {
 
             const connection = new HttpConnection("http://tempuri.org", options);
 
-            await connection.start(TransferFormat.Text);
-        });
+            await expect(connection.start(TransferFormat.Text))
+                .rejects
+                .toThrow("The connection was stopped during negotiation.");
+        },
+        "Failed to start the connection: Error: The connection was stopped during negotiation.");
     });
 
     it("cannot send with an un-started connection", async () => {
@@ -277,6 +277,7 @@ describe("HttpConnection", () => {
 
                 await startPromise;
             } finally {
+                (options.transport as ITransport).onclose!();
                 await connection.stop();
             }
         });
@@ -306,7 +307,7 @@ describe("HttpConnection", () => {
 
                     expect(await negotiateUrl).toBe(expectedUrl);
 
-                    await expect(startPromise).rejects;
+                    await expect(startPromise).rejects.toThrow("We don't care how this turns out");
                 } finally {
                     await connection.stop();
                 }
@@ -805,7 +806,7 @@ describe("HttpConnection", () => {
                 // Force TypeScript to let us call start incorrectly
                 const connection: any = new HttpConnection("http://tempuri.org", { ...commonOptions, logger });
 
-                expect(() => connection.start(42)).toThrowError("Unknown transferFormat value: 42.");
+                await expect(connection.start(42)).rejects.toThrow("Unknown transferFormat value: 42.");
             });
         });
 

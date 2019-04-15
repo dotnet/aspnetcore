@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
     internal sealed class DefaultLinkGenerator : LinkGenerator, IDisposable
     {
         private readonly ParameterPolicyFactory _parameterPolicyFactory;
-        private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
+        private readonly TemplateBinderFactory _binderFactory;
         private readonly ILogger<DefaultLinkGenerator> _logger;
         private readonly IServiceProvider _serviceProvider;
 
@@ -38,14 +38,14 @@ namespace Microsoft.AspNetCore.Routing
 
         public DefaultLinkGenerator(
             ParameterPolicyFactory parameterPolicyFactory,
+            TemplateBinderFactory binderFactory,
             EndpointDataSource dataSource,
-            ObjectPool<UriBuildingContext> uriBuildingContextPool,
             IOptions<RouteOptions> routeOptions,
             ILogger<DefaultLinkGenerator> logger,
             IServiceProvider serviceProvider)
         {
             _parameterPolicyFactory = parameterPolicyFactory;
-            _uriBuildingContextPool = uriBuildingContextPool;
+            _binderFactory = binderFactory;
             _logger = logger;
             _serviceProvider = serviceProvider;
 
@@ -282,40 +282,7 @@ namespace Microsoft.AspNetCore.Routing
 
         private TemplateBinder CreateTemplateBinder(RouteEndpoint endpoint)
         {
-            // Now create the constraints and parameter transformers from the pattern
-            var policies = new List<(string parameterName, IParameterPolicy policy)>();
-            foreach (var kvp in endpoint.RoutePattern.ParameterPolicies)
-            {
-                var parameterName = kvp.Key;
-
-                // It's possible that we don't have an actual route parameter, we need to support that case.
-                var parameter = endpoint.RoutePattern.GetParameter(parameterName);
-
-                // Use the first parameter transformer per parameter
-                var foundTransformer = false;
-                for (var i = 0; i < kvp.Value.Count; i++)
-                {
-                    var parameterPolicy = _parameterPolicyFactory.Create(parameter, kvp.Value[i]);
-                    if (!foundTransformer && parameterPolicy is IOutboundParameterTransformer parameterTransformer)
-                    {
-                        policies.Add((parameterName, parameterTransformer));
-                        foundTransformer = true;
-                    }
-
-                    if (parameterPolicy is IRouteConstraint constraint)
-                    {
-                        policies.Add((parameterName, constraint));
-                    }
-                }
-            }
-
-            return new TemplateBinder(
-                UrlEncoder.Default,
-                _uriBuildingContextPool,
-                endpoint.RoutePattern,
-                new RouteValueDictionary(endpoint.RoutePattern.Defaults),
-                endpoint.RoutePattern.RequiredValues.Keys,
-                policies);
+            return _binderFactory.Create(endpoint.RoutePattern);
         }
 
         // Internal for testing

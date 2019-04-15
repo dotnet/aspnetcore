@@ -74,6 +74,7 @@ namespace CorsWebSite
         public virtual void Configure(IApplicationBuilder app)
         {
             app.UseRouting();
+            app.UseCors();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

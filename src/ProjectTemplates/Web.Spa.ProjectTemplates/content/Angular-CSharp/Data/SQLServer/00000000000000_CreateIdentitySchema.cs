@@ -233,12 +233,6 @@ namespace Company.WebApplication1.Data.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_DeviceCodes_UserCode",
-                table: "DeviceCodes",
-                column: "UserCode",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
                 name: "IX_PersistedGrants_SubjectId_ClientId_Type",
                 table: "PersistedGrants",
                 columns: new[] { "SubjectId", "ClientId", "Type" });

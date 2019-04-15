@@ -905,6 +905,7 @@
         "Properties/launchSettings.json",
         "Data/WeatherForecast.cs",
         "Data/WeatherForecastService.cs",
+        "wwwroot/favicon.ico",
         "wwwroot/css/bootstrap/bootstrap.min.css",
         "wwwroot/css/bootstrap/bootstrap.min.css.map",
         "wwwroot/css/open-iconic/font/css/open-iconic-bootstrap.min.css",

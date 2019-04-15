@@ -294,6 +294,31 @@ namespace Templates.Test.Helpers
             }
         }
 
+        internal async Task<ProcessEx> RunDotNetEfUpdateDatabaseAsync()
+        {
+            var assembly = typeof(ProjectFactoryFixture).Assembly;
+
+            var dotNetEfFullPath = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .First(attribute => attribute.Key == "DotNetEfFullPath")
+                .Value;
+
+            var args = $"\"{dotNetEfFullPath}\" --verbose --no-build database update";
+
+            // Only run one instance of 'dotnet new' at once, as a workaround for
+            // https://github.com/aspnet/templating/issues/63
+            await DotNetNewLock.WaitAsync();
+            try
+            {
+                var result = ProcessEx.Run(Output, TemplateOutputDir, DotNetMuxer.MuxerPathOrDefault(), args);
+                await result.Exited;
+                return result;
+            }
+            finally
+            {
+                DotNetNewLock.Release();
+            }
+        }
+
         // If this fails, you should generate new migrations via migrations/updateMigrations.cmd
         public void AssertEmptyMigration(string migration)
         {
@@ -320,6 +345,27 @@ namespace Templates.Test.Helpers
             {
                 return str.Replace("\n", string.Empty).Replace("\r", string.Empty);
             }
+        }
+
+        public void AssertFileExists(string path, bool shouldExist)
+        {
+            var fullPath = Path.Combine(TemplateOutputDir, path);
+            var doesExist = File.Exists(fullPath);
+
+            if (shouldExist)
+            {
+                Assert.True(doesExist, "Expected file to exist, but it doesn't: " + path);
+            }
+            else
+            {
+                Assert.False(doesExist, "Expected file not to exist, but it does: " + path);
+            }
+        }
+
+        public string ReadFile(string path)
+        {
+            AssertFileExists(path, shouldExist: true);
+            return File.ReadAllText(Path.Combine(TemplateOutputDir, path));
         }
 
         internal async Task<ProcessEx> RunDotNetNewRawAsync(string arguments)

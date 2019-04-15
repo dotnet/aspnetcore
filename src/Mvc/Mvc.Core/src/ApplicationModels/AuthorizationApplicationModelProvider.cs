@@ -6,16 +6,21 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     internal class AuthorizationApplicationModelProvider : IApplicationModelProvider
     {
+        private readonly MvcOptions _mvcOptions;
         private readonly IAuthorizationPolicyProvider _policyProvider;
 
-        public AuthorizationApplicationModelProvider(IAuthorizationPolicyProvider policyProvider)
+        public AuthorizationApplicationModelProvider(
+            IAuthorizationPolicyProvider policyProvider,
+            IOptions<MvcOptions> mvcOptions)
         {
             _policyProvider = policyProvider;
+            _mvcOptions = mvcOptions.Value;
         }
 
         public int Order => -1000 + 10;
@@ -30,6 +35,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
+            }
+
+            if (_mvcOptions.EnableEndpointRouting)
+            {
+                // When using endpoint routing, the AuthorizationMiddleware does the work that Auth filters would otherwise perform.
+                // Consequently we do not need to convert authorization attributes to filters.
+                return;
             }
 
             foreach (var controllerModel in context.Result.Controllers)

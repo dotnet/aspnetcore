@@ -266,16 +266,16 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Assert.NotNull(anonymousAction.EndpointMetadata);
 
             Assert.Collection(anonymousAction.EndpointMetadata,
-                metadata => Assert.IsType<AllowAnonymousAttribute>(metadata),
-                metadata => Assert.IsType<AuthorizeAttribute>(metadata));
+                metadata => Assert.IsType<AuthorizeAttribute>(metadata),
+                metadata => Assert.IsType<AllowAnonymousAttribute>(metadata));
 
             var authorizeAction = Assert.Single(descriptors, a => a.RouteValues["action"] == "AuthorizeAction");
 
             Assert.NotNull(authorizeAction.EndpointMetadata);
 
             Assert.Collection(authorizeAction.EndpointMetadata,
-                metadata => Assert.Equal("ActionPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy),
-                metadata => Assert.Equal("ControllerPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy));
+                metadata => Assert.Equal("ControllerPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy),
+                metadata => Assert.Equal("ActionPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy));
         }
 
         [Fact]
@@ -291,6 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
             Assert.NotNull(action.EndpointMetadata);
 
             Assert.Collection(action.EndpointMetadata,
+                metadata => Assert.IsType<RouteAttribute>(metadata),
                 metadata => Assert.IsType<HttpGetAttribute>(metadata),
                 metadata =>
                 {
@@ -298,8 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
                     Assert.False(httpMethodMetadata.AcceptCorsPreflight);
                     Assert.Equal("GET", Assert.Single(httpMethodMetadata.HttpMethods));
-                },
-                metadata => Assert.IsType<RouteAttribute>(metadata));
+                });
         }
 
         [Fact]

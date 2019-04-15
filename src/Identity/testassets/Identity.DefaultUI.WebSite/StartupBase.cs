@@ -57,7 +57,7 @@ namespace Identity.DefaultUI.WebSite
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public virtual void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             // This prevents running out of file watchers on some linux machines
             ((PhysicalFileProvider)env.WebRootFileProvider).UseActivePolling = false;
@@ -80,14 +80,7 @@ namespace Identity.DefaultUI.WebSite
             app.UseRouting();
 
             app.UseAuthentication();
-
-            // This has to be disabled due to https://github.com/aspnet/AspNetCore/issues/8387
-            //
-            // UseAuthorization does not currently work with Razor pages, and it impacts
-            // many of the tests here. Uncomment when this is fixed so that we test what is recommended
-            // for users.
-            //
-            //app.UseAuthorization();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

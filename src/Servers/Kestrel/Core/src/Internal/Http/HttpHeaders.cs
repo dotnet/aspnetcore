@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal abstract class HttpHeaders : IHeaderDictionary
     {
+        protected long _bits = 0;
         protected long? _contentLength;
         protected bool _isReadOnly;
         protected Dictionary<string, StringValues> MaybeUnknown;

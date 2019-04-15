@@ -119,19 +119,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    var memberName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-
-                    if (memberName.SequenceEqual(TypePropertyNameBytes))
+                    if (reader.TextEquals(TypePropertyNameBytes))
                     {
                         // a handshake response does not have a type
                         // check the incoming message was not any other type of message
                         throw new InvalidDataException("Expected a handshake response from the server.");
                     }
-                    else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
+                    else if (reader.TextEquals(ErrorPropertyNameBytes))
                     {
                         error = reader.ReadAsString(ErrorPropertyName);
                     }
-                    else if (memberName.SequenceEqual(MinorVersionPropertyNameBytes))
+                    else if (reader.TextEquals(MinorVersionPropertyNameBytes))
                     {
                         minorVersion = reader.ReadAsInt32(MinorVersionPropertyName);
                     }
@@ -180,13 +178,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    var memberName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-
-                    if (memberName.SequenceEqual(ProtocolPropertyNameBytes))
+                    if (reader.TextEquals(ProtocolPropertyNameBytes))
                     {
                         protocol = reader.ReadAsString(ProtocolPropertyName);
                     }
-                    else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
+                    else if (reader.TextEquals(ProtocolVersionPropertyNameBytes))
                     {
                         protocolVersion = reader.ReadAsInt32(ProtocolVersionPropertyName);
                     }

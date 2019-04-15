@@ -1,11 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+import { DefaultReconnectPolicy } from "./DefaultReconnectPolicy";
 import { HttpConnection } from "./HttpConnection";
 import { HubConnection } from "./HubConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { IHubProtocol } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
+import { IReconnectPolicy } from "./IReconnectPolicy";
 import { HttpTransportType } from "./ITransport";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
@@ -22,6 +24,10 @@ export class HubConnectionBuilder {
     /** @internal */
     public logger?: ILogger;
 
+    /** If defined, this indicates the client should automatically attempt to reconnect if the connection is lost. */
+    /** @internal */
+    public reconnectPolicy?: IReconnectPolicy;
+
     /** Configures console logging for the {@link @aspnet/signalr.HubConnection}.
      *
      * @param {LogLevel} logLevel The minimum level of messages to log. Anything at this level, or a more severe level, will be logged.
@@ -35,6 +41,7 @@ export class HubConnectionBuilder {
      * @returns The {@link @aspnet/signalr.HubConnectionBuilder} instance, for chaining.
      */
     public configureLogging(logger: ILogger): HubConnectionBuilder;
+
     /** Configures custom logging for the {@link @aspnet/signalr.HubConnection}.
      *
      * @param {LogLevel | ILogger} logging An object implementing the {@link @aspnet/signalr.ILogger} interface or {@link @aspnet/signalr.LogLevel}.
@@ -85,9 +92,10 @@ export class HubConnectionBuilder {
         // Flow-typing knows where it's at. Since HttpTransportType is a number and IHttpConnectionOptions is guaranteed
         // to be an object, we know (as does TypeScript) this comparison is all we need to figure out which overload was called.
         if (typeof transportTypeOrOptions === "object") {
-            this.httpConnectionOptions = transportTypeOrOptions;
+            this.httpConnectionOptions = {...this.httpConnectionOptions, ...transportTypeOrOptions};
         } else {
             this.httpConnectionOptions = {
+                ...this.httpConnectionOptions,
                 transport: transportTypeOrOptions,
             };
         }
@@ -103,6 +111,39 @@ export class HubConnectionBuilder {
         Arg.isRequired(protocol, "protocol");
 
         this.protocol = protocol;
+        return this;
+    }
+
+    /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
+     * By default, the client will wait 0, 2, 10 and 30 seconds respectively before trying up to 4 reconnect attempts.
+     */
+    public withAutomaticReconnect(): HubConnectionBuilder;
+
+    /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
+     *
+     * @param {number[]} retryDelays An array containing the delays in milliseconds before trying each reconnect attempt.
+     * The length of the array represents how many failed reconnect attempts it takes before the client will stop attempting to reconnect.
+     */
+    public withAutomaticReconnect(retryDelays: number[]): HubConnectionBuilder;
+
+    /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
+     *
+     * @param {number[]} reconnectPolicy An {@link @aspnet/signalR.IReconnectPolicy} that controls the timing and number of reconnect attempts.
+     */
+    public withAutomaticReconnect(reconnectPolicy: IReconnectPolicy): HubConnectionBuilder;
+    public withAutomaticReconnect(retryDelaysOrReconnectPolicy?: number[] | IReconnectPolicy): HubConnectionBuilder {
+        if (this.reconnectPolicy) {
+            throw new Error("A reconnectPolicy has already been set.");
+        }
+
+        if (!retryDelaysOrReconnectPolicy) {
+            this.reconnectPolicy = new DefaultReconnectPolicy();
+        } else if (Array.isArray(retryDelaysOrReconnectPolicy)) {
+            this.reconnectPolicy = new DefaultReconnectPolicy(retryDelaysOrReconnectPolicy);
+        } else {
+            this.reconnectPolicy = retryDelaysOrReconnectPolicy;
+        }
+
         return this;
     }
 
@@ -130,7 +171,8 @@ export class HubConnectionBuilder {
         return HubConnection.create(
             connection,
             this.logger || NullLogger.instance,
-            this.protocol || new JsonHubProtocol());
+            this.protocol || new JsonHubProtocol(),
+            this.reconnectPolicy);
     }
 }
 

@@ -12,7 +12,6 @@
     <Reference Include="Microsoft.AspNetCore.Routing"  />
     <Reference Include="Microsoft.AspNetCore.WebSockets"  />
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources"  />
-    <Reference Include="Newtonsoft.Json"  />
     <Reference Include="System.Security.Principal.Windows"  />
   </ItemGroup>
 </Project>

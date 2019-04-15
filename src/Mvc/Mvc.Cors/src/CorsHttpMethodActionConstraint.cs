@@ -8,7 +8,6 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Mvc.Cors
 {
-    // Don't casually change the name of this. We reference the full type name in ActionConstraintCache.
     internal class CorsHttpMethodActionConstraint : HttpMethodActionConstraint
     {
         private readonly string OriginHeader = "Origin";

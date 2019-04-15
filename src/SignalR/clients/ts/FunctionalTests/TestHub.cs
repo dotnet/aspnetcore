@@ -34,6 +34,16 @@ namespace FunctionalTests
             return message;
         }
 
+        public string GetCallerConnectionId()
+        {
+            return Context.ConnectionId;
+        }
+
+        public int GetNumRedirects()
+        {
+            return int.Parse(Context.GetHttpContext().Request.Query["numRedirects"]);
+        }
+
         public void ThrowException(string message)
         {
             throw new InvalidOperationException(message);

@@ -8,11 +8,15 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -20,6 +24,8 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 {
     public class AuthorizeFilterTest
     {
+        private readonly ActionContext ActionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
+
         [Fact]
         public void InvalidUser()
         {
@@ -47,26 +53,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
             // Assert
             Assert.IsType<ChallengeResult>(authorizationContext.Result);
-        }
-
-        [Fact]
-        public async Task OnAuthorizationAsync_AuthorizationMiddlewareHasRun_NoOp()
-        {
-            // Arrange
-            var authorizationContext = GetAuthorizationContext(anonymous: true);
-            authorizationContext.HttpContext.Items["__AuthorizationMiddlewareInvoked"] = new object();
-
-            var authorizeFilterFactory = new AuthorizeFilter();
-            var filterFactory = authorizeFilterFactory as IFilterFactory;
-            var authorizeFilter = (AuthorizeFilter)filterFactory.CreateInstance(
-                authorizationContext.HttpContext.RequestServices);
-            authorizationContext.Filters.Add(authorizeFilter);
-
-            // Act
-            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
-
-            // Assert
-            Assert.Null(authorizationContext.Result);
         }
 
         [Fact]
@@ -527,6 +513,87 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             Assert.Same(policyProvider, actual.PolicyProvider);
         }
 
+        [Fact]
+        public async Task GetEffectivePolicyAsync_ReturnsCurrentPolicy_WhenNoEndpointMetadataIsAvailable()
+        {
+            // Arrange
+            var policy = new AuthorizationPolicyBuilder()
+                .RequireAssertion(_ => true)
+                .Build();
+            var filter = new AuthorizeFilter(policy);
+
+            var context = new AuthorizationFilterContext(ActionContext, new[] { filter });
+
+            // Act
+            var effectivePolicy = await filter.GetEffectivePolicyAsync(context);
+
+            // Assert
+            //
+            // Verify the policy is cached
+            Assert.Same(effectivePolicy, await filter.GetEffectivePolicyAsync(context));
+        }
+
+        [Fact]
+        public async Task GetEffectivePolicyAsync_CombinesPoliciesFromAuthFilters()
+        {
+            // Arrange
+            var policy1 = new AuthorizationPolicyBuilder()
+                .RequireClaim("Claim1")
+                .Build();
+
+            var policy2 = new AuthorizationPolicyBuilder()
+                .RequireClaim("Claim2")
+                .Build();
+            var filter1 = new AuthorizeFilter(policy1);
+            var filter2 = new AuthorizeFilter(policy2);
+
+            var context = new AuthorizationFilterContext(ActionContext, new[] { filter1, filter2 });
+
+            // Act
+            var effectivePolicy = await filter1.GetEffectivePolicyAsync(context);
+
+            // Assert
+            Assert.NotSame(policy1, effectivePolicy);
+            Assert.NotSame(policy2, effectivePolicy);
+            Assert.Equal(new[] { "Claim1", "Claim2" }, effectivePolicy.Requirements.Cast<ClaimsAuthorizationRequirement>().Select(c => c.ClaimType));
+        }
+
+        [Fact]
+        public async Task GetEffectivePolicyAsync_CombinesPoliciesFromEndpoint()
+        {
+            // Arrange
+            var policy1 = new AuthorizationPolicyBuilder()
+                .RequireClaim("Claim1")
+                .Build();
+
+            var policy2 = new AuthorizationPolicyBuilder()
+                .RequireClaim("Claim2")
+                .Build();
+
+            var filter = new AuthorizeFilter(policy1);
+            var options = new AuthorizationOptions();
+            options.AddPolicy("policy2", policy2);
+            var policyProvider = new DefaultAuthorizationPolicyProvider(Options.Create(options));
+
+            ActionContext.HttpContext.RequestServices = new ServiceCollection()
+                .AddSingleton<IAuthorizationPolicyProvider>(policyProvider)
+                .BuildServiceProvider();
+
+            ActionContext.HttpContext.SetEndpoint(new Endpoint(
+                _ => null,
+                new EndpointMetadataCollection(new AuthorizeAttribute("policy2")),
+                "test"));
+            var context = new AuthorizationFilterContext(ActionContext, new[] { filter, });
+
+            // Act
+            var effectivePolicy = await filter.GetEffectivePolicyAsync(context);
+
+            // Assert
+            Assert.NotSame(policy1, effectivePolicy);
+            Assert.NotSame(policy2, effectivePolicy);
+            Assert.Equal(new[] { "Claim1", "Claim2" }, effectivePolicy.Requirements.Cast<ClaimsAuthorizationRequirement>().Select(c => c.ClaimType));
+        }
+
         private AuthorizationFilterContext GetAuthorizationContext(
             bool anonymous = false,
             Action<IServiceCollection> registerServices = null)
@@ -580,6 +647,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             httpContext.SetupGet(c => c.RequestServices).Returns(serviceProvider);
             var contextItems = new Dictionary<object, object>();
             httpContext.SetupGet(c => c.Items).Returns(contextItems);
+            httpContext.SetupGet(c => c.Features).Returns(Mock.Of<IFeatureCollection>());
 
             // AuthorizationFilterContext
             var actionContext = new ActionContext(
