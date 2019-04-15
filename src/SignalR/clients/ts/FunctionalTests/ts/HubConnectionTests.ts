@@ -50,7 +50,7 @@ function getConnectionBuilder(transportType?: HttpTransportType, url?: string, o
 
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
-        describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", async () => {
+        describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", () => {
             it("can invoke server method and receive result", (done) => {
                 const message = "你好，世界！";
 

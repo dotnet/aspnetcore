@@ -8,13 +8,12 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Routing.DecisionTree;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Routing.Tree;
 
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Routing.Tree
 {
     // A decision tree that matches link generation entries based on route data.
     [DebuggerDisplay("{DebuggerDisplayString,nq}")]
-    public class LinkGenerationDecisionTree
+    internal class LinkGenerationDecisionTree
     {
         // Fallback value for cases where the ambient values weren't provided.
         //

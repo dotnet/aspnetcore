@@ -11,7 +11,7 @@ it('renders without crashing', () => {
         dispatch: () => {},
         getState: () => ({ ...state })
     });
-    const store = storeFake({});
+    const store = storeFake({}) as any;
 
     ReactDOM.render(
         <Provider store={store}>

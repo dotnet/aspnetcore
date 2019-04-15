@@ -1,11 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Routing.Tree;
-
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Routing.Tree
 {
-    public readonly struct OutboundMatchResult
+    internal readonly struct OutboundMatchResult
     {
         public OutboundMatchResult(OutboundMatch match, bool isFallbackMatch)
         {

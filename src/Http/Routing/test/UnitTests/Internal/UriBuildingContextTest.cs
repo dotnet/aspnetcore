@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.Extensions.WebEncoders.Testing;
@@ -6,6 +6,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class UriBuildingContextTest
     {
         [Fact]
@@ -16,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var value = "a/b b1/c";
             var expected = "/UrlEncode[[a/b b1/c]]";
             var uriBuilldingContext = new UriBuildingContext(urlTestEncoder);
-            
+
             // Act
             uriBuilldingContext.EncodeValue(value, 0, value.Length, encodeSlashes: true);
 
@@ -97,4 +98,5 @@ namespace Microsoft.AspNetCore.Routing.Internal
             Assert.Equal(expected, uriBuilldingContext.ToPathString().Value);
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }
