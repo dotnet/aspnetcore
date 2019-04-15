@@ -534,7 +534,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 ReleaseConnectionLock();
             }
 
-            LaunchStreams(_readers, cancellationToken);
+            LaunchStreams(cancellationToken);
             return channel;
         }
 
@@ -575,14 +575,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
             args = newArgs.ToArray();
         }
 
-        private void LaunchStreams(Dictionary<string, object> readers, CancellationToken cancellationToken)
+        private void LaunchStreams(CancellationToken cancellationToken)
         {
-            if (readers == null)
+            if (_readers == null)
             {
                 // if there were no streaming parameters then readers is never initialized
                 return;
             }
-            foreach (var kvp in readers)
+            foreach (var kvp in _readers)
             {
                 var reader = kvp.Value;
 
@@ -601,8 +601,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _ = _sendStreamItemsMethod
                     .MakeGenericMethod(reader.GetType().GetGenericArguments())
                     .Invoke(this, new object[] { kvp.Key.ToString(), reader, cancellationToken });
-
-
             }
         }
 
@@ -684,7 +682,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 ReleaseConnectionLock();
             }
 
-            LaunchStreams(_readers, cancellationToken);
+            LaunchStreams(cancellationToken);
 
             // Wait for this outside the lock, because it won't complete until the server responds
             return await invocationTask;
@@ -766,7 +764,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var invocationMessage = new InvocationMessage(null, methodName, args, streamIds?.ToArray());
             await SendWithLock(invocationMessage, callerName: nameof(SendCoreAsync));
 
-            LaunchStreams(_readers, cancellationToken);
+            LaunchStreams(cancellationToken);
         }
 
         private async Task SendWithLock(HubMessage message, CancellationToken cancellationToken = default, [CallerMemberName] string callerName = "")
