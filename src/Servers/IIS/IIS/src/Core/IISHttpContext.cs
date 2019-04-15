@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -512,7 +513,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 lock (_abortLock)
                 {
-                    _preventRequestAbortedCancellation = false;
                     localAbortCts = _abortedCts;
                     _abortedCts = null;
                 }

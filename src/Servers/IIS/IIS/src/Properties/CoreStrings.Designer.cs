@@ -150,6 +150,34 @@ namespace Microsoft.AspNetCore.Server.IIS
         internal static string FormatParameterReadOnlyAfterResponseStarted(object name)
             => string.Format(CultureInfo.CurrentCulture, GetString("ParameterReadOnlyAfterResponseStarted", "name"), name);
 
+        /// <summary>
+        /// Response Content-Length mismatch: too few bytes written ({written} of {expected}).
+        /// </summary>
+        internal static string TooFewBytesWritten
+        {
+            get => GetString("TooFewBytesWritten");
+        }
+
+        /// <summary>
+        /// Response Content-Length mismatch: too few bytes written ({written} of {expected}).
+        /// </summary>
+        internal static string FormatTooFewBytesWritten(object written, object expected)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TooFewBytesWritten", "written", "expected"), written, expected);
+
+        /// <summary>
+        /// Response Content-Length mismatch: too many bytes written ({written} of {expected}).
+        /// </summary>
+        internal static string TooManyBytesWritten
+        {
+            get => GetString("TooManyBytesWritten");
+        }
+
+        /// <summary>
+        /// Response Content-Length mismatch: too many bytes written ({written} of {expected}).
+        /// </summary>
+        internal static string FormatTooManyBytesWritten(object written, object expected)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TooManyBytesWritten", "written", "expected"), written, expected);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -33,10 +33,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 context = _application.CreateContext(this);
                 await _application.ProcessRequestAsync(context);
                 // TODO Verification of Response
-                //if (Volatile.Read(ref _requestAborted) == 0)
-                //{
-                //    VerifyResponseContentLength();
-                //}
+                if (!_connectionAborted)
+                {
+                    VerifyResponseContentLength();
+                }
             }
             catch (Exception ex)
             {

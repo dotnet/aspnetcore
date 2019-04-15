@@ -3,15 +3,19 @@
 
 using System;
 using System.Buffers;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext
     {
+        private long _responseBytesWritten;
+
         /// <summary>
         /// Reads data from the Input pipe to the user.
         /// </summary>
@@ -61,10 +65,21 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             async Task WriteFirstAsync()
             {
                 await InitializeResponse(flushHeaders: false);
+                CheckLastWrite();
                 await _bodyOutput.WriteAsync(memory, cancellationToken);
             }
 
-            return !HasResponseStarted ? WriteFirstAsync() : _bodyOutput.WriteAsync(memory, cancellationToken);
+            VerifyAndUpdateWrite(memory.Length);
+
+            if (!HasResponseStarted)
+            {
+                return WriteFirstAsync();
+            }
+            else
+            {
+                CheckLastWrite();
+                return _bodyOutput.WriteAsync(memory, cancellationToken);
+            }
         }
 
         /// <summary>
@@ -140,7 +155,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     var result = await _bodyOutput.Reader.ReadAsync();
 
                     var buffer = result.Buffer;
-
                     try
                     {
                         if (!buffer.IsEmpty)
@@ -184,6 +198,58 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
+        private void VerifyAndUpdateWrite(int count)
+        {
+            var responseHeaders = HttpResponseHeaders;
+
+            if (responseHeaders != null &&
+                !ResponseHeaders.TryGetValue("Transfer-Encoding", out _) &&
+                responseHeaders.ContentLength.HasValue &&
+                _responseBytesWritten + count > responseHeaders.ContentLength.Value)
+            {
+                throw new InvalidOperationException(
+                    CoreStrings.FormatTooManyBytesWritten(_responseBytesWritten + count, responseHeaders.ContentLength.Value));
+            }
+
+            _responseBytesWritten += count;
+        }
+        
+        protected void VerifyResponseContentLength()
+        {
+            var responseHeaders = HttpResponseHeaders;
+
+            if (Method != HttpMethod.Head.Method &&
+                StatusCode != StatusCodes.Status304NotModified &&
+                !ResponseHeaders.TryGetValue("Transfer-Encoding", out _) &&
+                responseHeaders.ContentLength.HasValue &&
+                _responseBytesWritten < responseHeaders.ContentLength.Value)
+            {
+                // We need to close the connection if any bytes were written since the client
+                // cannot be certain of how many bytes it will receive.
+
+                ReportApplicationError(new InvalidOperationException(
+                    CoreStrings.FormatTooFewBytesWritten(_responseBytesWritten, responseHeaders.ContentLength.Value)));
+            }
+        }
+
+        private void CheckLastWrite()
+        {
+            var responseHeaders = HttpResponseHeaders;
+
+            // Prevent firing request aborted token if this is the last write, to avoid
+            // aborting the request if the app is still running when the client receives
+            // the final bytes of the response and gracefully closes the connection.
+            //
+            // Called after VerifyAndUpdateWrite(), so _responseBytesWritten has already been updated.
+            if (responseHeaders != null &&
+                !ResponseHeaders.TryGetValue("Transfer-Encoding", out _) && // todo optimize this
+                responseHeaders.ContentLength.HasValue &&
+                _responseBytesWritten == responseHeaders.ContentLength.Value)
+            {
+                PreventRequestAbortedCancellation();
+            }
+        }
+
         internal void AbortIO(bool clientDisconnect)
         {
             var shouldScheduleCancellation = false;
@@ -197,6 +263,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 shouldScheduleCancellation = _abortedCts != null && !_preventRequestAbortedCancellation;
                 _connectionAborted = true;
+            }
+
+            if (clientDisconnect)
+            {
+                Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
             }
 
             _bodyOutput.Dispose();

@@ -147,4 +147,10 @@
   <data name="ParameterReadOnlyAfterResponseStarted" xml:space="preserve">
     <value>{name} cannot be set because the response has already started.</value>
   </data>
+  <data name="TooFewBytesWritten" xml:space="preserve">
+    <value>Response Content-Length mismatch: too few bytes written ({written} of {expected}).</value>
+  </data>
+  <data name="TooManyBytesWritten" xml:space="preserve">
+    <value>Response Content-Length mismatch: too many bytes written ({written} of {expected}).</value>
+  </data>
 </root>

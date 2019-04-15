@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
@@ -57,6 +56,20 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         void IHttpRequestLifetimeFeature.Abort()
         {
             Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
+        }
+
+        // TODO figure out if we want to support this (probably should, but requires counting bytes.
+        private void PreventRequestAbortedCancellation()
+        {
+            lock (_abortLock)
+            {
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
+                _preventRequestAbortedCancellation = true;
+            }
         }
     }
 }

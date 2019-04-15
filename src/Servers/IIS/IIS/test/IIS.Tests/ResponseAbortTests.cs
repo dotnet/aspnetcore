@@ -138,6 +138,95 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.True(tokenAborted);
         }
 
+        [ConditionalFact]
+        public async Task RequestAbortedTokenCannotBeCanceledAfterWritingFinalContentContentLength()
+        {
+            var requestCompletedCompletionSource = CreateTaskCompletionSource();
+
+            using (var testServer = await TestServer.Create(async ctx =>
+            {
+                ctx.Response.ContentLength = 1;
+                await ctx.Response.WriteAsync("a");
+
+                ctx.Abort();
+
+                var token = ctx.RequestAborted;
+
+                Assert.False(token.IsCancellationRequested);
+
+                requestCompletedCompletionSource.SetResult(true);
+            }, LoggerFactory))
+            {
+                using (var connection = testServer.CreateConnection())
+                {
+                    await SendContentLength1Post(connection);
+                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 1",
+                        "",
+                        "a",
+                        "");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        public async Task RequestAbortedTokenIsCanceledAfterAbort()
+        {
+            var requestCompletedCompletionSource = CreateTaskCompletionSource();
+
+            using (var testServer = await TestServer.Create(async ctx =>
+            {
+                ctx.Abort();
+
+                var token = ctx.RequestAborted;
+
+                Assert.True(token.IsCancellationRequested);
+
+                await Task.CompletedTask;
+            }, LoggerFactory))
+            {
+                using (var connection = testServer.CreateConnection())
+                {
+                    await SendContentLength1Post(connection);
+                    await connection.WaitForConnectionClose();
+                }
+            }
+        }
+
+        [ConditionalFact]
+        public async Task RequestAbortedTokenCannotBeCanceledAfterProduceEnd()
+        {
+            var requestCompletedCompletionSource = CreateTaskCompletionSource();
+
+            using (var testServer = await TestServer.Create(async ctx =>
+            {
+                ctx.Response.ContentLength = 1;
+                await ctx.Response.WriteAsync("a");
+
+                ctx.Abort();
+
+                var token = ctx.RequestAborted;
+
+                Assert.False(token.IsCancellationRequested);
+
+                requestCompletedCompletionSource.SetResult(true);
+            }, LoggerFactory))
+            {
+                using (var connection = testServer.CreateConnection())
+                {
+                    await SendContentLength1Post(connection);
+                    await requestCompletedCompletionSource.Task.DefaultTimeout();
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        "Content-Length: 1",
+                        "",
+                        "a",
+                        "");
+                }
+            }
+        }
         private static async Task SendContentLength1Post(TestConnection connection)
         {
             await connection.Send(

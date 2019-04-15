@@ -5,10 +5,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -52,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831", FlakyOn.All)]
+        [Repeat(20)]
         public async Task WritesCancelledWhenUsingAbortedToken()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
@@ -171,6 +173,31 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 }
 
                 Assert.IsType<OperationCanceledException>(exception);
+            }
+        }
+
+        [ConditionalFact]
+        public async Task CancellationTokenIsUsableAfterRequestContentLength()
+        {
+            using (var testServer = await TestServer.Create(async ctx =>
+            {
+                var token = ctx.RequestAborted;
+                var originalRegistration = token.Register(() => { });
+
+                ctx.Abort();
+
+                Assert.True(token.WaitHandle.WaitOne(10000));
+                Assert.True(ctx.RequestAborted.WaitHandle.WaitOne(10000));
+                Assert.Equal(token, originalRegistration.Token);
+
+                await Task.CompletedTask;
+            }, LoggerFactory))
+            {
+                using (var connection = testServer.CreateConnection())
+                {
+                    await SendContentLength1Post(connection);
+                    await connection.WaitForConnectionClose();
+                }
             }
         }
 
