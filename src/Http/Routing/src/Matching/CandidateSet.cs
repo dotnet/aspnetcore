@@ -18,19 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         private const int BitVectorSize = 32;
 
-        // Cannot be readonly because we need to modify it in place.
-        private BitVector32 _validity;
-        private readonly BitArray _largeCapactityValidity;
-
-        // We inline storage for 4 candidates here to avoid allocations in common
-        // cases. There's no real reason why 4 is important, it just seemed like 
-        // a plausible number.
-        private CandidateState _state0;
-        private CandidateState _state1;
-        private CandidateState _state2;
-        private CandidateState _state3;
-
-        private CandidateState[] _additionalCandidates;
+        private readonly CandidateState[] _candidates;
 
         /// <summary>
         /// <para>
@@ -69,56 +57,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             Count = endpoints.Length;
 
-            switch (endpoints.Length)
+            _candidates = new CandidateState[endpoints.Length];
+            for (var i = 0; i < endpoints.Length; i++)
             {
-                case 0:
-                    return;
-
-                case 1:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    break;
-
-                case 2:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
-                    break;
-
-                case 3:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
-                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
-                    break;
-
-                case 4:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
-                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
-                    _state3 = new CandidateState(endpoints[3], values[3], scores[3]);
-                    break;
-
-                default:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
-                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
-                    _state3 = new CandidateState(endpoints[3], values[3], scores[3]);
-
-                    _additionalCandidates = new CandidateState[endpoints.Length - 4];
-                    for (var i = 4; i < endpoints.Length; i++)
-                    {
-                        _additionalCandidates[i - 4] = new CandidateState(endpoints[i], values[i], scores[i]);
-                    }
-                    break;
-            }
-
-            // Initialize validity to valid by default.
-            if (Count < BitVectorSize)
-            {
-                // Sets the bit for each candidate that exists (bits > Count will be 0).
-                _validity = new BitVector32(unchecked((int)~(0xFFFFFFFFu << Count)));
-            }
-            else
-            {
-                _largeCapactityValidity = new BitArray(Count, defaultValue: true);
+                _candidates[i] = new CandidateState(endpoints[i], values[i], scores[i]);
             }
         }
 
@@ -126,56 +68,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             Count = candidates.Length;
 
-            switch (candidates.Length)
+            _candidates = new CandidateState[candidates.Length];
+            for (var i = 0; i < candidates.Length; i++)
             {
-                case 0:
-                    return;
-
-                case 1:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    break;
-
-                case 2:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
-                    break;
-
-                case 3:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
-                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
-                    break;
-
-                case 4:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
-                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
-                    _state3 = new CandidateState(candidates[3].Endpoint, candidates[3].Score);
-                    break;
-
-                default:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
-                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
-                    _state3 = new CandidateState(candidates[3].Endpoint, candidates[3].Score);
-
-                    _additionalCandidates = new CandidateState[candidates.Length - 4];
-                    for (var i = 4; i < candidates.Length; i++)
-                    {
-                        _additionalCandidates[i - 4] = new CandidateState(candidates[i].Endpoint, candidates[i].Score);
-                    }
-                    break;
-            }
-
-            // Initialize validity to valid by default.
-            if (Count < BitVectorSize)
-            {
-                // Sets the bit for each candidate that exists (bits > Count will be 0).
-                _validity = new BitVector32(unchecked((int)~(0xFFFFFFFFu << Count)));
-            }
-            else
-            {
-                _largeCapactityValidity = new BitArray(Count, defaultValue: true);
+                _candidates[i] = new CandidateState(candidates[i].Endpoint, candidates[i].Score);
             }
         }
 
@@ -207,23 +103,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     ThrowIndexArgumentOutOfRangeException();
                 }
 
-                switch (index)
-                {
-                    case 0:
-                        return ref _state0;
-
-                    case 1:
-                        return ref _state1;
-
-                    case 2:
-                        return ref _state2;
-
-                    case 3:
-                        return ref _state3;
-
-                    default:
-                        return ref _additionalCandidates[index - 4];
-                }
+                return ref _candidates[index];
             }
         }
 
@@ -233,7 +113,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// </summary>
         /// <param name="index">The candidate index.</param>
         /// <returns>
-        /// <c>true</c> if the candidate at position <paramref name="index"/> is considered value
+        /// <c>true</c> if the candidate at position <paramref name="index"/> is considered valid
         /// for the current request, otherwise <c>false</c>.
         /// </returns>
         public bool IsValidCandidate(int index)
@@ -244,15 +124,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
 
-            if (Count < BitVectorSize)
-            {
-                // Get the n-th bit
-                return _validity[0x00000001 << index];
-            }
-            else
-            {
-                return _largeCapactityValidity[index];
-            }
+            return _candidates[index].Score >= 0;
         }
 
         /// <summary>
@@ -270,15 +142,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
 
-            if (Count < BitVectorSize)
-            {
-                // Set the n-th bit
-                _validity[0x00000001 << index] = value;
-            }
-            else
-            {
-                _largeCapactityValidity[index] = value;
-            }
+            ref var original = ref _candidates[index];
+            _candidates[index] = new CandidateState(original.Endpoint, original.Values, original.Score >= 0 ^ value ? ~original.Score : original.Score);
         }
 
         /// <summary>
@@ -303,28 +168,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
 
-            switch (index)
-            {
-                case 0:
-                    _state0 = new CandidateState(endpoint, values, _state0.Score);
-                    break;
-
-                case 1:
-                    _state1 = new CandidateState(endpoint, values, _state1.Score);
-                    break;
-
-                case 2:
-                    _state2 = new CandidateState(endpoint, values, _state2.Score);
-                    break;
-
-                case 3:
-                    _state3 = new CandidateState(endpoint, values, _state3.Score);
-                    break;
-
-                default:
-                    _additionalCandidates[index - 4] = new CandidateState(endpoint, values, _additionalCandidates[index - 4].Score);
-                    break;
-            }
+            _candidates[index] = new CandidateState(endpoint, values, _candidates[index].Score);
 
             if (endpoint == null)
             {
