@@ -14,8 +14,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext
     {
-        private long _responseBytesWritten;
-
         /// <summary>
         /// Reads data from the Input pipe to the user.
         /// </summary>
@@ -212,7 +210,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (shouldScheduleCancellation)
             {
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                ThreadPool.QueueUserWorkItem(t =>
+                ThreadPool.UnsafeQueueUserWorkItem(t =>
                 {
                     try
                     {
@@ -235,7 +233,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     {
                         Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
                     }
-                });
+                }, this, preferLocal: false);
             }
         }
 
