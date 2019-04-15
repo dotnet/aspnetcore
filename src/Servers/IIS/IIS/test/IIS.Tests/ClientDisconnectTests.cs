@@ -177,31 +177,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task CancellationTokenIsUsableAfterRequestContentLength()
-        {
-            using (var testServer = await TestServer.Create(async ctx =>
-            {
-                var token = ctx.RequestAborted;
-                var originalRegistration = token.Register(() => { });
-
-                ctx.Abort();
-
-                Assert.True(token.WaitHandle.WaitOne(10000));
-                Assert.True(ctx.RequestAborted.WaitHandle.WaitOne(10000));
-                Assert.Equal(token, originalRegistration.Token);
-
-                await Task.CompletedTask;
-            }, LoggerFactory))
-            {
-                using (var connection = testServer.CreateConnection())
-                {
-                    await SendContentLength1Post(connection);
-                    await connection.WaitForConnectionClose();
-                }
-            }
-        }
-
-        [ConditionalFact]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831", FlakyOn.All)]
         public async Task ReaderThrowsCancelledException()
         {
