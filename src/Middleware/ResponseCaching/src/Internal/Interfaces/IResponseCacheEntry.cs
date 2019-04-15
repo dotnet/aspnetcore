@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public interface IResponseCacheEntry
+    internal interface IResponseCacheEntry
     {
     }
 }
