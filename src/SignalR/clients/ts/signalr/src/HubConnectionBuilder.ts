@@ -164,7 +164,7 @@ export class HubConnectionBuilder {
 
     /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
      *
-     * @param {number[]} reconnectPolicy An {@link @aspnet/signalR.IReconnectPolicy} that controls the timing and number of reconnect attempts.
+     * @param {IReconnectPolicy} reconnectPolicy An {@link @aspnet/signalR.IReconnectPolicy} that controls the timing and number of reconnect attempts.
      */
     public withAutomaticReconnect(reconnectPolicy: IReconnectPolicy): HubConnectionBuilder;
     public withAutomaticReconnect(retryDelaysOrReconnectPolicy?: number[] | IReconnectPolicy): HubConnectionBuilder {

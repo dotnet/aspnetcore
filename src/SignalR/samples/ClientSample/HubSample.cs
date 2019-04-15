@@ -1,14 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace ClientSample
@@ -37,6 +36,11 @@ namespace ClientSample
                     logging.AddConsole();
                 });
 
+            connectionBuilder.Services.Configure<LoggerFilterOptions>(options =>
+            {
+                options.MinLevel = LogLevel.Trace;
+            });
+
             if (uri.Scheme == "net.tcp")
             {
                 connectionBuilder.WithEndPoint(uri);
@@ -45,6 +49,8 @@ namespace ClientSample
             {
                 connectionBuilder.WithUrl(uri);
             }
+
+            connectionBuilder.WithAutomaticReconnect();
 
             var connection = connectionBuilder.Build();
 
@@ -68,7 +74,8 @@ namespace ClientSample
                 return Task.CompletedTask;
             };
 
-            while (true)
+
+            do
             {
                 // Dispose the previous token
                 closedTokenSource?.Dispose();
@@ -77,48 +84,44 @@ namespace ClientSample
                 closedTokenSource = new CancellationTokenSource();
 
                 // Connect to the server
-                if (!await ConnectAsync(connection))
+            } while (!await ConnectAsync(connection));
+
+            Console.WriteLine("Connected to {0}", uri);
+
+            // Handle the connected connection
+            while (true)
+            {
+                try
                 {
+                    var line = Console.ReadLine();
+
+                    if (line == null || closedTokenSource.Token.IsCancellationRequested)
+                    {
+                        break;
+                    }
+
+                    await connection.InvokeAsync<object>("Send", line);
+                }
+                catch (IOException)
+                {
+                    // Process being shutdown
                     break;
                 }
-
-                Console.WriteLine("Connected to {0}", uri); ;
-
-                // Handle the connected connection
-                while (true)
+                catch (OperationCanceledException)
                 {
-                    try
-                    {
-                        var line = Console.ReadLine();
-
-                        if (line == null || closedTokenSource.Token.IsCancellationRequested)
-                        {
-                            break;
-                        }
-
-                        await connection.InvokeAsync<object>("Send", line);
-                    }
-                    catch (IOException)
-                    {
-                        // Process being shutdown
-                        break;
-                    }
-                    catch (OperationCanceledException)
-                    {
-                        // The connection closed
-                        break;
-                    }
-                    catch (ObjectDisposedException)
-                    {
-                        // We're shutting down the client
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        // Send could have failed because the connection closed
-                        System.Console.WriteLine(ex);
-                        break;
-                    }
+                    // The connection closed
+                    break;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // We're shutting down the client
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    // Send could have failed because the connection closed
+                    System.Console.WriteLine(ex);
+                    break;
                 }
             }
 

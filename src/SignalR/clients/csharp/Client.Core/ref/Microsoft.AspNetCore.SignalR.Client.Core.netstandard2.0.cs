@@ -26,12 +26,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public static readonly System.TimeSpan DefaultServerTimeout;
         public HubConnection(Microsoft.AspNetCore.SignalR.Client.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
         public HubConnection(Microsoft.AspNetCore.SignalR.Client.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public HubConnection(Microsoft.AspNetCore.SignalR.Client.IConnectionFactory connectionFactory, Microsoft.AspNetCore.SignalR.Protocol.IHubProtocol protocol, System.IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.AspNetCore.SignalR.Client.IRetryPolicy reconnectPolicy) { }
         public string ConnectionId { get { throw null; } }
         public System.TimeSpan HandshakeTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan KeepAliveInterval { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.TimeSpan ServerTimeout { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.SignalR.Client.HubConnectionState State { get { throw null; } }
         public event System.Func<System.Exception, System.Threading.Tasks.Task> Closed { add { } remove { } }
+        public event System.Func<string, System.Threading.Tasks.Task> Reconnected { add { } remove { } }
+        public event System.Func<System.Exception, System.Threading.Tasks.Task> Reconnecting { add { } remove { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task DisposeAsync() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
@@ -64,6 +67,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public static partial class HubConnectionBuilderExtensions
     {
         public static Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder ConfigureLogging(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder hubConnectionBuilder, System.Action<Microsoft.Extensions.Logging.ILoggingBuilder> configureLogging) { throw null; }
+        public static Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder hubConnectionBuilder) { throw null; }
+        public static Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder hubConnectionBuilder, Microsoft.AspNetCore.SignalR.Client.IRetryPolicy retryPolicy) { throw null; }
+        public static Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder WithAutomaticReconnect(this Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder hubConnectionBuilder, System.TimeSpan[] reconnectDelays) { throw null; }
     }
     public static partial class HubConnectionExtensions
     {
@@ -139,7 +145,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public enum HubConnectionState
     {
         Disconnected = 0,
-        Connected = 1,
+        Connecting = 1,
+        Connected = 2,
+        Reconnecting = 3,
     }
     public partial interface IConnectionFactory
     {
@@ -149,5 +157,16 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public partial interface IHubConnectionBuilder : Microsoft.AspNetCore.SignalR.ISignalRBuilder
     {
         Microsoft.AspNetCore.SignalR.Client.HubConnection Build();
+    }
+    public partial interface IRetryPolicy
+    {
+        System.TimeSpan? NextRetryDelay(Microsoft.AspNetCore.SignalR.Client.RetryContext retryContext);
+    }
+    public sealed partial class RetryContext
+    {
+        public RetryContext() { }
+        public System.TimeSpan ElapsedTime { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public long PreviousRetryCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Exception RetryReason { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
