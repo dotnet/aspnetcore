@@ -65,7 +65,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             async Task WriteFirstAsync()
             {
                 await InitializeResponse(flushHeaders: false);
-                CheckLastWrite();
                 await _bodyOutput.WriteAsync(memory, cancellationToken);
             }
 
@@ -77,7 +76,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             else
             {
-                CheckLastWrite();
                 return _bodyOutput.WriteAsync(memory, cancellationToken);
             }
         }
@@ -232,37 +230,19 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private void CheckLastWrite()
-        {
-            var responseHeaders = HttpResponseHeaders;
-
-            // Prevent firing request aborted token if this is the last write, to avoid
-            // aborting the request if the app is still running when the client receives
-            // the final bytes of the response and gracefully closes the connection.
-            //
-            // Called after VerifyAndUpdateWrite(), so _responseBytesWritten has already been updated.
-            if (responseHeaders != null &&
-                !ResponseHeaders.TryGetValue("Transfer-Encoding", out _) && // todo optimize this
-                responseHeaders.ContentLength.HasValue &&
-                _responseBytesWritten == responseHeaders.ContentLength.Value)
-            {
-                PreventRequestAbortedCancellation();
-            }
-        }
-
         internal void AbortIO(bool clientDisconnect)
         {
             var shouldScheduleCancellation = false;
 
             lock (_abortLock)
             {
-                if (_connectionAborted)
+                if (_requestAborted)
                 {
                     return;
                 }
 
-                shouldScheduleCancellation = _abortedCts != null && !_preventRequestAbortedCancellation;
-                _connectionAborted = true;
+                shouldScheduleCancellation = _abortedCts != null;
+                _requestAborted = true;
             }
 
             if (clientDisconnect)
@@ -283,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                         lock (_abortLock)
                         {
-                            if (_abortedCts != null && !_preventRequestAbortedCancellation)
+                            if (_abortedCts != null)
                             {
                                 localAbortCts = _abortedCts;
                                 _abortedCts = null;

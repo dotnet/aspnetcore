@@ -12,8 +12,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
         private object _abortLock = new object();
-        private bool _preventRequestAbortedCancellation;
-        protected bool _connectionAborted;
+        protected bool _requestAborted;
 
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
@@ -27,12 +26,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 lock (_abortLock)
                 {
-                    if (_preventRequestAbortedCancellation)
-                    {
-                        return new CancellationToken(false);
-                    }
-
-                    if (_connectionAborted)
+                    if (_requestAborted)
                     {
                         return new CancellationToken(true);
                     }
@@ -56,19 +50,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         void IHttpRequestLifetimeFeature.Abort()
         {
             Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedByApplication));
-        }
-
-        private void PreventRequestAbortedCancellation()
-        {
-            lock (_abortLock)
-            {
-                if (_connectionAborted)
-                {
-                    return;
-                }
-
-                _preventRequestAbortedCancellation = true;
-            }
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 await _application.ProcessRequestAsync(context);
 
-                if (!_connectionAborted)
+                if (!_requestAborted)
                 {
                     VerifyResponseContentLength();
                 }
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
 
-            if (_connectionAborted)
+            if (_requestAborted)
             {
                 await ProduceEnd();
             }
