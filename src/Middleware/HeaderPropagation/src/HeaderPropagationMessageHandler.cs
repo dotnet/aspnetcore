@@ -53,11 +53,31 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             {
                 var outputName = string.IsNullOrEmpty(entry?.OutboundHeaderName) ? headerName : entry.OutboundHeaderName;
 
-                if (!request.Headers.Contains(outputName) &&
-                    _values.Headers.TryGetValue(headerName, out var values) &&
-                    !StringValues.IsNullOrEmpty(values))
+                var hasContent = request.Content != null;
+
+                if (!request.Headers.TryGetValues(outputName, out var _) &&
+                    !(hasContent && request.Content.Headers.TryGetValues(outputName, out var _)))
                 {
-                    request.Headers.TryAddWithoutValidation(outputName, (string[])values);
+                    if (_values.Headers.TryGetValue(headerName, out var stringValues) &&
+                        !StringValues.IsNullOrEmpty(stringValues))
+                    {
+                        if (stringValues.Count == 1)
+                        {
+                            var value = (string)stringValues;
+                            if (!request.Headers.TryAddWithoutValidation(outputName, value) && hasContent)
+                            {
+                                request.Content.Headers.TryAddWithoutValidation(outputName, value);
+                            }
+                        }
+                        else
+                        {
+                            var values = (string[])stringValues;
+                            if (!request.Headers.TryAddWithoutValidation(outputName, values) && hasContent)
+                            {
+                                request.Content.Headers.TryAddWithoutValidation(outputName, values);
+                            }
+                        }
+                    }
                 }
             }
 

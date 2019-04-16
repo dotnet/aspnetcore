@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -32,10 +32,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public override Matcher Build()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()), new TestServiceProvider()));
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var selector = new DefaultEndpointSelector();
 

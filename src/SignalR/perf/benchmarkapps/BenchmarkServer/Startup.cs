@@ -23,6 +23,7 @@ namespace BenchmarkServer
             {
                 o.EnableDetailedErrors = true;
             })
+            // TODO: Json vs NewtonsoftJson option
             .AddMessagePackProtocol();
 
             var redisConnectionString = _config["SignalRRedis"];
