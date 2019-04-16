@@ -8,6 +8,8 @@ using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -1833,6 +1835,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1766", FlakyOn.All)]
         public async Task EmailFactorFailsAfterSecurityStampChangeTest()
         {
             if (ShouldSkipDbTests())
