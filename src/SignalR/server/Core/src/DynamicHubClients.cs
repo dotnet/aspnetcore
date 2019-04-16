@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class DynamicHubClients
     {
-        private readonly IHubCallerClients _clients;
+        private readonly HubCallerClientsBase _clients;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DynamicHubClients"/> class.
         /// </summary>
-        /// <param name="clients">A wrapped <see cref="IHubCallerClients"/> that is used to invoke methods.</param>
-        public DynamicHubClients(IHubCallerClients clients)
+        /// <param name="clients">A wrapped <see cref="HubCallerClientsBase"/> that is used to invoke methods.</param>
+        public DynamicHubClients(HubCallerClientsBase clients)
         {
             _clients = clients;
         }

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets a <see cref="IHubClients"/> that can be used to invoke methods on clients connected to the hub.
         /// </summary>
-        IHubClients Clients { get; }
+        HubClientBase Clients { get; }
 
         /// <summary>
         /// Gets a <see cref="IGroupManager"/> that can be used to add and remove connections to named groups.

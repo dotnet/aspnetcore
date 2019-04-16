@@ -1,4 +1,4 @@
-﻿// Copyright(c) .NET Foundation.All rights reserved.
+// Copyright(c) .NET Foundation.All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class CustomHubContext<THub> : IHubContext<THub> where THub : Hub
     {
-        public IHubClients Clients => throw new System.NotImplementedException();
+        public HubClientBase Clients => throw new System.NotImplementedException();
 
         public IGroupManager Groups => throw new System.NotImplementedException();
     }
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         where THub : Hub<T>
         where T : class
     {
-        public IHubClients<T> Clients => throw new System.NotImplementedException();
+        public HubClientsBase<T> Clients => throw new System.NotImplementedException();
 
         public IGroupManager Groups => throw new System.NotImplementedException();
     }

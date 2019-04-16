@@ -12,14 +12,14 @@ namespace Microsoft.AspNetCore.SignalR
     public abstract class Hub : IDisposable
     {
         private bool _disposed;
-        private IHubCallerClients _clients;
+        private HubCallerClientsBase _clients;
         private HubCallerContext _context;
         private IGroupManager _groups;
 
         /// <summary>
         /// Gets or sets an object that can be used to invoke methods on the clients connected to this hub.
         /// </summary>
-        public IHubCallerClients Clients
+        public HubCallerClientsBase Clients
         {
             get
             {

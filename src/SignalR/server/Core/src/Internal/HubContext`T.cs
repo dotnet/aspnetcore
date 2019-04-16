@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         where T : class
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
-        private readonly IHubClients<T> _clients;
+        private readonly HubClientsBase<T> _clients;
 
         public HubContext(HubLifetimeManager<THub> lifetimeManager)
         {
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             Groups = new GroupManager<THub>(lifetimeManager);
         }
 
-        public IHubClients<T> Clients => _clients;
+        public HubClientsBase<T> Clients => _clients;
 
         public virtual IGroupManager Groups { get; }
     }

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -7,11 +9,14 @@ namespace Microsoft.AspNetCore.SignalR
     /// An abstraction that provides access to client connections, including the one that sent the current invocation.
     /// </summary>
     /// <typeparam name="T">The client caller type.</typeparam>
+    ///
+    [Obsolete("The IHubCallerClients<T> interface is obsolete. Use the HubCallerCliensBase<T> abstract class instead.", false)]
     public interface IHubCallerClients<T> : IHubClients<T>
     {
         /// <summary>
         /// Gets a caller to the connection which triggered the current invocation.
         /// </summary>
+        
         T Caller { get; }
 
         /// <summary>
