@@ -597,6 +597,28 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
+        public async Task ExceptionIsNotLoggedToResponseWhenStartupHookIsDisabled()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
+            deploymentParameters.HandlerSettings["callStartupHook"] = "false";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(result.IsSuccessStatusCode);
+
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("InvalidOperationException", content);
+
+            StopServer();
+
+            VerifyDotnetRuntimeEventLog(deploymentResult);
+        }
+
+        [ConditionalFact]
         [RequiresNewHandler]
         public async Task ExceptionIsLoggedToEventLogDoesNotWriteToResponse()
         {
@@ -621,7 +643,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             var expectedRegex = new Regex("Exception Info: System\\.InvalidOperationException:", RegexOptions.Singleline);
             var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
-            // There isn't a process ID to filter on here, so there can be duplicate entries
+            // There isn't a process ID to filter on here, so there can be duplicate entries from other tests.
             Assert.True(matchedEntries.Length > 0);
         }
 
