@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             var acceptHeader = headers.Accept;
 
             // If the client does not ask for HTML just format the exception as plain text
-            if (acceptHeader != null && !acceptHeader.Any(h => h.IsSubsetOf(_textPlainMediaType)))
+            if (acceptHeader == null || !acceptHeader.Any(h => h.IsSubsetOf(_textPlainMediaType)))
             {
                 httpContext.Response.ContentType = "text/plain";
 
