@@ -27,8 +27,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.TryAddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
-            services.TryAddSingleton<IResponseCachingPolicyProvider, ResponseCachingPolicyProvider>();
-            services.TryAddSingleton<IResponseCachingKeyProvider, ResponseCachingKeyProvider>();
 
             return services;
         }

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -30,17 +31,17 @@ namespace Microsoft.AspNetCore.ResponseCaching
             RequestDelegate next,
             IOptions<ResponseCachingOptions> options,
             ILoggerFactory loggerFactory,
-            IResponseCachingPolicyProvider policyProvider,
-            IResponseCachingKeyProvider keyProvider)
+            ObjectPoolProvider poolProvider)
             : this(
                 next,
                 options,
                 loggerFactory,
-                policyProvider,
+                new ResponseCachingPolicyProvider(),
                 new MemoryResponseCache(new MemoryCache(new MemoryCacheOptions
                 {
                     SizeLimit = options.Value.SizeLimit
-                })), keyProvider)
+                })),
+                new ResponseCachingKeyProvider(poolProvider, options))
         { }
 
         // for testing
