@@ -1,0 +1,187 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
+using System.Net;
+using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
+using ProjectTemplates.Helpers;
+using Xunit;
+using Xunit.Abstractions;
+
+// Turn off parallel test run for Edge as the driver does not support multiple Selenium tests at the same time
+#if EDGE
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
+#endif
+namespace ProjectTemplates.Basic.Tests.SpaTemplateTest
+{
+    public class SpaTemplateTestBase
+    {
+        public SpaTemplateTestBase(
+            ProjectFactoryFixture projectFactory, ITestOutputHelper output)
+        {
+            ProjectFactory = projectFactory;
+            Output = output;
+        }
+
+        public ProjectFactoryFixture ProjectFactory { get; set; }
+
+        public Project Project { get; set; }
+        public ITestOutputHelper Output { get; set; }
+
+        // Rather than using [Theory] to pass each of the different values for 'template',
+        // it's important to distribute the SPA template tests over different test classes
+        // so they can be run in parallel. Xunit doesn't parallelize within a test class.
+        protected async Task SpaTemplateImplAsync(
+            string key,
+            string template,
+            bool useLocalDb = false,
+            bool usesAuth = false)
+        {
+            Project = await ProjectFactory.GetOrCreateProject(key, Output);
+
+            var createResult = await Project.RunDotNetNewAsync(template, auth: usesAuth ? "Individual" : null, language: null, useLocalDb);
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            // We shouldn't have to do the NPM restore in tests because it should happen
+            // automatically at build time, but by doing it up front we can avoid having
+            // multiple NPM installs run concurrently which otherwise causes errors when
+            // tests run in parallel.
+            var clientAppSubdirPath = Path.Combine(Project.TemplateOutputDir, "ClientApp");
+            Assert.True(File.Exists(Path.Combine(clientAppSubdirPath, "package.json")), "Missing a package.json");
+
+            var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
+            if (usesAuth && !useLocalDb)
+            {
+                Assert.Contains(".db", projectFileContents);
+            }
+
+            var npmRestoreResult = await Project.RestoreWithRetryAsync(Output, clientAppSubdirPath);
+            Assert.True(0 == npmRestoreResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm restore", Project, npmRestoreResult));
+
+            var lintResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run lint");
+            Assert.True(0 == lintResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run lint", Project, lintResult));
+
+            if (template == "react" || template == "reactredux")
+            {
+                var testResult = await ProcessEx.RunViaShellAsync(Output, clientAppSubdirPath, "npm run test");
+                Assert.True(0 == testResult.ExitCode, ErrorMessages.GetFailedProcessMessage("npm run test", Project, testResult));
+            }
+
+            var publishResult = await Project.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+
+            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
+            // The output from publish will go into bin/Release/netcoreapp3.0/publish and won't be affected by calling build
+            // later, while the opposite is not true.
+
+            var buildResult = await Project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+
+            // localdb is not installed on the CI machines, so skip it.
+            var shouldVisitFetchData = !useLocalDb;
+
+            if (usesAuth)
+            {
+                var migrationsResult = await Project.RunDotNetEfCreateMigrationAsync(template);
+                Assert.True(0 == migrationsResult.ExitCode, ErrorMessages.GetFailedProcessMessage("run EF migrations", Project, migrationsResult));
+                Project.AssertEmptyMigration(template);
+
+                if (shouldVisitFetchData)
+                {
+                    var dbUpdateResult = await Project.RunDotNetEfUpdateDatabaseAsync();
+                    Assert.True(0 == dbUpdateResult.ExitCode, ErrorMessages.GetFailedProcessMessage("update database", Project, dbUpdateResult));
+                }
+            }
+
+            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+
+                await WarmUpServer(aspNetProcess);
+                await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            }
+
+            if (usesAuth)
+            {
+                UpdatePublishedSettings();
+            }
+
+            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+
+                await WarmUpServer(aspNetProcess);
+                await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+            }
+        }
+
+        private static async Task WarmUpServer(AspNetProcess aspNetProcess)
+        {
+            var attempt = 0;
+            var maxAttempts = 3;
+            do
+            {
+                try
+                {
+                    attempt++;
+                    var response = await aspNetProcess.SendRequest("/");
+                    if (response.StatusCode == HttpStatusCode.OK)
+                    {
+                        break;
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+                await Task.Delay(TimeSpan.FromSeconds(5 * attempt));
+            } while (attempt < maxAttempts);
+        }
+
+        private void UpdatePublishedSettings()
+        {
+            // Hijack here the config file to use the development key during publish.
+            var appSettings = JObject.Parse(File.ReadAllText(Path.Combine(Project.TemplateOutputDir, "appsettings.json")));
+            var appSettingsDevelopment = JObject.Parse(File.ReadAllText(Path.Combine(Project.TemplateOutputDir, "appsettings.Development.json")));
+            ((JObject)appSettings["IdentityServer"]).Merge(appSettingsDevelopment["IdentityServer"]);
+            ((JObject)appSettings["IdentityServer"]).Merge(new
+            {
+                IdentityServer = new
+                {
+                    Key = new
+                    {
+                        FilePath = "./tempkey.json"
+                    }
+                }
+            });
+            var testAppSettings = appSettings.ToString();
+            File.WriteAllText(Path.Combine(Project.TemplatePublishDir, "appsettings.json"), testAppSettings);
+        }
+
+        private void AssertFileExists(string basePath, string path, bool shouldExist)
+        {
+            var fullPath = Path.Combine(basePath, path);
+            var doesExist = File.Exists(fullPath);
+
+            if (shouldExist)
+            {
+                Assert.True(doesExist, "Expected file to exist, but it doesn't: " + path);
+            }
+            else
+            {
+                Assert.False(doesExist, "Expected file not to exist, but it does: " + path);
+            }
+        }
+
+        private string ReadFile(string basePath, string path)
+        {
+            AssertFileExists(basePath, path, shouldExist: true);
+            return File.ReadAllText(Path.Combine(basePath, path));
+        }
+    }
+}

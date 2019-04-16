@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(MSBuildThisFileDirectory)Infrastructure\GenerateTestProps.targets" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <Description>Common infra for project templates.</Description>
+    <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AngleSharp" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+    <Reference Include="System.Security.Cryptography.Cng" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DotNetEfFullPath</_Parameter1>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.0/any/dotnet-ef.dll</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>TestPackageRestorePath</_Parameter1>
+      <_Parameter2>$(TestPackageRestorePath)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using OpenQA.Selenium;
@@ -15,6 +16,13 @@ namespace Microsoft.AspNetCore.E2ETesting
         private static readonly AsyncLocal<IWebDriver> _asyncBrowser = new AsyncLocal<IWebDriver>();
         private static readonly AsyncLocal<ILogs> _logs = new AsyncLocal<ILogs>();
         private static readonly AsyncLocal<ITestOutputHelper> _output = new AsyncLocal<ITestOutputHelper>();
+
+        static BrowserTestBase()
+        {
+            // There is no good place to put this, so this is the best one.
+            // This sets the defualt timeout for all the Selenium test assertions.
+            WaitAssert.DefaultTimeout = TimeSpan.FromSeconds(30);
+        }
 
         public BrowserTestBase(BrowserFixture browserFixture, ITestOutputHelper output)
         {

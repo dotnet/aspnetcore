@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(MSBuildThisFileDirectory)..\..\testassets\ProjectTemplates.Tests.Common\Infrastructure\GenerateTestProps.targets" />
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
+    <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
+
+    <RunTemplateTests>true</RunTemplateTests>
+    <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+    <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
+
+    <EnforcePrerequisites>false</EnforcePrerequisites>
+    <!-- Properties that affect test runs -->
+    <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
+    <TestTemplateCreationFolder>TestTemplates</TestTemplateCreationFolder>
+    <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepositoryRoot)'))obj\template-restore\</TestPackageRestorePath>
+    <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="template-baselines.json" />
+    <Compile Include="$(SharedSourceRoot)Process\*.cs" LinkBase="shared\Process" />
+    <Compile Include="$(SharedSourceRoot)CertificateGeneration\**\*.cs" LinkBase="shared\CertificateGeneration" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="AngleSharp" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="../../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../../testassets/ProjectTemplates.Tests.Common/ProjectTemplates.Tests.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>DotNetEfFullPath</_Parameter1>
+      <_Parameter2>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))dotnet-ef/$(DotnetEfPackageVersion)/tools/netcoreapp3.0/any/dotnet-ef.dll</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>TestPackageRestorePath</_Parameter1>
+      <_Parameter2>$(TestPackageRestorePath)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <!-- Shared testing infrastructure for running E2E tests using selenium -->
+  <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.targets" />
+
+</Project>

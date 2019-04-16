@@ -57,9 +57,9 @@
                       $(RepositoryRoot)src\Installers\**\*.*proj;
                       $(RepositoryRoot)src\SignalR\clients\ts\**\node_modules\**\*.*proj;
                       $(RepositoryRoot)src\Components\Blazor\Templates\src\content\**\*.*proj;
-                      $(RepositoryRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.csproj;
-                      $(RepositoryRoot)src\ProjectTemplates\Web.ProjectTemplates\content\**\*.fsproj;
-                      $(RepositoryRoot)src\ProjectTemplates\Web.Spa.ProjectTemplates\content\**\*.csproj;
+                      $(RepositoryRoot)src\ProjectTemplates\src\Web.ProjectTemplates\content\**\*.csproj;
+                      $(RepositoryRoot)src\ProjectTemplates\src\Web.ProjectTemplates\content\**\*.fsproj;
+                      $(RepositoryRoot)src\ProjectTemplates\src\Web.Spa.ProjectTemplates\content\**\*.csproj;
                       " />
 
     <!-- Exclude the benchmarks because they use <PackageReference>. -->
@@ -166,7 +166,8 @@
                           $(RepositoryRoot)src\MusicStore\**\*.*proj;
                           $(RepositoryRoot)src\SignalR\**\*.csproj;
                           $(RepositoryRoot)src\Components\**\*.csproj;
-                          $(RepositoryRoot)src\ProjectTemplates\*\*.csproj;
+                          $(RepositoryRoot)src\ProjectTemplates\src\*\*.csproj;
+                          $(RepositoryRoot)src\ProjectTemplates\test\*\*.csproj;
                           $(RepositoryRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "
                         Exclude="
