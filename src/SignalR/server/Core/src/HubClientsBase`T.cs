@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.SignalR
     /// An abstraction that provides access to client connections.
     /// </summary>
     /// <typeparam name="T">The client invoker type.</typeparam>
-    public abstract class HubClientsBase<T>
+    #pragma warning disable CS0618
+    public abstract class HubClientsBase<T> : IHubClients<T>
     {
         /// <summary>
         /// Gets a <typeparamref name="T" /> that can be used to invoke methods on all clients connected to the hub.
