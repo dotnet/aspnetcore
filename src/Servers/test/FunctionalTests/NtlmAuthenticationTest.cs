@@ -21,12 +21,13 @@ namespace ServerComparison.FunctionalTests
         }
 
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress)
                 .WithTfms(Tfm.NetCoreApp30)
-                .WithAllHostingModels();
+                .WithHostingModels(HostingModel.InProcess);
 
         [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
+        [Repeat(100)]
         public async Task NtlmAuthentication(TestVariant variant)
         {
             var testName = $"NtlmAuthentication_{variant.Server}_{variant.Tfm}_{variant.Architecture}_{variant.ApplicationType}";
