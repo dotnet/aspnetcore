@@ -4,6 +4,7 @@
     <!-- MicrosoftNETCoreApp21PackageVersion is assigned at the bottom so it can automatically pick up MicrosoftNETCoreAppPackageVersion in an orchestrated build. -->
     <MicrosoftNETCoreAppPackageVersion>2.1.10</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.1.10</MicrosoftNETCoreDotNetAppHostPackageVersion>
+    <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.5.2</SystemNetHttpWinHttpHandlerPackageVersion>
   </PropertyGroup>
 
@@ -204,7 +205,6 @@
     <SystemThreadingTasksDataflowPackageVersion>4.9.0</SystemThreadingTasksDataflowPackageVersion>
     <SystemValueTuplePackageVersion>4.5.0</SystemValueTuplePackageVersion>
     <SystemIOPipelinesPackageVersion>4.5.3</SystemIOPipelinesPackageVersion>
-    <SystemMemoryPackageVersion>4.5.2</SystemMemoryPackageVersion>
     <SystemNetWebSocketsWebSocketProtocolPackageVersion>4.5.3</SystemNetWebSocketsWebSocketProtocolPackageVersion>
     <SystemThreadingTasksExtensionsPackageVersion>4.5.2</SystemThreadingTasksExtensionsPackageVersion>
     <Utf8JsonPackageVersion>1.3.7</Utf8JsonPackageVersion>
