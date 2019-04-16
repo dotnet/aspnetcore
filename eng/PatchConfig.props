@@ -53,6 +53,7 @@ Later on, this will be checked using this condition:
     <PackagesInPatch>
       Microsoft.AspNetCore.AspNetCoreModule;
       Microsoft.AspNetCore.AspNetCoreModuleV2;
+      Microsoft.AspNetCore.Identity.UI;
       java:signalr;
       Microsoft.AspNetCore.Mvc.Core;
       Microsoft.AspNetCore.Mvc.RazorPages;
