@@ -206,6 +206,22 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         }
 
         [Fact]
+        public void Visit_NullInteriorTarget_ReturnsFalse()
+        {
+            // Arrange
+            var visitor = new ObjectVisitor(new ParsedPath("/States/0"), new DefaultContractResolver());
+
+            // Act
+            object target = new Class1() { States = null, };
+            var visitStatus = visitor.TryVisit(ref target, out var adapter, out var message);
+
+            // Assert
+            Assert.False(visitStatus);
+            Assert.Null(adapter);
+            Assert.Null(message);
+        }
+
+        [Fact]
         public void Visit_NullTarget_ReturnsNullAdapter()
         {
             // Arrange

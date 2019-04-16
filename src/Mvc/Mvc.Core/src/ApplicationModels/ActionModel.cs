@@ -84,6 +84,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         public IReadOnlyList<object> Attributes { get; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ControllerModel"/>.
+        /// </summary>
         public ControllerModel Controller { get; set; }
 
         public IList<IFilterMetadata> Filters { get; }
@@ -123,6 +126,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         string ICommonModel.Name => ActionName;
 
+        /// <summary>
+        /// Gets the <see cref="SelectorModel"/> instances.
+        /// </summary>
         public IList<SelectorModel> Selectors { get; }
 
         public string DisplayName

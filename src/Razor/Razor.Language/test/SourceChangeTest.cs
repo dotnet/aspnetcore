@@ -104,8 +104,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var builder = new SpanBuilder(new SourceLocation(0, 0, 0));
-            builder.Accept(new RawTextSymbol(new SourceLocation(0, 0, 0), "Hello, "));
-            builder.Accept(new RawTextSymbol(new SourceLocation(7, 0, 7), "World"));
+            builder.Accept(new RawTextToken(new SourceLocation(0, 0, 0), "Hello, "));
+            builder.Accept(new RawTextToken(new SourceLocation(7, 0, 7), "World"));
 
             var span = new Span(builder);
 
@@ -123,8 +123,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var builder = new SpanBuilder(new SourceLocation(13, 0, 0));
-            builder.Accept(new RawTextSymbol(new SourceLocation(13, 0, 13), "Hello, "));
-            builder.Accept(new RawTextSymbol(new SourceLocation(20, 0, 20), "World"));
+            builder.Accept(new RawTextToken(new SourceLocation(13, 0, 13), "Hello, "));
+            builder.Accept(new RawTextToken(new SourceLocation(20, 0, 20), "World"));
 
             var span = new Span(builder);
 
@@ -142,8 +142,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var builder = new SpanBuilder(new SourceLocation(13, 0, 0));
-            builder.Accept(new RawTextSymbol(new SourceLocation(13, 0, 13), "Hello, "));
-            builder.Accept(new RawTextSymbol(new SourceLocation(20, 0, 20), "World"));
+            builder.Accept(new RawTextToken(new SourceLocation(13, 0, 13), "Hello, "));
+            builder.Accept(new RawTextToken(new SourceLocation(20, 0, 20), "World"));
 
             var span = new Span(builder);
 
@@ -161,8 +161,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var builder = new SpanBuilder(new SourceLocation(13, 0, 0));
-            builder.Accept(new RawTextSymbol(new SourceLocation(13, 0, 13), "Hello, "));
-            builder.Accept(new RawTextSymbol(new SourceLocation(20, 0, 20), "World"));
+            builder.Accept(new RawTextToken(new SourceLocation(13, 0, 13), "Hello, "));
+            builder.Accept(new RawTextToken(new SourceLocation(20, 0, 20), "World"));
 
             var span = new Span(builder);
 
@@ -180,8 +180,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var builder = new SpanBuilder(new SourceLocation(13, 0, 0));
-            builder.Accept(new RawTextSymbol(new SourceLocation(13, 0, 13), "Hello, "));
-            builder.Accept(new RawTextSymbol(new SourceLocation(20, 0, 20), "World"));
+            builder.Accept(new RawTextToken(new SourceLocation(13, 0, 13), "Hello, "));
+            builder.Accept(new RawTextToken(new SourceLocation(20, 0, 20), "World"));
 
             var span = new Span(builder);
 

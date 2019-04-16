@@ -73,8 +73,12 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
 #line default
 #line hidden
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
-                                                                                      
+#line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+                                                                          
                 
+
+#line default
+#line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
@@ -84,8 +88,12 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
 #line hidden
             __TestNamespace_InputTagHelper.Type = string.Empty;
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
-                                                                              
+#line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
+                                                                  
                 
+
+#line default
+#line hidden
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"

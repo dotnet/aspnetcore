@@ -1,0 +1,6 @@
+Markup block - Gen<None> - 24 - (0:0,0)
+    Tag block - Gen<TagHelper> - 24 - (0:0,0) - strong - catchAllTagHelper
+        SelfClosing - <strong catchAll="hi" />
+        catchAll - DoubleQuotes
+            Markup span - Gen<Markup> - [hi] - SpanEditHandler;Accepts:Any - (18:0,18) - Tokens:1
+                HtmlTokenType.Text;[hi];

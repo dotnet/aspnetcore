@@ -5,9 +5,10 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 {
     public enum ServerType
     {
+        None,
         IISExpress,
         IIS,
-        WebListener,
+        HttpSys,
         Kestrel,
         Nginx
     }

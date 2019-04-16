@@ -101,28 +101,46 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         protected ILogger Logger { get; }
 
         /// <summary>
-        /// Initializes and binds a model specified by <paramref name="parameter"/>.
+        /// <para>
+        /// This method overload is obsolete and will be removed in a future version. The recommended alternative is
+        /// <see cref="BindModelAsync(ActionContext, IModelBinder, IValueProvider, ParameterDescriptor, ModelMetadata, object)" />.
+        /// </para>
+        /// <para>Initializes and binds a model specified by <paramref name="parameter"/>.</para>
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/>.</param>
         /// <param name="parameter">The <see cref="ParameterDescriptor"/></param>
         /// <returns>The result of model binding.</returns>
+        [Obsolete("This method overload is obsolete and will be removed in a future version. The recommended " +
+            "alternative is the overload that also takes " + nameof(IModelBinder) + ", " + nameof(ModelMetadata) +
+            " and " + nameof(Object) + " parameters.")]
         public Task<ModelBindingResult> BindModelAsync(
             ActionContext actionContext,
             IValueProvider valueProvider,
             ParameterDescriptor parameter)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             return BindModelAsync(actionContext, valueProvider, parameter, value: null);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         /// <summary>
+        /// <para>
+        /// This method overload is obsolete and will be removed in a future version. The recommended alternative is
+        /// <see cref="BindModelAsync(ActionContext, IModelBinder, IValueProvider, ParameterDescriptor, ModelMetadata, object)" />.
+        /// </para>
+        /// <para>
         /// Binds a model specified by <paramref name="parameter"/> using <paramref name="value"/> as the initial value.
+        /// </para>
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         /// <param name="valueProvider">The <see cref="IValueProvider"/>.</param>
         /// <param name="parameter">The <see cref="ParameterDescriptor"/></param>
         /// <param name="value">The initial model value.</param>
         /// <returns>The result of model binding.</returns>
+        [Obsolete("This method overload is obsolete and will be removed in a future version. The recommended " +
+            "alternative is the overload that also takes " + nameof(IModelBinder) + " and " + nameof(ModelMetadata) +
+            " parameters.")]
         public virtual Task<ModelBindingResult> BindModelAsync(
             ActionContext actionContext,
             IValueProvider valueProvider,
@@ -204,8 +222,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(metadata));
             }
 
+            Logger.AttemptingToBindParameterOrProperty(parameter, metadata);
+
             if (parameter.BindingInfo?.RequestPredicate?.Invoke(actionContext) == false)
             {
+                Logger.ParameterBinderRequestPredicateShortCircuit(parameter, metadata);
                 return ModelBindingResult.Failed();
             }
 
@@ -216,8 +237,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 parameter.BindingInfo,
                 parameter.Name);
             modelBindingContext.Model = value;
-
-            Logger.AttemptingToBindParameterOrProperty(parameter, modelBindingContext);
 
             var parameterModelName = parameter.BindingInfo?.BinderModelName ?? metadata.BinderModelName;
             if (parameterModelName != null)
@@ -238,14 +257,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             await modelBinder.BindModelAsync(modelBindingContext);
 
-            Logger.DoneAttemptingToBindParameterOrProperty(parameter, modelBindingContext);
+            Logger.DoneAttemptingToBindParameterOrProperty(parameter, metadata);
 
             var modelBindingResult = modelBindingContext.Result;
 
             if (_mvcOptions.AllowValidatingTopLevelNodes &&
                 _objectModelValidator is ObjectModelValidator baseObjectValidator)
             {
-                Logger.AttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+                Logger.AttemptingToValidateParameterOrProperty(parameter, metadata);
 
                 EnforceBindRequiredAndValidate(
                     baseObjectValidator,
@@ -255,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     modelBindingContext,
                     modelBindingResult);
 
-                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, modelBindingContext);
+                Logger.DoneAttemptingToValidateParameterOrProperty(parameter, metadata);
             }
             else
             {
@@ -322,7 +341,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                     // and we ended up with an empty prefix.
                     modelName = modelBindingContext.FieldName;
                 }
-                
+
                 // Run validation, we expect this to validate [Required].
                 baseObjectValidator.Validate(
                     actionContext,
@@ -344,7 +363,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             if (!modelBindingResult.IsModelSet ||
                 modelBindingResult.Model == null ||
-                !(_modelMetadataProvider is IModelMetadataProvider2 modelMetadataProvider))
+                !(_modelMetadataProvider is ModelMetadataProvider modelMetadataProvider))
             {
                 return;
             }

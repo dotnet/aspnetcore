@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public void TestIsSubdomainOf(Uri subdomain, Uri domain)
         {
             // Act
-            bool isSubdomain = UriHelpers.IsSubdomainOf(subdomain, domain);
+            var isSubdomain = UriHelpers.IsSubdomainOf(subdomain, domain);
 
             // Assert
             Assert.True(isSubdomain);
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         public void TestIsSubdomainOf_ReturnsFalse_WhenNotSubdomain(Uri subdomain, Uri domain)
         {
             // Act
-            bool isSubdomain = UriHelpers.IsSubdomainOf(subdomain, domain);
+            var isSubdomain = UriHelpers.IsSubdomainOf(subdomain, domain);
 
             // Assert
             Assert.False(isSubdomain);

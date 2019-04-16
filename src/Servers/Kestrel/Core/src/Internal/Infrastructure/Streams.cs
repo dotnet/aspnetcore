@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     public class Streams
     {
-        private static readonly ThrowingWriteOnlyStream _throwingResponseStream
-            = new ThrowingWriteOnlyStream(new InvalidOperationException(CoreStrings.ResponseStreamWasUpgraded));
+        private static readonly ThrowingWasUpgradedWriteOnlyStream _throwingResponseStream
+            = new ThrowingWasUpgradedWriteOnlyStream();
         private readonly HttpResponseStream _response;
         private readonly HttpRequestStream _request;
         private readonly WrappingStream _upgradeableResponse;

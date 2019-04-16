@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Transport abstractions for the ASP.NET Core Kestrel cross-platform web server.</Description>
@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="$(KestrelSharedSourceRoot)src\ThrowHelper.cs" />
+    <Compile Include="$(RepositoryRoot)src\Shared\Buffers.MemoryPool\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

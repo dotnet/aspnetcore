@@ -2,18 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Logging.Debug;
 
 namespace CreateDefaultBuilderApp
 {
@@ -22,7 +15,7 @@ namespace CreateDefaultBuilderApp
         static void Main(string[] args)
         {
             WebHost.CreateDefaultBuilder()
-                .UseUrls("http://localhost:5002")
+                .UseUrls("http://127.0.0.1:0")
                 .ConfigureServices((context, services) =>
                 {
                     services.AddSingleton(typeof(IService<>), typeof(Service<>));

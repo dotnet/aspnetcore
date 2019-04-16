@@ -7,7 +7,7 @@ using System.Diagnostics;
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     // Tokenizer _loosely_ based on http://dev.w3.org/html5/spec/Overview.html#tokenization
-    internal class HtmlTokenizer : Tokenizer<HtmlSymbol, HtmlSymbolType>
+    internal class HtmlTokenizer : Tokenizer<HtmlToken, HtmlTokenType>
     {
         private const char TransitionChar = '@';
 
@@ -21,24 +21,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private new HtmlTokenizerState? CurrentState => (HtmlTokenizerState?)base.CurrentState;
 
-        public override HtmlSymbolType RazorCommentType
+        public override HtmlTokenType RazorCommentType
         {
-            get { return HtmlSymbolType.RazorComment; }
+            get { return HtmlTokenType.RazorComment; }
         }
 
-        public override HtmlSymbolType RazorCommentTransitionType
+        public override HtmlTokenType RazorCommentTransitionType
         {
-            get { return HtmlSymbolType.RazorCommentTransition; }
+            get { return HtmlTokenType.RazorCommentTransition; }
         }
 
-        public override HtmlSymbolType RazorCommentStarType
+        public override HtmlTokenType RazorCommentStarType
         {
-            get { return HtmlSymbolType.RazorCommentStar; }
+            get { return HtmlTokenType.RazorCommentStar; }
         }
 
-        protected override HtmlSymbol CreateSymbol(string content, HtmlSymbolType type, IReadOnlyList<RazorDiagnostic> errors)
+        protected override HtmlToken CreateToken(string content, HtmlTokenType type, IReadOnlyList<RazorDiagnostic> errors)
         {
-            return new HtmlSymbol(content, type, errors);
+            return new HtmlToken(content, type, errors);
         }
 
         protected override StateResult Dispatch()
@@ -57,8 +57,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     return RazorCommentBody();
                 case HtmlTokenizerState.StarAfterRazorCommentBody:
                     return StarAfterRazorCommentBody();
-                case HtmlTokenizerState.AtSymbolAfterRazorCommentBody:
-                    return AtSymbolAfterRazorCommentBody();
+                case HtmlTokenizerState.AtTokenAfterRazorCommentBody:
+                    return AtTokenAfterRazorCommentBody();
                 default:
                     Debug.Fail("Invalid TokenizerState");
                     return default(StateResult);
@@ -66,35 +66,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Optimize memory allocation by returning constants for the most frequent cases
-        protected override string GetSymbolContent(HtmlSymbolType type)
+        protected override string GetTokenContent(HtmlTokenType type)
         {
-            var symbolLength = Buffer.Length;
+            var tokenLength = Buffer.Length;
 
-            if (symbolLength == 1)
+            if (tokenLength == 1)
             {
                 switch (type)
                 {
-                    case HtmlSymbolType.OpenAngle:
+                    case HtmlTokenType.OpenAngle:
                         return "<";
-                    case HtmlSymbolType.Bang:
+                    case HtmlTokenType.Bang:
                         return "!";
-                    case HtmlSymbolType.ForwardSlash:
+                    case HtmlTokenType.ForwardSlash:
                         return "/";
-                    case HtmlSymbolType.QuestionMark:
+                    case HtmlTokenType.QuestionMark:
                         return "?";
-                    case HtmlSymbolType.LeftBracket:
+                    case HtmlTokenType.LeftBracket:
                         return "[";
-                    case HtmlSymbolType.CloseAngle:
+                    case HtmlTokenType.CloseAngle:
                         return ">";
-                    case HtmlSymbolType.RightBracket:
+                    case HtmlTokenType.RightBracket:
                         return "]";
-                    case HtmlSymbolType.Equals:
+                    case HtmlTokenType.Equals:
                         return "=";
-                    case HtmlSymbolType.DoubleQuote:
+                    case HtmlTokenType.DoubleQuote:
                         return "\"";
-                    case HtmlSymbolType.SingleQuote:
+                    case HtmlTokenType.SingleQuote:
                         return "'";
-                    case HtmlSymbolType.WhiteSpace:
+                    case HtmlTokenType.WhiteSpace:
                         if (Buffer[0] == ' ')
                         {
                             return " ";
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             return "\t";
                         }
                         break;
-                    case HtmlSymbolType.NewLine:
+                    case HtmlTokenType.NewLine:
                         if (Buffer[0] == '\n')
                         {
                             return "\n";
@@ -113,12 +113,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            if (symbolLength == 2 && type == HtmlSymbolType.NewLine)
+            if (tokenLength == 2 && type == HtmlTokenType.NewLine)
             {
                 return "\r\n";
             }
 
-            return base.GetSymbolContent(type);
+            return base.GetTokenContent(type);
         }
 
         // http://dev.w3.org/html5/spec/Overview.html#data-state
@@ -139,21 +139,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     return Transition(
                         HtmlTokenizerState.AfterRazorCommentTransition,
-                        EndSymbol(HtmlSymbolType.RazorCommentTransition));
+                        EndToken(HtmlTokenType.RazorCommentTransition));
                 }
                 else if (CurrentCharacter == '@')
                 {
                     // Could be escaped comment transition
                     return Transition(
                         HtmlTokenizerState.EscapedRazorCommentTransition,
-                        EndSymbol(HtmlSymbolType.Transition));
+                        EndToken(HtmlTokenType.Transition));
                 }
 
-                return Stay(EndSymbol(HtmlSymbolType.Transition));
+                return Stay(EndToken(HtmlTokenType.Transition));
             }
-            else if (AtSymbol())
+            else if (AtToken())
             {
-                return Stay(Symbol());
+                return Stay(Token());
             }
             else
             {
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private StateResult EscapedRazorCommentTransition()
         {
             TakeCurrent();
-            return Transition(HtmlTokenizerState.Data, EndSymbol(HtmlSymbolType.Transition));
+            return Transition(HtmlTokenizerState.Data, EndToken(HtmlTokenType.Transition));
         }
 
         private StateResult Text()
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var prev = '\0';
             while (!EndOfFile &&
                 !(ParserHelpers.IsWhitespace(CurrentCharacter) || ParserHelpers.IsNewLine(CurrentCharacter)) &&
-                !AtSymbol())
+                !AtToken())
             {
                 prev = CurrentCharacter;
                 TakeCurrent();
@@ -190,56 +190,56 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             // Output the Text token and return to the Data state to tokenize the next character (if there is one)
-            return Transition(HtmlTokenizerState.Data, EndSymbol(HtmlSymbolType.Text));
+            return Transition(HtmlTokenizerState.Data, EndToken(HtmlTokenType.Text));
         }
 
-        private HtmlSymbol Symbol()
+        private HtmlToken Token()
         {
-            Debug.Assert(AtSymbol());
+            Debug.Assert(AtToken());
             var sym = CurrentCharacter;
             TakeCurrent();
             switch (sym)
             {
                 case '<':
-                    return EndSymbol(HtmlSymbolType.OpenAngle);
+                    return EndToken(HtmlTokenType.OpenAngle);
                 case '!':
-                    return EndSymbol(HtmlSymbolType.Bang);
+                    return EndToken(HtmlTokenType.Bang);
                 case '/':
-                    return EndSymbol(HtmlSymbolType.ForwardSlash);
+                    return EndToken(HtmlTokenType.ForwardSlash);
                 case '?':
-                    return EndSymbol(HtmlSymbolType.QuestionMark);
+                    return EndToken(HtmlTokenType.QuestionMark);
                 case '[':
-                    return EndSymbol(HtmlSymbolType.LeftBracket);
+                    return EndToken(HtmlTokenType.LeftBracket);
                 case '>':
-                    return EndSymbol(HtmlSymbolType.CloseAngle);
+                    return EndToken(HtmlTokenType.CloseAngle);
                 case ']':
-                    return EndSymbol(HtmlSymbolType.RightBracket);
+                    return EndToken(HtmlTokenType.RightBracket);
                 case '=':
-                    return EndSymbol(HtmlSymbolType.Equals);
+                    return EndToken(HtmlTokenType.Equals);
                 case '"':
-                    return EndSymbol(HtmlSymbolType.DoubleQuote);
+                    return EndToken(HtmlTokenType.DoubleQuote);
                 case '\'':
-                    return EndSymbol(HtmlSymbolType.SingleQuote);
+                    return EndToken(HtmlTokenType.SingleQuote);
                 case '-':
                     Debug.Assert(CurrentCharacter == '-');
                     TakeCurrent();
-                    return EndSymbol(HtmlSymbolType.DoubleHyphen);
+                    return EndToken(HtmlTokenType.DoubleHyphen);
                 default:
-                    Debug.Fail("Unexpected symbol!");
-                    return EndSymbol(HtmlSymbolType.Unknown);
+                    Debug.Fail("Unexpected token!");
+                    return EndToken(HtmlTokenType.Unknown);
             }
         }
 
-        private HtmlSymbol Whitespace()
+        private HtmlToken Whitespace()
         {
             while (ParserHelpers.IsWhitespace(CurrentCharacter))
             {
                 TakeCurrent();
             }
-            return EndSymbol(HtmlSymbolType.WhiteSpace);
+            return EndToken(HtmlTokenType.WhiteSpace);
         }
 
-        private HtmlSymbol Newline()
+        private HtmlToken Newline()
         {
             Debug.Assert(ParserHelpers.IsNewLine(CurrentCharacter));
             // CSharp Spec §2.3.1
@@ -249,10 +249,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 TakeCurrent();
             }
-            return EndSymbol(HtmlSymbolType.NewLine);
+            return EndToken(HtmlTokenType.NewLine);
         }
 
-        private bool AtSymbol()
+        private bool AtToken()
         {
             return CurrentCharacter == '<' ||
                    CurrentCharacter == '<' ||
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Transition((int)state, result: null);
         }
 
-        private StateResult Transition(HtmlTokenizerState state, HtmlSymbol result)
+        private StateResult Transition(HtmlTokenizerState state, HtmlToken result)
         {
             return Transition((int)state, result);
         }
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             EscapedRazorCommentTransition = RazorCommentTokenizerState.EscapedRazorCommentTransition,
             RazorCommentBody = RazorCommentTokenizerState.RazorCommentBody,
             StarAfterRazorCommentBody = RazorCommentTokenizerState.StarAfterRazorCommentBody,
-            AtSymbolAfterRazorCommentBody = RazorCommentTokenizerState.AtSymbolAfterRazorCommentBody,
+            AtTokenAfterRazorCommentBody = RazorCommentTokenizerState.AtTokenAfterRazorCommentBody,
         }
     }
 }

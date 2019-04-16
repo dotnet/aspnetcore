@@ -58,8 +58,9 @@ namespace Microsoft.AspNetCore.NodeServices
             var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
             NodeInstanceOutputLogger = loggerFactory != null
                 ? loggerFactory.CreateLogger(LogCategoryName)
+#pragma warning disable CS0618 // Type or member is obsolete
                 : new ConsoleLogger(LogCategoryName, null, false);
-
+#pragma warning restore CS0618
             // By default, we use this package's built-in out-of-process-via-HTTP hosting/transport
             this.UseHttpHosting();
         }

@@ -1,0 +1,9 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <Target Name="GenerateServiceFileReferenceCodes" BeforeTargets="BeforeCompile">
+    <MsBuild Projects="$(MSBuildProjectFile)"
+        Targets="GenerateServiceFileReferenceCodes"
+        Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
+        RemoveProperties="TargetFrameworks;RuntimeIdentifier" />
+  </Target>
+</Project>

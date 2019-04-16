@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
 
@@ -641,6 +642,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             AddRange(selectorModel.ActionConstraints, attributes.OfType<IActionConstraintMetadata>());
+            AddRange(selectorModel.EndpointMetadata, attributes);
 
             // Simple case, all HTTP method attributes apply
             var httpMethods = attributes
@@ -652,6 +654,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (httpMethods.Length > 0)
             {
                 selectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(httpMethods));
+                selectorModel.EndpointMetadata.Add(new HttpMethodMetadata(httpMethods));
             }
 
             return selectorModel;

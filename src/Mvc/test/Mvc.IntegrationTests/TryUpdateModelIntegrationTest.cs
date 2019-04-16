@@ -373,15 +373,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var result = await TryUpdateModelAsync(model, string.Empty, testContext);
 
             // Assert
-            Assert.False(result);
+            Assert.True(result);
 
             // ModelState
-            Assert.False(modelState.IsValid);
+            Assert.True(modelState.IsValid);
             var entry = Assert.Single(modelState);
             Assert.Equal("Address[0].Street", entry.Key);
             var state = entry.Value;
             Assert.NotNull(state);
-            Assert.Equal(ModelValidationState.Unvalidated, state.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
             Assert.Equal("SomeStreet", state.RawValue);
             Assert.Equal("SomeStreet", state.AttemptedValue);
         }
@@ -402,15 +402,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var result = await TryUpdateModelAsync(model, "prefix", testContext);
 
             // Assert
-            Assert.False(result);
+            Assert.True(result);
 
             // ModelState
-            Assert.False(modelState.IsValid);
+            Assert.True(modelState.IsValid);
             var entry = Assert.Single(modelState);
             Assert.Equal("prefix.Address[0].Street", entry.Key);
             var state = entry.Value;
             Assert.NotNull(state);
-            Assert.Equal(ModelValidationState.Unvalidated, state.ValidationState);
+            Assert.Equal(ModelValidationState.Valid, state.ValidationState);
             Assert.Equal("SomeStreet", state.RawValue);
             Assert.Equal("SomeStreet", state.AttemptedValue);
         }

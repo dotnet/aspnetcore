@@ -1,0 +1,1 @@
+(1,1): Error RZ1028: End of file was reached before the end of the block comment.  All comments that start with the "@*" sequence must be terminated with a matching "*@" sequence.

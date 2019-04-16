@@ -3,7 +3,6 @@
 
   <PropertyGroup Condition=" '$(IsTestProject)' == 'true' ">
     <IsPackable>false</IsPackable>
-    <WarningsNotAsErrors>xUnit1026:$(WarningsNotAsErrors)</WarningsNotAsErrors>
     <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)MvcTests.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 </Project>

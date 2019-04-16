@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <authors>$authors$</authors>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <licenseUrl>$licenseUrl$</licenseUrl>
+    <projectUrl>$projectUrl$</projectUrl>
+    <iconUrl>$iconUrl$</iconUrl>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+    <tags>$tags$</tags>
+    <repository type="git" url="$repositoryUrl$" commit="$repositoryCommit$" />
+    <dependencies>
+      <group targetFramework=".NETStandard1.3" />
+    </dependencies>
+  </metadata>
+
+  <files>
+    <file src="$OutputBinary$" target="analyzers\dotnet\cs\" />
+    <file src="$OutputSymbol$" target="analyzers\dotnet\cs\" />
+  </files>
+</package>

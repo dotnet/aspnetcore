@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Buffers;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class PipeThroughputBenchmark
     {
-        private const int _writeLenght = 57;
+        private const int _writeLength = 57;
         private const int InnerLoopCount = 512;
 
         private Pipe _pipe;
@@ -32,15 +31,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 for (int i = 0; i < InnerLoopCount; i++)
                 {
-                    _pipe.Writer.GetMemory(_writeLenght);
-                    _pipe.Writer.Advance(_writeLenght);
+                    _pipe.Writer.GetMemory(_writeLength);
+                    _pipe.Writer.Advance(_writeLength);
                     await _pipe.Writer.FlushAsync();
                 }
             });
 
             var reading = Task.Run(async () =>
             {
-                long remaining = InnerLoopCount * _writeLenght;
+                long remaining = InnerLoopCount * _writeLength;
                 while (remaining != 0)
                 {
                     var result = await _pipe.Reader.ReadAsync();
@@ -57,8 +56,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             for (int i = 0; i < InnerLoopCount; i++)
             {
-                _pipe.Writer.GetMemory(_writeLenght);
-                _pipe.Writer.Advance(_writeLenght);
+                _pipe.Writer.GetMemory(_writeLength);
+                _pipe.Writer.Advance(_writeLength);
                 _pipe.Writer.FlushAsync().GetAwaiter().GetResult();
                 var result = _pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 _pipe.Reader.AdvanceTo(result.Buffer.End, result.Buffer.End);

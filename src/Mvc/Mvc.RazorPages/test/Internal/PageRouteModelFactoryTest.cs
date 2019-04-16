@@ -165,8 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 });
         }
 
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Theory]
         [InlineData("/Areas/About.cshtml")]
         [InlineData("/Areas/MyArea/Index.cshtml")]
         public void TryParseAreaPath_ReturnsFalse_IfPathDoesNotConform(string path)
@@ -182,8 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.False(success);
         }
 
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Theory]
         [InlineData("/Areas/MyArea/Views/About.cshtml")]
         [InlineData("/Areas/MyArea/SubDir/Pages/Index.cshtml")]
         [InlineData("/Areas/MyArea/NotPages/SubDir/About.cshtml")]
@@ -200,8 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.False(success);
         }
 
-        [ConditionalTheory]
-        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
+        [Theory]
         [InlineData("/Areas/MyArea/Pages/Index.cshtml", "MyArea", "/Index")]
         [InlineData("/Areas/Accounts/Pages/Manage/Edit.cshtml", "Accounts", "/Manage/Edit")]
         public void TryParseAreaPath_ParsesAreaPath(

@@ -1,0 +1,13 @@
+Markup block - Gen<None> - 12 - (0:0,0)
+    HtmlComment block - Gen<None> - 12 - (0:0,0)
+        Markup span - Gen<Markup> - [<!--] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:3
+            HtmlTokenType.OpenAngle;[<];
+            HtmlTokenType.Bang;[!];
+            HtmlTokenType.DoubleHyphen;[--];
+        Markup span - Gen<Markup> - [ foo ] - SpanEditHandler;Accepts:WhiteSpace - (4:0,4) - Tokens:3
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[foo];
+            HtmlTokenType.WhiteSpace;[ ];
+        Markup span - Gen<Markup> - [-->] - SpanEditHandler;Accepts:None - (9:0,9) - Tokens:2
+            HtmlTokenType.DoubleHyphen;[--];
+            HtmlTokenType.CloseAngle;[>];

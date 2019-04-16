@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.JsonPatch
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, logErrorAction: null));
+            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, null, new AdapterFactory()));
         }
 
         /// <summary>
@@ -184,12 +184,27 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// <param name="logErrorAction">Action to log errors</param>
         public void ApplyTo(object objectToApplyTo, Action<JsonPatchError> logErrorAction)
         {
+            ApplyTo(objectToApplyTo, new ObjectAdapter(ContractResolver, logErrorAction, new AdapterFactory()), logErrorAction);
+        }
+
+        /// <summary>
+        /// Apply this JsonPatchDocument
+        /// </summary>
+        /// <param name="objectToApplyTo">Object to apply the JsonPatchDocument to</param>
+        /// <param name="adapter">IObjectAdapter instance to use when applying</param>
+        /// <param name="logErrorAction">Action to log errors</param>
+        public void ApplyTo(object objectToApplyTo, IObjectAdapter adapter, Action<JsonPatchError> logErrorAction)
+        {
             if (objectToApplyTo == null)
             {
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            var adapter = new ObjectAdapter(ContractResolver, logErrorAction);
+            if (adapter == null)
+            {
+                throw new ArgumentNullException(nameof(adapter));
+            }
+
             foreach (var op in Operations)
             {
                 try

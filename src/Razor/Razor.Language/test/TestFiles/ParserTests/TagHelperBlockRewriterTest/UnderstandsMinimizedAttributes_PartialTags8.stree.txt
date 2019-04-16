@@ -1,0 +1,10 @@
+Markup block - Gen<None> - 89 - (0:0,0)
+    Tag block - Gen<TagHelper> - 89 - (0:0,0) - input - InputTagHelper1 - InputTagHelper2 - InputTagHelper3
+        StartTagAndEndTag - <input bound-required-int unbound-required bound-required-string
+        bound-required-int - Minimized
+        unbound-required - Minimized
+        bound-required-string - Minimized
+        Tag block - Gen<TagHelper> - 25 - (64:0,64) - p - PTagHelper
+            StartTagAndEndTag - <p bound-int bound-string
+            bound-int - Minimized
+            bound-string - Minimized

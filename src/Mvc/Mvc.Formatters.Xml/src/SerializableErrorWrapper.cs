@@ -14,6 +14,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     [XmlRoot("Error")]
     public sealed class SerializableErrorWrapper : IXmlSerializable, IUnwrappable
     {
+        // Element name used when ModelStateEntry's Key is empty. Dash in element name should avoid collisions with
+        // other ModelState entries because the character is not legal in an expression name.
+        internal static readonly string EmptyKey = "MVC-Empty";
+
         // Note: XmlSerializer requires to have default constructor
         public SerializableErrorWrapper()
         {
@@ -63,6 +67,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             {
                 var key = XmlConvert.DecodeName(reader.LocalName);
                 var value = reader.ReadInnerXml();
+                if (string.Equals(EmptyKey, key, StringComparison.Ordinal))
+                {
+                    key = string.Empty;
+                }
 
                 SerializableError.Add(key, value);
                 reader.MoveToContent();
@@ -81,6 +89,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             {
                 var key = keyValuePair.Key;
                 var value = keyValuePair.Value;
+                if (string.IsNullOrEmpty(key))
+                {
+                    key = EmptyKey;
+                }
+
                 writer.WriteStartElement(XmlConvert.EncodeLocalName(key));
                 if (value != null)
                 {

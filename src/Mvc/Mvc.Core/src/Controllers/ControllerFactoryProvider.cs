@@ -19,7 +19,10 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         public ControllerFactoryProvider(
             IControllerActivatorProvider activatorProvider,
             IControllerFactory controllerFactory,
-            IEnumerable<IControllerPropertyActivator> propertyActivators)
+#pragma warning disable PUB0001 // Pubternal type in public API
+            IEnumerable<IControllerPropertyActivator> propertyActivators
+#pragma warning restore PUB0001
+            )
         {
             if (activatorProvider == null)
             {

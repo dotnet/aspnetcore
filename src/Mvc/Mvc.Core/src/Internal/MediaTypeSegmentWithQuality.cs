@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
     /// <summary>
     /// A media type with its associated quality.
     /// </summary>
-    public struct MediaTypeSegmentWithQuality
+    public readonly struct MediaTypeSegmentWithQuality
     {
         /// <summary>
         /// Initializes an instance of <see cref="MediaTypeSegmentWithQuality"/>.

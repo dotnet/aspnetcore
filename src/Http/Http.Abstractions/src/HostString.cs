@@ -35,7 +35,12 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="port">A positive, greater than 0 value representing the port in the host string.</param>
         public HostString(string host, int port)
         {
-            if(port <= 0)
+            if (host == null)
+            {
+                throw new ArgumentNullException(nameof(host));
+            }
+
+            if (port <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(port), Resources.Exception_PortMustBeGreaterThanZero);
             }

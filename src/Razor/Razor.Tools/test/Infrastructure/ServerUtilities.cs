@@ -116,7 +116,6 @@ namespace Microsoft.AspNetCore.Razor.Tools
             private readonly CancellationToken _cancellationToken;
             private readonly TimeSpan? _keepAlive;
 
-
             public TestableServerCommand(
                 ConnectionHost host,
                 CompilerHost compilerHost,
@@ -145,6 +144,12 @@ namespace Microsoft.AspNetCore.Razor.Tools
                     _cancellationToken,
                     _eventBus ?? eventBus,
                     _keepAlive ?? keepAlive);
+            }
+
+            protected override FileStream WritePidFile()
+            {
+                // Disable writing PID file as it is tested separately.
+                return null;
             }
         }
     }

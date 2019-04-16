@@ -19,7 +19,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 {
     public class CSharpCompiler
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly RazorReferenceManager _referenceManager;
+#pragma warning restore CS0618 // Type or member is obsolete
         private readonly IHostingEnvironment _hostingEnvironment;
         private bool _optionsInitialized;
         private CSharpParseOptions _parseOptions;
@@ -27,7 +29,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private EmitOptions _emitOptions;
         private bool _emitPdb;
 
+#pragma warning disable CS0618 // Type or member is obsolete
         public CSharpCompiler(RazorReferenceManager manager, IHostingEnvironment hostingEnvironment)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
             _referenceManager = manager ?? throw new ArgumentNullException(nameof(manager));
             _hostingEnvironment = hostingEnvironment ?? throw new ArgumentNullException(nameof(hostingEnvironment));

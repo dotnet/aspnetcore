@@ -1,0 +1,13 @@
+Directive block - Gen<None> - 36 - (0:0,0)
+    Transition span - Gen<None> - [@] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:1
+        CSharpTokenType.Transition;[@];
+    Code span - Gen<Import: static global::System.Console;> - [using static global::System.Console] - SpanEditHandler;Accepts:AnyExceptNewline - (1:0,1) - Tokens:9
+        CSharpTokenType.Keyword;[using];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Keyword;[static];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[global];
+        CSharpTokenType.DoubleColon;[::];
+        CSharpTokenType.Identifier;[System];
+        CSharpTokenType.Dot;[.];
+        CSharpTokenType.Identifier;[Console];

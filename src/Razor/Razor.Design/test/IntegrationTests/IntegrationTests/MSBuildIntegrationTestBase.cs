@@ -62,7 +62,18 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
-            var buildArgumentList = new List<string>();
+            var buildArgumentList = new List<string>
+            {
+                // Disable node-reuse. We don't want msbuild processes to stick around
+                // once the test is completed.
+                "/nr:false",
+
+                // Let the test app know it is running as part of a test.
+                "/p:RunningAsTest=true",
+
+                $"/p:MicrosoftNETCoreAppVersion={BuildVariables.MicrosoftNETCoreAppPackageVersion}",
+                $"/p:NETStandardLibraryPackageVersion={BuildVariables.NETStandardLibraryPackageVersion}",
+            };
 
             if (!suppressRestore)
             {
@@ -72,11 +83,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             if (!suppressBuildServer)
             {
                 buildArgumentList.Add($@"/p:_RazorBuildServerPipeName=""{buildServerPipeName ?? BuildServer.PipeName}""");
-
-                // The build server will not be used in netcoreapp2.0 because PipeOptions.CurrentUserOnly is not available.
-                // But we still want to make sure to run the tests on the server. So suppress that check.
-                // This can be removed once https://github.com/aspnet/Razor/issues/2237 is done.
-                buildArgumentList.Add($"/p:_RazorSuppressCurrentUserOnlyPipeOptions=true");
             }
 
             if (!string.IsNullOrEmpty(target))

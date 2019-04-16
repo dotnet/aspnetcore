@@ -47,5 +47,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
             extension.WriteInjectProperty(context, this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(MemberName);
+
+            formatter.WriteProperty(nameof(MemberName), MemberName);
+            formatter.WriteProperty(nameof(TypeName), TypeName);
+        }
     }
 }
