@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
@@ -43,10 +44,24 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static readonly int ProtocolMinorVersion = 0;
 
         /// <summary>
+        /// Gets the serializer used to serialize invocation arguments and return values.
+        /// </summary>
+        private readonly JsonSerializerOptions _payloadSerializerOptions;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
         /// </summary>
-        public JsonHubProtocol()
+        public JsonHubProtocol() : this(Options.Create(new JsonHubProtocolOptions()))
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
+        /// </summary>
+        /// <param name="options">The options used to initialize the protocol.</param>
+        public JsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
+        {
+            _payloadSerializerOptions = options.Value.PayloadSerializerSettings._options;
         }
 
         /// <inheritdoc />
@@ -565,7 +580,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private JsonDocument GetParsedObject(object obj, Type type)
         {
-            var bytes = JsonSerializer.ToBytes(obj, type);
+            var bytes = JsonSerializer.ToBytes(obj, type, _payloadSerializerOptions);
             var token = JsonDocument.Parse(bytes);
             return token;
         }
@@ -689,7 +704,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return jsonObject.GetDateTimeOffset();
             }
 
-            return JsonSerializer.Parse(jsonObject.GetRawText(), type);
+            return JsonSerializer.Parse(jsonObject.GetRawText(), type, _payloadSerializerOptions);
         }
 
         private object[] BindTypes(JsonElement jsonArray, IReadOnlyList<Type> paramTypes)
@@ -745,6 +760,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
 
             return message;
+        }
+
+        internal static CustomJsonOptionsClass CreateDefaultSerializerSettings()
+        {
+            var options = new CustomJsonOptionsClass();
+            options._options.WriteIndented = false;
+            options._options.ReadCommentHandling = JsonCommentHandling.Skip;
+            options._options.AllowTrailingCommas = false;
+            options._options.IgnoreNullValues = false;
+
+            return options;
         }
     }
 }

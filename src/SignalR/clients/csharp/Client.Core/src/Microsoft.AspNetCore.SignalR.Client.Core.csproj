@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Client for ASP.NET Core SignalR</Description>
@@ -22,7 +22,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="System.Threading.Channels" />
