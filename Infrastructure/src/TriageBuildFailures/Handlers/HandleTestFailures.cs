@@ -116,7 +116,6 @@ CC {GetOwnerMentions(failureArea)}";
 
                     Reporter.Output($"Creating new issue for test failure {failure.Name}...");
                     var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees, hiddenData: hiddenData);
-                    await GHClient.AddIssueToProject(issue, GHClient.Config.ActiveFailuresColumn);
                     Reporter.Output($"Created issue {issue.HtmlUrl}");
 
                     return new FailureHandlerResult(build, applicableIssues: new[] { issue });

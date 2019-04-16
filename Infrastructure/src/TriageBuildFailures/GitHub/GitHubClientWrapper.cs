@@ -87,7 +87,7 @@ namespace TriageBuildFailures.GitHub
 
         public async Task AddIssueToProject(GitHubIssue issue, int columnId)
         {
-            var newCard = new NewProjectCard($"{issue.RepositoryOwner}/{issue.RepositoryName}#{issue.Number}");
+            var newCard = new NewProjectCard(issue.Id, ProjectCardContentType.Issue);
             await RetryHelpers.RetryAsync(async () => await Client.Repository.Project.Card.Create(columnId, newCard), _reporter);
         }
 
