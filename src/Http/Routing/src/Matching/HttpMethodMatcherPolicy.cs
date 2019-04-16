@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -136,10 +137,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
 
                 var httpMethod = httpContext.Request.Method;
+                var headers = httpContext.Request.Headers;
                 if (metadata.AcceptCorsPreflight &&
                     string.Equals(httpMethod, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
-                    httpContext.Request.Headers.ContainsKey(OriginHeader) &&
-                    httpContext.Request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
+                    headers.ContainsKey(HeaderNames.Origin) &&
+                    headers.TryGetValue(HeaderNames.AccessControlRequestMethod, out var accessControlRequestMethod) &&
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     needs405Endpoint = false; // We don't return a 405 for a CORS preflight request when the endpoints accept CORS preflight.
@@ -438,10 +440,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 int destination;
 
                 var httpMethod = httpContext.Request.Method;
+                var headers = httpContext.Request.Headers;
                 if (_supportsCorsPreflight &&
                     string.Equals(httpMethod, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
-                    httpContext.Request.Headers.ContainsKey(OriginHeader) &&
-                    httpContext.Request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
+                    headers.ContainsKey(HeaderNames.Origin) &&
+                    headers.TryGetValue(HeaderNames.AccessControlRequestMethod, out var accessControlRequestMethod) &&
                     !StringValues.IsNullOrEmpty(accessControlRequestMethod))
                 {
                     return _corsPreflightDestinations != null &&
