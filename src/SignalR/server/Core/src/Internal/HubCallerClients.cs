@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override IClientProxy Others => _hubClients.AllExcept(_currentConnectionId);
 
-        public override IClientProxy All { get; }
+        public override IClientProxy All => _hubClients.All;
 
         public override IClientProxy AllExcept(IReadOnlyList<string> excludedConnectionIds)
         {

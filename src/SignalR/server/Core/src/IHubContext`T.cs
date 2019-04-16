@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR
         where T : class
     {
         /// <summary>
-        /// Gets a <see cref="IHubClients{T}"/> that can be used to invoke methods on clients connected to the hub.
+        /// Gets a <see cref="HubClientsBase{T}"/> that can be used to invoke methods on clients connected to the hub.
         /// </summary>
         HubClientsBase<T> Clients { get; }
 

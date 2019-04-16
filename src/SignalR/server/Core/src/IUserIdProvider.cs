@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace Microsoft.AspNetCore.SignalR
@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.SignalR
     /// <summary>
     /// A provider abstraction for configuring the "User ID" for a connection.
     /// </summary>
-    /// <remarks><see cref="IUserIdProvider"/> is used by <see cref="IHubClients{T}.User(string)"/> to invoke connections associated with a user.</remarks>
+    /// <remarks><see cref="IUserIdProvider"/> is used by <see cref="HubClientsBase{T}.User(string)"/> to invoke connections associated with a user.</remarks>
     public interface IUserIdProvider
     {
         /// <summary>
