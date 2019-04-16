@@ -68,7 +68,7 @@ namespace FunctionalTests
 
         private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory, string startup)
         {
-            var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
+            var samplesPath = SkipOnHelixAttribute.OnHelix() ? AppContext.BaseDirectory : Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Middleware"), "CORS", "samples"); 
 
             var configuration =
 #if RELEASE
@@ -82,7 +82,7 @@ namespace FunctionalTests
                 TargetFramework = "netcoreapp3.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleDestination"),
+                ApplicationPath =  Path.Combine(samplesPath, "SampleDestination"),
                 PublishApplicationBeforeDeployment = false,
                 ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,
@@ -100,7 +100,7 @@ namespace FunctionalTests
                 TargetFramework = "netcoreapp3.0",
                 RuntimeFlavor = RuntimeFlavor.CoreClr,
                 ServerType = ServerType.Kestrel,
-                ApplicationPath = Path.Combine(solutionPath, "CORS", "samples", "SampleOrigin"),
+                ApplicationPath = Path.Combine(samplesPath, "SampleOrigin"),
                 PublishApplicationBeforeDeployment = false,
                 ApplicationType = ApplicationType.Portable,
                 Configuration = configuration,

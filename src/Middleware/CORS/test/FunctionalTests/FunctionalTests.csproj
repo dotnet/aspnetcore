@@ -4,8 +4,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <TestGroupName>Cors.FunctionalTests</TestGroupName>
     <DefaultItemExcludes>$(DefaultItemExcludes);node_modules\**\*</DefaultItemExcludes>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +15,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <HelixContent Include="..\..\samples\SampleOrigin\**\*.*" LinkBase="SampleOrigin" />
+    <HelixContent Include="..\..\samples\SampleDestination\**\*.*" LinkBase="SampleDestination" />
   </ItemGroup>
 
 </Project>
