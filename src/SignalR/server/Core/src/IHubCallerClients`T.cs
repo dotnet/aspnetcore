@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Gets a caller to the connection which triggered the current invocation.
         /// </summary>
-        
         T Caller { get; }
 
         /// <summary>
