@@ -575,14 +575,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             await request;
         }
 
-        [ConditionalFact]
+        [ConditionalTheory]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [RequiresNewHandler]
-        public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabled()
+        [InlineData("ASPNETCORE_ENVIRONMENT", "Development")]
+        [InlineData("DOTNET_ENVIRONMENT", "deVelopment")]
+        [InlineData("ASPNETCORE_DETAILED_ERRORS", "1")]
+        [InlineData("ASPNETCORE_DETAILED_ERRORS", "TRUE")]
+        public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabled(string environmentVariable, string value)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
-            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
+            deploymentParameters.EnvironmentVariables[environmentVariable] = value;
             var deploymentResult = await DeployAsync(deploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/");
             Assert.False(result.IsSuccessStatusCode);

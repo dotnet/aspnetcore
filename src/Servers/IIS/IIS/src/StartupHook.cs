@@ -18,6 +18,12 @@ using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.StackTrace.Sources;
 
+
+/// <summary>
+/// Startup hooks are pieces of code that will run before a users program main executes
+/// See: https://github.com/dotnet/core-setup/blob/master/Documentation/design-docs/host-startup-hook.md
+/// The type must be named StartupHook without any namespace, and should be internal.
+/// </summary>
 internal class StartupHook
 {
     /// <summary>
@@ -33,10 +39,21 @@ internal class StartupHook
             return;
         }
 
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT").Equals("Development", StringComparison.OrdinalIgnoreCase) ||
-            Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT").Equals("Development", StringComparison.OrdinalIgnoreCase))
+        var detailedErrors = Environment.GetEnvironmentVariable("ASPNETCORE_DETAILEDERRORS");
+        var detailedErrorsEnabled = string.IsNullOrEmpty(detailedErrors) ?
+            false :
+            detailedErrors.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+                detailedErrors.Equals("true", StringComparison.OrdinalIgnoreCase);
+
+        var aspnetCoreEnvironment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT");
+        var aspnetCoreEnvironmentDevelopment = string.IsNullOrEmpty(aspnetCoreEnvironment) ? false : aspnetCoreEnvironment.Equals("Development", StringComparison.OrdinalIgnoreCase);
+
+        var dotnetEnvironment = Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT");
+        var dotnetEnvironmentDevelopment = string.IsNullOrEmpty(dotnetEnvironment) ? false : dotnetEnvironment.Equals("Development", StringComparison.OrdinalIgnoreCase);
+
+        if (!detailedErrorsEnabled && !aspnetCoreEnvironmentDevelopment && !dotnetEnvironmentDevelopment)
         {
-            // Not running in development.
+            // Not running in development or detailed errors aren't enabled
             return;
         }
 
