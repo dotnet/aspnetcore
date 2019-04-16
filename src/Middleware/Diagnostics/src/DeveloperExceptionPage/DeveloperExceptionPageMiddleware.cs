@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.Internal;
@@ -135,7 +136,18 @@ namespace Microsoft.AspNetCore.Diagnostics
             if (acceptHeader != null && !acceptHeader.Contains("text/html", StringComparison.OrdinalIgnoreCase))
             {
                 httpContext.Response.ContentType = "text/plain";
-                return httpContext.Response.WriteAsync(errorContext.Exception.ToString());
+
+                var sb = new StringBuilder();
+                sb.AppendLine(errorContext.Exception.ToString());
+                sb.AppendLine();
+                sb.AppendLine("HEADERS");
+                sb.AppendLine("=======");
+                foreach (var pair in httpContext.Request.Headers)
+                {
+                    sb.AppendLine($"{pair.Key} = {pair.Value}");
+                }
+
+                return httpContext.Response.WriteAsync(sb.ToString());
             }
 
             if (errorContext.Exception is ICompilationException compilationException)
