@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
         private object _abortLock = new object();
-        protected bool _requestAborted;
+        protected volatile bool _requestAborted;
 
         CancellationToken IHttpRequestLifetimeFeature.RequestAborted
         {
