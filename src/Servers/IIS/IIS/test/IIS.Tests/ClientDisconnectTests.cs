@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalFact]
         [Repeat(20)]
-        public async Task WritesCancelledWhenUsingAbortedToken()
+        public async Task WritesCanceledWhenUsingAbortedToken()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     while (true)
                     {
                         await ctx.Response.Body.WriteAsync(data, ctx.RequestAborted);
+                        await Task.Delay(10); // Small delay to not constantly call WriteAsync.
                     }
                 }
                 catch (Exception e)

@@ -210,7 +210,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             if (shouldScheduleCancellation)
             {
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
-                ThreadPool.UnsafeQueueUserWorkItem(ctx =>
+                CancelRequestAbortedToken();
+            }
+        }
+
+        private void CancelRequestAbortedToken()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(ctx =>
                 {
                     try
                     {
@@ -234,7 +240,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                         Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
                     }
                 }, this, preferLocal: false);
-            }
         }
 
         public void Abort(Exception reason)
