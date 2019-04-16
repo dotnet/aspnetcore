@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         private const string PrerenderExportAttributeName = "asp-prerender-export";
         private const string PrerenderDataAttributeName = "asp-prerender-data";
         private const string PrerenderTimeoutAttributeName = "asp-prerender-timeout";
+        private const string PrerenderCspNonceAttributeName = "asp-prerender-csp-nonce";
         private static INodeServices _fallbackNodeServices; // Used only if no INodeServices was registered with DI
 
         private readonly string _applicationBasePath;
@@ -74,6 +75,12 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         public int TimeoutMillisecondsParameter { get; set; }
 
         /// <summary>
+        /// CSP nonce value.
+        /// </summary>
+        [HtmlAttributeName(PrerenderCspNonceAttributeName)]
+        public string CspNonce { get; set; }
+
+        /// <summary>
         /// The <see cref="ViewContext"/>.
         /// </summary>
         [HtmlAttributeNotBound]
@@ -121,7 +128,9 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             var globalsScript = result.CreateGlobalsAssignmentScript();
             if (!string.IsNullOrEmpty(globalsScript))
             {
-                output.PostElement.SetHtmlContent($"<script>{globalsScript}</script>");
+                var openingScriptTag = string.IsNullOrEmpty(CspNonce) ? "<script>" : $"<script nonce={CspNonce}>";
+            
+                output.PostElement.SetHtmlContent($"{openingScriptTag}{globalsScript}</script>");
             }
         }
     }
