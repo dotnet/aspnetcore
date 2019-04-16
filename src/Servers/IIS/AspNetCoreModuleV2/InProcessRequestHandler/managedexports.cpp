@@ -512,13 +512,9 @@ EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 VOID
 http_set_startup_error_page_content(_In_ byte* errorPageContent, int length)
 {
-    // Only set the response if we are running under IISExpress for security reasons.
-    if (g_pHttpServer->IsCommandLineLaunch())
-    {
-        g_errorPageContent = new BYTE[length];
-        g_errorPageLength = length;
-        memcpy(g_errorPageContent, errorPageContent, length);
-    }
+    g_errorPageContent = new BYTE[length];
+    g_errorPageLength = length;
+    memcpy(g_errorPageContent, errorPageContent, length);
 }
 
 // End of export

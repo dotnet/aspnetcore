@@ -117,14 +117,15 @@ namespace NativeIISSample
 
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
-                .UseKestrel()
-                .UseIIS()
-                .UseIISIntegration()
-                .UseStartup<Startup>()
-                .Build();
+            throw new Exception();
+            //var host = new WebHostBuilder()
+            //    .UseKestrel()
+            //    .UseIIS()
+            //    .UseIISIntegration()
+            //    .UseStartup<Startup>()
+            //    .Build();
 
-            host.Run();
+            //host.Run();
         }
     }
 }

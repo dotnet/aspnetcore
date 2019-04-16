@@ -26,8 +26,17 @@ internal class StartupHook
     /// </summary>
     public static void Initialize()
     {
-        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
+        if (!NativeMethods.IsAspNetCoreModuleLoaded())
         {
+            // This means someone set the startup hook for Microsoft.AspNetCore.Server.IIS
+            // but are not running inprocess. Return at this point.
+            return;
+        }
+
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT").Equals("Development", StringComparison.OrdinalIgnoreCase) ||
+            Environment.GetEnvironmentVariable("DOTNET_ENVIRONMENT").Equals("Development", StringComparison.OrdinalIgnoreCase))
+        {
+            // Not running in development.
             return;
         }
 
@@ -64,7 +73,8 @@ internal class StartupHook
             var errorPage = new ErrorPage(model);
 
             var stream = new MemoryStream();
-            // Sync over async here, but you can't have async code in startup hooks.
+
+            // Never will go async because we are writing to a memory stream.
             errorPage.ExecuteAsync(stream).GetAwaiter().GetResult();
 
             // Get the raw content and set the error page.

@@ -238,12 +238,21 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         if (m_pConfig->QueryCallStartupHook())
         {
             // Used to display developer exception page when there is an exception in main.
-            // TODO should we preserve whatever is in the environment variable before setting it?
-            SetEnvironmentVariable(L"DOTNET_STARTUP_HOOKS", L"Microsoft.AspNetCore.Server.IIS");
+            auto currentStartupHookEnv = Environment::GetEnvironmentVariableValue(DOTNETCORE_STARTUP_HOOK);
+
+            if (currentStartupHookEnv.has_value())
+            {
+                currentStartupHookEnv = currentStartupHookEnv.value() + L";" + ASPNETCORE_STARTUP_ASSEMBLY;
+                LOG_LAST_ERROR_IF(!SetEnvironmentVariable(DOTNETCORE_STARTUP_HOOK, currentStartupHookEnv.value().c_str()));
+            }
+            else
+            {
+                LOG_LAST_ERROR_IF(!SetEnvironmentVariable(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+            }
         }
 
         // Used to make .NET Runtime always log to event log when there is an unhandled exception.
-        SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1");
+        LOG_LAST_ERROR_IF(SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1"));
 
         bool clrThreadExited;
         {
