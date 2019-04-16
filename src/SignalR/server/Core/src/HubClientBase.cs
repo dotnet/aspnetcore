@@ -1,51 +1,28 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubClientBase : HubClientsBase<IClientProxy>
+    public abstract class HubClientsBase : HubClientsBase<IClientProxy>
     {
-        public override IClientProxy All => throw new NotImplementedException();
+        public override abstract IClientProxy All { get; }
+        public override abstract IClientProxy AllExcept(IReadOnlyList<string> excludedConnectionIds);
 
-        public override IClientProxy AllExcept(IReadOnlyList<string> excludedConnectionIds)
-        {
-            throw new NotImplementedException();
-        }
+        public override abstract IClientProxy Client(string connectionId);
 
-        public override IClientProxy Client(string connectionId)
-        {
-            throw new NotImplementedException();
-        }
+        public override abstract IClientProxy Clients(IReadOnlyList<string> connectionIds);
 
-        public override IClientProxy Clients(IReadOnlyList<string> connectionIds)
-        {
-            throw new NotImplementedException();
-        }
+        public override abstract IClientProxy Group(string groupName);
 
-        public override IClientProxy Group(string groupName)
-        {
-            throw new NotImplementedException();
-        }
+        public override abstract IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludedConnectionIds);
 
-        public override IClientProxy GroupExcept(string groupName, IReadOnlyList<string> excludedConnectionIds)
-        {
-            throw new NotImplementedException();
-        }
+        public override abstract IClientProxy Groups(IReadOnlyList<string> groupNames);
 
-        public override IClientProxy Groups(IReadOnlyList<string> groupNames)
-        {
-            throw new NotImplementedException();
-        }
+        public override abstract IClientProxy User(string userId);
 
-        public override IClientProxy User(string userId)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override IClientProxy Users(IReadOnlyList<string> userIds)
-        {
-            throw new NotImplementedException();
-        }
+        public override abstract IClientProxy Users(IReadOnlyList<string> userIds);
     }
 }

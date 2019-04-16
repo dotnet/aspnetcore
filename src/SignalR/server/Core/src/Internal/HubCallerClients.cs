@@ -8,10 +8,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     public class HubCallerClients : HubCallerClientsBase
     {
         private readonly string _connectionId;
-        private readonly HubClientBase _hubClients;
+        private readonly HubClientsBase _hubClients;
         private readonly string[] _currentConnectionId;
 
-        public HubCallerClients(HubClientBase hubClients, string connectionId)
+        public HubCallerClients(HubClientsBase hubClients, string connectionId)
         {
             _connectionId = connectionId;
             _hubClients = hubClients;
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override IClientProxy Others => _hubClients.AllExcept(_currentConnectionId);
 
-        public override IClientProxy All => _hubClients.All;
+        public override IClientProxy All { get; }
 
         public override IClientProxy AllExcept(IReadOnlyList<string> excludedConnectionIds)
         {

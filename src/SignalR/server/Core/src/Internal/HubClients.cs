@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
 {
-    internal class HubClients<THub> : HubClientBase where THub : Hub
+    internal class HubClients<THub> : HubClientsBase where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
 

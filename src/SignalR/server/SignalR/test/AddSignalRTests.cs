@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
     public class CustomHubContext<THub> : IHubContext<THub> where THub : Hub
     {
-        public HubClientBase Clients => throw new System.NotImplementedException();
+        public HubClientsBase Clients => throw new System.NotImplementedException();
 
         public IGroupManager Groups => throw new System.NotImplementedException();
     }
