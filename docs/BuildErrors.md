@@ -14,4 +14,4 @@ in a previous release of this assembly. See <./ReferenceResolution.md> for how t
 
 > error BUILD002: Package references changed since the last release...
 
-Similar to BUILD001, but this error not suppressable. This error only appears in servicing builds which should not change references between assemblies or packages.
+Similar to BUILD001, but this error is not suppressable. This error only appears in servicing builds, which should not change references between assemblies or packages.
