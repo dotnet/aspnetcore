@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
             var globalsScript = result.CreateGlobalsAssignmentScript();
             if (!string.IsNullOrEmpty(globalsScript))
             {
-                var openingScriptTag = string.IsNullOrEmpty(CspNonce) ? "<script>" : $"<script nonce={CspNonce}>";
+                var openingScriptTag = string.IsNullOrEmpty(CspNonce) ? "<script>" : $"<script nonce=\"{CspNonce}\">";
             
                 output.PostElement.SetHtmlContent($"{openingScriptTag}{globalsScript}</script>");
             }
