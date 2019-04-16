@@ -325,9 +325,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions
         {
-            // Allow for the payload to have null values for some inputs (under-binding)
-            IgnoreNullPropertyValueOnRead = true,
-
             ReaderOptions = new JsonReaderOptions
             {
                 // Limit the object graph we'll consume to a fixed depth. This prevents stackoverflow exceptions
