@@ -33,14 +33,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Resolve the RazorLangVersion based on values imported or TFM. -->
   <PropertyGroup>
     <_TargetFrameworkVersionWithoutV>$(TargetFrameworkVersion.TrimStart('vV'))</_TargetFrameworkVersionWithoutV>
-
-    <!-- Workaround for an older build of DesignTime.targets that requires this property to be available. This can be removed after 16.1 preview 2 insertion -->
-    <_TargetingNETCoreApp30OrLater Condition="'$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">true</_TargetingNETCoreApp30OrLater>
+    <_TargetingNETCoreApp30OrLater Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '$(_TargetFrameworkVersionWithoutV)' >= '3.0'">true</_TargetingNETCoreApp30OrLater>
 
     <!--
       Infer the RazorLangVersion if no value was specified. When adding support for newer target frameworks, list newer language versions first.
     -->
-    <RazorLangVersion Condition="'$(RazorLangVersion)' == '' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'">3.0</RazorLangVersion>
+    <RazorLangVersion Condition="'$(RazorLangVersion)' == '' AND '$(_TargetingNETCoreApp30OrLater)' == 'true'">3.0</RazorLangVersion>
 
     <!--
       In 3.0, we expect RazorLangVersion to either be specified in the template or inferred via TFM. In 2.x, RazorLangVersion is
@@ -53,7 +51,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_Targeting30OrNewerRazorLangVersion Condition="
         '$(RazorLangVersion)' == 'Latest' OR
         '$(RazorLangVersion)' == 'Experimental' OR
-        ('$(RazorLangVersion)' != '' AND '$(RazorLangVersion)' &gt; '2.9')">true</_Targeting30OrNewerRazorLangVersion>
+        ('$(RazorLangVersion)' != '' AND '$(RazorLangVersion)' >= '3.0')">true</_Targeting30OrNewerRazorLangVersion>
   </PropertyGroup>
 
 
@@ -386,7 +384,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- For a 3.0 project, targeting a RazorLangVersion is nearly always an error condition -->
     <Warning Text="Detected Razor language version downgrade. This is typically caused by a reference to the Microsoft.AspNetCore.Razor.Design package. Consider removing this package reference."
       Code="RAZORSDK1006"
-      Condition="'$(_Targeting30OrNewerRazorLangVersion)' != 'true' AND '$(_TargetFrameworkVersionWithoutV)' &gt; '2.9'" />
+      Condition="'$(_Targeting30OrNewerRazorLangVersion)' != 'true' AND '$(_TargetingNETCoreApp30OrLater)' == 'true'" />
 
     <FindInList
         List="@(RazorExtension)"
