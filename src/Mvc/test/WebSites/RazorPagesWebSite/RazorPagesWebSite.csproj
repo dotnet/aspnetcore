@@ -13,7 +13,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
-
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="$(MicrosoftNETSdkRazorPackageVersion)" PrivateAssets="All" />
+    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 </Project>

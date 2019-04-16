@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
     <ProjectReference Include="..\..\benchmarkapps\BasicApi\BasicApi.csproj" />
     <ProjectReference Include="..\..\benchmarkapps\BasicViews\BasicViews.csproj" />
     <ProjectReference Include="..\..\samples\MvcSandbox\MvcSandbox.csproj" />
