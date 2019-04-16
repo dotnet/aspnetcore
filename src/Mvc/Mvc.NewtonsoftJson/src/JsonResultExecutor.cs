@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             _logger.JsonResultExecuting(result.Value);
 
             var responseStream = response.Body;
-            Stream fileBufferingWriteStream = null;
+            FileBufferingWriteStream fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
                 fileBufferingWriteStream = new FileBufferingWriteStream();
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
 
                 if (fileBufferingWriteStream != null)
                 {
-                    await fileBufferingWriteStream.CopyToAsync(response.Body);
+                    await fileBufferingWriteStream.DrainBufferAsync(response.Body);
                 }
             }
             finally

@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             }
         }
 
-        public void CopyTo(Stream stream, bool clearBuffers)
+        public void MoveTo(Stream stream)
         {
             ThrowIfDisposed();
 
@@ -81,13 +81,10 @@ namespace Microsoft.AspNetCore.WebUtilities
                 stream.Write(page, 0, length);
             }
 
-            if (clearBuffers)
-            {
-                ClearBuffers();
-            }
+            ClearBuffers();
         }
 
-        public async Task CopyToAsync(Stream stream, bool clearBuffers, CancellationToken cancellationToken)
+        public async Task MoveToAsync(Stream stream, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();
 
@@ -101,10 +98,7 @@ namespace Microsoft.AspNetCore.WebUtilities
                 await stream.WriteAsync(page, 0, length, cancellationToken);
             }
 
-            if (clearBuffers)
-            {
-                ClearBuffers();
-            }
+            ClearBuffers();
         }
 
         public void Dispose()

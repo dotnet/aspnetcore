@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public void CopyTo_CopiesContentFromMemoryStream()
+        public async Task DrainBufferAsync_CopiesContentFromMemoryStream()
         {
             // Arrange
             var input = new byte[] { 1, 2, 3, 4, 5 };
@@ -340,14 +340,14 @@ namespace Microsoft.AspNetCore.WebUtilities
             var memoryStream = new MemoryStream();
 
             // Act
-            bufferingStream.CopyTo(memoryStream);
+            await bufferingStream.DrainBufferAsync(memoryStream, default);
 
             // Assert
             Assert.Equal(input, memoryStream.ToArray());
         }
 
         [Fact]
-        public void CopyTo_WithContentInDisk_CopiesContentFromMemoryStream()
+        public async Task DrainBufferAsync_WithContentInDisk_CopiesContentFromMemoryStream()
         {
             // Arrange
             var input = Enumerable.Repeat((byte)0xca, 30).ToArray();
@@ -356,80 +356,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             var memoryStream = new MemoryStream();
 
             // Act
-            bufferingStream.CopyTo(memoryStream);
+            await bufferingStream.DrainBufferAsync(memoryStream, default);
 
             // Assert
             Assert.Equal(input, memoryStream.ToArray());
-        }
-
-        [Fact]
-        public void CopyTo_InvokedMultipleTimes_Works()
-        {
-            // Arrange
-            var input = Enumerable.Repeat((byte)0xca, 30).ToArray();
-            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 21, tempFileDirectoryAccessor: () => TempDirectory);
-            bufferingStream.Write(input, 0, input.Length);
-            var memoryStream1 = new MemoryStream();
-            var memoryStream2 = new MemoryStream();
-
-            // Act
-            bufferingStream.CopyTo(memoryStream1);
-            bufferingStream.CopyTo(memoryStream2);
-
-            // Assert
-            Assert.Equal(input, memoryStream1.ToArray());
-            Assert.Equal(input, memoryStream2.ToArray());
-        }
-
-        [Fact]
-        public async Task CopyToAsync_CopiesContentFromMemoryStream()
-        {
-            // Arrange
-            var input = new byte[] { 1, 2, 3, 4, 5 };
-            using var bufferingStream = new FileBufferingWriteStream(tempFileDirectoryAccessor: () => TempDirectory);
-            bufferingStream.Write(input, 0, input.Length);
-            var memoryStream = new MemoryStream();
-
-            // Act
-            await bufferingStream.CopyToAsync(memoryStream);
-
-            // Assert
-            Assert.Equal(input, memoryStream.ToArray());
-        }
-
-        [Fact]
-        public async Task CopyToAsync_WithContentInDisk_CopiesContentFromMemoryStream()
-        {
-            // Arrange
-            var input = Enumerable.Repeat((byte)0xca, 30).ToArray();
-            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 21, tempFileDirectoryAccessor: () => TempDirectory);
-            bufferingStream.Write(input, 0, input.Length);
-            var memoryStream = new MemoryStream();
-
-            // Act
-            await bufferingStream.CopyToAsync(memoryStream);
-
-            // Assert
-            Assert.Equal(input, memoryStream.ToArray());
-        }
-
-        [Fact]
-        public async Task CopyToAsync_InvokedMultipleTimes_Works()
-        {
-            // Arrange
-            var input = Enumerable.Repeat((byte)0xca, 30).ToArray();
-            using var bufferingStream = new FileBufferingWriteStream(memoryThreshold: 21, tempFileDirectoryAccessor: () => TempDirectory);
-            bufferingStream.Write(input, 0, input.Length);
-            var memoryStream1 = new MemoryStream();
-            var memoryStream2 = new MemoryStream();
-
-            // Act
-            await bufferingStream.CopyToAsync(memoryStream1);
-            await bufferingStream.CopyToAsync(memoryStream2);
-
-            // Assert
-            Assert.Equal(input, memoryStream1.ToArray());
-            Assert.Equal(input, memoryStream2.ToArray());
         }
 
         public void Dispose()
@@ -455,7 +385,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static byte[] ReadBufferedContent(PagedByteBuffer buffer)
         {
             using var memoryStream = new MemoryStream();
-            buffer.CopyTo(memoryStream, clearBuffers: false);
+            buffer.MoveTo(memoryStream);
 
             return memoryStream.ToArray();
         }

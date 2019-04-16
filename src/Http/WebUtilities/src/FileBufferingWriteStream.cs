@@ -12,16 +12,8 @@ using Microsoft.AspNetCore.Internal;
 namespace Microsoft.AspNetCore.WebUtilities
 {
     /// <summary>
-    /// A <see cref="Stream"/> that wraps another stream and buffers content to be written.
-    /// <para>
-    /// <see cref="FileBufferingWriteStream"/> is intended to provide a workaround for APIs that need to perform
-    /// synchronous writes to the HTTP Response Stream while contending with a server that is configured to disallow synchronous writes.
-    /// Synchronous writes are buffered to a memory backed stream up to the specified threshold, after which further writes are spooled to
-    /// a temporary file on disk.
-    /// </para>
-    /// <para>
-    /// Consumers of this API can invoke <see cref="M:Stream.CopyToAsync" /> to copy the results to the HTTP Response Stream.
-    /// </para>
+    /// A <see cref="Stream"/> that buffers content to be written to disk. Use <see cref="DrainBufferAsync(Stream, CancellationToken)" />
+    /// to write buffered content to a target <see cref="Stream" />.
     /// </summary>
     public sealed class FileBufferingWriteStream : Stream
     {
@@ -131,8 +123,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // spool to disk.
                 EnsureFileStream();
 
-                // Spool memory content to disk and clear in memory buffers. We no longer need to hold on to it
-                PagedByteBuffer.CopyTo(FileStream, clearBuffers: true);
+                // Spool memory content to disk.
+                PagedByteBuffer.MoveTo(FileStream);
 
                 FileStream.Write(buffer, offset, count);
             }
@@ -164,66 +156,44 @@ namespace Microsoft.AspNetCore.WebUtilities
                 // spool to disk.
                 EnsureFileStream();
 
-                // Spool memory content to disk and clear in memory buffers. We no longer need to hold on to it
-                await PagedByteBuffer.CopyToAsync(FileStream, clearBuffers: true, cancellationToken);
-
+                // Spool memory content to disk.
+                await PagedByteBuffer.MoveToAsync(FileStream, cancellationToken);
                 await FileStream.WriteAsync(buffer, offset, count, cancellationToken);
             }
         }
 
+        /// <inheritdoc />
         public override void Flush()
         {
             // Do nothing.
         }
 
         /// <inheritdoc />
+        public override Task FlushAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+
+        /// <inheritdoc />
         public override void SetLength(long value) => throw new NotSupportedException();
 
         /// <summary>
-        /// Copies buffered content to <paramref name="destination"/>.
+        /// Drains buffered content to <paramref name="destination"/>.
         /// </summary>
-        /// <param name="destination">The <see cref="Stream" /> to copy to.</param>
-        /// <param name="bufferSize">The size of the buffer.</param>
+        /// <param name="destination">The <see cref="Stream" /> to drain buffered contents to.</param>
         /// <param name="cancellationToken">The <see cref="CancellationToken" />.</param>
-        /// <returns>A <see cref="Task" /> that represents the asynchronous copy operation.</returns>
-        /// <remarks>
-        /// Users of this API do not need to reset the <see cref="Position" /> of this instance, prior to copying content.
-        /// </remarks>
-        public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
+        /// <returns>A <see cref="Task" /> that represents the asynchronous drain operation.</returns>
+        public async Task DrainBufferAsync(Stream destination, CancellationToken cancellationToken = default)
         {
             // When not null, FileStream always has "older" spooled content. The PagedByteBuffer always has "newer"
             // unspooled content. Copy the FileStream content first when available.
             if (FileStream != null)
             {
                 FileStream.Position = 0;
-                await FileStream.CopyToAsync(destination, bufferSize, cancellationToken);
+                await FileStream.CopyToAsync(destination, cancellationToken);
+
+                await FileStream.DisposeAsync();
+                FileStream = null;
             }
 
-            // Copy memory content, but do not clear the buffers. We want multiple invocations of CopyTo \ CopyToAsync
-            // on this instance to behave the same.
-            await PagedByteBuffer.CopyToAsync(destination, clearBuffers: false, cancellationToken);
-        }
-
-        /// <summary>
-        /// Copies buffered content to <paramref name="destination"/>.
-        /// </summary>
-        /// <param name="destination">The <see cref="Stream" /> to copy to.</param>
-        /// <param name="bufferSize">The size of the buffer.</param>
-        /// <remarks>
-        /// Users of this API do not need to reset the <see cref="Position" /> of this instance, prior to copying content.
-        /// </remarks>
-        public override void CopyTo(Stream destination, int bufferSize)
-        {
-            // See comments under CopyToAsync for an explanation for the order of execution.
-            if (FileStream != null)
-            {
-                FileStream.Position = 0;
-                FileStream.CopyTo(destination, bufferSize);
-            }
-
-            // Copy memory content, but do not clear the buffers. We want multiple invocations of CopyTo \ CopyToAsync
-            // on this instance to behave the same.
-            PagedByteBuffer.CopyTo(destination, clearBuffers: false);
+            await PagedByteBuffer.MoveToAsync(destination, cancellationToken);
         }
 
         /// <inheritdoc />

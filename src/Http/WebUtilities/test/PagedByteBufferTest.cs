@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public void CopyTo_CopiesContentToStream()
+        public void MoveTo_CopiesContentToStream()
         {
             // Arrange
             var input = Enumerable.Repeat((byte)0xba, PagedByteBuffer.PageSize * 3 + 10).ToArray();
@@ -107,20 +107,23 @@ namespace Microsoft.AspNetCore.WebUtilities
             var stream = new MemoryStream();
 
             // Act
-            buffer.CopyTo(stream, clearBuffers: false);
+            buffer.MoveTo(stream);
 
             // Assert
             Assert.Equal(input, stream.ToArray());
 
-            // Verify copying it again works.
-            stream.SetLength(0);
-            buffer.CopyTo(stream, clearBuffers: false);
+            // Verify moving new content works.
+            var newInput = Enumerable.Repeat((byte)0xcb, PagedByteBuffer.PageSize * 2 + 13).ToArray();
+            buffer.Add(newInput, 0, newInput.Length);
 
-            Assert.Equal(input, stream.ToArray());
+            stream.SetLength(0);
+            buffer.MoveTo(stream);
+
+            Assert.Equal(newInput, stream.ToArray());
         }
 
         [Fact]
-        public async Task CopyToAsync_CopiesContentToStream()
+        public async Task MoveToAsync_CopiesContentToStream()
         {
             // Arrange
             var input = Enumerable.Repeat((byte)0xba, PagedByteBuffer.PageSize * 3 + 10).ToArray();
@@ -129,20 +132,22 @@ namespace Microsoft.AspNetCore.WebUtilities
             var stream = new MemoryStream();
 
             // Act
-            await buffer.CopyToAsync(stream, clearBuffers: false, default);
+            await buffer.MoveToAsync(stream, default);
 
             // Assert
             Assert.Equal(input, stream.ToArray());
 
-            // Verify copying it again works.
+            // Verify adding and moving new content works.
+            var newInput = Enumerable.Repeat((byte)0xcb, PagedByteBuffer.PageSize * 2 + 13).ToArray();
+            buffer.Add(newInput, 0, newInput.Length);
             stream.SetLength(0);
-            await buffer.CopyToAsync(stream, clearBuffers: false, default);
+            await buffer.MoveToAsync(stream, default);
 
-            Assert.Equal(input, stream.ToArray());
+            Assert.Equal(newInput, stream.ToArray());
         }
 
         [Fact]
-        public async Task CopyToAsync_WithClear_ClearsBuffers()
+        public async Task MoveToAsync_ClearsBuffers()
         {
             // Arrange
             var input = Enumerable.Repeat((byte)0xba, PagedByteBuffer.PageSize * 3 + 10).ToArray();
@@ -151,7 +156,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             var stream = new MemoryStream();
 
             // Act
-            await buffer.CopyToAsync(stream, clearBuffers: true, default);
+            await buffer.MoveToAsync(stream, default);
 
             // Assert
             Assert.Equal(input, stream.ToArray());
@@ -163,7 +168,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public void CopyTo_WithClear_ReturnsBuffers()
+        public void MoveTo_WithClear_ReturnsBuffers()
         {
             // Arrange
             var input = new byte[] { 1, };
@@ -178,7 +183,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 // Act
                 buffer.Add(input, 0, input.Length);
-                buffer.CopyTo(memoryStream, clearBuffers: true);
+                buffer.MoveTo(memoryStream);
 
                 // Assert
                 Assert.Equal(input, memoryStream.ToArray());
@@ -189,7 +194,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         }
 
         [Fact]
-        public async Task CopyToAsync_WithClear_ReturnsBuffers()
+        public async Task MoveToAsync_ReturnsBuffers()
         {
             // Arrange
             var input = new byte[] { 1, };
@@ -203,7 +208,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 // Act
                 buffer.Add(input, 0, input.Length);
-                await buffer.CopyToAsync(memoryStream, clearBuffers: true, default);
+                await buffer.MoveToAsync(memoryStream, default);
 
                 // Assert
                 Assert.Equal(input, memoryStream.ToArray());
@@ -236,8 +241,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private static byte[] ReadBufferedContent(PagedByteBuffer buffer)
         {
             using var stream = new MemoryStream();
-            buffer.CopyTo(stream, clearBuffers: false);
-
+            buffer.MoveTo(stream);
             return stream.ToArray();
         }
     }

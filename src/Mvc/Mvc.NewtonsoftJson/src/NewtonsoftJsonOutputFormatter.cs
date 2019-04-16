@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var response = context.HttpContext.Response;
 
             var responseStream = response.Body;
-            Stream fileBufferingWriteStream = null;
+            FileBufferingWriteStream fileBufferingWriteStream = null;
             if (!_mvcOptions.SuppressOutputFormatterBuffering)
             {
                 fileBufferingWriteStream = new FileBufferingWriteStream();
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 if (fileBufferingWriteStream != null)
                 {
-                    await fileBufferingWriteStream.CopyToAsync(response.Body);
+                    await fileBufferingWriteStream.DrainBufferAsync(response.Body);
                 }
             }
             finally
