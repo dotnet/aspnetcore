@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
 
-            if (_requestAborted)
+            if (!_requestAborted)
             {
                 await ProduceEnd();
             }
