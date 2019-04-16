@@ -235,10 +235,14 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        // TODO add a way to disable this.
-        auto startupHookDll = std::wstring(L"Microsoft.AspNetCore.Server.IIS");
-        
-        SetEnvironmentVariable(L"DOTNET_STARTUP_HOOKS", startupHookDll.c_str());
+        if (m_pConfig->QueryCallStartupHook())
+        {
+            // Used to display developer exception page when there is an exception in main.
+            // TODO should we preserve whatever is in the environment variable before setting it?
+            SetEnvironmentVariable(L"DOTNET_STARTUP_HOOKS", L"Microsoft.AspNetCore.Server.IIS");
+        }
+
+        // Used to make .NET Runtime always log to event log when there is an unhandled exception.
         SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1");
 
         bool clrThreadExited;

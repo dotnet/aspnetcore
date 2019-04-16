@@ -49,6 +49,12 @@ public:
     }
 
     bool
+    QueryCallStartupHook() const
+    {
+        return m_fCallStartupHook;
+    }
+
+    bool
     QueryWindowsAuthEnabled() const
     {
         return m_fWindowsAuthEnabled;
@@ -116,6 +122,7 @@ private:
     bool                           m_fStdoutLogEnabled;
     bool                           m_fDisableStartUpErrorPage;
     bool                           m_fSetCurrentDirectory;
+    bool                           m_fCallStartupHook;
     bool                           m_fWindowsAuthEnabled;
     bool                           m_fBasicAuthEnabled;
     bool                           m_fAnonymousAuthEnabled;
