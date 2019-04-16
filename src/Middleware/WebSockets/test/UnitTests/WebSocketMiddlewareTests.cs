@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.WebSockets.Test
                         request.Headers.Connection.Clear();
                         request.Headers.Connection.Add("Upgrade");
                         request.Headers.Upgrade.Add(new System.Net.Http.Headers.ProductHeaderValue("websocket"));
-                        request.Headers.Add(HeaderNames.SecWebSocketVersion, Constants.Headers.SupportedVersion);
+                        request.Headers.Add(HeaderNames.SecWebSocketVersion, "13");
                         // SecWebSocketKey required to be 16 bytes
                         request.Headers.Add(HeaderNames.SecWebSocketKey, Convert.ToBase64String(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16 }, Base64FormattingOptions.None));
 
