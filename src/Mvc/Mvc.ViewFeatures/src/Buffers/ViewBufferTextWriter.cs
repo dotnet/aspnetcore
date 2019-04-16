@@ -86,25 +86,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         /// <inheritdoc />
         public override Encoding Encoding { get; }
 
-        /// <inheritdoc />
-        public bool IsBuffering { get; private set; } = true;
-
         /// <summary>
         /// Gets the <see cref="ViewBuffer"/>.
         /// </summary>
         public ViewBuffer Buffer { get; }
 
+        /// <summary>
+        /// Gets a value that indiciates if <see cref="Flush"/> or <see cref="FlushAsync" /> was invoked.
+        /// </summary>
+        public bool Flushed { get; private set; }
+
         /// <inheritdoc />
         public override void Write(char value)
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(value.ToString());
-            }
-            else
-            {
-                _inner.Write(value);
-            }
+            Buffer.AppendHtml(value.ToString());
         }
 
         /// <inheritdoc />
@@ -125,14 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(new string(buffer, index, count));
-            }
-            else
-            {
-                _inner.Write(buffer, index, count);
-            }
+            Buffer.AppendHtml(new string(buffer, index, count));
         }
 
         /// <inheritdoc />
@@ -143,14 +131,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
                 return;
             }
 
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(value);
-            }
-            else
-            {
-                _inner.Write(value);
-            }
+            Buffer.AppendHtml(value);
         }
 
         /// <inheritdoc />
@@ -186,14 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
                 return;
             }
 
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(value);
-            }
-            else
-            {
-                value.WriteTo(_inner, _htmlEncoder);
-            }
+            Buffer.AppendHtml(value);
         }
 
         /// <summary>
@@ -207,14 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
                 return;
             }
 
-            if (IsBuffering)
-            {
-                value.MoveTo(Buffer);
-            }
-            else
-            {
-                value.WriteTo(_inner, _htmlEncoder);
-            }
+            value.MoveTo(Buffer);
         }
 
         /// <inheritdoc />
@@ -245,15 +212,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
         /// <inheritdoc />
         public override Task WriteAsync(char value)
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(value.ToString());
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return _inner.WriteAsync(value);
-            }
+            Buffer.AppendHtml(value.ToString());
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
@@ -273,121 +233,64 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(new string(buffer, index, count));
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return _inner.WriteAsync(buffer, index, count);
-            }
+            Buffer.AppendHtml(new string(buffer, index, count));
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public override Task WriteAsync(string value)
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(value);
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return _inner.WriteAsync(value);
-            }
+            Buffer.AppendHtml(value);
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public override void WriteLine()
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(NewLine);
-            }
-            else
-            {
-                _inner.WriteLine();
-            }
+            Buffer.AppendHtml(NewLine);
         }
 
         /// <inheritdoc />
         public override void WriteLine(string value)
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(value);
-                Buffer.AppendHtml(NewLine);
-            }
-            else
-            {
-                _inner.WriteLine(value);
-            }
+            Buffer.AppendHtml(value);
+            Buffer.AppendHtml(NewLine);
         }
 
         /// <inheritdoc />
         public override Task WriteLineAsync(char value)
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(value.ToString());
-                Buffer.AppendHtml(NewLine);
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return _inner.WriteLineAsync(value);
-            }
+            Buffer.AppendHtml(value.ToString());
+            Buffer.AppendHtml(NewLine);
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public override Task WriteLineAsync(char[] value, int start, int offset)
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(new string(value, start, offset));
-                Buffer.AppendHtml(NewLine);
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return _inner.WriteLineAsync(value, start, offset);
-            }
+            Buffer.AppendHtml(new string(value, start, offset));
+            Buffer.AppendHtml(NewLine);
+            return Task.CompletedTask;
+
         }
 
         /// <inheritdoc />
         public override Task WriteLineAsync(string value)
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(value);
-                Buffer.AppendHtml(NewLine);
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return _inner.WriteLineAsync(value);
-            }
+            Buffer.AppendHtml(value);
+            Buffer.AppendHtml(NewLine);
+            return Task.CompletedTask;
         }
 
         /// <inheritdoc />
         public override Task WriteLineAsync()
         {
-            if (IsBuffering)
-            {
-                Buffer.AppendHtml(NewLine);
-                return Task.CompletedTask;
-            }
-            else
-            {
-                return _inner.WriteLineAsync();
-            }
+            Buffer.AppendHtml(NewLine);
+            return Task.CompletedTask;
         }
 
         /// <summary>
         /// Copies the buffered content to the unbuffered writer and invokes flush on it.
-        /// Additionally causes this instance to no longer buffer and direct all write operations
-        /// to the unbuffered writer.
         /// </summary>
         public override void Flush()
         {
@@ -396,20 +299,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
                 return;
             }
 
-            if (IsBuffering)
-            {
-                IsBuffering = false;
-                Buffer.WriteTo(_inner, _htmlEncoder);
-                Buffer.Clear();
-            }
+            Flushed = true;
+
+            Buffer.WriteTo(_inner, _htmlEncoder);
+            Buffer.Clear();
 
             _inner.Flush();
         }
 
         /// <summary>
         /// Copies the buffered content to the unbuffered writer and invokes flush on it.
-        /// Additionally causes this instance to no longer buffer and direct all write operations
-        /// to the unbuffered writer.
         /// </summary>
         /// <returns>A <see cref="Task"/> that represents the asynchronous copy and flush operations.</returns>
         public override async Task FlushAsync()
@@ -419,12 +318,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers
                 return;
             }
 
-            if (IsBuffering)
-            {
-                IsBuffering = false;
-                await Buffer.WriteToAsync(_inner, _htmlEncoder);
-                Buffer.Clear();
-            }
+            Flushed = true;
+
+            await Buffer.WriteToAsync(_inner, _htmlEncoder);
+            Buffer.Clear();
 
             await _inner.FlushAsync();
         }
