@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     /// <summary>
-    /// An <see cref="MatcherPolicy"/> that implements filtering and selection by
+    /// A <see cref="MatcherPolicy"/> that implements filtering and selection by
     /// the host header of a request.
     /// </summary>
     public sealed class HostMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy, IEndpointSelectorPolicy
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 for (var j = 0; j < hosts.Count; j++)
                 {
                     var host = hosts[j].AsSpan();
-                    var port = "".AsSpan();
+                    var port = ReadOnlySpan<char>.Empty;
 
                     // Split into host and port
                     var pivot = host.IndexOf(":");
