@@ -130,10 +130,11 @@ namespace Microsoft.AspNetCore.Diagnostics
         private Task DisplayException(ErrorContext errorContext)
         {
             var httpContext = errorContext.HttpContext;
-            var acceptHeader = httpContext.Request.Headers[HeaderNames.Accept].ToString();
+            var headers = httpContext.Request.GetTypedHeaders();
+            var acceptHeader = headers.Accept;
 
             // If the client does not ask for HTML just format the exception as plain text
-            if (acceptHeader != null && !acceptHeader.Contains("text/html", StringComparison.OrdinalIgnoreCase))
+            if (acceptHeader != null && !acceptHeader.Any(h => h.IsSubsetOf(new MediaTypeHeaderValue("text/html"))))
             {
                 httpContext.Response.ContentType = "text/plain";
 
