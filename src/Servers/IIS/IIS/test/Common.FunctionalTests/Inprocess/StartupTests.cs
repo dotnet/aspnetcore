@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -481,6 +483,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
 
         private static Dictionary<string, Func<IISDeploymentParameters, string>> StandaloneConfigTransformations = InitStandaloneConfigTransformations();
+
         public static IEnumerable<object[]> StandaloneConfigTransformationsScenarios => StandaloneConfigTransformations.ToTheoryData();
 
         [ConditionalTheory]
@@ -573,7 +576,29 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task ExceptionIsLoggedToEventLogAndPutInResponseForIISExpress()
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
+        public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabled()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(result.IsSuccessStatusCode);
+
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.Contains("InvalidOperationException", content);
+            Assert.Contains("TestSite.Program.Main", content);
+
+            StopServer();
+
+            VerifyDotnetRuntimeEventLog(deploymentResult);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task ExceptionIsLoggedToEventLogDoesNotWriteToResponse()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
@@ -582,11 +607,47 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var result = await deploymentResult.HttpClient.GetAsync("/");
             Assert.False(result.IsSuccessStatusCode);
 
-            if (deploymentParameters.ServerType == ServerType.IISExpress)
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("InvalidOperationException", content);
+
+            StopServer();
+
+            VerifyDotnetRuntimeEventLog(deploymentResult);
+        }
+
+        private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)
+        {
+            var entries = GetEventLogsFromDotnetRuntime(deploymentResult); 
+
+            var expectedRegex = new Regex("Exception Info: System\\.InvalidOperationException:", RegexOptions.Singleline);
+            var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
+            // There isn't a process ID to filter on here, so there can be duplicate entries
+            Assert.True(matchedEntries.Length > 0);
+        }
+
+        private static IEnumerable<EventLogEntry> GetEventLogsFromDotnetRuntime(IISDeploymentResult deploymentResult)
+        {
+            var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-5);
+            var eventLog = new EventLog("Application");
+
+            for (var i = eventLog.Entries.Count - 1; i >= 0; i--)
             {
-                var content = await result.Content.ReadAsStringAsync();
-                Assert.Contains("InvalidOperationException", content);
-                Assert.Contains("TestSite.Program.Main(string[] args)", content);
+                var eventLogEntry = eventLog.Entries[i];
+                if (eventLogEntry.TimeGenerated < processStartTime)
+                {
+                    // If event logs is older than the process start time, we didn't find a match.
+                    break;
+                }
+
+                if (eventLogEntry.ReplacementStrings == null)
+                {
+                    continue;
+                }
+
+                if (eventLogEntry.Source == ".NET Runtime")
+                {
+                    yield return eventLogEntry;
+                }
             }
         }
 

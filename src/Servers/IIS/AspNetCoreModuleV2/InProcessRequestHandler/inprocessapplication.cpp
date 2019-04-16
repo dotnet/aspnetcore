@@ -465,7 +465,7 @@ IN_PROCESS_APPLICATION::SetEnvironmentVariablesOnWorkerProcess()
     {
         LOG_INFOF(L"Setting environment variable %ls=%ls", variable.first.c_str(), variable.second.c_str());
         SetEnvironmentVariable(variable.first.c_str(), variable.second.c_str());
-    }  
+    }
 
     return S_OK;
 }

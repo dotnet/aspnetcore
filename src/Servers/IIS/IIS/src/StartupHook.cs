@@ -26,7 +26,11 @@ internal class StartupHook
     /// </summary>
     public static void Initialize()
     {
-        // TODO make this unhandled exception
+        if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") != "Development")
+        {
+            return;
+        }
+
         AppDomain.CurrentDomain.UnhandledException += (sender, eventArgs) =>
         {
             var exception = (Exception)eventArgs.ExceptionObject;
@@ -59,7 +63,6 @@ internal class StartupHook
 
             var errorPage = new ErrorPage(model);
 
-            // Create a temporary HttpContext to write the response into.
             var stream = new MemoryStream();
             // Sync over async here, but you can't have async code in startup hooks.
             errorPage.ExecuteAsync(stream).GetAwaiter().GetResult();
