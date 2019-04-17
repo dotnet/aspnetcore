@@ -606,13 +606,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
         // this is called via reflection using the `_sendStreamItems` field
         private Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
         {
-            var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token).Token;
+            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
 
             async Task ReadChannelStream(CancellationTokenSource tokenSource)
             {
-                while (await reader.WaitToReadAsync(combinedToken))
+                while (await reader.WaitToReadAsync(combinedCts.Token))
                 {
-                    while (!combinedToken.IsCancellationRequested && reader.TryRead(out var item))
+                    while (!combinedCts.Token.IsCancellationRequested && reader.TryRead(out var item))
                     {
                         await SendWithLock(new StreamItemMessage(streamId, item));
                         Log.SendingStreamItem(_logger, streamId);
@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(streamId, combinedToken, ReadChannelStream);
+            return CommonStreaming(streamId, combinedCts, ReadChannelStream);
         }
 
 #if NETCOREAPP3_0
@@ -638,19 +638,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(streamId, token, ReadAsyncEnumerableStream);
+            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
+
+            return CommonStreaming(streamId, combinedCts, ReadAsyncEnumerableStream);
         }
 #endif
 
-        private async Task CommonStreaming(string streamId, CancellationToken token, Func<CancellationTokenSource, Task> createAndConsumeStream)
+        private async Task CommonStreaming(string streamId, CancellationTokenSource cts, Func<CancellationTokenSource, Task> createAndConsumeStream)
         {
             Log.StartingStream(_logger, streamId);
-            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
-
             string responseError = null;
             try
             {
-                await createAndConsumeStream(combinedCts);
+                await createAndConsumeStream(cts);
             }
             catch (OperationCanceledException)
             {
