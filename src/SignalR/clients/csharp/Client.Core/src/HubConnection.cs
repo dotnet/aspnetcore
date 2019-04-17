@@ -607,12 +607,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         // this is called via reflection using the `_sendStreamItems` field
         private Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
         {
-
             async Task ReadChannelStream(CancellationTokenSource tokenSource)
             {
-                while (await reader.WaitToReadAsync(token))
+                while (await reader.WaitToReadAsync(tokenSource.Token))
                 {
-                    while (!token.IsCancellationRequested && reader.TryRead(out var item))
+                    while (!tokenSource.Token.IsCancellationRequested && reader.TryRead(out var item))
                     {
                         await SendWithLock(new StreamItemMessage(streamId, item));
                         Log.SendingStreamItem(_logger, streamId);
