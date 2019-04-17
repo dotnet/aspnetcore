@@ -285,8 +285,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
             await InitializeResponse(flushHeaders: true);
 
-            await FlushAsync();
-
             return _streams.Upgrade();
         }
 
