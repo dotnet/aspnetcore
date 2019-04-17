@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        [RequiresNewHandler]
         public async Task MaxRequestBodySizeE2EWorks()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();

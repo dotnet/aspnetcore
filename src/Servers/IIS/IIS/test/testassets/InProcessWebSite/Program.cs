@@ -100,6 +100,7 @@ namespace TestSite
                 case "ConsoleWriteStartServer":
                     Console.WriteLine("TEST MESSAGE");
                     return StartServer();
+#if !FORWARDCOMPAT
                 case "DecreaseRequestLimit":
                     {
                         var host = new WebHostBuilder()
@@ -119,6 +120,7 @@ namespace TestSite
                         host.Run();
                         break;
                     }
+#endif
                 default:
                     return StartServer();
 

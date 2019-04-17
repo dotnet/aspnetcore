@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <TestAssetOutputName>InProcessForwardsCompatWebSite</TestAssetOutputName>
+    <DefineConstants>FORWARDCOMPAT</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">

@@ -191,7 +191,7 @@ namespace IIS.Tests
                     {
                         while (true)
                         {
-                            await ctx.Request.Body.ReadAsync(new byte[2000]);
+                            var num = await ctx.Request.Body.ReadAsync(new byte[2000]);
                         }
                     }
                     catch (BadHttpRequestException ex)
@@ -205,7 +205,7 @@ namespace IIS.Tests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
-                        "Content-Length: 1001",
+                        "Transfer-Encoding: chunked",
                         "Host: localhost",
                         "",
                         "1001",
