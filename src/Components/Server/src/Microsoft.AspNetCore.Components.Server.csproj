@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+    <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
 
     <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
     <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
