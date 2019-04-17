@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using System.Text.Json;
@@ -443,55 +444,56 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private void WriteMessageCore(HubMessage message, IBufferWriter<byte> stream)
         {
-            var writer = new Utf8JsonWriter(stream);
+            using var writer = new Utf8JsonWriter(stream);
 
             writer.WriteStartObject();
             switch (message)
             {
                 case InvocationMessage m:
-                    WriteMessageType(ref writer, HubProtocolConstants.InvocationMessageType);
-                    WriteHeaders(ref writer, m);
-                    WriteInvocationMessage(m, ref writer);
+                    WriteMessageType(writer, HubProtocolConstants.InvocationMessageType);
+                    WriteHeaders(writer, m);
+                    WriteInvocationMessage(m, writer);
                     break;
                 case StreamInvocationMessage m:
-                    WriteMessageType(ref writer, HubProtocolConstants.StreamInvocationMessageType);
-                    WriteHeaders(ref writer, m);
-                    WriteStreamInvocationMessage(m, ref writer);
+                    WriteMessageType(writer, HubProtocolConstants.StreamInvocationMessageType);
+                    WriteHeaders(writer, m);
+                    WriteStreamInvocationMessage(m, writer);
                     break;
                 case StreamItemMessage m:
-                    WriteMessageType(ref writer, HubProtocolConstants.StreamItemMessageType);
-                    WriteHeaders(ref writer, m);
-                    WriteStreamItemMessage(m, ref writer);
+                    WriteMessageType(writer, HubProtocolConstants.StreamItemMessageType);
+                    WriteHeaders(writer, m);
+                    WriteStreamItemMessage(m, writer);
                     break;
                 case CompletionMessage m:
-                    WriteMessageType(ref writer, HubProtocolConstants.CompletionMessageType);
-                    WriteHeaders(ref writer, m);
-                    WriteCompletionMessage(m, ref writer);
+                    WriteMessageType(writer, HubProtocolConstants.CompletionMessageType);
+                    WriteHeaders(writer, m);
+                    WriteCompletionMessage(m, writer);
                     break;
                 case CancelInvocationMessage m:
-                    WriteMessageType(ref writer, HubProtocolConstants.CancelInvocationMessageType);
-                    WriteHeaders(ref writer, m);
-                    WriteCancelInvocationMessage(m, ref writer);
+                    WriteMessageType(writer, HubProtocolConstants.CancelInvocationMessageType);
+                    WriteHeaders(writer, m);
+                    WriteCancelInvocationMessage(m, writer);
                     break;
                 case PingMessage _:
-                    WriteMessageType(ref writer, HubProtocolConstants.PingMessageType);
+                    WriteMessageType(writer, HubProtocolConstants.PingMessageType);
                     break;
                 case CloseMessage m:
-                    WriteMessageType(ref writer, HubProtocolConstants.CloseMessageType);
-                    WriteCloseMessage(m, ref writer);
+                    WriteMessageType(writer, HubProtocolConstants.CloseMessageType);
+                    WriteCloseMessage(m, writer);
                     break;
                 default:
                     throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
             }
             writer.WriteEndObject();
             writer.Flush();
+            Debug.Assert(writer.CurrentDepth == 0);
         }
 
-        private void WriteHeaders(ref Utf8JsonWriter writer, HubInvocationMessage message)
+        private void WriteHeaders(Utf8JsonWriter writer, HubInvocationMessage message)
         {
             if (message.Headers != null && message.Headers.Count > 0)
             {
-                writer.WriteStartObject(HeadersPropertyNameBytes, escape: false);
+                writer.WriteStartObject(HeadersPropertyNameBytes);
                 foreach (var value in message.Headers)
                 {
                     writer.WriteString(value.Key, value.Value);
@@ -500,64 +502,64 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
         }
 
-        private void WriteCompletionMessage(CompletionMessage message, ref Utf8JsonWriter writer)
+        private void WriteCompletionMessage(CompletionMessage message, Utf8JsonWriter writer)
         {
-            WriteInvocationId(message, ref writer);
+            WriteInvocationId(message, writer);
             if (!string.IsNullOrEmpty(message.Error))
             {
-                writer.WriteString(ErrorPropertyNameBytes, message.Error, escape: false);
+                writer.WriteString(ErrorPropertyNameBytes, message.Error);
             }
             else if (message.HasResult)
             {
                 using var token = GetParsedObject(message.Result, message.Result?.GetType());
-                token.RootElement.WriteAsProperty(ResultPropertyNameBytes, ref writer);
+                token.RootElement.WriteAsProperty(ResultPropertyNameBytes, writer);
             }
         }
 
-        private void WriteCancelInvocationMessage(CancelInvocationMessage message, ref Utf8JsonWriter writer)
+        private void WriteCancelInvocationMessage(CancelInvocationMessage message, Utf8JsonWriter writer)
         {
-            WriteInvocationId(message, ref writer);
+            WriteInvocationId(message, writer);
         }
 
-        private void WriteStreamItemMessage(StreamItemMessage message, ref Utf8JsonWriter writer)
+        private void WriteStreamItemMessage(StreamItemMessage message, Utf8JsonWriter writer)
         {
-            WriteInvocationId(message, ref writer);
+            WriteInvocationId(message, writer);
 
             using var token = GetParsedObject(message.Item, message.Item?.GetType());
-            token.RootElement.WriteAsProperty(ItemPropertyNameBytes, ref writer);
+            token.RootElement.WriteAsProperty(ItemPropertyNameBytes, writer);
         }
 
-        private void WriteInvocationMessage(InvocationMessage message, ref Utf8JsonWriter writer)
+        private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)
         {
-            WriteInvocationId(message, ref writer);
-            writer.WriteString(TargetPropertyNameBytes, message.Target, escape: false);
+            WriteInvocationId(message, writer);
+            writer.WriteString(TargetPropertyNameBytes, message.Target);
 
-            WriteArguments(message.Arguments, ref writer);
+            WriteArguments(message.Arguments, writer);
 
-            WriteStreamIds(message.StreamIds, ref writer);
+            WriteStreamIds(message.StreamIds, writer);
         }
 
-        private void WriteStreamInvocationMessage(StreamInvocationMessage message, ref Utf8JsonWriter writer)
+        private void WriteStreamInvocationMessage(StreamInvocationMessage message, Utf8JsonWriter writer)
         {
-            WriteInvocationId(message, ref writer);
-            writer.WriteString(TargetPropertyNameBytes, message.Target, escape: false);
+            WriteInvocationId(message, writer);
+            writer.WriteString(TargetPropertyNameBytes, message.Target);
 
-            WriteArguments(message.Arguments, ref writer);
+            WriteArguments(message.Arguments, writer);
 
-            WriteStreamIds(message.StreamIds, ref writer);
+            WriteStreamIds(message.StreamIds, writer);
         }
 
-        private void WriteCloseMessage(CloseMessage message, ref Utf8JsonWriter writer)
+        private void WriteCloseMessage(CloseMessage message, Utf8JsonWriter writer)
         {
             if (message.Error != null)
             {
-                writer.WriteString(ErrorPropertyNameBytes, message.Error, escape: false);
+                writer.WriteString(ErrorPropertyNameBytes, message.Error);
             }
         }
 
-        private void WriteArguments(object[] arguments, ref Utf8JsonWriter writer)
+        private void WriteArguments(object[] arguments, Utf8JsonWriter writer)
         {
-            writer.WriteStartArray(ArgumentsPropertyNameBytes, escape: false);
+            writer.WriteStartArray(ArgumentsPropertyNameBytes);
             foreach (var argument in arguments)
             {
                 var type = argument?.GetType();
@@ -572,7 +574,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 else
                 {
                     using var token = GetParsedObject(argument, type);
-                    token.RootElement.WriteAsValue(ref writer);
+                    token.RootElement.WriteAsValue(writer);
                 }
             }
             writer.WriteEndArray();
@@ -585,14 +587,14 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return token;
         }
 
-        private void WriteStreamIds(string[] streamIds, ref Utf8JsonWriter writer)
+        private void WriteStreamIds(string[] streamIds, Utf8JsonWriter writer)
         {
             if (streamIds == null)
             {
                 return;
             }
 
-            writer.WriteStartArray(StreamIdsPropertyNameBytes, escape: false);
+            writer.WriteStartArray(StreamIdsPropertyNameBytes);
             foreach (var streamId in streamIds)
             {
                 writer.WriteStringValue(streamId);
@@ -600,17 +602,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             writer.WriteEndArray();
         }
 
-        private static void WriteInvocationId(HubInvocationMessage message, ref Utf8JsonWriter writer)
+        private static void WriteInvocationId(HubInvocationMessage message, Utf8JsonWriter writer)
         {
             if (!string.IsNullOrEmpty(message.InvocationId))
             {
-                writer.WriteString(InvocationIdPropertyNameBytes, message.InvocationId, escape: false);
+                writer.WriteString(InvocationIdPropertyNameBytes, message.InvocationId);
             }
         }
 
-        private static void WriteMessageType(ref Utf8JsonWriter writer, int type)
+        private static void WriteMessageType(Utf8JsonWriter writer, int type)
         {
-            writer.WriteNumber(TypePropertyNameBytes, type, escape: false);
+            writer.WriteNumber(TypePropertyNameBytes, type);
         }
 
         private HubMessage BindCancelInvocationMessage(string invocationId)

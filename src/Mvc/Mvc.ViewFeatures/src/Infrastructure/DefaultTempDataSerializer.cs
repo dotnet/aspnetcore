@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
 
             using (var bufferWriter = new ArrayBufferWriter<byte>())
             {
-                var writer = new Utf8JsonWriter(bufferWriter);
+                using var writer = new Utf8JsonWriter(bufferWriter);
                 writer.WriteStartObject();
                 foreach (var (key, value) in values)
                 {
