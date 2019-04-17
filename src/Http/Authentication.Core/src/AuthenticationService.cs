@@ -156,7 +156,11 @@ namespace Microsoft.AspNetCore.Authentication
 
             if (Options.RequireAuthenticatedSignIn)
             {
-                if (principal.Identity == null || !principal.Identity.IsAuthenticated)
+                if (principal.Identity == null)
+                {
+                    throw new InvalidOperationException("SignInAsync when principal.Identity == null is not allowed when AuthenticationOptions.RequireAuthenticatedSignIn is true.");
+                }
+                if (!principal.Identity.IsAuthenticated)
                 {
                     throw new InvalidOperationException("SignInAsync when principal.Identity.IsAuthenticated is false is not allowed when AuthenticationOptions.RequireAuthenticatedSignIn is true.");
                 }
