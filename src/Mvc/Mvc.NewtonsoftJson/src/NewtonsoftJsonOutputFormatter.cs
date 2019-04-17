@@ -150,10 +150,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         var jsonSerializer = CreateJsonSerializer(context);
                         jsonSerializer.Serialize(jsonWriter, context.Object);
                     }
-
-                    // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
-                    // buffers. This is better than just letting dispose handle it (which would result in a synchronous write).
-                    await writer.FlushAsync();
                 }
 
                 if (fileBufferingWriteStream != null)

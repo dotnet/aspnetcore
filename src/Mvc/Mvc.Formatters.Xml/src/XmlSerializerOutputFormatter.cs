@@ -256,11 +256,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     {
                         Serialize(xmlSerializer, xmlWriter, value);
                     }
-
-                    // Perf: call FlushAsync to call WriteAsync on the stream with any content left in the TextWriter's
-                    // buffers. This is better than just letting dispose handle it (which would result in a synchronous
-                    // write).
-                    await textWriter.FlushAsync();
                 }
 
                 if (fileBufferingWriteStream != null)
