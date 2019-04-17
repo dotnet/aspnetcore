@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
+
             services.AddResponseCompression(options =>
             {
                 options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(new[]
@@ -30,15 +31,23 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
             });
         }
 
-        public void Configure(IApplicationBuilder app, IConfiguration configuration)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment environment, IConfiguration configuration)
         {
             app.UseDeveloperExceptionPage();
             app.UseResponseCompression();
             EnableConfiguredPathbase(app, configuration);
 
-            var clientAssemblyPath = FindClientAssemblyPath(app);
-            app.UseBlazor(new BlazorOptions { ClientAssemblyPath = clientAssemblyPath });
             app.UseBlazorDebugging();
+
+            app.UseStaticFiles();
+            app.UseClientSideBlazorFiles(FindClientAssemblyPath(environment));
+
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapFallbackToClientSideBlazor(FindClientAssemblyPath(environment), "index.html");
+            });
         }
 
         private static void EnableConfiguredPathbase(IApplicationBuilder app, IConfiguration configuration)
@@ -66,10 +75,9 @@ namespace Microsoft.AspNetCore.Blazor.DevServer.Server
             }
         }
 
-        private static string FindClientAssemblyPath(IApplicationBuilder app)
+        private static string FindClientAssemblyPath(IWebHostEnvironment environment)
         {
-            var env = app.ApplicationServices.GetRequiredService<IWebHostEnvironment>();
-            var contentRoot = env.ContentRootPath;
+            var contentRoot = environment.ContentRootPath;
             var binDir = FindClientBinDir(contentRoot);
             var appName = Path.GetFileName(contentRoot); // TODO: Allow for the possibility that the assembly name has been overridden
             var assemblyPath = Path.Combine(binDir, $"{appName}.dll");
