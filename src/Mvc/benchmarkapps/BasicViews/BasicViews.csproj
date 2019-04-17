@@ -9,7 +9,6 @@
     <!-- Pomelo.EntityFrameworkCore.MySql is not strong named, so this test assembly cannot be strong-named signed either. -->
     <SignAssembly>false</SignAssembly>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>
