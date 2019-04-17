@@ -148,7 +148,7 @@ describe("HubConnectionBuilder", () => {
         });
     });
 
-    describe("configureLogging", async () => {
+    describe("configureLogging", () => {
         function testLogLevels(logger: ILogger, minLevel: LogLevel) {
             const capturingConsole = new CapturingConsole();
             (logger as ConsoleLogger).outputConsole = capturingConsole;
