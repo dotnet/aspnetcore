@@ -111,7 +111,8 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
                         description: result.Description,
                         duration: duration,
                         exception: result.Exception,
-                        data: result.Data);
+                        data: result.Data,
+                        tags: registration.Tags);
 
                     Log.HealthCheckEnd(_logger, registration, entry, duration);
                     Log.HealthCheckData(_logger, registration, entry);

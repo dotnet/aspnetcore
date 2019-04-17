@@ -47,11 +47,13 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         private object _dummy;
         private int _dummyPrimitive;
         public HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string description, System.TimeSpan duration, System.Exception exception, System.Collections.Generic.IReadOnlyDictionary<string, object> data) { throw null; }
+        public HealthReportEntry(Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus status, string description, System.TimeSpan duration, System.Exception exception, System.Collections.Generic.IReadOnlyDictionary<string, object> data, System.Collections.Generic.IEnumerable<string> tags = null) { throw null; }
         public System.Collections.Generic.IReadOnlyDictionary<string, object> Data { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string Description { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.TimeSpan Duration { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.Extensions.Diagnostics.HealthChecks.HealthStatus Status { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IEnumerable<string> Tags { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public enum HealthStatus
     {
