@@ -7,7 +7,6 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.Loader;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -15,7 +14,6 @@ using System.Xml.XPath;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.Common;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
@@ -51,6 +49,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public HttpClient HttpClient { get; private set; }
         public TestConnection CreateConnection() => new TestConnection(_currentPort);
 
+        private static IISServerOptions _options;
         private IWebHost _host;
 
         private string _appHostConfigPath;
@@ -63,9 +62,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             _loggerFactory = loggerFactory;
         }
 
-        public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory)
+        public static async Task<TestServer> Create(Action<IApplicationBuilder> appBuilder, ILoggerFactory loggerFactory, IISServerOptions options)
         {
             await WebCoreLock.WaitAsync();
+            _options = options;
             var server = new TestServer(appBuilder, loggerFactory);
             server.Start();
             (await server.HttpClient.GetAsync("/start")).EnsureSuccessStatusCode();
@@ -75,7 +75,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static Task<TestServer> Create(RequestDelegate app, ILoggerFactory loggerFactory)
         {
-            return Create(builder => builder.Run(app), loggerFactory);
+            return Create(builder => builder.Run(app), loggerFactory, new IISServerOptions());
+        }
+
+        public static Task<TestServer> Create(RequestDelegate app, ILoggerFactory loggerFactory, IISServerOptions options)
+        {
+            return Create(builder => builder.Run(app), loggerFactory, options);
         }
 
         private void Start()
@@ -125,14 +130,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private int Main(IntPtr argc, IntPtr argv)
         {
-            _host = new WebHostBuilder()
+            var builder = new WebHostBuilder()
                 .UseIIS()
-                .ConfigureServices(services => {
-                        services.AddSingleton<IStartup>(this);
-                        services.AddSingleton(_loggerFactory);
+                .ConfigureServices(services =>
+                {
+                    services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = _options.MaxRequestBodySize);
+                    services.AddSingleton<IStartup>(this);
+                    services.AddSingleton(_loggerFactory);
                 })
-                .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName)
-                .Build();
+                .UseSetting(WebHostDefaults.ApplicationKey, typeof(TestServer).GetTypeInfo().Assembly.FullName);
+            _host = builder.Build();
 
             var doneEvent = new ManualResetEventSlim();
             var lifetime = _host.Services.GetService<IHostApplicationLifetime>();

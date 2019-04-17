@@ -147,4 +147,19 @@
   <data name="ParameterReadOnlyAfterResponseStarted" xml:space="preserve">
     <value>{name} cannot be set because the response has already started.</value>
   </data>
+    <data name="BadRequest_RequestBodyTooLarge" xml:space="preserve">
+    <value>Request body too large.</value>
+  </data>
+  <data name="MaxRequestBodySizeCannotBeModifiedAfterRead" xml:space="preserve">
+    <value>The maximum request body size cannot be modified after the app has already started reading from the request body.</value>
+  </data>
+  <data name="MaxRequestBodySizeCannotBeModifiedForUpgradedRequests" xml:space="preserve">
+    <value>The maximum request body size cannot be modified after the request has been upgraded.</value>
+  </data>
+  <data name="NonNegativeNumberOrNullRequired" xml:space="preserve">
+    <value>Value must be null or a non-negative number.</value>
+  </data>
+  <data name="BadRequest" xml:space="preserve">
+    <value>Bad request.</value>
+  </data>
 </root>

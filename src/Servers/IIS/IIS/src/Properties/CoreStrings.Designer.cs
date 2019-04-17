@@ -150,6 +150,76 @@ namespace Microsoft.AspNetCore.Server.IIS
         internal static string FormatParameterReadOnlyAfterResponseStarted(object name)
             => string.Format(CultureInfo.CurrentCulture, GetString("ParameterReadOnlyAfterResponseStarted", "name"), name);
 
+        /// <summary>
+        /// Request body too large.
+        /// </summary>
+        internal static string BadRequest_RequestBodyTooLarge
+        {
+            get => GetString("BadRequest_RequestBodyTooLarge");
+        }
+
+        /// <summary>
+        /// Request body too large.
+        /// </summary>
+        internal static string FormatBadRequest_RequestBodyTooLarge()
+            => GetString("BadRequest_RequestBodyTooLarge");
+
+        /// <summary>
+        /// The maximum request body size cannot be modified after the app has already started reading from the request body.
+        /// </summary>
+        internal static string MaxRequestBodySizeCannotBeModifiedAfterRead
+        {
+            get => GetString("MaxRequestBodySizeCannotBeModifiedAfterRead");
+        }
+
+        /// <summary>
+        /// The maximum request body size cannot be modified after the app has already started reading from the request body.
+        /// </summary>
+        internal static string FormatMaxRequestBodySizeCannotBeModifiedAfterRead()
+            => GetString("MaxRequestBodySizeCannotBeModifiedAfterRead");
+
+        /// <summary>
+        /// The maximum request body size cannot be modified after the request has been upgraded.
+        /// </summary>
+        internal static string MaxRequestBodySizeCannotBeModifiedForUpgradedRequests
+        {
+            get => GetString("MaxRequestBodySizeCannotBeModifiedForUpgradedRequests");
+        }
+
+        /// <summary>
+        /// The maximum request body size cannot be modified after the request has been upgraded.
+        /// </summary>
+        internal static string FormatMaxRequestBodySizeCannotBeModifiedForUpgradedRequests()
+            => GetString("MaxRequestBodySizeCannotBeModifiedForUpgradedRequests");
+
+        /// <summary>
+        /// Value must be null or a non-negative number.
+        /// </summary>
+        internal static string NonNegativeNumberOrNullRequired
+        {
+            get => GetString("NonNegativeNumberOrNullRequired");
+        }
+
+        /// <summary>
+        /// Value must be null or a non-negative number.
+        /// </summary>
+        internal static string FormatNonNegativeNumberOrNullRequired()
+            => GetString("NonNegativeNumberOrNullRequired");
+
+        /// <summary>
+        /// Bad request.
+        /// </summary>
+        internal static string BadRequest
+        {
+            get => GetString("BadRequest");
+        }
+
+        /// <summary>
+        /// Bad request.
+        /// </summary>
+        internal static string FormatBadRequest()
+            => GetString("BadRequest");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

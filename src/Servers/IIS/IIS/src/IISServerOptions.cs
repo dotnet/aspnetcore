@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.IIS;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -34,5 +37,32 @@ namespace Microsoft.AspNetCore.Builder
         internal bool ForwardWindowsAuthentication { get; set; } = true;
 
         internal string[] ServerAddresses { get; set; }
+
+
+        // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
+        // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
+        private long? _maxRequestBodySize = 30000000;
+
+        /// <summary>
+        /// Gets or sets the maximum allowed size of any request body in bytes.
+        /// When set to null, the maximum request body size is unlimited.
+        /// This limit has no effect on upgraded connections which are always unlimited.
+        /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to null (unlimited).
+        /// </remarks>
+        public long? MaxRequestBodySize
+        {
+            get => _maxRequestBodySize;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNumberOrNullRequired);
+                }
+                _maxRequestBodySize = value;
+            }
+        }
     }
 }

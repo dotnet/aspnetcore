@@ -100,6 +100,25 @@ namespace TestSite
                 case "ConsoleWriteStartServer":
                     Console.WriteLine("TEST MESSAGE");
                     return StartServer();
+                case "DecreaseRequestLimit":
+                    {
+                        var host = new WebHostBuilder()
+                            .ConfigureLogging((_, factory) =>
+                            {
+                                factory.AddConsole();
+                                factory.AddFilter("Console", level => level >= LogLevel.Information);
+                            })
+                            .UseIIS()
+                            .ConfigureServices(services =>
+                            {
+                                services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 1);
+                            })
+                            .UseStartup<Startup>()
+                            .Build();
+
+                        host.Run();
+                        break;
+                    }
                 default:
                     return StartServer();
 

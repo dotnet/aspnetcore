@@ -284,7 +284,6 @@ namespace TestSite
             {
                 result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
             }
-
         }
 
         private int _requestsInFlight = 0;

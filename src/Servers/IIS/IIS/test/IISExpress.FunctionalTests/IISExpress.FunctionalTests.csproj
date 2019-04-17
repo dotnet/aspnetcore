@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="../FunctionalTest.props" />
 
@@ -11,6 +11,7 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.IIS.csproj" />
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
     <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />

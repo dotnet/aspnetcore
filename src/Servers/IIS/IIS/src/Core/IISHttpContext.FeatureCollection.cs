@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                                             IServerVariablesFeature,
                                             IHttpBufferingFeature,
                                             ITlsConnectionFeature,
-                                            IHttpBodyControlFeature
+                                            IHttpBodyControlFeature,
+                                            IHttpMaxRequestBodySizeFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -277,12 +278,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             Debug.Assert(_readBodyTask == null || _readBodyTask.IsCompleted);
 
             // Reset reading status to allow restarting with new IO
-            _hasRequestReadingStarted = false;
+            HasStartedConsumingRequestBody = false;
 
             // Upgrade async will cause the stream processing to go into duplex mode
             AsyncIO = new WebSocketsAsyncIOEngine(_contextLock, _pInProcessHandler);
 
             await InitializeResponse(flushHeaders: true);
+
+            await FlushAsync();
 
             return _streams.Upgrade();
         }
@@ -321,6 +324,30 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         IEnumerator IEnumerable.GetEnumerator() => FastEnumerable().GetEnumerator();
 
         bool IHttpBodyControlFeature.AllowSynchronousIO { get; set; }
+
+        bool IHttpMaxRequestBodySizeFeature.IsReadOnly => HasStartedConsumingRequestBody || _wasUpgraded;
+
+        long? IHttpMaxRequestBodySizeFeature.MaxRequestBodySize
+        {
+            get => MaxRequestBodySize;
+            set
+            {
+                if (HasStartedConsumingRequestBody)
+                {
+                    throw new InvalidOperationException(CoreStrings.MaxRequestBodySizeCannotBeModifiedAfterRead);
+                }
+                if (_wasUpgraded)
+                {
+                    throw new InvalidOperationException(CoreStrings.MaxRequestBodySizeCannotBeModifiedForUpgradedRequests);
+                }
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNumberOrNullRequired);
+                }
+
+                MaxRequestBodySize = value;
+            }
+        }
 
         void IHttpBufferingFeature.DisableRequestBuffering()
         {
