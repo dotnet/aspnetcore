@@ -42,8 +42,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
 
         private static readonly MethodInfo _sendStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals("SendStreamItems"));
+#if NETCOREAPP3_0
         private static readonly MethodInfo _sendIAsyncStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals("SendIAsyncEnumerableStreamItems"));
-
+#endif
         // Persistent across all connections
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -606,13 +607,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
         // this is called via reflection using the `_sendStreamItems` field
         private Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
         {
-            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
 
             async Task ReadChannelStream(CancellationTokenSource tokenSource)
             {
-                while (await reader.WaitToReadAsync(combinedCts.Token))
+                while (await reader.WaitToReadAsync(token))
                 {
-                    while (!combinedCts.Token.IsCancellationRequested && reader.TryRead(out var item))
+                    while (!token.IsCancellationRequested && reader.TryRead(out var item))
                     {
                         await SendWithLock(new StreamItemMessage(streamId, item));
                         Log.SendingStreamItem(_logger, streamId);
@@ -620,7 +620,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            return CommonStreaming(streamId, combinedCts, ReadChannelStream);
+            return CommonStreaming(streamId, token, ReadChannelStream);
         }
 
 #if NETCOREAPP3_0
@@ -638,14 +638,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
             }
 
-            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
-
-            return CommonStreaming(streamId, combinedCts, ReadAsyncEnumerableStream);
+            return CommonStreaming(streamId, token, ReadAsyncEnumerableStream);
         }
 #endif
 
-        private async Task CommonStreaming(string streamId, CancellationTokenSource cts, Func<CancellationTokenSource, Task> createAndConsumeStream)
+        private async Task CommonStreaming(string streamId, CancellationToken token, Func<CancellationTokenSource, Task> createAndConsumeStream)
         {
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
+
             Log.StartingStream(_logger, streamId);
             string responseError = null;
             try
