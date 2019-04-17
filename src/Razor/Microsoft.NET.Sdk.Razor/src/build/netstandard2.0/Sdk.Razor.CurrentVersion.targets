@@ -802,8 +802,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       '$(_IsTargetingRazor2X)' != 'true'">
     <Warning
        Code="RAZORSDK1004"
-       Text="One or more Razor view or page files were found, but the project is not configured to add Razor support for MVC. The MSBuild property 'AddRazorSupportForMvc' must be set to correctly
- compile Razor files that target MVC. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
+       Text="One or more Razor view or page files were found, but the project is not configured to add Razor support for MVC. The MSBuild property 'AddRazorSupportForMvc' must be set to correctly compile Razor files that target MVC. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
   </Target>
 
   <Target Name="_CheckForIncorrectComponentsConfiguration"
@@ -814,8 +813,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <Warning
        Code="RAZORSDK1005"
-       Text="One or more Razor component files (.razor) were found, but the project is not configured to compile Razor Components. Configure the project by targeting RazorLangVersion 3.0 or newer.
- For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
+       Text="One or more Razor component files (.razor) were found, but the project is not configured to compile Razor Components. Configure the project by targeting RazorLangVersion 3.0 or newer. For more information, see https://go.microsoft.com/fwlink/?linkid=868374." />
   </Target>
 
   <Target Name="_ResolveRazorTargetPath">
