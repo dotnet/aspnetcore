@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication
 {
@@ -20,11 +21,13 @@ namespace Microsoft.AspNetCore.Authentication
         /// <param name="schemes">The <see cref="IAuthenticationSchemeProvider"/>.</param>
         /// <param name="handlers">The <see cref="IAuthenticationRequestHandler"/>.</param>
         /// <param name="transform">The <see cref="IClaimsTransformation"/>.</param>
-        public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform)
+        /// <param name="options">The <see cref="AuthenticationOptions"/>.</param>
+        public AuthenticationService(IAuthenticationSchemeProvider schemes, IAuthenticationHandlerProvider handlers, IClaimsTransformation transform, IOptions<AuthenticationOptions> options)
         {
             Schemes = schemes;
             Handlers = handlers;
             Transform = transform;
+            Options = options.Value;
         }
 
         /// <summary>
@@ -41,6 +44,11 @@ namespace Microsoft.AspNetCore.Authentication
         /// Used for claims transformation.
         /// </summary>
         public IClaimsTransformation Transform { get; }
+
+        /// <summary>
+        /// The <see cref="AuthenticationOptions"/>.
+        /// </summary>
+        public AuthenticationOptions Options { get; }
 
         /// <summary>
         /// Authenticate for the specified authentication scheme.
@@ -144,6 +152,14 @@ namespace Microsoft.AspNetCore.Authentication
             if (principal == null)
             {
                 throw new ArgumentNullException(nameof(principal));
+            }
+
+            if (Options.RequireAuthenticatedSignIn)
+            {
+                if (principal.Identity == null || !principal.Identity.IsAuthenticated)
+                {
+                    throw new InvalidOperationException("SignInAsync when principal.Identity.IsAuthenticated is false is not allowed when AuthenticationOptions.RequireAuthenticatedSignIn is true.");
+                }
             }
 
             if (scheme == null)
