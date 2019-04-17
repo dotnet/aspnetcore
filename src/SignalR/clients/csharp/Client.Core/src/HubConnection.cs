@@ -629,9 +629,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             async Task ReadAsyncEnumerableStream(CancellationTokenSource tokenSource)
             {
-                var s = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
+                var streamValues = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
 
-                await foreach (var streamValue in s)
+                await foreach (var streamValue in streamValues)
                 {
                     await SendWithLock(new StreamItemMessage(streamId, streamValue));
                     Log.SendingStreamItem(_logger, streamId);
