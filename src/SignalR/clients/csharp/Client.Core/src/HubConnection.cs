@@ -604,14 +604,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         // this is called via reflection using the `_sendStreamItems` field
-        private async Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
+        private Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
         {
-            Log.StartingStream(_logger, streamId);
-
             var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token).Token;
 
-            string responseError = null;
-            try
+            async Task ReadChannelStream(CancellationTokenSource tokenSource)
             {
                 while (await reader.WaitToReadAsync(combinedToken))
                 {
@@ -622,35 +619,39 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                 }
             }
-            catch (OperationCanceledException)
-            {
-                Log.CancelingStream(_logger, streamId);
-                responseError = $"Stream canceled by client.";
-            }
 
-            Log.CompletingStream(_logger, streamId);
-            await SendWithLock(CompletionMessage.WithError(streamId, responseError));
+            return CommonStreaming(streamId, combinedToken, ReadChannelStream);
         }
 
 #if NETCOREAPP3_0
-        // this is called via reflection using the `_sendStreamItems` field
-        private async Task SendIAsyncEnumerableStreamItems<T>(string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
+        // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
+        private Task SendIAsyncEnumerableStreamItems<T>(string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
         {
-            Log.StartingStream(_logger, streamId);
-
-            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
-
-            stream = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, combinedCts);
-
-            string responseError = null;
-            try
+            async Task ReadAsyncEnumerableStream(CancellationTokenSource tokenSource)
             {
-                await foreach (var streamValue in stream)
+                var s = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
+
+                await foreach (var streamValue in s)
                 {
                     await SendWithLock(new StreamItemMessage(streamId, streamValue));
                     Log.SendingStreamItem(_logger, streamId);
                 }
             }
+
+            return CommonStreaming(streamId, token, ReadAsyncEnumerableStream);
+        }
+#endif
+
+        private async Task CommonStreaming(string streamId, CancellationToken token, Func<CancellationTokenSource, Task> createAndConsumeStream)
+        {
+            Log.StartingStream(_logger, streamId);
+            var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
+
+            string responseError = null;
+            try
+            {
+                await createAndConsumeStream(combinedCts);
+            }
             catch (OperationCanceledException)
             {
                 Log.CancelingStream(_logger, streamId);
@@ -660,7 +661,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.CompletingStream(_logger, streamId);
             await SendWithLock(CompletionMessage.WithError(streamId, responseError));
         }
-#endif
 
         private async Task<object> InvokeCoreAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {

@@ -723,8 +723,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     {
                         for (var i = 0; i < 1000; i++)
                         {
-                            await Task.Delay(10);
                             yield return i;
+                            await Task.Delay(10);
                         }
                     }
 
