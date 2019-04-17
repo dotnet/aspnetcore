@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
@@ -16,6 +17,17 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
     public class JsonHubProtocolTests : JsonHubProtocolTestsBase
     {
         protected override IHubProtocol JsonHubProtocol => new JsonHubProtocol();
+
+        protected override IHubProtocol GetProtocolWithOptions(bool useCamelCase, bool ignoreNullValues)
+        {
+            var protocolOptions = new JsonHubProtocolOptions()
+            {
+                IgnoreNullValues = ignoreNullValues,
+                //TODO: camelCase
+            };
+
+            return new JsonHubProtocol(Options.Create(protocolOptions));
+        }
 
         [Theory]
         [InlineData("", "Error reading JSON.")]
@@ -42,7 +54,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var writer = MemoryBufferWriter.Get();
             try
             {
-                JsonHubProtocol.WriteMessage(testData.Message, writer);
+                var protocol = GetProtocolWithOptions(testData.UseCamelCase, testData.IgnoreNullValues);
+                protocol.WriteMessage(testData.Message, writer);
                 var json = Encoding.UTF8.GetString(writer.ToArray());
 
                 Assert.Equal(expectedOutput, json);
@@ -63,7 +76,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var binder = new TestBinder(testData.Message);
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
-            JsonHubProtocol.TryParseMessage(ref data, binder, out var message);
+            var protocol = GetProtocolWithOptions(testData.UseCamelCase, testData.IgnoreNullValues);
+            protocol.TryParseMessage(ref data, binder, out var message);
 
             Assert.Equal(testData.Message, message, TestHubMessageEqualityComparer.Instance);
         }
@@ -83,11 +97,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IDictionary<string, JsonProtocolTestData> CustomProtocolTestData => new[]
         {
-            new JsonProtocolTestData("InvocationMessage_HasFloatArgument", new InvocationMessage(null, "Target", new object[] { 1, "Foo", 2.0f }), "{\"type\":1,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
-            new JsonProtocolTestData("StreamItemMessage_HasFloatItem", new StreamItemMessage("123", 2.0f), "{\"type\":2,\"invocationId\":\"123\",\"item\":2}"),
-            new JsonProtocolTestData("CompletionMessage_HasFloatResult", CompletionMessage.WithResult("123", 2.0f), "{\"type\":3,\"invocationId\":\"123\",\"result\":2}"),
-            new JsonProtocolTestData("StreamInvocationMessage_HasFloatArgument", new StreamInvocationMessage("123", "Target", new object[] { 1, "Foo", 2.0f }), "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
-            new JsonProtocolTestData("InvocationMessage_StringIsoDateArgument", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20\\u002b12:34\"]}"),
+            new JsonProtocolTestData("InvocationMessage_HasFloatArgument", new InvocationMessage(null, "Target", new object[] { 1, "Foo", 2.0f }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
+            new JsonProtocolTestData("StreamItemMessage_HasFloatItem", new StreamItemMessage("123", 2.0f), true, true, "{\"type\":2,\"invocationId\":\"123\",\"item\":2}"),
+            new JsonProtocolTestData("CompletionMessage_HasFloatResult", CompletionMessage.WithResult("123", 2.0f), true, true, "{\"type\":3,\"invocationId\":\"123\",\"result\":2}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasFloatArgument", new StreamInvocationMessage("123", "Target", new object[] { 1, "Foo", 2.0f }), true, true, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
+            new JsonProtocolTestData("InvocationMessage_StringIsoDateArgument", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), true, true, "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20\\u002b12:34\"]}"),
         }.ToDictionary(t => t.Name);
 
         public static IEnumerable<object[]> CustomProtocolTestDataNames => CustomProtocolTestData.Keys.Select(name => new object[] { name });

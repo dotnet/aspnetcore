@@ -41,12 +41,6 @@ namespace FunctionalTests
             {
                 options.EnableDetailedErrors = true;
             })
-            .AddNewtonsoftJsonProtocol(options =>
-            {
-                // we are running the same tests with JSON and MsgPack protocols and having
-                // consistent casing makes it cleaner to verify results
-                options.PayloadSerializerSettings.ContractResolver = new DefaultContractResolver();
-            })
             .AddMessagePackProtocol();
 
             services.AddCors();
