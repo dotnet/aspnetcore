@@ -285,8 +285,8 @@ namespace Microsoft.AspNetCore.SignalR
     {
         private readonly object _dummy;
         public SerializedMessage(string protocolName, System.ReadOnlyMemory<byte> serialized) { throw null; }
-        public readonly string ProtocolName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public readonly System.ReadOnlyMemory<byte> Serialized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string ProtocolName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.ReadOnlyMemory<byte> Serialized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public static partial class SignalRConnectionBuilderExtensions
     {
