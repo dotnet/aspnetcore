@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
     internal partial class IISHttpContext
     {
         private long _consumedBytes;
+
         /// <summary>
         /// Reads data from the Input pipe to the user.
         /// </summary>
@@ -105,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                         break;
                     }
 
-                    if (RequestHeaders.ContentLength > MaxRequestBodySize)
+                    if (_consumedBytes > MaxRequestBodySize)
                     {
                         BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
                     }
