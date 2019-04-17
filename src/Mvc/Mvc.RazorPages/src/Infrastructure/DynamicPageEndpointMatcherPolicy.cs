@@ -107,8 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         "{ " + string.Join(", ", metadata.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}")) + " }.");
                 }
 
-                // It should not be possible to have more than one result for pages.
-                Debug.Assert(endpoints.Count == 1);
+                // It is possible to have more than one result for pages but they are equivalent.
 
                 var compiled = await _loader.LoadAsync(endpoints[0].Metadata.GetMetadata<PageActionDescriptor>());
                 var replacement = compiled.Endpoint;
