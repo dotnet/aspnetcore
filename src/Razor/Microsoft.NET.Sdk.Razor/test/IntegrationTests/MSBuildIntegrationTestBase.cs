@@ -60,7 +60,8 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             bool suppressTimeout = false,
             bool suppressBuildServer = false,
             string buildServerPipeName = null,
-            MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet)
+            MSBuildProcessKind msBuildProcessKind = MSBuildProcessKind.Dotnet,
+            bool runRestoreBeforeBuildOrPublish = true)
         {
             var timeout = suppressTimeout ? (TimeSpan?)Timeout.InfiniteTimeSpan : null;
             var buildArgumentList = new List<string>
@@ -82,7 +83,24 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
             if (!string.IsNullOrEmpty(target))
             {
+                // Restore before build or publish
+                if (runRestoreBeforeBuildOrPublish &&
+                    (string.Equals("Build", target, StringComparison.OrdinalIgnoreCase)
+                        || string.Equals("Publish", target, StringComparison.OrdinalIgnoreCase)))
+                {
+                    buildArgumentList.Add($"/t:Restore");
+                }
+
                 buildArgumentList.Add($"/t:{target}");
+            }
+            else
+            {
+                // By default, restore then build
+                if (runRestoreBeforeBuildOrPublish)
+                {
+                    buildArgumentList.Add($"/t:Restore");
+                }
+                buildArgumentList.Add($"/t:Build");
             }
 
             buildArgumentList.Add($"/p:Configuration={Configuration} {args}");
