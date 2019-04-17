@@ -5,6 +5,8 @@
 /.config/                       @aspnet/build
 /build/                         @aspnet/build
 /eng/                           @aspnet/build
+/eng/Versions.props             @aspnet-hello
+/eng/Version.Details.xml        @aspnet-hello
 /src/Components/                @SteveSandersonMS
 /src/DefaultBuilder/            @tratcher @anurse
 /src/Hosting/                   @tratcher @anurse
