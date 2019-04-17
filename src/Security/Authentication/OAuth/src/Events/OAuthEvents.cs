@@ -32,37 +32,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <summary>
         /// Gets or sets the delegate that is invoked when the ExchangeCode method is invoked.
         /// </summary>
-        public Func<OAuthExchangeCodeContext, Task<OAuthTokenResponse>> OnExchangeCode { get; set; } = async context =>
-        {
-            var tokenRequestParameters = new Dictionary<string, string>()
-            {
-                { "client_id", context.Options.ClientId },
-                { "redirect_uri", context.RedirectUri },
-                { "client_secret", context.Options.ClientSecret },
-                { "code", context.Code },
-                { "grant_type", "authorization_code" },
-            };
-
-            var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
-
-            var requestMessage = new HttpRequestMessage(HttpMethod.Post, context.Options.TokenEndpoint);
-            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            requestMessage.Content = requestContent;
-
-            var response = await context.Backchannel.SendAsync(requestMessage, context.HttpContext.RequestAborted);
-            if (response.IsSuccessStatusCode)
-            {
-                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-                return OAuthTokenResponse.Success(payload);
-            }
-            else
-            {
-                var error = "OAuth token endpoint failure: "
-                    + $"Status: {response.StatusCode}; Headers: {response.Headers.ToString()}; Body: {await response.Content.ReadAsStringAsync()};";
-                return OAuthTokenResponse.Failed(new Exception(error));
-            }
-        };
-
+        public Func<OAuthExchangeCodeContext, Task> OnExchangeCode { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked after the provider successfully authenticates a user.
@@ -78,11 +48,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public virtual Task RedirectToAuthorizationEndpoint(RedirectContext<OAuthOptions> context) => OnRedirectToAuthorizationEndpoint(context);
 
         /// <summary>
-        /// Invoked after user authenticates on the provider to exchange the code gained for the access token.
+        /// Invoked before the request to exchange the code for the access token.
         /// </summary>
         /// <param name="context">Contains the code returned, the redirect URI and the <see cref="AuthenticationProperties"/>.</param>
         /// <returns></returns>
-        public virtual Task<OAuthTokenResponse> ExchangeCode(OAuthExchangeCodeContext context) => OnExchangeCode(context);
+        public virtual Task ExchangeCode(OAuthExchangeCodeContext context) => OnExchangeCode(context);
     
     }
 }

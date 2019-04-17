@@ -2,13 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
-    /// Contains information about the relevant to exchanging the code for the access token.
+    /// Contains information about the exchanging code for the access token context.
     /// </summary>
     public class OAuthExchangeCodeContext : PropertiesContext<OAuthOptions>
     {
@@ -19,38 +20,21 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <param name="context">The HTTP environment.</param>
         /// <param name="scheme">The authentication scheme.</param>
         /// <param name="options">The options used by the authentication middleware.</param>
-        /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
-        /// <param name="redirectUri">The redirect URI</param>
-        /// <param name="code">The authorization code gained after user authentication</param>
+        /// <param name="tokenRequestParameters">The parameters that will be sent as query string for the token request</param>
         public OAuthExchangeCodeContext(
             AuthenticationProperties properties,
             HttpContext context,
             AuthenticationScheme scheme,
             OAuthOptions options,
-            HttpClient backchannel,
-            string redirectUri,
-            string code)
+            Dictionary<string, string> tokenRequestParameters)
             : base(context, scheme, options, properties)
         {
-            Backchannel = backchannel ?? throw new ArgumentNullException(nameof(backchannel));
-            RedirectUri = redirectUri;
-            Code = code;
+            TokenRequestParameters = tokenRequestParameters;
         }
-
-        /// <summary>
-        /// Gets the backchannel used to communicate with the provider.
-        /// </summary>
-        public HttpClient Backchannel { get; }
-
-        /// <summary>
-        /// Gets the URI used for the redirect operation.
-        /// </summary>
-        public string RedirectUri { get; }
 
         /// <summary>
         /// Gets the code returned by the authentication provider after user authenticates
         /// </summary>
-        public string Code { get; }
-
+        public Dictionary<string, string> TokenRequestParameters { get; }
     }
 }

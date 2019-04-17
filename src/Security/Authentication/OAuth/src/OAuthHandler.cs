@@ -161,8 +161,43 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri, AuthenticationProperties properties)
         {
-            var exchangeCodeContext = new OAuthExchangeCodeContext(properties, Context, Scheme, Options, Backchannel, redirectUri, code);
-            return await Events.OnExchangeCode(exchangeCodeContext);
+            var tokenRequestParameters = new Dictionary<string, string>()
+            {
+                { "client_id", Options.ClientId },	
+                { "redirect_uri", redirectUri },	
+                { "client_secret", Options.ClientSecret },	
+                { "code", code },	
+                { "grant_type", "authorization_code" },	
+            };
+
+            var exchangeCodeContext = new OAuthExchangeCodeContext(properties, Context, Scheme, Options, tokenRequestParameters);
+            await Events.OnExchangeCode(exchangeCodeContext);
+
+            var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
+
+            var requestMessage = new HttpRequestMessage(HttpMethod.Post, Options.TokenEndpoint);
+            requestMessage.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            requestMessage.Content = requestContent;
+            var response = await Backchannel.SendAsync(requestMessage, Context.RequestAborted);
+            if (response.IsSuccessStatusCode)
+            {
+                var payload = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                return OAuthTokenResponse.Success(payload);
+            }
+            else
+            {
+                var error = "OAuth token endpoint failure: " + await Display(response);
+                return OAuthTokenResponse.Failed(new Exception(error));
+            }
+        }
+
+        private static async Task<string> Display(HttpResponseMessage response)
+        {
+            var output = new StringBuilder();
+            output.Append("Status: " + response.StatusCode + ";");
+            output.Append("Headers: " + response.Headers.ToString() + ";");
+            output.Append("Body: " + await response.Content.ReadAsStringAsync() + ";");
+            return output.ToString();
         }
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
