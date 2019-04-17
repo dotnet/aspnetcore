@@ -876,5 +876,28 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             // Assert
             Assert.Contains(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareInvoked"));
         }
+
+        [Fact]
+        public async Task Invoke_WithoutOrigin_InvokeFlagSet()
+        {
+            // Arrange
+            var corsService = Mock.Of<ICorsService>();
+            var mockProvider = Mock.Of<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                loggerFactory,
+                "DefaultPolicyName");
+
+            var httpContext = new DefaultHttpContext();
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider);
+
+            // Assert
+            Assert.Contains(httpContext.Items, item => string.Equals(item.Key as string, "__CorsMiddlewareInvoked"));
+        }
     }
 }

@@ -25,6 +25,7 @@ The requirements that led to this system are:
 * Name the .csproj file to match the assembly name.
 * Run `build.cmd /t:GenerateProjectList` when adding new projects
 * Use [eng/tools/BaseLineGenerator/](/eng/tools/BaselineGenerator/README.md) if you need to update baselines.
+* If you need to make a breaking change to dependencies, you may need to add `<SuppressBaselineReference>`.
 
 ## Important files
 
@@ -67,3 +68,16 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
 
        If you don't know the commit hash of the source code used to produce "0.0.1-beta-1", you can use `000000` as a placeholder for `Sha`
        as its value is unimportant and will be updated the next time the bot runs.
+
+## Example: make a breaking change to references
+
+If Microsoft.AspNetCore.Banana in 2.1 had a reference to `Microsoft.AspNetCore.Orange`, but in 3.0 this reference is changing to `Microsoft.AspNetCore.BetterThanOrange`, you would need to make these changes to the .csproj file
+
+```diff
+<!-- in Microsoft.AspNetCore.Banana.csproj -->
+  <ItemGroup>
+-    <Reference Include="Microsoft.AspNetCore.Orange" /> <!-- the old dependency -->
++    <Reference Include="Microsoft.AspNetCore.BetterThanOrange" /> <!-- the new dependency -->
++    <SuppressBaselineReference Include="Microsoft.AspNetCore.Orange" /> <!-- suppress as a known breaking change -->
+  </ItemGroup>
+```

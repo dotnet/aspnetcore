@@ -53,6 +53,63 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Fact]
+        public async Task HeaderInState_WithMultipleValues_AddAllValues()
+        {
+            // Arrange
+            Configuration.Headers.Add("in", new HeaderPropagationEntry { OutboundHeaderName = "out" });
+            State.Headers.Add("in", new[] { "one", "two" });
+
+            // Act
+            await Client.SendAsync(new HttpRequestMessage());
+
+            // Assert
+            Assert.True(Handler.Headers.Contains("out"));
+            Assert.Equal(new[] { "one", "two" }, Handler.Headers.GetValues("out"));
+        }
+
+        [Fact]
+        public async Task HeaderInState_RequestWithContent_ContentHeaderPresent_DoesNotAddIt()
+        {
+            Configuration.Headers.Add("in", new HeaderPropagationEntry() { OutboundHeaderName = "Content-Type" });
+            State.Headers.Add("in", "test");
+
+            // Act
+            await Client.SendAsync(new HttpRequestMessage() { Content = new StringContent("test") });
+
+            // Assert
+            Assert.True(Handler.Content.Headers.Contains("Content-Type"));
+            Assert.Equal(new[] { "text/plain; charset=utf-8" }, Handler.Content.Headers.GetValues("Content-Type"));
+        }
+
+        [Fact]
+        public async Task HeaderInState_RequestWithContent_ContentHeaderNotPresent_AddValue()
+        {
+            Configuration.Headers.Add("in", new HeaderPropagationEntry() { OutboundHeaderName = "Content-Language" });
+            State.Headers.Add("in", "test");
+
+            // Act
+            await Client.SendAsync(new HttpRequestMessage() { Content = new StringContent("test") });
+
+            // Assert
+            Assert.True(Handler.Content.Headers.Contains("Content-Language"));
+            Assert.Equal(new[] { "test" }, Handler.Content.Headers.GetValues("Content-Language"));
+        }
+
+        [Fact]
+        public async Task HeaderInState_WithMultipleValues_RequestWithContent_ContentHeaderNotPresent_AddAllValues()
+        {
+            Configuration.Headers.Add("in", new HeaderPropagationEntry() { OutboundHeaderName = "Content-Language" });
+            State.Headers.Add("in", new[] { "one", "two" });
+
+            // Act
+            await Client.SendAsync(new HttpRequestMessage() { Content = new StringContent("test") });
+
+            // Assert
+            Assert.True(Handler.Content.Headers.Contains("Content-Language"));
+            Assert.Equal(new[] { "one", "two" }, Handler.Content.Headers.GetValues("Content-Language"));
+        }
+
+        [Fact]
         public async Task HeaderInState_NoOutputName_UseInputName()
         {
             // Arrange
@@ -168,11 +225,13 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         private class SimpleHandler : DelegatingHandler
         {
             public HttpHeaders Headers { get; private set; }
+            public HttpContent Content { get; private set; }
 
             protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
                 CancellationToken cancellationToken)
             {
                 Headers = request.Headers;
+                Content = request.Content;
                 return Task.FromResult(new HttpResponseMessage());
             }
         }

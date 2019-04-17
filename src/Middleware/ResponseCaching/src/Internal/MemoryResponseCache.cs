@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,11 +7,11 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class MemoryResponseCache : IResponseCache
+    internal class MemoryResponseCache : IResponseCache
     {
         private readonly IMemoryCache _cache;
 
-        public MemoryResponseCache(IMemoryCache cache)
+        internal MemoryResponseCache(IMemoryCache cache)
         {
             _cache = cache ?? throw new ArgumentNullException(nameof(cache));
         }

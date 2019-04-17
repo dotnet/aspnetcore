@@ -5,10 +5,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -52,8 +54,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831", FlakyOn.All)]
-        public async Task WritesCancelledWhenUsingAbortedToken()
+        [Repeat(20)]
+        public async Task WritesCanceledWhenUsingAbortedToken()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
@@ -69,6 +71,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     while (true)
                     {
                         await ctx.Response.Body.WriteAsync(data, ctx.RequestAborted);
+                        await Task.Delay(10); // Small delay to not constantly call WriteAsync.
                     }
                 }
                 catch (Exception e)

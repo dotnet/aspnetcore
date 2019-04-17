@@ -4,7 +4,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <DefineConstants>$(DefineConstants);NETCOREAPP2_0_CUSTOM_DEFINE</DefineConstants>
     <IsTestAssetProject>true</IsTestAssetProject>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>

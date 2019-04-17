@@ -18,7 +18,7 @@
 
   <Target Name="Restore">
     <Message Importance="High" Text="Running yarn install on $(MSBuildProjectFullPath)" />
-    <Yarn Command="install $(InstallArgs)" />
+    <Yarn Command="install $(InstallArgs)" StandardOutputImportance="High" StandardErrorImportance="High" />
   </Target>
 
   <Target Name="PrepareForBuild">

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.Internal;
@@ -17,11 +18,12 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Diagnostics
 {
     /// <summary>
-    /// Captures synchronous and asynchronous exceptions from the pipeline and generates HTML error responses.
+    /// Captures synchronous and asynchronous exceptions from the pipeline and generates error responses.
     /// </summary>
     public class DeveloperExceptionPageMiddleware
     {
@@ -32,6 +34,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
         private readonly Func<ErrorContext, Task> _exceptionHandler;
+        private static readonly MediaTypeHeaderValue _textPlainMediaType = new MediaTypeHeaderValue("text/html");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -127,13 +130,34 @@ namespace Microsoft.AspNetCore.Diagnostics
         // Assumes the response headers have not been sent.  If they have, still attempt to write to the body.
         private Task DisplayException(ErrorContext errorContext)
         {
-            var compilationException = errorContext.Exception as ICompilationException;
-            if (compilationException != null)
+            var httpContext = errorContext.HttpContext;
+            var headers = httpContext.Request.GetTypedHeaders();
+            var acceptHeader = headers.Accept;
+
+            // If the client does not ask for HTML just format the exception as plain text
+            if (acceptHeader == null || !acceptHeader.Any(h => h.IsSubsetOf(_textPlainMediaType)))
             {
-                return DisplayCompilationException(errorContext.HttpContext, compilationException);
+                httpContext.Response.ContentType = "text/plain";
+
+                var sb = new StringBuilder();
+                sb.AppendLine(errorContext.Exception.ToString());
+                sb.AppendLine();
+                sb.AppendLine("HEADERS");
+                sb.AppendLine("=======");
+                foreach (var pair in httpContext.Request.Headers)
+                {
+                    sb.AppendLine($"{pair.Key}: {pair.Value}");
+                }
+
+                return httpContext.Response.WriteAsync(sb.ToString());
             }
 
-            return DisplayRuntimeException(errorContext.HttpContext, errorContext.Exception);
+            if (errorContext.Exception is ICompilationException compilationException)
+            {
+                return DisplayCompilationException(httpContext, compilationException);
+            }
+
+            return DisplayRuntimeException(httpContext, errorContext.Exception);
         }
 
         private Task DisplayCompilationException(
