@@ -69,16 +69,16 @@ namespace Microsoft.AspNetCore.Components
     [EventHandler("ontouchleave", typeof(UITouchEventArgs))]
 
     // Pointer events
-    [EventHandler("gotpointercapture", typeof(UIPointerEventArgs))]
-    [EventHandler("lostpointercapture", typeof(UIPointerEventArgs))]
-    [EventHandler("pointercancel", typeof(UIPointerEventArgs))]
-    [EventHandler("pointerdown", typeof(UIPointerEventArgs))]
-    [EventHandler("pointerenter", typeof(UIPointerEventArgs))]
-    [EventHandler("pointerleave", typeof(UIPointerEventArgs))]
-    [EventHandler("pointermove", typeof(UIPointerEventArgs))]
-    [EventHandler("pointerout", typeof(UIPointerEventArgs))]
-    [EventHandler("pointerover", typeof(UIPointerEventArgs))]
-    [EventHandler("pointerup", typeof(UIPointerEventArgs))]
+    [EventHandler("ongotpointercapture", typeof(UIPointerEventArgs))]
+    [EventHandler("onlostpointercapture", typeof(UIPointerEventArgs))]
+    [EventHandler("onpointercancel", typeof(UIPointerEventArgs))]
+    [EventHandler("onpointerdown", typeof(UIPointerEventArgs))]
+    [EventHandler("onpointerenter", typeof(UIPointerEventArgs))]
+    [EventHandler("onpointerleave", typeof(UIPointerEventArgs))]
+    [EventHandler("onpointermove", typeof(UIPointerEventArgs))]
+    [EventHandler("onpointerout", typeof(UIPointerEventArgs))]
+    [EventHandler("onpointerover", typeof(UIPointerEventArgs))]
+    [EventHandler("onpointerup", typeof(UIPointerEventArgs))]
 
     // Media events
     [EventHandler("oncanplay", typeof(UIEventArgs))]
