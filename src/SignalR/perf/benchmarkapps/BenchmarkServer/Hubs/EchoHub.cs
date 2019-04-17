@@ -10,7 +10,7 @@ namespace BenchmarkServer.Hubs
 {
     public class EchoHub : Hub
     {
-        static int _connectionCount = 0;
+        private static int _connectionCount = 0;
         static int _peakConnectionCount = 0;
 
         static DateTime _serverStart = DateTime.Now;
