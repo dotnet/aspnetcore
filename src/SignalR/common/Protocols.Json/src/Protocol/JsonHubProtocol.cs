@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="options">The options used to initialize the protocol.</param>
         public JsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
         {
-            _payloadSerializerOptions = options.Value.PayloadSerializerSettings._options;
+            _payloadSerializerOptions = options.Value._serializerOptions;
         }
 
         /// <inheritdoc />
@@ -762,13 +762,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return message;
         }
 
-        internal static CustomJsonOptionsClass CreateDefaultSerializerSettings()
+        internal static JsonSerializerOptions CreateDefaultSerializerSettings()
         {
-            var options = new CustomJsonOptionsClass();
-            options._options.WriteIndented = false;
-            options._options.ReadCommentHandling = JsonCommentHandling.Skip;
-            options._options.AllowTrailingCommas = false;
-            options._options.IgnoreNullValues = false;
+            var options = new JsonSerializerOptions();
+            options.WriteIndented = false;
+            options.ReadCommentHandling = JsonCommentHandling.Disallow;
+            options.AllowTrailingCommas = false;
+            options.IgnoreNullValues = false;
+            options.IgnoreReadOnlyProperties = false;
+            // TODO: camelCase
 
             return options;
         }
