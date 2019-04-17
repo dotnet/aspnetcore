@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private void SetErrorResponseHeaders(int statusCode)
         {
             StatusCode = statusCode;
-            ReasonPhrase = string.Empty; // TODO
+            ReasonPhrase = string.Empty;
             HttpResponseHeaders.Clear();
         }
 
@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public void SetBadRequestState(BadHttpRequestException ex)
         {
-            //Log.ConnectionBadRequest(ConnectionId, ex);
+            Log.ConnectionBadRequest(_logger, RequestConnectionId, ex);
 
             if (!HasResponseStarted)
             {

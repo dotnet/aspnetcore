@@ -38,7 +38,6 @@ namespace Microsoft.AspNetCore.Builder
 
         internal string[] ServerAddresses { get; set; }
 
-
         // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
         // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
         private long? _maxRequestBodySize = 30000000;
