@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         protected static ActionContext GetActionContext(
             MediaTypeHeaderValue contentType,
-            MemoryStream responseStream = null)
+            Stream responseStream = null)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.ContentType = contentType.ToString();
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             object outputValue,
             Type outputType,
             string contentType = "application/xml; charset=utf-8",
-            MemoryStream responseStream = null)
+            Stream responseStream = null)
         {
             var mediaTypeHeaderValue = MediaTypeHeaderValue.Parse(contentType);
 

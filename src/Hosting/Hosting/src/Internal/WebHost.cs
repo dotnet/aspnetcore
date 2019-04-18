@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private IServiceProvider _applicationServices;
         private ExceptionDispatchInfo _applicationServicesException;
-        private ILogger<WebHost> _logger;
+        private ILogger _logger;
 
         private bool _stopped;
 
@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public virtual async Task StartAsync(CancellationToken cancellationToken = default)
         {
             HostingEventSource.Log.HostStart();
-            _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
+            _logger = _applicationServices.GetRequiredService<ILoggerFactory>().CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             _logger.Starting();
 
             var application = BuildApplication();

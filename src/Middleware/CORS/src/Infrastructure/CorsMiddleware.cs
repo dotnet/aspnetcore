@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Cors.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
 {
@@ -119,6 +118,9 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <inheritdoc />
         public Task Invoke(HttpContext context, ICorsPolicyProvider corsPolicyProvider)
         {
+            // Flag to indicate to other systems, that CORS middleware was run for this request
+            context.Items[CorsMiddlewareInvokedKey] = CorsMiddlewareInvokedValue;
+
             if (!context.Request.Headers.ContainsKey(CorsConstants.Origin))
             {
                 return _next(context);
@@ -136,9 +138,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             //    there is an endpoint with IEnableCorsAttribute that has a policy name then
             //    fetch policy by name, prioritizing it above policy on middleware
             // 3. If there is no policy on middleware then use name on middleware
-
-            // Flag to indicate to other systems, e.g. MVC, that CORS middleware was run for this request
-            context.Items[CorsMiddlewareInvokedKey] = CorsMiddlewareInvokedValue;
 
             var endpoint = context.GetEndpoint();
 

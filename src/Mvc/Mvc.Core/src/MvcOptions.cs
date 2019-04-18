@@ -105,7 +105,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets or sets the flag to buffer the request body in input formatters. Default is <c>false</c>.
         /// </summary>
-        public bool SuppressInputFormatterBuffering { get; set; } = false;
+        public bool SuppressInputFormatterBuffering { get; set; }
+
+        /// <summary>
+        /// Gets or sets the flag that determines if buffering is disabled for output formatters that
+        /// synchronously write to the HTTP response body.
+        /// </summary>
+        public bool SuppressOutputFormatterBuffering { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
@@ -323,19 +329,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets the <see cref="JsonSerializerOptions"/> used by <see cref="SystemTextJsonInputFormatter"/> and
         /// <see cref="SystemTextJsonOutputFormatter"/>.
         /// </summary>
-        public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions
-        {
-            // Allow for the payload to have null values for some inputs (under-binding)
-            IgnoreNullPropertyValueOnRead = true,
-
-            ReaderOptions = new JsonReaderOptions
-            {
-                // Limit the object graph we'll consume to a fixed depth. This prevents stackoverflow exceptions
-                // from deserialization errors that might occur from deeply nested objects.
-                // This value is to be kept in sync with JsonSerializerSettingsProvider.DefaultMaxDepth
-                MaxDepth = DefaultMaxModelBindingRecursionDepth,
-            },
-        };
+        public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions();
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();
 

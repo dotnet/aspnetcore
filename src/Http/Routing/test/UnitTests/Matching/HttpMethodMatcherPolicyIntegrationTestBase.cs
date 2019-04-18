@@ -14,8 +14,10 @@ using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
 namespace Microsoft.AspNetCore.Routing.Matching
 {
     // End-to-end tests for the HTTP method matching functionality
-    public class HttpMethodMatcherPolicyIntegrationTest
+    public abstract class HttpMethodMatcherPolicyIntegrationTestBase
     {
+        protected abstract bool HasDynamicMetadata { get; }
+
         [Fact]
         public async Task Match_HttpMethod()
         {
@@ -203,7 +205,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
         }
 
-        [Fact] // When all of the candidates handles specific verbs, use a 405 endpoint
+        [Fact]
         public async Task NotMatch_HttpMethod_CORS_DoesNotReturn405()
         {
             // Arrange
@@ -357,7 +359,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return (httpContext, context);
         }
 
-        internal static RouteEndpoint CreateEndpoint(
+        internal RouteEndpoint CreateEndpoint(
             string template,
             object defaults = null,
             object constraints = null,
@@ -369,6 +371,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (httpMethods != null)
             {
                 metadata.Add(new HttpMethodMetadata(httpMethods ?? Array.Empty<string>(), acceptCorsPreflight));
+            }
+
+            if (HasDynamicMetadata)
+            {
+                metadata.Add(new DynamicEndpointMetadata());
             }
 
             var displayName = "endpoint: " + template + " " + string.Join(", ", httpMethods ?? new[] { "(any)" });
@@ -384,6 +391,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var endpoint = CreateEndpoint(template);
             return (CreateMatcher(endpoint), endpoint);
+        }
+
+        private class DynamicEndpointMetadata : IDynamicEndpointMetadata
+        {
+            public bool IsDynamic => true;
         }
     }
 }

@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public interface IResponseCachingPolicyProvider
+    internal interface IResponseCachingPolicyProvider
     {
         /// <summary>
         /// Determine whether the response caching logic should be attempted for the incoming HTTP request.

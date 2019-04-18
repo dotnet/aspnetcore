@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
@@ -9,8 +10,8 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
-using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -24,13 +25,26 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         private readonly ILogger<ViewComponentResult> _logger;
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataDictionaryFactory;
+        private IHttpResponseStreamWriterFactory _writerFactory;
 
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public ViewComponentResultExecutor(
             IOptions<MvcViewOptions> mvcHelperOptions,
             ILoggerFactory loggerFactory,
             HtmlEncoder htmlEncoder,
             IModelMetadataProvider modelMetadataProvider,
             ITempDataDictionaryFactory tempDataDictionaryFactory)
+            : this(mvcHelperOptions, loggerFactory, htmlEncoder, modelMetadataProvider, tempDataDictionaryFactory, null)
+        {
+        }
+
+        public ViewComponentResultExecutor(
+            IOptions<MvcViewOptions> mvcHelperOptions,
+            ILoggerFactory loggerFactory,
+            HtmlEncoder htmlEncoder,
+            IModelMetadataProvider modelMetadataProvider,
+            ITempDataDictionaryFactory tempDataDictionaryFactory,
+            IHttpResponseStreamWriterFactory writerFactory)
         {
             if (mvcHelperOptions == null)
             {
@@ -62,6 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _htmlEncoder = htmlEncoder;
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataDictionaryFactory = tempDataDictionaryFactory;
+            _writerFactory = writerFactory;
         }
 
         /// <inheritdoc />
@@ -105,14 +120,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 response.StatusCode = result.StatusCode.Value;
             }
 
-            // Opt into sync IO support until we can work out an alternative https://github.com/aspnet/AspNetCore/issues/6397
-            var syncIOFeature = context.HttpContext.Features.Get<Http.Features.IHttpBodyControlFeature>();
-            if (syncIOFeature != null)
-            {
-                syncIOFeature.AllowSynchronousIO = true;
-            }
+            _writerFactory ??= context.HttpContext.RequestServices.GetRequiredService<IHttpResponseStreamWriterFactory>();
 
-            using (var writer = new HttpResponseStreamWriter(response.Body, resolvedContentTypeEncoding))
+            using (var writer = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
             {
                 var viewContext = new ViewContext(
                     context,
@@ -127,9 +137,26 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 // IViewComponentHelper is stateful, we want to make sure to retrieve it every time we need it.
                 var viewComponentHelper = context.HttpContext.RequestServices.GetRequiredService<IViewComponentHelper>();
                 (viewComponentHelper as IViewContextAware)?.Contextualize(viewContext);
-
                 var viewComponentResult = await GetViewComponentResult(viewComponentHelper, _logger, result);
-                viewComponentResult.WriteTo(writer, _htmlEncoder);
+
+                if (viewComponentResult is ViewBuffer viewBuffer)
+                {
+                    // In the ordinary case, DefaultViewComponentHelper will return an instance of ViewBuffer. We can simply
+                    // invoke WriteToAsync on it.
+                    await viewBuffer.WriteToAsync(writer, _htmlEncoder);
+                    await writer.FlushAsync();
+                }
+                else
+                {
+                    using var memoryStream = new MemoryStream();
+                    using (var intermediateWriter = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+                    {
+                        viewComponentResult.WriteTo(intermediateWriter, _htmlEncoder);
+                    }
+
+                    memoryStream.Position = 0;
+                    await memoryStream.CopyToAsync(response.Body);
+                }
             }
         }
 

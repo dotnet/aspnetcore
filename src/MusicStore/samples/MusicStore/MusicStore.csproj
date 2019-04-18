@@ -8,7 +8,6 @@
     <DefineConstants>$(DefineConstants);DEMO</DefineConstants>
     <RuntimeIdentifiers>win-x86;win-x64;linux-x64;osx-x64</RuntimeIdentifiers>
     <InProcessTestSite>true</InProcessTestSite>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup>

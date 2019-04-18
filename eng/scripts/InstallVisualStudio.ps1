@@ -25,7 +25,6 @@
 
         .\InstallVisualStudio.ps1
 #>
-[CmdletBinding(DefaultParameterSetName = 'Default')]
 param(
     [ValidateSet('BuildTools','Community', 'Professional', 'Enterprise')]
     [string]$Edition = 'Enterprise',
@@ -35,8 +34,8 @@ param(
 )
 
 if ($Passive -and $Quiet) {
-    Write-Host "The -Passive and -Quiet options cannot be used together." -f Red
-    Write-Host "Run ``Get-Help $PSCommandPath`` for more details." -f Red
+    Write-Host -ForegroundColor Red "Error: The -Passive and -Quiet options cannot be used together."
+    Write-Host -ForegroundColor Red "Run ``Get-Help $PSCommandPath`` for more details."
     exit 1
 }
 
@@ -98,15 +97,61 @@ if ($Quiet) {
     $arguments += '--quiet', '--wait'
 }
 
-Write-Host ""
+Write-Host
 Write-Host "Installing Visual Studio 2019 $Edition" -f Magenta
-Write-Host ""
+Write-Host
 Write-Host "Running '$bootstrapper $arguments'"
 
-$process = Start-Process -FilePath "$bootstrapper" -ArgumentList $arguments `
-    -PassThru -RedirectStandardError "$intermedateDir\errors.txt" -Verbose -Wait
-if ($process.ExitCode -ne 0) {
-    Get-Content "$intermedateDir\errors.txt" | Write-Error
+foreach ($i in 0, 1, 2) {
+    if ($i -ne 0) {
+        Write-Host "Retrying..."
+    }
+
+    $process = Start-Process -FilePath "$bootstrapper" -ArgumentList $arguments -ErrorAction Continue -PassThru `
+        -RedirectStandardError "$intermedateDir\errors.txt" -Verbose -Wait
+    Write-Host "Exit code = $($process.ExitCode)."
+    if ($process.ExitCode -eq 0) {
+        break
+    } else {
+        # https://docs.microsoft.com/en-us/visualstudio/install/use-command-line-parameters-to-install-visual-studio#error-codes
+        if ($process.ExitCode -eq 3010) {
+            Write-Host -ForegroundColor Red "Error: Installation requires restart to finish the VS update."
+            break
+        }
+        elseif ($process.ExitCode -eq 5007) {
+            Write-Host -ForegroundColor Red "Error: Operation was blocked - the computer does not meet the requirements."
+            break
+        }
+        elseif (($process.ExitCode -eq 5004) -or ($process.ExitCode -eq 1602)) {
+            Write-Host -ForegroundColor Red "Error: Operation was canceled."
+        }
+        else {
+            Write-Host -ForegroundColor Red "Error: Installation failed for an unknown reason."
+        }
+
+        Write-Host
+        Write-Host "Errors:"
+        Get-Content "$intermedateDir\errors.txt" | Write-Warning
+        Write-Host
+
+        Get-ChildItem $env:Temp\dd_bootstrapper_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
+            Write-Host "${_}:"
+            Get-Content "$_"
+            Write-Host
+        }
+
+        $clientLogs = Get-ChildItem $env:Temp\dd_client_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
+            Write-Host "${_}:"
+            Get-Content "$_"
+            Write-Host
+        }
+
+        $setupLogs = Get-ChildItem $env:Temp\dd_setup_*.log |Sort-Object CreationTime -Descending |Select-Object -First 1 |% {
+            Write-Host "${_}:"
+            Get-Content "$_"
+            Write-Host
+        }
+    }
 }
 
 Remove-Item "$intermedateDir\errors.txt" -errorAction SilentlyContinue
