@@ -306,12 +306,34 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Debug.Assert(_actionExecutedContext != null);
         }
 
-        private async Task<ActionExecutedContext> InvokeNextActionFilterAwaitedAsync()
+        private Task<ActionExecutedContext> InvokeNextActionFilterAwaitedAsync()
         {
             Debug.Assert(_actionExecutingContext != null);
             if (_actionExecutingContext.Result != null)
             {
                 // If we get here, it means that an async filter set a result AND called next(). This is forbidden.
+                return Throw();
+            }
+
+            var task = InvokeNextActionFilterAsync();
+            if (!task.IsCompletedSuccessfully)
+            {
+                return Awaited(this, task);
+            }
+
+            Debug.Assert(_actionExecutedContext != null);
+            return Task.FromResult(_actionExecutedContext);
+
+            static async Task<ActionExecutedContext> Awaited(ControllerActionInvoker invoker, Task task)
+            {
+                await task;
+
+                Debug.Assert(invoker._actionExecutedContext != null);
+                return invoker._actionExecutedContext;
+            }
+#pragma warning disable CS1998
+            static async Task<ActionExecutedContext> Throw()
+            {
                 var message = Resources.FormatAsyncActionFilter_InvalidShortCircuit(
                     typeof(IAsyncActionFilter).Name,
                     nameof(ActionExecutingContext.Result),
@@ -320,11 +342,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                 throw new InvalidOperationException(message);
             }
-
-            await InvokeNextActionFilterAsync();
-
-            Debug.Assert(_actionExecutedContext != null);
-            return _actionExecutedContext;
+#pragma warning restore CS1998
         }
 
         private async Task InvokeActionMethodAsync()
