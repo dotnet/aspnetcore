@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing
             _routeOptions = routeOptions?.Value ?? throw new ArgumentNullException(nameof(routeOptions));
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
             var endpoint = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
             if (endpoint?.RequestDelegate != null)
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing
                 if (_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
                 {
                     // User opted out of this check.
-                    return;
+                    return Task.CompletedTask;
                 }
 
                 if (endpoint.Metadata.GetMetadata<IAuthorizeData>() != null &&
@@ -58,17 +58,35 @@ namespace Microsoft.AspNetCore.Routing
 
                 try
                 {
-                    await endpoint.RequestDelegate(httpContext);
+                    var requestTask = endpoint.RequestDelegate(httpContext);
+                    if (!requestTask.IsCompletedSuccessfully)
+                    {
+                        return AwaitRequestTask(endpoint, requestTask, _logger);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    Log.ExecutedEndpoint(_logger, endpoint);
+                    return Task.FromException(exception);
+                }
+
+                Log.ExecutedEndpoint(_logger, endpoint);
+                return Task.CompletedTask;
+            }
+
+            return _next(httpContext);
+
+            static async Task AwaitRequestTask(Endpoint endpoint, Task requestTask, ILogger logger)
+            {
+                try
+                {
+                    await requestTask;
                 }
                 finally
                 {
-                    Log.ExecutedEndpoint(_logger, endpoint);
+                    Log.ExecutedEndpoint(logger, endpoint);
                 }
-
-                return;
             }
-
-            await _next(httpContext);
         }
 
         private static void ThrowMissingAuthMiddlewareException(Endpoint endpoint)
