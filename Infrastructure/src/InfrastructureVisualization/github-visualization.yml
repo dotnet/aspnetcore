@@ -1,0 +1,14 @@
+
+trigger:
+    - jkotalik/infraViz
+
+pool:
+    vmImage: 'windows-2019'
+variables: 
+    buildConfiguration: 'Release'
+steps:
+    - powershell: ./Infrastructure/src/InfrastructureVisualization/build.ps1
+      env:
+         ConnectionString: $(ConnectionString)
+         PersonalAccessToken: $(PersonalAccessToken)
+         DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
