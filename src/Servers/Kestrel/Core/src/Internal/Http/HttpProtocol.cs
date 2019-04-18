@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -903,7 +904,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             if (_httpVersion != Http.HttpVersion.Http10 &&
-                RequestHeaders.TryGetValue("Expect", out var expect) &&
+                RequestHeaders.TryGetValue(HeaderNames.Expect, out var expect) &&
                 (expect.FirstOrDefault() ?? "").Equals("100-continue", StringComparison.OrdinalIgnoreCase))
             {
                 Output.Write100ContinueAsync().GetAwaiter().GetResult();

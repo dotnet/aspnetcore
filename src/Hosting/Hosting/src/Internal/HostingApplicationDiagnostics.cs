@@ -22,11 +22,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private const string DeprecatedDiagnosticsEndRequestKey = "Microsoft.AspNetCore.Hosting.EndRequest";
         private const string DiagnosticsUnhandledExceptionKey = "Microsoft.AspNetCore.Hosting.UnhandledException";
 
-        private const string RequestIdHeaderName = "Request-Id";
-        private const string CorrelationContextHeaderName = "Correlation-Context";
-        private const string TraceParentHeaderName = "traceparent";
-        private const string TraceStateHeaderName = "tracestate";
-
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
 
@@ -238,22 +233,22 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             var activity = new Activity(ActivityName);
 
-            if (!httpContext.Request.Headers.TryGetValue(TraceParentHeaderName, out var requestId))
+            if (!httpContext.Request.Headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
             {
-                httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out requestId);
+                httpContext.Request.Headers.TryGetValue(HeaderNames.RequestId, out requestId);
             }
 
             if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
-                if (httpContext.Request.Headers.TryGetValue(TraceStateHeaderName, out var traceState))
+                if (httpContext.Request.Headers.TryGetValue(HeaderNames.TraceState, out var traceState))
                 {
                     activity.TraceStateString = traceState;
                 }
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                string[] baggage = httpContext.Request.Headers.GetCommaSeparatedValues(CorrelationContextHeaderName);
+                string[] baggage = httpContext.Request.Headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
                 if (baggage.Length > 0)
                 {
                     foreach (var item in baggage)

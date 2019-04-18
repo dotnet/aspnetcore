@@ -94,7 +94,11 @@ namespace CodeGenerator
                 "Translate",
                 "User-Agent",
                 "DNT",
-                "Upgrade-Insecure-Requests"
+                "Upgrade-Insecure-Requests",
+                "Request-Id",
+                "Correlation-Context",
+                "TraceParent",
+                "TraceState"
             })
             .Concat(corsRequestHeaders)
             .Select((header, index) => new KnownHeader
@@ -539,21 +543,21 @@ namespace CodeGenerator
                 new
                 {
                     Headers = requestHeaders,
-                    HeadersByLength = requestHeaders.GroupBy(x => x.Name.Length),
+                    HeadersByLength = requestHeaders.OrderBy(x => x.Name.Length).GroupBy(x => x.Name.Length),
                     ClassName = "HttpRequestHeaders",
                     Bytes = default(byte[])
                 },
                 new
                 {
                     Headers = responseHeaders,
-                    HeadersByLength = responseHeaders.GroupBy(x => x.Name.Length),
+                    HeadersByLength = responseHeaders.OrderBy(x => x.Name.Length).GroupBy(x => x.Name.Length),
                     ClassName = "HttpResponseHeaders",
                     Bytes = responseHeaders.SelectMany(header => header.Bytes).ToArray()
                 },
                 new
                 {
                     Headers = responseTrailers,
-                    HeadersByLength = responseTrailers.GroupBy(x => x.Name.Length),
+                    HeadersByLength = responseTrailers.OrderBy(x => x.Name.Length).GroupBy(x => x.Name.Length),
                     ClassName = "HttpResponseTrailers",
                     Bytes = responseTrailers.SelectMany(header => header.Bytes).ToArray()
                 }
@@ -647,27 +651,43 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
-                    {{{Each(byLength, header => $@"
-                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{{(header.Identifier == "ContentLength" ? @"
-                            if (_contentLength.HasValue)
-                            {
-                                value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
-                                return true;
-                            }
-                            return false;" : $@"
-                            if ({header.TestBit()})
-                            {{
-                                value = _headers._{header.Identifier};
-                                return true;
-                            }}
-                            return false;")}
-                        }}")}
-                    }}
-                    break;")}
+                {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
+                    if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
+                    {{{(header.Identifier == "ContentLength" ? @"
+                        if (_contentLength.HasValue)
+                        {
+                            value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
+                            return true;
+                        }
+                        return false;" : $@"
+                        if ({header.TestBit()})
+                        {{
+                            value = _headers._{header.Identifier};
+                            return true;
+                        }}
+                        return false;")}
+                    }}")}
+{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
+                    if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {{{(header.Identifier == "ContentLength" ? @"
+                        if (_contentLength.HasValue)
+                        {
+                            value = HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value);
+                            return true;
+                        }
+                        return false;" : $@"
+                        if ({header.TestBit()})
+                        {{
+                            value = _headers._{header.Identifier};
+                            return true;
+                        }}
+                        return false;")}
+                    }}")}
+                    break;
+                }}")}
             }}
 
-            return MaybeUnknown?.TryGetValue(key, out value) ?? false;
+            return TryGetUnknown(key, ref value);
         }}
 
         protected override void SetValueFast(string key, StringValues value)
@@ -676,17 +696,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
-                    {{{Each(byLength, header => $@"
-                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{{(header.Identifier == "ContentLength" ? $@"
-                            _contentLength = ParseContentLength(value.ToString());" : $@"
-                            {header.SetBit()};
-                            _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
-                            _headers._raw{header.Identifier} = null;")}")}
-                            return;
-                        }}")}
-                    }}
-                    break;")}
+                {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
+                    if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
+                    {{{(header.Identifier == "ContentLength" ? $@"
+                        _contentLength = ParseContentLength(value.ToString());" : $@"
+                        {header.SetBit()};
+                        _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                        _headers._raw{header.Identifier} = null;")}")}
+                        return;
+                    }}")}
+{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
+                    if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {{{(header.Identifier == "ContentLength" ? $@"
+                        _contentLength = ParseContentLength(value.ToString());" : $@"
+                        {header.SetBit()};
+                        _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                        _headers._raw{header.Identifier} = null;")}")}
+                        return;
+                    }}")}
+                    break;
+                }}")}
             }}
 
             SetValueUnknown(key, value);
@@ -698,32 +727,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
-                    {{{Each(byLength, header => $@"
-                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{{(header.Identifier == "ContentLength" ? $@"
-                            if (!_contentLength.HasValue)
-                            {{
-                                _contentLength = ParseContentLength(value);
-                                return true;
-                            }}
-                            return false;" : $@"
-                            if ({header.TestNotBit()})
-                            {{
-                                {header.SetBit()};
-                                _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
-                                _headers._raw{header.Identifier} = null;")}
-                                return true;
-                            }}
-                            return false;")}
-                        }}")}
-                    }}
-                    break;")}
+                {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
+                    if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
+                    {{{(header.Identifier == "ContentLength" ? $@"
+                        if (!_contentLength.HasValue)
+                        {{
+                            _contentLength = ParseContentLength(value);
+                            return true;
+                        }}
+                        return false;" : $@"
+                        if ({header.TestNotBit()})
+                        {{
+                            {header.SetBit()};
+                            _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                            _headers._raw{header.Identifier} = null;")}
+                            return true;
+                        }}
+                        return false;")}
+                    }}")}
+    {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
+                    if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {{{(header.Identifier == "ContentLength" ? $@"
+                        if (!_contentLength.HasValue)
+                        {{
+                            _contentLength = ParseContentLength(value);
+                            return true;
+                        }}
+                        return false;" : $@"
+                        if ({header.TestNotBit()})
+                        {{
+                            {header.SetBit()};
+                            _headers._{header.Identifier} = value;{(header.EnhancedSetter == false ? "" : $@"
+                            _headers._raw{header.Identifier} = null;")}
+                            return true;
+                        }}
+                        return false;")}
+                    }}")}
+                    break;
+                }}")}
             }}
-{(loop.ClassName == "HttpResponseHeaders" ? @"
-            ValidateHeaderNameCharacters(key);" : "")}
-            Unknown.Add(key, value);
-            // Return true, above will throw and exit for false
-            return true;
+
+            return AddValueUnknown(key, value);
         }}
 
         protected override bool RemoveFast(string key)
@@ -731,29 +775,47 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
                 case {byLength.Key}:
-                    {{{Each(byLength, header => $@"
-                        if (""{header.Name}"".Equals(key, StringComparison.OrdinalIgnoreCase))
-                        {{{(header.Identifier == "ContentLength" ? @"
-                            if (_contentLength.HasValue)
-                            {
-                                _contentLength = null;
-                                return true;
-                            }
-                            return false;" : $@"
-                            if ({header.TestBit()})
-                            {{
-                                {header.ClearBit()};
-                                _headers._{header.Identifier} = default(StringValues);{(header.EnhancedSetter == false ? "" : $@"
-                                _headers._raw{header.Identifier} = null;")}
-                                return true;
-                            }}
-                            return false;")}
-                        }}")}
-                    }}
-                    break;")}
+                {{{Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
+                    if (ReferenceEquals(HeaderNames.{header.Identifier}, key))
+                    {{{(header.Identifier == "ContentLength" ? @"
+                        if (_contentLength.HasValue)
+                        {
+                            _contentLength = null;
+                            return true;
+                        }
+                        return false;" : $@"
+                        if ({header.TestBit()})
+                        {{
+                            {header.ClearBit()};
+                            _headers._{header.Identifier} = default(StringValues);{(header.EnhancedSetter == false ? "" : $@"
+                            _headers._raw{header.Identifier} = null;")}
+                            return true;
+                        }}
+                        return false;")}
+                    }}")}
+    {Each(byLength.OrderBy(h => !h.PrimaryHeader), header => $@"
+                    if (HeaderNames.{header.Identifier}.Equals(key, StringComparison.OrdinalIgnoreCase))
+                    {{{(header.Identifier == "ContentLength" ? @"
+                        if (_contentLength.HasValue)
+                        {
+                            _contentLength = null;
+                            return true;
+                        }
+                        return false;" : $@"
+                        if ({header.TestBit()})
+                        {{
+                            {header.ClearBit()};
+                            _headers._{header.Identifier} = default(StringValues);{(header.EnhancedSetter == false ? "" : $@"
+                            _headers._raw{header.Identifier} = null;")}
+                            return true;
+                        }}
+                        return false;")}
+                    }}")}
+                    break;
+                }}")}
             }}
 
-            return MaybeUnknown?.Remove(key) ?? false;
+            return RemoveUnknown(key);
         }}
 {(loop.ClassName != "HttpRequestHeaders" ?
  $@"        protected override void ClearFast()
@@ -770,7 +832,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
             if ({header.TestTempBit()})
             {{
-                _headers._{header.Identifier} = default(StringValues);
+                _headers._{header.Identifier} = default;
                 if({header.TestNotTempBit()})
                 {{
                     return;
@@ -786,7 +848,7 @@ $@"        private void Clear(long bitsToClear)
             {Each(loop.Headers.Where(header => header.Identifier != "ContentLength").OrderBy(h => !h.PrimaryHeader), header => $@"
             if ({header.TestTempBit()})
             {{
-                _headers._{header.Identifier} = default(StringValues);
+                _headers._{header.Identifier} = default;
                 if({header.TestNotTempBit()})
                 {{
                     return;
@@ -809,7 +871,7 @@ $@"        private void Clear(long bitsToClear)
                     {{
                         return false;
                     }}
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(""{header.Name}"", _headers._{header.Identifier});
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _headers._{header.Identifier});
                     ++arrayIndex;
                 }}")}
                 if (_contentLength.HasValue)
@@ -818,7 +880,7 @@ $@"        private void Clear(long bitsToClear)
                     {{
                         return false;
                     }}
-                    array[arrayIndex] = new KeyValuePair<string, StringValues>(""Content-Length"", HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
+                    array[arrayIndex] = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_contentLength.Value));
                     ++arrayIndex;
                 }}
             ((ICollection<KeyValuePair<string, StringValues>>)MaybeUnknown)?.CopyTo(array, arrayIndex);
@@ -970,14 +1032,14 @@ $@"        private void Clear(long bitsToClear)
                 Header{header.Identifier}: // case {header.Index}
                     if ({header.TestBit()})
                     {{
-                        _current = new KeyValuePair<string, StringValues>(""{header.Name}"", _collection._headers._{header.Identifier});
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.{header.Identifier}, _collection._headers._{header.Identifier});
                         _next = {header.Index + 1};
                         return true;
                     }}")}
                 {(!loop.ClassName.Contains("Trailers") ? $@"HeaderContentLength: // case {loop.Headers.Count() - 1}
                     if (_collection._contentLength.HasValue)
                     {{
-                        _current = new KeyValuePair<string, StringValues>(""Content-Length"", HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
+                        _current = new KeyValuePair<string, StringValues>(HeaderNames.ContentLength, HeaderUtilities.FormatNonNegativeInt64(_collection._contentLength.Value));
                         _next = {loop.Headers.Count()};
                         return true;
                     }}" : "")}

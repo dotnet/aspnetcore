@@ -11,6 +11,7 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var responseHeaders = _responseHeaders;
             responseHeaders.HeaderContentEncoding = "gzip";
             responseHeaders.HeaderContentType = "text/html; charset=utf-8";
-            _responseHeadersDict["Strict-Transport-Security"] = "max-age=31536000; includeSubdomains";
+            _responseHeadersDict[HeaderNames.StrictTransportSecurity] = "max-age=31536000; includeSubdomains";
             responseHeaders.HeaderVary = "Accept-Encoding";
             _responseHeadersDict["X-Powered-By"] = "ASP.NET";
 

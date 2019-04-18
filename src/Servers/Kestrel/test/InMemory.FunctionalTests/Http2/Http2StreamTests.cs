@@ -273,8 +273,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [InlineData(HeaderNames.Path, "/")]
-        [InlineData(HeaderNames.Scheme, "http")]
+        [InlineData(":path", "/")]
+        [InlineData(":scheme", "http")]
         public async Task HEADERS_Received_CONNECTMethod_WithSchemeOrPath_Reset(string headerName, string value)
         {
             await InitializeConnectionAsync(_noopApplication);
