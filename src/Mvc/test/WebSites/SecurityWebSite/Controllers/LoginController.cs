@@ -24,7 +24,7 @@ namespace SecurityWebSite.Controllers
         [HttpPost]
         public async Task<IActionResult> LoginClaimA()
         {
-            var identity = new ClaimsIdentity(new[] { new Claim("ClaimA", "Value") });
+            var identity = new ClaimsIdentity(new[] { new Claim("ClaimA", "Value") }, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
             return Ok();
         }
@@ -32,7 +32,7 @@ namespace SecurityWebSite.Controllers
         [HttpPost]
         public async Task<IActionResult> LoginClaimAB()
         {
-            var identity = new ClaimsIdentity(new[] { new Claim("ClaimA", "Value"), new Claim("ClaimB", "Value") });
+            var identity = new ClaimsIdentity(new[] { new Claim("ClaimA", "Value"), new Claim("ClaimB", "Value") }, CookieAuthenticationDefaults.AuthenticationScheme);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
             return Ok();
         }
