@@ -512,7 +512,7 @@ VOID
 http_set_startup_error_page_content(_In_ byte* errorPageContent, int length)
 {
     g_errorPageContent.resize(length);
-    memcpy(&g_errorPageContent[length], errorPageContent, length);
+    memcpy(&g_errorPageContent[0], errorPageContent, length);
 }
 
 // End of export
