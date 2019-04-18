@@ -15,7 +15,7 @@ namespace TriageBuildFailures.VSTS.Models
         public DateTime DateStarted { get; set; }
         public DateTime DateEnded { get; set; }
         public BuildStatus TaskStatus { get; set; }
-        public int Rank { get; set; }
+        public int? Rank { get; set; }
         public IEnumerable<VSTSIssue> Issues { get; set; }
         public string AgentName { get; set; }
         public string LogUrl { get; set; }
