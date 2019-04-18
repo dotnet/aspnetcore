@@ -163,11 +163,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var tokenRequestParameters = new Dictionary<string, string>()
             {
-                { "client_id", Options.ClientId },	
-                { "redirect_uri", redirectUri },	
-                { "client_secret", Options.ClientSecret },	
-                { "code", code },	
-                { "grant_type", "authorization_code" },	
+                { "client_id", Options.ClientId },
+                { "redirect_uri", redirectUri },
+                { "client_secret", Options.ClientSecret },
+                { "code", code },
+                { "grant_type", "authorization_code" },
             };
 
             var exchangeCodeContext = new OAuthExchangeCodeContext(properties, Context, Scheme, Options, tokenRequestParameters);
