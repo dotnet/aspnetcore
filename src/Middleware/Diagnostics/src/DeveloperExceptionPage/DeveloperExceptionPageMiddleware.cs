@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
         private readonly Func<ErrorContext, Task> _exceptionHandler;
-        private static readonly MediaTypeHeaderValue _textPlainMediaType = new MediaTypeHeaderValue("text/html");
+        private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeveloperExceptionPageMiddleware"/> class
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             var acceptHeader = headers.Accept;
 
             // If the client does not ask for HTML just format the exception as plain text
-            if (acceptHeader == null || !acceptHeader.Any(h => h.IsSubsetOf(_textPlainMediaType)))
+            if (acceptHeader == null || !acceptHeader.Any(h => h.IsSubsetOf(_textHtmlMediaType)))
             {
                 httpContext.Response.ContentType = "text/plain";
 
