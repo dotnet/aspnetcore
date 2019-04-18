@@ -372,47 +372,76 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 #pragma warning restore CS1998
         }
 
-        private async Task InvokeActionMethodAsync()
+        private Task InvokeActionMethodAsync()
         {
-            var controllerContext = _controllerContext;
-            var objectMethodExecutor = _cacheEntry.ObjectMethodExecutor;
-            var controller = _instance;
-            var arguments = _arguments;
-            var actionMethodExecutor = _cacheEntry.ActionMethodExecutor;
-            var orderedArguments = PrepareArguments(arguments, objectMethodExecutor);
-
-            var diagnosticListener = _diagnosticListener;
-            var logger = _logger;
-
-            IActionResult result = null;
-            try
+            if (_diagnosticListener.IsEnabled() || _logger.IsEnabled(LogLevel.Trace))
             {
-                diagnosticListener.BeforeActionMethod(
-                    controllerContext,
-                    arguments,
-                    controller);
-                logger.ActionMethodExecuting(controllerContext, orderedArguments);
-                var stopwatch = ValueStopwatch.StartNew();
-                var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, controller, orderedArguments);
-                if (actionResultValueTask.IsCompletedSuccessfully)
-                {
-                    result = actionResultValueTask.Result;
-                }
-                else
-                {
-                    result = await actionResultValueTask;
-                }
-
-                _result = result;
-                logger.ActionMethodExecuted(controllerContext, result, stopwatch.GetElapsedTime());
+                return Logged(this);
             }
-            finally
+
+            var objectMethodExecutor = _cacheEntry.ObjectMethodExecutor;
+            var actionMethodExecutor = _cacheEntry.ActionMethodExecutor;
+            var orderedArguments = PrepareArguments(_arguments, objectMethodExecutor);
+
+            var actionResultValueTask = actionMethodExecutor.Execute(_mapper, objectMethodExecutor, _instance, orderedArguments);
+            if (actionResultValueTask.IsCompletedSuccessfully)
             {
-                diagnosticListener.AfterActionMethod(
-                    controllerContext,
-                    arguments,
-                    controllerContext,
-                    result);
+                _result = actionResultValueTask.Result;
+            }
+            else
+            {
+                return Awaited(this, actionResultValueTask);
+            }
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(ControllerActionInvoker invoker, ValueTask< IActionResult> actionResultValueTask)
+            {
+                invoker._result = await actionResultValueTask;
+            }
+
+            static async Task Logged(ControllerActionInvoker invoker)
+            {
+                var controllerContext = invoker._controllerContext;
+                var objectMethodExecutor = invoker._cacheEntry.ObjectMethodExecutor;
+                var controller = invoker._instance;
+                var arguments = invoker._arguments;
+                var actionMethodExecutor = invoker._cacheEntry.ActionMethodExecutor;
+                var orderedArguments = PrepareArguments(arguments, objectMethodExecutor);
+
+                var diagnosticListener = invoker._diagnosticListener;
+                var logger = invoker._logger;
+
+                IActionResult result = null;
+                try
+                {
+                    diagnosticListener.BeforeActionMethod(
+                        controllerContext,
+                        arguments,
+                        controller);
+                    logger.ActionMethodExecuting(controllerContext, orderedArguments);
+                    var stopwatch = ValueStopwatch.StartNew();
+                    var actionResultValueTask = actionMethodExecutor.Execute(invoker._mapper, objectMethodExecutor, controller, orderedArguments);
+                    if (actionResultValueTask.IsCompletedSuccessfully)
+                    {
+                        result = actionResultValueTask.Result;
+                    }
+                    else
+                    {
+                        result = await actionResultValueTask;
+                    }
+
+                    invoker._result = result;
+                    logger.ActionMethodExecuted(controllerContext, result, stopwatch.GetElapsedTime());
+                }
+                finally
+                {
+                    diagnosticListener.AfterActionMethod(
+                        controllerContext,
+                        arguments,
+                        controllerContext,
+                        result);
+                }
             }
         }
 
