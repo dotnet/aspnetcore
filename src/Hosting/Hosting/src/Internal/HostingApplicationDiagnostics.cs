@@ -248,8 +248,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                StringValues baggage = httpContext.Request.Headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
-                if (baggage.Count > 0)
+                string[] baggage = httpContext.Request.Headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                if (baggage.Length > 0)
                 {
                     foreach (var item in baggage)
                     {
