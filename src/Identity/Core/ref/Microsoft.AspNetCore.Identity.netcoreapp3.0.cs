@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Identity
 }
 namespace Microsoft.Extensions.DependencyInjection
 {
-    public static partial class IdentityServiceCollectionExtensions
+    public static partial class CoreIdentityServiceCollectionExtensions
     {
         public static Microsoft.AspNetCore.Identity.IdentityBuilder AddIdentity<TUser, TRole>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) where TUser : class where TRole : class { throw null; }
         public static Microsoft.AspNetCore.Identity.IdentityBuilder AddIdentity<TUser, TRole>(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Identity.IdentityOptions> setupAction) where TUser : class where TRole : class { throw null; }
