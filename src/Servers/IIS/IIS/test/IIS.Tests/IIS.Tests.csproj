@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
     <IsIISTest>true</IsIISTest>
+    <TestGroupName>IIS.Tests</TestGroupName>
   </PropertyGroup>
 
   <ItemGroup>
