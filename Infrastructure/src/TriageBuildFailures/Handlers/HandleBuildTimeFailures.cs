@@ -51,7 +51,6 @@ namespace TriageBuildFailures.Handlers
         }
 
         private const string _BrokenBuildLabel = "Broken Build";
-        private static readonly string[] _Notifiers = new string[] { "Eilon", "mkArtakMSFT", "anurse" };
 
         public override async Task<IFailureHandlerResult> HandleFailure(ICIBuild build)
         {
@@ -80,7 +79,7 @@ namespace TriageBuildFailures.Handlers
 
 {build.WebURL}
 
-CC {GitHubUtils.GetAtMentions(_Notifiers)}";
+CC @aspnet/build";
                 var issueLabels = new[]
                 {
                     _PRI0Label,
@@ -102,8 +101,7 @@ CC {GitHubUtils.GetAtMentions(_Notifiers)}";
                     new KeyValuePair<string, object>("WebURL", build.WebURL),
                 };
 
-                // TODO: Would be nice if we could figure out how to map broken builds to failure areas
-                var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: null, hiddenData: hiddenData);
+                var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: new [] { "aspnet/build" }, hiddenData: hiddenData);
                 await GHClient.AddIssueToProject(issue, GHClient.Config.NewBuildFailuresColumn);
                 Reporter.Output($"Created issue {issue.HtmlUrl}");
 
