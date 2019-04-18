@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Authorization
             _policyProvider = policyProvider;
         }
 
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             if (context == null)
             {
@@ -53,10 +54,14 @@ namespace Microsoft.AspNetCore.Authorization
             var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
             if (authorizeData.Count() == 0)
             {
-                await _next(context);
-                return;
+                return _next(context);
             }
-            
+
+            return EvaluatePolicy(context, endpoint, authorizeData);
+        }
+
+        private async Task EvaluatePolicy(HttpContext context, Endpoint endpoint, IEnumerable<IAuthorizeData> authorizeData)
+        {
             var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData);
             if (policy == null)
             {
