@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -71,6 +72,27 @@ namespace Microsoft.AspNetCore.Routing
                 return AwaitMatch(this, httpContext, feature, matchTask);
             }
 
+            return SetRoutingAndContinue(httpContext, feature);
+
+            // Awaited fallbacks for when the Tasks do not synchronously complete
+            static async Task AwaitMatcher(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task<Matcher> matcherTask)
+            {
+                var matcher = await matcherTask;
+                await matcher.MatchAsync(httpContext, feature);
+                await middleware.SetRoutingAndContinue(httpContext, feature);
+            }
+
+            static async Task AwaitMatch(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task matchTask)
+            {
+                await matchTask;
+                await middleware.SetRoutingAndContinue(httpContext, feature);
+            }
+
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Task SetRoutingAndContinue(HttpContext httpContext, EndpointSelectorContext feature)
+        {
             if (feature.Endpoint != null)
             {
                 // Set the endpoint feature only on success. This means we won't overwrite any
@@ -85,38 +107,6 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return _next(httpContext);
-
-            // Awaited fallbacks for when the Tasks do not synchronously complete
-            static async Task AwaitMatcher(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task<Matcher> matcherTask)
-            {
-                var matcher = await matcherTask;
-                await matcher.MatchAsync(httpContext, feature);
-                await CompleteAwaited(middleware, httpContext, feature);
-            }
-
-            static async Task AwaitMatch(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task matchTask)
-            {
-                await matchTask;
-                await CompleteAwaited(middleware, httpContext, feature);
-            }
-
-            static Task CompleteAwaited(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature)
-            {
-                if (feature.Endpoint != null)
-                {
-                    // Set the endpoint feature only on success. This means we won't overwrite any
-                    // existing state for related features unless we did something.
-                    SetFeatures(httpContext, feature);
-
-                    Log.MatchSuccess(middleware._logger, feature);
-                }
-                else
-                {
-                    Log.MatchFailure(middleware._logger);
-                }
-
-                return middleware._next(httpContext);
-            }
         }
 
         private static void SetFeatures(HttpContext httpContext, EndpointSelectorContext context)
