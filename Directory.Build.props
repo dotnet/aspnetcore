@@ -79,6 +79,10 @@
     <PackageReference Include="Microsoft.SourceLink.Vsts.Git" Version="$(MicrosoftSourceLinkVstsGitPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(DisablePubternalApiCheck)' != 'true' AND '$(IsTestProject)' != 'true' AND '$(IsBenchmarkProject)' != 'true' AND '$(IsTestAssetProject)' != 'true'">
+    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" AllowExplicitReference="true" />
+  </ItemGroup>
+
   <!-- Compilation options which apply to all languages. Language-specific options should be set in eng/targets/$(lang).Common.props -->
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
