@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR
             get => _serializerOptions.PropertyNamingPolicy == JsonNamingPolicy.CamelCase;
             set
             {
-                if (value == true)
+                if (value)
                 {
                     _serializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
                 }
