@@ -289,15 +289,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     }
                 }
 
-                // https://github.com/aspnet/AspNetCore/issues/8329
-                if (hostingModel == HostingModel.OutOfProcess &&
-                    server == ServerType.IISExpress &&
-                    Environment.OSVersion.Version.Major == 6 &&
-                    Environment.OSVersion.Version.Minor == 1)
-                {
-                    continue;
-                }
-
                 variants.Add(new TestVariant()
                 {
                     Server = server,
