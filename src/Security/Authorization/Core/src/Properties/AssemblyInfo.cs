@@ -4,5 +4,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Authorization;
 
+// Microsoft.AspNetCore.Http.Abstractions
 [assembly: TypeForwardedTo(typeof(IAuthorizeData))]
 [assembly: TypeForwardedTo(typeof(IAllowAnonymous))]
