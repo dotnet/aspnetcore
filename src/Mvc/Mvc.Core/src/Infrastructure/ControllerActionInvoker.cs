@@ -373,16 +373,41 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         /// <remarks><see cref="ResourceInvoker.InvokeFilterPipelineAsync"/> for details on what the
         /// variables in this method represent.</remarks>
-        protected override async Task InvokeInnerFilterAsync()
+        protected override Task InvokeInnerFilterAsync()
         {
-            var next = State.ActionBegin;
-            var scope = Scope.Invoker;
-            var state = (object)null;
-            var isCompleted = false;
-
-            while (!isCompleted)
+            try
             {
-                await Next(ref next, ref scope, ref state, ref isCompleted);
+                var next = State.ActionBegin;
+                var scope = Scope.Invoker;
+                var state = (object)null;
+                var isCompleted = false;
+
+                while (!isCompleted)
+                {
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
+                }
+
+                return Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                // Wrap non task-wrapped exceptions in a Task, 
+                // as this isn't done automatically since the method is not async.
+                return Task.FromException(ex);
+            }
+
+            static async Task Awaited(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                await lastTask;
+
+                while (!isCompleted)
+                {
+                    await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                }
             }
         }
 
