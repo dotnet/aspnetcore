@@ -7,7 +7,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;json;jsonpatch</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
-    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
