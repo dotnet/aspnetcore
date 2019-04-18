@@ -4,14 +4,14 @@
 using System.IO;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Http.Internal
+namespace Microsoft.AspNetCore.Internal
 {
-    public class BufferingHelperTests
+    public class AspNetCoreTempDirectoryTests
     {
         [Fact]
         public void GetTempDirectory_Returns_Valid_Location()
         {
-            var tempDirectory = BufferingHelper.TempDirectory;
+            var tempDirectory = AspNetCoreTempDirectory.TempDirectory;
             Assert.NotNull(tempDirectory);
             Assert.True(Directory.Exists(tempDirectory));
         }

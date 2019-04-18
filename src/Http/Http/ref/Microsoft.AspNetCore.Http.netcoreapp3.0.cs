@@ -306,7 +306,6 @@ namespace Microsoft.AspNetCore.Http.Internal
     }
     public static partial class BufferingHelper
     {
-        public static string TempDirectory { get { throw null; } }
         public static Microsoft.AspNetCore.Http.HttpRequest EnableRewind(this Microsoft.AspNetCore.Http.HttpRequest request, int bufferThreshold = 30720, long? bufferLimit = default(long?)) { throw null; }
         public static Microsoft.AspNetCore.WebUtilities.MultipartSection EnableRewind(this Microsoft.AspNetCore.WebUtilities.MultipartSection section, System.Action<System.IDisposable> registerForDispose, int bufferThreshold = 30720, long? bufferLimit = default(long?)) { throw null; }
     }
