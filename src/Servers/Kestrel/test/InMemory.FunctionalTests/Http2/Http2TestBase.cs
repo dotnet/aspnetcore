@@ -1164,6 +1164,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         internal async Task WaitForConnectionErrorAsync<TException>(bool ignoreNonGoAwayFrames, int expectedLastStreamId, Http2ErrorCode expectedErrorCode, params string[] expectedErrorMessage)
             where TException : Exception
         {
+            await WaitForConnectionErrorAsyncDoNotCloseTransport<TException>(ignoreNonGoAwayFrames, expectedLastStreamId, expectedErrorCode, expectedErrorMessage);
+            _pair.Application.Output.Complete();
+        }
+
+        internal async Task WaitForConnectionErrorAsyncDoNotCloseTransport<TException>(bool ignoreNonGoAwayFrames, int expectedLastStreamId, Http2ErrorCode expectedErrorCode, params string[] expectedErrorMessage)
+            where TException : Exception
+        {
             var frame = await ReceiveFrameAsync();
 
             if (ignoreNonGoAwayFrames)
@@ -1184,7 +1191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             }
 
             await _connectionTask.DefaultTimeout();
-            _pair.Application.Output.Complete();
+            TestApplicationErrorLogger.LogInformation("Stopping Connection From ConnectionErrorAsync");
         }
 
         internal async Task WaitForStreamErrorAsync(int expectedStreamId, Http2ErrorCode expectedErrorCode, string expectedErrorMessage)
