@@ -51,8 +51,8 @@ namespace Microsoft.AspNetCore.Authorization
             context.Items[AuthorizationMiddlewareInvokedKey] = AuthorizationMiddlewareInvokedValue;
 
             // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
-            var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
-            if (authorizeData.Count() == 0)
+            var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>();
+            if (authorizeData == null || authorizeData.Count() == 0)
             {
                 return _next(context);
             }
