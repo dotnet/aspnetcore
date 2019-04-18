@@ -53,6 +53,7 @@ RenderBody content
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2300", FlakyOn.All)]
         public async Task FlushInvokedInComponent()
         {
             var expected = new string('a', 1024 * 1024);
