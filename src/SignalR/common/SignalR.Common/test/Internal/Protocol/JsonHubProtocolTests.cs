@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var protocolOptions = new JsonHubProtocolOptions()
             {
                 IgnoreNullValues = ignoreNullValues,
-                //TODO: camelCase
+                UseCamelCase = useCamelCase,
             };
 
             return new JsonHubProtocol(Options.Create(protocolOptions));
@@ -102,8 +102,66 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new JsonProtocolTestData("CompletionMessage_HasFloatResult", CompletionMessage.WithResult("123", 2.0f), true, true, "{\"type\":3,\"invocationId\":\"123\",\"result\":2}"),
             new JsonProtocolTestData("StreamInvocationMessage_HasFloatArgument", new StreamInvocationMessage("123", "Target", new object[] { 1, "Foo", 2.0f }), true, true, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\",2]}"),
             new JsonProtocolTestData("InvocationMessage_StringIsoDateArgument", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), true, true, "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20\\u002b12:34\"]}"),
+
+            new JsonProtocolTestData("InvocationMessage_HasCustomArgumentWithNoCamelCase", new InvocationMessage(null, "Target", new object[] { new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } } }), false, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"ByteArrProp\":[1,2,3]}]}"),
+            new JsonProtocolTestData("InvocationMessage_HasCustomArgumentWithNullValueIgnore", new InvocationMessage(null, "Target", new object[] { new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } } }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"byteArrProp\":[1,2,3]}]}"),
+            new JsonProtocolTestData("InvocationMessage_HasCustomArgumentWithNullValueIgnoreAndNoCamelCase", new InvocationMessage(null, "Target", new object[] { new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } } }), false, false, "{\"type\":1,\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NullProp\":null,\"ByteArrProp\":[1,2,3]}]}"),
+            new JsonProtocolTestData("InvocationMessage_HasCustomArgumentWithNullValueInclude", new InvocationMessage(null, "Target", new object[] { new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } } }), true, false, "{\"type\":1,\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"nullProp\":null,\"byteArrProp\":[1,2,3]}]}"),
+            new JsonProtocolTestData("StreamItemMessage_HasCustomItemWithNoCamelCase", new StreamItemMessage("123", new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } }), false, true, "{\"type\":2,\"invocationId\":\"123\",\"item\":{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"ByteArrProp\":[1,2,3]}}"),
+            new JsonProtocolTestData("StreamItemMessage_HasCustomItemWithNullValueIgnore", new StreamItemMessage("123", new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } }), true, true, "{\"type\":2,\"invocationId\":\"123\",\"item\":{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"byteArrProp\":[1,2,3]}}"),
+            new JsonProtocolTestData("StreamItemMessage_HasCustomItemWithNullValueIgnoreAndNoCamelCase", new StreamItemMessage("123", new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } }), false, false, "{\"type\":2,\"invocationId\":\"123\",\"item\":{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NullProp\":null,\"ByteArrProp\":[1,2,3]}}"),
+            new JsonProtocolTestData("StreamItemMessage_HasCustomItemWithNullValueInclude", new StreamItemMessage("123", new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } }), true, false, "{\"type\":2,\"invocationId\":\"123\",\"item\":{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"nullProp\":null,\"byteArrProp\":[1,2,3]}}"),
+            new JsonProtocolTestData("CompletionMessage_HasCustomResultWithNoCamelCase", CompletionMessage.WithResult("123", new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } }), false, true, "{\"type\":3,\"invocationId\":\"123\",\"result\":{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"ByteArrProp\":[1,2,3]}}"),
+            new JsonProtocolTestData("CompletionMessage_HasCustomResultWithNullValueIgnore", CompletionMessage.WithResult("123", new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } }), true, true, "{\"type\":3,\"invocationId\":\"123\",\"result\":{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"byteArrProp\":[1,2,3]}}"),
+            new JsonProtocolTestData("CompletionMessage_HasCustomResultWithNullValueIncludeAndNoCamelCase", CompletionMessage.WithResult("123", new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } }), false, false, "{\"type\":3,\"invocationId\":\"123\",\"result\":{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NullProp\":null,\"ByteArrProp\":[1,2,3]}}"),
+            new JsonProtocolTestData("CompletionMessage_HasCustomResultWithNullValueInclude", CompletionMessage.WithResult("123", new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } }), true, false, "{\"type\":3,\"invocationId\":\"123\",\"result\":{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"nullProp\":null,\"byteArrProp\":[1,2,3]}}"),
+            new JsonProtocolTestData("CompletionMessage_HasErrorAndCamelCase", CompletionMessage.Empty("123"), true, true, "{\"type\":3,\"invocationId\":\"123\"}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasCustomArgumentWithNoCamelCase", new StreamInvocationMessage("123", "Target", new object[] { new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } } }), false, true, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"ByteArrProp\":[1,2,3]}]}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasCustomArgumentWithNullValueIgnore", new StreamInvocationMessage("123", "Target", new object[] { new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } } }), true, true, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"byteArrProp\":[1,2,3]}]}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasCustomArgumentWithNullValueIgnoreAndNoCamelCase", new StreamInvocationMessage("123", "Target", new object[] { new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } } }), false, false, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NullProp\":null,\"ByteArrProp\":[1,2,3]}]}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasCustomArgumentWithNullValueInclude", new StreamInvocationMessage("123", "Target", new object[] { new TemporaryCustomObject() { ByteArrProp = new byte[] { 1, 2, 3 } } }), true, false, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00Z\",\"nullProp\":null,\"byteArrProp\":[1,2,3]}]}"),
         }.ToDictionary(t => t.Name);
 
         public static IEnumerable<object[]> CustomProtocolTestDataNames => CustomProtocolTestData.Keys.Select(name => new object[] { name });
+    }
+
+    // Revert back to CustomObject when initial values on arrays are supported
+    // e.g. byte[] arr { get; set; } = byte[] { 1, 2, 3 };
+    internal class TemporaryCustomObject : IEquatable<TemporaryCustomObject>
+    {
+        // Not intended to be a full set of things, just a smattering of sample serializations
+        public string StringProp { get; set; } = "SignalR!";
+
+        public double DoubleProp { get; set; } = 6.2831853071;
+
+        public int IntProp { get; set; } = 42;
+
+        public DateTime DateTimeProp { get; set; } = new DateTime(2017, 4, 11, 0, 0, 0, DateTimeKind.Utc);
+
+        public object NullProp { get; set; } = null;
+
+        public byte[] ByteArrProp { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            return obj is TemporaryCustomObject o && Equals(o);
+        }
+
+        public override int GetHashCode()
+        {
+            // This is never used in a hash table
+            return 0;
+        }
+
+        public bool Equals(TemporaryCustomObject right)
+        {
+            // This allows the comparer below to properly compare the object in the test.
+            return string.Equals(StringProp, right.StringProp, StringComparison.Ordinal) &&
+                DoubleProp == right.DoubleProp &&
+                IntProp == right.IntProp &&
+                DateTime.Equals(DateTimeProp, right.DateTimeProp) &&
+                NullProp == right.NullProp &&
+                System.Linq.Enumerable.SequenceEqual(ByteArrProp, right.ByteArrProp);
+        }
     }
 }

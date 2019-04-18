@@ -21,5 +21,20 @@ namespace Microsoft.AspNetCore.SignalR
         public bool IgnoreNullValues { get => _serializerOptions.IgnoreNullValues; set => _serializerOptions.IgnoreNullValues = value; }
         public bool WriteIndented { get => _serializerOptions.WriteIndented; set => _serializerOptions.WriteIndented = value; }
         public bool AllowTrailingCommas { get => _serializerOptions.AllowTrailingCommas; set => _serializerOptions.AllowTrailingCommas = value; }
+        public bool UseCamelCase
+        {
+            get => _serializerOptions.PropertyNamingPolicy == JsonNamingPolicy.CamelCase;
+            set
+            {
+                if (value == true)
+                {
+                    _serializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                }
+                else
+                {
+                    _serializerOptions.PropertyNamingPolicy = null;
+                }
+            }
+        }
     }
 }
