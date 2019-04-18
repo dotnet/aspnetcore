@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
+    <IsIISTest>true</IsIISTest>
   </PropertyGroup>
 
   <ItemGroup>
