@@ -1,8 +1,7 @@
 {
   "Email": {
-    "QuietEmail": "rybrande@microsoft.com",
-    "EngineeringAlias": "projectk-runtime-eng@microsoft.com",
-    "BuildBuddyEmail": "rybrande@microsoft.com",
+    "QuietEmail": "aspnetcore-build@microsoft.com",
+    "BuildTeamEmail": "aspnetcore-build@microsoft.com",
     "FromEmail": "asplab@microsoft.com",
     "SMTPConfig": {
       "Host": "smtp.office365.com",
@@ -10,7 +9,6 @@
     }
   },
   "GitHub": {
-    "BuildBuddyUsername": "ryanbrandenburg",
     "BotUsername": "aspnet-hello",
     "IssueAreas": [
       {

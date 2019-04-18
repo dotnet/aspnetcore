@@ -26,7 +26,7 @@ namespace TriageBuildFailures.Handlers
             await EmailClient.SendEmail(
                 subject: subject,
                 body: message,
-                to: EmailClient.Config.BuildBuddyEmail);
+                to: EmailClient.Config.BuildTeamEmail);
 
             return new FailureHandlerResult(build, Array.Empty<ICIIssue>());
         }

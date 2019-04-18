@@ -168,7 +168,7 @@ namespace TriageBuildFailures.GitHub
                 hiddenDataStringBuilder.AppendLine("</details>");
             }
 
-            var fullBody = $@"This issue was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.
+            var fullBody = $@"This issue was made automatically. If there is a problem contact aspnetcore-build@microsoft.com.
 
 {body}
 
@@ -219,7 +219,7 @@ namespace TriageBuildFailures.GitHub
 
         private string ModifyComment(string comment)
         {
-            return $"This comment was made automatically. If there is a problem contact {Config.BuildBuddyUsername}.\n\n{comment}";
+            return $"This comment was made automatically. If there is a problem contact aspnetcore-build@microsoft.com.\n\n{comment}";
         }
 
         private async Task EnsureLabelsExist(string owner, string repo, IList<string> labels)
