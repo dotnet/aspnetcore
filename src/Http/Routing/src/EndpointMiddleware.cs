@@ -70,6 +70,7 @@ namespace Microsoft.AspNetCore.Routing
                     return Task.FromException(exception);
                 }
 
+                Log.ExecutedEndpoint(_logger, endpoint);
                 return Task.CompletedTask;
             }
 
