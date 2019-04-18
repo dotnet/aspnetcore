@@ -580,13 +580,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [RequiresNewHandler]
         [InlineData("ASPNETCORE_ENVIRONMENT", "Development")]
         [InlineData("DOTNET_ENVIRONMENT", "deVelopment")]
-        [InlineData("ASPNETCORE_DETAILED_ERRORS", "1")]
-        [InlineData("ASPNETCORE_DETAILED_ERRORS", "TRUE")]
+        [InlineData("ASPNETCORE_DETAILEDERRORS", "1")]
+        [InlineData("ASPNETCORE_DETAILEDERRORS", "TRUE")]
         public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabled(string environmentVariable, string value)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+
+            // Deployment parameters by default set ASPNETCORE_DETAILEDERRORS to true
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "";
             deploymentParameters.EnvironmentVariables[environmentVariable] = value;
+
             var deploymentResult = await DeployAsync(deploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/");
             Assert.False(result.IsSuccessStatusCode);
@@ -607,6 +611,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "";
             deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
             deploymentParameters.HandlerSettings["callStartupHook"] = "false";
 
@@ -628,6 +633,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+
+            // Deployment parameters by default set ASPNETCORE_DETAILEDERRORS to true
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/");
