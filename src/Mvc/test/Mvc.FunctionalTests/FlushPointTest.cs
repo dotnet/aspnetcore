@@ -3,6 +3,8 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -36,6 +38,7 @@ RenderBody content
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2300", FlakyOn.All)]
         public async Task FlushFollowedByLargeContent()
         {
             // Arrange
@@ -50,6 +53,7 @@ RenderBody content
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2300", FlakyOn.All)]
         public async Task FlushInvokedInComponent()
         {
             var expected = new string('a', 1024 * 1024);
