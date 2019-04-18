@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// of <see cref="OnActionExecutionAsync" /> to continue execution of the action.</param>
         /// <returns>A <see cref="Task"/> instance.</returns>
         [NonAction]
-        public virtual async Task OnActionExecutionAsync(
+        public virtual Task OnActionExecutionAsync(
             ActionExecutingContext context,
             ActionExecutionDelegate next)
         {
@@ -357,7 +357,20 @@ namespace Microsoft.AspNetCore.Mvc
             OnActionExecuting(context);
             if (context.Result == null)
             {
-                OnActionExecuted(await next());
+                var task = next();
+                if (!task.IsCompletedSuccessfully)
+                {
+                    return Awaited(this, task);
+                }
+
+                OnActionExecuted(task.Result);
+            }
+
+            return Task.CompletedTask;
+
+            static async Task Awaited(Controller controller, Task<ActionExecutedContext> task)
+            {
+                controller.OnActionExecuted(await task);
             }
         }
 
