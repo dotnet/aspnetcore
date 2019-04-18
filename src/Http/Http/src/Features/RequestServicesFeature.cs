@@ -42,12 +42,16 @@ namespace Microsoft.AspNetCore.Http.Features
             }
         }
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
             switch (_scope)
             {
                 case IAsyncDisposable asyncDisposable:
-                    await asyncDisposable.DisposeAsync();
+                    var vt = asyncDisposable.DisposeAsync();
+                    if (!vt.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, vt);
+                    }
                     break;
                 case IDisposable disposable:
                     disposable.Dispose();
@@ -56,6 +60,15 @@ namespace Microsoft.AspNetCore.Http.Features
 
             _scope = null;
             _requestServices = null;
+
+            return default;
+
+            static async ValueTask Awaited(RequestServicesFeature servicesFeature, ValueTask vt)
+            {
+                await vt;
+                servicesFeature._scope = null;
+                servicesFeature._requestServices = null;
+            }
         }
 
         public void Dispose()
