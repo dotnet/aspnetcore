@@ -9,17 +9,12 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
-    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, BYTE* content, int length) noexcept
-        : ServerErrorHandler(pContext, statusCode, subStatusCode, statusText, hr, module, disableStartupPage, 0, content, length)
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page) noexcept
+        : ServerErrorHandler(pContext, statusCode, subStatusCode, statusText, hr, module, disableStartupPage, page, std::vector<byte>()) 
     {
     }
 
-    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page) noexcept
-        : ServerErrorHandler(pContext, statusCode, subStatusCode, statusText, hr, module, disableStartupPage, page, nullptr, 0)
-    {
-    }
-
-    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page, BYTE* content, int length) noexcept
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page, const std::vector<byte>& content) noexcept
         : REQUEST_HANDLER(pContext),
         m_pContext(pContext),
         m_HR(hr),
@@ -29,7 +24,6 @@ public:
         m_statusText(std::move(statusText)),
         m_page(page),
         m_ExceptionInfoContent(content),
-        m_length(length),
         m_moduleInstance(module)
     {
     }
@@ -60,10 +54,10 @@ private:
         );
 
         dataChunk.DataChunkType = HttpDataChunkFromMemory;
-        if (m_length > 0)
+        if (m_ExceptionInfoContent.size() > 0)
         {
-            dataChunk.FromMemory.pBuffer = m_ExceptionInfoContent;
-            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(m_length);
+            dataChunk.FromMemory.pBuffer = &m_ExceptionInfoContent[0];
+            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(m_ExceptionInfoContent.size());
         }
         else
         {
@@ -117,6 +111,5 @@ private:
     USHORT m_statusCode;
     USHORT m_subStatusCode;
     std::string m_statusText;
-    BYTE* m_ExceptionInfoContent;
-    int m_length;
+    std::vector<byte> m_ExceptionInfoContent;
 };

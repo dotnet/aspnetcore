@@ -7,8 +7,7 @@
 #include "EventLog.h"
 
 extern bool g_fInProcessApplicationCreated;
-extern BYTE* g_errorPageContent;
-extern int g_errorPageLength;
+extern std::vector<byte> g_errorPageContent;
 extern IHttpServer* g_pHttpServer;
 
 //
@@ -512,9 +511,8 @@ EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 VOID
 http_set_startup_error_page_content(_In_ byte* errorPageContent, int length)
 {
-    g_errorPageContent = new BYTE[length];
-    g_errorPageLength = length;
-    memcpy(g_errorPageContent, errorPageContent, length);
+    g_errorPageContent.resize(g_errorPageContent.size() + length);
+    memcpy(&g_errorPageContent[g_errorPageContent.size() - length], errorPageContent, length);
 }
 
 // End of export
