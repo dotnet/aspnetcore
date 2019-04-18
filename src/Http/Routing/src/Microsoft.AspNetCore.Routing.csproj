@@ -11,7 +11,6 @@ Microsoft.AspNetCore.Routing.RouteCollection</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
   </PropertyGroup>
 
   <PropertyGroup>
