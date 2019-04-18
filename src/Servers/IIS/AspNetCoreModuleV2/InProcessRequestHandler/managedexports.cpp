@@ -511,8 +511,8 @@ EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 VOID
 http_set_startup_error_page_content(_In_ byte* errorPageContent, int length)
 {
-    g_errorPageContent.resize(g_errorPageContent.size() + length);
-    memcpy(&g_errorPageContent[g_errorPageContent.size() - length], errorPageContent, length);
+    g_errorPageContent.resize(length);
+    memcpy(&g_errorPageContent[length], errorPageContent, length);
 }
 
 // End of export

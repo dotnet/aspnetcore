@@ -16,12 +16,12 @@ public:
         HINSTANCE moduleInstance,
         BOOL disableLogs,
         HRESULT hr,
-        const std::vector<byte>& errorPageContent
+        std::vector<byte>&& errorPageContent
         )
         : m_disableLogs(disableLogs),
         m_HR(hr),
         m_moduleInstance(moduleInstance),
-        m_errorPageContent(errorPageContent),
+        m_errorPageContent(std::move(errorPageContent)),
         InProcessApplicationBase(pServer, pApplication)
     {
     }
