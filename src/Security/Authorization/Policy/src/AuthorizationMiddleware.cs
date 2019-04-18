@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Authorization
             // Flag to indicate to other systems, e.g. MVC, that authorization middleware was run for this request
             context.Items[AuthorizationMiddlewareInvokedKey] = AuthorizationMiddlewareInvokedValue;
 
-            // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
             var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>();
             if (authorizeData == null || authorizeData.Count() == 0)
             {
@@ -62,6 +61,7 @@ namespace Microsoft.AspNetCore.Authorization
 
         private async Task EvaluatePolicy(HttpContext context, Endpoint endpoint, IEnumerable<IAuthorizeData> authorizeData)
         {
+            // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
             var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData);
             if (policy == null)
             {
