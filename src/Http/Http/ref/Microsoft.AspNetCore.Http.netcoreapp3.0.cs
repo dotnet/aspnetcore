@@ -249,7 +249,6 @@ namespace Microsoft.AspNetCore.Http.Features
         public RequestServicesFeature(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory scopeFactory) { }
         public System.IServiceProvider RequestServices { get { throw null; } set { } }
         public void Dispose() { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
     }
     public partial class ResponseBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature
