@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private async Task InvokeNextActionFilterAsync()
+        private Task InvokeNextActionFilterAsync()
         {
             try
             {
@@ -292,7 +292,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 var isCompleted = false;
                 while (!isCompleted)
                 {
-                    await Next(ref next, ref scope, ref state, ref isCompleted);
+                    var lastTask = Next(ref next, ref scope, ref state, ref isCompleted);
+                    if (!lastTask.IsCompletedSuccessfully)
+                    {
+                        return Awaited(this, lastTask, next, scope, state, isCompleted);
+                    }
                 }
             }
             catch (Exception exception)
@@ -304,6 +308,29 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             Debug.Assert(_actionExecutedContext != null);
+            return Task.CompletedTask;
+
+            static async Task Awaited(ControllerActionInvoker invoker, Task lastTask, State next, Scope scope, object state, bool isCompleted)
+            {
+                try
+                {
+                    await lastTask;
+
+                    while (!isCompleted)
+                    {
+                        await invoker.Next(ref next, ref scope, ref state, ref isCompleted);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    invoker._actionExecutedContext = new ActionExecutedContext(invoker._controllerContext, invoker._filters, invoker._instance)
+                    {
+                        ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
+                    };
+                }
+
+                Debug.Assert(invoker._actionExecutedContext != null);
+            }
         }
 
         private Task<ActionExecutedContext> InvokeNextActionFilterAwaitedAsync()
