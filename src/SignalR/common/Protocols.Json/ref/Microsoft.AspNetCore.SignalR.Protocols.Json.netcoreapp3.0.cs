@@ -8,6 +8,7 @@ namespace Microsoft.AspNetCore.SignalR
         public JsonHubProtocolOptions() { }
         public bool AllowTrailingCommas { get { throw null; } set { } }
         public bool IgnoreNullValues { get { throw null; } set { } }
+        public bool UseCamelCase { get { throw null; } set { } }
         public bool WriteIndented { get { throw null; } set { } }
     }
 }
