@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     /// <summary>
-    /// Contains information about the exchanging code for the access token context.
+    /// Contains information about the context of exchanging code for access token .
     /// </summary>
     public class OAuthExchangeCodeContext : PropertiesContext<OAuthOptions>
     {
@@ -24,15 +24,15 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             HttpContext context,
             AuthenticationScheme scheme,
             OAuthOptions options,
-            Dictionary<string, string> tokenRequestParameters)
+            IDictionary<string, string> tokenRequestParameters)
             : base(context, scheme, options, properties)
         {
             TokenRequestParameters = tokenRequestParameters;
         }
 
         /// <summary>
-        /// Gets the code returned by the authentication provider after user authenticates
+        /// Gets the request parameters for the token request
         /// </summary>
-        public Dictionary<string, string> TokenRequestParameters { get; }
+        public IDictionary<string, string> TokenRequestParameters { get; }
     }
 }
