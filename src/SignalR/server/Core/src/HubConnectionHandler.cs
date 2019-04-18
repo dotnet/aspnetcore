@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.SignalR
             var keepAlive = _hubOptions.KeepAliveInterval ?? _globalHubOptions.KeepAliveInterval ?? HubOptionsSetup.DefaultKeepAliveInterval;
             var clientTimeout = _hubOptions.ClientTimeoutInterval ?? _globalHubOptions.ClientTimeoutInterval ?? HubOptionsSetup.DefaultClientTimeoutInterval;
             var handshakeTimeout = _hubOptions.HandshakeTimeout ?? _globalHubOptions.HandshakeTimeout ?? HubOptionsSetup.DefaultHandshakeTimeout;
+            var streamBufferCapacity = _hubOptions.StreamBufferCapacity ?? _globalHubOptions.StreamBufferCapacity?? HubOptionsSetup.DefaultStreamBufferCapacity;
             var supportedProtocols = _hubOptions.SupportedProtocols ?? _globalHubOptions.SupportedProtocols;
 
             if (supportedProtocols != null && supportedProtocols.Count == 0)
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             Log.ConnectedStarting(_logger);
 
-            var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory, clientTimeout);
+            var connectionContext = new HubConnectionContext(connection, keepAlive, _loggerFactory, clientTimeout, streamBufferCapacity);
 
             var resolvedSupportedProtocols = (supportedProtocols as IReadOnlyList<string>) ?? supportedProtocols.ToList();
             if (!await connectionContext.HandshakeAsync(handshakeTimeout, resolvedSupportedProtocols, _protocolResolver, _userIdProvider, _enableDetailedErrors))

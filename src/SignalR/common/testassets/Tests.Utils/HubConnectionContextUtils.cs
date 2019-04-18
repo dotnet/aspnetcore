@@ -29,13 +29,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public static MockHubConnectionContext CreateMock(ConnectionContext connection)
         {
-            return new MockHubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance, TimeSpan.FromSeconds(15));
+            return new MockHubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance, TimeSpan.FromSeconds(15), 10);
         }
 
         public class MockHubConnectionContext : HubConnectionContext
         {
-            public MockHubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval)
-                : base(connectionContext, keepAliveInterval, loggerFactory, clientTimeoutInterval)
+            public MockHubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval, int streamBufferCapacity)
+                : base(connectionContext, keepAliveInterval, loggerFactory, clientTimeoutInterval, streamBufferCapacity)
             {
 
             }

@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         internal const int DefaultMaximumMessageSize = 32 * 1024;
 
+        internal const int DefaultStreamBufferCapacity = 10;
+
         private readonly List<string> _defaultProtocols = new List<string>();
 
         public HubOptionsSetup(IEnumerable<IHubProtocol> protocols)

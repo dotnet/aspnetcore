@@ -46,5 +46,11 @@ namespace Microsoft.AspNetCore.SignalR
         /// Detailed error messages include details from exceptions thrown on the server.
         /// </summary>
         public bool? EnableDetailedErrors { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether detailed error messages are sent to the client.
+        /// Detailed error messages include details from exceptions thrown on the server.
+        /// </summary>
+        public int? StreamBufferCapacity { get; set; } = null;
     }
 }

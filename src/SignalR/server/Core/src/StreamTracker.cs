@@ -16,14 +16,20 @@ namespace Microsoft.AspNetCore.SignalR
     internal class StreamTracker
     {
         private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("BuildStream"));
+        private readonly int _streamBufferCapacity = 10;
         private ConcurrentDictionary<string, IStreamConverter> _lookup = new ConcurrentDictionary<string, IStreamConverter>();
+
+        public StreamTracker(int streamBufferCapacity)
+        {
+            _streamBufferCapacity = streamBufferCapacity;
+        }
 
         /// <summary>
         /// Creates a new stream and returns the ChannelReader for it as an object.
         /// </summary>
         public object AddStream(string streamId, Type itemType)
         {
-            var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, Array.Empty<object>());
+            var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, new object[] { _streamBufferCapacity });
             _lookup[streamId] = newConverter;
             return newConverter.GetReaderAsObject();
         }
@@ -71,9 +77,9 @@ namespace Microsoft.AspNetCore.SignalR
             return true;
         }
 
-        private static IStreamConverter BuildStream<T>()
+        private static IStreamConverter BuildStream<T>(int streamBufferCapacity)
         {
-            return new ChannelConverter<T>();
+            return new ChannelConverter<T>(streamBufferCapacity);
         }
 
         private interface IStreamConverter
@@ -88,7 +94,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             private Channel<T> _channel;
 
-            public ChannelConverter()
+            public ChannelConverter(int streamBufferCapacity)
             {
                 // TODO: Make this configurable or figure out a good limit
                 // https://github.com/aspnet/AspNetCore/issues/4399
