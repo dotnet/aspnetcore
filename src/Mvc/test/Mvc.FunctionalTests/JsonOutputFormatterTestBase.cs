@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using FormatterWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -161,15 +162,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             using var _ = new ActivityReplacer();
 
-            // Arrange
-            var expected = $"{{\"type\":\"https://tools.ietf.org/html/rfc7231#section-6.5.4\",\"title\":\"Not Found\",\"status\":404,\"traceId\":\"{Activity.Current.Id}\"}}";
-
             // Act
             var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.ProblemDetailsResult)}");
 
             // Assert
             await response.AssertStatusCodeAsync(HttpStatusCode.NotFound);
-            Assert.Equal(expected, await response.Content.ReadAsStringAsync());
+
+            var obj = JObject.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Equal("https://tools.ietf.org/html/rfc7231#section-6.5.4", obj.Value<string>("type"));
+            Assert.Equal("Not Found", obj.Value<string>("title"));
+            Assert.Equal("404", obj.Value<string>("status"));
+            Assert.NotNull(obj.Value<string>("traceId"));
         }
 
         [Fact]

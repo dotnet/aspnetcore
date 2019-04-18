@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             Options = options.Value;
             Server = server;
-            Logger = loggerFactory.CreateLogger<GenericWebHostService>();
+            Logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             LifetimeLogger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
             DiagnosticListener = diagnosticListener;
             HttpContextFactory = httpContextFactory;
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public GenericWebHostServiceOptions Options { get; }
         public IServer Server { get; }
-        public ILogger<GenericWebHostService> Logger { get; }
+        public ILogger Logger { get; }
         // Only for high level lifetime events
         public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
