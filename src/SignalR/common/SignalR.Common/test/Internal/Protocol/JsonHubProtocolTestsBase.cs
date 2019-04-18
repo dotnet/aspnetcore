@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
     {
         protected abstract IHubProtocol JsonHubProtocol { get; }
 
+        protected abstract IHubProtocol GetProtocolWithOptions(bool useCamelCase, bool ignoreNullValues);
+
         public static readonly IDictionary<string, string> TestHeaders = new Dictionary<string, string>
         {
             { "Foo", "Bar" },
@@ -31,18 +33,18 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IDictionary<string, JsonProtocolTestData> ProtocolTestData => new[]
         {
-            new JsonProtocolTestData("InvocationMessage_HasInvocationId", new InvocationMessage("123", "Target", new object[] { 1, "Foo" }), "{\"type\":1,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\"]}"),
-            new JsonProtocolTestData("InvocationMessage_HasBoolArgument", new InvocationMessage(null, "Target", new object[] { true }), "{\"type\":1,\"target\":\"Target\",\"arguments\":[true]}"),
-            new JsonProtocolTestData("InvocationMessage_HasNullArgument", new InvocationMessage(null, "Target", new object[] { null }), "{\"type\":1,\"target\":\"Target\",\"arguments\":[null]}"),
-            new JsonProtocolTestData("InvocationMessage_HasStreamArgument", new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__" }), "{\"type\":1,\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\"]}"),
-            new JsonProtocolTestData("InvocationMessage_HasStreamAndNormalArgument", new InvocationMessage(null, "Target", new object[] { 42 }, new string[] { "__test_id__" }), "{\"type\":1,\"target\":\"Target\",\"arguments\":[42],\"streamIds\":[\"__test_id__\"]}"),
-            new JsonProtocolTestData("InvocationMessage_HasMultipleStreams", new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__", "__test_id2__" }), "{\"type\":1,\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\",\"__test_id2__\"]}"),
-            new JsonProtocolTestData("InvocationMessage_DateTimeOffsetArgument", new InvocationMessage("Method", new object[] { DateTimeOffset.Parse("2016-05-10T13:51:20+12:34") }), "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20+12:34\"]}"),
+            new JsonProtocolTestData("InvocationMessage_HasInvocationId", new InvocationMessage("123", "Target", new object[] { 1, "Foo" }), true, true, "{\"type\":1,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\"]}"),
+            new JsonProtocolTestData("InvocationMessage_HasBoolArgument", new InvocationMessage(null, "Target", new object[] { true }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[true]}"),
+            new JsonProtocolTestData("InvocationMessage_HasNullArgument", new InvocationMessage(null, "Target", new object[] { null }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[null]}"),
+            new JsonProtocolTestData("InvocationMessage_HasStreamArgument", new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__" }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\"]}"),
+            new JsonProtocolTestData("InvocationMessage_HasStreamAndNormalArgument", new InvocationMessage(null, "Target", new object[] { 42 }, new string[] { "__test_id__" }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[42],\"streamIds\":[\"__test_id__\"]}"),
+            new JsonProtocolTestData("InvocationMessage_HasMultipleStreams", new InvocationMessage(null, "Target", Array.Empty<object>(), new string[] { "__test_id__", "__test_id2__" }), true, true, "{\"type\":1,\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\",\"__test_id2__\"]}"),
+            new JsonProtocolTestData("InvocationMessage_DateTimeOffsetArgument", new InvocationMessage("Method", new object[] { DateTimeOffset.Parse("2016-05-10T13:51:20+12:34") }), true, true, "{\"type\":1,\"target\":\"Method\",\"arguments\":[\"2016-05-10T13:51:20+12:34\"]}"),
 
-            new JsonProtocolTestData("StreamItemMessage_HasIntegerItem", new StreamItemMessage("123", 1), "{\"type\":2,\"invocationId\":\"123\",\"item\":1}"),
-            new JsonProtocolTestData("StreamItemMessage_HasStringItem", new StreamItemMessage("123", "Foo"), "{\"type\":2,\"invocationId\":\"123\",\"item\":\"Foo\"}"),
-            new JsonProtocolTestData("StreamItemMessage_HasBoolItem", new StreamItemMessage("123", true), "{\"type\":2,\"invocationId\":\"123\",\"item\":true}"),
-            new JsonProtocolTestData("StreamItemMessage_HasNullItem", new StreamItemMessage("123", null), "{\"type\":2,\"invocationId\":\"123\",\"item\":null}"),
+            new JsonProtocolTestData("StreamItemMessage_HasIntegerItem", new StreamItemMessage("123", 1), true, true, "{\"type\":2,\"invocationId\":\"123\",\"item\":1}"),
+            new JsonProtocolTestData("StreamItemMessage_HasStringItem", new StreamItemMessage("123", "Foo"), true, true, "{\"type\":2,\"invocationId\":\"123\",\"item\":\"Foo\"}"),
+            new JsonProtocolTestData("StreamItemMessage_HasBoolItem", new StreamItemMessage("123", true), true, true, "{\"type\":2,\"invocationId\":\"123\",\"item\":true}"),
+            new JsonProtocolTestData("StreamItemMessage_HasNullItem", new StreamItemMessage("123", null), true, true, "{\"type\":2,\"invocationId\":\"123\",\"item\":null}"),
 
             // Dictionary not supported yet
             //new JsonProtocolTestData("StreamItemMessage_HasHeaders", AddHeaders(TestHeaders, new StreamItemMessage("123", new CustomObject())), "{\"type\":2," + SerializedHeaders + ",\"invocationId\":\"123\",\"item\":{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NullProp\":null,\"ByteArrProp\":[1,2,3]}}"),
@@ -50,25 +52,26 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             //new JsonProtocolTestData("StreamInvocationMessage_HasHeaders", AddHeaders(TestHeaders, new StreamInvocationMessage("123", "Target", new object[] { new CustomObject() })), "{\"type\":4," + SerializedHeaders + ",\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NullProp\":null,\"ByteArrProp\":[1,2,3]}]}"),
             //new JsonProtocolTestData("CancelInvocationMessage_HasHeaders", AddHeaders(TestHeaders, new CancelInvocationMessage("123")), "{\"type\":5," + SerializedHeaders + ",\"invocationId\":\"123\"}"),
 
-            new JsonProtocolTestData("CompletionMessage_HasIntegerResult", CompletionMessage.WithResult("123", 1), "{\"type\":3,\"invocationId\":\"123\",\"result\":1}"),
-            new JsonProtocolTestData("CompletionMessage_HasStringResult", CompletionMessage.WithResult("123", "Foo"), "{\"type\":3,\"invocationId\":\"123\",\"result\":\"Foo\"}"),
-            new JsonProtocolTestData("CompletionMessage_HasBoolResult", CompletionMessage.WithResult("123", true), "{\"type\":3,\"invocationId\":\"123\",\"result\":true}"),
-            new JsonProtocolTestData("CompletionMessage_HasNullResult", CompletionMessage.WithResult("123", null), "{\"type\":3,\"invocationId\":\"123\",\"result\":null}"),
-            new JsonProtocolTestData("CompletionMessage_HasError", CompletionMessage.WithError("123", "Whoops!"), "{\"type\":3,\"invocationId\":\"123\",\"error\":\"Whoops!\"}"),
-            new JsonProtocolTestData("CompletionMessage_HasErrorAndHeaders", AddHeaders(TestHeaders, CompletionMessage.WithError("123", "Whoops!")), "{\"type\":3," + SerializedHeaders + ",\"invocationId\":\"123\",\"error\":\"Whoops!\"}"),
+            new JsonProtocolTestData("CompletionMessage_HasIntegerResult", CompletionMessage.WithResult("123", 1), true, true, "{\"type\":3,\"invocationId\":\"123\",\"result\":1}"),
+            new JsonProtocolTestData("CompletionMessage_HasStringResult", CompletionMessage.WithResult("123", "Foo"), true, true, "{\"type\":3,\"invocationId\":\"123\",\"result\":\"Foo\"}"),
+            new JsonProtocolTestData("CompletionMessage_HasBoolResult", CompletionMessage.WithResult("123", true), true, true, "{\"type\":3,\"invocationId\":\"123\",\"result\":true}"),
+            new JsonProtocolTestData("CompletionMessage_HasNullResult", CompletionMessage.WithResult("123", null), true, true, "{\"type\":3,\"invocationId\":\"123\",\"result\":null}"),
+            new JsonProtocolTestData("CompletionMessage_HasError", CompletionMessage.WithError("123", "Whoops!"), true, true, "{\"type\":3,\"invocationId\":\"123\",\"error\":\"Whoops!\"}"),
+            new JsonProtocolTestData("CompletionMessage_HasErrorAndHeaders", AddHeaders(TestHeaders, CompletionMessage.WithError("123", "Whoops!")), true, true, "{\"type\":3," + SerializedHeaders + ",\"invocationId\":\"123\",\"error\":\"Whoops!\"}"),
 
-            new JsonProtocolTestData("StreamInvocationMessage_HasInvocationId", new StreamInvocationMessage("123", "Target", new object[] { 1, "Foo" }), "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\"]}"),
-            new JsonProtocolTestData("StreamInvocationMessage_HasBoolArgument", new StreamInvocationMessage("123", "Target", new object[] { true }), "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[true]}"),
-            new JsonProtocolTestData("StreamInvocationMessage_HasNullArgument", new StreamInvocationMessage("123", "Target", new object[] { null }), "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[null]}"),
-            new JsonProtocolTestData("StreamInvocationMessage_HasStreamArgument", new StreamInvocationMessage("123", "Target", Array.Empty<object>(), new string[] { "__test_id__" }), "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\"]}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasInvocationId", new StreamInvocationMessage("123", "Target", new object[] { 1, "Foo" }), true, true, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[1,\"Foo\"]}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasBoolArgument", new StreamInvocationMessage("123", "Target", new object[] { true }), true, true, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[true]}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasNullArgument", new StreamInvocationMessage("123", "Target", new object[] { null }), true, true, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[null]}"),
+            new JsonProtocolTestData("StreamInvocationMessage_HasStreamArgument", new StreamInvocationMessage("123", "Target", Array.Empty<object>(), new string[] { "__test_id__" }), true, true, "{\"type\":4,\"invocationId\":\"123\",\"target\":\"Target\",\"arguments\":[],\"streamIds\":[\"__test_id__\"]}"),
 
-            new JsonProtocolTestData("CancelInvocationMessage_HasInvocationId", new CancelInvocationMessage("123"), "{\"type\":5,\"invocationId\":\"123\"}"),
+            new JsonProtocolTestData("CancelInvocationMessage_HasInvocationId", new CancelInvocationMessage("123"), true, true, "{\"type\":5,\"invocationId\":\"123\"}"),
 
-            new JsonProtocolTestData("PingMessage", PingMessage.Instance, "{\"type\":6}"),
+            new JsonProtocolTestData("PingMessage", PingMessage.Instance, true, true, "{\"type\":6}"),
 
-            new JsonProtocolTestData("CloseMessage", CloseMessage.Empty, "{\"type\":7}"),
-            new JsonProtocolTestData("CloseMessage_HasError", new CloseMessage("Error!"), "{\"type\":7,\"error\":\"Error!\"}"),
-            new JsonProtocolTestData("CloseMessage_HasErrorEmptyString", new CloseMessage(""), "{\"type\":7,\"error\":\"\"}"),
+            new JsonProtocolTestData("CloseMessage", CloseMessage.Empty, false, true, "{\"type\":7}"),
+            new JsonProtocolTestData("CloseMessage_HasError", new CloseMessage("Error!"), false, true, "{\"type\":7,\"error\":\"Error!\"}"),
+            new JsonProtocolTestData("CloseMessage_HasErrorEmptyString", new CloseMessage(""), false, true, "{\"type\":7,\"error\":\"\"}"),
+            new JsonProtocolTestData("CloseMessage_HasErrorWithCamelCase", new CloseMessage("Error!"), true, true, "{\"type\":7,\"error\":\"Error!\"}"),
 
         }.ToDictionary(t => t.Name);
 
@@ -76,13 +79,12 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IDictionary<string, JsonProtocolTestData> OutOfOrderJsonTestData => new[]
         {
-            new JsonProtocolTestData("InvocationMessage_StringIsoDateArgumentFirst", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), "{ \"arguments\": [\"2016-05-10T13:51:20+12:34\"], \"type\":1, \"target\": \"Method\" }"),
-            //new JsonProtocolTestData("InvocationMessage_StringIsoDateArgumentFirst", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), false, "{ \"arguments\": [\"2016-05-10T13:51:20+12:34\"], \"type\":1, \"target\": \"Method\" }"),
-            //new JsonProtocolTestData("InvocationMessage_DateTimeOffsetArgumentFirst", new InvocationMessage("Method", new object[] { DateTimeOffset.Parse("2016-05-10T13:51:20+12:34") }), false, "{ \"arguments\": [\"2016-05-10T13:51:20+12:34\"], \"type\":1, \"target\": \"Method\" }"),
-            new JsonProtocolTestData("InvocationMessage_IntegerArrayArgumentFirst", new InvocationMessage("Method", new object[] { 1, 2 }), "{ \"arguments\": [1,2], \"type\":1, \"target\": \"Method\" }"),
-            new JsonProtocolTestData("StreamInvocationMessage_IntegerArrayArgumentFirst", new StreamInvocationMessage("3", "Method", new object[] { 1, 2 }), "{ \"type\":4, \"arguments\": [1,2], \"target\": \"Method\", \"invocationId\": \"3\" }"),
-            new JsonProtocolTestData("CompletionMessage_ResultFirst", new CompletionMessage("15", null, 10, hasResult: true), "{ \"type\":3, \"result\": 10, \"invocationId\": \"15\" }"),
-            new JsonProtocolTestData("StreamItemMessage_ItemFirst", new StreamItemMessage("1a", "foo"), "{ \"item\": \"foo\", \"invocationId\": \"1a\", \"type\":2 }")
+            new JsonProtocolTestData("InvocationMessage_StringIsoDateArgumentFirst", new InvocationMessage("Method", new object[] { "2016-05-10T13:51:20+12:34" }), false, true, "{ \"arguments\": [\"2016-05-10T13:51:20+12:34\"], \"type\":1, \"target\": \"Method\" }"),
+            new JsonProtocolTestData("InvocationMessage_DateTimeOffsetArgumentFirst", new InvocationMessage("Method", new object[] { DateTimeOffset.Parse("2016-05-10T13:51:20+12:34") }), false, true, "{ \"arguments\": [\"2016-05-10T13:51:20+12:34\"], \"type\":1, \"target\": \"Method\" }"),
+            new JsonProtocolTestData("InvocationMessage_IntegerArrayArgumentFirst", new InvocationMessage("Method", new object[] { 1, 2 }), false, true, "{ \"arguments\": [1,2], \"type\":1, \"target\": \"Method\" }"),
+            new JsonProtocolTestData("StreamInvocationMessage_IntegerArrayArgumentFirst", new StreamInvocationMessage("3", "Method", new object[] { 1, 2 }), false, true, "{ \"type\":4, \"arguments\": [1,2], \"target\": \"Method\", \"invocationId\": \"3\" }"),
+            new JsonProtocolTestData("CompletionMessage_ResultFirst", new CompletionMessage("15", null, 10, hasResult: true), false, true, "{ \"type\":3, \"result\": 10, \"invocationId\": \"15\" }"),
+            new JsonProtocolTestData("StreamItemMessage_ItemFirst", new StreamItemMessage("1a", "foo"), false, true, "{ \"item\": \"foo\", \"invocationId\": \"1a\", \"type\":2 }")
 
         }.ToDictionary(t => t.Name);
 
@@ -99,7 +101,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var writer = MemoryBufferWriter.Get();
             try
             {
-                JsonHubProtocol.WriteMessage(testData.Message, writer);
+                var protocol = GetProtocolWithOptions(testData.UseCamelCase, testData.IgnoreNullValues);
+                protocol.WriteMessage(testData.Message, writer);
                 var json = Encoding.UTF8.GetString(writer.ToArray());
 
                 Assert.Equal(expectedOutput, json);
@@ -120,7 +123,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var binder = new TestBinder(testData.Message);
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
-            JsonHubProtocol.TryParseMessage(ref data, binder, out var message);
+            var protocol = GetProtocolWithOptions(testData.UseCamelCase, testData.IgnoreNullValues);
+            protocol.TryParseMessage(ref data, binder, out var message);
 
             Assert.Equal(testData.Message, message, TestHubMessageEqualityComparer.Instance);
         }
@@ -179,7 +183,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
             var binder = new TestBinder(testData.Message);
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
-            JsonHubProtocol.TryParseMessage(ref data, binder, out var message);
+            var protocol = GetProtocolWithOptions(testData.UseCamelCase, testData.IgnoreNullValues);
+            protocol.TryParseMessage(ref data, binder, out var message);
 
             Assert.Equal(testData.Message, message, TestHubMessageEqualityComparer.Instance);
         }
@@ -205,7 +210,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{\"type\":4,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[ \"abc\", \"xyz\"]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
         [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,\"\",{\"1\":1,\"2\":2}]}", "Invocation provides 3 argument(s) but target expects 2.")]
         [InlineData("{\"type\":1,\"arguments\":[1,\"\",{\"1\":1,\"2\":2}]},\"invocationId\":\"42\",\"target\":\"foo\"", "Invocation provides 3 argument(s) but target expects 2.")]
-        [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,[1]]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
+        // Both of these should be fixed by https://github.com/dotnet/corefx/issues/36901
+        // [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,[1]]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
         // [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[1,[]]}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
         public void ArgumentBindingErrors(string input, string expectedMessage)
         {
@@ -277,12 +283,16 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             public string Name { get; }
             public HubMessage Message { get; }
             public string Json { get; }
+            public bool UseCamelCase { get; }
+            public bool IgnoreNullValues { get; }
 
-            public JsonProtocolTestData(string name, HubMessage message, string json)
+            public JsonProtocolTestData(string name, HubMessage message, bool useCamelCase, bool ignoreNullValues, string json)
             {
                 Name = name;
                 Message = message;
                 Json = json;
+                UseCamelCase = useCamelCase;
+                IgnoreNullValues = ignoreNullValues;
             }
 
             public override string ToString() => Name;

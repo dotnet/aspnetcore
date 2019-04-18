@@ -21,7 +21,7 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Reference Include="Microsoft.Bcl.Json.Sources" />
     <Reference Include="System.Buffers" />
     <Reference Include="System.Runtime.CompilerServices.Unsafe" />

@@ -68,7 +68,6 @@
 
       If these are needed as direct dependencies, it is okay to change them to ExternalAspNetCoreAppReference and move up into sections above.
     -->
-    <_TransitiveExternalAspNetCoreAppReference Include="Newtonsoft.Json"                                    Version="$(NewtonsoftJsonPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
   </ItemGroup>

@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
@@ -43,10 +44,24 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         private static readonly int ProtocolMinorVersion = 0;
 
         /// <summary>
+        /// Gets the serializer used to serialize invocation arguments and return values.
+        /// </summary>
+        private readonly JsonSerializerOptions _payloadSerializerOptions;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
         /// </summary>
-        public JsonHubProtocol()
+        public JsonHubProtocol() : this(Options.Create(new JsonHubProtocolOptions()))
         {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JsonHubProtocol"/> class.
+        /// </summary>
+        /// <param name="options">The options used to initialize the protocol.</param>
+        public JsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
+        {
+            _payloadSerializerOptions = options.Value._serializerOptions;
         }
 
         /// <inheritdoc />
@@ -188,11 +203,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 {
                                     // If we have an invocation id already we can parse the end result
                                     var returnType = binder.GetReturnType(invocationId);
-                                    if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        using var token = JsonDocument.ParseValue(ref reader);
-                                        result = BindType(token.RootElement, returnType);
-                                    }
+                                    using var token = JsonDocument.ParseValue(ref reader);
+                                    result = BindType(token.RootElement, returnType);
                                 }
                             }
                             else if (reader.TextEquals(ItemPropertyNameBytes))
@@ -216,11 +228,8 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 try
                                 {
                                     var itemType = binder.GetStreamItemType(id);
-                                    if (reader.TokenType != JsonTokenType.Null)
-                                    {
-                                        using var token = JsonDocument.ParseValue(ref reader);
-                                        item = BindType(token.RootElement, itemType);
-                                    }
+                                    using var token = JsonDocument.ParseValue(ref reader);
+                                    item = BindType(token.RootElement, itemType);
                                 }
                                 catch (Exception ex)
                                 {
@@ -571,7 +580,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private JsonDocument GetParsedObject(object obj, Type type)
         {
-            var bytes = JsonSerializer.ToBytes(obj, type);
+            var bytes = JsonSerializer.ToBytes(obj, type, _payloadSerializerOptions);
             var token = JsonDocument.Parse(bytes);
             return token;
         }
@@ -695,11 +704,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                 return jsonObject.GetDateTimeOffset();
             }
 
-            if (jsonObject.Type == JsonValueType.Null)
-            {
-                return null;
-            }
-            return JsonSerializer.Parse(jsonObject.GetRawText(), type);
+            return JsonSerializer.Parse(jsonObject.GetRawText(), type, _payloadSerializerOptions);
         }
 
         private object[] BindTypes(JsonElement jsonArray, IReadOnlyList<Type> paramTypes)
@@ -755,6 +760,19 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             }
 
             return message;
+        }
+
+        internal static JsonSerializerOptions CreateDefaultSerializerSettings()
+        {
+            var options = new JsonSerializerOptions();
+            options.WriteIndented = false;
+            options.ReadCommentHandling = JsonCommentHandling.Disallow;
+            options.AllowTrailingCommas = false;
+            options.IgnoreNullValues = false;
+            options.IgnoreReadOnlyProperties = false;
+            // TODO: camelCase
+
+            return options;
         }
     }
 }
