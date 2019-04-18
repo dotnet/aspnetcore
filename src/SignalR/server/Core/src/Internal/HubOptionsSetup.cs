@@ -54,6 +54,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 options.SupportedProtocols = new List<string>();
             }
 
+            if (options.StreamBufferCapacity == null)
+            {
+                options.StreamBufferCapacity = DefaultStreamBufferCapacity;
+            }
+
             foreach (var protocol in _defaultProtocols)
             {
                 options.SupportedProtocols.Add(protocol);

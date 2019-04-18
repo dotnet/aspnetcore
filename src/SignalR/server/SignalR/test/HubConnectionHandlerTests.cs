@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 using MessagePack;
 using MessagePack.Formatters;
@@ -207,6 +208,33 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.NotNull(client.HandshakeResponseMessage);
                     Assert.Equal("Handshake was canceled.", client.HandshakeResponseMessage.Error);
 
+                    await connectionHandlerTask.OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task StreamBufferCapacity()
+        {
+            using (StartVerifiableLog())
+            {
+                var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+                {
+                    services.Configure<HubOptions>(options =>
+                    {
+                        options.StreamBufferCapacity = 1;
+                    });
+                }, LoggerFactory);
+                var connectionHandler = serviceProvider.GetService<HubConnectionHandler<SimpleHub>>();
+
+                using (var client = new TestClient())
+                {
+                    var connectionHandlerTask = await client.ConnectAsync(connectionHandler, false);
+
+                    var channel = Channel.CreateUnbounded<string>();
+                    await client.SendHubMessageAsync(new StreamInvocationMessage("1", nameof(StreamingHub.StreamEcho), new object[] { channel })).OrTimeout();
+                    channel.Writer.TryWrite("A");
+                    channel.Writer.TryWrite("B");
                     await connectionHandlerTask.OrTimeout();
                 }
             }

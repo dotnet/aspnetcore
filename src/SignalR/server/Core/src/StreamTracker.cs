@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 // TODO: Make this configurable or figure out a good limit
                 // https://github.com/aspnet/AspNetCore/issues/4399
-                _channel = Channel.CreateBounded<T>(10);
+                _channel = Channel.CreateBounded<T>(streamBufferCapacity);
             }
 
             public Type GetItemType()
