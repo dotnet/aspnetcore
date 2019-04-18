@@ -325,10 +325,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var ex = Assert.Throws<InvalidOperationException>(() => candidateSet.ExpandEndpoint(0, Array.Empty<Endpoint>(), comparer));
 
             // Assert
-            Assert.Equal(@"
-Using ExpandEndpoint requires that the replaced endpoint have a unique priority. The following endpoints were found with the same priority:
-test: /0
-test: /1"
+            Assert.Equal(@"Using ExpandEndpoint requires that the replaced endpoint have a unique priority. The following endpoints were found with the same priority:" +
+                Environment.NewLine +
+                "test: /0" +
+                Environment.NewLine +
+                "test: /1"
                 .TrimStart(), ex.Message);
         }
 
