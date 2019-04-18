@@ -103,7 +103,6 @@ namespace Microsoft.AspNetCore.StaticFiles
     public partial class StaticFileMiddleware
     {
         public StaticFileMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnv, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.StaticFileOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
     public partial class StaticFileResponseContext
