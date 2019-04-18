@@ -235,8 +235,26 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        bool clrThreadExited;
+        if (m_pConfig->QueryCallStartupHook())
+        {
+            // Used to display developer exception page when there is an exception in main.
+            auto currentStartupHookEnv = Environment::GetEnvironmentVariableValue(DOTNETCORE_STARTUP_HOOK);
 
+            if (currentStartupHookEnv.has_value())
+            {
+                currentStartupHookEnv = currentStartupHookEnv.value() + L";" + ASPNETCORE_STARTUP_ASSEMBLY;
+                LOG_LAST_ERROR_IF(!SetEnvironmentVariable(DOTNETCORE_STARTUP_HOOK, currentStartupHookEnv.value().c_str()));
+            }
+            else
+            {
+                LOG_LAST_ERROR_IF(!SetEnvironmentVariable(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+            }
+        }
+
+        // Used to make .NET Runtime always log to event log when there is an unhandled exception.
+        LOG_LAST_ERROR_IF(SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1"));
+
+        bool clrThreadExited;
         {
             auto redirectionOutput = LoggingHelpers::CreateOutputs(
                     m_pConfig->QueryStdoutLogEnabled(),
