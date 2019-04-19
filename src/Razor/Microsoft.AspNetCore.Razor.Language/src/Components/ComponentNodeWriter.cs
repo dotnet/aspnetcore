@@ -182,16 +182,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 var p = new List<(string seqName, string typeName, string parameterName)>();
                 foreach (var attribute in node.Component.Attributes)
                 {
-                    p.Add(($"__seq{p.Count}", attribute.TypeName, $"__arg{p.Count}"));
+                    var typeName = attribute.TypeName;
+                    if (attribute.BoundAttribute != null && !attribute.BoundAttribute.IsGenericTypedProperty())
+                    {
+                        typeName = "global::" + typeName;
+                    }
+                    p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
                 }
 
                 foreach (var childContent in node.Component.ChildContents)
                 {
-                    p.Add(($"__seq{p.Count}", childContent.TypeName, $"__arg{p.Count}"));
+                    var typeName = childContent.TypeName;
+                    if (childContent.BoundAttribute != null && !childContent.BoundAttribute.IsGenericTypedProperty())
+                    {
+                        typeName = "global::" + typeName;
+                    }
+                    p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
                 }
 
                 foreach (var capture in node.Component.Captures)
                 {
+                    // The capture type name should already contain the global:: prefix.
                     p.Add(($"__seq{p.Count}", capture.TypeName, $"__arg{p.Count}"));
                 }
 

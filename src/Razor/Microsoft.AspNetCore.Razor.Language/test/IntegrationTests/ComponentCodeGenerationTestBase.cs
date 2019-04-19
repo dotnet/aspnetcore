@@ -2788,6 +2788,47 @@ namespace Test
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void GenericComponent_NonGenericParameter_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+using Test.Shared;
+
+namespace Test
+{
+    public class MyComponent<TItem> : ComponentBase
+    {
+        [Parameter] TItem Item { get; set; }
+        [Parameter] MyClass Foo { get; set; }
+    }
+}
+
+namespace Test.Shared
+{
+    public class MyClass
+    {
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Test.Shared
+<MyComponent Item=""3"" Foo=""@Hello"" />
+
+@functions {
+    MyClass Hello = new MyClass();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region Ref
