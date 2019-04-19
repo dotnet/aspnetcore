@@ -26,13 +26,13 @@ namespace Microsoft.AspNetCore.Diagnostics
             RequestDelegate next,
             ILoggerFactory loggerFactory,
             IOptions<ExceptionHandlerOptions> options,
-            DiagnosticListener diagnosticSource)
+            DiagnosticListener diagnosticListener)
         {
             _next = next;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
             _clearCacheHeadersDelegate = ClearCacheHeaders;
-            _diagnosticListener = diagnosticSource;
+            _diagnosticListener = diagnosticListener;
             if (_options.ExceptionHandler == null)
             {
                 if (_options.ExceptionHandlingPath == null)
