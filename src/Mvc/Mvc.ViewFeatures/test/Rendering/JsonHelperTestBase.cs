@@ -29,6 +29,21 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         }
 
         [Fact]
+        public void Serialize_WithNullValue()
+        {
+            // Arrange
+            var helper = GetJsonHelper();
+            var expectedOutput = "null";
+
+            // Act
+            var result = helper.Serialize(value: null);
+
+            // Assert
+            var htmlString = Assert.IsType<HtmlString>(result);
+            Assert.Equal(expectedOutput, htmlString.ToString());
+        }
+
+        [Fact]
         public void Serialize_WithControlCharacters()
         {
             // Arrange
