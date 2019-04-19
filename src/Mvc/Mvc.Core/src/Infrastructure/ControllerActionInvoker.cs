@@ -395,7 +395,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             return Task.CompletedTask;
 
-            static async Task Awaited(ControllerActionInvoker invoker, ValueTask< IActionResult> actionResultValueTask)
+            static async Task Awaited(ControllerActionInvoker invoker, ValueTask<IActionResult> actionResultValueTask)
             {
                 invoker._result = await actionResultValueTask;
             }
