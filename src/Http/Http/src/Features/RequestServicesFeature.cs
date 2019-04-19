@@ -52,6 +52,9 @@ namespace Microsoft.AspNetCore.Http.Features
                     {
                         return Awaited(this, vt);
                     }
+                    // If its a IValueTaskSource backed ValueTask,
+                    // inform it its result has been read so it can reset
+                    vt.GetAwaiter().GetResult();
                     break;
                 case IDisposable disposable:
                     disposable.Dispose();
