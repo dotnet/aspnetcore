@@ -770,7 +770,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             options.AllowTrailingCommas = false;
             options.IgnoreNullValues = false;
             options.IgnoreReadOnlyProperties = false;
-            // TODO: camelCase
+            options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
 
             return options;
         }
