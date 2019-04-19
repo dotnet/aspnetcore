@@ -47,11 +47,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js" LogicalName="_framework\%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js" LogicalName="_framework/%(Filename)%(Extension)" />
 
     <EmbeddedResource
       Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map"
-      LogicalName="_framework\%(Filename)%(Extension)"
+      LogicalName="_framework/%(Filename)%(Extension)"
       Condition="Exists('..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map')" />
   </ItemGroup>
 
