@@ -323,6 +323,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Components.Prerendering.Test", "Mvc.Components.Prerendering\test\Microsoft.AspNetCore.Mvc.Components.Prerendering.Test.csproj", "{C6F3BCE6-1EFD-4360-932B-B98573E78926}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Protocols.Json", "..\SignalR\common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj", "{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -1839,6 +1841,18 @@ Global
 		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|x86.ActiveCfg = Release|Any CPU
 		{C6F3BCE6-1EFD-4360-932B-B98573E78926}.Release|x86.Build.0 = Release|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Debug|x86.Build.0 = Debug|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Release|x86.ActiveCfg = Release|Any CPU
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1970,6 +1984,7 @@ Global
 		{A8C3066F-E80D-4E03-9962-741B551B8FBC} = {16703B76-C9F7-4C75-AE6C-53D92E308E3C}
 		{6D6489E5-48BD-4F9B-9EEE-22AEEA1E1890} = {45CE788D-4B69-4F83-981C-F43D8F15B0F1}
 		{C6F3BCE6-1EFD-4360-932B-B98573E78926} = {45CE788D-4B69-4F83-981C-F43D8F15B0F1}
+		{637119E8-5BBB-4FC7-A372-DAF38FF5EBD9} = {5FE3048A-E96B-44F8-A7C4-FC590D7E04B4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {63D344F6-F86D-40E6-85B9-0AABBE338C4A}
