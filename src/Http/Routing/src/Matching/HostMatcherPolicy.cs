@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     var port = ReadOnlySpan<char>.Empty;
 
                     // Split into host and port
-                    var pivot = host.IndexOf(":");
+                    var pivot = host.IndexOf(':');
                     if (pivot >= 0)
                     {
                         port = host.Slice(pivot + 1);
