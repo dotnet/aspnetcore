@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) { }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context, Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate next) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.PartialViewResult PartialView() { throw null; }
