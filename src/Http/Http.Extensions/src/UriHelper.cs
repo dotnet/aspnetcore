@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
     public static class UriHelper
     {
         private const char ForwardSlash = '/';
-        private const char Pound = '#';
+        private const char Hash = '#';
         private const char QuestionMark = '?';
         private const string SchemeDelimiter = "://";
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
 
             int searchIndex;
             var limit = uri.Length;
-            if ((searchIndex = uri.IndexOf(Pound, startIndex)) >= 0 && searchIndex < limit)
+            if ((searchIndex = uri.IndexOf(Hash, startIndex)) >= 0 && searchIndex < limit)
             {
                 fragment = FragmentString.FromUriComponent(uri.Substring(searchIndex));
                 limit = searchIndex;
