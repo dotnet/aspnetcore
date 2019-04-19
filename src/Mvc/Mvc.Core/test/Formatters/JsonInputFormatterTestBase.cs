@@ -106,7 +106,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public virtual async Task JsonFormatterReadsDateTimeValue()
         {
             // Arrange
-            var content = "\"2012-02-01 12:45 AM\"";
+            var expected = new DateTime(2012, 02, 01, 00, 45, 00);
+            var content = $"\"{expected.ToString("O")}\"";
             var formatter = GetInputFormatter();
 
             var contentBytes = Encoding.UTF8.GetBytes(content);
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Assert
             Assert.False(result.HasError);
             var dateValue = Assert.IsType<DateTime>(result.Model);
-            Assert.Equal(new DateTime(2012, 02, 01, 00, 45, 00), dateValue);
+            Assert.Equal(expected, dateValue);
         }
 
         [Fact]
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             // Arrange
             var formatter = GetInputFormatter();
 
-            var content = "{\"Name\": \"Person Name\", \"Age\": 30}";
+            var content = "{\"name\": \"Person Name\", \"age\": 30}";
             var contentBytes = Encoding.UTF8.GetBytes(content);
             var httpContext = GetHttpContext(contentBytes);
 
@@ -194,8 +195,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.False(result.HasError);
-            var integers = Assert.IsType<List<int>>(result.Model);
-            Assert.Equal(new int[] { 0, 23, 300 }, integers);
+            Assert.IsAssignableFrom(requestedType, result.Model);
+            Assert.Equal(new int[] { 0, 23, 300 }, (IEnumerable<int>)result.Model);
         }
 
         [Fact]
