@@ -160,6 +160,7 @@ namespace System.Buffers
             }
         }
 
+        // This method can ONLY be called from the finalizer of MemoryPoolBlock
         internal void RefreshBlock(MemoryPoolSlab slab, int offset, int length)
         {
             lock (_disposeSync)
@@ -167,6 +168,8 @@ namespace System.Buffers
                 if (!_isDisposed && slab != null && slab.IsActive)
                 {
                     // Need to make a new object because this one is being finalized
+                    // Note, this must be called within the _disposeSync lock because the block
+                    // could be disposed at the same time as the finalizer.
                     Return(new MemoryPoolBlock(this, slab, offset, length));
                 }
             }
