@@ -33,6 +33,11 @@ param(
     [switch]$Quiet
 )
 
+if ($env:TF_BUILD) {
+    Write-Error 'This script is not intended for use on CI. It is only meant to be used to install a local developer environment. If you need to change Visual Studio requirements in CI agents, contact the @aspnet/build team.'
+    exit 1
+}
+
 if ($Passive -and $Quiet) {
     Write-Host -ForegroundColor Red "Error: The -Passive and -Quiet options cannot be used together."
     Write-Host -ForegroundColor Red "Run ``Get-Help $PSCommandPath`` for more details."
