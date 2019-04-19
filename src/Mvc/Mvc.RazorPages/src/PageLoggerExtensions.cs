@@ -13,8 +13,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     {
         public const string PageFilter = "Page Filter";
 
-        private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _handlerMethodExecuting;
+        private static readonly Action<ILogger, string, ModelValidationState, Exception> _handlerMethodExecuting;
         private static readonly Action<ILogger, ModelValidationState, Exception> _implicitHandlerMethodExecuting;
+        private static readonly Action<ILogger, string, string[], Exception> _handlerMethodExecutingWithArguments;
         private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
         private static readonly Action<ILogger, string, Exception> _implicitHandlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
@@ -26,10 +27,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         {
             // These numbers start at 101 intentionally to avoid conflict with the IDs used by ResourceInvoker.
 
-            _handlerMethodExecuting = LoggerMessage.Define<string, string[], ModelValidationState>(
+            _handlerMethodExecuting = LoggerMessage.Define<string, ModelValidationState>(
                 LogLevel.Information,
                 new EventId(101, "ExecutingHandlerMethod"),
-                "Executing handler method {HandlerName} with arguments ({Arguments}) - ModelState is {ValidationState}");
+                "Executing handler method {HandlerName} - ModelState is {ValidationState}");
+
+            _handlerMethodExecutingWithArguments = LoggerMessage.Define<string, string[]>(
+                LogLevel.Trace,
+                new EventId(103, "HandlerMethodExecutingWithArguments"),
+                "Executing handler method {HandlerName} with arguments ({Arguments})");
 
             _handlerMethodExecuted = LoggerMessage.Define<string, string>(
                 LogLevel.Information,
@@ -73,23 +79,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             {
                 var handlerName = handler.MethodInfo.DeclaringType.FullName + "." + handler.MethodInfo.Name;
 
-                string[] convertedArguments;
-                if (arguments == null)
+                var validationState = context.ModelState.ValidationState;
+                _handlerMethodExecuting(logger, handlerName, validationState, null);
+
+                if (arguments != null && logger.IsEnabled(LogLevel.Trace))
                 {
-                    convertedArguments = null;
-                }
-                else
-                {
-                    convertedArguments = new string[arguments.Length];
+                    var convertedArguments = new string[arguments.Length];
                     for (var i = 0; i < arguments.Length; i++)
                     {
                         convertedArguments[i] = Convert.ToString(arguments[i]);
                     }
+
+                    _handlerMethodExecutingWithArguments(logger, handlerName, convertedArguments, null);
                 }
-
-                var validationState = context.ModelState.ValidationState;
-
-                _handlerMethodExecuting(logger, handlerName, convertedArguments, validationState, null);
             }
         }
 
