@@ -5,6 +5,7 @@
     <MicrosoftNETCoreAppPackageVersion>2.2.4</MicrosoftNETCoreAppPackageVersion>
     <MicrosoftNETCoreDotNetAppHostPackageVersion>2.2.4</MicrosoftNETCoreDotNetAppHostPackageVersion>
     <MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>2.2.0</MicrosoftExtensionsLoggingAzureAppServicesPackageVersion>
+    <MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>2.2.0</MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>
     <SystemDataSqlClientPackageVersion>4.6.0</SystemDataSqlClientPackageVersion>
   </PropertyGroup>
 
@@ -63,7 +64,6 @@
     <MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>2.2.0</MicrosoftExtensionsDependencyInjectionSpecificationTestsPackageVersion>
     <MicrosoftExtensionsDiagnosticAdapterPackageVersion>2.2.0</MicrosoftExtensionsDiagnosticAdapterPackageVersion>
     <MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsDiagnosticsHealthChecksAbstractionsPackageVersion>
-    <MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>2.2.0</MicrosoftExtensionsDiagnosticsHealthChecksPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>2.2.0</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftExtensionsFileProvidersCompositePackageVersion>2.2.0</MicrosoftExtensionsFileProvidersCompositePackageVersion>
     <MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>2.2.0</MicrosoftExtensionsFileProvidersEmbeddedPackageVersion>
