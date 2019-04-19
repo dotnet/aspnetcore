@@ -13,8 +13,25 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
+    /// <summary>
+    /// Authenticates requests using Negotiate, Kerberos, or NTLM.
+    /// </summary>
     public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthenticationRequestHandler
     {
+        // TODO: Move to server connection storage feature.
+        // This has no cleaup. Static because handlers are per-request.
+        // These instances should be disposed when all requests are complete and the connection is cleaned up.
+        private static ConcurrentDictionary<string, INegotiateState> _states = new ConcurrentDictionary<string, INegotiateState>();
+
+        private string _verb = "Negotiate";// "NTLM";
+
+        /// <summary>
+        /// Creates a new <see cref="NegotiateHandler"/>
+        /// </summary>
+        /// <param name="options"></param>
+        /// <param name="logger"></param>
+        /// <param name="encoder"></param>
+        /// <param name="clock"></param>
         public NegotiateHandler(IOptionsMonitor<NegotiateOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
@@ -29,16 +46,16 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             set => base.Events = value;
         }
 
+        /// <summary>
+        /// Creates the default events type.
+        /// </summary>
+        /// <returns></returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new NegotiateEvents());
 
-        // TODO: Move to server connection storage feature.
-        // This has no cleaup. Static because handlers are per-request.
-        // These instances should be disposed when all requests are complete and the connection is cleaned up.
-        private static ConcurrentDictionary<string, INegotiateState> _states = new ConcurrentDictionary<string, INegotiateState>();
-
-        private string _verb = "Negotiate";// "NTLM";
-
-        // Intercept incomplete auth handshakes and continue or complete them.
+        /// <summary>
+        /// Intercepts incomplete auth handshakes and continues or completes them.
+        /// </summary>
+        /// <returns></returns>
         public Task<bool> HandleRequestAsync()
         {
             var connectionId = Context.Connection.Id;
@@ -87,7 +104,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         }
 
         /// <summary>
-        /// Checks if the current connection is authenticated and returns the user.
+        /// Checks if the current request is authenticated and returns the user.
         /// </summary>
         /// <returns></returns>
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
@@ -104,6 +121,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             return Task.FromResult(AuthenticateResult.NoResult());
         }
 
+        /// <summary>
+        /// Issues a 401 WWW-Authenticate challenge.
+        /// </summary>
+        /// <param name="properties"></param>
+        /// <returns></returns>
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             var authResult = await HandleAuthenticateOnceSafeAsync();

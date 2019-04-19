@@ -4,15 +4,10 @@
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     /// <summary>
-    /// Options class provides information needed to control Bearer Authentication handler behavior
+    /// Options class provides information needed to control Negotiate Authentication handler behavior
     /// </summary>
     public class NegotiateOptions : AuthenticationSchemeOptions
     {
-        /// <summary>
-        /// Gets or sets the challenge to put in the "WWW-Authenticate" header.
-        /// </summary>
-        public string Challenge { get; set; } = NegotiateDefaults.AuthenticationScheme;
-
         /// <summary>
         /// The object provided by the application to process events raised by the bearer authentication handler.
         /// The application may implement the interface fully, or it may create an instance of NegotiateEvents

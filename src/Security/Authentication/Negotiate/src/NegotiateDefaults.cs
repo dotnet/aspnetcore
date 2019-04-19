@@ -4,13 +4,13 @@
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     /// <summary>
-    /// Default values used by bearer authentication.
+    /// Default values used by Negotiate authentication.
     /// </summary>
     public static class NegotiateDefaults
     {
         /// <summary>
         /// Default value for AuthenticationScheme property in the NegotiateAuthenticationOptions
         /// </summary>
-        public const string AuthenticationScheme = "Bearer";
+        public const string AuthenticationScheme = "Negotiate";
     }
 }

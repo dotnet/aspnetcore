@@ -21,24 +21,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public Exception AuthenticateFailure { get; set; }
 
         /// <summary>
-        /// Gets or sets the "error" value returned to the caller as part
-        /// of the WWW-Authenticate header.
-        /// </summary>
-        public string Error { get; set; }
-
-        /// <summary>
-        /// Gets or sets the "error_description" value returned to the caller as part
-        /// of the WWW-Authenticate header.
-        /// </summary>
-        public string ErrorDescription { get; set; }
-
-        /// <summary>
-        /// Gets or sets the "error_uri" value returned to the caller as part of the
-        /// WWW-Authenticate header. This property is always null unless explicitly set.
-        /// </summary>
-        public string ErrorUri { get; set; }
-
-        /// <summary>
         /// If true, will skip any default logic for this challenge.
         /// </summary>
         public bool Handled { get; private set; }

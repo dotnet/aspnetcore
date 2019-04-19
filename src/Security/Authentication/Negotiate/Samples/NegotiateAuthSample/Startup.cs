@@ -1,7 +1,6 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Negotiate;
@@ -11,9 +10,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 
 namespace NegotiateAuthSample
 {
@@ -57,13 +53,12 @@ namespace NegotiateAuthSample
                 await next();
             });
 
-            // TODO: Move to endpoints.
+            // TODO: Move to endpoints?
             app.Run(HandleRequest);
         }
 
         public async Task HandleRequest(HttpContext context)
         {
-
             var user = context.User.Identity;
             await context.Response.WriteAsync($"Authenticated? {user.IsAuthenticated}, Name: {user.Name}");
         }
