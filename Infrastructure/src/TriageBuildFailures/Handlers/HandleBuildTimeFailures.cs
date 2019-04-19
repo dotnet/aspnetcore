@@ -101,7 +101,7 @@ CC @aspnet/build";
                     new KeyValuePair<string, object>("WebURL", build.WebURL),
                 };
 
-                var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: new [] { "aspnet/build" }, hiddenData: hiddenData);
+                var issue = await GHClient.CreateIssue(owner, repo, subject, body, issueLabels, assignees: null hiddenData: hiddenData);
                 await GHClient.AddIssueToProject(issue, GHClient.Config.NewBuildFailuresColumn);
                 Reporter.Output($"Created issue {issue.HtmlUrl}");
 
