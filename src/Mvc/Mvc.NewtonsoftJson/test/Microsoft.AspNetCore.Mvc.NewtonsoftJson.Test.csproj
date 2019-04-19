@@ -16,6 +16,7 @@
     <Compile Include="..\..\Mvc.Core\test\Formatters\JsonOutputFormatterTestBase.cs" />
     <Compile Include="..\..\Mvc.Core\test\Infrastructure\JsonResultExecutorTestBase.cs" />
     <Compile Include="..\..\Mvc.ViewFeatures\test\Infrastructure\TempDataSerializerTestBase.cs" />
+    <Compile Include="..\..\Mvc.ViewFeatures\test\Rendering\JsonHelperTestBase.cs" />
   </ItemGroup>
 
 </Project>
