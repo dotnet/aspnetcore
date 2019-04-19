@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -35,25 +36,25 @@ namespace Microsoft.AspNetCore.Http.Connections
 
         public static void WriteResponse(NegotiationResponse response, IBufferWriter<byte> output)
         {
-            var writer = new Utf8JsonWriter(output, new JsonWriterState(new JsonWriterOptions() { SkipValidation = true }));
+            using var writer = new Utf8JsonWriter(output, new JsonWriterOptions() { SkipValidation = true });
             writer.WriteStartObject();
 
             if (!string.IsNullOrEmpty(response.Url))
             {
-                writer.WriteString(UrlPropertyNameBytes, response.Url, escape: false);
+                writer.WriteString(UrlPropertyNameBytes, response.Url);
             }
 
             if (!string.IsNullOrEmpty(response.AccessToken))
             {
-                writer.WriteString(AccessTokenPropertyNameBytes, response.AccessToken, escape: false);
+                writer.WriteString(AccessTokenPropertyNameBytes, response.AccessToken);
             }
 
             if (!string.IsNullOrEmpty(response.ConnectionId))
             {
-                writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId, escape: false);
+                writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId);
             }
 
-            writer.WriteStartArray(AvailableTransportsPropertyNameBytes, escape: false);
+            writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
 
             if (response.AvailableTransports != null)
             {
@@ -62,20 +63,20 @@ namespace Microsoft.AspNetCore.Http.Connections
                     writer.WriteStartObject();
                     if (availableTransport.Transport != null)
                     {
-                        writer.WriteString(TransportPropertyNameBytes, availableTransport.Transport, escape: false);
+                        writer.WriteString(TransportPropertyNameBytes, availableTransport.Transport);
                     }
                     else
                     {
                         // Might be able to remove this after https://github.com/dotnet/corefx/issues/34632 is resolved
-                        writer.WriteNull(TransportPropertyNameBytes, escape: false);
+                        writer.WriteNull(TransportPropertyNameBytes);
                     }
-                    writer.WriteStartArray(TransferFormatsPropertyNameBytes, escape: false);
+                    writer.WriteStartArray(TransferFormatsPropertyNameBytes);
 
                     if (availableTransport.TransferFormats != null)
                     {
                         foreach (var transferFormat in availableTransport.TransferFormats)
                         {
-                            writer.WriteStringValue(transferFormat, escape: false);
+                            writer.WriteStringValue(transferFormat);
                         }
                     }
 
@@ -87,7 +88,8 @@ namespace Microsoft.AspNetCore.Http.Connections
             writer.WriteEndArray();
             writer.WriteEndObject();
 
-            writer.Flush(isFinalBlock: true);
+            writer.Flush();
+            Debug.Assert(writer.CurrentDepth == 0);
         }
 
         public static NegotiationResponse ParseResponse(ReadOnlySpan<byte> content)
