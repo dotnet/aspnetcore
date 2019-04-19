@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private const int _ulongMaxValueLength = 20;
 
         private readonly Pipe _pipe;
-        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
+        private readonly MemoryPool<byte> _memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool());
 
         public PipelineExtensionTests()
         {

@@ -160,6 +160,18 @@ namespace System.Buffers
             }
         }
 
+        internal void RefreshBlock(MemoryPoolSlab slab, int offset, int length)
+        {
+            lock (_disposeSync)
+            {
+                if (!_isDisposed && slab != null && slab.IsActive)
+                {
+                    // Need to make a new object because this one is being finalized
+                    Return(new MemoryPoolBlock(this, slab, offset, length));
+                }
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (_isDisposed)
