@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -7,8 +7,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ControllersFromServicesClassLibrary\ControllersFromServicesClassLibrary.csproj" />
-
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Runtime" />
+    <Reference Include="Microsoft.AspNetCore.Razor.Language" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.Diagnostics" />
