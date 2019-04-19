@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Buffers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -148,14 +149,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
                 else
                 {
-                    using var memoryStream = new MemoryStream();
-                    using (var intermediateWriter = _writerFactory.CreateWriter(response.Body, resolvedContentTypeEncoding))
+                    using var bufferingStream = new FileBufferingWriteStream();
+                    using (var intermediateWriter = _writerFactory.CreateWriter(bufferingStream, resolvedContentTypeEncoding))
                     {
                         viewComponentResult.WriteTo(intermediateWriter, _htmlEncoder);
                     }
 
-                    memoryStream.Position = 0;
-                    await memoryStream.CopyToAsync(response.Body);
+                    await bufferingStream.DrainBufferAsync(response.Body);
                 }
             }
         }

@@ -440,6 +440,48 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public async Task ExecuteResultAsync_WithCustomViewComponentHelper_ForLargeText()
+        {
+            // Arrange
+            var expected = new string('a', 64 * 1024 * 1024);
+            var methodInfo = typeof(TextViewComponent).GetMethod(nameof(TextViewComponent.Invoke));
+            var descriptor = new ViewComponentDescriptor()
+            {
+                FullName = "Full.Name.Text",
+                ShortName = "Text",
+                TypeInfo = typeof(TextViewComponent).GetTypeInfo(),
+                MethodInfo = methodInfo,
+                Parameters = methodInfo.GetParameters(),
+            };
+            var result = Task.FromResult<IHtmlContent>(new HtmlContentBuilder().AppendHtml(expected));
+
+            var helper = Mock.Of<IViewComponentHelper>(h => h.InvokeAsync(It.IsAny<Type>(), It.IsAny<object>()) == result);
+
+            var httpContext = new DefaultHttpContext();
+            var services = CreateServices(diagnosticListener: null, httpContext, new[] { descriptor });
+            services.AddSingleton<IViewComponentHelper>(helper);
+
+            httpContext.RequestServices = services.BuildServiceProvider();
+            httpContext.Response.Body = new MemoryStream();
+
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            var viewComponentResult = new ViewComponentResult()
+            {
+                Arguments = new { name = "World!" },
+                ViewComponentType = typeof(TextViewComponent),
+                TempData = _tempDataDictionary,
+            };
+
+            // Act
+            await viewComponentResult.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var body = ReadBody(actionContext.HttpContext.Response);
+            Assert.Equal(expected, body);
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_SetsStatusCode()
         {
             // Arrange
