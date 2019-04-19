@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private const int _ulongMaxValueLength = 20;
 
         private readonly Pipe _pipe;
-        private readonly MemoryPool<byte> _memoryPool = new DiagnosticMemoryPool(new SlabMemoryPool());
+        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
 
         public PipelineExtensionTests()
         {
