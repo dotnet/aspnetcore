@@ -27,7 +27,7 @@
       $(OpenApiDefaultOutputDirectory) value is interpreted relative to the project folder, unless already an
       absolute path.
     -->
-    <OpenApiDefaultOutputDirectory>
+    <OpenApiDefaultOutputDirectory
         Condition="'$(OpenApiDefaultOutputDirectory)' == ''">$(BaseIntermediateOutputPath)</OpenApiDefaultOutputDirectory>
     <OpenApiDefaultOutputDirectory>$([MSBuild]::EnsureTrailingSlash('$(OpenApiDefaultOutputDirectory)'))</OpenApiDefaultOutputDirectory>
   </PropertyGroup>
