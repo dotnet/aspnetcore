@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
@@ -23,7 +24,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         // These instances should be disposed when all requests are complete and the connection is cleaned up.
         private static ConcurrentDictionary<string, INegotiateState> _states = new ConcurrentDictionary<string, INegotiateState>();
 
-        private string _verb = "Negotiate";// "NTLM";
+        private static string _verb = "Negotiate";// "NTLM";
+        private static string _prefix = _verb + " ";
 
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
@@ -55,52 +57,63 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Intercepts incomplete auth handshakes and continues or completes them.
         /// </summary>
-        /// <returns></returns>
-        public Task<bool> HandleRequestAsync()
+        /// <returns>True if a response was generated, false otherwise.</returns>
+        public async Task<bool> HandleRequestAsync()
         {
-            var connectionId = Context.Connection.Id;
-            var authorization = Request.Headers[HeaderNames.Authorization].ToString();
-
-            if (string.IsNullOrEmpty(authorization))
+            try
             {
-                Logger.LogDebug($"C:{connectionId}, No Authorization header");
-                return Task.FromResult(false);
+                var connectionId = Context.Connection.Id;
+                var authorizationHeader = Request.Headers[HeaderNames.Authorization];
+
+                if (StringValues.IsNullOrEmpty(authorizationHeader))
+                {
+                    Logger.LogDebug($"C:{connectionId}, No Authorization header");
+                    return false;
+                }
+
+                var authorization = authorizationHeader.ToString();
+                Logger.LogTrace($"C:{connectionId}, Authorization: " + authorization);
+                string token = null;
+                if (authorization.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    token = authorization.Substring(_prefix.Length).Trim();
+                }
+
+                // If no token found, no further work possible
+                if (string.IsNullOrEmpty(token))
+                {
+                    Logger.LogDebug($"C:{connectionId}, Non-Negotiate Authorization header");
+                    return false;
+                }
+
+                var authState = _states.GetOrAdd(connectionId, _ => Options.StateFactory.CreateInstance());
+                var outgoing = authState.GetOutgoingBlob(token);
+                if (!authState.IsCompleted)
+                {
+                    Logger.LogInformation($"C:{connectionId}, Incomplete-Negotiate, 401 {_verb} {outgoing}");
+                    Response.StatusCode = StatusCodes.Status401Unauthorized;
+                    Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
+                    return true;
+                }
+
+                // TODO SPN check?
+
+                Logger.LogInformation($"C:{connectionId}, Completed-Negotiate, {_verb} {outgoing}");
+                if (!string.IsNullOrEmpty(outgoing))
+                {
+                    // There can be a final blob of data we need to send to the client, but let the request execute as normal.
+                    Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
+                }
+            }
+            catch (Exception ex)
+            {
+                var context = new AuthenticationFailedContext(Context, Scheme, Options) { Exception = ex };
+                await Events.AuthenticationFailed(context);
+                // TODO: Handled, return true/false or rethrow.
+                throw;
             }
 
-            Logger.LogDebug($"C:{connectionId}, Authorization: " + authorization);
-            string token = null;
-            if (authorization.StartsWith($"{_verb} ", StringComparison.OrdinalIgnoreCase))
-            {
-                token = authorization.Substring($"{_verb} ".Length).Trim();
-            }
-
-            // If no token found, no further work possible
-            if (string.IsNullOrEmpty(token))
-            {
-                Logger.LogDebug($"C:{connectionId}, Non-Negotiate Authorization header");
-                return Task.FromResult(false);
-            }
-
-            var authState = _states.GetOrAdd(connectionId, _ => Options.StateFactory.CreateInstance());
-            var outgoing = authState.GetOutgoingBlob(token);
-            if (!authState.IsCompleted)
-            {
-                Logger.LogInformation($"C:{connectionId}, Incomplete-Negotiate, 401 {_verb} {outgoing}");
-                Response.StatusCode = StatusCodes.Status401Unauthorized;
-                Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
-                return Task.FromResult(true);
-            }
-
-            // TODO SPN check?
-
-            Logger.LogInformation($"C:{connectionId}, Completed-Negotiate, {_verb} {outgoing}");
-            if (!string.IsNullOrEmpty(outgoing))
-            {
-                // There can be a final blob of data we need to send to the client, but let the request execute as normal.
-                Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
-            }
-
-            return Task.FromResult(false);
+            return false;
         }
 
         /// <summary>
@@ -112,7 +125,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var connectionId = Context.Connection.Id;
             if (_states.TryGetValue(connectionId, out var auth) && auth.IsCompleted)
             {
-                Logger.LogInformation($"C:{connectionId}, Cached User");
+                Logger.LogDebug($"C:{connectionId}, Cached User");
                 var user = auth.GetPrincipal();
                 var ticket = new AuthenticationTicket(user, Scheme.Name);
                 return Task.FromResult(AuthenticateResult.Success(ticket));
@@ -128,6 +141,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            // TODO: Should we invalidate your current auth state?
             var authResult = await HandleAuthenticateOnceSafeAsync();
             var eventContext = new NegotiateChallengeContext(Context, Scheme, Options, properties)
             {
@@ -140,6 +154,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 return;
             }
 
+            var connectionId = Context.Connection.Id;
+            Logger.LogDebug($"C:{connectionId}, Challenged");
             Response.StatusCode = StatusCodes.Status401Unauthorized;
             Response.Headers.Append(HeaderNames.WWWAuthenticate, _verb);
         }
