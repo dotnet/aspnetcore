@@ -1,23 +1,21 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Authentication;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Threading.Tasks;
 
-namespace NegotiateAuthSample
+namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
-    public class NtAuthWrapper
+    internal class ReflectedNegotiateState : INegotiateState
     {
         private readonly object _instance;
         private readonly MethodInfo _getOutgoingBlob;
         private readonly MethodInfo _isCompleted;
         private readonly MethodInfo _getIdentity;
 
-        public NtAuthWrapper()
+        public ReflectedNegotiateState()
         {
             var ntAuthType = typeof(AuthenticationException).Assembly.GetType("System.Net.NTAuthentication");
             var constructor = ntAuthType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
@@ -36,7 +34,7 @@ namespace NegotiateAuthSample
         }
 
         // Copied rather than reflected to remove the IsCompleted -> CloseContext check.
-        internal string GetOutgoingBlob(string incomingBlob)
+        public string GetOutgoingBlob(string incomingBlob)
         {
             byte[] decodedIncomingBlob = null;
             if (incomingBlob != null && incomingBlob.Length > 0)
@@ -59,12 +57,12 @@ namespace NegotiateAuthSample
             return (byte[])_getOutgoingBlob.Invoke(_instance, new object[] { incomingBlob, thrownOnError });
         }
 
-        internal bool IsCompleted
+        public bool IsCompleted
         {
             get => (bool)_isCompleted.Invoke(_instance, Array.Empty<object>());
         }
 
-        internal ClaimsPrincipal GetPrincipal()
+        public ClaimsPrincipal GetPrincipal()
         {
             return new WindowsPrincipal((WindowsIdentity)_getIdentity.Invoke(obj: null, parameters: new object[] { _instance }));
         }

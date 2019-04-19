@@ -9,6 +9,8 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore" />
     <Reference Include="Microsoft.Extensions.Hosting" />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Negotiate" />
+    <Reference Include="Microsoft.AspNetCore.Authorization" />
   </ItemGroup>
   
   <ItemGroup>
