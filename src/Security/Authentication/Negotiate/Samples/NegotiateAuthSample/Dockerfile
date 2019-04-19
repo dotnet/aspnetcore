@@ -5,16 +5,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core-nightly/sdk:3.0.100-preview4-stretch AS build
 WORKDIR /src
-COPY ["IntegratedAuthSample.csproj", ""]
-RUN dotnet restore "IntegratedAuthSample.csproj"
+COPY ["NegotiateAuthSample.csproj", ""]
+RUN dotnet restore "NegotiateAuthSample.csproj"
 COPY . .
 WORKDIR "/src/"
-RUN dotnet build "IntegratedAuthSample.csproj" -c Release -o /app
+RUN dotnet build "NegotiateAuthSample.csproj" -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish "IntegratedAuthSample.csproj" -c Release -o /app
+RUN dotnet publish "NegotiateAuthSample.csproj" -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
-ENTRYPOINT ["dotnet", "IntegratedAuthSample.dll"]
+ENTRYPOINT ["dotnet", "NegotiateAuthSample.dll"]

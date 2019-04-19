@@ -15,7 +15,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "IntegratedAuthSample": {
+    "NegotiateAuthSample": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {

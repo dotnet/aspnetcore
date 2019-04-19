@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace IntegratedAuthSample
+namespace NegotiateAuthSample
 {
     public class Startup
     {
