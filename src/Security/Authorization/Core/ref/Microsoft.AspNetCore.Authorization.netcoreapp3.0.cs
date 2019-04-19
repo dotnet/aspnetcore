@@ -42,6 +42,11 @@ namespace Microsoft.AspNetCore.Authorization
         public virtual System.Threading.Tasks.Task HandleAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context) { throw null; }
         protected abstract System.Threading.Tasks.Task HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context, TRequirement requirement, TResource resource);
     }
+    public partial class AuthorizationMiddleware
+    {
+        public AuthorizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider policyProvider) { }
+        public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
+    }
     public partial class AuthorizationOptions
     {
         public AuthorizationOptions() { }
@@ -209,6 +214,45 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         public RolesAuthorizationRequirement(System.Collections.Generic.IEnumerable<string> allowedRoles) { }
         public System.Collections.Generic.IEnumerable<string> AllowedRoles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Threading.Tasks.Task HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context, Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement requirement) { throw null; }
+    }
+}
+namespace Microsoft.AspNetCore.Authorization.Policy
+{
+    public partial interface IPolicyEvaluator
+    {
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> AuthenticateAsync(Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Http.HttpContext context);
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult> AuthorizeAsync(Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Authentication.AuthenticateResult authenticationResult, Microsoft.AspNetCore.Http.HttpContext context, object resource);
+    }
+    public partial class PolicyAuthorizationResult
+    {
+        internal PolicyAuthorizationResult() { }
+        public bool Challenged { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool Forbidden { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public bool Succeeded { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult Challenge() { throw null; }
+        public static Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult Forbid() { throw null; }
+        public static Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult Success() { throw null; }
+    }
+    public partial class PolicyEvaluator : Microsoft.AspNetCore.Authorization.Policy.IPolicyEvaluator
+    {
+        public PolicyEvaluator(Microsoft.AspNetCore.Authorization.IAuthorizationService authorization) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authentication.AuthenticateResult> AuthenticateAsync(Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.Policy.PolicyAuthorizationResult> AuthorizeAsync(Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy, Microsoft.AspNetCore.Authentication.AuthenticateResult authenticationResult, Microsoft.AspNetCore.Http.HttpContext context, object resource) { throw null; }
+    }
+}
+namespace Microsoft.AspNetCore.Builder
+{
+    public static partial class AuthorizationAppBuilderExtensions
+    {
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseAuthorization(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
+    }
+    public static partial class AuthorizationEndpointConventionBuilderExtensions
+    {
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireAuthorization(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireAuthorization(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params Microsoft.AspNetCore.Authorization.IAuthorizeData[] authorizeData) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireAuthorization(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params string[] policyNames) { throw null; }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

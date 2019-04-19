@@ -34,11 +34,11 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Verify that AddAuthorizationPolicy was called before calling UseAuthorization
             // We use the AuthorizationPolicyMarkerService to ensure all the services were added.
-            if (app.ApplicationServices.GetService(typeof(AuthorizationPolicyMarkerService)) == null)
+            if (app.ApplicationServices.GetService(typeof(AuthorizationMarkerService)) == null)
             {
                 throw new InvalidOperationException(Resources.FormatException_UnableToFindServices(
                     nameof(IServiceCollection),
-                    nameof(PolicyServiceCollectionExtensions.AddAuthorizationPolicyEvaluator),
+                    nameof(AuthorizationServiceCollectionExtensions.AddAuthorization),
                     "ConfigureServices(...)"));
             }
         }
