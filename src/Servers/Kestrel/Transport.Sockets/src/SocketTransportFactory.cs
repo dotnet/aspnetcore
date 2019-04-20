@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
+#pragma warning disable PUB0001 // Pubternal type in public API
     public sealed class SocketTransportFactory : ITransportFactory
+#pragma warning restore PUB0001 // Pubternal type in public API
     {
         private readonly SocketTransportOptions _options;
         private readonly IApplicationLifetime _appLifetime;
@@ -40,7 +42,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _trace = new SocketsTrace(logger);
         }
 
+#pragma warning disable PUB0001 // Pubternal type in public API
         public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher)
+#pragma warning restore PUB0001 // Pubternal type in public API
         {
             if (endPointInformation == null)
             {
@@ -57,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new ArgumentNullException(nameof(dispatcher));
             }
 
-            return new SocketTransport(endPointInformation, dispatcher, _appLifetime, _options.IOQueueCount, _trace);
+            return new SocketTransport(endPointInformation, dispatcher, _appLifetime, _options.IOQueueCount, _trace, _options.MemoryPoolFactory());
         }
     }
 }

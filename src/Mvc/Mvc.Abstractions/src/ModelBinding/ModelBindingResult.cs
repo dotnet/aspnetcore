@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// <summary>
     /// Contains the result of model binding.
     /// </summary>
-    public struct ModelBindingResult : IEquatable<ModelBindingResult>
+    public readonly struct ModelBindingResult : IEquatable<ModelBindingResult>
     {
         /// <summary>
         /// Creates a <see cref="ModelBindingResult"/> representing a failed model binding operation.

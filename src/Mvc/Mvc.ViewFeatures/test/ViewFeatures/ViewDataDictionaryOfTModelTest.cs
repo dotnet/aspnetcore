@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     public class ViewDataDictionaryOfTModelTest
     {
         [Fact]
-        public void Constructor_InitalizesMembers()
+        public void Constructor_InitializesMembers()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
-        public void CopyConstructors_InitalizeModelAndModelMetadataBasedOnSource()
+        public void CopyConstructors_InitializeModelAndModelMetadataBasedOnSource()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
-        public void CopyConstructors_InitalizeModelAndModelMetadataBasedOnSource_NullModel()
+        public void CopyConstructors_InitializeModelAndModelMetadataBasedOnSource_NullModel()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
-        public void CopyConstructor_InitalizesModelAndModelMetadataBasedOnSource_ModelOfSubclass()
+        public void CopyConstructor_InitializesModelAndModelMetadataBasedOnSource_ModelOfSubclass()
         {
             // Arrange
             var metadataProvider = new EmptyModelMetadataProvider();

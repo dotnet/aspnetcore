@@ -1206,7 +1206,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Theory]
-        [InlineData(nameof(TestController.AsynActionMethodWithTestActionResult))]
+        [InlineData(nameof(TestController.AsyncActionMethodWithTestActionResult))]
         [InlineData(nameof(TestController.ActionMethodWithTestActionResult))]
         public async Task InvokeAction_ReturnTypeAsIActionResult_ReturnsExpected(string methodName)
         {
@@ -1654,7 +1654,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return new TestActionResult { Value = value };
             }
 
-            public async Task<TestActionResult> AsynActionMethodWithTestActionResult(int value)
+            public async Task<TestActionResult> AsyncActionMethodWithTestActionResult(int value)
             {
                 return await Task.FromResult<TestActionResult>(new TestActionResult { Value = value });
             }

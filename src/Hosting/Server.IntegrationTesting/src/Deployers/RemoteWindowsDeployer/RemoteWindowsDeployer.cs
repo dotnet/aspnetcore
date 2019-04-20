@@ -33,43 +33,43 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
             if (_deploymentParameters.ServerType != ServerType.IIS
                 && _deploymentParameters.ServerType != ServerType.Kestrel
-                && _deploymentParameters.ServerType != ServerType.WebListener)
+                && _deploymentParameters.ServerType != ServerType.HttpSys)
             {
                 throw new InvalidOperationException($"Server type {_deploymentParameters.ServerType} is not supported for remote deployment." +
-                    $" Supported server types are {nameof(ServerType.Kestrel)}, {nameof(ServerType.IIS)} and {nameof(ServerType.WebListener)}");
+                    $" Supported server types are {nameof(ServerType.Kestrel)}, {nameof(ServerType.IIS)} and {nameof(ServerType.HttpSys)}");
             }
 
-            if (string.IsNullOrWhiteSpace(_deploymentParameters.ServerName))
+            if (string.IsNullOrEmpty(_deploymentParameters.ServerName))
             {
                 throw new ArgumentException($"Invalid value '{_deploymentParameters.ServerName}' for {nameof(RemoteWindowsDeploymentParameters.ServerName)}");
             }
 
-            if (string.IsNullOrWhiteSpace(_deploymentParameters.ServerAccountName))
+            if (string.IsNullOrEmpty(_deploymentParameters.ServerAccountName))
             {
                 throw new ArgumentException($"Invalid value '{_deploymentParameters.ServerAccountName}' for {nameof(RemoteWindowsDeploymentParameters.ServerAccountName)}." +
                     " Account credentials are required to enable creating a powershell session to the remote server.");
             }
 
-            if (string.IsNullOrWhiteSpace(_deploymentParameters.ServerAccountPassword))
+            if (string.IsNullOrEmpty(_deploymentParameters.ServerAccountPassword))
             {
                 throw new ArgumentException($"Invalid value '{_deploymentParameters.ServerAccountPassword}' for {nameof(RemoteWindowsDeploymentParameters.ServerAccountPassword)}." +
                     " Account credentials are required to enable creating a powershell session to the remote server.");
             }
 
             if (_deploymentParameters.ApplicationType == ApplicationType.Portable
-                && string.IsNullOrWhiteSpace(_deploymentParameters.DotnetRuntimePath))
+                && string.IsNullOrEmpty(_deploymentParameters.DotnetRuntimePath))
             {
                 throw new ArgumentException($"Invalid value '{_deploymentParameters.DotnetRuntimePath}' for {nameof(RemoteWindowsDeploymentParameters.DotnetRuntimePath)}. " +
                     "It must be non-empty for portable apps.");
             }
 
-            if (string.IsNullOrWhiteSpace(_deploymentParameters.RemoteServerFileSharePath))
+            if (string.IsNullOrEmpty(_deploymentParameters.RemoteServerFileSharePath))
             {
                 throw new ArgumentException($"Invalid value for {nameof(RemoteWindowsDeploymentParameters.RemoteServerFileSharePath)}." +
                     " . A file share is required to copy the application's published output.");
             }
 
-            if (string.IsNullOrWhiteSpace(_deploymentParameters.ApplicationBaseUriHint))
+            if (string.IsNullOrEmpty(_deploymentParameters.ApplicationBaseUriHint))
             {
                 throw new ArgumentException($"Invalid value for {nameof(RemoteWindowsDeploymentParameters.ApplicationBaseUriHint)}.");
             }

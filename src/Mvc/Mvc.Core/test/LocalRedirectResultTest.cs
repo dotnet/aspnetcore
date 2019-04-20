@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
@@ -168,13 +169,15 @@ namespace Microsoft.AspNetCore.Mvc
             var serviceProvider = GetServiceProvider();
 
             httpContext.Setup(o => o.Response)
-                       .Returns(response);
+                .Returns(response);
             httpContext.SetupGet(o => o.RequestServices)
-                       .Returns(serviceProvider);
+                .Returns(serviceProvider);
             httpContext.SetupGet(o => o.Items)
-                       .Returns(new ItemsDictionary());
+                .Returns(new ItemsDictionary());
             httpContext.Setup(o => o.Request.PathBase)
-                       .Returns(new PathString(appRoot));
+                .Returns(new PathString(appRoot));
+            httpContext.SetupGet(h => h.Features)
+                .Returns(new FeatureCollection());
 
             return httpContext.Object;
         }

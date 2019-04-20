@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -8,6 +9,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class TagHelperRewritingTestBase : CsHtmlMarkupParserTestBase
     {
+        internal void RunParseTreeRewriterTest(string documentContent, params string[] tagNames)
+        {
+            RunParseTreeRewriterTest(documentContent, expectedOutput: null, tagNames: tagNames);
+        }
+
         internal void RunParseTreeRewriterTest(
             string documentContent,
             MarkupBlock expectedOutput,
@@ -49,6 +55,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         internal void EvaluateData(
             IEnumerable<TagHelperDescriptor> descriptors,
             string documentContent,
+            string tagHelperPrefix = null,
+            RazorParserFeatureFlags featureFlags = null)
+        {
+            EvaluateData(descriptors, documentContent, null, Array.Empty<RazorDiagnostic>(), tagHelperPrefix, featureFlags);
+        }
+
+        internal void EvaluateData(
+            IEnumerable<TagHelperDescriptor> descriptors,
+            string documentContent,
             MarkupBlock expectedOutput,
             IEnumerable<RazorDiagnostic> expectedErrors,
             string tagHelperPrefix = null,
@@ -68,8 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 .OrderBy(error => error.Span.AbsoluteIndex)
                 .ToList();
 
-            EvaluateRazorErrors(actualErrors, expectedErrors.ToList());
-            EvaluateParseTree(actualTree, expectedOutput);
+            BaselineTest(actualTree, filePath: null, verifySyntaxTree: false, actualErrors.ToArray());
         }
     }
 }

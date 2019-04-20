@@ -178,6 +178,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         Task NoClientHandler();
     }
 
+    public class VersionHub : Hub
+    {
+        public string Echo(string message) => message;
+
+        public Task NewProtocolMethodServer()
+        {
+            return Clients.Caller.SendAsync("NewProtocolMethodClient");
+        }
+    }
+
     [Authorize(JwtBearerDefaults.AuthenticationScheme)]
     public class HubWithAuthorization : Hub
     {

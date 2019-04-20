@@ -1,0 +1,110 @@
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.IO;
+using System.Text;
+using Xunit;
+using Xunit.Sdk;
+
+namespace Microsoft.AspNetCore.Razor.Language.Legacy
+{
+    internal class ClassifiedSpanVerifier
+    {
+        internal static void Verify(SyntaxTreeNode node, string filePath, string[] baseline)
+        {
+            using (var writer = new StringWriter())
+            {
+                var walker = new Walker(writer, filePath, baseline);
+                walker.Visit(node);
+                walker.AssertReachedEndOfBaseline();
+            }
+        }
+
+        private class Walker : ClassifiedSpanWriter
+        {
+            private readonly string[] _baseline;
+            private readonly StringWriter _writer;
+
+            private int _index;
+
+            public Walker(StringWriter writer, string filePath, string[] baseline) : base(writer, filePath)
+            {
+                _writer = writer;
+                _baseline = baseline;
+            }
+
+            public override void VisitClassifiedSpan(ClassifiedSpanInternal span)
+            {
+                var expected = _index < _baseline.Length ? _baseline[_index++] : null;
+
+                _writer.GetStringBuilder().Clear();
+                base.VisitClassifiedSpan(span);
+                var actual = _writer.GetStringBuilder().ToString();
+                AssertEqual(span, expected, actual);
+            }
+
+            public void AssertReachedEndOfBaseline()
+            {
+                // Since we're walking the list of classified spans there's the chance that our baseline is longer.
+                Assert.True(_baseline.Length == _index, $"Not all lines of the baseline were visited! {_baseline.Length} {_index}");
+            }
+
+            private void AssertEqual(ClassifiedSpanInternal span, string expected, string actual)
+            {
+                if (string.Equals(expected, actual))
+                {
+                    return;
+                }
+
+                if (expected == null)
+                {
+                    var message = "The span is missing from baseline.";
+                    throw new ClassifiedSpanBaselineException(span, expected, actual, message);
+                }
+                else
+                {
+                    var message = $"Contents are not equal.";
+                    throw new ClassifiedSpanBaselineException(span, expected, actual, message);
+                }
+            }
+
+            private class ClassifiedSpanBaselineException : XunitException
+            {
+                public ClassifiedSpanBaselineException(ClassifiedSpanInternal span, string expected, string actual, string userMessage)
+                    : base(Format(span, expected, actual, userMessage))
+                {
+                    Span = span;
+                    Expected = expected;
+                    Actual = actual;
+                }
+
+                public ClassifiedSpanInternal Span { get; }
+
+                public string Actual { get; }
+
+                public string Expected { get; }
+
+                private static string Format(ClassifiedSpanInternal span, string expected, string actual, string userMessage)
+                {
+                    var builder = new StringBuilder();
+                    builder.AppendLine(userMessage);
+                    builder.AppendLine();
+
+                    if (expected != null)
+                    {
+                        builder.Append("Expected: ");
+                        builder.AppendLine(expected);
+                    }
+
+                    if (actual != null)
+                    {
+                        builder.Append("Actual: ");
+                        builder.AppendLine(actual);
+                    }
+
+                    return builder.ToString();
+                }
+            }
+        }
+    }
+}

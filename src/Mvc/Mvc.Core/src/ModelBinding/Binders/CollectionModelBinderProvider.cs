@@ -7,6 +7,7 @@ using System.Reflection;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 {
@@ -32,7 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             }
 
             var loggerFactory = context.Services.GetRequiredService<ILoggerFactory>();
-            
+            var mvcOptions = context.Services.GetRequiredService<IOptions<MvcOptions>>().Value;
+
             // If the model type is ICollection<> then we can call its Add method, so we can always support it.
             var collectionType = ClosedGenericMatcher.ExtractGenericInterface(modelType, typeof(ICollection<>));
             if (collectionType != null)
@@ -41,11 +43,15 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 var elementBinder = context.CreateBinder(context.MetadataProvider.GetMetadataForType(elementType));
 
                 var binderType = typeof(CollectionModelBinder<>).MakeGenericType(collectionType.GenericTypeArguments);
-                return (IModelBinder)Activator.CreateInstance(binderType, elementBinder, loggerFactory);
+                return (IModelBinder)Activator.CreateInstance(
+                    binderType,
+                    elementBinder,
+                    loggerFactory,
+                    mvcOptions.AllowValidatingTopLevelNodes);
             }
 
             // If the model type is IEnumerable<> then we need to know if we can assign a List<> to it, since
-            // that's what we would create. (The cases handled here are IEnumerable<>, IReadOnlyColection<> and
+            // that's what we would create. (The cases handled here are IEnumerable<>, IReadOnlyCollection<> and
             // IReadOnlyList<>).
             var enumerableType = ClosedGenericMatcher.ExtractGenericInterface(modelType, typeof(IEnumerable<>));
             if (enumerableType != null)
@@ -57,7 +63,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     var elementBinder = context.CreateBinder(context.MetadataProvider.GetMetadataForType(elementType));
 
                     var binderType = typeof(CollectionModelBinder<>).MakeGenericType(enumerableType.GenericTypeArguments);
-                    return (IModelBinder)Activator.CreateInstance(binderType, elementBinder, loggerFactory);
+                    return (IModelBinder)Activator.CreateInstance(
+                        binderType,
+                        elementBinder,
+                        loggerFactory,
+                        mvcOptions.AllowValidatingTopLevelNodes);
                 }
             }
 

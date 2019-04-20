@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public partial class LibuvConnection : TransportConnection
+    public partial class LibuvConnection : TransportConnection, IDisposable
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
 
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             (handle, status, state) => ReadCallback(handle, status, state);
 
         private static readonly Func<UvStreamHandle, int, object, LibuvFunctions.uv_buf_t> _allocCallback =
-            (handle, suggestedsize, state) => AllocCallback(handle, suggestedsize, state);
+            (handle, suggestedSize, state) => AllocCallback(handle, suggestedSize, state);
 
         private readonly UvStreamHandle _socket;
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
@@ -53,8 +53,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public override MemoryPool<byte> MemoryPool => Thread.MemoryPool;
         public override PipeScheduler InputWriterScheduler => Thread;
         public override PipeScheduler OutputReaderScheduler => Thread;
-
-        public override long TotalBytesWritten => OutputConsumer?.TotalBytesWritten ?? 0;
 
         public async Task Start()
         {
@@ -88,14 +86,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                     else
                     {
+                        // This is unexpected.
+                        Log.ConnectionError(ConnectionId, ex);
+
                         inputError = ex;
                         outputError = ex;
                     }
                 }
                 finally
                 {
+                    inputError = inputError ?? _abortReason ?? new ConnectionAbortedException("The libuv transport's send loop completed gracefully.");
+
                     // Now, complete the input so that no more reads can happen
-                    Input.Complete(inputError ?? _abortReason ?? new ConnectionAbortedException());
+                    Input.Complete(inputError);
                     Output.Complete(outputError);
 
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
@@ -103,11 +106,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     Input.CancelPendingFlush();
 
                     // Send a FIN
-                    Log.ConnectionWriteFin(ConnectionId);
+                    Log.ConnectionWriteFin(ConnectionId, inputError.Message);
 
                     // We're done with the socket now
                     _socket.Dispose();
-                    ThreadPool.QueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
+                    ThreadPool.UnsafeQueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
                 }
             }
             catch (Exception e)
@@ -119,10 +122,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public override void Abort(ConnectionAbortedException abortReason)
         {
             _abortReason = abortReason;
-            Output.CancelPendingRead();
             
+            // Cancel WriteOutputAsync loop after setting _abortReason.
+            Output.CancelPendingRead();
+
             // This cancels any pending I/O.
             Thread.Post(s => s.Dispose(), _socket);
+        }
+
+        // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
+        public void Dispose()
+        {
+            _connectionClosedTokenSource.Dispose();
+            _connectionClosingCts.Dispose();
         }
 
         // Called on Libuv thread
@@ -233,6 +245,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
             else
             {
+                // This is unexpected.
                 Log.ConnectionError(ConnectionId, uvError);
                 return new IOException(uvError.Message, uvError);
             }

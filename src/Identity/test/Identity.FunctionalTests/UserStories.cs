@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await register.SubmitRegisterFormForValidUserAsync(userName, password);
         }
 
+
         internal static async Task<Index> LoginExistingUserAsync(HttpClient client, string userName, string password)
         {
             var index = await Index.CreateAsync(client);
@@ -105,12 +106,16 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             return await login2Fa.Send2FACodeAsync(twoFactorKey);
         }
 
-        internal static async Task<ShowRecoveryCodes> EnableTwoFactorAuthentication(Index index)
+        internal static async Task<ShowRecoveryCodes> EnableTwoFactorAuthentication(Index index, bool consent = true)
         {
             var manage = await index.ClickManageLinkAsync();
-            var twoFactor = await manage.ClickTwoFactorLinkAsync();
-            var enableAuthenticator = await twoFactor.ClickEnableAuthenticatorLinkAsync();
-            return await enableAuthenticator.SendValidCodeAsync();
+            var twoFactor = await manage.ClickTwoFactorLinkAsync(consent);
+            if (consent)
+            {
+                var enableAuthenticator = await twoFactor.ClickEnableAuthenticatorLinkAsync();
+                return await enableAuthenticator.SendValidCodeAsync();
+            }
+            return null;
         }
 
         internal static async Task<ResetAuthenticator> ResetAuthenticator(Index index)
@@ -219,5 +224,11 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
             ResponseAssert.IsOK(download);
             return JsonConvert.DeserializeObject<JObject>(await download.Content.ReadAsStringAsync());
         }
+
+        internal static async Task AcceptCookiePolicy(HttpClient client)
+        {
+            var goToPrivacy = await client.GetAsync("/Privacy");
+        }
+
     }
 }

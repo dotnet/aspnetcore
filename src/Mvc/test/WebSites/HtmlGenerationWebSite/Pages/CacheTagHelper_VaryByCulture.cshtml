@@ -1,0 +1,15 @@
+@page
+@addTagHelper *, HtmlGenerationWebSite
+@using System.Globalization
+@functions
+{
+    [BindProperty(SupportsGet = true)]
+    public int CorrelationId { get; set; }
+}
+
+<h2 id="culture">@CultureInfo.CurrentCulture</h2>
+<h2 id="ui-culture">@CultureInfo.CurrentUICulture</h2>
+<span id="correlation-id">@CorrelationId</span>
+<test-cache vary-by-culture="true" vary-by-query="varyByQueryKey">
+    <span id="cached-correlation-id">@CorrelationId</span>
+</test-cache>

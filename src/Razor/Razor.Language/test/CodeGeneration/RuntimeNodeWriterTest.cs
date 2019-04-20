@@ -340,6 +340,91 @@ if (true) { }
         }
 
         [Fact]
+        public void WriteHtmlLiteral_WithinMaxSize_WritesSingleLiteral()
+        {
+            // Arrange
+            var codeWriter = new CodeWriter();
+            var writer = new RuntimeNodeWriter();
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            // Act
+            writer.WriteHtmlLiteral(context, maxStringLiteralLength: 6, "Hello");
+
+            // Assert
+            var csharp = context.CodeWriter.GenerateCode();
+            Assert.Equal(
+@"WriteLiteral(""Hello"");
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteHtmlLiteral_GreaterThanMaxSize_WritesMultipleLiterals()
+        {
+            // Arrange
+            var codeWriter = new CodeWriter();
+            var writer = new RuntimeNodeWriter();
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            // Act
+            writer.WriteHtmlLiteral(context, maxStringLiteralLength: 6, "Hello World");
+
+            // Assert
+            var csharp = context.CodeWriter.GenerateCode();
+            Assert.Equal(
+@"WriteLiteral(""Hello "");
+WriteLiteral(""World"");
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteHtmlLiteral_GreaterThanMaxSize_SingleEmojisSplit()
+        {
+            // Arrange
+            var codeWriter = new CodeWriter();
+            var writer = new RuntimeNodeWriter();
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            // Act
+            writer.WriteHtmlLiteral(context, maxStringLiteralLength: 2, " 👦");
+
+            // Assert
+            var csharp = context.CodeWriter.GenerateCode();
+            Assert.Equal(
+@"WriteLiteral("" "");
+WriteLiteral(""👦"");
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteHtmlLiteral_GreaterThanMaxSize_SequencedZeroWithJoinedEmojisSplit()
+        {
+            // Arrange
+            var codeWriter = new CodeWriter();
+            var writer = new RuntimeNodeWriter();
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            // Act
+            writer.WriteHtmlLiteral(context, maxStringLiteralLength: 6, "👩‍👩‍👧‍👧👩‍👩‍👧‍👧");
+
+            // Assert
+            var csharp = context.CodeWriter.GenerateCode();
+            Assert.Equal(
+@"WriteLiteral(""👩‍👩‍"");
+WriteLiteral(""👧‍👧"");
+WriteLiteral(""👩‍👩‍"");
+WriteLiteral(""👧‍👧"");
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
         public void WriteHtmlContent_RendersContentCorrectly()
         {
             // Arrange

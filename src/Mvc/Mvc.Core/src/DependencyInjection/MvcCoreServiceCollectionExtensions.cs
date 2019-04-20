@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -148,7 +147,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IPostConfigureOptions<MvcOptions>, MvcOptionsConfigureCompatibilityOptions>());
             services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IPostConfigureOptions<MvcOptions>, MvcCoreMvcOptionsSetup>());
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IPostConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcCoreRouteOptionsSetup>());
 
@@ -164,7 +167,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
 
-            services.TryAddSingleton<IActionDescriptorCollectionProvider, ActionDescriptorCollectionProvider>();
+            services.TryAddSingleton<IActionDescriptorCollectionProvider, DefaultActionDescriptorCollectionProvider>();
 
             //
             // Action Selection
@@ -173,8 +176,11 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ActionConstraintCache>();
 
             // Will be cached by the DefaultActionSelector
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IActionConstraintProvider, DefaultActionConstraintProvider>());
+
+            // Policies for Endpoints
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ConsumesMatcherPolicy>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, ActionConstraintMatcherPolicy>());
 
             //
             // Controller Factory
@@ -226,7 +232,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var options = s.GetRequiredService<IOptions<MvcOptions>>().Value;
                 var metadataProvider = s.GetRequiredService<IModelMetadataProvider>();
-                return new DefaultObjectValidator(metadataProvider, options.ModelValidatorProviders);
+                return new DefaultObjectValidator(metadataProvider, options.ModelValidatorProviders, options);
             });
             services.TryAddSingleton<ClientValidatorCache>();
             services.TryAddSingleton<ParameterBinder>();
@@ -253,6 +259,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IActionResultExecutor<RedirectToRouteResult>, RedirectToRouteResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<RedirectToPageResult>, RedirectToPageResultExecutor>();
             services.TryAddSingleton<IActionResultExecutor<ContentResult>, ContentResultExecutor>();
+            services.TryAddSingleton<IClientErrorFactory, ProblemDetailsClientErrorFactory>();
 
             //
             // Route Handlers
@@ -261,11 +268,20 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<MvcAttributeRouteHandler>(); // Many per app
 
             //
+            // Endpoint Routing / Endpoints
+            //
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<EndpointDataSource, MvcEndpointDataSource>());
+            services.TryAddSingleton<MvcEndpointInvokerFactory>();
+
+            //
             // Middleware pipeline filter related
             //
             services.TryAddSingleton<MiddlewareFilterConfigurationProvider>();
             // This maintains a cache of middleware pipelines, so it needs to be a singleton
             services.TryAddSingleton<MiddlewareFilterBuilder>();
+            // Sets ApplicationBuilder on MiddlewareFilterBuilder
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter, MiddlewareFilterBuilderStartupFilter>());
         }
 
         private static void ConfigureDefaultServices(IServiceCollection services)

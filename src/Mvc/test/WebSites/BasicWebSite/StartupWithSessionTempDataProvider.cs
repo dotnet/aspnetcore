@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
@@ -13,7 +14,8 @@ namespace BasicWebSite
             // CookieTempDataProvider is the default ITempDataProvider, so we must override it with session.
             services
                 .AddMvc()
-                .AddSessionStateTempDataProvider();
+                .AddSessionStateTempDataProvider()
+                .SetCompatibilityVersion(CompatibilityVersion.Latest);
             services.AddSession();
 
             services.ConfigureBaseWebSiteAuthPolicies();

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             _logger = loggerFactory.CreateLogger<FormFileModelBinder>();
         }
-        
+
         /// <inheritdoc />
         public async Task BindModelAsync(ModelBindingContext bindingContext)
         {
@@ -84,6 +84,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 : bindingContext.ModelName;
 
             await GetFormFilesAsync(modelName, bindingContext, postedFiles);
+
+            // If ParameterBinder incorrectly overrode ModelName, fall back to OriginalModelName prefix. Comparisons
+            // are tedious because e.g. top-level parameter or property is named Blah and it contains a BlahBlah
+            // property. OriginalModelName may be null in tests.
+            if (postedFiles.Count == 0 &&
+                bindingContext.OriginalModelName != null &&
+                !string.Equals(modelName, bindingContext.OriginalModelName, StringComparison.Ordinal) &&
+                !modelName.StartsWith(bindingContext.OriginalModelName + "[", StringComparison.Ordinal) &&
+                !modelName.StartsWith(bindingContext.OriginalModelName + ".", StringComparison.Ordinal))
+            {
+                modelName = ModelNames.CreatePropertyModelName(bindingContext.OriginalModelName, modelName);
+                await GetFormFilesAsync(modelName, bindingContext, postedFiles);
+            }
 
             object value;
             if (bindingContext.ModelType == typeof(IFormFile))

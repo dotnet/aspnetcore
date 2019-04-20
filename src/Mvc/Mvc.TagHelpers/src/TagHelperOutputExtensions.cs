@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 var copiedAttribute = false;
 
                 // We iterate context.AllAttributes backwards since we prioritize TagHelperOutput values occurring
-                // before the current context.AllAttribtes[i].
+                // before the current context.AllAttributes[i].
                 for (var i = context.AllAttributes.Count - 1; i >= 0; i--)
                 {
                     // We look for the original attribute so we can restore the exact attribute name the user typed in

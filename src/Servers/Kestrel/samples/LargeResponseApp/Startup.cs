@@ -20,9 +20,8 @@ namespace LargeResponseApp
         {
             app.Run(async (context) =>
             {
-                int numChunks;
                 var path = context.Request.Path;
-                if (!path.HasValue || !int.TryParse(path.Value.Substring(1), out numChunks))
+                if (!path.HasValue || !int.TryParse(path.Value.Substring(1), out var numChunks))
                 {
                     numChunks = _defaultNumChunks;
                 }

@@ -81,213 +81,213 @@ Generated Location: (3077:70,63 [4] )
 Source Location: (523:16,74 [18] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |
                 |
-Generated Location: (3296:75,86 [18] )
+Generated Location: (3378:76,74 [18] )
 |
                 |
 
 Source Location: (556:17,31 [30] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |true ? "checkbox" : "anything"|
-Generated Location: (3649:80,31 [30] )
+Generated Location: (3762:84,31 [30] )
 |true ? "checkbox" : "anything"|
 
 Source Location: (591:17,66 [18] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |
                 |
-Generated Location: (3945:86,78 [18] )
+Generated Location: (4140:91,66 [18] )
 |
                 |
 
 Source Location: (623:18,30 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |if(true) { |
-Generated Location: (4297:91,30 [11] )
+Generated Location: (4523:99,30 [11] )
 |if(true) { |
 
 Source Location: (655:18,62 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | } else { |
-Generated Location: (4497:96,62 [10] )
+Generated Location: (4723:104,62 [10] )
 | } else { |
 
 Source Location: (686:18,93 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | }|
-Generated Location: (4727:101,93 [2] )
+Generated Location: (4953:109,93 [2] )
 | }|
 
 Source Location: (690:18,97 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |
             }|
-Generated Location: (5107:108,97 [15] )
+Generated Location: (5333:116,97 [15] )
 |
             }|
 
 Source Location: (212:8,32 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |DateTime.Now|
-Generated Location: (5375:115,32 [12] )
+Generated Location: (5601:123,32 [12] )
 |DateTime.Now|
 
 Source Location: (832:22,14 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | var @object = false;|
-Generated Location: (5529:120,14 [21] )
+Generated Location: (5755:128,14 [21] )
 | var @object = false;|
 
 Source Location: (885:23,29 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |(|
-Generated Location: (5927:127,42 [1] )
+Generated Location: (6153:135,42 [1] )
 |(|
 
 Source Location: (886:23,30 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |@object|
-Generated Location: (5928:127,43 [7] )
+Generated Location: (6154:135,43 [7] )
 |@object|
 
 Source Location: (893:23,37 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |)|
-Generated Location: (5935:127,50 [1] )
+Generated Location: (6161:135,50 [1] )
 |)|
 
 Source Location: (760:21,39 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |DateTimeOffset.Now.Year|
-Generated Location: (6197:133,38 [23] )
+Generated Location: (6423:141,38 [23] )
 |DateTimeOffset.Now.Year|
 
 Source Location: (783:21,62 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | -|
-Generated Location: (6220:133,61 [2] )
+Generated Location: (6446:141,61 [2] )
 | -|
 
 Source Location: (785:21,64 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | 1970|
-Generated Location: (6222:133,63 [5] )
+Generated Location: (6448:141,63 [5] )
 | 1970|
 
 Source Location: (1025:26,61 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |(|
-Generated Location: (6623:140,60 [1] )
+Generated Location: (6849:148,60 [1] )
 |(|
 
 Source Location: (1026:26,62 [30] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |DateTimeOffset.Now.Year > 2014|
-Generated Location: (6624:140,61 [30] )
+Generated Location: (6850:148,61 [30] )
 |DateTimeOffset.Now.Year > 2014|
 
 Source Location: (1056:26,92 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |)|
-Generated Location: (6654:140,91 [1] )
+Generated Location: (6880:148,91 [1] )
 |)|
 
 Source Location: (928:25,16 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |-1970|
-Generated Location: (6911:146,33 [5] )
+Generated Location: (7137:154,33 [5] )
 |-1970|
 
 Source Location: (933:25,21 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | +|
-Generated Location: (6916:146,38 [2] )
+Generated Location: (7142:154,38 [2] )
 | +|
 
 Source Location: (935:25,23 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | |
-Generated Location: (6918:146,40 [1] )
+Generated Location: (7144:154,40 [1] )
 | |
 
 Source Location: (936:25,24 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |@|
-Generated Location: (6919:146,41 [1] )
+Generated Location: (7145:154,41 [1] )
 |@|
 
 Source Location: (937:25,25 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |DateTimeOffset.Now.Year|
-Generated Location: (6920:146,42 [23] )
+Generated Location: (7146:154,42 [23] )
 |DateTimeOffset.Now.Year|
 
 Source Location: (1155:29,28 [30] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |DateTimeOffset.Now.Year > 2014|
-Generated Location: (7321:153,42 [30] )
+Generated Location: (7547:161,42 [30] )
 |DateTimeOffset.Now.Year > 2014|
 
 Source Location: (1093:28,16 [30] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |DateTimeOffset.Now.Year - 1970|
-Generated Location: (7607:159,33 [30] )
+Generated Location: (7833:167,33 [30] )
 |DateTimeOffset.Now.Year - 1970|
 
 Source Location: (1283:32,28 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |   |
-Generated Location: (8015:166,42 [3] )
+Generated Location: (8241:174,42 [3] )
 |   |
 
 Source Location: (1286:32,31 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |@|
-Generated Location: (8018:166,45 [1] )
+Generated Location: (8244:174,45 [1] )
 |@|
 
 Source Location: (1287:32,32 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |(|
-Generated Location: (8019:166,46 [1] )
+Generated Location: (8245:174,46 [1] )
 |(|
 
 Source Location: (1288:32,33 [27] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |  DateTimeOffset.Now.Year  |
-Generated Location: (8020:166,47 [27] )
+Generated Location: (8246:174,47 [27] )
 |  DateTimeOffset.Now.Year  |
 
 Source Location: (1315:32,60 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |)|
-Generated Location: (8047:166,74 [1] )
+Generated Location: (8273:174,74 [1] )
 |)|
 
 Source Location: (1316:32,61 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | >|
-Generated Location: (8048:166,75 [2] )
+Generated Location: (8274:174,75 [2] )
 | >|
 
 Source Location: (1318:32,63 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 | 2014|
-Generated Location: (8050:166,77 [5] )
+Generated Location: (8276:174,77 [5] )
 | 2014|
 
 Source Location: (1323:32,68 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |   |
-Generated Location: (8055:166,82 [3] )
+Generated Location: (8281:174,82 [3] )
 |   |
 
 Source Location: (1220:31,17 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |(|
-Generated Location: (8314:172,33 [1] )
+Generated Location: (8540:180,33 [1] )
 |(|
 
 Source Location: (1221:31,18 [29] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |"My age is this long.".Length|
-Generated Location: (8315:172,34 [29] )
+Generated Location: (8541:180,34 [29] )
 |"My age is this long.".Length|
 
 Source Location: (1250:31,47 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |)|
-Generated Location: (8344:172,63 [1] )
+Generated Location: (8570:180,63 [1] )
 |)|
 
 Source Location: (1355:34,9 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |someMethod(|
-Generated Location: (8482:177,9 [11] )
+Generated Location: (8708:185,9 [11] )
 |someMethod(|
 
 Source Location: (1410:34,64 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |checked|
-Generated Location: (8900:181,63 [7] )
+Generated Location: (9126:189,63 [7] )
 |checked|
 
 Source Location: (1375:34,29 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |123|
-Generated Location: (9155:187,33 [3] )
+Generated Location: (9381:195,33 [3] )
 |123|
 
 Source Location: (1424:34,78 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |)|
-Generated Location: (9196:192,1 [1] )
+Generated Location: (9422:200,1 [1] )
 |)|
 
 Source Location: (1437:35,10 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml)
 |
 }|
-Generated Location: (9335:197,10 [3] )
+Generated Location: (9561:205,10 [3] )
 |
 }|
 

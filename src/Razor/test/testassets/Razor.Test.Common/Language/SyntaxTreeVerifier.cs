@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new InvalidOperationException($"Span starting at {span.Start} should start at {_tracker.CurrentLocation} - {span} ");
             }
 
-            for (var i = 0; i < span.Symbols.Count; i++)
+            for (var i = 0; i < span.Tokens.Count; i++)
             {
-                _tracker.UpdateLocation(span.Symbols[i].Content);
+                _tracker.UpdateLocation(span.Tokens[i].Content);
             }
         }
     }

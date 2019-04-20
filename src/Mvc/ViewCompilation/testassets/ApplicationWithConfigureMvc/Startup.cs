@@ -9,6 +9,7 @@ namespace ApplicationWithConfigureStartup
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddLogging(loggingBuilder => loggingBuilder.AddConsole());
             // Add framework services.
             var builder = services.AddMvc();
             ConfigureMvc(builder);
@@ -16,7 +17,6 @@ namespace ApplicationWithConfigureStartup
 
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
-            loggerFactory.AddConsole();
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -29,8 +29,10 @@ namespace ApplicationWithConfigureStartup
         {
             builder.AddRazorOptions(options =>
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 var callback = options.CompilationCallback;
                 options.CompilationCallback = context =>
+#pragma warning restore CS0618 // Type or member is obsolete
                 {
                     callback(context);
                     foreach (var tree in context.Compilation.SyntaxTrees)

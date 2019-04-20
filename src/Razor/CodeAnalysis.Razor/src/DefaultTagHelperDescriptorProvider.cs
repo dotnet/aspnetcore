@@ -31,8 +31,15 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
+            var iTagHelper = compilation.GetTypeByMetadataName(TagHelperTypes.ITagHelper);
+            if (iTagHelper == null || iTagHelper.TypeKind == TypeKind.Error)
+            {
+                // Could not find attributes we care about in the compilation. Nothing to do.
+                return;
+            }
+
             var types = new List<INamedTypeSymbol>();
-            var visitor = TagHelperTypeVisitor.Create(compilation, types);
+            var visitor = new TagHelperTypeVisitor(iTagHelper, types);
 
             // We always visit the global namespace.
             visitor.Visit(compilation.Assembly.GlobalNamespace);

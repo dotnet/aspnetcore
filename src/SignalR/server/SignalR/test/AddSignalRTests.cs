@@ -4,8 +4,10 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -17,12 +19,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var serviceCollection = new ServiceCollection();
 
+            var markerService = new SignalRCoreMarkerService();
+            serviceCollection.AddSingleton(markerService);
             serviceCollection.AddSingleton<IUserIdProvider, CustomIdProvider>();
             serviceCollection.AddSingleton(typeof(HubLifetimeManager<>), typeof(CustomHubLifetimeManager<>));
             serviceCollection.AddSingleton<IHubProtocolResolver, CustomHubProtocolResolver>();
             serviceCollection.AddScoped(typeof(IHubActivator<>), typeof(CustomHubActivator<>));
             serviceCollection.AddSingleton(typeof(IHubContext<>), typeof(CustomHubContext<>));
             serviceCollection.AddSingleton(typeof(IHubContext<,>), typeof(CustomHubContext<,>));
+            var hubOptions = new HubOptionsSetup(new List<IHubProtocol>());
+            serviceCollection.AddSingleton<IConfigureOptions<HubOptions>>(hubOptions);
             serviceCollection.AddSignalR();
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
@@ -33,6 +39,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.IsType<CustomHubContext<CustomHub>>(serviceProvider.GetRequiredService<IHubContext<CustomHub>>());
             Assert.IsType<CustomHubContext<CustomTHub, string>>(serviceProvider.GetRequiredService<IHubContext<CustomTHub, string>>());
             Assert.IsType<CustomHubContext<CustomDynamicHub>>(serviceProvider.GetRequiredService<IHubContext<CustomDynamicHub>>());
+            Assert.Equal(hubOptions, serviceProvider.GetRequiredService<IConfigureOptions<HubOptions>>());
+            Assert.Equal(markerService, serviceProvider.GetRequiredService<SignalRCoreMarkerService>());
         }
 
         [Fact]

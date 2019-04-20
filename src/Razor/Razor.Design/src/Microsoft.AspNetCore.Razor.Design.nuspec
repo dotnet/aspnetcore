@@ -26,6 +26,6 @@
     <file src="$TaskSymbolNet46$" target="tasks\net46\" />
     <file src="$TaskAssemblyNetStandard$" target="tasks\netstandard2.0\" />
     <file src="$TaskSymbolNetStandard$" target="tasks\netstandard2.0\" />
-    <file src="$ToolAssembly$" target="tools\" exclude="**\*.xml" />
+    <file src="$ToolFiles$" target="tools\" exclude="**\*.xml" />
   </files>
 </package>

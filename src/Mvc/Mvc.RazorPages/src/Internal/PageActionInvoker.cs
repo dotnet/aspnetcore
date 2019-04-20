@@ -275,7 +275,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Pages have an implicit 'return Page()' even without a handler method.
             if (_result == null)
             {
+                _logger.ExecutingImplicitHandlerMethod(_pageContext);
                 _result = new PageResult();
+                _logger.ExecutedImplicitHandlerMethod(_result);
             }
 
             // Ensure ViewData is set on PageResult for backwards compatibility (For example, Identity UI accesses

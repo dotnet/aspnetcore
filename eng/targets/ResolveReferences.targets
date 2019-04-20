@@ -55,6 +55,7 @@
     <_ExplicitPackageReference Include="@(PackageReference)" Exclude="@(_ImplicitPackageReference)" />
     <!-- Special case: ignore the reference to Internal.AspNetCore.Sdk, which is defined in eng/targets/Cpp.Common.props. -->
     <_ExplicitPackageReference Remove="Internal.AspNetCore.Sdk" />
+    <_ExplicitPackageReference Remove="Microsoft.NETFramework.ReferenceAssemblies" />
 
     <_UnusedProjectReferenceProvider Include="@(ProjectReferenceProvider)" Exclude="@(Reference)" />
 

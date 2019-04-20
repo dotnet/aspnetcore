@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
         [InlineData(typeof(List<Person>))]
         [InlineData(typeof(List<SerializableError>))]
         [InlineData(typeof(PersonList))]
-        public void ThrowsArugmentExceptionFor_ConcreteEnumerableOfT(Type declaredType)
+        public void ThrowsArgumentExceptionFor_ConcreteEnumerableOfT(Type declaredType)
         {
             // Arrange
             var expectedMessage = "The type must be an interface and must be or derive from 'IEnumerable`1'.";

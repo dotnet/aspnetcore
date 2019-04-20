@@ -7,14 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Razor" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="$(SharedSourceRoot)CopyOnWriteDictionary\**\*.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Html.Abstractions" />
   </ItemGroup>
 

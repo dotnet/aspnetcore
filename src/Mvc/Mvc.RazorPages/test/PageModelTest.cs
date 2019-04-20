@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
@@ -329,80 +328,80 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         [InlineData("")]
         [InlineData(null)]
         [InlineData("SampleController")]
-        public void RedirectToAction_WithParameterActionAndControllerName_SetsEqualNames(string pageModelName)
+        public void RedirectToAction_WithParameterActionAndControllerName_SetsEqualNames(string controllerName)
         {
             // Arrange
             var pageModel = new TestPageModel();
 
             // Act
-            var resultTemporary = pageModel.RedirectToAction("SampleAction", pageModelName);
+            var resultTemporary = pageModel.RedirectToAction("SampleAction", controllerName);
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultTemporary);
             Assert.False(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Equal("SampleAction", resultTemporary.ActionName);
-            Assert.Equal(pageModelName, resultTemporary.ControllerName);
+            Assert.Equal(controllerName, resultTemporary.ControllerName);
         }
 
         [Theory]
         [InlineData("")]
         [InlineData(null)]
         [InlineData("SampleController")]
-        public void RedirectToActionPreserveMethod_WithParameterActionAndControllerName_SetsEqualNames(string pageModelName)
+        public void RedirectToActionPreserveMethod_WithParameterActionAndControllerName_SetsEqualNames(string controllerName)
         {
             // Arrange
             var pageModel = new TestPageModel();
 
             // Act
-            var resultTemporary = pageModel.RedirectToActionPreserveMethod(actionName: "SampleAction", controllerName: pageModelName);
+            var resultTemporary = pageModel.RedirectToActionPreserveMethod(actionName: "SampleAction", controllerName: controllerName);
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultTemporary);
             Assert.True(resultTemporary.PreserveMethod);
             Assert.False(resultTemporary.Permanent);
             Assert.Equal("SampleAction", resultTemporary.ActionName);
-            Assert.Equal(pageModelName, resultTemporary.ControllerName);
+            Assert.Equal(controllerName, resultTemporary.ControllerName);
         }
 
         [Theory]
         [InlineData("")]
         [InlineData(null)]
         [InlineData("SampleController")]
-        public void RedirectToActionPermanent_WithParameterActionAndControllerName_SetsEqualNames(string pageModelName)
+        public void RedirectToActionPermanent_WithParameterActionAndControllerName_SetsEqualNames(string controllerName)
         {
             // Arrange
             var pageModel = new TestPageModel();
 
             // Act
-            var resultPermanent = pageModel.RedirectToActionPermanent("SampleAction", pageModelName);
+            var resultPermanent = pageModel.RedirectToActionPermanent("SampleAction", controllerName);
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultPermanent);
             Assert.False(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Equal("SampleAction", resultPermanent.ActionName);
-            Assert.Equal(pageModelName, resultPermanent.ControllerName);
+            Assert.Equal(controllerName, resultPermanent.ControllerName);
         }
 
         [Theory]
         [InlineData("")]
         [InlineData(null)]
         [InlineData("SampleController")]
-        public void RedirectToActionPermanentPreserveMethod_WithParameterActionAndControllerName_SetsEqualNames(string pageModelName)
+        public void RedirectToActionPermanentPreserveMethod_WithParameterActionAndControllerName_SetsEqualNames(string controllerName)
         {
             // Arrange
             var pageModel = new TestPageModel();
 
             // Act
-            var resultPermanent = pageModel.RedirectToActionPermanentPreserveMethod(actionName: "SampleAction", controllerName: pageModelName);
+            var resultPermanent = pageModel.RedirectToActionPermanentPreserveMethod(actionName: "SampleAction", controllerName: controllerName);
 
             // Assert
             Assert.IsType<RedirectToActionResult>(resultPermanent);
             Assert.True(resultPermanent.PreserveMethod);
             Assert.True(resultPermanent.Permanent);
             Assert.Equal("SampleAction", resultPermanent.ActionName);
-            Assert.Equal(pageModelName, resultPermanent.ControllerName);
+            Assert.Equal(controllerName, resultPermanent.ControllerName);
         }
 
         [Theory]
@@ -1022,10 +1021,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             // Arrange
             var pageModel = new TestPageModel();
             var pageName = "/Page-Name";
-            var routeVaues = new { key = "value" };
+            var routeValues = new { key = "value" };
 
             // Act
-            var result = pageModel.RedirectToPage(pageName, routeVaues);
+            var result = pageModel.RedirectToPage(pageName, routeValues);
 
             // Assert
             Assert.IsType<RedirectToPageResult>(result);
@@ -1893,6 +1892,113 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             await testPageModel.Object.OnPageHandlerSelectionAsync(pageHandlerSelectedContext);
 
             testPageModel.Verify();
+        }
+
+        [Fact]
+        public void PartialView_WithName()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var pageModel = new TestPageModel
+            {
+                PageContext = new PageContext
+                {
+                    ViewData = viewData
+                }
+            };
+
+            // Act
+            var result = pageModel.Partial("LoginStatus");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("LoginStatus", result.ViewName);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void PartialView_WithNameAndModel()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var pageModel = new TestPageModel
+            {
+                PageContext = new PageContext
+                {
+                    ViewData = viewData
+                }
+            };
+            var model = new { Username = "Admin" };
+
+            // Act
+            var result = pageModel.Partial("LoginStatus", model);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("LoginStatus", result.ViewName);
+            Assert.Equal(model, result.Model);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void ViewComponent_WithName()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var pageModel = new TestPageModel
+            {
+                PageContext = new PageContext
+                {
+                    ViewData = viewData,
+                },
+            };
+
+            // Act
+            var result = pageModel.ViewComponent("TagCloud");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal("TagCloud", result.ViewComponentName);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void ViewComponent_WithType()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var pageModel = new TestPageModel
+            {
+                PageContext = new PageContext
+                {
+                    ViewData = viewData,
+                },
+            };
+
+            // Act
+            var result = pageModel.ViewComponent(typeof(Guid));
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(typeof(Guid), result.ViewComponentType);
+            Assert.Same(viewData, result.ViewData);
+        }
+
+        [Fact]
+        public void ViewComponent_WithArguments()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var arguments = new { Arg1 = "Hi", Arg2 = "There" };
+
+            // Act
+            var result = pageModel.ViewComponent(typeof(Guid), arguments);
+
+            // Assert
+            Assert.NotNull(result);
+
+            Assert.Equal(typeof(Guid), result.ViewComponentType);
+            Assert.Same(arguments, result.Arguments);
         }
 
         private class ContentPageModel : PageModel

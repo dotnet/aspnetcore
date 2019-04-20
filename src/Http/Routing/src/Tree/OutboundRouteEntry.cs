@@ -58,5 +58,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
         /// Gets or sets the <see cref="RouteTemplate"/>.
         /// </summary>
         public RouteTemplate RouteTemplate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the data that is associated with this entry.
+        /// </summary>
+        public object Data { get; set; }
     }
 }
