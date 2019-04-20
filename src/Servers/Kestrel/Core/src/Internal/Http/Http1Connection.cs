@@ -56,6 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Input = _context.Transport.Input;
             Output = _http1Output;
             MemoryPool = _context.MemoryPool;
+            TcpCorkFeature?.Cork();
         }
 
         public PipeReader Input { get; }

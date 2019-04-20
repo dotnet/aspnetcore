@@ -11,16 +11,19 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketConnection : TransportConnection, IDisposable
+    internal sealed class SocketConnection : TransportConnection, ITcpCorkFeature, IDisposable
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
         private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
         private static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
+        private static readonly bool IsLinux = RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
         private readonly Socket _socket;
         private readonly PipeScheduler _scheduler;
@@ -33,7 +36,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private volatile bool _socketDisposed;
         private volatile Exception _shutdownReason;
 
-        internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
+        private bool _tcpCork = false;
+
+        internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace, bool useTcpCork)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -62,6 +67,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             _receiver = new SocketReceiver(_socket, awaiterScheduler);
             _sender = new SocketSender(_socket, awaiterScheduler);
+
+            if (IsLinux && useTcpCork)
+            {
+                ((IFeatureCollection)this).Set<ITcpCorkFeature>(this);
+            }
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
@@ -333,5 +343,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                    errorCode == SocketError.Interrupted ||
                    (errorCode == SocketError.InvalidArgument && !IsWindows);
         }
+
+        void ITcpCorkFeature.Cork()
+        {
+            if (!_tcpCork)
+            {
+                _tcpCork = true;
+                _socket.SetCorkOption(isCorked: true);
+            }
+        }
+
+        void ITcpCorkFeature.UnCork()
+        {
+            if (_tcpCork)
+            {
+                _tcpCork = false;
+                _socket.SetCorkOption(isCorked: false);
+            }
+        }
+    }
+
+    internal static class SocketExtension
+    {
+        private const int SOL_TCP = 6;
+        private const int TCP_CORK = 3;
+
+        public unsafe static void SetCorkOption(this Socket socket, bool isCorked)
+        {
+            int optval = isCorked ? 1 : 0;
+            setsockopt(socket.Handle, SOL_TCP, TCP_CORK, &optval, sizeof(int));
+        }
+
+        [DllImport("libc")]
+        static unsafe extern int setsockopt(IntPtr sockfd, int level, int optname, void* optval, int optlen);
     }
 }

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new ArgumentNullException(nameof(dispatcher));
             }
 
-            return new SocketTransport(endPointInformation, dispatcher, _appLifetime, _options.IOQueueCount, _trace, _options.MemoryPoolFactory());
+            return new SocketTransport(endPointInformation, dispatcher, _appLifetime, _options, _trace);
         }
     }
 }

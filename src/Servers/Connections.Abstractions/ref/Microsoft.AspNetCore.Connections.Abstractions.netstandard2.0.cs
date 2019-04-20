@@ -138,6 +138,11 @@ namespace Microsoft.AspNetCore.Connections.Features
     {
         System.Buffers.MemoryPool<byte> MemoryPool { get; }
     }
+    public partial interface ITcpCorkFeature
+    {
+        void Cork();
+        void UnCork();
+    }
     public partial interface ITlsHandshakeFeature
     {
         System.Security.Authentication.CipherAlgorithmType CipherAlgorithm { get; }

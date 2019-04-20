@@ -13,6 +13,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -77,6 +78,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ServerOptions = ServiceContext.ServerOptions;
             HttpRequestHeaders = new HttpRequestHeaders(reuseHeaderValues: !ServerOptions.DisableStringReuse);
             HttpResponseControl = this;
+            TcpCorkFeature = context.ConnectionFeatures?.Get<ITcpCorkFeature>();
         }
 
         public IHttpResponseControl HttpResponseControl { get; set; }
@@ -99,6 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public bool HasStartedConsumingRequestBody { get; set; }
         public long? MaxRequestBodySize { get; set; }
         public bool AllowSynchronousIO { get; set; }
+        public ITcpCorkFeature TcpCorkFeature { get; }
 
         /// <summary>
         /// The request id. <seealso cref="HttpContext.TraceIdentifier"/>
@@ -478,6 +481,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 shouldScheduleCancellation = _abortedCts != null && !_preventRequestAbortedCancellation;
                 _connectionAborted = true;
+
+                TcpCorkFeature?.UnCork();
             }
 
             if (shouldScheduleCancellation)
@@ -573,13 +578,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 BeginRequestProcessing();
 
-                var result = default(ReadResult);
-                var endConnection = false;
+                ReadResult result = default;
+                bool endConnection;
                 do
                 {
                     if (BeginRead(out var awaitable))
                     {
+                        if (TcpCorkFeature != null &&
+                            !awaitable.IsCompleted)
+                        {
+                            TcpCorkFeature.UnCork();
+                        }
+
                         result = await awaitable;
+                        TcpCorkFeature?.Cork();
+
                     }
                 } while (!TryParseRequest(result, out endConnection));
 
@@ -961,6 +974,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestProcessingStatus = RequestProcessingStatus.HeadersCommitted;
 
             var responseHeaders = CreateResponseHeaders(appCompleted);
+
+            if (TcpCorkFeature != null &&
+                responseHeaders.HeaderContentType.ToString() ==
+                "text/event-stream")
+            {
+                // Switch off TcpCork for Server Sent Events
+                TcpCorkFeature.UnCork();
+            }
 
             Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
         }

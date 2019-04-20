@@ -305,6 +305,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             ReasonPhrase = "Switching Protocols";
             ResponseHeaders[HeaderNames.Connection] = "Upgrade";
 
+            // Switch off TcpCork for Upgrade
+            TcpCorkFeature?.UnCork();
+
             await FlushAsync();
 
             return bodyControl.Upgrade();

@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     {
         public SocketTransportOptions() { }
         public int IOQueueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool TcpCork { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal

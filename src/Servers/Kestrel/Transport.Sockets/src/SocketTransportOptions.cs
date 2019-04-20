@@ -17,6 +17,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// </remarks>
         public int IOQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
 
+        /// <summary>
+        /// Set to false to disable use of TCP_CORK for all connections.
+        /// </summary>
+        /// <remarks>
+        /// Only supported on Linux. Defaults to true.
+        /// </remarks>
+        public bool TcpCork { get; set; } = true;
+
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = () => KestrelMemoryPool.Create();
     }
 }

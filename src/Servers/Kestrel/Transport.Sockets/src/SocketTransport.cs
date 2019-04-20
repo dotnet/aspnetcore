@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly int _numSchedulers;
         private readonly PipeScheduler[] _schedulers;
         private readonly ISocketsTrace _trace;
+        private readonly SocketTransportOptions _options;
         private Socket _listenSocket;
         private Task _listenTask;
         private Exception _listenException;
@@ -36,9 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             IEndPointInformation endPointInformation,
             IConnectionDispatcher dispatcher,
             IHostApplicationLifetime applicationLifetime,
-            int ioQueueCount,
-            ISocketsTrace trace,
-            MemoryPool<byte> memoryPool)
+            SocketTransportOptions options,
+            ISocketsTrace trace)
         {
             Debug.Assert(endPointInformation != null);
             Debug.Assert(endPointInformation.Type == ListenType.IPEndPoint);
@@ -50,11 +50,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _dispatcher = dispatcher;
             _appLifetime = applicationLifetime;
             _trace = trace;
-            _memoryPool = memoryPool;
+            _memoryPool = options.MemoryPoolFactory();
+            _options = options;
 
-            if (ioQueueCount > 0)
+            if (options.IOQueueCount > 0)
             {
-                _numSchedulers = ioQueueCount;
+                _numSchedulers = options.IOQueueCount;
                 _schedulers = new IOQueue[_numSchedulers];
 
                 for (var i = 0; i < _numSchedulers; i++)
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                             var acceptSocket = await _listenSocket.AcceptAsync();
                             acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
-                            var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace);
+                            var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[schedulerIndex], _trace, _options.TcpCork);
 
                             // REVIEW: This task should be tracked by the server for graceful shutdown
                             // Today it's handled specifically for http but not for arbitrary middleware
