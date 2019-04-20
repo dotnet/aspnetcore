@@ -57,6 +57,51 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
+        public void ActivityStopDoesNotFireIfNoListenerAttachedForStart()
+        {
+            // Arrange
+            var diagnosticSource = new DiagnosticListener("DummySource");
+            var logger = new LoggerWithScopes(isEnabled: true);
+            var hostingApplication = CreateApplication(out var features, diagnosticSource: diagnosticSource, logger: logger);
+            var startFired = false;
+            var stopFired = false;
+
+            diagnosticSource.Subscribe(new CallbackDiagnosticListener(pair =>
+            {
+                // This should not fire
+                if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Start")
+                {
+                    startFired = true;
+                }
+
+                // This should not fire
+                if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Stop")
+                {
+                    stopFired = true;
+                }
+            }),
+            (s, o, arg3) =>
+            {
+                // The events are off
+                return false;
+            });
+
+
+            // Act
+            var context = hostingApplication.CreateContext(features);
+
+            Assert.Single(logger.Scopes);
+            var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
+            Assert.Equal(Activity.Current.Id, pairs["ActivityId"].ToString());
+
+            hostingApplication.DisposeContext(context, exception: null);
+
+            Assert.False(startFired);
+            Assert.False(stopFired);
+            Assert.Null(Activity.Current);
+        }
+
+        [Fact]
         public void ActivityIsNotCreatedWhenIsEnabledForActivityIsFalse()
         {
             var diagnosticSource = new DiagnosticListener("DummySource");

@@ -48,7 +48,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             if (loggingEnabled || (diagnosticListenerEnabled && _diagnosticListener.IsEnabled(ActivityName, httpContext)))
             {
-                context.Activity = StartActivity(httpContext);
+                context.Activity = StartActivity(httpContext, out var hasDiagnosticListener);
+                context.HasDiagnosticListener = hasDiagnosticListener;
             }
 
             if (diagnosticListenerEnabled)
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Always stop activity if it was started
             if (activity != null)
             {
-                StopActivity(httpContext, activity);
+                StopActivity(httpContext, activity, context.HasDiagnosticListener);
             }
 
             if (context.EventLogEnabled && exception != null)
@@ -229,9 +230,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext)
+        private Activity StartActivity(HttpContext httpContext, out bool hasDiagnosticListener)
         {
             var activity = new Activity(ActivityName);
+            hasDiagnosticListener = false;
 
             if (!httpContext.Request.Headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
             {
@@ -265,6 +267,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             if (_diagnosticListener.IsEnabled(ActivityStartKey))
             {
+                hasDiagnosticListener = true;
                 _diagnosticListener.StartActivity(activity, new { HttpContext = httpContext });
             }
             else
@@ -276,9 +279,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void StopActivity(HttpContext httpContext, Activity activity)
+        private void StopActivity(HttpContext httpContext, Activity activity, bool hasDiagnosticListener)
         {
-            _diagnosticListener.StopActivity(activity, new { HttpContext = httpContext });
+            if (hasDiagnosticListener)
+            {
+                _diagnosticListener.StopActivity(activity, new { HttpContext = httpContext });
+            }
+            else
+            {
+                activity.Stop();
+            }
         }
     }
 }
