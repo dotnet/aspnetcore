@@ -31,7 +31,9 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         /// <param name="pathBase">The base path.</param>
         /// <param name="application">The <see cref="IHttpApplication{TContext}"/>.</param>
+#pragma warning disable PUB0001
         public ClientHandler(PathString pathBase, IHttpApplication<Context> application)
+#pragma warning restore PUB0001
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
 

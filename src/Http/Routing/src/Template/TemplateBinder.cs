@@ -47,7 +47,9 @@ namespace Microsoft.AspNetCore.Routing.Template
             "to create TemplateBinder instances.")]
         public TemplateBinder(
             UrlEncoder urlEncoder,
+#pragma warning disable PUB0001
             ObjectPool<UriBuildingContext> pool,
+#pragma warning restore PUB0001
             RouteTemplate template,
             RouteValueDictionary defaults)
             : this(urlEncoder, pool, template?.ToRoutePattern(), defaults, requiredKeys: null, parameterPolicies: null)
@@ -70,7 +72,9 @@ namespace Microsoft.AspNetCore.Routing.Template
             "to create TemplateBinder instances.")]
         public TemplateBinder(
             UrlEncoder urlEncoder,
+#pragma warning disable PUB0001
             ObjectPool<UriBuildingContext> pool,
+#pragma warning restore PUB0001
             RoutePattern pattern,
             RouteValueDictionary defaults,
             IEnumerable<string> requiredKeys,
@@ -305,7 +309,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                         //
                         // We can still generate a URL from this ("/a") but we shouldn't accept 'c' because
                         // we can't use it.
-                        // 
+                        //
                         // In the example above we should fall into this block for 'b'.
                         copyAmbientValues = false;
                     }
@@ -328,11 +332,11 @@ namespace Microsoft.AspNetCore.Routing.Template
                     if (hasAmbientValue &&
                         (RoutePartsEqual(requiredValue, ambientValue) || RoutePattern.IsRequiredValueAny(requiredValue)))
                     {
-                        // Treat this an an explicit value to *force it*. 
+                        // Treat this an an explicit value to *force it*.
                         slots[i] = new KeyValuePair<string, object>(key, ambientValue);
                         hasExplicitValue = true;
                         value = ambientValue;
-                    }   
+                    }
                 }
 
                 // If the parameter is a match, add it to the list of values we will use for URI generation
@@ -346,7 +350,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
                 else if (parameter.IsOptional || parameter.IsCatchAll)
                 {
-                    // Value isn't needed for optional or catchall parameters - wipe out the key, so it 
+                    // Value isn't needed for optional or catchall parameters - wipe out the key, so it
                     // will be omitted from the RVD.
                     slots[i] = default;
                 }
@@ -567,13 +571,13 @@ namespace Microsoft.AspNetCore.Routing.Template
                         }
                         else
                         {
-                            // If the value is not accepted, it is null or empty value in the 
+                            // If the value is not accepted, it is null or empty value in the
                             // middle of the segment. We accept this if the parameter is an
                             // optional parameter and it is preceded by an optional seperator.
                             // In this case, we need to remove the optional seperator that we
                             // have added to the URI
                             // Example: template = {id}.{format?}. parameters: id=5
-                            // In this case after we have generated "5.", we wont find any value 
+                            // In this case after we have generated "5.", we wont find any value
                             // for format, so we remove '.' and generate 5.
                             if (!context.Accept(converted, parameterPart.EncodeSlashes))
                             {
@@ -739,7 +743,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             return slots;
         }
 
-        // This represents an 'explicit null' in the slots array. 
+        // This represents an 'explicit null' in the slots array.
         [DebuggerDisplay("explicit null")]
         private class SentinullValue
         {
