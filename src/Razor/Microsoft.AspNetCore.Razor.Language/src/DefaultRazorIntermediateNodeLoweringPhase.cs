@@ -473,7 +473,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 var name = node.Name.GetContent();
                 if (name.StartsWith("data-", StringComparison.OrdinalIgnoreCase) &&
-                    !_featureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes)
+                    !_featureFlags.AllowConditionalDataDashAttributes)
                 {
                     Visit(prefix);
                     Visit(node.Value);
@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var name = node.Name.GetContent();
                 if (name.StartsWith("data-", StringComparison.OrdinalIgnoreCase) &&
-                    !_featureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes)
+                    !_featureFlags.AllowConditionalDataDashAttributes)
                 {
                     base.VisitMarkupMinimizedAttributeBlock(node);
                     return;

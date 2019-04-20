@@ -1923,10 +1923,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private bool IsConditionalAttributeName(string name)
         {
-            var attributeCanBeConditional =
-                Context.FeatureFlags.EXPERIMENTAL_AllowConditionalDataDashAttributes ||
-                !name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
-            return attributeCanBeConditional;
+            if (Context.FeatureFlags.AllowConditionalDataDashAttributes)
+            {
+                return true;
+            }
+
+            if (!name.StartsWith("data-", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
+            return false;
         }
 
         private void NestingBlock(in SyntaxListBuilder<RazorSyntaxNode> builder, Tuple<string, string> nestingSequences)

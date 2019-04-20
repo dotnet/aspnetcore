@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override RazorParserOptions Build()
         {
-            return new DefaultRazorParserOptions(Directives.ToArray(), DesignTime, ParseLeadingDirectives, LanguageVersion, FileKind);
+            return new DefaultRazorParserOptions(Directives.ToArray(), DesignTime, ParseLeadingDirectives, LanguageVersion, FileKind ?? FileKinds.Legacy);
         }
 
         public override void SetDesignTime(bool designTime)

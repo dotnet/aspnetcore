@@ -254,12 +254,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 designTime,
                 parseLeadingDirectives: false,
                 version: version,
+                fileKind: FileKinds.Legacy,
                 featureFlags: featureFlags);
         }
 
         private class TestRazorParserOptions : RazorParserOptions
         {
-            public TestRazorParserOptions(DirectiveDescriptor[] directives, bool designTime, bool parseLeadingDirectives, RazorLanguageVersion version, RazorParserFeatureFlags featureFlags = null)
+            public TestRazorParserOptions(DirectiveDescriptor[] directives, bool designTime, bool parseLeadingDirectives, RazorLanguageVersion version, string fileKind, RazorParserFeatureFlags featureFlags = null)
             {
                 if (directives == null)
                 {
@@ -270,10 +271,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DesignTime = designTime;
                 ParseLeadingDirectives = parseLeadingDirectives;
                 Version = version;
-                FeatureFlags = featureFlags ?? RazorParserFeatureFlags.Create(Version);
+                FileKind = fileKind;
+                FeatureFlags = featureFlags ?? RazorParserFeatureFlags.Create(Version, fileKind);
             }
 
             public override bool DesignTime { get; }
+
+            internal override string FileKind { get; }
 
             public override IReadOnlyCollection<DirectiveDescriptor> Directives { get; }
 

@@ -734,7 +734,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             EvaluateData(
                 descriptors,
                 document,
-                featureFlags: RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_2_0));
+                featureFlags: RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_2_0, FileKinds.Legacy));
         }
 
         [Fact]

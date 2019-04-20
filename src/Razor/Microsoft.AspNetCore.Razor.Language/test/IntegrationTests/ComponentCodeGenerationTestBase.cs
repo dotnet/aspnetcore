@@ -2853,6 +2853,27 @@ namespace Test.Shared
         }
 
         [Fact]
+        public void Element_WithRef_AndOtherAttributes()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<input type=""text"" data-slider-min=""@Min"" ref=""@_element"" />
+
+@functions {
+        private ElementRef _element;
+
+        [Parameter] protected int Min { get; set; }
+        public void Foo() { System.GC.KeepAlive(_element); }
+    }
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void Component_WithRef()
         {
             // Arrange

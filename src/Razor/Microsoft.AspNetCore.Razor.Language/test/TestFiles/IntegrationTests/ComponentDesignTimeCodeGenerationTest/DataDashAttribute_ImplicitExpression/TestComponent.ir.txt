@@ -18,8 +18,10 @@ Document -
                     IntermediateToken - (2:0,2 [40] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  \n  var myValue = "Expression value";\n
                 MarkupElement - (45:3,0 [53] x:\dir\subdir\Test\TestComponent.cshtml) - elem
                     HtmlAttribute - (50:3,5 [25] x:\dir\subdir\Test\TestComponent.cshtml) -  data-abc=" - "
-                        HtmlAttributeValue - (61:3,16 [13] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (61:3,16 [13] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Literal value
+                        HtmlAttributeValue - (61:3,16 [7] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (61:3,16 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Literal
+                        HtmlAttributeValue - (68:3,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) -  
+                            IntermediateToken - (69:3,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - value
                     HtmlAttribute - (75:3,30 [20] x:\dir\subdir\Test\TestComponent.cshtml) -  data-def=" - "
                         CSharpExpressionAttributeValue - (86:3,41 [8] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (87:3,42 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - myValue

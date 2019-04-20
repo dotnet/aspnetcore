@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Create_LatestVersion_AllowsMinimizedBooleanTagHelperAttributes()
         {
             // Arrange & Act
-            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_2_1);
+            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_2_1, FileKinds.Legacy);
 
             // Assert
             Assert.True(context.AllowMinimizedBooleanTagHelperAttributes);
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Create_OlderVersion_DoesNotAllowMinimizedBooleanTagHelperAttributes()
         {
             // Arrange & Act
-            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_1_1);
+            var context = RazorParserFeatureFlags.Create(RazorLanguageVersion.Version_1_1, FileKinds.Legacy);
 
             // Assert
             Assert.False(context.AllowMinimizedBooleanTagHelperAttributes);

@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 designTime: false,
                 parseLeadingDirectives: false,
                 version: RazorLanguageVersion.Latest,
-                fileKind: null);
+                fileKind: FileKinds.Legacy);
         }
 
         public static RazorParserOptions Create(Action<RazorParserOptionsBuilder> configure)
         {
-            return Create(configure, fileKind: null);
+            return Create(configure, fileKind: FileKinds.Legacy);
         }
 
         public static RazorParserOptions Create(Action<RazorParserOptionsBuilder> configure, string fileKind)
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var builder = new DefaultRazorParserOptionsBuilder(designTime: false, version: RazorLanguageVersion.Latest, fileKind);
+            var builder = new DefaultRazorParserOptionsBuilder(designTime: false, version: RazorLanguageVersion.Latest, fileKind ?? FileKinds.Legacy);
             configure(builder);
             var options = builder.Build();
 
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var builder = new DefaultRazorParserOptionsBuilder(designTime: true, version: RazorLanguageVersion.Latest, fileKind);
+            var builder = new DefaultRazorParserOptionsBuilder(designTime: true, version: RazorLanguageVersion.Latest, fileKind ?? FileKinds.Legacy);
             configure(builder);
             var options = builder.Build();
 

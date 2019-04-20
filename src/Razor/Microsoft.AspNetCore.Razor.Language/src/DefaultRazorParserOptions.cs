@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             DesignTime = designTime;
             ParseLeadingDirectives = parseLeadingDirectives;
             Version = version;
-            FeatureFlags = RazorParserFeatureFlags.Create(Version);
+            FeatureFlags = RazorParserFeatureFlags.Create(Version, fileKind);
             FileKind = fileKind;
         }
 

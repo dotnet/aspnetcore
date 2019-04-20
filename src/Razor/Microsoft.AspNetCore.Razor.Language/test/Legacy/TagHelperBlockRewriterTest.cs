@@ -2161,14 +2161,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 bool allowComponentFileKind = false,
                 bool allowRazorInCodeBlockDirectives = false,
                 bool allowUsingVariableDeclarations = false,
-                bool experimental_AllowConditionalDataDashAttributes = false)
+                bool allowConditionalDataDashAttributesInComponents = false)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
                 AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelper;
                 AllowComponentFileKind = allowComponentFileKind;
                 AllowRazorInAllCodeBlocks = allowRazorInCodeBlockDirectives;
                 AllowUsingVariableDeclarations = allowUsingVariableDeclarations;
-                EXPERIMENTAL_AllowConditionalDataDashAttributes = experimental_AllowConditionalDataDashAttributes;
+                AllowConditionalDataDashAttributes = allowConditionalDataDashAttributesInComponents;
             }
 
             public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
@@ -2181,7 +2181,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             public override bool AllowUsingVariableDeclarations { get; }
 
-            public override bool EXPERIMENTAL_AllowConditionalDataDashAttributes { get; }
+            public override bool AllowConditionalDataDashAttributes { get; }
         }
     }
 }

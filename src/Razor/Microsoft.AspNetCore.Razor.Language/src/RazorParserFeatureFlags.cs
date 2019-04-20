@@ -1,18 +1,25 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Razor.Language
 {
     internal abstract class RazorParserFeatureFlags
     {
-        public static RazorParserFeatureFlags Create(RazorLanguageVersion version)
+        public static RazorParserFeatureFlags Create(RazorLanguageVersion version, string fileKind)
         {
+            if (fileKind == null)
+            {
+                throw new ArgumentNullException(nameof(fileKind));
+            }
+
             var allowMinimizedBooleanTagHelperAttributes = false;
             var allowHtmlCommentsInTagHelpers = false;
             var allowComponentFileKind = false;
             var allowRazorInAllCodeBlocks = false;
             var allowUsingVariableDeclarations = false;
-            var experimental_AllowConditionalDataDashAttributes = false;
+            var allowConditionalDataDashAttributes = false;
 
             if (version.CompareTo(RazorLanguageVersion.Version_2_1) >= 0)
             {
@@ -29,9 +36,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 allowUsingVariableDeclarations = true;
             }
 
+            if (FileKinds.IsComponent(fileKind))
+            {
+                allowConditionalDataDashAttributes = true;
+            }
+
             if (version.CompareTo(RazorLanguageVersion.Experimental) >= 0)
             {
-                experimental_AllowConditionalDataDashAttributes = true;
+                allowConditionalDataDashAttributes = true;
             }
 
             return new DefaultRazorParserFeatureFlags(
@@ -40,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 allowComponentFileKind,
                 allowRazorInAllCodeBlocks,
                 allowUsingVariableDeclarations,
-                experimental_AllowConditionalDataDashAttributes);
+                allowConditionalDataDashAttributes);
         }
 
         public abstract bool AllowMinimizedBooleanTagHelperAttributes { get; }
@@ -53,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool AllowUsingVariableDeclarations { get; }
 
-        public abstract bool EXPERIMENTAL_AllowConditionalDataDashAttributes { get; }
+        public abstract bool AllowConditionalDataDashAttributes { get; }
 
         private class DefaultRazorParserFeatureFlags : RazorParserFeatureFlags
         {
@@ -63,14 +75,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 bool allowComponentFileKind,
                 bool allowRazorInAllCodeBlocks,
                 bool allowUsingVariableDeclarations,
-                bool experimental_AllowConditionalDataDashAttributes)
+                bool allowConditionalDataDashAttributesInComponents)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
                 AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelpers;
                 AllowComponentFileKind = allowComponentFileKind;
                 AllowRazorInAllCodeBlocks = allowRazorInAllCodeBlocks;
                 AllowUsingVariableDeclarations = allowUsingVariableDeclarations;
-                EXPERIMENTAL_AllowConditionalDataDashAttributes = experimental_AllowConditionalDataDashAttributes;
+                AllowConditionalDataDashAttributes = allowConditionalDataDashAttributesInComponents;
             }
 
             public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
@@ -83,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public override bool AllowUsingVariableDeclarations { get; }
 
-            public override bool EXPERIMENTAL_AllowConditionalDataDashAttributes { get; }
+            public override bool AllowConditionalDataDashAttributes { get; }
         }
     }
 }
