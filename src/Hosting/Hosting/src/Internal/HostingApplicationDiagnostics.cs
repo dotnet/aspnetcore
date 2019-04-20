@@ -233,22 +233,23 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             var activity = new Activity(ActivityName);
 
-            if (!httpContext.Request.Headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
+            var headers = httpContext.Request.Headers;
+            if (!headers.TryGetValue(HeaderNames.TraceParent, out var requestId))
             {
-                httpContext.Request.Headers.TryGetValue(HeaderNames.RequestId, out requestId);
+                headers.TryGetValue(HeaderNames.RequestId, out requestId);
             }
 
             if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
-                if (httpContext.Request.Headers.TryGetValue(HeaderNames.TraceState, out var traceState))
+                if (headers.TryGetValue(HeaderNames.TraceState, out var traceState))
                 {
                     activity.TraceStateString = traceState;
                 }
 
                 // We expect baggage to be empty by default
                 // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
-                string[] baggage = httpContext.Request.Headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
+                string[] baggage = headers.GetCommaSeparatedValues(HeaderNames.CorrelationContext);
                 if (baggage.Length > 0)
                 {
                     foreach (var item in baggage)
