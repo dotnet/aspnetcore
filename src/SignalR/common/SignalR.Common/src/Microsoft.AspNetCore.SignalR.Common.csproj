@@ -16,6 +16,7 @@
     <Compile Include="$(SignalRSharedSourceRoot)TextMessageParser.cs" Link="Internal\TextMessageParser.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextReader.cs" Link="Internal\Utf8BufferTextReader.cs" />
     <Compile Include="$(SignalRSharedSourceRoot)Utf8BufferTextWriter.cs" Link="Internal\Utf8BufferTextWriter.cs" />
+    <Compile Include="$(SignalRSharedSourceRoot)ReusableUtf8JsonWriter.cs" Link="Internal\ReusableUtf8JsonWriter.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -6,7 +6,6 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
 
@@ -31,65 +30,73 @@ namespace Microsoft.AspNetCore.Http.Connections
         private static ReadOnlySpan<byte> ErrorPropertyNameBytes => new byte[] { (byte)'e', (byte)'r', (byte)'r', (byte)'o', (byte)'r' };
 
         // Used to detect ASP.NET SignalR Server connection attempt
-        private const string ProtocolVersionPropertyName = "ProtocolVersion";
         private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => new byte[] { (byte)'P', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l', (byte)'V', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
 
         public static void WriteResponse(NegotiationResponse response, IBufferWriter<byte> output)
         {
-            using var writer = new Utf8JsonWriter(output, new JsonWriterOptions() { SkipValidation = true });
-            writer.WriteStartObject();
+            var reusableWriter = ReusableUtf8JsonWriter.Get(output);
 
-            if (!string.IsNullOrEmpty(response.Url))
+            try
             {
-                writer.WriteString(UrlPropertyNameBytes, response.Url);
-            }
+                var writer = reusableWriter.GetJsonWriter();
+                writer.WriteStartObject();
 
-            if (!string.IsNullOrEmpty(response.AccessToken))
-            {
-                writer.WriteString(AccessTokenPropertyNameBytes, response.AccessToken);
-            }
-
-            if (!string.IsNullOrEmpty(response.ConnectionId))
-            {
-                writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId);
-            }
-
-            writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
-
-            if (response.AvailableTransports != null)
-            {
-                foreach (var availableTransport in response.AvailableTransports)
+                if (!string.IsNullOrEmpty(response.Url))
                 {
-                    writer.WriteStartObject();
-                    if (availableTransport.Transport != null)
-                    {
-                        writer.WriteString(TransportPropertyNameBytes, availableTransport.Transport);
-                    }
-                    else
-                    {
-                        // Might be able to remove this after https://github.com/dotnet/corefx/issues/34632 is resolved
-                        writer.WriteNull(TransportPropertyNameBytes);
-                    }
-                    writer.WriteStartArray(TransferFormatsPropertyNameBytes);
-
-                    if (availableTransport.TransferFormats != null)
-                    {
-                        foreach (var transferFormat in availableTransport.TransferFormats)
-                        {
-                            writer.WriteStringValue(transferFormat);
-                        }
-                    }
-
-                    writer.WriteEndArray();
-                    writer.WriteEndObject();
+                    writer.WriteString(UrlPropertyNameBytes, response.Url);
                 }
+
+                if (!string.IsNullOrEmpty(response.AccessToken))
+                {
+                    writer.WriteString(AccessTokenPropertyNameBytes, response.AccessToken);
+                }
+
+                if (!string.IsNullOrEmpty(response.ConnectionId))
+                {
+                    writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId);
+                }
+
+                writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
+
+                if (response.AvailableTransports != null)
+                {
+                    foreach (var availableTransport in response.AvailableTransports)
+                    {
+                        writer.WriteStartObject();
+                        if (availableTransport.Transport != null)
+                        {
+                            writer.WriteString(TransportPropertyNameBytes, availableTransport.Transport);
+                        }
+                        else
+                        {
+                            // Might be able to remove this after https://github.com/dotnet/corefx/issues/34632 is resolved
+                            writer.WriteNull(TransportPropertyNameBytes);
+                        }
+                        writer.WriteStartArray(TransferFormatsPropertyNameBytes);
+
+                        if (availableTransport.TransferFormats != null)
+                        {
+                            foreach (var transferFormat in availableTransport.TransferFormats)
+                            {
+                                writer.WriteStringValue(transferFormat);
+                            }
+                        }
+
+                        writer.WriteEndArray();
+                        writer.WriteEndObject();
+                    }
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+
+                writer.Flush();
+                Debug.Assert(writer.CurrentDepth == 0);
             }
-
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-
-            writer.Flush();
-            Debug.Assert(writer.CurrentDepth == 0);
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
         }
 
         public static NegotiationResponse ParseResponse(ReadOnlySpan<byte> content)
