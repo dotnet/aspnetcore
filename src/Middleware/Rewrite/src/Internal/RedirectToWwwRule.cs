@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Rewrite.Logging;
@@ -12,9 +13,20 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
     public class RedirectToWwwRule : IRule
     {
         public readonly int _statusCode;
+        public string[] _domains = new string[0];
 
         public RedirectToWwwRule(int statusCode)
         {
+            _statusCode = statusCode;
+        }
+        
+        public RedirectToWwwRule(int statusCode, params string[] domains)
+        {
+            if (domains == null)
+            {
+                throw new ArgumentNullException(nameof(domains));
+            }
+            _domains = domains;
             _statusCode = statusCode;
         }
 
@@ -28,6 +40,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             }
 
             if (req.Host.Value.StartsWith("www.", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Result = RuleResult.ContinueRules;
+                return;
+            }
+            
+            if (_domains.Length > 0 && !_domains.Any(d => req.Host.Host.Equals(d, StringComparison.OrdinalIgnoreCase)))
             {
                 context.Result = RuleResult.ContinueRules;
                 return;
