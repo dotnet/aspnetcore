@@ -114,8 +114,7 @@ namespace Microsoft.AspNetCore.DataProtection
             });
         }
 
-        [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2177", FlakyOn.AzP.Windows)]
+        [ConditionalFact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2177")]
         [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
         [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6720
         public void System_UsesProvidedDirectoryAndCertificate()
