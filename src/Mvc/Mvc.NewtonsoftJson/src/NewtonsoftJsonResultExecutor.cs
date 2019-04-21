@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
     /// <summary>
     /// Executes a <see cref="JsonResult"/> to write to the response.
     /// </summary>
-    internal class JsonResultExecutor : IActionResultExecutor<JsonResult>
+    internal class NewtonsoftJsonResultExecutor : IActionResultExecutor<JsonResult>
     {
         private static readonly string DefaultContentType = new MediaTypeHeaderValue("application/json")
         {
@@ -34,16 +34,16 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         private readonly IArrayPool<char> _charPool;
 
         /// <summary>
-        /// Creates a new <see cref="JsonResultExecutor"/>.
+        /// Creates a new <see cref="NewtonsoftJsonResultExecutor"/>.
         /// </summary>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
-        /// <param name="logger">The <see cref="ILogger{JsonResultExecutor}"/>.</param>
+        /// <param name="logger">The <see cref="ILogger{NewtonsoftJsonResultExecutor}"/>.</param>
         /// <param name="mvcOptions">Accessor to <see cref="MvcOptions"/>.</param>
         /// <param name="jsonOptions">Accessor to <see cref="MvcNewtonsoftJsonOptions"/>.</param>
         /// <param name="charPool">The <see cref="ArrayPool{Char}"/> for creating <see cref="T:char[]"/> buffers.</param>
-        public JsonResultExecutor(
+        public NewtonsoftJsonResultExecutor(
             IHttpResponseStreamWriterFactory writerFactory,
-            ILogger<JsonResultExecutor> logger,
+            ILogger<NewtonsoftJsonResultExecutor> logger,
             IOptions<MvcOptions> mvcOptions,
             IOptions<MvcNewtonsoftJsonOptions> jsonOptions,
             ArrayPool<char> charPool)

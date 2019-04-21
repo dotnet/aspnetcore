@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -73,14 +71,22 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, NewtonsoftJsonMvcOptionsSetup>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApiDescriptionProvider, JsonPatchOperationsArrayProvider>());
-            services.TryAddSingleton<IActionResultExecutor<JsonResult>, JsonResultExecutor>();
+
+
+            var jsonResultExecutor = services.FirstOrDefault(f =>
+               f.ServiceType == typeof(IActionResultExecutor<JsonResult>) &&
+               f.ImplementationType?.Assembly == typeof(JsonResult).Assembly);
+
+            if (jsonResultExecutor != null)
+            {
+                services.Remove(jsonResultExecutor);
+            }
+            services.TryAddSingleton<IActionResultExecutor<JsonResult>, NewtonsoftJsonResultExecutor>();
 
             var viewFeaturesAssembly = typeof(IHtmlHelper).Assembly;
-
             var tempDataSerializer = services.FirstOrDefault(f =>
                 f.ServiceType == typeof(TempDataSerializer) &&
-                f.ImplementationType?.Assembly == viewFeaturesAssembly &&
-                f.ImplementationType.FullName == "Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure.DefaultTempDataSerializer");
+                f.ImplementationType?.Assembly == viewFeaturesAssembly);
 
             if (tempDataSerializer != null)
             {
@@ -94,8 +100,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             var jsonHelper = services.FirstOrDefault(
                 f => f.ServiceType == typeof(IJsonHelper) &&
-                f.ImplementationType?.Assembly == viewFeaturesAssembly &&
-                f.ImplementationType.FullName == "Microsoft.AspNetCore.Mvc.Rendering.DefaultJsonHelper");
+                f.ImplementationType?.Assembly == viewFeaturesAssembly);
             if (jsonHelper != null)
             {
                 services.Remove(jsonHelper);

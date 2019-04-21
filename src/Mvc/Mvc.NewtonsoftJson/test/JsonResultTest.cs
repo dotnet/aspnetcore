@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             var httpContext = new DefaultHttpContext();
             httpContext.Response.Body = new MemoryStream();
 
-            var executor = new JsonResultExecutor(
+            var executor = new NewtonsoftJsonResultExecutor(
                 new TestHttpResponseStreamWriterFactory(),
-                NullLogger<JsonResultExecutor>.Instance,
+                NullLogger<NewtonsoftJsonResultExecutor>.Instance,
                 Options.Create(new MvcOptions()),
                 Options.Create(new MvcNewtonsoftJsonOptions()),
                 ArrayPool<char>.Shared);
