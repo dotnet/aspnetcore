@@ -9,12 +9,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
     public class ScratchDatabaseFixture : IDisposable
     {
-#pragma warning disable EF1001 // Internal EF Core API usage.
-        private readonly LazyRef<SqlServerTestStore> _testStore;
+        private readonly Lazy<SqlServerTestStore> _testStore;
 
         public ScratchDatabaseFixture()
         {
-            _testStore = new LazyRef<SqlServerTestStore>(() => SqlServerTestStore.CreateScratch());
+            _testStore = new Lazy<SqlServerTestStore>(() => SqlServerTestStore.CreateScratch());
         }
 
         public string ConnectionString => _testStore.Value.Connection.ConnectionString;
@@ -23,9 +22,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         {
             if (_testStore.HasValue)
             {
-                _testStore.Value?.Dispose();
+                _testStore.Value.Dispose();
             }
         }
-#pragma warning restore EF1001 // Internal EF Core API usage.
     }
 }
