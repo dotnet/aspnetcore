@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var services = new ServiceCollection()
-                .AddSingleton<IJsonHelper, DefaultJsonHelper>();
+                .AddSingleton<IJsonHelper, SystemTextJsonHelper>();
 
             // Act
             NewtonsoftJsonMvcCoreBuilderExtensions.AddServicesCore(services);
