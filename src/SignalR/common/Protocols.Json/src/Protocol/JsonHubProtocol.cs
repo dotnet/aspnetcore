@@ -444,49 +444,57 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private void WriteMessageCore(HubMessage message, IBufferWriter<byte> stream)
         {
-            using var writer = new Utf8JsonWriter(stream);
+            var reusableWriter = ReusableUtf8JsonWriter.Get(stream);
 
-            writer.WriteStartObject();
-            switch (message)
+            try
             {
-                case InvocationMessage m:
-                    WriteMessageType(writer, HubProtocolConstants.InvocationMessageType);
-                    WriteHeaders(writer, m);
-                    WriteInvocationMessage(m, writer);
-                    break;
-                case StreamInvocationMessage m:
-                    WriteMessageType(writer, HubProtocolConstants.StreamInvocationMessageType);
-                    WriteHeaders(writer, m);
-                    WriteStreamInvocationMessage(m, writer);
-                    break;
-                case StreamItemMessage m:
-                    WriteMessageType(writer, HubProtocolConstants.StreamItemMessageType);
-                    WriteHeaders(writer, m);
-                    WriteStreamItemMessage(m, writer);
-                    break;
-                case CompletionMessage m:
-                    WriteMessageType(writer, HubProtocolConstants.CompletionMessageType);
-                    WriteHeaders(writer, m);
-                    WriteCompletionMessage(m, writer);
-                    break;
-                case CancelInvocationMessage m:
-                    WriteMessageType(writer, HubProtocolConstants.CancelInvocationMessageType);
-                    WriteHeaders(writer, m);
-                    WriteCancelInvocationMessage(m, writer);
-                    break;
-                case PingMessage _:
-                    WriteMessageType(writer, HubProtocolConstants.PingMessageType);
-                    break;
-                case CloseMessage m:
-                    WriteMessageType(writer, HubProtocolConstants.CloseMessageType);
-                    WriteCloseMessage(m, writer);
-                    break;
-                default:
-                    throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
+                var writer = reusableWriter.GetJsonWriter();
+                writer.WriteStartObject();
+                switch (message)
+                {
+                    case InvocationMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.InvocationMessageType);
+                        WriteHeaders(writer, m);
+                        WriteInvocationMessage(m, writer);
+                        break;
+                    case StreamInvocationMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.StreamInvocationMessageType);
+                        WriteHeaders(writer, m);
+                        WriteStreamInvocationMessage(m, writer);
+                        break;
+                    case StreamItemMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.StreamItemMessageType);
+                        WriteHeaders(writer, m);
+                        WriteStreamItemMessage(m, writer);
+                        break;
+                    case CompletionMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.CompletionMessageType);
+                        WriteHeaders(writer, m);
+                        WriteCompletionMessage(m, writer);
+                        break;
+                    case CancelInvocationMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.CancelInvocationMessageType);
+                        WriteHeaders(writer, m);
+                        WriteCancelInvocationMessage(m, writer);
+                        break;
+                    case PingMessage _:
+                        WriteMessageType(writer, HubProtocolConstants.PingMessageType);
+                        break;
+                    case CloseMessage m:
+                        WriteMessageType(writer, HubProtocolConstants.CloseMessageType);
+                        WriteCloseMessage(m, writer);
+                        break;
+                    default:
+                        throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
+                }
+                writer.WriteEndObject();
+                writer.Flush();
+                Debug.Assert(writer.CurrentDepth == 0);
             }
-            writer.WriteEndObject();
-            writer.Flush();
-            Debug.Assert(writer.CurrentDepth == 0);
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
         }
 
         private void WriteHeaders(Utf8JsonWriter writer, HubInvocationMessage message)
