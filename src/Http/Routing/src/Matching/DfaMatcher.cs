@@ -80,8 +80,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // Just strict path matching
                 if (flags == Candidate.CandidateFlags.None)
                 {
-                    // TODO: Remove this allocation
-                    context.RouteValues = new RouteValueDictionary();
                     context.Endpoint = candidate.Endpoint;
 
                     // We're done
