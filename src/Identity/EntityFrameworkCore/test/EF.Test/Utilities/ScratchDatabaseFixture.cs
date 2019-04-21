@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         public void Dispose()
         {
-            if (_testStore.HasValue)
+             if (_testStore.IsValueCreated)
             {
                 _testStore.Value.Dispose();
             }
