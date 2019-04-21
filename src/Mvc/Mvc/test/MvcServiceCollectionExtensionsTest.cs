@@ -15,12 +15,15 @@ using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Cors;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.Razor.TagHelpers;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Filters;
 using Microsoft.AspNetCore.Routing;
@@ -217,6 +220,35 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Assert
             VerifyAllServices(services);
+        }
+
+        [Fact]
+        public void AddControllersWithViews_AddsDocumentedServices()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddControllersWithViews();
+
+            // Assert
+            // Adds controllers
+            Assert.Contains(services, s => s.ServiceType == typeof(IActionInvokerProvider) && s.ImplementationType == typeof(ControllerActionInvokerProvider));
+            // Adds ApiExplorer
+            Assert.Contains(services, s => s.ServiceType == typeof(IApiDescriptionGroupCollectionProvider));
+            // Adds CORS
+            Assert.Contains(services, s => s.ServiceType == typeof(CorsAuthorizationFilter));
+            // Adds DataAnnotations
+            Assert.Contains(services, s => s.ServiceType == typeof(IConfigureOptions<MvcOptions>) && s.ImplementationType == typeof(MvcDataAnnotationsMvcOptionsSetup));
+            // Adds FormatterMappings
+            Assert.Contains(services, s => s.ServiceType == typeof(FormatFilter));
+            // Adds Views
+            Assert.Contains(services, s => s.ServiceType == typeof(IHtmlHelper));
+            // Adds Razor
+            Assert.Contains(services, s => s.ServiceType == typeof(IRazorViewEngine));
+            // Adds CacheTagHelper
+            Assert.Contains(services, s => s.ServiceType == typeof(CacheTagHelperMemoryCacheFactory));
+
+            // No Razor Pages
+            Assert.Empty(services.Where(s => s.ServiceType == typeof(IActionInvokerProvider) && s.ImplementationType == typeof(PageActionInvokerProvider)));
         }
 
         private void VerifyAllServices(IServiceCollection services)
