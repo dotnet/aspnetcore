@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -53,7 +53,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // FindCandidateSet will process the DFA and return a candidate set. This does
             // some preliminary matching of the URL (mostly the literal segments).
             var (candidates, policies) = FindCandidateSet(httpContext, path, segments);
-            if (candidates.Length == 0)
+            var candidateCount = candidates.Length;
+            if (candidateCount == 0)
             {
                 if (log)
                 {
@@ -66,6 +67,26 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (log)
             {
                 Logger.CandidatesFound(_logger, path, candidates);
+            }
+
+            var policyCount = policies.Length;
+
+            // This is a fast path for single candidate, 0 policies and default selector
+            if (policyCount == 0 && candidateCount == 1 && _selector is DefaultEndpointSelector)
+            {
+                ref var candidate = ref candidates[0];
+                var flags = candidate.Flags;
+
+                // Just strict path matching
+                if (flags == Candidate.CandidateFlags.None)
+                {
+                    // TODO: Remove this allocation
+                    context.RouteValues = new RouteValueDictionary();
+                    context.Endpoint = candidate.Endpoint;
+
+                    // We're done
+                    return Task.CompletedTask;
+                }
             }
 
             // At this point we have a candidate set, defined as a list of endpoints in
@@ -83,7 +104,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // `candidateSet` is the mutable state that we pass to the EndpointSelector.
             var candidateSet = new CandidateSet(candidates);
 
-            for (var i = 0; i < candidates.Length; i++)
+            for (var i = 0; i < candidateCount; i++)
             {
                 // PERF: using ref here to avoid copying around big structs.
                 //
@@ -165,7 +186,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            if (policies.Length == 0)
+            if (policyCount == 0)
             {
                 // Perf: avoid a state machine if there are no polices
                 return _selector.SelectAsync(httpContext, context, candidateSet);
