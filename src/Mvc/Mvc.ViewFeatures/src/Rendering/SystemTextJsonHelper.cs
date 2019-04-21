@@ -20,8 +20,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <inheritdoc />
         public IHtmlContent Serialize(object value)
         {
-            // JsonSerializer always encodes
-            var json = JsonSerializer.ToString(value, value?.GetType() ?? typeof(object), _mvcOptions.SerializerOptions);
+            // JsonSerializer always encodes non-ASCII chars, so we do not need
+            // to do anything special with the SerializerOptions
+            var json = JsonSerializer.ToString(value, _mvcOptions.SerializerOptions);
             return new HtmlString(json);
         }
     }
