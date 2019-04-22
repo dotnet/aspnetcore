@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private readonly EndpointSelector _selector;
         private readonly DfaState[] _states;
         private readonly int _maxSegmentCount;
+        private readonly bool _isDefaultEndpointSelector;
 
         public DfaMatcher(ILogger<DfaMatcher> logger, EndpointSelector selector, DfaState[] states, int maxSegmentCount)
         {
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _selector = selector;
             _states = states;
             _maxSegmentCount = maxSegmentCount;
+            _isDefaultEndpointSelector = selector is DefaultEndpointSelector;
         }
 
         public sealed override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
@@ -72,13 +74,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var policyCount = policies.Length;
 
             // This is a fast path for single candidate, 0 policies and default selector
-            if (policyCount == 0 && candidateCount == 1 && _selector is DefaultEndpointSelector)
+            if (candidateCount == 1 && policyCount == 0 && _isDefaultEndpointSelector)
             {
                 ref var candidate = ref candidates[0];
-                var flags = candidate.Flags;
 
                 // Just strict path matching
-                if (flags == Candidate.CandidateFlags.None)
+                if (candidate.Flags == Candidate.CandidateFlags.None)
                 {
                     context.Endpoint = candidate.Endpoint;
 
