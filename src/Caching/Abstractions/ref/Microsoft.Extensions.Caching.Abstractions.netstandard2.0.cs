@@ -71,19 +71,19 @@ namespace Microsoft.Extensions.Caching.Memory
     }
     public enum CacheItemPriority
     {
-        High = 2,
         Low = 0,
-        NeverRemove = 3,
         Normal = 1,
+        High = 2,
+        NeverRemove = 3,
     }
     public enum EvictionReason
     {
-        Capacity = 5,
-        Expired = 3,
         None = 0,
         Removed = 1,
         Replaced = 2,
+        Expired = 3,
         TokenExpired = 4,
+        Capacity = 5,
     }
     public partial interface ICacheEntry : System.IDisposable
     {
