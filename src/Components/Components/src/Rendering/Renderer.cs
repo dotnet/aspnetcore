@@ -455,7 +455,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             finally
             {
-                RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
+                // RemoveEventHandlerIdsAsync is designed to be fired-and-forgotten
+                // It will clone and persist any state it needs if it needs to run asynchronously
+                _ = RemoveEventHandlerIdsAsync(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
+
                 _batchBuilder.ClearStateForCurrentBatch();
                 _isBatchInProgress = false;
             }
@@ -599,14 +602,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private void RemoveEventHandlerIds(ArrayRange<int> eventHandlerIds, Task afterTask)
+        private async Task RemoveEventHandlerIdsAsync(ArrayRange<int> eventHandlerIds, Task afterTaskIgnoreErrors)
         {
             if (eventHandlerIds.Count == 0)
             {
                 return;
             }
 
-            if (afterTask.IsCompleted)
+            if (afterTaskIgnoreErrors.IsCompleted)
             {
                 var array = eventHandlerIds.Array;
                 var count = eventHandlerIds.Count;
@@ -622,8 +625,19 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 // any further). We must clone the data because the underlying RenderBatchBuilder
                 // may be reused and hence modified by an unrelated subsequent batch.
                 var eventHandlerIdsClone = eventHandlerIds.Clone();
-                afterTask.ContinueWith(_ =>
-                    RemoveEventHandlerIds(eventHandlerIdsClone, Task.CompletedTask));
+
+                try
+                {
+                    await afterTaskIgnoreErrors;
+                }
+                catch (Exception)
+                {
+                    // As per method contract, we're not error-handling the task.
+                    // That remains the caller's business.
+                }
+
+                // We know the next execution will complete synchronously, so nothing to await
+                _ = RemoveEventHandlerIdsAsync(eventHandlerIdsClone, Task.CompletedTask);
             }
         }
 
