@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             dataSource.AddRoute("1", "/1/{controller}/{action}/{id?}", null, null, null);
             dataSource.AddRoute("2", "/2/{controller}/{action}/{id?}", null, null, null);
 
-            dataSource.Add((b) =>
+            dataSource.DefaultBuilder.Add((b) =>
             {
                 b.Metadata.Add("Hi there");
             });
@@ -192,6 +192,87 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
                     Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
                     Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                },
+                e =>
+                {
+                    Assert.Equal("/test", e.RoutePattern.RawText);
+                    Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                });
+        }
+
+        [Fact]
+        public void Endpoints_AppliesConventions_RouteSpecificMetadata()
+        {
+            // Arrange
+            var actions = new List<ActionDescriptor>
+            {
+                new ControllerActionDescriptor
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo()
+                    {
+                        Template = "/test",
+                    },
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Test" },
+                        { "controller", "Test" },
+                    },
+                },
+                new ControllerActionDescriptor
+                {
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Index" },
+                        { "controller", "Home" },
+                    },
+                }
+            };
+
+            var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+            mockDescriptorProvider.Setup(m => m.ActionDescriptors).Returns(new ActionDescriptorCollection(actions, 0));
+
+            var dataSource = (ControllerActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
+            dataSource.AddRoute("1", "/1/{controller}/{action}/{id?}", null, null, null).Add(b => b.Metadata.Add("A"));
+            dataSource.AddRoute("2", "/2/{controller}/{action}/{id?}", null, null, null).Add(b => b.Metadata.Add("B"));
+
+            dataSource.DefaultBuilder.Add((b) =>
+            {
+                b.Metadata.Add("Hi there");
+            });
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            Assert.Collection(
+                endpoints.OfType<RouteEndpoint>().Where(e => !SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+                e =>
+                {
+                    Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal(new[] { "Hi there", "A" }, e.Metadata.GetOrderedMetadata<string>());
+                },
+                e =>
+                {
+                    Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal(new[] { "Hi there", "B" }, e.Metadata.GetOrderedMetadata<string>());
+                });
+
+            Assert.Collection(
+                endpoints.OfType<RouteEndpoint>().Where(e => SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+                e =>
+                {
+                    Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal(new[] { "Hi there", "A" }, e.Metadata.GetOrderedMetadata<string>());
+                },
+                e =>
+                {
+                    Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal(new[] { "Hi there", "B" }, e.Metadata.GetOrderedMetadata<string>());
                 },
                 e =>
                 {

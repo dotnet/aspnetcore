@@ -83,7 +83,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         route.DataTokens,
                         suppressLinkGeneration: true,
                         suppressPathMatching: false,
-                        conventions);
+                        conventions,
+                        route.Conventions);
                     endpoints.Add(builder);
                 }
             }
@@ -109,12 +110,17 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     dataTokens: null,
                     action.AttributeRouteInfo.SuppressLinkGeneration,
                     action.AttributeRouteInfo.SuppressPathMatching,
-                    conventions);
+                    conventions,
+                    perRouteConventions: Array.Empty<Action<EndpointBuilder>>());
                 endpoints.Add(endpoint);
             }
         }
 
-        public void AddConventionalLinkGenerationRoute(List<Endpoint> endpoints, HashSet<string> keys, ConventionalRouteEntry route, IReadOnlyList<Action<EndpointBuilder>> conventions)
+        public void AddConventionalLinkGenerationRoute(
+            List<Endpoint> endpoints,
+            HashSet<string> keys,
+            ConventionalRouteEntry route,
+            IReadOnlyList<Action<EndpointBuilder>> conventions)
         {
             if (endpoints == null)
             {
@@ -175,6 +181,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             for (var i = 0; i < conventions.Count; i++)
             {
                 conventions[i](builder);
+            }
+
+            for (var i = 0; i < route.Conventions.Count; i++)
+            {
+                route.Conventions[i](builder);
             }
 
             endpoints.Add((RouteEndpoint)builder.Build());
@@ -240,7 +251,8 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             RouteValueDictionary dataTokens,
             bool suppressLinkGeneration,
             bool suppressPathMatching,
-            IReadOnlyList<Action<EndpointBuilder>> conventions)
+            IReadOnlyList<Action<EndpointBuilder>> conventions,
+            IReadOnlyList<Action<EndpointBuilder>> perRouteConventions)
         {
 
             // We don't want to close over the retrieve the Invoker Factory in ActionEndpointFactory as
@@ -338,6 +350,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             for (var i = 0; i < conventions.Count; i++)
             {
                 conventions[i](builder);
+            }
+
+            for (var i = 0; i < perRouteConventions.Count; i++)
+            {
+                perRouteConventions[i](builder);
             }
 
             return (RouteEndpoint)builder.Build();

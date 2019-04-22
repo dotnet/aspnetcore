@@ -3,16 +3,21 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
+    public sealed partial class ControllerActionEndpointConventionBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder
+    {
+        internal ControllerActionEndpointConventionBuilder() { }
+        public void Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder> convention) { }
+    }
     public static partial class ControllerEndpointRouteBuilderExtensions
     {
-        public static void MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string areaName, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { }
-        public static void MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
-        public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string action, string controller, string area) { }
-        public static void MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string action, string controller, string area) { }
-        public static void MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string action, string controller) { }
-        public static void MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string action, string controller) { }
+        public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapAreaControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string areaName, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string name, string pattern, object defaults = null, object constraints = null, object dataTokens = null) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapControllers(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
+        public static Microsoft.AspNetCore.Builder.ControllerActionEndpointConventionBuilder MapDefaultControllerRoute(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string action, string controller, string area) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToAreaController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string action, string controller, string area) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string action, string controller) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallbackToController(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, string action, string controller) { throw null; }
     }
     public static partial class MvcApplicationBuilderExtensions
     {
