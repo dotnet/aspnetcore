@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             var rawUrlInBytes = GetRawUrlInBytes();
 
             // Pre Windows 10 RS2 applicationInitialization request might not have pRawUrl set, fallback to cocked url
-            if (rawUrlInBytes == null)
+            if (rawUrlInBytes.Length == 0)
             {
                 return GetCookedUrl().GetAbsPath();
             }
@@ -193,9 +193,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // check and skip it
             if (rawUrlInBytes.Length > 0 && rawUrlInBytes[rawUrlInBytes.Length - 1] == 0)
             {
-                var newRawUrlInBytes = new byte[rawUrlInBytes.Length - 1];
-                Array.Copy(rawUrlInBytes, newRawUrlInBytes, newRawUrlInBytes.Length);
-                rawUrlInBytes = newRawUrlInBytes;
+                rawUrlInBytes = rawUrlInBytes.Slice(0, rawUrlInBytes.Length - 1);
             }
 
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
