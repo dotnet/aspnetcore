@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Watcher.Internal
     {
         private readonly FileWatcher _fileWatcher;
         private readonly IFileSet _fileSet;
+        private readonly IReporter _reporter;
 
         public FileSetWatcher(IFileSet fileSet, IReporter reporter)
         {
@@ -20,6 +21,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             _fileSet = fileSet;
             _fileWatcher = new FileWatcher(reporter);
+            _reporter = reporter;
         }
 
         public async Task<string> GetChangedFileAsync(CancellationToken cancellationToken)
@@ -41,6 +43,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             };
 
             _fileWatcher.OnFileChange += callback;
+            _reporter.Warn("Waiting for a file to change before restarting dotnet...");
             var changedFile = await tcs.Task;
             _fileWatcher.OnFileChange -= callback;
 
