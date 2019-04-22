@@ -455,10 +455,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             finally
             {
-                // RemoveEventHandlerIdsAsync is designed to be fired-and-forgotten
-                // It will clone and persist any state it needs if it needs to run asynchronously
-                _ = RemoveEventHandlerIdsAsync(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
-
+                RemoveEventHandlerIds(_batchBuilder.DisposedEventHandlerIds.ToRange(), updateDisplayTask);
                 _batchBuilder.ClearStateForCurrentBatch();
                 _isBatchInProgress = false;
             }
@@ -602,7 +599,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
         }
 
-        private async Task RemoveEventHandlerIdsAsync(ArrayRange<int> eventHandlerIds, Task afterTaskIgnoreErrors)
+        private void RemoveEventHandlerIds(ArrayRange<int> eventHandlerIds, Task afterTaskIgnoreErrors)
         {
             if (eventHandlerIds.Count == 0)
             {
@@ -620,6 +617,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
             }
             else
             {
+                _ = ContinueAfterTask(eventHandlerIds, afterTaskIgnoreErrors);
+            }
+
+            // Factor out the async part into a separate local method purely so, in the
+            // synchronous case, there's no state machine or task construction
+            async Task ContinueAfterTask(ArrayRange<int> eventHandlerIds, Task afterTaskIgnoreErrors)
+            {
                 // We need to delay the actual removal (e.g., until we've confirmed the client
                 // has processed the batch and hence can be sure not to reuse the handler IDs
                 // any further). We must clone the data because the underlying RenderBatchBuilder
@@ -636,8 +640,8 @@ namespace Microsoft.AspNetCore.Components.Rendering
                     // That remains the caller's business.
                 }
 
-                // We know the next execution will complete synchronously, so nothing to await
-                _ = RemoveEventHandlerIdsAsync(eventHandlerIdsClone, Task.CompletedTask);
+                // We know the next execution will complete synchronously, so no infinite loop
+                RemoveEventHandlerIds(eventHandlerIdsClone, Task.CompletedTask);
             }
         }
 
