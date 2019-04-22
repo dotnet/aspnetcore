@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.SignalR.Internal
@@ -15,7 +16,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public void Configure(HubOptions<THub> options)
         {
-            options.SupportedProtocols = _hubOptions.SupportedProtocols;
+            options.SupportedProtocols = new List<string>(_hubOptions.SupportedProtocols.Count);
+            foreach (var protocol in _hubOptions.SupportedProtocols)
+            {
+                options.SupportedProtocols.Add(protocol);
+            }
             options.KeepAliveInterval = _hubOptions.KeepAliveInterval;
             options.HandshakeTimeout = _hubOptions.HandshakeTimeout;
         }
