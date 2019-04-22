@@ -350,7 +350,7 @@ namespace Test
             // Assert: Captured ChildContent frames are correct
             var childFrames = GetFrames((RenderFragment)frames[2].AttributeValue);
             Assert.Collection(
-                childFrames,
+                childFrames.AsEnumerable(),
                 frame => AssertFrame.Text(frame, "Some text", 3),
                 frame => AssertFrame.Element(frame, "some-child", 4, 4),
                 frame => AssertFrame.Attribute(frame, "a", "1", 5),
@@ -393,7 +393,7 @@ namespace Test
             // correct relative to each other (i.e., incrementing) within the nesting level.
             // As an implementation detail, it happens that they do follow on from the parent
             // level, but we could change that part of the implementation if we wanted.
-            var innerFrames = GetFrames((RenderFragment)frames[1].AttributeValue).ToArray();
+            var innerFrames = GetFrames((RenderFragment)frames[1].AttributeValue).AsEnumerable().ToArray();
             Assert.Collection(
                 innerFrames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 2, 2),
@@ -401,7 +401,7 @@ namespace Test
 
             // Assert: second level of ChildContent is correct
             Assert.Collection(
-                GetFrames((RenderFragment)innerFrames[1].AttributeValue),
+                GetFrames((RenderFragment)innerFrames[1].AttributeValue).AsEnumerable(),
                 frame => AssertFrame.Text(frame, "Some text", 4));
         }
 
@@ -547,7 +547,7 @@ namespace Test
             // Assert: Captured ChildContent frames are correct
             var childFrames = GetFrames((RenderFragment)frames[6].AttributeValue);
             Assert.Collection(
-                childFrames,
+                childFrames.AsEnumerable(),
                 frame => AssertFrame.MarkupWhitespace(frame, 7),
                 frame => AssertFrame.Markup(frame, "<div><span></span><span></span></div>\n      ", 8),
                 frame => AssertFrame.Element(frame, "div", 2, 9),

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Assert
             var frames = builder.GetFrames();
             Assert.NotNull(frames.Array);
-            Assert.Empty(frames);
+            Assert.Empty(frames.AsEnumerable());
         }
 
         [Fact]
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             var frames = builder.GetFrames();
-            Assert.Collection(frames,
+            Assert.Collection(frames.AsEnumerable(),
                 frame => AssertFrame.Text(frame, "First item"),
                 frame => AssertFrame.Text(frame, string.Empty),
                 frame => AssertFrame.Text(frame, "Second item"));
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             var frames = builder.GetFrames();
-            Assert.Collection(frames,
+            Assert.Collection(frames.AsEnumerable(),
                 frame => AssertFrame.Element(frame, "some elem", 3),
                 frame => AssertFrame.Markup(frame, "Blah"),
                 frame => AssertFrame.Markup(frame, string.Empty));
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             var frames = builder.GetFrames();
-            Assert.Collection(frames,
+            Assert.Collection(frames.AsEnumerable(),
                 frame => AssertFrame.Markup(frame, "Some markup"),
                 frame => AssertFrame.Markup(frame, string.Empty));
         }
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             var frames = builder.GetFrames();
-            Assert.Collection(frames,
+            Assert.Collection(frames.AsEnumerable(),
                 frame => AssertFrame.Markup(frame, string.Empty));
         }
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             var frames = builder.GetFrames();
-            Assert.Collection(frames,
+            Assert.Collection(frames.AsEnumerable(),
                 frame => AssertFrame.Text(frame, "1234"),
                 frame => AssertFrame.Text(frame, string.Empty));
         }
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.OpenElement(0, "my element");
 
             // Assert
-            var frame = builder.GetFrames().Single();
+            var frame = builder.GetFrames().AsEnumerable().Single();
             AssertFrame.Element(frame, "my element", 0);
         }
 
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.AddContent(0, "standalone text 2"); // 11:  standalone text 2
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Text(frame, "standalone text 1"),
                 frame => AssertFrame.Element(frame, "root", 10),
                 frame => AssertFrame.Text(frame, "root text 1"),
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseElement();                                 //     </myelement>
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "myelement", 6),
                 frame => AssertFrame.Attribute(frame, "attribute1", "value 1"),
                 frame => AssertFrame.Attribute(frame, "attribute2", "123"),
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseElement();                              //     </parent>
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "parent", 6),
                 frame => AssertFrame.Component<TestComponent>(frame),
                 frame => AssertFrame.Attribute(frame, "child1attribute1", "A"),
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseElement();                              //     </parent>
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "parent", 6),
                 frame => AssertFrame.Component<TestComponent>(frame),
                 frame => AssertFrame.Attribute(frame, "child1attribute1", "A"),
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseElement();                                 //     </parent>
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "parent", 6, 10),
                 frame => AssertFrame.Region(frame, 5, 11),
                 frame => AssertFrame.Text(frame, "Hello", 3),
@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseElement();
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "parent", 5, 10),
                 frame => AssertFrame.Region(frame, 4, 11),
                 frame => AssertFrame.Text(frame, "Hello from the fragment", 0),
@@ -470,7 +470,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseElement();                                 //     </myelement>
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "myelement", 4, 0),
                 frame => AssertFrame.Attribute(frame, "attribute2", "123", 1),
                 frame => AssertFrame.ElementReferenceCapture(frame, referenceCaptureAction, 2),
@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseElement();
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "myelement", 3),
                 frame => AssertFrame.ElementReferenceCapture(frame, referenceCaptureAction1),
                 frame => AssertFrame.ElementReferenceCapture(frame, referenceCaptureAction2));
@@ -559,7 +559,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseComponent();                               //     </TestComponent>
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 4, 0),
                 frame => AssertFrame.Attribute(frame, "attribute2", 123, 1),
                 frame => AssertFrame.ComponentReferenceCapture(frame, myAction, 2),
@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.CloseComponent();
 
             // Assert
-            Assert.Collection(builder.GetFrames(),
+            Assert.Collection(builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 3),
                 frame => AssertFrame.ComponentReferenceCapture(frame, referenceCaptureAction1),
                 frame => AssertFrame.ComponentReferenceCapture(frame, referenceCaptureAction2));
@@ -647,7 +647,7 @@ namespace Microsoft.AspNetCore.Components.Test
             builder.Clear();
 
             // Assert
-            Assert.Empty(builder.GetFrames());
+            Assert.Empty(builder.GetFrames().AsEnumerable());
         }
 
         [Fact]
@@ -663,7 +663,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", true, 1));
         }
@@ -681,7 +681,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
@@ -700,7 +700,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -718,7 +718,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", "hi", 1));
         }
@@ -736,7 +736,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
@@ -755,7 +755,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -775,7 +775,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -793,7 +793,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
@@ -812,7 +812,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -830,7 +830,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
@@ -854,7 +854,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -872,7 +872,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", true, 1));
         }
@@ -890,7 +890,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
@@ -909,7 +909,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -927,7 +927,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", "hi", 1));
         }
@@ -945,7 +945,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", "hi", 1));
         }
@@ -965,7 +965,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -985,7 +985,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -1005,7 +1005,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -1025,7 +1025,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
@@ -1043,7 +1043,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(
-                builder.GetFrames(),
+                builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
