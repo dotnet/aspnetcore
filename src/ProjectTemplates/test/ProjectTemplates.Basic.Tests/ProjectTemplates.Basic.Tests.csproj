@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
+    <TestGroupName>ProjectTemplates.Basic.Tests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
     <RunTemplateTests>true</RunTemplateTests>
@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepositoryRoot)src/Hosting/Server.IntegrationTesting/src/Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="../../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../../testassets/ProjectTemplates.Tests.Common/ProjectTemplates.Tests.Common.csproj" />
   </ItemGroup>
