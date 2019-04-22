@@ -15,7 +15,15 @@ namespace Test
         {
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment<System.String>)((context) => (builder2) => {
-                builder2.AddContent(2, context);
+                builder2.AddContent(2, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                            context
+
+#line default
+#line hidden
+#nullable disable
+                );
             }
             ));
             builder.CloseComponent();

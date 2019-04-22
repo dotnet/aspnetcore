@@ -23,7 +23,15 @@ namespace Test
 #nullable disable
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "data-abc", "Literal value");
-            builder.AddAttribute(2, "data-def", myValue);
+            builder.AddAttribute(2, "data-def", 
+#nullable restore
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                          myValue
+
+#line default
+#line hidden
+#nullable disable
+            );
             builder.CloseElement();
         }
         #pragma warning restore 1998

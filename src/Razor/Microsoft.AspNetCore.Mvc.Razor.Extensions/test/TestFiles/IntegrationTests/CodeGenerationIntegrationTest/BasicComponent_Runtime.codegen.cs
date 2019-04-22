@@ -15,9 +15,25 @@ namespace __GeneratedComponent
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "class", this.ToString());
+            builder.AddAttribute(1, "class", 
+#nullable restore
+#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
+             this.ToString()
+
+#line default
+#line hidden
+#nullable disable
+            );
             builder.AddMarkupContent(2, "\r\n    Hello world\r\n    ");
-            builder.AddContent(3, string.Format("{0}", "Hello"));
+            builder.AddContent(3, 
+#nullable restore
+#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
+     string.Format("{0}", "Hello")
+
+#line default
+#line hidden
+#nullable disable
+            );
             builder.AddMarkupContent(4, "\r\n");
             builder.CloseElement();
         }

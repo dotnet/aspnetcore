@@ -14,7 +14,15 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "attr", Foo);
+            builder.AddAttribute(1, "attr", 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+            Foo
+
+#line default
+#line hidden
+#nullable disable
+            );
             builder.CloseElement();
         }
         #pragma warning restore 1998

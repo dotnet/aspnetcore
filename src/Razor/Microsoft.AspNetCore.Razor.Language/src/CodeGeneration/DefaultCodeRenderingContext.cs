@@ -1,5 +1,4 @@
-﻿
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -56,6 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             Diagnostics = new RazorDiagnosticCollection();
             Items = new ItemCollection();
             SourceMappings = new List<SourceMapping>();
+            LinePragmas = new List<LinePragma>();
 
             var diagnostics = _documentNode.GetAllDiagnostics();
             for (var i = 0; i < diagnostics.Count; i++)
@@ -93,6 +93,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public override ItemCollection Items { get; }
 
         public List<SourceMapping> SourceMappings { get; }
+
+        internal List<LinePragma> LinePragmas { get; }
 
         public override IntermediateNodeWriter NodeWriter => Current.Writer;
 
@@ -198,6 +200,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             Visitor.Visit(node);
 
             _scopes.RemoveAt(_scopes.Count - 1);
+        }
+
+        public override void AddLinePragma(LinePragma linePragma)
+        {
+            LinePragmas.Add(linePragma);
         }
 
         private struct ScopeInternal

@@ -20,7 +20,15 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(Enabled);
+            __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                              Enabled
+
+#line default
+#line hidden
+#nullable disable
+            );
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Enabled = __value, Enabled);
         }
         #pragma warning restore 1998

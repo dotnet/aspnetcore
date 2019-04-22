@@ -26,7 +26,15 @@ using System.Threading.Tasks;
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, async (e) => await Task.Delay(10));
+            __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                  async (e) => await Task.Delay(10)
+
+#line default
+#line hidden
+#nullable disable
+            );
         }
         #pragma warning restore 1998
     }

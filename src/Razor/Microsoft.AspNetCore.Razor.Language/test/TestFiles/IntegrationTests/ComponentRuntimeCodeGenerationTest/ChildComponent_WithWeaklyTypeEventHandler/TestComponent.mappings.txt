@@ -2,7 +2,7 @@ Source Location: (53:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |
-Generated Location: (911:22,12 [62] )
+Generated Location: (1073:30,12 [62] )
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |

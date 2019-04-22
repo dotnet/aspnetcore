@@ -9,6 +9,6 @@ Generated Location: (845:24,2 [40] )
 
 Source Location: (87:3,42 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |myValue|
-Generated Location: (1047:32,42 [7] )
+Generated Location: (1067:33,42 [7] )
 |myValue|
 

@@ -2,7 +2,7 @@ Source Location: (73:3,12 [38] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     MyClass Hello = new MyClass();
 |
-Generated Location: (764:21,12 [38] )
+Generated Location: (1199:43,12 [38] )
 |
     MyClass Hello = new MyClass();
 |

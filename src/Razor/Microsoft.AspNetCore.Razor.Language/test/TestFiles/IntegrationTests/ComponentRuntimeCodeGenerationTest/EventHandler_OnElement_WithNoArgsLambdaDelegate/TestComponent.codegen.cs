@@ -14,7 +14,15 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, () => { }));
+            builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                  () => { }
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.CloseElement();
         }
         #pragma warning restore 1998

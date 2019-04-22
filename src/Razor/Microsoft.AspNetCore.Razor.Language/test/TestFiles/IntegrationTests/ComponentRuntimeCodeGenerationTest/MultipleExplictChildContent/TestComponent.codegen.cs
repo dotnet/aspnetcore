@@ -19,7 +19,15 @@ namespace Test
             }
             ));
             builder.AddAttribute(3, "Footer", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
-                builder2.AddContent(4, "bye!");
+                builder2.AddContent(4, 
+#nullable restore
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+              "bye!"
+
+#line default
+#line hidden
+#nullable disable
+                );
             }
             ));
             builder.CloseComponent();

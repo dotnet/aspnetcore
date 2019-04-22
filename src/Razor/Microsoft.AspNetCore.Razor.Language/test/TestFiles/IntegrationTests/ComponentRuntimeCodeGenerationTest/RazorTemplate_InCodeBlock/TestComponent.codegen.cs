@@ -23,7 +23,15 @@ namespace Test
 #nullable disable
             (builder2) => {
                 builder2.OpenElement(0, "div");
-                builder2.AddContent(1, person.Name);
+                builder2.AddContent(1, 
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                  person.Name
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.CloseElement();
             }
 #nullable restore

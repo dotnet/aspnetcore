@@ -14,7 +14,15 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenComponent<Test.MyComponent<string>>(0);
-            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<string>("hi"));
+            builder.AddAttribute(1, "Item", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<string>(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                  "hi"
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Assert
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
+            AssertLinePragmas(codeDocument, designTime: true);
             AssertSourceMappingsMatchBaseline(codeDocument);
         }
     }

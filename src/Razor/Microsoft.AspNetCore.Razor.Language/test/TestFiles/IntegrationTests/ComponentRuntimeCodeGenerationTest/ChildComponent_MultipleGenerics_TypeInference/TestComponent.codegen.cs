@@ -13,14 +13,46 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, "hi", 2, new List<long>(), 3, (context) => (builder2) => {
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                     "hi"
+
+#line default
+#line hidden
+#nullable disable
+            , 2, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                    new List<long>()
+
+#line default
+#line hidden
+#nullable disable
+            , 3, (context) => (builder2) => {
                 builder2.OpenElement(4, "div");
-                builder2.AddContent(5, context.ToLower());
+                builder2.AddContent(5, 
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                      context.ToLower()
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.CloseElement();
             }
             , 6, (item) => (builder2) => {
                 builder2.AddMarkupContent(7, "\r\n  ");
-                builder2.AddContent(8, System.Math.Max(0, item.Item));
+                builder2.AddContent(8, 
+#nullable restore
+#line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
+   System.Math.Max(0, item.Item)
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.AddMarkupContent(9, ";\r\n");
             }
             );

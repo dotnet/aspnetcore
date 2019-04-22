@@ -22,7 +22,15 @@ namespace Test
 #nullable disable
             (builder2) => {
                 builder2.OpenElement(0, "div");
-                builder2.AddContent(1, context.ToLowerInvariant());
+                builder2.AddContent(1, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                       context.ToLowerInvariant()
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.CloseElement();
             }
 #nullable restore
@@ -33,7 +41,15 @@ namespace Test
 #line hidden
 #nullable disable
             builder.OpenComponent<Test.MyComponent>(2);
-            builder.AddAttribute(3, "Header", new Microsoft.AspNetCore.Components.RenderFragment<System.String>(header));
+            builder.AddAttribute(3, "Header", new Microsoft.AspNetCore.Components.RenderFragment<System.String>(
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                     header
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.AddAttribute(4, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
                 builder2.AddContent(5, "Some Content");
             }

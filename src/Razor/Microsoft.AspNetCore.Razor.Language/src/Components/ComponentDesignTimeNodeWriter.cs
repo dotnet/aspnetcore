@@ -244,54 +244,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            var firstChild = node.Children[0];
-            if (firstChild.Source != null)
+            context.CodeWriter.WriteStartAssignment(DesignTimeVariable);
+            for (var i = 0; i < node.Children.Count; i++)
             {
-                using (context.CodeWriter.BuildLinePragma(firstChild.Source.Value, context))
+                if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
-                    var offset = DesignTimeVariable.Length + " = ".Length;
-                    context.CodeWriter.WritePadding(offset, firstChild.Source, context);
-                    context.CodeWriter.WriteStartAssignment(DesignTimeVariable);
-
-                    for (var i = 0; i < node.Children.Count; i++)
-                    {
-                        if (node.Children[i] is IntermediateToken token && token.IsCSharp)
-                        {
-                            context.AddSourceMappingFor(token);
-                            context.CodeWriter.Write(token.Content);
-                        }
-                        else
-                        {
-                            // There may be something else inside the expression like a Template or another extension node.
-                            context.RenderNode(node.Children[i]);
-                        }
-                    }
-
-                    context.CodeWriter.WriteLine(";");
+                    WriteCSharpToken(context, token);
+                }
+                else
+                {
+                    // There may be something else inside the expression like a Template or another extension node.
+                    context.RenderNode(node.Children[i]);
                 }
             }
-            else
-            {
-                context.CodeWriter.WriteStartAssignment(DesignTimeVariable);
-                for (var i = 0; i < node.Children.Count; i++)
-                {
-                    if (node.Children[i] is IntermediateToken token && token.IsCSharp)
-                    {
-                        if (token.Source != null)
-                        {
-                            context.AddSourceMappingFor(token);
-                        }
-
-                        context.CodeWriter.Write(token.Content);
-                    }
-                    else
-                    {
-                        // There may be something else inside the expression like a Template or another extension node.
-                        context.RenderNode(node.Children[i]);
-                    }
-                }
-                context.CodeWriter.WriteLine(";");
-            }
+            context.CodeWriter.WriteLine(";");
         }
 
         public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)

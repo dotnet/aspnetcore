@@ -23,9 +23,25 @@ namespace Test
             (builder2) => {
                 builder2.OpenElement(0, "li");
                 builder2.AddContent(1, "#");
-                builder2.AddContent(2, context.Index);
+                builder2.AddContent(2, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                               context.Index
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.AddContent(3, " - ");
-                builder2.AddContent(4, context.Item.ToLower());
+                builder2.AddContent(4, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                                                context.Item.ToLower()
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.CloseElement();
             }
 #nullable restore
@@ -36,7 +52,15 @@ namespace Test
 #line hidden
 #nullable disable
             builder.OpenComponent<Test.MyComponent>(5);
-            builder.AddAttribute(6, "Template", new Microsoft.AspNetCore.Components.RenderFragment<Test.Context>(template));
+            builder.AddAttribute(6, "Template", new Microsoft.AspNetCore.Components.RenderFragment<Test.Context>(
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                        template
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.CloseComponent();
         }
         #pragma warning restore 1998

@@ -24,7 +24,15 @@ namespace Test
             (builder2) => {
                 builder2.OpenElement(0, "div");
                 builder2.OpenComponent<Test.MyComponent>(1);
-                builder2.AddAttribute(2, "Name", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(person.Name));
+                builder2.AddAttribute(2, "Name", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                                     person.Name
+
+#line default
+#line hidden
+#nullable disable
+                ));
                 builder2.CloseComponent();
                 builder2.CloseElement();
             }
@@ -38,7 +46,15 @@ namespace Test
             builder.OpenComponent<Test.MyComponent>(3);
             builder.AddAttribute(4, "ChildContent", (Microsoft.AspNetCore.Components.RenderFragment)((builder2) => {
                 builder2.AddMarkupContent(5, "\r\n");
-                builder2.AddContent(6, "hello, world!");
+                builder2.AddContent(6, 
+#nullable restore
+#line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
+  "hello, world!"
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.AddMarkupContent(7, "\r\n");
             }
             ));

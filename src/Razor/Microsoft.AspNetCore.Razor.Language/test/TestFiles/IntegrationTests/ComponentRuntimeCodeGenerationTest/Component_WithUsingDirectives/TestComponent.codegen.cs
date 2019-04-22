@@ -8,7 +8,13 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
-    using Test2;
+#nullable restore
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+using Test2;
+
+#line default
+#line hidden
+#nullable disable
     [Microsoft.AspNetCore.Components.RouteAttribute("/MyPage")]
     [Microsoft.AspNetCore.Components.RouteAttribute("/AnotherRoute/{id}")]
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase

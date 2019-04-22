@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -16,6 +17,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract IReadOnlyList<RazorDiagnostic> Diagnostics { get; }
 
         public abstract RazorCodeGenerationOptions Options { get; }
+
+        internal virtual IReadOnlyList<LinePragma> LinePragmas { get; }
 
         public static RazorCSharpDocument Create(string generatedCode, RazorCodeGenerationOptions options, IEnumerable<RazorDiagnostic> diagnostics)
         {
@@ -34,14 +37,15 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(diagnostics));
             }
 
-            return new DefaultRazorCSharpDocument(generatedCode, options, diagnostics.ToArray(), sourceMappings: null);
+            return new DefaultRazorCSharpDocument(generatedCode, options, diagnostics.ToArray(), sourceMappings: null, linePragmas: null);
         }
 
         public static RazorCSharpDocument Create(
             string generatedCode,
             RazorCodeGenerationOptions options,
             IEnumerable<RazorDiagnostic> diagnostics,
-            IEnumerable<SourceMapping> sourceMappings)
+            IEnumerable<SourceMapping> sourceMappings,
+            IEnumerable<LinePragma> linePragmas)
         {
             if (generatedCode == null)
             {
@@ -63,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(sourceMappings));
             }
 
-            return new DefaultRazorCSharpDocument(generatedCode, options, diagnostics.ToArray(), sourceMappings.ToArray());
+            return new DefaultRazorCSharpDocument(generatedCode, options, diagnostics.ToArray(), sourceMappings.ToArray(), linePragmas.ToArray());
         }
     }
 }

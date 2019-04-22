@@ -14,8 +14,24 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "p");
-            builder.AddAttribute(1, "onmouseover", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, OnComponentHover));
-            builder.AddAttribute(2, "style", "background:" + " " + (ParentBgColor) + ";");
+            builder.AddAttribute(1, "onmouseover", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                 OnComponentHover
+
+#line default
+#line hidden
+#nullable disable
+            ));
+            builder.AddAttribute(2, "style", "background:" + " " + (
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                       ParentBgColor
+
+#line default
+#line hidden
+#nullable disable
+            ) + ";");
             builder.CloseElement();
         }
         #pragma warning restore 1998

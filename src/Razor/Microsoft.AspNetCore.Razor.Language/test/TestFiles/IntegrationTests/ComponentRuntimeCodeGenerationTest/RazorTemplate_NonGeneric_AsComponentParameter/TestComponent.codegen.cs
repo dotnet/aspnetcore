@@ -31,7 +31,15 @@ namespace Test
 #line hidden
 #nullable disable
             builder.OpenComponent<Test.MyComponent>(1);
-            builder.AddAttribute(2, "Person", template);
+            builder.AddAttribute(2, "Person", 
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                      template
+
+#line default
+#line hidden
+#nullable disable
+            );
             builder.CloseComponent();
         }
         #pragma warning restore 1998

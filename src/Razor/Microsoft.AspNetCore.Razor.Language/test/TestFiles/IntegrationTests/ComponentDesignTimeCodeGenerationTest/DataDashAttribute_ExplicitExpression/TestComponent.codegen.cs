@@ -28,13 +28,15 @@ namespace Test
 #line default
 #line hidden
 #nullable disable
+            __o = 
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                     __o = myValue;
+                                           myValue
 
 #line default
 #line hidden
 #nullable disable
+            ;
         }
         #pragma warning restore 1998
     }

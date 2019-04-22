@@ -15,7 +15,15 @@ namespace Test
         {
             builder.OpenElement(0, "input");
             builder.AddAttribute(1, "type", "text");
-            builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(CurrentDate, "MM/dd/yyyy"));
+            builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                          CurrentDate
+
+#line default
+#line hidden
+#nullable disable
+            , "MM/dd/yyyy"));
             builder.AddAttribute(3, "onchange", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, "MM/dd/yyyy"));
             builder.CloseElement();
         }

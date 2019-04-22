@@ -7,7 +7,13 @@ namespace Test
     using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
-    using Microsoft.AspNetCore.Components;
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+using Microsoft.AspNetCore.Components;
+
+#line default
+#line hidden
+#nullable disable
     public class TestComponent<TItem1, TItem2> : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
@@ -25,7 +31,15 @@ namespace Test
             builder.AddContent(1, "    ");
             builder.OpenElement(2, "p");
             builder.AddMarkupContent(3, "\r\n    ");
-            builder.AddContent(4, ChildContent(item2));
+            builder.AddContent(4, 
+#nullable restore
+#line 9 "x:\dir\subdir\Test\TestComponent.cshtml"
+     ChildContent(item2)
+
+#line default
+#line hidden
+#nullable disable
+            );
             builder.AddMarkupContent(5, ";\r\n    ");
             builder.CloseElement();
             builder.AddMarkupContent(6, "\r\n");

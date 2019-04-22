@@ -20,7 +20,15 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(CurrentDate, "MM/dd");
+            __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                         CurrentDate
+
+#line default
+#line hidden
+#nullable disable
+            , "MM/dd");
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, "MM/dd");
         }
         #pragma warning restore 1998

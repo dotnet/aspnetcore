@@ -19,7 +19,15 @@ namespace Test
                 builder2.AddMarkupContent(3, "\r\n    Some text");
                 builder2.OpenElement(4, "some-child");
                 builder2.AddAttribute(5, "a", "1");
-                builder2.AddContent(6, item.ToLowerInvariant());
+                builder2.AddContent(6, 
+#nullable restore
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                item.ToLowerInvariant()
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.CloseElement();
                 builder2.AddMarkupContent(7, "\r\n  ");
             }

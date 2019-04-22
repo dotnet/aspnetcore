@@ -19,7 +19,15 @@ namespace Test
                 builder2.AddContent(3, "Some text");
                 builder2.OpenElement(4, "some-child");
                 builder2.AddAttribute(5, "a", "1");
-                builder2.AddContent(6, context.ToLowerInvariant());
+                builder2.AddContent(6, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                      context.ToLowerInvariant()
+
+#line default
+#line hidden
+#nullable disable
+                );
                 builder2.CloseElement();
             }
             ));

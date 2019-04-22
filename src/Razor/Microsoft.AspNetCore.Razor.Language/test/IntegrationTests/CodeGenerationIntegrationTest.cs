@@ -979,6 +979,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
             AssertSourceMappingsMatchBaseline(codeDocument);
+            AssertLinePragmas(codeDocument, designTime: true);
         }
 
         private void RunTimeTest()
@@ -1002,6 +1003,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             // Assert
             AssertDocumentNodeMatchesBaseline(codeDocument.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(codeDocument.GetCSharpDocument());
+            AssertLinePragmas(codeDocument, designTime: false);
         }
 
         private void RunRuntimeTagHelpersTest(IEnumerable<TagHelperDescriptor> descriptors)

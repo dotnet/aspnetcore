@@ -14,7 +14,15 @@ namespace Test
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "myvalue", Microsoft.AspNetCore.Components.BindMethods.GetValue(ParentValue));
+            builder.AddAttribute(1, "myvalue", Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                  ParentValue
+
+#line default
+#line hidden
+#nullable disable
+            ));
             builder.AddAttribute(2, "myevent", Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue));
             builder.CloseElement();
         }

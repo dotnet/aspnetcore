@@ -15,7 +15,15 @@ namespace Test
         {
             builder.OpenComponent<Test.MyComponent>(0);
             builder.AddAttribute(1, "some-attribute", "foo");
-            builder.AddAttribute(2, "another-attribute", 43.ToString());
+            builder.AddAttribute(2, "another-attribute", 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                                       43.ToString()
+
+#line default
+#line hidden
+#nullable disable
+            );
             builder.CloseComponent();
         }
         #pragma warning restore 1998

@@ -8,7 +8,13 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
-    using AnotherTest;
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+using AnotherTest;
+
+#line default
+#line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
@@ -23,7 +29,15 @@ namespace Test
             builder.AddMarkupContent(3, "\r\n");
             builder.OpenComponent<AnotherTest.FooterComponent>(4);
             builder.AddAttribute(5, "Footer", (Microsoft.AspNetCore.Components.RenderFragment<System.DateTime>)((context) => (builder2) => {
-                builder2.AddContent(6, context);
+                builder2.AddContent(6, 
+#nullable restore
+#line 7 "x:\dir\subdir\Test\TestComponent.cshtml"
+             context
+
+#line default
+#line hidden
+#nullable disable
+                );
             }
             ));
             builder.CloseComponent();
@@ -37,7 +51,15 @@ namespace Test
             builder.AddMarkupContent(11, "\r\n");
             builder.OpenComponent<AnotherTest.FooterComponent>(12);
             builder.AddAttribute(13, "Footer", (Microsoft.AspNetCore.Components.RenderFragment<System.DateTime>)((context) => (builder2) => {
-                builder2.AddContent(14, context);
+                builder2.AddContent(14, 
+#nullable restore
+#line 13 "x:\dir\subdir\Test\TestComponent.cshtml"
+             context
+
+#line default
+#line hidden
+#nullable disable
+                );
             }
             ));
             builder.CloseComponent();

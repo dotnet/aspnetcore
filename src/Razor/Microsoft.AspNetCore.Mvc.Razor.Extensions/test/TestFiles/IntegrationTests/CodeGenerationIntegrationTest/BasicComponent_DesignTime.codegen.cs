@@ -30,13 +30,15 @@ IDisposable __typeHelper = default(IDisposable);
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
+            __o = 
 #nullable restore
 #line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
-       __o = this.ToString();
+             this.ToString()
 
 #line default
 #line hidden
 #nullable disable
+            ;
 #nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicComponent.cshtml"
 __o = string.Format("{0}", "Hello");

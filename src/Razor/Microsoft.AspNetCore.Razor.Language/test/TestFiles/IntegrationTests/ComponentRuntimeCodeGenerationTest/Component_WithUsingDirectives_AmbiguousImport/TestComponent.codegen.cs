@@ -8,8 +8,20 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
-    using Test2;
-    using Test3;
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+using Test2;
+
+#line default
+#line hidden
+#nullable disable
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+using Test3;
+
+#line default
+#line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998

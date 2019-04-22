@@ -1,13 +1,13 @@
 Source Location: (30:0,30 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |Enabled|
-Generated Location: (844:22,71 [7] )
+Generated Location: (946:25,30 [7] )
 |Enabled|
 
 Source Location: (55:1,12 [41] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public bool Enabled { get; set; }
 |
-Generated Location: (1118:28,12 [41] )
+Generated Location: (1284:36,12 [41] )
 |
     public bool Enabled { get; set; }
 |

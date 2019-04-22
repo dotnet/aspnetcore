@@ -13,7 +13,23 @@ namespace Test
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 18, 2, Microsoft.AspNetCore.Components.BindMethods.GetValue(Value), 3, Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value));
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                                     18
+
+#line default
+#line hidden
+#nullable disable
+            , 2, Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+                       Value
+
+#line default
+#line hidden
+#nullable disable
+            ), 3, Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value));
         }
         #pragma warning restore 1998
 #nullable restore

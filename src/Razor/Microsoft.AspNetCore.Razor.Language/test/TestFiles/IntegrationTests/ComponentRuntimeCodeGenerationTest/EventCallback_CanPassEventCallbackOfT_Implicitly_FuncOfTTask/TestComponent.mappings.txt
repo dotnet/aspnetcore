@@ -6,7 +6,7 @@ Source Location: (51:2,12 [141] x:\dir\subdir\Test\TestComponent.cshtml)
         return Task.CompletedTask;
     }
 |
-Generated Location: (1065:22,12 [141] )
+Generated Location: (1224:30,12 [141] )
 |
     private int counter;
     private Task Increment(UIMouseEventArgs e) {

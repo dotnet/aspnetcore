@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 return NullDisposable.Default;
             }
 
-            return new LinePragmaWriter(writer, span.Value, context.Options);
+            return new LinePragmaWriter(writer, span.Value, context);
         }
 
         private static void WriteVerbatimStringLiteral(CodeWriter writer, string literal)
@@ -596,13 +596,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private class LinePragmaWriter : IDisposable
         {
             private readonly CodeWriter _writer;
-            private readonly RazorCodeGenerationOptions _codeGenerationOptions;
+            private readonly CodeRenderingContext _context;
             private readonly int _startIndent;
+            private readonly int _sourceLineIndex;
+            private readonly int _startLineIndex;
+            private readonly string _sourceFilePath;
 
             public LinePragmaWriter(
                 CodeWriter writer, 
                 SourceSpan span,
-                RazorCodeGenerationOptions codeGenerationOptions)
+                CodeRenderingContext context)
             {
                 if (writer == null)
                 {
@@ -610,11 +613,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
 
                 _writer = writer;
-                _codeGenerationOptions = codeGenerationOptions;
+                _context = context;
                 _startIndent = _writer.CurrentIndent;
+                _sourceFilePath = span.FilePath;
+                _sourceLineIndex = span.LineIndex;
                 _writer.CurrentIndent = 0;
 
-                if (!_codeGenerationOptions.SuppressNullabilityEnforcement)
+                if (!_context.Options.SuppressNullabilityEnforcement)
                 {
                     var endsWithNewline = _writer.Length > 0 && _writer[_writer.Length - 1] == '\n';
                     if (!endsWithNewline)
@@ -625,6 +630,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
 
                 WriteLineNumberDirective(writer, span);
+
+                // Capture the line index after writing the #line directive.
+                _startLineIndex = writer.Location.LineIndex;
             }
 
             public void Dispose()
@@ -642,16 +650,21 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     _writer.WriteLine();
                 }
 
+                var lineCount = _writer.Location.LineIndex - _startLineIndex;
+                var linePragma = new LinePragma(_sourceLineIndex, lineCount, _sourceFilePath);
+                _context.AddLinePragma(linePragma);
+
                 _writer
                     .WriteLine("#line default")
                     .WriteLine("#line hidden");
 
-                if (!_codeGenerationOptions.SuppressNullabilityEnforcement)
+                if (!_context.Options.SuppressNullabilityEnforcement)
                 {
                     _writer.WriteLine("#nullable disable");
                 }
 
                 _writer.CurrentIndent = _startIndent;
+
             }
         }
 

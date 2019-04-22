@@ -8,13 +8,35 @@ namespace Test
     using System.Linq;
     using System.Threading.Tasks;
     using Microsoft.AspNetCore.Components;
-    using Test.Shared;
+#nullable restore
+#line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
+using Test.Shared;
+
+#line default
+#line hidden
+#nullable disable
     public class TestComponent : Microsoft.AspNetCore.Components.ComponentBase
     {
         #pragma warning disable 1998
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder)
         {
-            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 3, 2, Hello);
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, 
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                   3
+
+#line default
+#line hidden
+#nullable disable
+            , 2, 
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                            Hello
+
+#line default
+#line hidden
+#nullable disable
+            );
         }
         #pragma warning restore 1998
 #nullable restore
