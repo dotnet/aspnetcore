@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             : base(actions)
         {
             _endpointFactory = endpointFactory;
-            
+ 
             _routes = new List<ConventionalRouteEntry>();
 
             // In traditional conventional routing setup, the routes defined by a user have a order
@@ -38,13 +38,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
             _order = 1;
 
+            DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions);
+
             // IMPORTANT: this needs to be the last thing we do in the constructor. 
             // Change notifications can happen immediately!
             Subscribe();
         }
 
+        public ControllerActionEndpointConventionBuilder DefaultBuilder { get; }
 
-        public void AddRoute(
+        public ControllerActionEndpointConventionBuilder AddRoute(
             string routeName,
             string pattern,
             RouteValueDictionary defaults,
@@ -53,7 +56,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             lock (Lock)
             {
-                _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _order++));
+                var conventions = new List<Action<EndpointBuilder>>();
+                _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _order++, conventions));
+                return new ControllerActionEndpointConventionBuilder(Lock, conventions);
             }
         }
 

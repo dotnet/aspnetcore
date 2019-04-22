@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
         private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, string template)
         {
-            return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null, order: 0));
+            return CreateConventionalRoutedEndpoint(action, new ConventionalRouteEntry(routeName: null, template, null, null, null, order: 0, new List<Action<EndpointBuilder>>()));
         }
 
         private RouteEndpoint CreateConventionalRoutedEndpoint(ActionDescriptor action, ConventionalRouteEntry route)
@@ -341,9 +341,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             RouteValueDictionary defaults = null,
             IDictionary<string, object> constraints = null,
             RouteValueDictionary dataTokens = null,
-            int order = 0)
+            int order = 0,
+            List<Action<EndpointBuilder>> conventions = null)
         {
-            return new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, order);
+            conventions ??= new List<Action<EndpointBuilder>>();
+            return new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, order, conventions);
         }
 
         private ActionDescriptor CreateActionDescriptor(

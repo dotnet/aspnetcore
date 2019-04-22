@@ -20,10 +20,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             _endpointFactory = endpointFactory;
 
+            DefaultBuilder = new PageActionEndpointConventionBuilder(Lock, Conventions);
+
             // IMPORTANT: this needs to be the last thing we do in the constructor. 
             // Change notifications can happen immediately!
             Subscribe();
         }
+
+        public PageActionEndpointConventionBuilder DefaultBuilder { get; }
 
         protected override List<Endpoint> CreateEndpoints(IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
         {
