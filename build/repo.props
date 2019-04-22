@@ -167,8 +167,8 @@
                           $(RepositoryRoot)src\SignalR\**\*.csproj;
                           $(RepositoryRoot)src\Components\**\*.csproj;
                           $(RepositoryRoot)src\ProjectTemplates\src\*\*.csproj;
-                          $(RepositoryRoot)src\ProjectTemplates\test\*\*.csproj;
                           $(RepositoryRoot)src\ProjectTemplates\testassets\*\*.csproj;
+                          $(RepositoryRoot)src\ProjectTemplates\test\*\*.csproj;
                           "
                         Exclude="
                           @(ProjectToBuild);
