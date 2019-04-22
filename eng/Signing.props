@@ -98,6 +98,12 @@
     <FileSignInfo Include="@(_DotNetFilesToExclude->'%(FileName)%(Extension)'->Distinct())" CertificateName="None" />
 
     <!--
+      We include the Microsoft.Build.Locator.dll assembly in our global tool 'Microsoft.dotnet-openapi'.
+      It is already signed by that team, so we don't need to sign it.
+    -->
+    <FileSignInfo Include="Microsoft.Build.Locator.dll" CertificateName="None" />
+
+    <!--
       We include the Microsoft.Data.SqlClient.dll assembly in our global tool 'dotnet-sql-cache'.
       It is already signed by that team, so we don't need to sign it.
     -->

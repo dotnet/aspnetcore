@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Microsoft.DotNet.Watcher.Tools.Tests
+namespace Microsoft.Extensions.Tools.Internal
 {
     public class TemporaryDirectory : IDisposable
     {
@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
         public TemporaryDirectory()
         {
-            Root = Path.Combine(Path.GetTempPath(), "dotnet-watch-tests", Guid.NewGuid().ToString("N"));
+            Root = Path.Combine(Path.GetTempPath(), "dotnet-tool-tests", Guid.NewGuid().ToString("N"));
         }
 
         private TemporaryDirectory(string path, TemporaryDirectory parent)
@@ -34,22 +34,32 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
         public string Root { get; }
 
-        public TemporaryCSharpProject WithCSharpProject(string name)
+        public TemporaryCSharpProject WithCSharpProject(string name, string sdk = "Microsoft.NET.Sdk")
         {
-            var project = new TemporaryCSharpProject(name, this);
+            var project = new TemporaryCSharpProject(name, this, sdk);
             _projects.Add(project);
             return project;
         }
 
-        public TemporaryCSharpProject WithCSharpProject(string name, out TemporaryCSharpProject project)
+        public TemporaryCSharpProject WithCSharpProject(string name, out TemporaryCSharpProject project, string sdk = "Microsoft.NET.Sdk")
         {
-            project = WithCSharpProject(name);
+            project = WithCSharpProject(name, sdk);
             return project;
         }
 
         public TemporaryDirectory WithFile(string name, string contents = "")
         {
             _files[name] = contents;
+            return this;
+        }
+
+        public TemporaryDirectory WithContentFile(string name)
+        {
+            using (var stream = File.OpenRead(Path.Combine("TestContent", $"{name}.txt")))
+            using (var streamReader = new StreamReader(stream))
+            {
+                _files[name] = streamReader.ReadToEnd();
+            }
             return this;
         }
 

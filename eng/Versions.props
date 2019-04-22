@@ -196,7 +196,9 @@
     <!-- Partner teams -->
     <MicrosoftAzureKeyVaultPackageVersion>2.3.2</MicrosoftAzureKeyVaultPackageVersion>
     <MicrosoftAzureStorageBlobPackageVersion>10.0.1</MicrosoftAzureStorageBlobPackageVersion>
+    <MicrosoftBuildPackageVersion>15.8.166</MicrosoftBuildPackageVersion>
     <MicrosoftBuildFrameworkPackageVersion>15.8.166</MicrosoftBuildFrameworkPackageVersion>
+    <MicrosoftBuildLocatorPackageVersion>1.2.6</MicrosoftBuildLocatorPackageVersion>
     <MicrosoftBuildUtilitiesCorePackageVersion>15.8.166</MicrosoftBuildUtilitiesCorePackageVersion>
     <MicrosoftCodeAnalysisCommonPackageVersion>3.0.0</MicrosoftCodeAnalysisCommonPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>3.0.0</MicrosoftCodeAnalysisCSharpPackageVersion>
@@ -232,6 +234,7 @@
     <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
     <NewtonsoftJsonPackageVersion>12.0.1</NewtonsoftJsonPackageVersion>
+    <NSwagApiDescriptionClientPackageVersion>13.0.4</NSwagApiDescriptionClientPackageVersion>
     <SeleniumSupportPackageVersion>3.12.1</SeleniumSupportPackageVersion>
     <SeleniumWebDriverMicrosoftDriverPackageVersion>17.17134.0</SeleniumWebDriverMicrosoftDriverPackageVersion>
     <SeleniumWebDriverChromeDriverPackageVersion>2.43.0</SeleniumWebDriverChromeDriverPackageVersion>
