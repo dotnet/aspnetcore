@@ -4,6 +4,8 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Description>Common infra for project templates.</Description>
+    <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
+    <TestTemplateCreationFolder>TestTemplates</TestTemplateCreationFolder>
     <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
   </PropertyGroup>
 
