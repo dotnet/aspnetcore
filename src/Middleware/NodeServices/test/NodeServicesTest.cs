@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.NodeServices
         }
 
         private static string ModulePath(string testModuleName)
-            => $"../../../js/{testModuleName}";
+            => Environment.GetEnvironmentVariable("helix") ? $"../../../Exec/js/{testModuleName}" : $"../../../js/{testModuleName}" ;
 
         public void Dispose()
         {
