@@ -24,6 +24,14 @@
 <?define PlatformValue = "x86" ?>
 <?endif?>
 
+<?if $(var.Platform) = "x64" ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
+<?else ?>
+    <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
+    <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
+<?endif ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
     <Product Id="$(var.ProductCode)"
           Name="!(loc.AspNetCoreModuleProductNameV2)"
@@ -137,21 +145,12 @@
                    <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="Asp.Net Core Module">
                        <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
                            <Component Id="AspNetCoreModuleV2" Guid="3a692941-59be-43cf-98a8-6ed01b12a519" Win64="$(var.IsWin64)">
-                                <?if $(var.Platform) = "x64" ?>
-                                    <File Id="AspNetCoreModuleV2Dll"
-                                        Name="aspnetcorev2.dll"
-                                        Source="$(var.AspNetCoreV2.TargetPath)"
-                                        DiskId="1"
-                                        Vital="yes">
-                                    </File>
-                                <?else ?>
-                                    <File Id="AspNetCoreModuleV2Dll"
-                                        Name="aspnetcorev2.dll"
-                                        Source="$(var.AspNetCoreV2WoW64.TargetPath)"
-                                        DiskId="1"
-                                        Vital="yes">
-                                    </File>
-                                <?endif?>
+                                <File Id="AspNetCoreModuleV2Dll"
+                                    Name="aspnetcorev2.dll"
+                                    Source="$(var.AspNetCoreV2ProgramFilesTargetPath)"
+                                    DiskId="1"
+                                    Vital="yes">
+                                </File>
                                <RemoveFile Id="AspNetCoreModuleV2Dll_Remove" Name="aspnetcorev2.dll" On="install" />
                                <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
                                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll]"/>
@@ -160,21 +159,12 @@
                            </Component>
                            <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)" >
                                <Component Id="AspNetCoreModuleHandler" Guid="4b62060a-deb8-4de3-9557-9c0be21dc844" Win64="$(var.IsWin64)">
-                                    <?if $(var.Platform) = "x64" ?>
-                                        <File Id="AspNetCoreModuleHandlerDll"
-                                            Name="aspnetcorev2_outofprocess.dll"
-                                            Source="$(var.AspNetCoreV2Handler.TargetPath)"
-                                            DiskId="1"
-                                            Vital="yes">
-                                        </File>
-                                    <?else ?>
-                                        <File Id="AspNetCoreModuleHandlerDll"
-                                            Name="aspnetcorev2_outofprocess.dll"
-                                            Source="$(var.AspNetCoreV2HandlerWoW64.TargetPath)"
-                                            DiskId="1"
-                                            Vital="yes">
-                                        </File>
-                                    <?endif?>
+                                    <File Id="AspNetCoreModuleHandlerDll"
+                                        Name="aspnetcorev2_outofprocess.dll"
+                                        Source="$(var.AspNetCoreV2HandlerProgramFilesTargetPath)"
+                                        DiskId="1"
+                                        Vital="yes">
+                                    </File>
                                </Component>
                            </Directory>
                        </Directory>
