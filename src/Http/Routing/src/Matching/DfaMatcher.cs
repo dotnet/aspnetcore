@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private readonly EndpointSelector _selector;
         private readonly DfaState[] _states;
         private readonly int _maxSegmentCount;
+        private readonly bool _isDefaultEndpointSelector;
 
         public DfaMatcher(ILogger<DfaMatcher> logger, EndpointSelector selector, DfaState[] states, int maxSegmentCount)
         {
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _selector = selector;
             _states = states;
             _maxSegmentCount = maxSegmentCount;
+            _isDefaultEndpointSelector = selector is DefaultEndpointSelector;
         }
 
         public sealed override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
@@ -53,7 +55,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // FindCandidateSet will process the DFA and return a candidate set. This does
             // some preliminary matching of the URL (mostly the literal segments).
             var (candidates, policies) = FindCandidateSet(httpContext, path, segments);
-            if (candidates.Length == 0)
+            var candidateCount = candidates.Length;
+            if (candidateCount == 0)
             {
                 if (log)
                 {
@@ -66,6 +69,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
             if (log)
             {
                 Logger.CandidatesFound(_logger, path, candidates);
+            }
+
+            var policyCount = policies.Length;
+
+            // This is a fast path for single candidate, 0 policies and default selector
+            if (candidateCount == 1 && policyCount == 0 && _isDefaultEndpointSelector)
+            {
+                ref var candidate = ref candidates[0];
+
+                // Just strict path matching
+                if (candidate.Flags == Candidate.CandidateFlags.None)
+                {
+                    context.Endpoint = candidate.Endpoint;
+
+                    // We're done
+                    return Task.CompletedTask;
+                }
             }
 
             // At this point we have a candidate set, defined as a list of endpoints in
@@ -83,7 +103,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // `candidateSet` is the mutable state that we pass to the EndpointSelector.
             var candidateSet = new CandidateSet(candidates);
 
-            for (var i = 0; i < candidates.Length; i++)
+            for (var i = 0; i < candidateCount; i++)
             {
                 // PERF: using ref here to avoid copying around big structs.
                 //
@@ -165,7 +185,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            if (policies.Length == 0)
+            if (policyCount == 0)
             {
                 // Perf: avoid a state machine if there are no polices
                 return _selector.SelectAsync(httpContext, context, candidateSet);
