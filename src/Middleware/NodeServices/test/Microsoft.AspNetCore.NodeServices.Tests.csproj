@@ -10,6 +10,8 @@
     <Reference Include="Microsoft.AspNetCore.NodeServices" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <HelixContent Include="js\*.*" LinkBase="js" />   
   </ItemGroup>
 
+   
 </Project>
