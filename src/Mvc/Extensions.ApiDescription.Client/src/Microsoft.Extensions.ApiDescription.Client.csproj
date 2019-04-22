@@ -27,15 +27,9 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.Build.Utilities.Core" />
-    <Reference Include="System.Net.Http" Condition="'$(TargetFramework)' == 'net461'" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec">
-    <MSBuild Projects="../../dotnet-getdocument/src/dotnet-getdocument.csproj"
-        BuildInParallel="$(BuildInParallel)"
-        RemoveProperties="RuntimeIdentifier;TargetFrameworks;TargetFramework"
-        Targets="Publish" />
-
     <PropertyGroup>
       <NuspecProperties>
         id=$(PackageId);

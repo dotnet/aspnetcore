@@ -118,11 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DuplicateFileOutputPaths" xml:space="preserve">
-    <value>Multiple items have OutputPath='{0}'. All ServiceFileReference and ServiceProjectReference items must have unique OutputPath metadata.</value>
-    <comment>ServiceProjectReference items become ServiceFileReference items and all ServiceFileReference items must have unique OutputPath metadata.</comment>
-  </data>
-  <data name="DuplicateProjectDocumentPaths" xml:space="preserve">
-    <value>Mutliple ServiceProjectReference items have DocumentPath='{0}'. ServiceProjectReference items must have unique DocumentPath metadata.</value>
+    <value>Multiple items have OutputPath='{0}'. All OpenApiReference items must have unique OutputPath metadata.</value>
   </data>
   <data name="InvalidEmptyMetadataValue" xml:space="preserve">
     <value>Invalid {0} metadata value for {1} item '{2}'. {0} metadata must not be set to the empty string.</value>

@@ -11,7 +11,7 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
             = new ResourceManager("Microsoft.Extensions.ApiDescription.Tasks.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// Multiple items have OutputPath='{0}'. All ServiceFileReference and ServiceProjectReference items must have unique OutputPath metadata.
+        /// Multiple items have OutputPath='{0}'. All OpenApiReference items must have unique OutputPath metadata.
         /// </summary>
         internal static string DuplicateFileOutputPaths
         {
@@ -19,24 +19,10 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
         }
 
         /// <summary>
-        /// Multiple items have OutputPath='{0}'. All ServiceFileReference and ServiceProjectReference items must have unique OutputPath metadata.
+        /// Multiple items have OutputPath='{0}'. All OpenApiReference items must have unique OutputPath metadata.
         /// </summary>
         internal static string FormatDuplicateFileOutputPaths(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("DuplicateFileOutputPaths"), p0);
-
-        /// <summary>
-        /// Mutliple ServiceProjectReference items have DocumentPath='{0}'. ServiceProjectReference items must have unique DocumentPath metadata.
-        /// </summary>
-        internal static string DuplicateProjectDocumentPaths
-        {
-            get => GetString("DuplicateProjectDocumentPaths");
-        }
-
-        /// <summary>
-        /// Mutliple ServiceProjectReference items have DocumentPath='{0}'. ServiceProjectReference items must have unique DocumentPath metadata.
-        /// </summary>
-        internal static string FormatDuplicateProjectDocumentPaths(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("DuplicateProjectDocumentPaths"), p0);
 
         /// <summary>
         /// Invalid {0} metadata value for {1} item '{2}'. {0} metadata must not be set to the empty string.
