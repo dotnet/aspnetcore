@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Text.Json;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
@@ -46,19 +45,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                         break;
 
                     case JsonValueType.String:
-                        var stringValue = item.Value.GetString();
-                        // BsonTempDataSerializer will parse certain types of string values. We'll attempt to imitiate it.
-                        if (DateTime.TryParseExact(stringValue, "r", CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var dateTime))
-                        {
-                            deserializedValue = dateTime;
-                        }
-                        else if (Guid.TryParseExact(stringValue, "B", out var guid))
+                        if (item.Value.TryGetGuid(out var guid))
                         {
                             deserializedValue = guid;
                         }
+                        else if (item.Value.TryGetDateTime(out var dateTime))
+                        {
+                            deserializedValue = dateTime;
+                        }
                         else
                         {
-                            deserializedValue = stringValue;
+                            deserializedValue = item.Value.GetString();
                         }
                         break;
 
@@ -123,11 +120,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
                             break;
 
                         case DateTime dateTime:
-                            writer.WriteString(key, dateTime.ToString("r", CultureInfo.InvariantCulture));
+                            writer.WriteString(key, dateTime);
                             break;
 
                         case Guid guid:
-                            writer.WriteString(key, guid.ToString("B", CultureInfo.InvariantCulture));
+                            writer.WriteString(key, guid);
                             break;
                     }
                 }
