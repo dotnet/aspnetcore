@@ -37,10 +37,7 @@
   -->
   <ItemDefinitionGroup>
     <!-- OpenApiProjectReference items may also include OpenApiReference metadata. -->
-    <OpenApiProjectReference>
-      <!-- The original identity. Saved when creating OpenApiReference items. -->
-      <SourceProject>%(Identity)</SourceProject>
-    </OpenApiProjectReference>
+    <OpenApiProjectReference />
 
     <OpenApiReference>
       <!-- Name of the class to generate. Defaults to match filename in %(OutputPath). -->

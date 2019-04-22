@@ -21,38 +21,35 @@
       Do not change %(ReferenceOutputAssembly) if project contains duplicate @(ProjectReference) and
       @(OpenApiProjectReference) items.
     -->
-    <ProjectReference Include="@(OpenApiProjectReference)" Exclude="@(ProjectReference)" ReferenceOutputAssembly="false" />
-    <ProjectReference Update="@(OpenApiProjectReference)" OpenApiReference="true" />
+    <ProjectReference Include="@(OpenApiProjectReference)" Exclude="@(ProjectReference)">
+      <NoWarn>NU1702</NoWarn>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Update="@(OpenApiProjectReference)">
+      <OpenApiReference>true</OpenApiReference>
+    </ProjectReference>
   </ItemGroup>
 
   <Target Name="_CreateOpenApiReferenceItemsForOpenApiProjectReferences"
       AfterTargets="ResolveProjectReferences"
-      Condition="'%(ProjectReferenceWithConfiguration.OpenApiReference)' == 'true' AND '$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'"
-      Inputs="%(ProjectReferenceWithConfiguration.Identity)"
-      Outputs="&lt;not-a-file !&gt;">
-    <PropertyGroup>
-      <_Identity>%(ProjectReferenceWithConfiguration.Identity)</_Identity>
-      <_Temporary />
-    </PropertyGroup>
+      Condition="'$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true'">
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
 
-    <MSBuild Target="OpenApiGetDocuments"
-        Project="$(_Identity)"
+    <MSBuild Targets="OpenApiGetDocuments"
+        Projects="@(ProjectReferenceWithConfiguration)"
+        Condition="'%(ProjectReferenceWithConfiguration.OpenApiReference)' == 'true'"
         Properties="%(ProjectReferenceWithConfiguration.SetConfiguration); %(ProjectReferenceWithConfiguration.SetPlatform); %(ProjectReferenceWithConfiguration.SetTargetFramework)"
         RebaseOutputs="true"
         RemoveProperties="%(ProjectReferenceWithConfiguration.GlobalPropertiesToRemove);TargetFrameworks;RuntimeIdentifier">
-      <Output TaskParameter="TargetOutputs" PropertyName="_Temporary" />
+      <Output TaskParameter="TargetOutputs" ItemName="_Temporary" />
     </MSBuild>
 
     <ItemGroup>
-      <OpenApiProjectReference Update="$(_Identity)">
-        <Documents>$(_Temporary)</Documents>
-      </OpenApiProjectReference>
-      <OpenApiReference Include="@(OpenApiProjectReference -> '%(Documents)')" Condition="'%(Identity)' == '$(_Identity)'" />
+      <OpenApiReference Include="@(_Temporary)" Exclude="@(OpenApiReference)" RemoveMetadata="FullConfiguration" />
+      <_Temporary Remove="@(_Temporary)" />
     </ItemGroup>
-    <PropertyGroup>
-      <_Identity />
-      <_Temporary />
-    </PropertyGroup>
   </Target>
 
   <!-- OpenApiReference support. -->
@@ -84,8 +81,10 @@
 
   <Target Name="_InnerGenerateOpenApiReferenceCode" DependsOnTargets="_GetCurrentOpenApiReference;$(GeneratorTarget)" />
 
-  <Target Name="_GenerateOpenApiReferenceCode" Inputs="@(OpenApiReference)" Outputs="%(OutputPath)"
-      Condition="$(OpenApiGenerateAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true') OR !Exists('%(OutputPath)')">
+  <Target Name="_GenerateOpenApiReferenceCode"
+      Condition="$(OpenApiGenerateAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true')"
+      Inputs="@(OpenApiReference)"
+      Outputs="%(OutputPath)">
     <MSBuild BuildInParallel="$(BuildInParallel)"
         Projects="$(MSBuildProjectFullPath)"
         Properties="GeneratorTargetPath=%(OpenApiReference.OutputPath);GeneratorTarget=Generate%(CodeGenerator);GeneratorMetadata=%(SerializedMetadata)"
@@ -105,27 +104,26 @@
           Condition="Exists('%(OpenApiReference.OutputPath)') AND ! $([System.IO.File]::Exists('%(OpenApiReference.OutputPath)'))" />
 
       <!-- If OutputPath is a file, add it directly to relevant items. -->
-      <TypeScriptCompile Remove="@(_Files)" Condition="'%(_Files.OutputPathExtension)' == '.ts'" />
-      <TypeScriptCompile Include="@(_Files)" Condition="'%(_Files.OutputPathExtension)' == '.ts'">
+      <TypeScriptCompile Include="@(_Files)"
+          Exclude="@(TypeScriptCompile)"
+          Condition="'%(_Files.OutputPathExtension)' == '.ts' OR '%(_Files.OutputPathExtension)' == '.tsx'">
         <SourceDocument>%(_Files.FullPath)</SourceDocument>
       </TypeScriptCompile>
 
-      <Compile Remove="@(_Files)"
-          Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.OutputPathExtension)' == '$(DefaultLanguageSourceExtension)'" />
       <Compile Include="@(_Files)"
+          Exclude="@(Compile)"
           Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.OutputPathExtension)' == '$(DefaultLanguageSourceExtension)'">
         <SourceDocument>%(OpenApiReference.FullPath)</SourceDocument>
       </Compile>
 
       <!-- Otherwise, add all descendant files with the expected extension. -->
-      <TypeScriptCompile Remove="@(_Directories -> '%(Identity)/**/*.ts')" />
-      <TypeScriptCompile Include="@(_Directories -> '%(Identity)/**/*.ts')">
+      <TypeScriptCompile Include="@(_Directories -> '%(Identity)/**/*.ts;%(Identity)/**/*.tsx')"
+          Exclude="@(TypeScriptCompile)">
         <SourceDocument>%(_Directories.FullPath)</SourceDocument>
       </TypeScriptCompile>
 
-      <Compile Remove="@(_Directories -> '%(Identity)/**/*.$(DefaultLanguageSourceExtension)')"
-          Condition="'$(DefaultLanguageSourceExtension)' != '.ts'" />
       <Compile Include="@(_Directories -> '%(Identity)/**/*.$(DefaultLanguageSourceExtension)')"
+          Exclude="@(Compile)"
           Condition="'$(DefaultLanguageSourceExtension)' != '.ts'">
         <SourceDocument>%(_Directories.FullPath)</SourceDocument>
       </Compile>

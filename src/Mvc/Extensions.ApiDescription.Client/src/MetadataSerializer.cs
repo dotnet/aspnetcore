@@ -115,7 +115,6 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
         {
             if (string.IsNullOrEmpty(value))
             {
-                builder.Append(value);
                 return;
             }
 
