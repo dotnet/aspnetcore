@@ -7,11 +7,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-watch", "dotnet-watc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-watch.Tests", "dotnet-watch\test\dotnet-watch.Tests.csproj", "{63F7E822-D1E2-4C41-8ABF-60B9E3A9C54C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-dev-certs", "dotnet-dev-certs\src\dotnet-dev-certs.csproj", "{0D6D5693-7E0C-4FE8-B4AA-21207B2650AA}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E01EE27B-6CF9-4707-9849-5BA2ABA825F2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DeveloperCertificates.XPlat", "FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj", "{7BBDBDA2-299F-4C36-8338-23C525901DE0}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{2C485EAF-E4DE-4D14-8AE1-330641E17D44}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests", "FirstRunCertGenerator\test\Microsoft.AspNetCore.DeveloperCertificates.XPlat.Tests.csproj", "{1EC6FA27-40A5-433F-8CA1-636E7ED8863E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-dev-certs", "dotnet-dev-certs\src\dotnet-dev-certs.csproj", "{98550159-E04E-44EB-A969-E5BF12444B94}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sql-cache", "dotnet-sql-cache\src\dotnet-sql-cache.csproj", "{216AF7F1-5B05-477E-B8D3-86F6059F268A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-secrets", "dotnet-user-secrets\src\dotnet-user-secrets.csproj", "{5FE62357-2915-4890-813A-D82656BDC4DD}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-user-secrets.Tests", "dotnet-user-secrets\test\dotnet-user-secrets.Tests.csproj", "{25F8DCC4-4571-42F7-BA0F-5C2D5A802297}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-openapi", "dotnet-openapi\src\dotnet-openapi.csproj", "{16F0A420-F785-4669-B3D0-C7550C546889}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-openapi.Tests", "dotnet-openapi\test\dotnet-openapi.Tests.csproj", "{4922C862-D173-4E59-8F5E-23AEC2D59061}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sql-cache", "dotnet-sql-cache\src\dotnet-sql-cache.csproj", "{15FB0E39-1A28-4325-AD3C-76352516C80D}"
 EndProject
@@ -45,9 +55,43 @@ Global
 		{15FB0E39-1A28-4325-AD3C-76352516C80D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15FB0E39-1A28-4325-AD3C-76352516C80D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15FB0E39-1A28-4325-AD3C-76352516C80D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98550159-E04E-44EB-A969-E5BF12444B94}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98550159-E04E-44EB-A969-E5BF12444B94}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98550159-E04E-44EB-A969-E5BF12444B94}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98550159-E04E-44EB-A969-E5BF12444B94}.Release|Any CPU.Build.0 = Release|Any CPU
+		{216AF7F1-5B05-477E-B8D3-86F6059F268A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{216AF7F1-5B05-477E-B8D3-86F6059F268A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{216AF7F1-5B05-477E-B8D3-86F6059F268A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{216AF7F1-5B05-477E-B8D3-86F6059F268A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5FE62357-2915-4890-813A-D82656BDC4DD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FE62357-2915-4890-813A-D82656BDC4DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5FE62357-2915-4890-813A-D82656BDC4DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FE62357-2915-4890-813A-D82656BDC4DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{25F8DCC4-4571-42F7-BA0F-5C2D5A802297}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{25F8DCC4-4571-42F7-BA0F-5C2D5A802297}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{25F8DCC4-4571-42F7-BA0F-5C2D5A802297}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{25F8DCC4-4571-42F7-BA0F-5C2D5A802297}.Release|Any CPU.Build.0 = Release|Any CPU
+		{16F0A420-F785-4669-B3D0-C7550C546889}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{16F0A420-F785-4669-B3D0-C7550C546889}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{16F0A420-F785-4669-B3D0-C7550C546889}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{16F0A420-F785-4669-B3D0-C7550C546889}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4922C862-D173-4E59-8F5E-23AEC2D59061}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4922C862-D173-4E59-8F5E-23AEC2D59061}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4922C862-D173-4E59-8F5E-23AEC2D59061}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4922C862-D173-4E59-8F5E-23AEC2D59061}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{E16F10C8-5FC3-420B-AB33-D6E5CBE89B75} = {E01EE27B-6CF9-4707-9849-5BA2ABA825F2}
+		{63F7E822-D1E2-4C41-8ABF-60B9E3A9C54C} = {2C485EAF-E4DE-4D14-8AE1-330641E17D44}
+		{98550159-E04E-44EB-A969-E5BF12444B94} = {E01EE27B-6CF9-4707-9849-5BA2ABA825F2}
+		{216AF7F1-5B05-477E-B8D3-86F6059F268A} = {E01EE27B-6CF9-4707-9849-5BA2ABA825F2}
+		{5FE62357-2915-4890-813A-D82656BDC4DD} = {E01EE27B-6CF9-4707-9849-5BA2ABA825F2}
+		{25F8DCC4-4571-42F7-BA0F-5C2D5A802297} = {2C485EAF-E4DE-4D14-8AE1-330641E17D44}
+		{16F0A420-F785-4669-B3D0-C7550C546889} = {E01EE27B-6CF9-4707-9849-5BA2ABA825F2}
+		{4922C862-D173-4E59-8F5E-23AEC2D59061} = {2C485EAF-E4DE-4D14-8AE1-330641E17D44}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EC668D8E-97B9-4758-9E5C-2E5DD6B9137B}

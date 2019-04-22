@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <OutputType>exe</OutputType>
+    <Description>Command line tool to add an openapi service reference</Description>
+    <RootNamespace>Microsoft.DotNet.Openapi.Tools</RootNamespace>
+    <PackAsTool>true</PackAsTool>
+    <!-- This package is for internal use only. It contains a CLI tool. -->
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ToolSharedSourceRoot)CommandLine\**\*.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <Reference Include="Microsoft.Build.Locator" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>NSwagCSharp</_Parameter1>
+      <_Parameter2>NSwag.ApiDescription.Client:$(NSwagApiDescriptionClientPackageVersion);Newtonsoft.Json:$(NewtonsoftJsonPackageVersion)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+</Project>

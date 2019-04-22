@@ -3,6 +3,7 @@
 
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.CommandLineUtils
 {
@@ -18,6 +19,13 @@ namespace Microsoft.Extensions.CommandLineUtils
             => app.OnExecute(() =>
                 {
                     action();
+                    return 0;
+                });
+
+        public static void OnExecute(this CommandLineApplication app, Func<Task> func)
+            => app.OnExecute(async () =>
+                {
+                    await func();
                     return 0;
                 });
 

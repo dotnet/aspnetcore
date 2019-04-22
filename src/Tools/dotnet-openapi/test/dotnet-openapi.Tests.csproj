@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AssemblyName>Microsoft.DotNet.Open.Api.Tools.Tests</AssemblyName>
+    <DefaultItemExcludes>$(DefaultItemExcludes);TestProjects\**\*</DefaultItemExcludes>
+    <TestGroupName>DotNetAddServiceReferenceToolsTests</TestGroupName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(ToolSharedSourceRoot)TestHelpers\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Content Include="TestContent\*" LinkBase="TestContent\" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(SharedSourceRoot)Process\ProcessExtensions.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <ProjectReference Include="..\src\dotnet-openapi.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>TestSettings:RestoreSources</_Parameter1>
+      <_Parameter2>$(RestoreSources)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>TestSettings:RuntimeFrameworkVersion</_Parameter1>
+      <_Parameter2>$(RuntimeFrameworkVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>RepoRoot</_Parameter1>
+      <_Parameter2>$(RepoRoot)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
+  <Target Name="CleanTestProjects" BeforeTargets="CoreCompile">
+    <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
+  </Target>
+
+  <Target Name="PublishDotNetOpenApiOnBuild" BeforeTargets="Build">
+    <MSBuild Projects="..\src\dotnet-openapi.csproj" Targets="Publish" Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
+  </Target>
+
+  <Target Name="PublishDotNetOpenApiOnPublish" BeforeTargets="Publish">
+    <MSBuild Projects="..\src\dotnet-openapi.csproj" Targets="Publish" Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />
+  </Target>
+</Project>
