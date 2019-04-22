@@ -48,16 +48,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 return;
             }
             
-            var domainRequiresRedirection = false;
+            var requestRequiresRedirection = false;
             foreach (var domain in _domains)
             {
                 if (domain.Equals(req.Host.Host, StringComparison.OrdinalIgnoreCase))
                 {
-                    domainRequiresRedirection = true;
+                    requestRequiresRedirection = true;
                     break;
                 }
             }
-            if (!domainRequiresRedirection)
+            if (!requestRequiresRedirection)
             {
                 context.Result = RuleResult.ContinueRules;
                 return;
