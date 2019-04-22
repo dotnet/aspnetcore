@@ -50,9 +50,9 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
         public override bool Execute()
         {
             var outputs = new List<ITaskItem>(Inputs.Length);
+            var codeGenerators = new HashSet<string>();
             var destinations = new HashSet<string>();
 
-            var first = true;
             foreach (var item in Inputs)
             {
                 var codeGenerator = item.GetMetadata("CodeGenerator");
@@ -71,10 +71,9 @@ namespace Microsoft.Extensions.ApiDescription.Tasks
                 var newItem = new TaskItem(item);
                 outputs.Add(newItem);
 
-                if (first)
+                if (codeGenerators.Add(codeGenerator))
                 {
                     newItem.SetMetadata("FirstForGenerator", "true");
-                    first = false;
                 }
                 else
                 {
