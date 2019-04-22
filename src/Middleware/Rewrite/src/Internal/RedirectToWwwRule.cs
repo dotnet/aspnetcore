@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Rewrite.Logging;
@@ -26,6 +25,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
             {
                 throw new ArgumentNullException(nameof(domains));
             }
+            if (domains.Length < 1)
+            {
+                throw new ArgumentException(nameof(domains));
+            }
             _domains = domains;
             _statusCode = statusCode;
         }
@@ -45,7 +48,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
                 return;
             }
             
-            if (_domains.Length > 0 && !_domains.Any(d => req.Host.Host.Equals(d, StringComparison.OrdinalIgnoreCase)))
+            var domainRequiresRedirection = false;
+            foreach (var domain in _domains)
+            {
+                if (domain.Equals(req.Host.Host, StringComparison.OrdinalIgnoreCase))
+                {
+                    domainRequiresRedirection = true;
+                    break;
+                }
+            }
+            if (!domainRequiresRedirection)
             {
                 context.Result = RuleResult.ContinueRules;
                 return;
