@@ -9,21 +9,21 @@
 -->
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview5.19222.6">
+    <Dependency Name="Microsoft.AspNetCore.Razor.Language" Version="3.0.0-preview5.19222.7">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>5a80cb9857ad9d479e1090bd4b4efbc7e59d9bc3</Sha>
+      <Sha>2f93396fdf329649cc12d62be1f67d91e5dc77c8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview5.19222.6">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions" Version="3.0.0-preview5.19222.7">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>5a80cb9857ad9d479e1090bd4b4efbc7e59d9bc3</Sha>
+      <Sha>2f93396fdf329649cc12d62be1f67d91e5dc77c8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview5.19222.6">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor" Version="3.0.0-preview5.19222.7">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>5a80cb9857ad9d479e1090bd4b4efbc7e59d9bc3</Sha>
+      <Sha>2f93396fdf329649cc12d62be1f67d91e5dc77c8</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview5.19222.6">
+    <Dependency Name="Microsoft.NET.Sdk.Razor" Version="3.0.0-preview5.19222.7">
       <Uri>https://github.com/aspnet/AspNetCore-Tooling</Uri>
-      <Sha>5a80cb9857ad9d479e1090bd4b4efbc7e59d9bc3</Sha>
+      <Sha>2f93396fdf329649cc12d62be1f67d91e5dc77c8</Sha>
     </Dependency>
     <Dependency Name="dotnet-ef" Version="3.0.0-preview5.19222.6">
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
