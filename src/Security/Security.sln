@@ -142,6 +142,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NegotiateAuthSample", "Auth
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate", "Authentication\Negotiate\src\Microsoft.AspNetCore.Authentication.Negotiate.csproj", "{B7EA3B80-3A38-402A-BC3F-986907CA657C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate.Test", "Authentication\Negotiate\test\Negotiate.Test\Microsoft.AspNetCore.Authentication.Negotiate.Test.csproj", "{903E6CD4-7503-4BBB-86A1-96E0C73F0A90}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest", "Authentication\Negotiate\test\Negotiate.FunctionalTest\Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest.csproj", "{8991AEC8-49F3-4DF1-ADA9-00C13737E005}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -364,6 +368,14 @@ Global
 		{B7EA3B80-3A38-402A-BC3F-986907CA657C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7EA3B80-3A38-402A-BC3F-986907CA657C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7EA3B80-3A38-402A-BC3F-986907CA657C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{903E6CD4-7503-4BBB-86A1-96E0C73F0A90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{903E6CD4-7503-4BBB-86A1-96E0C73F0A90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{903E6CD4-7503-4BBB-86A1-96E0C73F0A90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{903E6CD4-7503-4BBB-86A1-96E0C73F0A90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8991AEC8-49F3-4DF1-ADA9-00C13737E005}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8991AEC8-49F3-4DF1-ADA9-00C13737E005}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8991AEC8-49F3-4DF1-ADA9-00C13737E005}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8991AEC8-49F3-4DF1-ADA9-00C13737E005}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -434,6 +446,8 @@ Global
 		{A482E4FD-51C2-4061-8357-1E4757D6CF27} = {79C549BA-2932-450A-B87D-635879361343}
 		{473D25BB-9F02-4BA4-A47A-729E239C06FD} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
 		{B7EA3B80-3A38-402A-BC3F-986907CA657C} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
+		{903E6CD4-7503-4BBB-86A1-96E0C73F0A90} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
+		{8991AEC8-49F3-4DF1-ADA9-00C13737E005} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}
