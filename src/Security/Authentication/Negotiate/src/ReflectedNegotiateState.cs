@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Linq;
 using System.Net;
@@ -14,6 +17,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         private readonly MethodInfo _getOutgoingBlob;
         private readonly MethodInfo _isCompleted;
         private readonly MethodInfo _getIdentity;
+        private readonly MethodInfo _closeContext;
 
         public ReflectedNegotiateState()
         {
@@ -27,6 +31,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 info.Name.Equals("GetOutgoingBlob") && info.GetParameters().Count() == 2).Single();
             _isCompleted = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("get_IsCompleted")).Single();
+            _closeContext = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
+                info.Name.Equals("CloseContext")).Single();
 
             var negoStreamPalType = typeof(AuthenticationException).Assembly.GetType("System.Net.Security.NegotiateStreamPal");
             _getIdentity = negoStreamPalType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Where(info =>
@@ -34,6 +40,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         }
 
         // Copied rather than reflected to remove the IsCompleted -> CloseContext check.
+        // The client doesn't need the context once auth is complete, but the server does.
+        // I'm not sure why it auto-closes for the client given that the client closes it just a few lines later.
+        // https://github.com/dotnet/corefx/blob/a3ab91e10045bb298f48c1d1f9bd5b0782a8ac46/src/System.Net.Http/src/System/Net/Http/SocketsHttpHandler/AuthenticationHelper.NtAuth.cs#L134
         public string GetOutgoingBlob(string incomingBlob)
         {
             byte[] decodedIncomingBlob = null;
@@ -62,9 +71,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             get => (bool)_isCompleted.Invoke(_instance, Array.Empty<object>());
         }
 
-        public ClaimsPrincipal GetPrincipal()
+        public IIdentity GetIdentity()
         {
-            return new WindowsPrincipal((WindowsIdentity)_getIdentity.Invoke(obj: null, parameters: new object[] { _instance }));
+            return (IIdentity)_getIdentity.Invoke(obj: null, parameters: new object[] { _instance });
+        }
+
+        public void Dispose()
+        {
+            _closeContext.Invoke(_instance, Array.Empty<object>());
         }
     }
 }

@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             set { base.Events = value; }
         }
 
+        // For testing
         internal INegotiateStateFactory StateFactory { get; set; } = new ReflectedNegotiateStateFactory();
     }
 }

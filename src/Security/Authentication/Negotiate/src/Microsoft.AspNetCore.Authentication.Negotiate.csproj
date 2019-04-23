@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ASP.NET Core middleware that enables an application to receive an OpenID Connect bearer token.</Description>
+    <Description>ASP.NET Core authentication handler used to authenticate requests using Negotiate, Kerberos, or NTLM.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security</PackageTags>
     <IsShippingPackage>true</IsShippingPackage>
@@ -11,6 +10,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authentication" />
+    <Reference Include="Microsoft.AspNetCore.Connections.Abstractions" />
   </ItemGroup>
 
 </Project>

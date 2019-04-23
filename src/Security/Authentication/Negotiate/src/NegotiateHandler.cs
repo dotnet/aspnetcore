@@ -3,9 +3,13 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -19,11 +23,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     /// </summary>
     public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthenticationRequestHandler
     {
-        // TODO: Move to server connection storage feature.
-        // This has no cleaup. Static because handlers are per-request.
-        // These instances should be disposed when all requests are complete and the connection is cleaned up.
-        private static ConcurrentDictionary<string, INegotiateState> _states = new ConcurrentDictionary<string, INegotiateState>();
-
+        private static string NegotiateStateKey = nameof(INegotiateState);
+        // TODO: CONFIG?
         private static string _verb = "Negotiate";// "NTLM";
         private static string _prefix = _verb + " ";
 
@@ -86,17 +87,34 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     return false;
                 }
 
-                var authState = _states.GetOrAdd(connectionId, _ => Options.StateFactory.CreateInstance());
+                var connectionItems = GetConnectionItems();
+
+                var authState = (INegotiateState)connectionItems[NegotiateStateKey];
+                if (authState == null)
+                {
+                    // TODO: IConnectionLifetimeFeature would fire mid-request.
+                    // Replace with a connetion level version of Response.RegisterForDispose.
+                    var connectionLifetimeFeature = Context.Features.Get<IConnectionLifetimeFeature>();
+                    if (connectionLifetimeFeature == null || !connectionLifetimeFeature.ConnectionClosed.CanBeCanceled)
+                    {
+                        throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionLifetimeFeature)}");
+                    }
+                    connectionItems[NegotiateStateKey] = authState = Options.StateFactory.CreateInstance();
+                    connectionLifetimeFeature.ConnectionClosed.UnsafeRegister(DisposeState, authState);
+                }
+
                 var outgoing = authState.GetOutgoingBlob(token);
                 if (!authState.IsCompleted)
                 {
                     Logger.LogInformation($"C:{connectionId}, Incomplete-Negotiate, 401 {_verb} {outgoing}");
                     Response.StatusCode = StatusCodes.Status401Unauthorized;
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
+
+                    // TODO: Consider disposing the authState and caching a copy of the user instead.
                     return true;
                 }
 
-                // TODO SPN check?
+                // TODO SPN check? NTLM + CBT only?
 
                 Logger.LogInformation($"C:{connectionId}, Completed-Negotiate, {_verb} {outgoing}");
                 if (!string.IsNullOrEmpty(outgoing))
@@ -122,11 +140,25 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            var authState = (INegotiateState)GetConnectionItems()[NegotiateStateKey];
             var connectionId = Context.Connection.Id;
-            if (_states.TryGetValue(connectionId, out var auth) && auth.IsCompleted)
+            if (authState != null && authState.IsCompleted)
             {
                 Logger.LogDebug($"C:{connectionId}, Cached User");
-                var user = auth.GetPrincipal();
+
+                // Make a new copy of the user for each request, they are mutable objects
+                var identity = authState.GetIdentity();
+                ClaimsPrincipal user;
+                if (identity is WindowsIdentity winIdentity)
+                {
+                    user = new WindowsPrincipal(winIdentity);
+                    Response.RegisterForDispose(winIdentity);
+                }
+                else
+                {
+                    user = new ClaimsPrincipal(new ClaimsIdentity(identity));
+                }
+
                 var ticket = new AuthenticationTicket(user, Scheme.Name);
                 return Task.FromResult(AuthenticateResult.Success(ticket));
             }
@@ -158,6 +190,22 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Logger.LogDebug($"C:{connectionId}, Challenged");
             Response.StatusCode = StatusCodes.Status401Unauthorized;
             Response.Headers.Append(HeaderNames.WWWAuthenticate, _verb);
+        }
+
+        private IDictionary<object, object> GetConnectionItems()
+        {
+            var connectionItems = Context.Features.Get<IConnectionItemsFeature>()?.Items;
+            if (connectionItems == null)
+            {
+                throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionItemsFeature)}");
+            }
+
+            return connectionItems;
+        }
+
+        private static void DisposeState(object state)
+        {
+            ((IDisposable)state).Dispose();
         }
     }
 }
