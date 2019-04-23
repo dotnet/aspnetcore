@@ -5,7 +5,10 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
+    <IsIISTest>true</IsIISTest>
   </PropertyGroup>
+
+  <Import Project="../FunctionalTest.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
