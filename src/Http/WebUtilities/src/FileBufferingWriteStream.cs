@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public override bool CanWrite => true;
 
         /// <inheritdoc />
-        public override long Length => throw new NotSupportedException();
+        public override long Length => PagedByteBuffer.Length + (FileStream?.Length ?? 0);
 
         /// <inheritdoc />
         public override long Position
@@ -77,8 +77,6 @@ namespace Microsoft.AspNetCore.WebUtilities
             get => throw new NotSupportedException();
             set => throw new NotSupportedException();
         }
-
-        internal long BufferedLength => PagedByteBuffer.Length + (FileStream?.Length ?? 0);
 
         internal PagedByteBuffer PagedByteBuffer { get; }
 
@@ -103,7 +101,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             ThrowArgumentException(buffer, offset, count);
             ThrowIfDisposed();
 
-            if (_bufferLimit.HasValue && _bufferLimit - BufferedLength < count)
+            if (_bufferLimit.HasValue && _bufferLimit - Length < count)
             {
                 Dispose();
                 throw new IOException("Buffer limit exceeded.");
@@ -136,7 +134,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             ThrowArgumentException(buffer, offset, count);
             ThrowIfDisposed();
 
-            if (_bufferLimit.HasValue && _bufferLimit - BufferedLength < count)
+            if (_bufferLimit.HasValue && _bufferLimit - Length < count)
             {
                 Dispose();
                 throw new IOException("Buffer limit exceeded.");
