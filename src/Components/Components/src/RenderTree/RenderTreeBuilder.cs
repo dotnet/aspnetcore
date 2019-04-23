@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -366,6 +365,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="value">The value of the attribute.</param>
         public void AddAttribute(int sequence, string name, object value)
         {
+            // TEMPORARY HACK until implementing compiler support for "key"
+            // If the attribute is called "key", attach a key to the nearest element/component
+            // Currently only implemented for attribute values of type 'object' (or at least,
+            // ones that don't match any of the more specific overloads)
+            if (string.Equals(name, "key", StringComparison.Ordinal))
+            {
+                SetKey(value.GetHashCode());
+                return;
+            }
+
             // This looks a bit daunting because we need to handle the boxed/object version of all of the
             // types that AddAttribute special cases.
             if (_lastNonAttributeFrameType == RenderTreeFrameType.Element)
@@ -401,6 +410,32 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 // This is going to throw. Calling it just to get a consistent exception message.
                 AssertCanAddAttribute();
+            }
+        }
+
+        private void SetKey(int keyValue)
+        {
+            // TODO: Call this from the compiler when there's a "key" directive attribute
+            // Alternative would be to add a param to OpenElement/OpenComponent that
+            // takes the key directly
+            var parentFrameIndex = GetCurrentParentFrameIndex();
+            if (!parentFrameIndex.HasValue)
+            {
+                throw new InvalidOperationException("Cannot set a key outside the scope of a component or element.");
+            }
+
+            var parentFrameIndexValue = parentFrameIndex.Value;
+            ref var parentFrame = ref _entries.Buffer[parentFrameIndexValue];
+            switch (parentFrame.FrameType)
+            {
+                case RenderTreeFrameType.Element:
+                    _entries.Buffer[parentFrameIndexValue] = parentFrame.WithElementKey(keyValue);
+                    break;
+                case RenderTreeFrameType.Component:
+                    _entries.Buffer[parentFrameIndexValue] = parentFrame.WithComponentKey(keyValue);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameType}.");
             }
         }
 

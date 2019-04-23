@@ -7,6 +7,11 @@ using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
 {
+    // TODO: Can we make this *not* readonly? Then we could eliminate all the fragile and
+    // expensive WithXyz methods and just mutate it in place. Need to consider every place
+    // where this is used and check we're appropriately handling it by reference and not
+    // copying at all.
+
     /// <summary>
     /// Represents an entry in a tree of user interface (UI) items.
     /// </summary>
@@ -210,26 +215,28 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// </summary>
         [FieldOffset(24)] public readonly string MarkupContent;
 
-        private RenderTreeFrame(int sequence, string elementName, int elementSubtreeLength)
+        private RenderTreeFrame(int sequence, string elementName, int elementSubtreeLength, int? elementKey)
             : this()
         {
             FrameType = RenderTreeFrameType.Element;
             Sequence = sequence;
             ElementName = elementName;
             ElementSubtreeLength = elementSubtreeLength;
+            ElementKey = elementKey;
         }
 
-        private RenderTreeFrame(int sequence, Type componentType, int componentSubtreeLength)
+        private RenderTreeFrame(int sequence, Type componentType, int componentSubtreeLength, int? componentKey)
             : this()
         {
             FrameType = RenderTreeFrameType.Component;
             Sequence = sequence;
             ComponentType = componentType;
             ComponentSubtreeLength = componentSubtreeLength;
+            ComponentKey = componentKey;
         }
 
-        private RenderTreeFrame(int sequence, Type componentType, int subtreeLength, ComponentState componentState)
-            : this(sequence, componentType, subtreeLength)
+        private RenderTreeFrame(int sequence, Type componentType, int subtreeLength, ComponentState componentState, int? componentKey)
+            : this(sequence, componentType, subtreeLength, componentKey)
         {
             ComponentId = componentState.ComponentId;
             ComponentState = componentState;
@@ -299,7 +306,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         internal static RenderTreeFrame Element(int sequence, string elementName)
-            => new RenderTreeFrame(sequence, elementName: elementName, elementSubtreeLength: 0);
+            => new RenderTreeFrame(sequence, elementName: elementName, elementSubtreeLength: 0, elementKey: null);
 
         internal static RenderTreeFrame Text(int sequence, string textContent)
             => new RenderTreeFrame(sequence, textContent: textContent);
@@ -314,10 +321,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value);
 
         internal static RenderTreeFrame ChildComponent(int sequence, Type componentType)
-            => new RenderTreeFrame(sequence, componentType, 0);
+            => new RenderTreeFrame(sequence, componentType, 0, null);
 
         internal static RenderTreeFrame PlaceholderChildComponentWithSubtreeLength(int subtreeLength)
-            => new RenderTreeFrame(0, typeof(IComponent), subtreeLength);
+            => new RenderTreeFrame(0, typeof(IComponent), subtreeLength, null);
 
         internal static RenderTreeFrame Region(int sequence)
             => new RenderTreeFrame(sequence, regionSubtreeLength: 0);
@@ -329,16 +336,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(sequence, componentReferenceCaptureAction: componentReferenceCaptureAction, parentFrameIndex: parentFrameIndex);
 
         internal RenderTreeFrame WithElementSubtreeLength(int elementSubtreeLength)
-            => new RenderTreeFrame(Sequence, elementName: ElementName, elementSubtreeLength: elementSubtreeLength);
+            => new RenderTreeFrame(Sequence, elementName: ElementName, elementSubtreeLength: elementSubtreeLength, elementKey: ElementKey);
 
         internal RenderTreeFrame WithComponentSubtreeLength(int componentSubtreeLength)
-            => new RenderTreeFrame(Sequence, componentType: ComponentType, componentSubtreeLength: componentSubtreeLength);
+            => new RenderTreeFrame(Sequence, componentType: ComponentType, componentSubtreeLength: componentSubtreeLength, componentKey: ComponentKey);
 
         internal RenderTreeFrame WithAttributeSequence(int sequence)
             => new RenderTreeFrame(sequence, attributeName: AttributeName, attributeValue: AttributeValue);
 
         internal RenderTreeFrame WithComponent(ComponentState componentState)
-            => new RenderTreeFrame(Sequence, ComponentType, ComponentSubtreeLength, componentState);
+            => new RenderTreeFrame(Sequence, ComponentType, ComponentSubtreeLength, componentState, componentKey: ComponentKey);
 
         internal RenderTreeFrame WithAttributeEventHandlerId(int eventHandlerId)
             => new RenderTreeFrame(Sequence, AttributeName, AttributeValue, eventHandlerId);
@@ -348,6 +355,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         internal RenderTreeFrame WithElementReferenceCaptureId(string elementReferenceCaptureId)
             => new RenderTreeFrame(Sequence, ElementReferenceCaptureAction, elementReferenceCaptureId);
+
+        internal RenderTreeFrame WithElementKey(int elementKey)
+            => new RenderTreeFrame(Sequence, elementName: ElementName, elementSubtreeLength: ElementSubtreeLength, elementKey: elementKey);
+
+        internal RenderTreeFrame WithComponentKey(int componentKey)
+            => new RenderTreeFrame(Sequence, componentType: ComponentType, subtreeLength: ComponentSubtreeLength, componentState: ComponentState, componentKey: componentKey);
 
         /// <inheritdoc />
         // Just to be nice for debugging and unit tests.
