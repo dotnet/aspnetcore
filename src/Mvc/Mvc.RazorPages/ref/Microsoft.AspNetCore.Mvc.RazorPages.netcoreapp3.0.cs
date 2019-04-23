@@ -18,6 +18,13 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
     {
         void Apply(Microsoft.AspNetCore.Mvc.ApplicationModels.PageApplicationModel model);
     }
+    public partial interface IPageApplicationModelPartsProvider
+    {
+        Microsoft.AspNetCore.Mvc.ApplicationModels.PageHandlerModel CreateHandlerModel(System.Reflection.MethodInfo method);
+        Microsoft.AspNetCore.Mvc.ApplicationModels.PageParameterModel CreateParameterModel(System.Reflection.ParameterInfo parameter);
+        Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel CreatePropertyModel(System.Reflection.PropertyInfo property);
+        bool IsHandler(System.Reflection.MethodInfo methodInfo);
+    }
     public partial interface IPageApplicationModelProvider
     {
         int Order { get; }
