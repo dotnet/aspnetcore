@@ -244,22 +244,6 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 frame => AssertFrame.Attribute(frame, "attr", "Hello, WORLD    with number 246!", 1));
         }
 
-        // This test exercises the case where two IntermediateTokens are part of the same expression.
-        // In these case they are split by a comment.
-        [Fact]
-        public void SupportsAttributesWithInterpolatedStringExpressionValues_SplitByComment()
-        {
-            // Arrange/Act
-            var component = CompileToComponent(
-                "@{ var myValue = \"world\"; var myNum=123; }"
-                + "<elem attr=\"Hello, @myValue.ToUpperInvariant()    with number @(myN@* Blazor is Blawesome! *@um*2)!\" />");
-
-            // Assert
-            Assert.Collection(GetRenderTree(component),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", "Hello, WORLD    with number 246!", 1));
-        }
-
         [Fact]
         public void SupportsAttributesWithInterpolatedTernaryExpressionValues()
         {
