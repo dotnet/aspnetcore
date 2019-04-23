@@ -92,10 +92,10 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
     public enum EncryptionAlgorithm
     {
         AES_128_CBC = 0,
-        AES_192_CBC = 1,
-        AES_256_CBC = 2,
         AES_128_GCM = 3,
+        AES_192_CBC = 1,
         AES_192_GCM = 4,
+        AES_256_CBC = 2,
         AES_256_GCM = 5,
     }
     public partial interface IAuthenticatedEncryptor
@@ -369,9 +369,9 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
     [System.FlagsAttribute]
     public enum DpapiNGProtectionDescriptorFlags
     {
-        None = 0,
-        NamedDescriptor = 1,
         MachineKey = 32,
+        NamedDescriptor = 1,
+        None = 0,
     }
     public sealed partial class DpapiNGXmlDecryptor : Microsoft.AspNetCore.DataProtection.XmlEncryption.IXmlDecryptor
     {

@@ -80,10 +80,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     [System.FlagsAttribute]
     public enum HttpProtocols
     {
-        None = 0,
         Http1 = 1,
-        Http2 = 2,
         Http1AndHttp2 = 3,
+        Http2 = 2,
+        None = 0,
     }
     public partial class KestrelServer : Microsoft.AspNetCore.Hosting.Server.IServer, System.IDisposable
     {
@@ -215,17 +215,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public enum HttpMethod : byte
     {
-        Get = (byte)0,
-        Put = (byte)1,
-        Delete = (byte)2,
-        Post = (byte)3,
-        Head = (byte)4,
-        Trace = (byte)5,
-        Patch = (byte)6,
         Connect = (byte)7,
-        Options = (byte)8,
         Custom = (byte)9,
+        Delete = (byte)2,
+        Get = (byte)0,
+        Head = (byte)4,
         None = (byte)255,
+        Options = (byte)8,
+        Patch = (byte)6,
+        Post = (byte)3,
+        Put = (byte)1,
+        Trace = (byte)5,
     }
     public partial class HttpParser<TRequestHandler> : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpParser<TRequestHandler> where TRequestHandler : Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpHeadersHandler, Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http.IHttpRequestLineHandler
     {
@@ -238,16 +238,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     }
     public enum HttpScheme
     {
-        Unknown = -1,
         Http = 0,
         Https = 1,
+        Unknown = -1,
     }
     public enum HttpVersion
     {
-        Unknown = -1,
         Http10 = 0,
         Http11 = 1,
         Http2 = 2,
+        Unknown = -1,
     }
     public partial interface IHttpHeadersHandler
     {
@@ -290,8 +290,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
 {
     public enum ClientCertificateMode
     {
-        NoCertificate = 0,
         AllowCertificate = 1,
+        NoCertificate = 0,
         RequireCertificate = 2,
     }
     public partial class HttpsConnectionAdapterOptions

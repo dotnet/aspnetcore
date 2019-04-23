@@ -814,10 +814,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     }
     public enum ModelValidationState
     {
-        Unvalidated = 0,
         Invalid = 1,
-        Valid = 2,
         Skipped = 3,
+        Unvalidated = 0,
+        Valid = 2,
     }
     public partial class TooManyModelErrorsException : System.Exception
     {
@@ -888,9 +888,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
     }
     public enum ModelMetadataKind
     {
-        Type = 0,
-        Property = 1,
         Parameter = 2,
+        Property = 1,
+        Type = 0,
     }
 }
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation

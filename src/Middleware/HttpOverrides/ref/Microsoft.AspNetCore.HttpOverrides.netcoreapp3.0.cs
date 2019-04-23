@@ -40,11 +40,11 @@ namespace Microsoft.AspNetCore.HttpOverrides
     [System.FlagsAttribute]
     public enum ForwardedHeaders
     {
+        All = 7,
         None = 0,
         XForwardedFor = 1,
         XForwardedHost = 2,
         XForwardedProto = 4,
-        All = 7,
     }
     public static partial class ForwardedHeadersDefaults
     {

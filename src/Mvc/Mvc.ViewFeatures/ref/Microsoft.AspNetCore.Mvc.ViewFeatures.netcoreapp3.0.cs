@@ -233,8 +233,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     }
     public enum Html5DateRenderingMode
     {
-        Rfc3339 = 0,
         CurrentCulture = 1,
+        Rfc3339 = 0,
     }
     public static partial class HtmlHelperDisplayExtensions
     {
@@ -575,10 +575,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     }
     public enum TagRenderMode
     {
-        Normal = 0,
-        StartTag = 1,
         EndTag = 2,
+        Normal = 0,
         SelfClosing = 3,
+        StartTag = 1,
     }
     public static partial class ViewComponentHelperExtensions
     {

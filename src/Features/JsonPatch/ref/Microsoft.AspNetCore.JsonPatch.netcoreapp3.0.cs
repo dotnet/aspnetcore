@@ -216,8 +216,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         protected enum OperationType
         {
             Add = 0,
-            Remove = 1,
             Get = 2,
+            Remove = 1,
             Replace = 3,
         }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -230,8 +230,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         }
         protected enum PositionType
         {
-            Index = 0,
             EndOfList = 1,
+            Index = 0,
             Invalid = 2,
             OutOfBounds = 3,
         }
@@ -292,12 +292,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
     public enum OperationType
     {
         Add = 0,
+        Copy = 4,
+        Invalid = 6,
+        Move = 3,
         Remove = 1,
         Replace = 2,
-        Move = 3,
-        Copy = 4,
         Test = 5,
-        Invalid = 6,
     }
     public partial class Operation<TModel> : Microsoft.AspNetCore.JsonPatch.Operations.Operation where TModel : class
     {

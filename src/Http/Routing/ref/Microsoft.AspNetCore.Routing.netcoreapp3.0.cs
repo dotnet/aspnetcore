@@ -683,9 +683,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     }
     public enum RoutePatternParameterKind
     {
-        Standard = 0,
-        Optional = 1,
         CatchAll = 2,
+        Optional = 1,
+        Standard = 0,
     }
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString()}")]
     public sealed partial class RoutePatternParameterPart : Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart

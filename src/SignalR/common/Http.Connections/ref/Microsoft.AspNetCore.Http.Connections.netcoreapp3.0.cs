@@ -134,9 +134,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
     }
     public enum HttpConnectionStatus
     {
-        Inactive = 0,
         Active = 1,
         Disposed = 2,
+        Inactive = 0,
     }
     public static partial class ServerSentEventsMessageFormatter
     {
