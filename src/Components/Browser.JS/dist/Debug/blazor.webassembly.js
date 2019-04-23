@@ -2097,16 +2097,16 @@ var editReader = {
 };
 // Keep in sync with memory layout in RenderTreeFrame.cs
 var frameReader = {
-    structLength: 28,
+    structLength: 36,
     frameType: function (frame) { return Environment_1.platform.readInt32Field(frame, 4); },
     subtreeLength: function (frame) { return Environment_1.platform.readInt32Field(frame, 8); },
-    elementReferenceCaptureId: function (frame) { return Environment_1.platform.readStringField(frame, 16); },
+    elementReferenceCaptureId: function (frame) { return Environment_1.platform.readStringField(frame, 24); },
     componentId: function (frame) { return Environment_1.platform.readInt32Field(frame, 12); },
-    elementName: function (frame) { return Environment_1.platform.readStringField(frame, 16); },
-    textContent: function (frame) { return Environment_1.platform.readStringField(frame, 16); },
-    markupContent: function (frame) { return Environment_1.platform.readStringField(frame, 16); },
-    attributeName: function (frame) { return Environment_1.platform.readStringField(frame, 16); },
-    attributeValue: function (frame) { return Environment_1.platform.readStringField(frame, 24); },
+    elementName: function (frame) { return Environment_1.platform.readStringField(frame, 24); },
+    textContent: function (frame) { return Environment_1.platform.readStringField(frame, 24); },
+    markupContent: function (frame) { return Environment_1.platform.readStringField(frame, 24); },
+    attributeName: function (frame) { return Environment_1.platform.readStringField(frame, 24); },
+    attributeValue: function (frame) { return Environment_1.platform.readStringField(frame, 32); },
     attributeEventHandlerId: function (frame) { return Environment_1.platform.readInt32Field(frame, 8); },
 };
 function arrayValuesEntry(arrayValues, index, itemSize) {

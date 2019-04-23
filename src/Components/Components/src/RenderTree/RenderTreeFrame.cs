@@ -3,7 +3,6 @@
 
 using System;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Microsoft.AspNetCore.Components.RenderTree
@@ -24,6 +23,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         // Eventually we might stop using this shared memory interop altogether (and would have to
         // if running as a web worker) so for now to keep things simple, treat reference types as
         // 8 bytes here.
+
+        // Although each frame type uses the slots for different purposes, the runtime does not
+        // allow reference type slots to overlap with each other or with value-type slots.
+        // Here's the current layout:
+        //
+        // Offset   Type
+        // ------   ----
+        // 0-3      Int32 (sequence number)
+        // 4-7      Int32 (frame type)
+        // 8-23     Value types (usage varies by frame type)
+        // 24-31    Reference type (usage varies by frame type)
+        // 32-39    Reference type (usage varies by frame type)
+        //
+        // On Mono WebAssembly, because it's 32-bit, the final slot occupies bytes 32-35,
+        // so the struct length is only 36.
 
         // --------------------------------------------------------------------------------
         // Common
@@ -54,9 +68,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
+        /// gets the element's key (if any).
+        /// </summary>
+        [FieldOffset(16)] public readonly int? ElementKey;
+
+        /// <summary>
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Element"/>,
         /// gets a name representing the type of the element. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string ElementName;
+        [FieldOffset(24)] public readonly string ElementName;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Text
@@ -66,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Text"/>,
         /// gets the content of the text frame. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string TextContent;
+        [FieldOffset(24)] public readonly string TextContent;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Attribute
@@ -82,13 +102,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute name. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string AttributeName;
+        [FieldOffset(24)] public readonly string AttributeName;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Attribute"/>,
         /// gets the attribute value. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(24)] public readonly object AttributeValue;
+        [FieldOffset(32)] public readonly object AttributeValue;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Component
@@ -109,15 +129,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
+        /// gets the component's key (if any).
+        /// </summary>
+        [FieldOffset(16)] public readonly int? ComponentKey;
+
+        /// <summary>
+        /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the type of the child component.
         /// </summary>
-        [FieldOffset(16)] public readonly Type ComponentType;
+        [FieldOffset(24)] public readonly Type ComponentType;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
         /// gets the child component state object. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(24)] internal readonly ComponentState ComponentState;
+        [FieldOffset(32)] internal readonly ComponentState ComponentState;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Component"/>,
@@ -144,13 +170,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ElementReferenceCapture"/>,
         /// gets the ID of the reference capture. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string ElementReferenceCaptureId;
+        [FieldOffset(24)] public readonly string ElementReferenceCaptureId;
 
         /// <summary>
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ElementReferenceCapture"/>,
         /// gets the action that writes the reference to its target. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(24)] public readonly Action<ElementRef> ElementReferenceCaptureAction;
+        [FieldOffset(32)] public readonly Action<ElementRef> ElementReferenceCaptureAction;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.ComponentReferenceCapture
@@ -172,7 +198,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.ComponentReferenceCapture"/>,
         /// gets the action that writes the reference to its target. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly Action<object> ComponentReferenceCaptureAction;
+        [FieldOffset(24)] public readonly Action<object> ComponentReferenceCaptureAction;
 
         // --------------------------------------------------------------------------------
         // RenderTreeFrameType.Markup
@@ -182,7 +208,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="FrameType"/> property equals <see cref="RenderTreeFrameType.Markup"/>,
         /// gets the content of the markup frame. Otherwise, the value is undefined.
         /// </summary>
-        [FieldOffset(16)] public readonly string MarkupContent;
+        [FieldOffset(24)] public readonly string MarkupContent;
 
         private RenderTreeFrame(int sequence, string elementName, int elementSubtreeLength)
             : this()

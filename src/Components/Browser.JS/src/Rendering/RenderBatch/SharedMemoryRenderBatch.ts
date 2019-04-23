@@ -92,16 +92,16 @@ const editReader = {
 
 // Keep in sync with memory layout in RenderTreeFrame.cs
 const frameReader = {
-  structLength: 28,
+  structLength: 36,
   frameType: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 4) as FrameType,
   subtreeLength: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),
-  elementReferenceCaptureId: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
+  elementReferenceCaptureId: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24),
   componentId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 12),
-  elementName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
-  textContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
-  markupContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16)!,
-  attributeName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 16),
-  attributeValue: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24),
+  elementName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24),
+  textContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24),
+  markupContent: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24)!,
+  attributeName: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 24),
+  attributeValue: (frame: RenderTreeFrame) => platform.readStringField(frame as any, 32),
   attributeEventHandlerId: (frame: RenderTreeFrame) => platform.readInt32Field(frame as any, 8),
 };
 
