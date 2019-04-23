@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             .GetRuntimeMethods()
             .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeCancelableAsyncEnumerable)) && m.IsGenericMethod);
 
-        private static readonly MethodInfo MakeCancelableAsyncEnumerableFromChannelMethod = typeof(AsyncEnumerableAdapters)
+        private static readonly MethodInfo MakeAsyncEnumerableFromChannelMethod = typeof(AsyncEnumerableAdapters)
             .GetRuntimeMethods()
-            .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeCancelableAsyncEnumerableFromChannel)) && m.IsGenericMethod);
+            .Single(m => m.Name.Equals(nameof(AsyncEnumerableAdapters.MakeAsyncEnumerableFromChannel)) && m.IsGenericMethod);
 
         private readonly MethodInfo _makeCancelableEnumerableMethodInfo;
         private Func<object, CancellationToken, IAsyncEnumerable<object>> _makeCancelableEnumerable;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 if (openReturnType == typeof(ChannelReader<>))
                 {
                     StreamReturnType = returnType.GetGenericArguments()[0];
-                    _makeCancelableEnumerableMethodInfo = MakeCancelableAsyncEnumerableFromChannelMethod;
+                    _makeCancelableEnumerableMethodInfo = MakeAsyncEnumerableFromChannelMethod;
                     break;
                 }
             }
