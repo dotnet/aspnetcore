@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -11,6 +12,29 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     internal class GetDocumentCommandWorker
     {
+        private const string DocumentService = "Microsoft.Extensions.ApiDescriptions.IDocumentProvider";
+        private static readonly char[] InvalidFilenameCharacters = Path.GetInvalidFileNameChars();
+        private static readonly string[] InvalidFilenameStrings = new[] { ".." };
+
+        private const string BuildMethodName = "BuildWebHost";
+        private static readonly object[] BuildArguments = new[] { Array.Empty<string>() };
+        private static readonly Type[] BuildParameterTypes = new[] { typeof(string[]) };
+        private static readonly Type BuildReturnType = typeof(IWebHost);
+
+        private const string CreateMethodName = "CreateWebHostBuilder";
+        private static readonly object[] CreateArguments = BuildArguments;
+        private static readonly Type[] CreateParameterTypes = BuildParameterTypes;
+        private static readonly Type CreateReturnType = typeof(IWebHostBuilder);
+
+        private const string GetDocumentsMethodName = "GetDocumentNames";
+        private static readonly object[] GetDocumentsArguments = Array.Empty<object>();
+        private static readonly Type[] GetDocumentsParameterTypes = Type.EmptyTypes;
+        private static readonly Type GetDocumentsReturnType = typeof(IEnumerable<string>);
+
+        private const string GenerateMethodName = "GenerateAsync";
+        private static readonly Type[] GenerateMethodParameterTypes = new[] { typeof(string), typeof(TextWriter) };
+        private static readonly Type GenerateMethodReturnType = typeof(Task);
+
         public static int Process(GetDocumentCommandContext context)
         {
             var assemblyName = new AssemblyName(context.AssemblyName);
@@ -22,200 +46,325 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 return 2;
             }
 
-            var services = GetServices(entryPointType, context.AssemblyPath, context.AssemblyName);
-            if (services == null)
-            {
-                return 3;
-            }
-
-            var success = TryProcess(context, services);
-            if (!success)
-            {
-                // As part of the aspnet/Mvc#8425 fix, return 4 here.
-                return 0;
-            }
-
-            return 0;
-        }
-
-        public static bool TryProcess(GetDocumentCommandContext context, IServiceProvider services)
-        {
-            var documentName = string.IsNullOrEmpty(context.DocumentName) ?
-                GetDocumentCommand.FallbackDocumentName :
-                context.DocumentName;
-            var methodName = string.IsNullOrEmpty(context.Method) ?
-                GetDocumentCommand.FallbackMethod :
-                context.Method;
-            var serviceName = string.IsNullOrEmpty(context.Service) ?
-                GetDocumentCommand.FallbackService :
-                context.Service;
-
-            Reporter.WriteInformation(Resources.FormatUsingDocument(documentName));
-            Reporter.WriteInformation(Resources.FormatUsingMethod(methodName));
-            Reporter.WriteInformation(Resources.FormatUsingService(serviceName));
+            static string FormatException(Exception exception) => $"{exception.GetType().FullName}: {exception.Message}";
 
             try
             {
-                Type serviceType = null;
-                foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+                var services = GetServices(entryPointType);
+                if (services == null)
                 {
-                    serviceType = assembly.GetType(serviceName, throwOnError: false);
-                    if (serviceType != null)
-                    {
-                        break;
-                    }
+                    return 3;
                 }
 
-                // As part of the aspnet/Mvc#8425 fix, make all warnings in this method errors unless the file already
-                // exists.
-                if (serviceType == null)
+                var success = GetDocuments(context, services);
+                if (!success)
                 {
-                    Reporter.WriteWarning(Resources.FormatServiceTypeNotFound(serviceName));
-                    return false;
+                    return 4;
                 }
-
-                var method = serviceType.GetMethod(methodName, new[] { typeof(string), typeof(TextWriter) });
-                if (method == null)
-                {
-                    Reporter.WriteWarning(Resources.FormatMethodNotFound(methodName, serviceName));
-                    return false;
-                }
-                else if (!typeof(Task).IsAssignableFrom(method.ReturnType))
-                {
-                    Reporter.WriteWarning(Resources.FormatMethodReturnTypeUnsupported(
-                        methodName,
-                        serviceName,
-                        method.ReturnType,
-                        typeof(Task)));
-                    return false;
-                }
-
-                var service = services.GetService(serviceType);
-                if (service == null)
-                {
-                    Reporter.WriteWarning(Resources.FormatServiceNotFound(serviceName));
-                    return false;
-                }
-
-                // Create the output FileStream last to avoid corrupting an existing file or writing partial data.
-                var stream = new MemoryStream();
-                using (var writer = new StreamWriter(stream))
-                {
-                    var resultTask = (Task)method.Invoke(service, new object[] { documentName, writer });
-                    if (resultTask == null)
-                    {
-                        Reporter.WriteWarning(
-                            Resources.FormatMethodReturnedNull(methodName, serviceName, nameof(Task)));
-                        return false;
-                    }
-
-                    var finishedIndex = Task.WaitAny(resultTask, Task.Delay(TimeSpan.FromMinutes(1)));
-                    if (finishedIndex != 0)
-                    {
-                        Reporter.WriteWarning(Resources.FormatMethodTimedOut(methodName, serviceName, 1));
-                        return false;
-                    }
-
-                    writer.Flush();
-                    if (stream.Length > 0L)
-                    {
-                        stream.Position = 0L;
-                        using (var outStream = File.Create(context.OutputPath))
-                        {
-                            stream.CopyTo(outStream);
-                            outStream.Flush();
-                        }
-                    }
-                }
-
-                return true;
             }
             catch (AggregateException ex) when (ex.InnerException != null)
             {
                 foreach (var innerException in ex.Flatten().InnerExceptions)
                 {
-                    Reporter.WriteWarning(FormatException(innerException));
+                    Reporter.WriteError(FormatException(innerException));
                 }
+
+                Reporter.WriteVerbose(ex.StackTrace);
+                return 5;
             }
             catch (Exception ex)
             {
-                Reporter.WriteWarning(FormatException(ex));
+                Reporter.WriteError(FormatException(ex));
+                Reporter.WriteVerbose(ex.StackTrace);
+                return 6;
             }
 
-            File.Delete(context.OutputPath);
-
-            return false;
+            return 0;
         }
 
-        // TODO: Use Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources once we have dev feed available.
-        private static IServiceProvider GetServices(Type entryPointType, string assemblyPath, string assemblyName)
+        private static IServiceProvider GetServices(Type entryPointType)
         {
-            var args = new[] { Array.Empty<string>() };
-            var methodInfo = entryPointType.GetMethod("BuildWebHost");
+            // BuildWebHost (old style has highest priority)
+            var methodInfo = GetMethod(
+                BuildMethodName,
+                entryPointType,
+                BuildParameterTypes,
+                BuildReturnType,
+                // Will fall back to find CreateWebHostBuilder method.
+                reportErrors: false,
+                isStatic: true);
             if (methodInfo != null)
             {
-                // BuildWebHost (old style has highest priority)
-                var parameters = methodInfo.GetParameters();
-                if (!methodInfo.IsStatic ||
-                    parameters.Length != 1 ||
-                    typeof(string[]) != parameters[0].ParameterType ||
-                    typeof(IWebHost) != methodInfo.ReturnType)
+                var webHost = (IWebHost)InvokeMethod(methodInfo, instance: null, arguments: BuildArguments);
+                if (webHost == null)
                 {
-                    Reporter.WriteError(
-                        "BuildWebHost method found in {assemblyPath} does not have expected signature.");
-
                     return null;
                 }
 
-                try
-                {
-                    var webHost = (IWebHost)methodInfo.Invoke(obj: null, parameters: args);
-
-                    return webHost.Services;
-                }
-                catch (Exception ex)
-                {
-                    Reporter.WriteError($"BuildWebHost method threw: {FormatException(ex)}");
-
-                    return null;
-                }
+                return webHost.Services;
             }
 
-            if ((methodInfo = entryPointType.GetMethod("CreateWebHostBuilder")) != null)
+            // CreateWebHostBuilder
+            methodInfo = GetMethod(
+                CreateMethodName,
+                entryPointType,
+                CreateParameterTypes,
+                CreateReturnType,
+                // Use a different message for this case.
+                reportErrors: false,
+                isStatic: true);
+            if (methodInfo == null)
             {
-                // CreateWebHostBuilder
-                var parameters = methodInfo.GetParameters();
-                if (!methodInfo.IsStatic ||
-                    parameters.Length != 1 ||
-                    typeof(string[]) != parameters[0].ParameterType ||
-                    typeof(IWebHostBuilder) != methodInfo.ReturnType)
-                {
-                    Reporter.WriteError(
-                        "CreateWebHostBuilder method found in {assemblyPath} does not have expected signature.");
+                Reporter.WriteError(Resources.FormatMethodsNotFound(
+                    BuildMethodName,
+                    CreateMethodName,
+                    entryPointType));
 
-                    return null;
-                }
-
-                try
-                {
-                    var builder = (IWebHostBuilder)methodInfo.Invoke(obj: null, parameters: args);
-
-                    return builder.Build().Services;
-                }
-                catch (Exception ex)
-                {
-                    Reporter.WriteError($"CreateWebHostBuilder method threw: {FormatException(ex)}");
-
-                    return null;
-                }
+                return null;
             }
 
-            return null;
+            var builder = (IWebHostBuilder)InvokeMethod(methodInfo, instance: null, arguments: CreateArguments);
+            if (builder == null)
+            {
+                return null;
+            }
+
+            return builder.Build().Services;
         }
 
-        private static string FormatException(Exception exception)
+        private static bool GetDocuments(GetDocumentCommandContext context, IServiceProvider services)
         {
-            return $"{exception.GetType().FullName}: {exception.Message}";
+            Type serviceType = null;
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            {
+                serviceType = assembly.GetType(DocumentService, throwOnError: false);
+                if (serviceType != null)
+                {
+                    break;
+                }
+            }
+
+            if (serviceType == null)
+            {
+                Reporter.WriteError(Resources.FormatServiceTypeNotFound(DocumentService));
+                return false;
+            }
+
+            var getDocumentsMethod = GetMethod(
+                GetDocumentsMethodName,
+                serviceType,
+                GetDocumentsParameterTypes,
+                GetDocumentsReturnType,
+                reportErrors: true,
+                isStatic: false);
+            if (getDocumentsMethod == null)
+            {
+                return false;
+            }
+
+            var generateMethod = GetMethod(
+                GenerateMethodName,
+                serviceType,
+                GenerateMethodParameterTypes,
+                GenerateMethodReturnType,
+                reportErrors: true,
+                isStatic: false);
+            if (generateMethod == null)
+            {
+                return false;
+            }
+
+            var service = services.GetService(serviceType);
+            if (service == null)
+            {
+                Reporter.WriteError(Resources.FormatServiceNotFound(DocumentService));
+                return false;
+            }
+
+            var documentNames = (IEnumerable<string>)InvokeMethod(getDocumentsMethod, service, GetDocumentsArguments);
+            if (documentNames == null)
+            {
+                return false;
+            }
+
+            // Write out the documents.
+            Directory.CreateDirectory(context.OutputDirectory);
+            var filePathList = new List<string>();
+            foreach (var documentName in documentNames)
+            {
+                var filePath = GetDocument(
+                    documentName,
+                    context.ProjectName,
+                    context.OutputDirectory,
+                    generateMethod,
+                    service);
+                if (filePath == null)
+                {
+                    return false;
+                }
+
+                filePathList.Add(filePath);
+            }
+
+            // Write out the cache file.
+            var stream = File.Create(context.FileListPath);
+            using var writer = new StreamWriter(stream) { AutoFlush = true };
+            writer.WriteLine(string.Join(Environment.NewLine, filePathList));
+            stream.Flush();
+
+            return true;
+        }
+
+        private static string GetDocument(
+            string documentName,
+            string projectName,
+            string outputDirectory,
+            MethodInfo generateMethod,
+            object service)
+        {
+            Reporter.WriteInformation(Resources.FormatRetrievingDocument(documentName));
+
+            var stream = new MemoryStream();
+            using var writer = new StreamWriter(stream) { AutoFlush = true };
+            var resultTask = (Task)InvokeMethod(generateMethod, service, new object[] { documentName, writer });
+            if (resultTask == null)
+            {
+                return null;
+            }
+
+            var finishedIndex = Task.WaitAny(resultTask, Task.Delay(TimeSpan.FromMinutes(1)));
+            if (finishedIndex != 0)
+            {
+                Reporter.WriteError(Resources.FormatMethodTimedOut(GenerateMethodName, DocumentService, 1));
+                return null;
+            }
+
+            var filePath = GetDocumentPath(documentName, projectName, outputDirectory);
+            try
+            {
+                if (stream.Length == 0L)
+                {
+                    Reporter.WriteError(Resources.FormatMethodWroteNoContent(
+                        GenerateMethodName,
+                        DocumentService,
+                        documentName));
+
+                    return null;
+                }
+
+                stream.Position = 0L;
+                Reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
+
+                // Create the output FileStream last to avoid corrupting an existing file or writing partial data.
+                using var outStream = File.Create(filePath);
+                stream.CopyTo(outStream);
+                outStream.Flush();
+            }
+            catch
+            {
+                File.Delete(filePath);
+                throw;
+            }
+
+            return filePath;
+        }
+
+        private static string GetDocumentPath(string documentName, string projectName, string outputDirectory)
+        {
+            string path;
+            if (string.Equals("v1", documentName, StringComparison.Ordinal))
+            {
+                // Leave default document name out of the filename.
+                path = projectName + ".json";
+            }
+            else
+            {
+                // Sanitize the document name because it may contain almost any character, including illegal filename
+                // characters such as '/' and '?' and the string "..". Do not treat slashes as folder separators.
+                var sanitizedDocumentName = string.Join("_", documentName.Split(InvalidFilenameCharacters));
+                while (sanitizedDocumentName.Contains(InvalidFilenameStrings[0]))
+                {
+                    sanitizedDocumentName = string.Join(
+                        ".",
+                        sanitizedDocumentName.Split(InvalidFilenameStrings, StringSplitOptions.None));
+                }
+
+                path = $"{projectName}_{documentName}.json";
+            }
+
+            if (!string.IsNullOrEmpty(outputDirectory))
+            {
+                path = Path.Combine(outputDirectory, path);
+            }
+
+            return path;
+        }
+
+        private static MethodInfo GetMethod(
+            string methodName,
+            Type type,
+            Type[] parameterTypes,
+            Type returnType,
+            bool reportErrors,
+            bool isStatic)
+        {
+            static void Report(bool reportErrors, string message)
+            {
+                if (reportErrors)
+                {
+                    Reporter.WriteError(message);
+                }
+                else
+                {
+                    Reporter.WriteWarning(message);
+                }
+            }
+
+            var method = type.GetMethod(methodName, parameterTypes);
+            if (method == null)
+            {
+                Report(reportErrors, Resources.FormatMethodNotFound(methodName, type));
+                return null;
+            }
+
+            if (isStatic != method.IsStatic)
+            {
+                if (isStatic)
+                {
+                    Report(reportErrors, Resources.FormatMethodIsNotStatic(methodName, type));
+                }
+                else
+                {
+                    Report(reportErrors, Resources.FormatMethodIsStatic(methodName, type));
+                }
+
+                return null;
+            }
+
+            if (!returnType.IsAssignableFrom(method.ReturnType))
+            {
+                Report(
+                    reportErrors,
+                    Resources.FormatMethodReturnTypeUnsupported(methodName, type, method.ReturnType, returnType));
+
+                return null;
+            }
+
+            return method;
+        }
+
+        private static object InvokeMethod(MethodInfo method, object instance, object[] arguments)
+        {
+            var result = method.Invoke(instance, arguments);
+            if (result == null)
+            {
+                Reporter.WriteError(Resources.FormatMethodReturnedNull(
+                    method.Name,
+                    method.DeclaringType,
+                    method.ReturnType));
+            }
+
+            return result;
         }
     }
 }
