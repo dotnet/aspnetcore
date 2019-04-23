@@ -290,11 +290,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             Debug.Assert(!HasStartedConsumingRequestBody);
 
-            HasStartedConsumingRequestBody = true;
             if (RequestHeaders.ContentLength > MaxRequestBodySize)
             {
                 BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
             }
+
+            HasStartedConsumingRequestBody = true;
 
             EnsureIOInitialized();
 

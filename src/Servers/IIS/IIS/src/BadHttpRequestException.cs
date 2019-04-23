@@ -4,7 +4,6 @@
 using System.IO;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IIS
 {
@@ -16,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.IIS
             StatusCode = statusCode;
             Reason = reason;
         }
+
         public int StatusCode { get; }
 
         internal RequestRejectionReason Reason { get; }

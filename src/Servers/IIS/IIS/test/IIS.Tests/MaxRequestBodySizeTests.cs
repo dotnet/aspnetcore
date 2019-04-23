@@ -143,6 +143,57 @@ namespace IIS.Tests
         }
 
         [ConditionalFact]
+        public async Task DoesNotRejectBodylessPostWithZeroContentLengthRequestWithZeroMaxRequestBodySize()
+        {
+            using (var testServer = await TestServer.Create(
+                async ctx =>
+                {
+                    await ctx.Request.Body.ReadAsync(new byte[2000]);
+
+                }, LoggerFactory, new IISServerOptions { MaxRequestBodySize = 0 }))
+            {
+                using (var connection = testServer.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        $"Content-Length: 0",
+                        "Host: localhost",
+                        "",
+                        "");
+
+                    await connection.Receive("HTTP/1.1 200 OK");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        public async Task DoesNotRejectBodylessPostWithEmptyChunksRequestWithZeroMaxRequestBodySize()
+        {
+            using (var testServer = await TestServer.Create(
+                async ctx =>
+                {
+                    await ctx.Request.Body.ReadAsync(new byte[2000]);
+
+                }, LoggerFactory, new IISServerOptions { MaxRequestBodySize = 0 }))
+            {
+                using (var connection = testServer.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        $"Transfer-Encoding: chunked",
+                        "Host: localhost",
+                        "",
+                        "0",
+                        "",
+                        "");
+
+                    await connection.Receive("HTTP/1.1 200 OK");
+                }
+            }
+        }
+
+
+        [ConditionalFact]
         public async Task SettingMaxRequestBodySizeAfterReadingFromRequestBodyThrows()
         {
             var perRequestMaxRequestBodySize = 0x10;
@@ -240,7 +291,7 @@ namespace IIS.Tests
                 {
                     await connection.Send(
                         "POST / HTTP/1.1",
-                        "Host:",
+                        "Host: localhost",
                         "Content-Length: " + (new IISServerOptions().MaxRequestBodySize + 1),
                         "",
                         "");

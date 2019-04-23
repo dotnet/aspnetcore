@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             {
                 _streams.Stop();
 
-                if (!HasResponseStarted && _requestRejectedException == null && _applicationException == null && _onStarting != null)
+                if (!HasResponseStarted && _applicationException == null && _onStarting != null)
                 {
                     await FireOnStarting();
                     // Dispose
