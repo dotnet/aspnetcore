@@ -135,9 +135,9 @@ namespace Microsoft.AspNetCore.Http
     }
     public enum CookieSecurePolicy
     {
+        SameAsRequest = 0,
         Always = 1,
         None = 2,
-        SameAsRequest = 0,
     }
     public partial class Endpoint
     {

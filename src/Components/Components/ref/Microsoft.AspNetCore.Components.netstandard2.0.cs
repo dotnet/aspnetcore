@@ -783,31 +783,31 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public enum RenderTreeEditType
     {
         PrependFrame = 1,
-        RemoveAttribute = 4,
         RemoveFrame = 2,
         SetAttribute = 3,
+        RemoveAttribute = 4,
+        UpdateText = 5,
         StepIn = 6,
         StepOut = 7,
         UpdateMarkup = 8,
-        UpdateText = 5,
     }
     public enum RenderTreeFrameType
     {
+        Element = 1,
+        Text = 2,
         Attribute = 3,
         Component = 4,
-        ComponentReferenceCapture = 7,
-        Element = 1,
-        ElementReferenceCapture = 6,
-        Markup = 8,
         Region = 5,
-        Text = 2,
+        ElementReferenceCapture = 6,
+        ComponentReferenceCapture = 7,
+        Markup = 8,
     }
 }
 namespace Microsoft.AspNetCore.Components.Routing
 {
     public enum NavLinkMatch
     {
-        All = 1,
         Prefix = 0,
+        All = 1,
     }
 }

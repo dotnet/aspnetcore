@@ -5,9 +5,9 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     public enum ValidationSummary
     {
-        All = 2,
-        ModelOnly = 1,
         None = 0,
+        ModelOnly = 1,
+        All = 2,
     }
 }
 namespace Microsoft.AspNetCore.Mvc.TagHelpers
@@ -18,11 +18,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-controller")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-fragment")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-host")]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-page")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-page-handler")]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-page")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-protocol")]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-route")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-route-*")]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("a", Attributes="asp-route")]
     public partial class AnchorTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
     {
         public AnchorTagHelper(Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator generator) { }
@@ -131,28 +131,28 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-area")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-controller")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-fragment")]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-page")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-page-handler")]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-route")]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-page")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-route-*")]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("button", Attributes="asp-route")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-action", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-all-route-data", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-area", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-controller", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-fragment", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-page", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-page-handler", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-route", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-page", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-route-*", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=image], asp-route", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-action", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-all-route-data", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-area", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-controller", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-fragment", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-page", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-page-handler", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-route", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-page", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-route-*", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("input", Attributes="[type=submit], asp-route", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     public partial class FormActionTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
     {
         public FormActionTagHelper(Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory urlHelperFactory) { }
@@ -271,9 +271,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public override System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { throw null; }
     }
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-append-version", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-fallback-href", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-fallback-href-exclude", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-fallback-href-include", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-fallback-href", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-fallback-test-class", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-fallback-test-property", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("link", Attributes="asp-fallback-test-value", TagStructure=Microsoft.AspNetCore.Razor.TagHelpers.TagStructure.WithoutEndTag)]
@@ -357,9 +357,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         public override System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output) { throw null; }
     }
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-append-version")]
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-fallback-src")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-fallback-src-exclude")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-fallback-src-include")]
+    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-fallback-src")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-fallback-test")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-src-exclude")]
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("script", Attributes="asp-src-include")]

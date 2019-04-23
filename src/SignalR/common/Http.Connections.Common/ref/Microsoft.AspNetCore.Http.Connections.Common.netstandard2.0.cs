@@ -16,10 +16,10 @@ namespace Microsoft.AspNetCore.Http.Connections
     [System.FlagsAttribute]
     public enum HttpTransportType
     {
-        LongPolling = 4,
         None = 0,
-        ServerSentEvents = 2,
         WebSockets = 1,
+        ServerSentEvents = 2,
+        LongPolling = 4,
     }
     public static partial class NegotiateProtocol
     {
