@@ -6,6 +6,7 @@
     <TestGroupName>IIS.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <SkipTests Condition=" '$(SkipIISTests)' == 'true' ">true</SkipTests>
+    <IsIISTest>true</IsIISTest>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />

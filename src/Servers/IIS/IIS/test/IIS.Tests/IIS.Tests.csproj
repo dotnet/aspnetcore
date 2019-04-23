@@ -6,8 +6,9 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <InProcessTestSite>true</InProcessTestSite>
     <IsIISTest>true</IsIISTest>
-    <TestGroupName>IIS.Tests</TestGroupName>
   </PropertyGroup>
+
+  <Import Project="../FunctionalTest.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
