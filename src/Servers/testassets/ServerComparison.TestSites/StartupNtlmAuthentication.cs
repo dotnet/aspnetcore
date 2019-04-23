@@ -3,14 +3,39 @@
 
 using System;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Negotiate;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IISIntegration;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace ServerComparison.TestSites
 {
     public class StartupNtlmAuthentication
     {
+        public IConfiguration Configuration { get; }
+        public bool IsKestrel => string.Equals(Configuration["server"], "Microsoft.AspNetCore.Server.Kestrel");
+
+        public StartupNtlmAuthentication(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public void ConfigureServices(IServiceCollection services)
+        {
+            if (IsKestrel)
+            {
+                services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                    .AddNegotiate();
+            }
+            else
+            {
+                services.AddAuthentication(IISDefaults.AuthenticationScheme);
+            }
+        }
+
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory)
         {
             app.Use(async (context, next) =>
@@ -31,6 +56,7 @@ namespace ServerComparison.TestSites
                 }
             });
 
+            app.UseAuthentication();
             app.Use((context, next) => 
             {
                 if (context.Request.Path.Equals("/Anonymous"))
@@ -46,13 +72,13 @@ namespace ServerComparison.TestSites
                     }
                     else
                     {
-                        return context.ChallengeAsync("Windows");
+                        return context.ChallengeAsync();
                     }
                 }
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.ForbidAsync("Windows");
+                    return context.ForbidAsync();
                 }
 
                 return context.Response.WriteAsync("Hello World");

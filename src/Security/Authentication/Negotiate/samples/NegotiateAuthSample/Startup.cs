@@ -28,9 +28,7 @@ namespace NegotiateAuthSample
             });
             */
             services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
-                .AddNegotiate(o =>
-                {
-                });
+                .AddNegotiate();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
