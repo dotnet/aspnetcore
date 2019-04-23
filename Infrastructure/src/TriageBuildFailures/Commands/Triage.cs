@@ -51,6 +51,7 @@ namespace TriageBuildFailures.Commands
             new HandleTestFailures(),
             new HandleBuildTimeFailures(),
             new HandleOnlyIgnoredTests(),
+            new HandleSucceededWithIssuesFailures(),
             new HandleUnhandled(),
         };
 
