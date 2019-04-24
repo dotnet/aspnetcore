@@ -49,9 +49,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
                 var newSeq = hasMoreNew ? newTree[newStartIndex].Sequence : int.MaxValue;
                 var isSeqMatch = oldSeq == newSeq;
-                var isSeqAndKeyMatch = isSeqMatch && KeyValue(ref oldTree[oldStartIndex]) == KeyValue(ref newTree[newStartIndex]);
 
-                if (isSeqAndKeyMatch)
+                if (isSeqMatch && IsKeyMatch(ref oldTree[oldStartIndex], ref newTree[newStartIndex]))
                 {
                     AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, newStartIndex);
                     oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
@@ -204,6 +203,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
 
                 newStartIndex = NextSiblingIndex(frame, newStartIndex);
+            }
+        }
+
+        private static bool IsKeyMatch(ref RenderTreeFrame frame1, ref RenderTreeFrame frame2)
+        {
+            switch (frame1.FrameType)
+            {
+                case RenderTreeFrameType.Element:
+                    return frame1.ElementKey == frame2.ElementKey;
+                case RenderTreeFrameType.Component:
+                    return frame1.ComponentKey == frame2.ComponentKey;
+                default:
+                    return true; // Other frame types don't have keys, so that's always a compatible match
             }
         }
 
