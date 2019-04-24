@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             int oldStartIndex, int oldEndIndexExcl,
             int newStartIndex, int newEndIndexExcl)
         {
+            // TODO: Reuse these (e.g., via a stack of them on the RenderBatchBuilder
+            Dictionary<int, (int oldIndex, int newIndex)> keyToIndicesLookup = null;
+
             var hasMoreOld = oldEndIndexExcl > oldStartIndex;
             var hasMoreNew = newEndIndexExcl > newStartIndex;
             var prevOldSeq = -1;
@@ -45,8 +48,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
                 var newSeq = hasMoreNew ? newTree[newStartIndex].Sequence : int.MaxValue;
+                var isSeqMatch = oldSeq == newSeq;
+                var isSeqAndKeyMatch = isSeqMatch && KeyValue(ref oldTree[oldStartIndex]) == KeyValue(ref newTree[newStartIndex]);
 
-                if (oldSeq == newSeq)
+                if (isSeqAndKeyMatch)
                 {
                     AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, newStartIndex);
                     oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
@@ -59,66 +64,99 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 else
                 {
                     bool treatAsInsert;
-                    var oldLoopedBack = oldSeq <= prevOldSeq;
-                    var newLoopedBack = newSeq <= prevNewSeq;
-                    if (oldLoopedBack == newLoopedBack)
-                    {
-                        // Both sequences are proceeding through the same loop block, so do a simple
-                        // preordered merge join (picking from whichever side brings us closer to being
-                        // back in sync)
-                        treatAsInsert = newSeq < oldSeq;
 
-                        if (oldLoopedBack)
-                        {
-                            // If both old and new have now looped back, we must reset their 'looped back'
-                            // tracker so we can treat them as proceeding through the same loop block
-                            prevOldSeq = prevNewSeq = -1;
-                        }
-                    }
-                    else if (oldLoopedBack)
+                    if (isSeqMatch)
                     {
-                        // Old sequence looped back but new one didn't
-                        // The new sequence either has some extra trailing elements in the current loop block
-                        // which we should insert, or omits some old trailing loop blocks which we should delete
-                        // TODO: Find a way of not recomputing this next flag on every iteration
-                        var newLoopsBackLater = false;
-                        for (var testIndex = newStartIndex + 1; testIndex < newEndIndexExcl; testIndex++)
+                        // Mismatch on key only
+                        if (keyToIndicesLookup == null)
                         {
-                            if (newTree[testIndex].Sequence < newSeq)
+                            keyToIndicesLookup = new Dictionary<int, (int oldIndex, int newIndex)>();
+                            BuildKeyToIndicesLookup(keyToIndicesLookup, oldTree, oldStartIndex, oldEndIndexExcl, newTree, newStartIndex, newEndIndexExcl);
+                        }
+
+                        var oldKey = KeyValue(ref oldTree[oldStartIndex]);
+                        var newKey = KeyValue(ref newTree[newStartIndex]);
+                        var oldKeyIsInNewTree = oldKey.HasValue && keyToIndicesLookup[oldKey.Value].newIndex >= 0;
+                        var newKeyIsInOldTree = newKey.HasValue && keyToIndicesLookup[newKey.Value].oldIndex >= 0;
+                        if (oldKeyIsInNewTree)
+                        {
+                            if (newKeyIsInOldTree)
                             {
-                                newLoopsBackLater = true;
-                                break;
+                                throw new NotImplementedException("Not yet supported: moving items by key");
+                            }
+                            else
+                            {
+                                treatAsInsert = true;
                             }
                         }
-
-                        // If the new sequence loops back later to an earlier point than this,
-                        // then we know it's part of the existing loop block (so should be inserted).
-                        // If not, then it's unrelated to the previous loop block (so we should treat
-                        // the old items as trailing loop blocks to be removed).
-                        treatAsInsert = newLoopsBackLater;
+                        else
+                        {
+                            treatAsInsert = false;
+                        }
                     }
                     else
                     {
-                        // New sequence looped back but old one didn't
-                        // The old sequence either has some extra trailing elements in the current loop block
-                        // which we should delete, or the new sequence has extra trailing loop blocks which we
-                        // should insert
-                        // TODO: Find a way of not recomputing this next flag on every iteration
-                        var oldLoopsBackLater = false;
-                        for (var testIndex = oldStartIndex + 1; testIndex < oldEndIndexExcl; testIndex++)
+                        var oldLoopedBack = oldSeq <= prevOldSeq;
+                        var newLoopedBack = newSeq <= prevNewSeq;
+                        if (oldLoopedBack == newLoopedBack)
                         {
-                            if (oldTree[testIndex].Sequence < oldSeq)
+                            // Both sequences are proceeding through the same loop block, so do a simple
+                            // preordered merge join (picking from whichever side brings us closer to being
+                            // back in sync)
+                            treatAsInsert = newSeq < oldSeq;
+
+                            if (oldLoopedBack)
                             {
-                                oldLoopsBackLater = true;
-                                break;
+                                // If both old and new have now looped back, we must reset their 'looped back'
+                                // tracker so we can treat them as proceeding through the same loop block
+                                prevOldSeq = prevNewSeq = -1;
                             }
                         }
+                        else if (oldLoopedBack)
+                        {
+                            // Old sequence looped back but new one didn't
+                            // The new sequence either has some extra trailing elements in the current loop block
+                            // which we should insert, or omits some old trailing loop blocks which we should delete
+                            // TODO: Find a way of not recomputing this next flag on every iteration
+                            var newLoopsBackLater = false;
+                            for (var testIndex = newStartIndex + 1; testIndex < newEndIndexExcl; testIndex++)
+                            {
+                                if (newTree[testIndex].Sequence < newSeq)
+                                {
+                                    newLoopsBackLater = true;
+                                    break;
+                                }
+                            }
 
-                        // If the old sequence loops back later to an earlier point than this,
-                        // then we know it's part of the existing loop block (so should be removed).
-                        // If not, then it's unrelated to the previous loop block (so we should treat
-                        // the new items as trailing loop blocks to be inserted).
-                        treatAsInsert = !oldLoopsBackLater;
+                            // If the new sequence loops back later to an earlier point than this,
+                            // then we know it's part of the existing loop block (so should be inserted).
+                            // If not, then it's unrelated to the previous loop block (so we should treat
+                            // the old items as trailing loop blocks to be removed).
+                            treatAsInsert = newLoopsBackLater;
+                        }
+                        else
+                        {
+                            // New sequence looped back but old one didn't
+                            // The old sequence either has some extra trailing elements in the current loop block
+                            // which we should delete, or the new sequence has extra trailing loop blocks which we
+                            // should insert
+                            // TODO: Find a way of not recomputing this next flag on every iteration
+                            var oldLoopsBackLater = false;
+                            for (var testIndex = oldStartIndex + 1; testIndex < oldEndIndexExcl; testIndex++)
+                            {
+                                if (oldTree[testIndex].Sequence < oldSeq)
+                                {
+                                    oldLoopsBackLater = true;
+                                    break;
+                                }
+                            }
+
+                            // If the old sequence loops back later to an earlier point than this,
+                            // then we know it's part of the existing loop block (so should be removed).
+                            // If not, then it's unrelated to the previous loop block (so we should treat
+                            // the new items as trailing loop blocks to be inserted).
+                            treatAsInsert = !oldLoopsBackLater;
+                        }
                     }
 
                     if (treatAsInsert)
@@ -136,6 +174,49 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         prevOldSeq = oldSeq;
                     }
                 }
+            }
+        }
+
+        private static void BuildKeyToIndicesLookup(Dictionary<int, (int oldIndex, int newIndex)> keyToIndicesLookup, RenderTreeFrame[] oldTree, int oldStartIndex, int oldEndIndexExcl, RenderTreeFrame[] newTree, int newStartIndex, int newEndIndexExcl)
+        {
+            while (oldStartIndex < oldEndIndexExcl)
+            {
+                ref var frame = ref oldTree[oldStartIndex];
+                var key = KeyValue(ref frame);
+                if (key.HasValue)
+                {
+                    keyToIndicesLookup[key.Value] = (oldStartIndex, -1);
+                }
+
+                oldStartIndex = NextSiblingIndex(frame, oldStartIndex);
+            }
+
+            while (newStartIndex < newEndIndexExcl)
+            {
+                ref var frame = ref newTree[newStartIndex];
+                var key = KeyValue(ref frame);
+                if (key.HasValue)
+                {
+                    var keyValue = key.Value;
+                    keyToIndicesLookup[keyValue] = keyToIndicesLookup.ContainsKey(keyValue)
+                        ? (keyToIndicesLookup[keyValue].oldIndex, newStartIndex)
+                        : (-1, newStartIndex);
+                }
+
+                newStartIndex = NextSiblingIndex(frame, newStartIndex);
+            }
+        }
+
+        private static int? KeyValue(ref RenderTreeFrame frame)
+        {
+            switch (frame.FrameType)
+            {
+                case RenderTreeFrameType.Component:
+                    return frame.ComponentKey;
+                case RenderTreeFrameType.Element:
+                    return frame.ElementKey;
+                default:
+                    return null;
             }
         }
 

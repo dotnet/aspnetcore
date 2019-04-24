@@ -413,7 +413,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
         }
 
-        private void SetKey(int keyValue)
+        /// <summary>
+        /// Applies the specified key to the most recently opened element or component frame.
+        /// </summary>
+        /// <param name="keyValue">The value for the key.</param>
+        public void SetKey(int keyValue)
         {
             // TODO: Call this from the compiler when there's a "key" directive attribute
             // Alternative would be to add a param to OpenElement/OpenComponent that

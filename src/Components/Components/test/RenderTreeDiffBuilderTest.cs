@@ -270,6 +270,71 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RecognizesKeyedInsertions()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey(100);
+            oldTree.AddContent(1, "Existing");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey(200);
+            newTree.AddContent(1, "Inserted");
+            newTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey(100);
+            newTree.AddContent(1, "Existing");
+            newTree.CloseElement();
+
+            // Without the key, it would change the text "Existing" to "Inserted", then insert a new "Existing" below it
+            // With the key, it just inserts a new "Inserted" at the top
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal(200, referenceFrames[entry.ReferenceFrameIndex].ElementKey);
+                });
+        }
+
+        [Fact]
+        public void RecognizesKeyedDeletions()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey(100);
+            oldTree.AddContent(1, "First");
+            oldTree.CloseElement();
+
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey(200);
+            oldTree.AddContent(1, "Second");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey(200);
+            newTree.AddContent(1, "Second");
+            newTree.CloseElement();
+
+            // Without the key, it changes the text content of "First" to "Second", then deletes the other "Second"
+            // With the key, it just deletes "First"
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
+        }
+
+        [Fact]
         public void RecognizesTextUpdates()
         {
             // Arrange
