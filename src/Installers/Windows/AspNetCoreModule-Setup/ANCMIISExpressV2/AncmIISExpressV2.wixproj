@@ -58,8 +58,10 @@
           AfterTargets="Build">
     <ItemGroup>
       <BuildContentForAncm Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\bin\$(Configuration)\$(TempPlatform)\*.*" />
+      <BuildContentForAncmHandler Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\OutOfProcessRequestHandler\bin\$(Configuration)\$(TempPlatform)\*.*" />
     </ItemGroup>
     <Copy SourceFiles="@(BuildContentForAncm)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
+    <Copy SourceFiles="@(BuildContentForAncmHandler)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

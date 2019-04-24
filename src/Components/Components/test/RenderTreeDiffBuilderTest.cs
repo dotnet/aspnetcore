@@ -486,7 +486,7 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.NotEqual(0, removedEventHandlerFrame.AttributeEventHandlerId);
             Assert.Equal(
                 new[] { removedEventHandlerFrame.AttributeEventHandlerId },
-                batch.DisposedEventHandlerIDs);
+                batch.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
@@ -1114,7 +1114,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var renderBatch = GetRenderedBatch();
 
             // Assert
-            var diff = renderBatch.UpdatedComponents.Single();
+            var diff = renderBatch.UpdatedComponents.AsEnumerable().Single();
             Assert.Collection(diff.Edits,
                 entry => AssertEdit(entry, RenderTreeEditType.StepIn, 1),
                 entry =>
@@ -1145,7 +1145,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var renderBatch = GetRenderedBatch();
-            var componentInstance = newTree.GetFrames().First().Component as FakeComponent;
+            var componentInstance = newTree.GetFrames().AsEnumerable().First().Component as FakeComponent;
 
             // Assert
             Assert.Equal(1, renderBatch.UpdatedComponents.Count);
@@ -1216,7 +1216,7 @@ namespace Microsoft.AspNetCore.Components.Test
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
             Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
-            Assert.Empty(batch.DisposedEventHandlerIDs);
+            Assert.Empty(batch.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
@@ -1243,7 +1243,7 @@ namespace Microsoft.AspNetCore.Components.Test
             AssertFrame.Attribute(newAttributeFrame, "ontest", retainedHandler);
             Assert.NotEqual(0, oldAttributeFrame.AttributeEventHandlerId);
             Assert.Equal(oldAttributeFrame.AttributeEventHandlerId, newAttributeFrame.AttributeEventHandlerId);
-            Assert.Empty(batch.DisposedEventHandlerIDs);
+            Assert.Empty(batch.DisposedEventHandlerIDs.AsEnumerable());
         }
 
         [Fact]
@@ -1503,7 +1503,7 @@ namespace Microsoft.AspNetCore.Components.Test
             var batch = GetRenderedBatch(initializeFromFrames);
             var diffsInBatch = batch.UpdatedComponents;
             Assert.Equal(1, diffsInBatch.Count);
-            return (diffsInBatch.Array[0], batch.ReferenceFrames.ToArray(), batch);
+            return (diffsInBatch.Array[0], batch.ReferenceFrames.AsEnumerable().ToArray(), batch);
         }
 
         private RenderBatch GetRenderedBatch(bool initializeFromFrames = false)
