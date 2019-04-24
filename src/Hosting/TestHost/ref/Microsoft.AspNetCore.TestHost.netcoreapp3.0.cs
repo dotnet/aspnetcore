@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.TestHost
 {
     public partial class ClientHandler : System.Net.Http.HttpMessageHandler
     {
-        public ClientHandler(Microsoft.AspNetCore.Http.PathString pathBase, Microsoft.AspNetCore.Hosting.Server.IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context> application) { }
+        internal ClientHandler() { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
