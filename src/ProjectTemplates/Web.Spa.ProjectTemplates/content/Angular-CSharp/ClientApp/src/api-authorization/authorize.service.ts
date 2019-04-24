@@ -322,6 +322,11 @@ export class AuthorizeService {
       prefix: ApplicationName
     });
     this.userManager = new UserManager(settings);
+
+    this.userManager.events.addUserSignedOut(async () => {
+      await this.userManager.removeUser();
+      this.userSubject.next(null);
+    });
   }
 
   private getUserFromStorage(): Observable<IUser> {
