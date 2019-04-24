@@ -53,7 +53,8 @@ namespace Microsoft.AspNetCore.Http.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool IsPercentEncodedChar(string str, int index)
         {
-            if (str[index] == '%' && index < str.Length - 2)
+            var len = (uint)str.Length;
+            if (str[index] == '%' && index < len - 2)
             {
                 return AreFollowingTwoCharsHex(str, index);
             }
