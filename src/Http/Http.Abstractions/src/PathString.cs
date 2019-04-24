@@ -74,12 +74,18 @@ namespace Microsoft.AspNetCore.Http
             }
 
             var value = _value;
-            for (var i = 0; i < value.Length; i++)
+            var i = 0;
+            for (; i < value.Length; i++)
             {
                 if (!PathStringHelper.IsValidPathChar(value[i]) || PathStringHelper.IsPercentEncodedChar(value, i))
                 {
-                    return ToEscapedUriComponent(value, i);
+                    break;
                 }
+            }
+
+            if (i < value.Length)
+            {
+                return ToEscapedUriComponent(value, i);
             }
 
             return value;
