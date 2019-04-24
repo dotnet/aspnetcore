@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Http.Internal
 {
-    internal class PathStringHelper
+    internal static class PathStringHelper
     {
         private static readonly bool[] ValidPathChars = {
             false, false, false, false, false, false, false, false,     // 0x00 - 0x07
@@ -70,12 +70,11 @@ namespace Microsoft.AspNetCore.Http.Internal
             var charToHex = CharToHexLookup;
             var i1 = (int)str[index + 1];
             var i2 = (int)str[index + 2];
-            if ((uint)i1 < (uint)charToHex.Length &&
-                charToHex[i1] != 0xff &&
-               (uint)i2 < (uint)charToHex.Length &&
-                charToHex[i2] != 0xff)
+            if ((uint)i1 < (uint)charToHex.Length
+                && (uint)i2 < (uint)charToHex.Length)
             {
-                return true;
+                var tmp = charToHex[i1] | charToHex[i2];
+                return tmp != 0xFF;
             }
 
             return false;
