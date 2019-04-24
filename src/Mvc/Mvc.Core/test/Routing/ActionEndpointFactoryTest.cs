@@ -226,6 +226,26 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         [Fact]
+        public void AddEndpoints_AttributeRouted_WithRouteName_EndpointCreated()
+        {
+            // Arrange
+            var values = new { controller = "TestController", action = "TestAction", page = (string)null };
+            var action = CreateActionDescriptor(values, "{controller}/{action}/{page}");
+            action.AttributeRouteInfo.Name = "Test";
+
+            // Act
+            var endpoint = CreateAttributeRoutedEndpoint(action);
+
+            // Assert
+            Assert.Equal("{controller}/{action}/{page}", endpoint.RoutePattern.RawText);
+            Assert.Equal("TestController", endpoint.RoutePattern.RequiredValues["controller"]);
+            Assert.Equal("TestAction", endpoint.RoutePattern.RequiredValues["action"]);
+            Assert.False(endpoint.RoutePattern.RequiredValues.ContainsKey("page"));
+            Assert.Equal("Test", endpoint.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+            Assert.Equal("Test", endpoint.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
+        }
+
+        [Fact]
         public void AddEndpoints_ConventionalRouted_WithMatchingConstraint_CreatesEndpoint()
         {
             // Arrange
@@ -300,7 +320,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private RouteEndpoint CreateAttributeRoutedEndpoint(ActionDescriptor action)
         {
             var endpoints = new List<Endpoint>();
-            Factory.AddEndpoints(endpoints, action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>());
+            Factory.AddEndpoints(endpoints, new HashSet<string>(StringComparer.OrdinalIgnoreCase), action, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>());
             return Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
         }
 
@@ -314,7 +334,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.NotNull(action.RouteValues);
 
             var endpoints = new List<Endpoint>();
-            Factory.AddEndpoints(endpoints, action, new[] { route, }, Array.Empty<Action<EndpointBuilder>>());
+            Factory.AddEndpoints(endpoints, new HashSet<string>(StringComparer.OrdinalIgnoreCase), action, new[] { route, }, Array.Empty<Action<EndpointBuilder>>());
             var endpoint = Assert.IsType<RouteEndpoint>(Assert.Single(endpoints));
 
             // This should be true for all conventional-routed actions.
@@ -331,7 +351,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         private IReadOnlyList<RouteEndpoint> CreateConventionalRoutedEndpoints(ActionDescriptor action, IReadOnlyList<ConventionalRouteEntry> routes)
         {
             var endpoints = new List<Endpoint>();
-            Factory.AddEndpoints(endpoints, action, routes, Array.Empty<Action<EndpointBuilder>>());
+            Factory.AddEndpoints(endpoints, new HashSet<string>(StringComparer.OrdinalIgnoreCase), action, routes, Array.Empty<Action<EndpointBuilder>>());
             return endpoints.Cast<RouteEndpoint>().ToList();
         }
 

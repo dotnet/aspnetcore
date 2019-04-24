@@ -32,11 +32,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         protected override List<Endpoint> CreateEndpoints(IReadOnlyList<ActionDescriptor> actions, IReadOnlyList<Action<EndpointBuilder>> conventions)
         {
             var endpoints = new List<Endpoint>();
+            var routeData = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < actions.Count; i++)
             {
                 if (actions[i] is PageActionDescriptor action)
                 {
-                    _endpointFactory.AddEndpoints(endpoints, action, Array.Empty<ConventionalRouteEntry>(), conventions);
+                    _endpointFactory.AddEndpoints(endpoints, routeData, action, Array.Empty<ConventionalRouteEntry>(), conventions);
                 }
             }
 

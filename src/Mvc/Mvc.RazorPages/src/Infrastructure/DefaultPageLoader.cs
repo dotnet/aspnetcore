@@ -105,7 +105,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             // compiling/loading the page. Then once we have a match we load the page and we can create an endpoint
             // with all of the information we get from the compiled action descriptor.
             var endpoints = new List<Endpoint>();
-            _endpointFactory.AddEndpoints(endpoints, compiled, Array.Empty<ConventionalRouteEntry>(), Array.Empty<Action<EndpointBuilder>>());
+            _endpointFactory.AddEndpoints(
+                endpoints,
+                new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                compiled,
+                Array.Empty<ConventionalRouteEntry>(),
+                Array.Empty<Action<EndpointBuilder>>());
 
             // In some test scenarios there's no route so the endpoint isn't created. This is fine because
             // it won't happen for real.

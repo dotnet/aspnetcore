@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     AttributeRouteInfo = new AttributeRouteInfo()
                     {
                         Template = "/test",
+                        Name = "Test",
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
@@ -107,16 +108,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
                     Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("1", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("1", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
                 },
                 e =>
                 {
                     Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
                     Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("2", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("2", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
                 },
                 e =>
                 {
                     Assert.Equal("/test", e.RoutePattern.RawText);
                     Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Test", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("Test", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
                 });
         }
 
