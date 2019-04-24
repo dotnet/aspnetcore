@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Net;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -19,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             // Individual segments are URL-decoded in order to support arbitrary characters, assuming UTF-8 encoding.
             for (int i = 0; i < Segments.Length; i++)
             {
-                Segments[i] = WebUtility.UrlDecode(Segments[i]);
+                Segments[i] = Uri.UnescapeDataString(Segments[i]);
             }
         }
 

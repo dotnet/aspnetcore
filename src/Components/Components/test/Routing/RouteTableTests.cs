@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
         [InlineData("/value2/", "value2")]
         [InlineData("/d%C3%A9j%C3%A0%20vu", "déjà vu")]
         [InlineData("/d%C3%A9j%C3%A0%20vu/", "déjà vu")]
-        [InlineData("/d%C3%A9j%C3%A0+vu", "déjà vu")]
+        [InlineData("/d%C3%A9j%C3%A0+vu", "déjà+vu")]
         public void CanMatchParameterTemplate(string path, string expectedValue)
         {
             // Arrange
