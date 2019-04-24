@@ -592,7 +592,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                         result = await awaitable;
                         TcpCorkFeature?.Cork();
-
                     }
                 } while (!TryParseRequest(result, out endConnection));
 
