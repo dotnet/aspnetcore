@@ -209,7 +209,6 @@ namespace Microsoft.AspNetCore.Mvc
     }
     public enum CompatibilityVersion
     {
-        Latest = 2147483647,
         [System.ObsoleteAttribute("This CompatibilityVersion value is obsolete. The recommended alternatives are Version_3_0 or later.")]
         Version_2_0 = 0,
         [System.ObsoleteAttribute("This CompatibilityVersion value is obsolete. The recommended alternatives are Version_3_0 or later.")]
@@ -217,6 +216,7 @@ namespace Microsoft.AspNetCore.Mvc
         [System.ObsoleteAttribute("This CompatibilityVersion value is obsolete. The recommended alternatives are Version_3_0 or later.")]
         Version_2_2 = 2,
         Version_3_0 = 3,
+        Latest = 2147483647,
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(409)]
     public partial class ConflictObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
@@ -2115,8 +2115,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     public enum BindingBehavior
     {
-        Never = 1,
         Optional = 0,
+        Never = 1,
         Required = 2,
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Parameter | System.AttributeTargets.Property, AllowMultiple=false, Inherited=true)]
