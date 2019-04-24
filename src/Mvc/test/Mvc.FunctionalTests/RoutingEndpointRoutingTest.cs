@@ -377,6 +377,67 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("/ConventionalTransformerRoute/conventional-transformer", result.Link);
         }
 
+        [Fact]
+        public async Task LinkGenerator_EndpointName_LinkToConventionalRoutedAction()
+        {
+            // Arrange
+            
+            // Act
+            var response = await Client.GetAsync("/EndpointName/LinkToConventionalRouted");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal("/EndpointName/LinkToConventionalRouted", body);
+        }
+
+        [Fact]
+        public async Task LinkGenerator_EndpointName_LinkToConventionalRoutedAction_WithAmbientValueIgnored()
+        {
+            // Arrange
+
+            // Act
+            var response = await Client.GetAsync("/EndpointName/LinkToConventionalRouted/test");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal("/EndpointName/LinkToConventionalRouted", body);
+        }
+
+
+        [Fact]
+        public async Task LinkGenerator_EndpointName_LinkToAttributeRoutedAction()
+        {
+            // Arrange
+
+            // Act
+            var response = await Client.GetAsync("/EndpointName/LinkToAttributeRouted");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal("/EndpointName/LinkToAttributeRouted", body);
+        }
+
+        [Fact]
+        public async Task LinkGenerator_EndpointName_LinkToAttributeRoutedAction_WithAmbientValueIgnored()
+        {
+            // Arrange
+
+            // Act
+            var response = await Client.GetAsync("/EndpointName/LinkToAttributeRouted/test");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+
+            Assert.Equal("/EndpointName/LinkToAttributeRouted", body);
+        }
+
         // Endpoint routing exposes HTTP 405s for HTTP method mismatches.
         protected override void AssertCorsRejectionStatusCode(HttpResponseMessage response)
         {

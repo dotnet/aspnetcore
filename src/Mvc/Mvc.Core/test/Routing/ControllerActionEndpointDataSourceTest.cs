@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     AttributeRouteInfo = new AttributeRouteInfo()
                     {
                         Template = "/test",
+                        Name = "Test",
                     },
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                     {
@@ -107,16 +108,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 {
                     Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
                     Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("1", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("1", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
                 },
                 e =>
                 {
                     Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
                     Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("2", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("2", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
                 },
                 e =>
                 {
                     Assert.Equal("/test", e.RoutePattern.RawText);
                     Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Test", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("Test", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
                 });
         }
 
@@ -198,6 +205,95 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     Assert.Equal("/test", e.RoutePattern.RawText);
                     Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
                     Assert.Equal("Hi there", e.Metadata.GetMetadata<string>());
+                });
+        }
+
+        [Fact]
+        public void Endpoints_AppliesConventions_CanOverideEndpointName()
+        {
+            // Arrange
+            var actions = new List<ActionDescriptor>
+            {
+                new ControllerActionDescriptor
+                {
+                    AttributeRouteInfo = new AttributeRouteInfo()
+                    {
+                        Template = "/test",
+                        Name = "Test",
+                    },
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Test" },
+                        { "controller", "Test" },
+                    },
+                },
+                new ControllerActionDescriptor
+                {
+                    RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                    {
+                        { "action", "Index" },
+                        { "controller", "Home" },
+                    },
+                }
+            };
+
+            var mockDescriptorProvider = new Mock<IActionDescriptorCollectionProvider>();
+            mockDescriptorProvider
+                .Setup(m => m.ActionDescriptors)
+                .Returns(new ActionDescriptorCollection(actions, 0));
+
+            var dataSource = (ControllerActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
+            dataSource.AddRoute("1", "/1/{controller}/{action}/{id?}", null, null, null);
+            dataSource.AddRoute("2", "/2/{controller}/{action}/{id?}", null, null, null);
+            
+            
+            dataSource.DefaultBuilder.Add(b =>
+            {
+                if (b.Metadata.OfType<ActionDescriptor>().FirstOrDefault()?.AttributeRouteInfo != null)
+                {
+                    b.Metadata.Add(new EndpointNameMetadata("NewName"));
+                }
+            });
+
+            // Act
+            var endpoints = dataSource.Endpoints;
+
+            // Assert
+            Assert.Collection(
+                endpoints.OfType<RouteEndpoint>().Where(e => !SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+                e =>
+                {
+                    Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                },
+                e =>
+                {
+                    Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Same(actions[1], e.Metadata.GetMetadata<ActionDescriptor>());
+                });
+
+            Assert.Collection(
+                endpoints.OfType<RouteEndpoint>().Where(e => SupportsLinkGeneration(e)).OrderBy(e => e.RoutePattern.RawText),
+                e =>
+                {
+                    Assert.Equal("/1/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("1", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("1", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
+                },
+                e =>
+                {
+                    Assert.Equal("/2/{controller}/{action}/{id?}", e.RoutePattern.RawText);
+                    Assert.Null(e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("2", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("2", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
+                },
+                e =>
+                {
+                    Assert.Equal("/test", e.RoutePattern.RawText);
+                    Assert.Same(actions[0], e.Metadata.GetMetadata<ActionDescriptor>());
+                    Assert.Equal("Test", e.Metadata.GetMetadata<IRouteNameMetadata>().RouteName);
+                    Assert.Equal("NewName", e.Metadata.GetMetadata<IEndpointNameMetadata>().EndpointName);
                 });
         }
 
