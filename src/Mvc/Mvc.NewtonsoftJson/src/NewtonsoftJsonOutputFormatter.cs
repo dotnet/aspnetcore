@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         /// <summary>
         /// Called during serialization to create the <see cref="JsonSerializer"/>.The formatter context
-        /// that is passed gives an ability to create serializer specific to the context. 
+        /// that is passed gives an ability to create serializer specific to the context.
         /// </summary>
         /// <returns>The <see cref="JsonSerializer"/> used during serialization and deserialization.</returns>
         protected virtual JsonSerializer CreateJsonSerializer()
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         /// <summary>
         /// Called during serialization to create the <see cref="JsonSerializer"/>.The formatter context
-        /// that is passed gives an ability to create serializer specific to the context. 
+        /// that is passed gives an ability to create serializer specific to the context.
         /// </summary>
         /// <param name="context">A context object for <see cref="IOutputFormatter.WriteAsync(OutputFormatterWriteContext)"/>.</param>
         /// <returns>The <see cref="JsonSerializer"/> used during serialization and deserialization.</returns>
@@ -154,6 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 if (fileBufferingWriteStream != null)
                 {
+                    response.ContentLength = fileBufferingWriteStream.Length;
                     await fileBufferingWriteStream.DrainBufferAsync(response.Body);
                 }
             }

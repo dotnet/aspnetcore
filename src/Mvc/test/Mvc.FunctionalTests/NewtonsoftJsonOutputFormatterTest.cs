@@ -4,6 +4,7 @@
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.NewtonsoftJson;
+using FormatterWebSite.Controllers;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -40,6 +41,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var actualBody = await response.Content.ReadAsStringAsync();
             Assert.Equal(expectedBody, actualBody);
+        }
+
+        [Fact]
+        public async Task JsonOutputFormatter_SetsContentLength()
+        {
+            // Act
+            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.SimpleModelResult)}");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            Assert.Equal(50, response.Content.Headers.ContentLength);
         }
     }
 }
