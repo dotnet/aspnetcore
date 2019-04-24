@@ -187,9 +187,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 builder.Metadata.Add(new RouteNameMetadata(route.RouteName));
             }
 
-            // MVC guarantees that when two of it's endpoints have the same route name they are equivalent.
+            // See comments on the other usage of EndpointNameMetadata in this class.
             //
-            // However, Endpoint Routing requires Endpoint Names to be unique.
+            // The set of cases for a conventional route are much simpler. We don't need to check
+            // for Endpoint Name already exising here because there's no way to add an attribute to
+            // a conventional route.
             if (route.RouteName != null && routeNames.Add(route.RouteName))
             {
                 builder.Metadata.Add(new EndpointNameMetadata(route.RouteName));
@@ -314,8 +316,21 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             // MVC guarantees that when two of it's endpoints have the same route name they are equivalent.
             //
+            // The case for this looks like:
+            //
+            //  [HttpGet]
+            //  [HttpPost]
+            //  [Route("/Foo", Name = "Foo")]
+            //  public void DoStuff() { }
+            //
             // However, Endpoint Routing requires Endpoint Names to be unique.
-            if (routeName != null && !suppressLinkGeneration && routeNames.Add(routeName))
+            //
+            // We can use the route name as the endpoint name if it's not set. Note that there's no
+            // attribute for this today so it's unlikley. Using endpoint name on a 
+            if (routeName != null && 
+                !suppressLinkGeneration && 
+                routeNames.Add(routeName) &&
+                builder.Metadata.OfType<IEndpointNameMetadata>().LastOrDefault()?.EndpointName == null)
             {
                 builder.Metadata.Add(new EndpointNameMetadata(routeName));
             }

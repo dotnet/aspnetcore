@@ -107,10 +107,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var endpoints = new List<Endpoint>();
             _endpointFactory.AddEndpoints(
                 endpoints,
-                new HashSet<string>(StringComparer.OrdinalIgnoreCase),
-                compiled,
-                Array.Empty<ConventionalRouteEntry>(),
-                Array.Empty<Action<EndpointBuilder>>());
+                routeNames: new HashSet<string>(StringComparer.OrdinalIgnoreCase),
+                action: compiled,
+                routes: Array.Empty<ConventionalRouteEntry>(),
+                conventions: Array.Empty<Action<EndpointBuilder>>());
 
             // In some test scenarios there's no route so the endpoint isn't created. This is fine because
             // it won't happen for real.
