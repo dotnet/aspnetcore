@@ -371,12 +371,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public unsafe static void SetCorkOption(this Socket socket, bool isCorked)
         {
             int optval = isCorked ? 1 : 0;
-            setsockopt(socket.Handle, SOL_TCP, TCP_CORK, &optval, sizeof(int));
+            setsockopt((int)socket.Handle, SOL_TCP, TCP_CORK, &optval, sizeof(int));
         }
 
         // Option is rejected by corefx PAL layer
         // Shim until api supported e.g. SetRawSocketOption https://github.com/dotnet/corefx/issues/37122
         [DllImport("libc")]
-        static unsafe extern int setsockopt(IntPtr sockfd, int level, int optname, void* optval, int optlen);
+        static unsafe extern int setsockopt(int sockfd, int level, int optname, void* optval, int optlen);
     }
 }
