@@ -16,8 +16,6 @@ namespace Microsoft.AspNetCore.Http
     [TypeConverter(typeof(PathStringConverter))]
     public readonly struct PathString : IEquatable<PathString>
     {
-        private static readonly char[] splitChar = { '/' };
-
         /// <summary>
         /// Represents the empty path. This field is read-only.
         /// </summary>
@@ -75,27 +73,40 @@ namespace Microsoft.AspNetCore.Http
                 return string.Empty;
             }
 
+            var value = _value;
+            for (var i = 0; i < value.Length; i++)
+            {
+                if (!PathStringHelper.IsValidPathChar(value[i]) || PathStringHelper.IsPercentEncodedChar(value, i))
+                {
+                    return ToEscapedUriComponent(value, i);
+                }
+            }
+
+            return value;
+        }
+
+        private static string ToEscapedUriComponent(string value, int i)
+        {
             StringBuilder buffer = null;
 
             var start = 0;
-            var count = 0;
+            var count = i;
             var requiresEscaping = false;
-            var i = 0;
 
-            while (i < _value.Length)
+            while (i < value.Length)
             {
-                var isPercentEncodedChar = PathStringHelper.IsPercentEncodedChar(_value, i);
-                if (PathStringHelper.IsValidPathChar(_value[i]) || isPercentEncodedChar)
+                var isPercentEncodedChar = PathStringHelper.IsPercentEncodedChar(value, i);
+                if (PathStringHelper.IsValidPathChar(value[i]) || isPercentEncodedChar)
                 {
                     if (requiresEscaping)
                     {
                         // the current segment requires escape
                         if (buffer == null)
                         {
-                            buffer = new StringBuilder(_value.Length * 3);
+                            buffer = new StringBuilder(value.Length * 3);
                         }
 
-                        buffer.Append(Uri.EscapeDataString(_value.Substring(start, count)));
+                        buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
 
                         requiresEscaping = false;
                         start = i;
@@ -120,10 +131,10 @@ namespace Microsoft.AspNetCore.Http
                         // the current segment doesn't require escape
                         if (buffer == null)
                         {
-                            buffer = new StringBuilder(_value.Length * 3);
+                            buffer = new StringBuilder(value.Length * 3);
                         }
 
-                        buffer.Append(_value, start, count);
+                        buffer.Append(value, start, count);
 
                         requiresEscaping = true;
                         start = i;
@@ -135,9 +146,9 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            if (count == _value.Length && !requiresEscaping)
+            if (count == value.Length && !requiresEscaping)
             {
-                return _value;
+                return value;
             }
             else
             {
@@ -145,23 +156,22 @@ namespace Microsoft.AspNetCore.Http
                 {
                     if (buffer == null)
                     {
-                        buffer = new StringBuilder(_value.Length * 3);
+                        buffer = new StringBuilder(value.Length * 3);
                     }
 
                     if (requiresEscaping)
                     {
-                        buffer.Append(Uri.EscapeDataString(_value.Substring(start, count)));
+                        buffer.Append(Uri.EscapeDataString(value.Substring(start, count)));
                     }
                     else
                     {
-                        buffer.Append(_value, start, count);
+                        buffer.Append(value, start, count);
                     }
                 }
 
                 return buffer.ToString();
             }
         }
-
 
         /// <summary>
         /// Returns an PathString given the path as it is escaped in the URI format. The string MUST NOT contain any
