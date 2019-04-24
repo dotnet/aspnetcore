@@ -319,7 +319,6 @@ namespace Microsoft.AspNetCore.Routing
         public RouteOptions() { }
         public bool AppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IDictionary<string, System.Type> ConstraintMap { get { throw null; } set { } }
-        public System.Collections.Generic.ICollection<Microsoft.AspNetCore.Routing.EndpointDataSource> EndpointDataSources { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool LowercaseQueryStrings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool LowercaseUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressCheckForUnhandledSecurityMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
