@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
 using Newtonsoft.Json.Linq;
@@ -51,7 +52,7 @@ namespace Templates.Test.SpaTemplateTest
             // multiple NPM installs run concurrently which otherwise causes errors when
             // tests run in parallel.
             var clientAppSubdirPath = Path.Combine(Project.TemplateOutputDir, "ClientApp");
-            Assert.True(File.Exists(Path.Combine(clientAppSubdirPath, "package.json")), "Missing a package.json");
+            ValidatePackageJson(clientAppSubdirPath);
 
             var projectFileContents = ReadFile(Project.TemplateOutputDir, $"{Project.ProjectName}.csproj");
             if (usesAuth && !useLocalDb)
@@ -135,6 +136,17 @@ namespace Templates.Test.SpaTemplateTest
                     TestBasicNavigation(visitFetchData: shouldVisitFetchData, usesAuth, browser);
                 }
             }
+        }
+
+        private void ValidatePackageJson(string clientAppSubdirPath)
+        {
+            Assert.True(File.Exists(Path.Combine(clientAppSubdirPath, "package.json")), "Missing a package.json");
+            var packageJson = JObject.Parse(ReadFile(clientAppSubdirPath, "package.json"));
+
+            // NPM package names must match ^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$
+            var packageName = (string)packageJson["name"];
+            Regex regex = new Regex("^(?:@[a-z0-9-~][a-z0-9-._~]*/)?[a-z0-9-~][a-z0-9-._~]*$");
+            Assert.True(regex.IsMatch(packageName), "package.json name is invalid format");
         }
 
         private static async Task WarmUpServer(AspNetProcess aspNetProcess)
