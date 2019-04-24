@@ -29,7 +29,7 @@ ReactDOM.render(
 //// Uncomment the lines below to register the generated service worker.
 //// By default create-react-app includes a service worker to improve the
 //// performance of the application by caching static assets. This service
-//// worker, can however try and handle paths for the identity UI, so it is
+//// worker can interfere with the Identity UI, so it is
 //// disabled by default when Identity is being used.
 ////
 ////registerServiceWorker();
