@@ -1,11 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -21,11 +23,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                                                ITransportSchedulerFeature,
                                                IConnectionLifetimeFeature,
                                                IConnectionHeartbeatFeature,
-                                               IConnectionLifetimeNotificationFeature
+                                               IConnectionLifetimeNotificationFeature,
+                                               IConnectionCompleteFeature
     {
         // NOTE: When feature interfaces are added to or removed from this TransportConnection class implementation,
         // then the list of `features` in the generated code project MUST also be updated.
         // See also: tools/CodeGenerator/TransportConnectionFeatureCollection.cs
+
+        private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         string IHttpConnectionFeature.ConnectionId
         {
@@ -99,6 +104,69 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         void IConnectionHeartbeatFeature.OnHeartbeat(System.Action<object> action, object state)
         {
             OnHeartbeat(action, state);
+        }
+
+        public void OnCompleted(Func<object, Task> callback, object state)
+        {
+            if (_onCompleted == null)
+            {
+                _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
+            }
+            _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
+        }
+
+        public Task FireOnCompleted()
+        {
+            var onCompleted = _onCompleted;
+
+            if (onCompleted == null || onCompleted.Count == 0)
+            {
+                return Task.CompletedTask;
+            }
+
+            return FireOnCompletedMayAwait(onCompleted);
+        }
+
+        private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        {
+            while (onCompleted.TryPop(out var entry))
+            {
+                try
+                {
+                    var task = entry.Key.Invoke(entry.Value);
+                    if (!ReferenceEquals(task, Task.CompletedTask))
+                    {
+                        return FireOnCompletedAwaited(task, onCompleted);
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private async Task FireOnCompletedAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        {
+            try
+            {
+                await currentTask;
+            }
+            catch (Exception)
+            {
+            }
+
+            while (onCompleted.TryPop(out var entry))
+            {
+                try
+                {
+                    await entry.Key.Invoke(entry.Value);
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
     }
 }
