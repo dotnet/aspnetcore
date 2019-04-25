@@ -41,6 +41,25 @@ namespace Microsoft.AspNetCore.Authorization.Test
         }
 
         [Fact]
+        public async Task NoEndpointWithRequired_AnonymousUser_Challenges()
+        {
+            // Arrange
+            var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetRequiredPolicyAsync()).ReturnsAsync(policy);
+            var next = new TestRequestDelegate();
+
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+            var context = GetHttpContext(anonymous: true);
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            Assert.False(next.Called);
+        }
+
+        [Fact]
         public async Task HasEndpointWithoutAuth_AnonymousUser_Allows()
         {
             // Arrange
@@ -57,6 +76,26 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             // Assert
             Assert.True(next.Called);
+        }
+
+        [Fact]
+        public async Task HasEndpointWithRequiredWithoutAuth_AnonymousUser_Challenges()
+        {
+            // Arrange
+            var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
+            var policyProvider = new Mock<IAuthorizationPolicyProvider>();
+            policyProvider.Setup(p => p.GetDefaultPolicyAsync()).ReturnsAsync(policy);
+            policyProvider.Setup(p => p.GetRequiredPolicyAsync()).ReturnsAsync(policy);
+            var next = new TestRequestDelegate();
+
+            var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
+            var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint());
+
+            // Act
+            await middleware.Invoke(context);
+
+            // Assert
+            Assert.False(next.Called);
         }
 
         [Fact]
@@ -108,8 +147,11 @@ namespace Microsoft.AspNetCore.Authorization.Test
             var policy = new AuthorizationPolicyBuilder().RequireAssertion(_ => true).Build();
             var policyProvider = new Mock<IAuthorizationPolicyProvider>();
             var getPolicyCount = 0;
+            var getRequiredPolicyCount = 0;
             policyProvider.Setup(p => p.GetPolicyAsync(It.IsAny<string>())).ReturnsAsync(policy)
                 .Callback(() => getPolicyCount++);
+            policyProvider.Setup(p => p.GetRequiredPolicyAsync()).ReturnsAsync(policy)
+                .Callback(() => getRequiredPolicyCount++);
             var next = new TestRequestDelegate();
             var middleware = CreateMiddleware(next.Invoke, policyProvider.Object);
             var context = GetHttpContext(anonymous: true, endpoint: CreateEndpoint(new AuthorizeAttribute("whatever")));
@@ -117,14 +159,17 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Act & Assert
             await middleware.Invoke(context);
             Assert.Equal(1, getPolicyCount);
+            Assert.Equal(1, getRequiredPolicyCount);
             Assert.Equal(1, next.CalledCount);
 
             await middleware.Invoke(context);
             Assert.Equal(2, getPolicyCount);
+            Assert.Equal(2, getRequiredPolicyCount);
             Assert.Equal(2, next.CalledCount);
 
             await middleware.Invoke(context);
             Assert.Equal(3, getPolicyCount);
+            Assert.Equal(3, getRequiredPolicyCount);
             Assert.Equal(3, next.CalledCount);
         }
 

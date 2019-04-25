@@ -50,12 +50,6 @@ namespace Microsoft.AspNetCore.Authorization
 
             // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
             var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
-            if (authorizeData.Count() == 0)
-            {
-                await _next(context);
-                return;
-            }
-            
             var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData);
             if (policy == null)
             {
