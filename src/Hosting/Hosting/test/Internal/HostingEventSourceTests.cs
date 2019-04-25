@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         [Theory]
         [MemberData(nameof(RequestStartData))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2040", "All")]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2230", FlakyOn.All)]
         public void RequestStart(DefaultHttpContext httpContext, string[] expected)
         {
             // Arrange
