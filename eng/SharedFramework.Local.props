@@ -47,6 +47,7 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
+    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Certificate" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.OAuth" />
