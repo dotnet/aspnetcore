@@ -107,13 +107,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7972
         [ConditionalTheory]
         [InlineData(RuntimeArchitecture.x64)]
         [InlineData(RuntimeArchitecture.x86)]
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2221", FlakyOn.Helix.All)]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -651,7 +651,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)
         {
-            var entries = GetEventLogsFromDotnetRuntime(deploymentResult); 
+            var entries = GetEventLogsFromDotnetRuntime(deploymentResult);
 
             var expectedRegex = new Regex("Exception Info: System\\.InvalidOperationException:", RegexOptions.Singleline);
             var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
