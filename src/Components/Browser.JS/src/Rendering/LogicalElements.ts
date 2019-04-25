@@ -155,6 +155,71 @@ export function getLogicalChildrenArray(element: LogicalElement) {
   return element[logicalChildrenPropname] as LogicalElement[];
 }
 
+export function permuteLogicalChildren(parent: LogicalElement, permutationList: PermutationListEntry[]) {
+  // The permutationList must represent a valid permutation, i.e., the list of 'from' indices
+  // is distinct, and the list of 'to' indices is a permutation of it. The algorithm here
+  // relies on that assumption.
+
+  // Each of the phases here has to happen separately, because each one is designed not to
+  // interfere with the indices or DOM entries used by subsequent phases.
+
+  // Phase 1: track which nodes we will move
+  const siblings = getLogicalChildrenArray(parent);
+  permutationList.forEach((listEntry: PermutationListEntryWithTrackingData) => {
+    listEntry.moveRangeStart = siblings[listEntry.fromSiblingIndex];
+    listEntry.moveRangeEnd = findLastDomNodeInRange(listEntry.moveRangeStart);
+  });
+
+  // Phase 2: insert markers
+  permutationList.forEach((listEntry: PermutationListEntryWithTrackingData) => {
+    const marker = listEntry.moveToBeforeMarker = document.createComment('marker');
+    const insertBeforeNode = siblings[listEntry.toSiblingIndex + 1] as any as Node;
+    if (insertBeforeNode) {
+      insertBeforeNode.parentNode!.insertBefore(marker, insertBeforeNode);
+    } else {
+      appendDomNode(marker, parent);
+    }
+  });
+
+  // Phase 3: move descendants & remove markers
+  permutationList.forEach((listEntry: PermutationListEntryWithTrackingData) => {
+    const insertBefore = listEntry.moveToBeforeMarker!;
+    const parentDomNode = insertBefore.parentNode!;
+    const elementToMove = listEntry.moveRangeStart!;
+    const moveEndNode = listEntry.moveRangeEnd!;
+    let nextToMove = elementToMove as any as Node | null;
+    while (nextToMove) {
+      const nextNext = nextToMove.nextSibling;
+      parentDomNode.insertBefore(nextToMove, insertBefore);
+
+      if (nextToMove === moveEndNode) {
+        break;
+      } else {
+        nextToMove = nextNext;
+      }
+    }
+
+    parentDomNode.removeChild(insertBefore);
+  });
+
+  // Phase 4: update siblings index
+  permutationList.forEach((listEntry: PermutationListEntryWithTrackingData) => {
+    siblings[listEntry.toSiblingIndex] = listEntry.moveRangeStart!;
+  });
+}
+
+export interface PermutationListEntry {
+  fromSiblingIndex: number,
+  toSiblingIndex: number,
+}
+
+interface PermutationListEntryWithTrackingData extends PermutationListEntry {
+  // These extra properties are used internally when processing the permutation list
+  moveRangeStart?: LogicalElement,
+  moveRangeEnd?: Node,
+  moveToBeforeMarker?: Node,
+}
+
 function getLogicalNextSibling(element: LogicalElement): LogicalElement | null {
   const siblings = getLogicalChildrenArray(getLogicalParent(element)!);
   const siblingIndex = Array.prototype.indexOf.call(siblings, element);
@@ -189,6 +254,27 @@ function appendDomNode(child: Node, parent: LogicalElement) {
   } else {
     // Should never happen
     throw new Error(`Cannot append node because the parent is not a valid logical element. Parent: ${parent}`);
+  }
+}
+
+// Returns the final node (in depth-first evaluation order) that is a descendant of the logical element.
+// As such, the entire subtree is between 'element' and 'findLastDomNodeInRange(element)' inclusive.
+function findLastDomNodeInRange(element: LogicalElement) {
+  if (element instanceof Element) {
+    return element;
+  }
+
+  const nextSibling = getLogicalNextSibling(element);
+  if (nextSibling) {
+    // Simple case: not the last logical sibling, so take the node before the next sibling
+    return (nextSibling as any as Node).previousSibling;
+  } else {
+    // Harder case: there's no logical next-sibling, so recurse upwards until we find
+    // a logical ancestor that does have one, or a physical element
+    const logicalParent = getLogicalParent(element)!;
+    return logicalParent instanceof Element
+      ? logicalParent.lastChild
+      : findLastDomNodeInRange(logicalParent);
   }
 }
 

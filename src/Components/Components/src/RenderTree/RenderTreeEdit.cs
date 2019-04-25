@@ -33,6 +33,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// If the <see cref="Type"/> value is <see cref="RenderTreeEditType.PermutationListEntry"/>,
         /// gets the sibling index to which the frame should be moved.
         /// </summary>
+        // NOTE: Other code relies on the assumption that ReferenceFrameIndex and
+        // MoveToSiblingIndex share a memory slot. If you change this, be sure to
+        // update affected usages of ReferenceFrameIndex.
         [FieldOffset(8)] public readonly int MoveToSiblingIndex;
 
         /// <summary>

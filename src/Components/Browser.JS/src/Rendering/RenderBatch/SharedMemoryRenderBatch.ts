@@ -87,7 +87,8 @@ const editReader = {
   editType: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 0) as EditType,
   siblingIndex: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 4),
   newTreeIndex: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 8),
-  removedAttributeName: (edit: RenderTreeEdit) => platform.readStringField(edit as any, 12),
+  moveToSiblingIndex: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 8),
+  removedAttributeName: (edit: RenderTreeEdit) => platform.readStringField(edit as any, 16),
 };
 
 // Keep in sync with memory layout in RenderTreeFrame.cs

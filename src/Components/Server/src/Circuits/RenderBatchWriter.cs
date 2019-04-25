@@ -105,7 +105,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             // for this specific RenderTreeEditType.
             _binaryWriter.Write((int)edit.Type);
             _binaryWriter.Write(edit.SiblingIndex);
+
+            // ReferenceFrameIndex and MoveToSiblingIndex share a slot, so this writes
+            // whichever one applies to the edit type
             _binaryWriter.Write(edit.ReferenceFrameIndex);
+
             WriteString(edit.RemovedAttributeName, allowDeduplication: true);
         }
 

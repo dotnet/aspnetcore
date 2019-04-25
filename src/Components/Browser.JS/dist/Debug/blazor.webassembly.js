@@ -1037,6 +1037,7 @@ var BrowserRenderer = /** @class */ (function () {
     BrowserRenderer.prototype.applyEdits = function (batch, parent, childIndex, edits, referenceFrames) {
         var currentDepth = 0;
         var childIndexAtCurrentDepth = childIndex;
+        var permutationList;
         var arraySegmentReader = batch.arraySegmentReader;
         var editReader = batch.editReader;
         var frameReader = batch.frameReader;
@@ -1123,6 +1124,19 @@ var BrowserRenderer = /** @class */ (function () {
                     parent = LogicalElements_1.getLogicalParent(parent);
                     currentDepth--;
                     childIndexAtCurrentDepth = currentDepth === 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
+                    break;
+                }
+                case RenderBatch_1.EditType.permutationListEntry: {
+                    permutationList = permutationList || [];
+                    permutationList.push({
+                        fromSiblingIndex: childIndexAtCurrentDepth + editReader.siblingIndex(edit),
+                        toSiblingIndex: childIndexAtCurrentDepth + editReader.moveToSiblingIndex(edit),
+                    });
+                    break;
+                }
+                case RenderBatch_1.EditType.permutationListEnd: {
+                    LogicalElements_1.permuteLogicalChildren(parent, permutationList);
+                    permutationList = undefined;
                     break;
                 }
                 default: {
@@ -1929,6 +1943,54 @@ function getLogicalChildrenArray(element) {
     return element[logicalChildrenPropname];
 }
 exports.getLogicalChildrenArray = getLogicalChildrenArray;
+function permuteLogicalChildren(parent, permutationList) {
+    // The permutationList must represent a valid permutation, i.e., the list of 'from' indices
+    // is distinct, and the list of 'to' indices is a permutation of it. The algorithm here
+    // relies on that assumption.
+    // Each of the phases here has to happen separately, because each one is designed not to
+    // interfere with the indices or DOM entries used by subsequent phases.
+    // Phase 1: track which nodes we will move
+    var siblings = getLogicalChildrenArray(parent);
+    permutationList.forEach(function (listEntry) {
+        listEntry.moveRangeStart = siblings[listEntry.fromSiblingIndex];
+        listEntry.moveRangeEnd = findLastDomNodeInRange(listEntry.moveRangeStart);
+    });
+    // Phase 2: insert markers
+    permutationList.forEach(function (listEntry) {
+        var marker = listEntry.moveToBeforeMarker = document.createComment('marker');
+        var insertBeforeNode = siblings[listEntry.toSiblingIndex + 1];
+        if (insertBeforeNode) {
+            insertBeforeNode.parentNode.insertBefore(marker, insertBeforeNode);
+        }
+        else {
+            appendDomNode(marker, parent);
+        }
+    });
+    // Phase 3: move descendants & remove markers
+    permutationList.forEach(function (listEntry) {
+        var insertBefore = listEntry.moveToBeforeMarker;
+        var parentDomNode = insertBefore.parentNode;
+        var elementToMove = listEntry.moveRangeStart;
+        var moveEndNode = listEntry.moveRangeEnd;
+        var nextToMove = elementToMove;
+        while (nextToMove) {
+            var nextNext = nextToMove.nextSibling;
+            parentDomNode.insertBefore(nextToMove, insertBefore);
+            if (nextToMove === moveEndNode) {
+                break;
+            }
+            else {
+                nextToMove = nextNext;
+            }
+        }
+        parentDomNode.removeChild(insertBefore);
+    });
+    // Phase 4: update siblings index
+    permutationList.forEach(function (listEntry) {
+        siblings[listEntry.toSiblingIndex] = listEntry.moveRangeStart;
+    });
+}
+exports.permuteLogicalChildren = permuteLogicalChildren;
 function getLogicalNextSibling(element) {
     var siblings = getLogicalChildrenArray(getLogicalParent(element));
     var siblingIndex = Array.prototype.indexOf.call(siblings, element);
@@ -1968,6 +2030,26 @@ function appendDomNode(child, parent) {
         throw new Error("Cannot append node because the parent is not a valid logical element. Parent: " + parent);
     }
 }
+// Returns the final node (in depth-first evaluation order) that is a descendant of the logical element.
+// As such, the entire subtree is between 'element' and 'findLastDomNodeInRange(element)' inclusive.
+function findLastDomNodeInRange(element) {
+    if (element instanceof Element) {
+        return element;
+    }
+    var nextSibling = getLogicalNextSibling(element);
+    if (nextSibling) {
+        // Simple case: not the last logical sibling, so take the node before the next sibling
+        return nextSibling.previousSibling;
+    }
+    else {
+        // Harder case: there's no logical next-sibling, so recurse upwards until we find
+        // a logical ancestor that does have one, or a physical element
+        var logicalParent = getLogicalParent(element);
+        return logicalParent instanceof Element
+            ? logicalParent.lastChild
+            : findLastDomNodeInRange(logicalParent);
+    }
+}
 function createSymbolOrFallback(fallback) {
     return typeof Symbol === 'function' ? Symbol() : fallback;
 }
@@ -1996,6 +2078,8 @@ var EditType;
     EditType[EditType["stepIn"] = 6] = "stepIn";
     EditType[EditType["stepOut"] = 7] = "stepOut";
     EditType[EditType["updateMarkup"] = 8] = "updateMarkup";
+    EditType[EditType["permutationListEntry"] = 9] = "permutationListEntry";
+    EditType[EditType["permutationListEnd"] = 10] = "permutationListEnd";
 })(EditType = exports.EditType || (exports.EditType = {}));
 var FrameType;
 (function (FrameType) {
@@ -2093,7 +2177,8 @@ var editReader = {
     editType: function (edit) { return Environment_1.platform.readInt32Field(edit, 0); },
     siblingIndex: function (edit) { return Environment_1.platform.readInt32Field(edit, 4); },
     newTreeIndex: function (edit) { return Environment_1.platform.readInt32Field(edit, 8); },
-    removedAttributeName: function (edit) { return Environment_1.platform.readStringField(edit, 12); },
+    moveToSiblingIndex: function (edit) { return Environment_1.platform.readInt32Field(edit, 8); },
+    removedAttributeName: function (edit) { return Environment_1.platform.readStringField(edit, 16); },
 };
 // Keep in sync with memory layout in RenderTreeFrame.cs
 var frameReader = {
