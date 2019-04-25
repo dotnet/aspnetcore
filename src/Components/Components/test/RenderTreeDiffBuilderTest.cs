@@ -344,6 +344,7 @@ namespace Microsoft.AspNetCore.Components.Test
             oldTree.CloseElement();
 
             oldTree.AddContent(2, "Hello");
+            oldTree.AddContent(3, "Will be deleted");
 
             oldTree.OpenElement(0, "container");
             oldTree.SetKey(200);
@@ -379,6 +380,8 @@ namespace Microsoft.AspNetCore.Components.Test
                     Assert.Equal("First modified", referenceFrames[entry.ReferenceFrameIndex].TextContent);
                 },
                 entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
+
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 2),
 
                 // Then we have the list of moves
                 entry =>
