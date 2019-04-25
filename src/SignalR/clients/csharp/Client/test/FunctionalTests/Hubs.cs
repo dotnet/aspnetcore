@@ -47,7 +47,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => TestHubMethodsImpl.StreamIAsyncConsumer(source);
 
-
         public string GetUserIdentifier()
         {
             return Context.UserIdentifier;

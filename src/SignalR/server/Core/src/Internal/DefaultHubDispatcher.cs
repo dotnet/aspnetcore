@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         private static readonly MethodInfo _convertToStream = typeof(DefaultHubDispatcher<THub>).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("ConvertStream"));
 
-
         public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, IOptions<HubOptions<THub>> hubOptions,
             IOptions<HubOptions> globalHubOptions, ILogger<DefaultHubDispatcher<THub>> logger)
         {
@@ -282,12 +281,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                     var itemType = descriptor.StreamingParameters[streamPointer];
                                     arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
 
+                                    // Check if we have an IAsyncEnumerable here and wrap the channel provided by AddStream
                                     if (ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer]))
                                     {
                                         arguments[parameterPointer] = _convertToStream.MakeGenericMethod(itemType).Invoke(null, new object[] { arguments[parameterPointer] });
-                                        Console.WriteLine("test");
                                     }
-                                    // Check if we actually have an IAsync Enumerable here and add a wrapper method
 
                                     streamPointer++;
                                 }
