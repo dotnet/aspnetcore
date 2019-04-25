@@ -3,8 +3,16 @@
     <td>@Forecast.TemperatureC</td>
     <td>@Forecast.TemperatureF</td>
     <td>@Forecast.Summary.ToUpper()</td>
+    <td>
+        Component @myGuid has rendered @(++renderCount) times
+        <button onclick="@NoOp">+</button>
+    </td>
 </tr>
 
 @functions {
+    int renderCount = 0;
+    string myGuid = Guid.NewGuid().ToString("D").Substring(0, 6);
     [Parameter] WeatherForecast Forecast { get; set; }
+
+    void NoOp() {}
 }
