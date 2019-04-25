@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 if (!certificateIsValid)
                 {
-                    using (Logger.BeginScope(clientCertificate.SHA256Thumprint()))
+                    using (Logger.BeginScope(clientCertificate.GetCertHashString(HashAlgorithmName.SHA256)))
                     {
                         Logger.LogWarning("Client certificate failed validation, subject was {0}", clientCertificate.Subject);
                         foreach (var validationFailure in chain.ChainStatus)
