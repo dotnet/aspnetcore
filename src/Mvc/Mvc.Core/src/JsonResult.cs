@@ -68,17 +68,7 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var services = context.HttpContext.RequestServices;
-            var executor = services.GetService<IActionResultExecutor<JsonResult>>();
-            if (executor == null)
-            {
-                throw new InvalidOperationException(Resources.FormatReferenceToNewtonsoftJsonRequired(
-                    $"{nameof(JsonResult)}.{nameof(ExecuteResultAsync)}",
-                    "Microsoft.AspNetCore.Mvc.NewtonsoftJson",
-                    nameof(IMvcBuilder),
-                    "AddNewtonsoftJson",
-                    "ConfigureServices(...)"));
-            }
-
+            var executor = services.GetRequiredService<IActionResultExecutor<JsonResult>>();
             return executor.ExecuteAsync(context, this);
         }
     }

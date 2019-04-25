@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,12 +8,10 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class RawUrlHelper
     {
-        private static readonly byte[] _forwardSlashPath = Encoding.ASCII.GetBytes("/");
-
         /// <summary>
         /// Find the segment of the URI byte array which represents the path.
         /// </summary>
-        public static ArraySegment<byte> GetPath(byte[] raw)
+        public static Span<byte> GetPath(Span<byte> raw)
         {
             // performance 
             var pathStartIndex = 0;
@@ -38,12 +36,12 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                     // and http.sys behavior: If the Uri contains a query, there must be at least one '/'
                     // between the authority and the '?' character: It's safe to just look for the first
                     // '/' after the authority to determine the beginning of the path.
-                    pathStartIndex = Find(raw, authorityStartIndex, '/');
+                    pathStartIndex = Find(raw, authorityStartIndex, (byte)'/');
                     if (pathStartIndex == -1)
                     {
                         // e.g. for request lines like: 'GET http://myserver' (no final '/')
                         // At this point we can return a path with a slash.
-                        return new ArraySegment<byte>(_forwardSlashPath);
+                        return default;
                     }
                 }
                 else
@@ -67,7 +65,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 scan++;
             }
 
-            return new ArraySegment<byte>(raw, pathStartIndex, scan - pathStartIndex);
+            return raw.Slice(pathStartIndex, scan - pathStartIndex);
         }
 
         /// <summary>
@@ -75,7 +73,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         /// </summary>
         /// <param name="raw">The byte array represents the raw URI</param>
         /// <returns>Length of the matched bytes, 0 if it is not matched.</returns>
-        private static int FindHttpOrHttps(byte[] raw)
+        private static int FindHttpOrHttps(Span<byte> raw)
         {
             if (raw.Length < 7)
             {
@@ -135,17 +133,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             }
         }
 
-        private static int Find(byte[] raw, int begin, char target)
+        private static int Find(Span<byte> raw, int begin, byte target)
         {
-            for (var idx = begin; idx < raw.Length; ++idx)
+            var idx = raw.Slice(begin).IndexOf(target);
+            if (idx != -1)
             {
-                if (raw[idx] == target)
-                {
-                    return idx;
-                }
+                return idx + begin;
             }
-
-            return -1;
+            return idx;
         }
     }
 }

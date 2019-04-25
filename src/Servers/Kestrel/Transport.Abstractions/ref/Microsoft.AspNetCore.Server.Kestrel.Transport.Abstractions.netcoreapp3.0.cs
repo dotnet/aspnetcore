@@ -6,8 +6,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
     public enum FileHandleType
     {
         Auto = 0,
-        Pipe = 2,
         Tcp = 1,
+        Pipe = 2,
     }
     public partial interface IApplicationTransportFeature
     {
@@ -49,15 +49,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
     }
     public enum ListenType
     {
-        FileHandle = 2,
         IPEndPoint = 0,
         SocketPath = 1,
+        FileHandle = 2,
     }
     public enum SchedulingMode
     {
         Default = 0,
-        Inline = 2,
         ThreadPool = 1,
+        Inline = 2,
     }
     public abstract partial class TransportConnection : Microsoft.AspNetCore.Connections.ConnectionContext, Microsoft.AspNetCore.Connections.Features.IConnectionHeartbeatFeature, Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature, Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature, Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature, Microsoft.AspNetCore.Connections.Features.IMemoryPoolFeature, Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IApplicationTransportFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportSchedulerFeature, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {

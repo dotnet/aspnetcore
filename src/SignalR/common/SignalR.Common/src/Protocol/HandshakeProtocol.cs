@@ -60,14 +60,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="output">The output writer.</param>
         public static void WriteRequestMessage(HandshakeRequestMessage requestMessage, IBufferWriter<byte> output)
         {
-            using var writer = new Utf8JsonWriter(output, new JsonWriterOptions() { SkipValidation = true });
+            var reusableWriter = ReusableUtf8JsonWriter.Get(output);
 
-            writer.WriteStartObject();
-            writer.WriteString(ProtocolPropertyNameBytes, requestMessage.Protocol);
-            writer.WriteNumber(ProtocolVersionPropertyNameBytes, requestMessage.Version);
-            writer.WriteEndObject();
-            writer.Flush();
-            Debug.Assert(writer.CurrentDepth == 0);
+            try
+            {
+                var writer = reusableWriter.GetJsonWriter();
+
+                writer.WriteStartObject();
+                writer.WriteString(ProtocolPropertyNameBytes, requestMessage.Protocol);
+                writer.WriteNumber(ProtocolVersionPropertyNameBytes, requestMessage.Version);
+                writer.WriteEndObject();
+                writer.Flush();
+                Debug.Assert(writer.CurrentDepth == 0);
+            }
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
 
             TextMessageFormatter.WriteRecordSeparator(output);
         }
@@ -79,19 +88,28 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="output">The output writer.</param>
         public static void WriteResponseMessage(HandshakeResponseMessage responseMessage, IBufferWriter<byte> output)
         {
-            using var writer = new Utf8JsonWriter(output, new JsonWriterOptions() { SkipValidation = true });
+            var reusableWriter = ReusableUtf8JsonWriter.Get(output);
 
-            writer.WriteStartObject();
-            if (!string.IsNullOrEmpty(responseMessage.Error))
+            try
             {
-                writer.WriteString(ErrorPropertyNameBytes, responseMessage.Error);
+                var writer = reusableWriter.GetJsonWriter();
+
+                writer.WriteStartObject();
+                if (!string.IsNullOrEmpty(responseMessage.Error))
+                {
+                    writer.WriteString(ErrorPropertyNameBytes, responseMessage.Error);
+                }
+
+                writer.WriteNumber(MinorVersionPropertyNameBytes, responseMessage.MinorVersion);
+
+                writer.WriteEndObject();
+                writer.Flush();
+                Debug.Assert(writer.CurrentDepth == 0);
             }
-
-            writer.WriteNumber(MinorVersionPropertyNameBytes, responseMessage.MinorVersion);
-
-            writer.WriteEndObject();
-            writer.Flush();
-            Debug.Assert(writer.CurrentDepth == 0);
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
 
             TextMessageFormatter.WriteRecordSeparator(output);
         }

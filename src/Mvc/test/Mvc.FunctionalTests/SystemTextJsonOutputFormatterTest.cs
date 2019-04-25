@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        [Fact(Skip = "Insert issue here")]
+        [Fact(Skip = "Dictionary serialization does not correctly work.")]
         public override Task SerializableErrorIsReturnedInExpectedFormat() => base.SerializableErrorIsReturnedInExpectedFormat();
 
         [Fact]
@@ -29,67 +29,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("\"Hello Mr. \\ud83e\\udd8a\"", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
-        public override async Task Formatting_SimpleModel()
-        {
-            // Arrange
-            var expected = "{\"Id\":10,\"Name\":\"Test\",\"StreetName\":\"Some street\"}";
-
-            // Act
-            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.SimpleModelResult)}");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            Assert.Equal(expected, await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public override async Task Formatting_CollectionType()
-        {
-            // Arrange
-            var expected = "[{\"Id\":10,\"Name\":\"TestName\",\"StreetName\":null},{\"Id\":11,\"Name\":\"TestName1\",\"StreetName\":\"Some street\"}]";
-
-            // Act
-            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.CollectionModelResult)}");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            Assert.Equal(expected, await response.Content.ReadAsStringAsync());
-        }
-
         [Fact(Skip = "Dictionary serialization does not correctly work.")]
         public override Task Formatting_DictionaryType() => base.Formatting_DictionaryType();
 
         [Fact(Skip = "Dictionary serialization does not correctly work.")]
         public override Task Formatting_ProblemDetails() => base.Formatting_ProblemDetails();
 
-        [Fact]
-        public override async Task Formatting_PolymorphicModel()
-        {
-            // Arrange
-            var expected = "{\"Id\":10,\"Name\":\"test\",\"StreetName\":null}";
-
-            // Act
-            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.PolymorphicResult)}");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            Assert.Equal(expected, await response.Content.ReadAsStringAsync());
-        }
-
-        [Fact]
-        public override async Task Formatting_LargeObject()
-        {
-            // Arrange
-            var expectedName = "This is long so we can test large objects " + new string('a', 1024 * 65);
-            var expected = $"{{\"Id\":10,\"Name\":\"{expectedName}\",\"StreetName\":null}}";
-
-            // Act
-            var response = await Client.GetAsync($"/JsonOutputFormatter/{nameof(JsonOutputFormatterController.LargeObjectResult)}");
-
-            // Assert
-            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
-            Assert.Equal(expected, await response.Content.ReadAsStringAsync());
-        }
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36166")]
+        public override Task Formatting_PolymorphicModel() => base.Formatting_PolymorphicModel();
     }
 }

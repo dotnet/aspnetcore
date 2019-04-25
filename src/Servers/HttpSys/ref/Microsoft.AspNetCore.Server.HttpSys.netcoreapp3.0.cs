@@ -20,17 +20,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     [System.FlagsAttribute]
     public enum AuthenticationSchemes
     {
-        Basic = 1,
-        Kerberos = 16,
-        Negotiate = 8,
         None = 0,
+        Basic = 1,
         NTLM = 4,
+        Negotiate = 8,
+        Kerberos = 16,
     }
     public enum Http503VerbosityLevel : long
     {
         Basic = (long)0,
-        Full = (long)2,
         Limited = (long)1,
+        Full = (long)2,
     }
     public static partial class HttpSysDefaults
     {

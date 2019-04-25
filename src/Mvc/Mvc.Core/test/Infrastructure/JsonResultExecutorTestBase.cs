@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -15,21 +14,20 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class JsonResultExecutorTest
+    public abstract class JsonResultExecutorTestBase
     {
         [Fact]
         public async Task ExecuteAsync_UsesDefaultContentType_IfNoContentTypeSpecified()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
 
             var context = GetActionContext();
 
@@ -49,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         public async Task ExecuteAsync_NullEncoding_DoesNotSetCharsetOnContentType()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
 
             var context = GetActionContext();
 
@@ -67,10 +65,54 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         }
 
         [Fact]
+        public async Task ExecuteAsync_UsesEncodingSpecifiedInContentType()
+        {
+            // Arrange
+            var expected = Encoding.Unicode.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+
+            var context = GetActionContext();
+            context.HttpContext.Response.ContentType = "text/json; charset=utf-8";
+
+            var result = new JsonResult(new { foo = "abcd" })
+            {
+                ContentType = "text/json; charset=utf-16",
+            };
+            var executor = CreateExecutor();
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            var written = GetWrittenBytes(context.HttpContext);
+            Assert.Equal(expected, written);
+            Assert.Equal("text/json; charset=utf-16", context.HttpContext.Response.ContentType);
+        }
+
+        [Fact]
+        public async Task ExecuteAsync_UsesEncodingSpecifiedInResponseContentType()
+        {
+            // Arrange
+            var expected = Encoding.Unicode.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
+
+            var context = GetActionContext();
+            context.HttpContext.Response.ContentType = "text/json; charset=utf-16";
+            var result = new JsonResult(new { foo = "abcd" });
+            var executor = CreateExecutor();
+
+            // Act
+            await executor.ExecuteAsync(context, result);
+
+            // Assert
+            var written = GetWrittenBytes(context.HttpContext);
+            Assert.Equal(expected, written);
+            Assert.Equal("text/json; charset=utf-16", context.HttpContext.Response.ContentType);
+        }
+
+        [Fact]
         public async Task ExecuteAsync_SetsContentTypeAndEncoding()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
 
             var context = GetActionContext();
 
@@ -94,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         public async Task ExecuteAsync_NoResultContentTypeSet_UsesResponseContentType_AndSuppliedEncoding()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
             var expectedContentType = "text/foo; p1=p1-value; charset=us-ascii";
 
             var context = GetActionContext();
@@ -120,7 +162,7 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             string expectedContentType)
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { foo = "abcd" }));
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(new { foo = "abcd" }));
 
             var context = GetActionContext();
             context.HttpContext.Response.ContentType = responseContentType;
@@ -141,14 +183,13 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         public async Task ExecuteAsync_UsesPassedInSerializerSettings()
         {
             // Arrange
-            var expected = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(
+            var expected = Encoding.UTF8.GetBytes(JsonSerializer.ToString(
                 new { foo = "abcd" },
-                Formatting.Indented));
+                new JsonSerializerOptions { WriteIndented = true }));
 
             var context = GetActionContext();
 
-            var serializerSettings = new JsonSerializerSettings();
-            serializerSettings.Formatting = Formatting.Indented;
+            var serializerSettings = GetIndentedSettings();
 
             var result = new JsonResult(new { foo = "abcd" }, serializerSettings);
             var executor = CreateExecutor();
@@ -161,6 +202,8 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             Assert.Equal(expected, written);
             Assert.Equal("application/json; charset=utf-8", context.HttpContext.Response.ContentType);
         }
+
+        protected abstract object GetIndentedSettings();
 
         [Fact]
         public async Task ExecuteAsync_ErrorDuringSerialization_DoesNotWriteContent()
@@ -175,7 +218,11 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             {
                 await executor.ExecuteAsync(context, result);
             }
-            catch (JsonSerializationException serializerException)
+            catch (NotImplementedException ex)
+            {
+                Assert.Equal("Property Age has not been implemented", ex.Message);
+            }
+            catch (Exception serializerException)
             {
                 var expectedException = Assert.IsType<NotImplementedException>(serializerException.InnerException);
                 Assert.Equal("Property Age has not been implemented", expectedException.Message);
@@ -192,15 +239,16 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             // Arrange
             var expected = "Executing JsonResult, writing value of type 'System.String'.";
             var context = GetActionContext();
-            var logger = new StubLogger();
-            var executer = CreateExecutor(logger);
+            var sink = new TestSink();
+            var executor = CreateExecutor(new TestLoggerFactory(sink, enabled: true));
             var result = new JsonResult("result_value");
 
             // Act
-            await executer.ExecuteAsync(context, result);
+            await executor.ExecuteAsync(context, result);
 
             // Assert
-            Assert.Equal(expected, logger.MostRecentMessage);
+            var write = Assert.Single(sink.Writes);
+            Assert.Equal(expected, write.State.ToString());
         }
 
         [Fact]
@@ -209,26 +257,28 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             // Arrange
             var expected = "Executing JsonResult, writing value of type 'null'.";
             var context = GetActionContext();
-            var logger = new StubLogger();
-            var executer = CreateExecutor(logger);
+            var sink = new TestSink();
+            var executor = CreateExecutor(new TestLoggerFactory(sink, enabled: true));
             var result = new JsonResult(null);
 
             // Act
-            await executer.ExecuteAsync(context, result);
+            await executor.ExecuteAsync(context, result);
 
             // Assert
-            Assert.Equal(expected, logger.MostRecentMessage);
+            var write = Assert.Single(sink.Writes);
+            Assert.Equal(expected, write.State.ToString());
         }
 
         [Fact]
         public async Task ExecuteAsync_LargePayload_DoesNotPerformSynchronousWrites()
         {
             // Arrange
-            var model = Enumerable.Range(0, 1000).Select(p => new TestModel { Property = new string('a', 5000)});
+            var model = Enumerable.Range(0, 1000).Select(p => new TestModel { Property = new string('a', 5000) }).ToArray();
 
-            var stream = new Mock<Stream> { CallBase = true };
+            var stream = new Mock<Stream>();
             stream.Setup(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.CompletedTask);
+                .Returns(Task.CompletedTask)
+                .Verifiable();
             stream.SetupGet(s => s.CanWrite).Returns(true);
             var context = GetActionContext();
             context.HttpContext.Response.Body = stream.Object;
@@ -240,21 +290,29 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             await executor.ExecuteAsync(context, result);
 
             // Assert
-            stream.Verify(v => v.WriteAsync(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.AtLeastOnce());
-
             stream.Verify(v => v.Write(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()), Times.Never());
             stream.Verify(v => v.Flush(), Times.Never());
         }
 
-        private static JsonResultExecutor CreateExecutor(ILogger<JsonResultExecutor> logger = null)
+        [Fact]
+        public async Task ExecuteAsync_ThrowsIfSerializerSettingIsNotTheCorrectType()
         {
-            return new JsonResultExecutor(
-                new TestHttpResponseStreamWriterFactory(),
-                logger ?? NullLogger<JsonResultExecutor>.Instance,
-                Options.Create(new MvcOptions()),
-                Options.Create(new MvcNewtonsoftJsonOptions()),
-                ArrayPool<char>.Shared);
+            // Arrange
+            var context = GetActionContext();
+
+            var result = new JsonResult(new { foo = "abcd" }, new object());
+            var executor = CreateExecutor();
+
+            // Act & Assert
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => executor.ExecuteAsync(context, result));
+
+            // Assert
+            Assert.StartsWith("Property 'JsonResult.SerializerSettings' must be an instance of type", ex.Message);
         }
+
+        protected IActionResultExecutor<JsonResult> CreateExecutor() => CreateExecutor(NullLoggerFactory.Instance);
+
+        protected abstract IActionResultExecutor<JsonResult> CreateExecutor(ILoggerFactory loggerFactory);
 
         private static HttpContext GetHttpContext()
         {
@@ -289,20 +347,6 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
                 {
                     throw new NotImplementedException($"Property {nameof(Age)} has not been implemented");
                 }
-            }
-        }
-
-        private class StubLogger : ILogger<JsonResultExecutor>
-        {
-            public string MostRecentMessage { get; private set; }
-
-            public IDisposable BeginScope<TState>(TState state) => throw new NotImplementedException();
-
-            public bool IsEnabled(LogLevel logLevel) => true;
-
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
-            {
-                MostRecentMessage = formatter(state, exception);
             }
         }
 

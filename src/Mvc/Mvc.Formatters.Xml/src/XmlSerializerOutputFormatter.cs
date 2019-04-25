@@ -260,6 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 if (fileBufferingWriteStream != null)
                 {
+                    response.ContentLength = fileBufferingWriteStream.Length;
                     await fileBufferingWriteStream.DrainBufferAsync(response.Body);
                 }
             }

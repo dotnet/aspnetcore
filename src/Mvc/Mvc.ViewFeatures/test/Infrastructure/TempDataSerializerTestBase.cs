@@ -173,6 +173,72 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
             Assert.Equal(value, roundTripValue);
         }
 
+        [Fact]
+        public virtual void RoundTripTest_DateTimeToString()
+        {
+            // Documents the behavior of round-tripping a DateTime value as a string
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = new DateTime(2009, 1, 1, 12, 37, 43);
+            var input = new Dictionary<string, object>
+            {
+                { key, value.ToString() }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<string>(values[key]);
+            Assert.Equal(value.ToString(), roundTripValue);
+        }
+
+        [Fact]
+        public virtual void RoundTripTest_StringThatIsNotCompliantGuid()
+        {
+            // Documents the behavior of round-tripping a Guid with a non-default format specifier
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = Guid.NewGuid();
+            var input = new Dictionary<string, object>
+            {
+                { key, value.ToString("N") }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<string>(values[key]);
+            Assert.Equal(value.ToString("N"), roundTripValue);
+        }
+
+        [Fact]
+        public virtual void RoundTripTest_GuidToString()
+        {
+            // Documents the behavior of round-tripping a Guid value as a string
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = Guid.NewGuid();
+            var input = new Dictionary<string, object>
+            {
+                { key, value.ToString() }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<Guid>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
         protected abstract TempDataSerializer GetTempDataSerializer();
     }
 }

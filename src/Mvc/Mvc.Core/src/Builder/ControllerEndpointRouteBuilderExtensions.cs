@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds endpoints for controller actions to the <see cref="IEndpointRouteBuilder"/> without specifying any routes.
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
-        public static IEndpointConventionBuilder MapControllers(this IEndpointRouteBuilder endpoints)
+        /// <returns>An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
+        public static ControllerActionEndpointConventionBuilder MapControllers(this IEndpointRouteBuilder endpoints)
         {
             if (endpoints == null)
             {
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
 
             EnsureControllerServices(endpoints);
 
-            return GetOrCreateDataSource(endpoints);
+            return GetOrCreateDataSource(endpoints).DefaultBuilder;
         }
 
         /// <summary>
@@ -39,8 +39,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <c>{controller=Home}/{action=Index}/{id?}</c>.
         /// </summary>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with controller actions.</returns>
-        public static IEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder endpoints)
+        /// <returns>
+        /// An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions for this route.
+        /// </returns>
+        public static ControllerActionEndpointConventionBuilder MapDefaultControllerRoute(this IEndpointRouteBuilder endpoints)
         {
             if (endpoints == null)
             {
@@ -50,14 +52,12 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             var dataSource = GetOrCreateDataSource(endpoints);
-            dataSource.AddRoute(
+            return dataSource.AddRoute(
                 "default",
                 "{controller=Home}/{action=Index}/{id?}",
                 defaults: null,
                 constraints: null,
                 dataTokens: null);
-
-            return dataSource;
         }
 
         /// <summary>
@@ -80,7 +80,10 @@ namespace Microsoft.AspNetCore.Builder
         /// An object that contains data tokens for the route. The object's properties represent the names and
         /// values of the data tokens.
         /// </param>
-        public static void MapControllerRoute(
+        /// <returns>
+        /// An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions for this route.
+        /// </returns>
+        public static ControllerActionEndpointConventionBuilder MapControllerRoute(
             this IEndpointRouteBuilder endpoints,
             string name,
             string pattern,
@@ -96,7 +99,7 @@ namespace Microsoft.AspNetCore.Builder
             EnsureControllerServices(endpoints);
 
             var dataSource = GetOrCreateDataSource(endpoints);
-            dataSource.AddRoute(
+            return dataSource.AddRoute(
                 name,
                 pattern,
                 new RouteValueDictionary(defaults),
@@ -125,7 +128,10 @@ namespace Microsoft.AspNetCore.Builder
         /// An object that contains data tokens for the route. The object's properties represent the names and
         /// values of the data tokens.
         /// </param>
-        public static void MapAreaControllerRoute(
+        /// <returns>
+        /// An <see cref="ControllerActionEndpointConventionBuilder"/> for endpoints associated with controller actions for this route.
+        /// </returns>
+        public static ControllerActionEndpointConventionBuilder MapAreaControllerRoute(
             this IEndpointRouteBuilder endpoints,
             string name,
             string areaName,
@@ -150,7 +156,7 @@ namespace Microsoft.AspNetCore.Builder
             var constraintsDictionary = new RouteValueDictionary(constraints);
             constraintsDictionary["area"] = constraintsDictionary["area"] ?? new StringRouteConstraint(areaName);
 
-            endpoints.MapControllerRoute(name, pattern, defaultsDictionary, constraintsDictionary, dataTokens);
+            return endpoints.MapControllerRoute(name, pattern, defaultsDictionary, constraintsDictionary, dataTokens);
         }
 
         /// <summary>
@@ -183,7 +189,7 @@ namespace Microsoft.AspNetCore.Builder
         /// actions match these values, the result is implementation defined.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToController(
+        public static IEndpointConventionBuilder MapFallbackToController(
             this IEndpointRouteBuilder endpoints,
             string action,
             string controller)
@@ -210,11 +216,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
             });
+            return builder;
         }
 
         /// <summary>
@@ -251,7 +259,7 @@ namespace Microsoft.AspNetCore.Builder
         /// actions match these values, the result is implementation defined.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToController(
+        public static IEndpointConventionBuilder MapFallbackToController(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             string action,
@@ -284,11 +292,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area: null));
             });
+            return builder;
         }
 
         /// <summary>
@@ -322,7 +332,7 @@ namespace Microsoft.AspNetCore.Builder
         /// actions match these values, the result is implementation defined.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToAreaController(
+        public static IEndpointConventionBuilder MapFallbackToAreaController(
             this IEndpointRouteBuilder endpoints,
             string action,
             string controller,
@@ -350,11 +360,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            endpoints.MapFallback(context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
             });
+            return builder;
         }
 
         /// <summary>
@@ -392,7 +404,7 @@ namespace Microsoft.AspNetCore.Builder
         /// actions match these values, the result is implementation defined.
         /// </para>
         /// </remarks>
-        public static void MapFallbackToAreaController(
+        public static IEndpointConventionBuilder MapFallbackToAreaController(
             this IEndpointRouteBuilder endpoints,
             string pattern,
             string action,
@@ -426,11 +438,13 @@ namespace Microsoft.AspNetCore.Builder
 
             // Maps a fallback endpoint with an empty delegate. This is OK because
             // we don't expect the delegate to run.
-            endpoints.MapFallback(pattern, context => Task.CompletedTask).Add(b =>
+            var builder = endpoints.MapFallback(pattern, context => Task.CompletedTask);
+            builder.Add(b =>
             {
                 // MVC registers a policy that looks for this metadata.
                 b.Metadata.Add(CreateDynamicControllerMetadata(action, controller, area));
             });
+            return builder;
         }
 
         private static DynamicControllerMetadata CreateDynamicControllerMetadata(string action, string controller, string area)

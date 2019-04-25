@@ -316,8 +316,8 @@ namespace Microsoft.Net.Http.Headers
     }
     public enum SameSiteMode
     {
-        Lax = 1,
         None = 0,
+        Lax = 1,
         Strict = 2,
     }
     public partial class SetCookieHeaderValue

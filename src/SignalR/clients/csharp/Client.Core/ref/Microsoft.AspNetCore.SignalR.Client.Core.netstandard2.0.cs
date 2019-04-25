@@ -138,8 +138,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
     }
     public enum HubConnectionState
     {
-        Connected = 1,
         Disconnected = 0,
+        Connected = 1,
     }
     public partial interface IConnectionFactory
     {

@@ -138,17 +138,14 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             return null;
         }
 
-        internal byte[] GetRawUrlInBytes()
+        internal Span<byte> GetRawUrlInBytes()
         {
             if (NativeRequest->pRawUrl != null && NativeRequest->RawUrlLength > 0)
             {
-                var result = new byte[NativeRequest->RawUrlLength];
-                Marshal.Copy((IntPtr)NativeRequest->pRawUrl, result, 0, NativeRequest->RawUrlLength);
-
-                return result;
+                return new Span<byte>(NativeRequest->pRawUrl, NativeRequest->RawUrlLength);
             }
 
-            return null;
+            return default;
         }
 
         internal CookedUrl GetCookedUrl()
