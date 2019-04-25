@@ -24,7 +24,7 @@ else
         <tbody>
             @foreach (var forecast in forecasts)
             {
-                <tr>
+                <tr key=@forecast>
                     <td>@forecast.DateFormatted</td>
                     <td>@forecast.TemperatureC</td>
                     <td>@forecast.TemperatureF</td>
@@ -41,6 +41,9 @@ else
             Next ▶
         </a>
     </p>
+    <button onclick="@Shuffle">Shuffle</button>
+    <button onclick="@SortAsc">Sort ASC</button>
+    <button onclick="@SortDesc">Sort DESC</button>
 }
 
 @functions {
@@ -57,5 +60,21 @@ else
     protected override async Task OnParametersSetAsync()
     {
         forecasts = await ForecastService.GetForecastAsync(StartDate);
+    }
+
+    void Shuffle()
+    {
+        var rng = new Random();
+        forecasts = forecasts.OrderBy(_ => rng.Next()).ToArray();
+    }
+
+    void SortAsc()
+    {
+        forecasts = forecasts.OrderBy(f => f.DateFormatted).ToArray();
+    }
+
+    void SortDesc()
+    {
+        forecasts = forecasts.OrderByDescending(f => f.DateFormatted).ToArray();
     }
 }
