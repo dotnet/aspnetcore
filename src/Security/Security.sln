@@ -140,6 +140,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Certificate", "Certificate"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Certificate", "Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj", "{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Certificate.Sample", "Authentication\Certificate\samples\Certificate.Sample\Certificate.Sample.csproj", "{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -358,6 +360,10 @@ Global
 		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -427,6 +433,7 @@ Global
 		{FD3AB895-2AF6-447D-82CF-DB002B491D23} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{4DF524BF-D9A9-46F2-882C-68C48FF5FF33} = {79C549BA-2932-450A-B87D-635879361343}
 		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870} = {4DF524BF-D9A9-46F2-882C-68C48FF5FF33}
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158} = {4DF524BF-D9A9-46F2-882C-68C48FF5FF33}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}

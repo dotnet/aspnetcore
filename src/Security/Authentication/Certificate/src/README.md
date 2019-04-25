@@ -1,7 +1,5 @@
-﻿# Microsoft.AspNetCore.Authentication.Certificate
+# Microsoft.AspNetCore.Authentication.Certificate
  
-*This handler is available for ASP.NET Core 2.0 only. Not due to technical reasons, I'm just lazy.*
-
 This project sort of contains an implementation of [Certificate Authentication](https://tools.ietf.org/html/rfc5246#section-7.4.4) for ASP.NET Core. 
 Certificate authentication happens at the TLS level, long before it ever gets to ASP.NET Core, so, more accurately this is an authentication handler
 that validates the certificate and then gives you an event where you can resolve that certificate to a ClaimsPrincipal. 

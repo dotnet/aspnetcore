@@ -20,27 +20,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 {
     public class ClientCertificateAuthenticationTests
     {
-        //[Fact]
-        //public void CheckThatTestRootCAIsLoaded()
-        //{
-        //    bool found;
-
-        //    using (var rootCAStore = new X509Store(StoreName.Root))
-        //    {
-        //        rootCAStore.Open(OpenFlags.ReadOnly);
-
-        //        var certificates = rootCAStore.Certificates.Find(
-        //            X509FindType.FindBySerialNumber,
-        //            "5d452c99003e54954f85aca776fd5b2c",
-        //            true);
-
-        //        found = certificates.Count != 0;
-
-        //        rootCAStore.Close();
-        //    }
-
-        //    Assert.True(found);
-        //}
 
         [Fact]
         public async Task VerifySchemeDefaults()
@@ -231,78 +210,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        //[Fact]
-        //public async Task VerifyRootedCertWithNoEkuPassesByDefault()
-        //{
-        //    var server = CreateServer(
-        //        new CertificateAuthenticationOptions
-        //        {
-        //            Events = sucessfulValidationEvents
-        //        },
-        //        Certificates.RootedNoEku);
-
-        //    var response = await server.CreateClient().GetAsync("https://example.com/");
-        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        //}
-
-        //[Fact]
-        //public async Task VerifyRootedCertWithClientEkuPassesByDefault()
-        //{
-        //    var server = CreateServer(
-        //        new CertificateAuthenticationOptions
-        //        {
-        //            Events = sucessfulValidationEvents
-        //        },
-        //        Certificates.RootedClientEku);
-
-        //    var response = await server.CreateClient().GetAsync("https://example.com/");
-        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        //}
-
-        //[Fact]
-        //public async Task VerifyRootedCertWithServerEkuFailsByDefault()
-        //{
-        //    var server = CreateServer(
-        //        new CertificateAuthenticationOptions
-        //        {
-        //            Events = sucessfulValidationEvents
-        //        },
-        //        Certificates.RootedServerEku);
-
-        //    var response = await server.CreateClient().GetAsync("https://example.com/");
-        //    Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        //}
-
-        //[Fact]
-        //public async Task VerifyRootedCertWithServerEkuPassesIfEkuValidationIsTurnedOff()
-        //{
-        //    var server = CreateServer(
-        //        new CertificateAuthenticationOptions
-        //        {
-        //            ValidateCertificateUse = false,
-        //            Events = sucessfulValidationEvents
-        //        },
-        //        Certificates.RootedServerEku);
-
-        //    var response = await server.CreateClient().GetAsync("https://example.com/");
-        //    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        //}
-
-        [Fact]
-        public async Task VerifyRevokedCertFailsByDefault()
-        {
-            var server = CreateServer(
-                new CertificateAuthenticationOptions
-                {
-                    Events = sucessfulValidationEvents
-                },
-//                Certificates.RootedRevoked);
-                  Certificates.SelfSignedNotYetValid);
-
-            var response = await server.CreateClient().GetAsync("https://example.com/");
-            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        }
-
         [Fact]
         public async Task VerifyFailingInTheValidationEventReturnsForbidden()
         {
@@ -312,7 +219,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                     ValidateCertificateUse = false,
                     Events = failedValidationEvents
                 },
-                //Certificates.RootedServerEku);
                 Certificates.SelfSignedValidWithServerEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
@@ -329,7 +235,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                     ValidateCertificateUse = false,
                     Events = unprocessedValidationEvents
                 },
-                //Certificates.RootedServerEku);
                 Certificates.SelfSignedValidWithServerEku);
 
             var response = await server.CreateClient().GetAsync("https://example.com/");
@@ -361,7 +266,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 wireUpHeaderMiddleware : true);
 
             var client = server.CreateClient();
-            //client.DefaultRequestHeaders.Add("X-ARR-ClientCert", Convert.ToBase64String(Certificates.RootedNoEku.RawData));
             client.DefaultRequestHeaders.Add("X-ARR-ClientCert", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -379,7 +283,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("X-ARR-ClientCert", "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
-            //client.DefaultRequestHeaders.Add("X-ARR-ClientCert", "OOPS" + Convert.ToBase64String(Certificates.RootedNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
@@ -397,7 +300,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 headerName: "random-Weird-header");
 
             var client = server.CreateClient();
-            //client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.RootedNoEku.RawData));
             client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -415,7 +317,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 headerName: "another-random-Weird-header");
 
             var client = server.CreateClient();
-            //client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.RootedNoEku.RawData));
             client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

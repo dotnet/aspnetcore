@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -8,18 +9,13 @@ using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 
-namespace idunno.Authentication.Certificate.Sample
+namespace Certificate.Sample
 {
     public class Program
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
-        }
-
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
+            var host = new WebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(IPAddress.Loopback, 5001, listenOptions =>
@@ -28,12 +24,17 @@ namespace idunno.Authentication.Certificate.Sample
                         {
                             ServerCertificate = FindHttpsCertificate(),
                             ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                            ClientCertificateValidation = CertificateValidator.DisableChannelValidation
+                            //ClientCertificateValidation = CertificateValidator.DisableChannelValidation
                         });
                     });
                     options.Listen(IPAddress.Loopback, 5000);
                 })
+                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseStartup<Startup>()
                 .Build();
+
+            host.Run();
+        }
 
         private static X509Certificate2 FindHttpsCertificate()
         {
