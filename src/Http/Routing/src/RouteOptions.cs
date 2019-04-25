@@ -10,6 +10,9 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class RouteOptions
     {
+        private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
+        private ICollection<EndpointDataSource> _endpointDataSources;
+
         /// <summary>
         /// Gets a collection of <see cref="EndpointDataSource"/> instances configured with routing.
         /// </summary>
@@ -59,9 +62,6 @@ namespace Microsoft.AspNetCore.Routing
         /// this check if it does not match your application's requirements.
         /// </remarks>
         public bool SuppressCheckForUnhandledSecurityMetadata { get; set; }
-
-        private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
-        private ICollection<EndpointDataSource> _endpointDataSources;
 
         public IDictionary<string, Type> ConstraintMap
         {
