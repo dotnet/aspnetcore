@@ -143,6 +143,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2206", FlakyOn.All)]
         public async Task RequestBody_ReadAsyncPartialBodyAndExpiredTimeout_Canceled()
         {
             StaggardContent content = new StaggardContent();
