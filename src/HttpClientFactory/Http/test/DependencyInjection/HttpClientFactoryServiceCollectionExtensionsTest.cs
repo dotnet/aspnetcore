@@ -347,6 +347,78 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient<TestTypedClient>("Test"));
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client types must be unique. " +
+                "Consider using inheritance to create multiple unique types with the same API surface.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameTypedClientTwice_WithAddTypedClient_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("Test").AddTypedClient<TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client types must be unique. " +
+                "Consider using inheritance to create multiple unique types with the same API surface.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameNameWithTypedClientTwice_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient<AnotherNamespace.TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the name 'TestTypedClient', bound to the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client names are computed based on the type name without considering the namespace ('TestTypedClient'). " +
+                "Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void AddHttpClient_AddSameNameWithTypedClientTwice_WithAddTypedClient_ThrowsError()
+        {
+            // Arrange
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddHttpClient<TestTypedClient>();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => serviceCollection.AddHttpClient("TestTypedClient").AddTypedClient<AnotherNamespace.TestTypedClient>());
+
+            // Assert
+            Assert.Equal(
+                "The HttpClient factory already has a registered client with the name 'TestTypedClient', bound to the type 'Microsoft.Extensions.Http.TestTypedClient'. " +
+                "Client names are computed based on the type name without considering the namespace ('TestTypedClient'). " +
+                "Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.",
+                ex.Message);
+        }
+
+        [Fact]
         public void AddHttpClient_AddTypedClient_WithServiceDelegate_ConfiguresNamedClient()
         {
             // Arrange
@@ -1044,6 +1116,16 @@ namespace Microsoft.Extensions.DependencyInjection
             public HttpClient HttpClient { get; }
 
             public TransientService Service { get; }
+        }
+    }
+}
+
+namespace AnotherNamespace
+{
+    public class TestTypedClient
+    {
+        public TestTypedClient(HttpClient httpClient)
+        {
         }
     }
 }

@@ -48,6 +48,10 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHttpMessageHandlerBuilderFilter, LoggingHttpMessageHandlerBuilderFilter>());
 
+            // This is used to track state and report errors **DURING** service registration. This has to be an instance
+            // because we access it by reaching into the service collection.
+            services.TryAddSingleton(new HttpClientMappingRegistry());
+
             return services;
         }
 

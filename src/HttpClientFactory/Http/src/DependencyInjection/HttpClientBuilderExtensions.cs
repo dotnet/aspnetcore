@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using Microsoft.Extensions.Http;
@@ -321,6 +323,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            ReserveClient(builder, typeof(TClient), builder.Name);
+
             builder.Services.AddTransient<TClient>(s =>
             {
                 var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
@@ -373,6 +377,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(builder));
             }
 
+            ReserveClient(builder, typeof(TClient), builder.Name);
+
             builder.Services.AddTransient<TClient>(s =>
             {
                 var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
@@ -419,6 +425,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(factory));
             }
 
+            ReserveClient(builder, typeof(TClient), builder.Name);
+
             builder.Services.AddTransient<TClient>(s =>
             {
                 var httpClientFactory = s.GetRequiredService<IHttpClientFactory>();
@@ -463,6 +471,8 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(factory));
             }
+
+            ReserveClient(builder, typeof(TClient), builder.Name);
 
             builder.Services.AddTransient<TClient>(s =>
             {
@@ -513,6 +523,36 @@ namespace Microsoft.Extensions.DependencyInjection
 
             builder.Services.Configure<HttpClientFactoryOptions>(builder.Name, options => options.HandlerLifetime = handlerLifetime);
             return builder;
+        }
+
+        // See comments on HttpClientMappingRegistry.
+        private static void ReserveClient(IHttpClientBuilder builder, Type type, string name)
+        {
+            var registry = (HttpClientMappingRegistry)builder.Services.Single(sd => sd.ServiceType == typeof(HttpClientMappingRegistry)).ImplementationInstance;
+            Debug.Assert(registry != null);
+
+            // Check for same type registered twice. This can't work because typed clients have to be unique for DI to function.
+            if (registry.TypedClientRegistrations.TryGetValue(type, out var otherName))
+            {
+                var message =
+                    $"The HttpClient factory already has a registered client with the type '{type.FullName}'. " +
+                    $"Client types must be unique. " +
+                    $"Consider using inheritance to create multiple unique types with the same API surface.";
+                throw new InvalidOperationException(message);
+            }
+
+            // Check for same name registered to two types. This won't work because we rely on named options for the configuration.
+            if (registry.NamedClientRegistrations.TryGetValue(name, out var otherType))
+            {
+                var message =
+                    $"The HttpClient factory already has a registered client with the name '{name}', bound to the type '{otherType.FullName}'. " +
+                    $"Client names are computed based on the type name without considering the namespace ('{otherType.Name}'). " +
+                    $"Use an overload of AddHttpClient that accepts a string and provide a unique name to resolve the conflict.";
+                throw new InvalidOperationException(message);
+            }
+
+            registry.TypedClientRegistrations[type] = name;
+            registry.NamedClientRegistrations[name] = type;
         }
     }
 }
