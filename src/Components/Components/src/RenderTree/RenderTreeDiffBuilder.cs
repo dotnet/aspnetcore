@@ -207,6 +207,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             // Output the list of moves, if any
             if (keyToIndicesLookup != null)
             {
+                var didWriteMoveFrame = false;
                 foreach (var kvp in keyToIndicesLookup)
                 {
                     var oldSiblingIndex = kvp.Value.OldSiblingIndex;
@@ -215,7 +216,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     {
                         diffContext.Edits.Append(
                             RenderTreeEdit.MoveFrame(oldSiblingIndex.Value, newSiblingIndex.Value));
+                        didWriteMoveFrame = true;
                     }
+                }
+
+                if (didWriteMoveFrame)
+                {
+                    diffContext.Edits.Append(RenderTreeEdit.EndOfMoveList());
                 }
             }
         }

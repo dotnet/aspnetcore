@@ -393,7 +393,8 @@ namespace Microsoft.AspNetCore.Components.Test
                 {
                     AssertEdit(entry, RenderTreeEditType.MoveFrame, 2);
                     Assert.Equal(0, entry.MoveToSiblingIndex);
-                });
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.EndOfMoveList, 0));
         }
 
         [Fact]

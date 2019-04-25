@@ -94,5 +94,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         internal static RenderTreeEdit MoveFrame(int siblingIndex, int toSiblingIndex)
             => new RenderTreeEdit(RenderTreeEditType.MoveFrame, siblingIndex, toSiblingIndex);
+
+        internal static RenderTreeEdit EndOfMoveList()
+            => new RenderTreeEdit(RenderTreeEditType.EndOfMoveList);
     }
 }

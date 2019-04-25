@@ -56,5 +56,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// Indicates that an existing sibling frame should be moved immediately before the specified frame.
         /// </summary>
         MoveFrame = 9,
+
+        /// <summary>
+        /// Indicates that the preceding sequence of <see cref="MoveFrame"/> entries is now complete.
+        /// </summary>
+        EndOfMoveList = 10,
     }
 }
