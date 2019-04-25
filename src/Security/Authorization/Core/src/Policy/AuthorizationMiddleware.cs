@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.Authorization
             _policyProvider = policyProvider;
         }
 
-        public Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext context)
         {
             if (context == null)
             {
@@ -49,18 +48,14 @@ namespace Microsoft.AspNetCore.Authorization
             // Flag to indicate to other systems, e.g. MVC, that authorization middleware was run for this request
             context.Items[AuthorizationMiddlewareInvokedKey] = AuthorizationMiddlewareInvokedValue;
 
-            var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>();
-            if (authorizeData == null || authorizeData.Count() == 0)
-            {
-                return _next(context);
-            }
-
-            return EvaluatePolicy(context, endpoint, authorizeData);
-        }
-
-        private async Task EvaluatePolicy(HttpContext context, Endpoint endpoint, IEnumerable<IAuthorizeData> authorizeData)
-        {
             // IMPORTANT: Changes to authorization logic should be mirrored in MVC's AuthorizeFilter
+            var authorizeData = endpoint?.Metadata.GetOrderedMetadata<IAuthorizeData>() ?? Array.Empty<IAuthorizeData>();
+            if (authorizeData.Count() == 0)
+            {
+                await _next(context);
+                return;
+            }
+            
             var policy = await AuthorizationPolicy.CombineAsync(_policyProvider, authorizeData);
             if (policy == null)
             {
