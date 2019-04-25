@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                     arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
 
                                     // Check if we have an IAsyncEnumerable here and wrap the channel provided by AddStream
-                                    if (ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer]))
+                                    if (ReflectionHelper.IsIAsyncEnumerable(descriptor.OriginalParameterTypes[parameterPointer]))
                                     {
                                         arguments[parameterPointer] = _convertToStream.MakeGenericMethod(itemType).Invoke(null, new object[] { arguments[parameterPointer] });
                                     }
