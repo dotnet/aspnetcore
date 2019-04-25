@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -55,49 +54,59 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new NegotiateEvents());
 
+        private bool IsHttp2 => string.Equals("HTTP/2", Request.Protocol, StringComparison.OrdinalIgnoreCase);
+
         /// <summary>
-        /// Intercepts incomplete auth handshakes and continues or completes them.
+        /// Intercepts incomplete Negotiate authentication handshakes and continues or completes them.
         /// </summary>
         /// <returns>True if a response was generated, false otherwise.</returns>
         public async Task<bool> HandleRequestAsync()
         {
             try
             {
-                var connectionId = Context.Connection.Id;
+                if (IsHttp2)
+                {
+                    // HTTP/2 is not supported. Do not throw because this may be running on a server that supports
+                    // both HTTP/1 and HTTP/2.
+                    return false;
+                }
+
+                var connectionItems = GetConnectionItems();
+                var authState = (INegotiateState)connectionItems[NegotiateStateKey];
+
                 var authorizationHeader = Request.Headers[HeaderNames.Authorization];
 
                 if (StringValues.IsNullOrEmpty(authorizationHeader))
                 {
-                    Logger.LogDebug($"C:{connectionId}, No Authorization header");
+                    if (authState?.IsCompleted == false)
+                    {
+                        throw new InvalidOperationException("An anonymous request was received in between authentication handshake requests.");
+                    }
+                    Logger.LogDebug($"No Authorization header");
                     return false;
                 }
 
                 var authorization = authorizationHeader.ToString();
-                Logger.LogTrace($"C:{connectionId}, Authorization: " + authorization);
+                Logger.LogTrace($"Authorization: " + authorization);
                 string token = null;
                 if (authorization.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
                 {
                     token = authorization.Substring(_prefix.Length).Trim();
                 }
-
-                // If no token found, no further work possible
-                if (string.IsNullOrEmpty(token))
+                else
                 {
-                    Logger.LogDebug($"C:{connectionId}, Non-Negotiate Authorization header");
+                    Logger.LogDebug($"Non-Negotiate Authorization header");
                     return false;
                 }
 
-                var connectionItems = GetConnectionItems();
-
-                var authState = (INegotiateState)connectionItems[NegotiateStateKey];
                 if (authState == null)
                 {
                     // TODO: IConnectionLifetimeFeature would fire mid-request.
-                    // Replace with a connetion level version of Response.RegisterForDispose.
+                    // Replace with IConnectionCompleteFeature.OnCompleted. https://github.com/aspnet/AspNetCore/pull/9754
                     var connectionLifetimeFeature = Context.Features.Get<IConnectionLifetimeFeature>();
-                    if (connectionLifetimeFeature == null || !connectionLifetimeFeature.ConnectionClosed.CanBeCanceled)
+                    if (connectionLifetimeFeature == null)
                     {
-                        throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionLifetimeFeature)}");
+                        throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionLifetimeFeature)} like Kestrel.");
                     }
                     connectionItems[NegotiateStateKey] = authState = Options.StateFactory.CreateInstance();
                     connectionLifetimeFeature.ConnectionClosed.UnsafeRegister(DisposeState, authState);
@@ -106,7 +115,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 var outgoing = authState.GetOutgoingBlob(token);
                 if (!authState.IsCompleted)
                 {
-                    Logger.LogInformation($"C:{connectionId}, Incomplete-Negotiate, 401 {_verb} {outgoing}");
+                    Logger.LogInformation($"Incomplete-Negotiate, 401 {_verb} {outgoing}");
                     Response.StatusCode = StatusCodes.Status401Unauthorized;
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
 
@@ -116,7 +125,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 // TODO SPN check? NTLM + CBT only?
 
-                Logger.LogInformation($"C:{connectionId}, Completed-Negotiate, {_verb} {outgoing}");
+                Logger.LogInformation($"Completed-Negotiate, {_verb} {outgoing}");
                 if (!string.IsNullOrEmpty(outgoing))
                 {
                     // There can be a final blob of data we need to send to the client, but let the request execute as normal.
@@ -140,11 +149,17 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            if (IsHttp2)
+            {
+                // Not supported. We don't throw because Negotiate may be set as the default auth
+                // handler on a server that's running HTTP/1 and HTTP/2.
+                return Task.FromResult(AuthenticateResult.NoResult());
+            }
+
             var authState = (INegotiateState)GetConnectionItems()[NegotiateStateKey];
-            var connectionId = Context.Connection.Id;
             if (authState != null && authState.IsCompleted)
             {
-                Logger.LogDebug($"C:{connectionId}, Cached User");
+                Logger.LogDebug($"Cached User");
 
                 // Make a new copy of the user for each request, they are mutable objects
                 var identity = authState.GetIdentity();
@@ -173,6 +188,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
+            // TODO: Verify clients will downgrade from HTTP/2 to HTTP/1?
+            // Or do we need to send HTTP_1_1_REQUIRED? Or throw here?
             // TODO: Should we invalidate your current auth state?
             var authResult = await HandleAuthenticateOnceSafeAsync();
             var eventContext = new NegotiateChallengeContext(Context, Scheme, Options, properties)
@@ -186,8 +203,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 return;
             }
 
-            var connectionId = Context.Connection.Id;
-            Logger.LogDebug($"C:{connectionId}, Challenged");
+            Logger.LogDebug($"Challenged");
             Response.StatusCode = StatusCodes.Status401Unauthorized;
             Response.Headers.Append(HeaderNames.WWWAuthenticate, _verb);
         }
@@ -197,7 +213,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var connectionItems = Context.Features.Get<IConnectionItemsFeature>()?.Items;
             if (connectionItems == null)
             {
-                throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionItemsFeature)}");
+                throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionItemsFeature)} like Kestrel.");
             }
 
             return connectionItems;

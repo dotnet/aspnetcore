@@ -15,14 +15,12 @@ namespace NegotiateAuthSample
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            /*
+            /* https://github.com/aspnet/AspNetCore/issues/9583
             services.AddAuthorization(options =>
             {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
                     .Build();
             });
@@ -31,7 +29,6 @@ namespace NegotiateAuthSample
                 .AddNegotiate();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             app.UseDeveloperExceptionPage();
@@ -39,7 +36,7 @@ namespace NegotiateAuthSample
             // app.UseAuthorization();
             app.Use(async (context, next) =>
             {
-                // todo: move to authz
+                // todo: move to authz https://github.com/aspnet/AspNetCore/issues/9583
                 var result = await context.AuthenticateAsync();
                 if (!result.Succeeded || !result.Principal.Identity.IsAuthenticated)
                 {
