@@ -14169,8 +14169,13 @@ function permuteLogicalChildren(parent, moveList) {
     // The moveList must represent a valid permutation, i.e., the list of 'from' indices
     // is distinct, and the list of 'to' indices is a permutation of it. The algorithm
     // here relies on that assumption.
-    // Phase 1: insert markers
+    // Phase 1: track which nodes we will move
     var siblings = getLogicalChildrenArray(parent);
+    moveList.forEach(function (moveListEntry) {
+        moveListEntry.moveRangeStart = siblings[moveListEntry.fromSiblingIndex];
+        moveListEntry.moveRangeEnd = findLastDomNodeInRange(moveListEntry.moveRangeStart);
+    });
+    // Phase 2: insert markers
     moveList.forEach(function (moveListEntry) {
         var marker = moveListEntry.toMarker = document.createComment('marker');
         var insertBeforeNode = siblings[moveListEntry.toSiblingIndex + 1];
@@ -14181,12 +14186,12 @@ function permuteLogicalChildren(parent, moveList) {
             appendDomNode(marker, parent);
         }
     });
-    // Phase 2: move children & remove markers
+    // Phase 3: move children & remove markers
     moveList.forEach(function (moveListEntry) {
         var insertBefore = moveListEntry.toMarker;
         var parentDomNode = insertBefore.parentNode;
-        var elementToMove = moveListEntry.movedElement = siblings[moveListEntry.fromSiblingIndex];
-        var moveEndNode = findLastDomNodeInRange(elementToMove);
+        var elementToMove = moveListEntry.moveRangeStart;
+        var moveEndNode = moveListEntry.moveRangeEnd;
         var nextToMove = elementToMove;
         while (nextToMove) {
             var nextNext = nextToMove.nextSibling;
@@ -14200,9 +14205,9 @@ function permuteLogicalChildren(parent, moveList) {
         }
         parentDomNode.removeChild(insertBefore);
     });
-    // Phase 3: update siblings index
+    // Phase 4: update siblings index
     moveList.forEach(function (moveListEntry) {
-        siblings[moveListEntry.toSiblingIndex] = moveListEntry.movedElement;
+        siblings[moveListEntry.toSiblingIndex] = moveListEntry.moveRangeStart;
     });
 }
 exports.permuteLogicalChildren = permuteLogicalChildren;

@@ -238,8 +238,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         private RenderTreeFrame(int sequence, Type componentType, int subtreeLength, ComponentState componentState, int? componentKey)
             : this(sequence, componentType, subtreeLength, componentKey)
         {
-            ComponentId = componentState.ComponentId;
-            ComponentState = componentState;
+            if (componentState != null)
+            {
+                ComponentId = componentState.ComponentId;
+                ComponentState = componentState;
+            }
         }
 
         private RenderTreeFrame(int sequence, string textContent)

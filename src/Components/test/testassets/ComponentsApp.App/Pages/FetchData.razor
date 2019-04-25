@@ -24,12 +24,7 @@ else
         <tbody>
             @foreach (var forecast in forecasts)
             {
-                <tr key=@forecast>
-                    <td>@forecast.DateFormatted</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
-                </tr>
+                <WeatherRow key="@forecast" Forecast="@forecast" />
             }
         </tbody>
     </table>

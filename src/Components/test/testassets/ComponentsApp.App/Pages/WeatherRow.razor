@@ -1,0 +1,10 @@
+<tr>
+    <td>@Forecast.DateFormatted</td>
+    <td>@Forecast.TemperatureC</td>
+    <td>@Forecast.TemperatureF</td>
+    <td>@Forecast.Summary.ToUpper()</td>
+</tr>
+
+@functions {
+    [Parameter] WeatherForecast Forecast { get; set; }
+}

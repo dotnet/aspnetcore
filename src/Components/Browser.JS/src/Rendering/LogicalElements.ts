@@ -28,7 +28,7 @@
 const logicalChildrenPropname = createSymbolOrFallback('_blazorLogicalChildren');
 const logicalParentPropname = createSymbolOrFallback('_blazorLogicalParent');
 const logicalEndSiblingPropname = createSymbolOrFallback('_blazorLogicalEnd');
-export interface MoveListEntry { fromSiblingIndex: number, toSiblingIndex: number, toMarker?: Node, movedElement?: LogicalElement }
+export interface MoveListEntry { fromSiblingIndex: number, toSiblingIndex: number, moveRangeStart?: LogicalElement, moveRangeEnd?: Node, toMarker?: Node }
 
 export function toLogicalRootCommentElement(start: Comment, end: Comment): LogicalElement {
   // Now that we support start/end comments as component delimiters we are going to be setting up
@@ -141,8 +141,14 @@ export function permuteLogicalChildren(parent: LogicalElement, moveList: MoveLis
   // is distinct, and the list of 'to' indices is a permutation of it. The algorithm
   // here relies on that assumption.
 
-  // Phase 1: insert markers
+  // Phase 1: track which nodes we will move
   const siblings = getLogicalChildrenArray(parent);
+  moveList.forEach(moveListEntry => {
+    moveListEntry.moveRangeStart = siblings[moveListEntry.fromSiblingIndex];
+    moveListEntry.moveRangeEnd = findLastDomNodeInRange(moveListEntry.moveRangeStart);
+  });
+
+  // Phase 2: insert markers
   moveList.forEach(moveListEntry => {
     const marker = moveListEntry.toMarker = document.createComment('marker');
     const insertBeforeNode = siblings[moveListEntry.toSiblingIndex + 1] as any as Node;
@@ -153,12 +159,12 @@ export function permuteLogicalChildren(parent: LogicalElement, moveList: MoveLis
     }
   });
 
-  // Phase 2: move children & remove markers
+  // Phase 3: move descendants & remove markers
   moveList.forEach(moveListEntry => {
     const insertBefore = moveListEntry.toMarker!;
     const parentDomNode = insertBefore.parentNode!;
-    const elementToMove = moveListEntry.movedElement = siblings[moveListEntry.fromSiblingIndex];
-    const moveEndNode = findLastDomNodeInRange(elementToMove);
+    const elementToMove = moveListEntry.moveRangeStart!;
+    const moveEndNode = moveListEntry.moveRangeEnd!;
     let nextToMove = elementToMove as any as Node | null;
     while (nextToMove) {
       const nextNext = nextToMove.nextSibling;
@@ -174,9 +180,9 @@ export function permuteLogicalChildren(parent: LogicalElement, moveList: MoveLis
     parentDomNode.removeChild(insertBefore);
   });
 
-  // Phase 3: update siblings index
+  // Phase 4: update siblings index
   moveList.forEach(moveListEntry => {
-    siblings[moveListEntry.toSiblingIndex] = moveListEntry.movedElement!;
+    siblings[moveListEntry.toSiblingIndex] = moveListEntry.moveRangeStart!;
   });
 }
 
