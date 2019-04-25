@@ -1,13 +1,14 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using System.Threading.Tasks;
-
+using Microsoft.AspNetCore.Authentication.Certificate;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-namespace idunno.Authentication.Certificate.Sample
+namespace Certificate.Sample
 {
     public class Startup
     {
@@ -46,23 +47,28 @@ namespace idunno.Authentication.Certificate.Sample
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            app.UseRouting();
+
+            if (((IHostEnvironment)env).IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseAuthentication();
-
             app.UseStatusCodePages();
 
-            app.UseMvc(routes =>
+            app.UseAuthentication();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                     name: "default",
-                     template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapDefaultControllerRoute();
             });
+                     //      routes.MapRoute(
+                     //name: "default",
+                     //template: "{controller=Home}/{action=Index}/{id?}");
+ 
+
         }
     }
 }

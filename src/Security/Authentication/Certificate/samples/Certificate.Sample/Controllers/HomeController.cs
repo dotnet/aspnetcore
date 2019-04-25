@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 
-namespace idunno.Authentication.Certificate.Sample.Controllers
+namespace Certificate.Sample.Controllers
 {
     public class HomeController : Controller
     {
