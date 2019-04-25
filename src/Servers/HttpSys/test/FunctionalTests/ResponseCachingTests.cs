@@ -46,6 +46,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2135", FlakyOn.All)]
         public async Task Caching_JustPublic_NotCached()
         {
             var requestCount = 1;
