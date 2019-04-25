@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Http.Internal
             var i = (int)c;
 
             // Array is in chunks of 32 bits, so get offset by dividing by 32
-            var offset = i / 32;
+            var offset = i >> 5;		// i / 32;
             // Significant bit position is the remainder of the above calc; i % 32 => i & 31
             var significantBit = 1u << (i & 31);
 
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         private static bool IsHexadecimalChar(char c)
         {
             // Between 0 - 9 or uppercased between A - F
-            return (c - '0') <= 9 || ((c & ~0x20) - 'A') <= ('F' - 'A');
+            return (uint)(c - '0') <= 9 || (uint)((c & ~0x20) - 'A') <= ('F' - 'A');
         }
     }
 }
