@@ -2231,7 +2231,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact(Skip = "Camel case is not the default yet")]
+        [Fact]
         public async Task JsonHubProtocolUsesCamelCasingByDefault()
         {
             using (StartVerifiableLog())
