@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly ILogger<HubDispatcher<THub>> _logger;
         private readonly bool _enableDetailedErrors;
 
+        private static readonly MethodInfo _convertToStream = typeof(DefaultHubDispatcher<THub>).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("ConvertStream"));
+
+
         public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, IOptions<HubOptions<THub>> hubOptions,
             IOptions<HubOptions> globalHubOptions, ILogger<DefaultHubDispatcher<THub>> logger)
         {
@@ -278,6 +281,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                     Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
                                     var itemType = descriptor.StreamingParameters[streamPointer];
                                     arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
+
+                                    if (ReflectionHelper.IsStreamingType(descriptor.OriginalParameterTypes[parameterPointer]))
+                                    {
+                                        arguments[parameterPointer] = _convertToStream.MakeGenericMethod(itemType).Invoke(null, new object[] { arguments[parameterPointer] });
+                                        Console.WriteLine("test");
+                                    }
+                                    // Check if we actually have an IAsync Enumerable here and add a wrapper method
+
                                     streamPointer++;
                                 }
                                 else
@@ -377,6 +388,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 if (disposeScope)
                 {
                     await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                }
+            }
+        }
+
+        private static async IAsyncEnumerable<T> ConvertStream<T>(ChannelReader<T> reader)
+        {
+            while (await reader.WaitToReadAsync())
+            {
+                while (reader.TryRead(out var item))
+                {
+                    yield return (T)item;
                 }
             }
         }

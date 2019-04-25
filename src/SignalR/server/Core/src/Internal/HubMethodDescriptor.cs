@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     HasSyntheticArguments = true;
                     return false;
                 }
-                else if (ReflectionHelper.IsStreamingType(p.ParameterType, mustBeDirectType: true))
+                else if (ReflectionHelper.IsStreamingType(p.ParameterType, mustBeDirectType: true) || ReflectionHelper.IsIAsyncEnumerable(p.ParameterType))
                 {
                     if (StreamingParameters == null)
                     {
