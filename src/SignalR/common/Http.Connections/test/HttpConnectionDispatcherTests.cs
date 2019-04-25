@@ -1030,7 +1030,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        [Flakty]
         public async Task RequestToActiveConnectionIdKillsPreviousConnectionLongPolling()
         {
             using (StartVerifiableLog())
