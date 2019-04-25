@@ -614,18 +614,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             public static X509Certificate2 SelfSignedExpired { get; private set; } =
                 new X509Certificate2(GetFullyQualifiedFilePath("selfSignedNoEkuCertificateExpired.cer"));
 
-            //public static X509Certificate2 RootedNoEku { get; private set; } =
-            //    new X509Certificate2(GetFullyQualifiedFilePath("rootedNoEku.cer"));
-
-            //public static X509Certificate2 RootedClientEku { get; private set; } =
-            //    new X509Certificate2(GetFullyQualifiedFilePath("rootedClientEku.cer"));
-
-            //public static X509Certificate2 RootedServerEku { get; private set; } =
-            //    new X509Certificate2(GetFullyQualifiedFilePath("rootedServerEku.cer"));
-
-            //public static X509Certificate2 RootedRevoked { get; private set; } =
-            //    new X509Certificate2(GetFullyQualifiedFilePath("rootedRevoked.cer"));
-
             private static string GetFullyQualifiedFilePath(string filename)
             {
                 var filePath = Path.Combine(collateralPath, filename);
