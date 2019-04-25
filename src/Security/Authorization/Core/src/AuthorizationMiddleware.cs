@@ -22,18 +22,8 @@ namespace Microsoft.AspNetCore.Authorization
 
         public AuthorizationMiddleware(RequestDelegate next, IAuthorizationPolicyProvider policyProvider)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
-            if (policyProvider == null)
-            {
-                throw new ArgumentNullException(nameof(policyProvider));
-            }
-
-            _next = next;
-            _policyProvider = policyProvider;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
+            _policyProvider = policyProvider ?? throw new ArgumentNullException(nameof(policyProvider));
         }
 
         public async Task Invoke(HttpContext context)

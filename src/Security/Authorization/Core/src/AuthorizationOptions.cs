@@ -28,16 +28,16 @@ namespace Microsoft.AspNetCore.Authorization
         public AuthorizationPolicy DefaultPolicy { get; set; } = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
 
         /// <summary>
-        /// Gets or sets the required authorization policy. Defaults to null.
+        /// Gets or sets the fallback authorization policy for the <see cref="AuthorizationMiddleware"/>. Defaults to null.
         /// </summary>
         /// <remarks>
-        /// By default the required policy is null.
+        /// By default the fallback policy is null, and is not used in any way by the default <see cref="IAuthorizationService"/>.
         /// 
-        /// If a required policy has been specified then it is always evaluated, even if there are no
+        /// If a fallback policy has been specified then it is only evaluated by the <see cref="AuthorizationMiddleware"/> if there are no
         /// <see cref="IAuthorizeData"/> instances for a resource. If a resource has <see cref="IAuthorizeData"/>
-        /// then they are evaluated together with the required policy.
+        /// then they are evaluated instead of the fallback policy.
         /// </remarks>
-        public AuthorizationPolicy RequiredPolicy { get; set; }
+        public AuthorizationPolicy FallbackPolicy { get; set; }
 
         /// <summary>
         /// Add an authorization policy with the provided name.
