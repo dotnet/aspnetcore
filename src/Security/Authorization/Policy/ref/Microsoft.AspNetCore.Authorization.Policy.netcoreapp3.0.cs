@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-<<<<<<< HEAD
-=======
 namespace Microsoft.AspNetCore.Authorization
 {
     public partial class AuthorizationMiddleware
@@ -51,7 +49,6 @@ namespace Microsoft.AspNetCore.Builder
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireAuthorization(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params string[] policyNames) { throw null; }
     }
 }
->>>>>>> parent of c34cdefc95... Avoid async in AuthorizationMiddleware when no metadata (#9521)
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class PolicyServiceCollectionExtensions
