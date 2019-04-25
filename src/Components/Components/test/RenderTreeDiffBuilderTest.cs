@@ -335,6 +335,65 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RecognizesKeyedMoves()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey(100);
+            oldTree.AddContent(1, "First");
+            oldTree.CloseElement();
+
+            oldTree.AddContent(2, "Hello");
+
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey(200);
+            oldTree.AddContent(1, "Second");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey(200);
+            newTree.AddContent(1, "Second");
+            newTree.CloseElement();
+
+            newTree.AddContent(2, "Hello");
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey(100);
+            newTree.AddContent(1, "First modified");
+            newTree.CloseElement();
+
+            // Without the key, it changes the text contents of both
+            // With the key, it reorders them and just updates the text content of one
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                // First we update the modified descendants in place
+                entry => AssertEdit(entry, RenderTreeEditType.StepIn, 0),
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.UpdateText, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("First modified", referenceFrames[entry.ReferenceFrameIndex].TextContent);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.StepOut, 0),
+
+                // Then we have the list of moves
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.MoveFrame, 0);
+                    Assert.Equal(2, entry.MoveToSiblingIndex);
+                },
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.MoveFrame, 2);
+                    Assert.Equal(0, entry.MoveToSiblingIndex);
+                });
+        }
+
+        [Fact]
         public void RecognizesTextUpdates()
         {
             // Arrange

@@ -30,13 +30,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public static void DisposeFrames(RenderBatchBuilder batchBuilder, ArrayRange<RenderTreeFrame> frames)
             => DisposeFramesInRange(batchBuilder, frames.Array, 0, frames.Count);
 
+        struct KeyToIndicesEntry
+        {
+            public int OldIndex;
+            public int OldSiblingIndex;
+            public int NewIndex;
+            public int NewSiblingIndex;
+        }
+
         private static void AppendDiffEntriesForRange(
             ref DiffContext diffContext,
             int oldStartIndex, int oldEndIndexExcl,
             int newStartIndex, int newEndIndexExcl)
         {
             // TODO: Reuse these (e.g., via a stack of them on the RenderBatchBuilder
-            Dictionary<int, (int oldIndex, int newIndex)> keyToIndicesLookup = null;
+            Dictionary<int, KeyToIndicesEntry> keyToIndicesLookup = null;
 
             var hasMoreOld = oldEndIndexExcl > oldStartIndex;
             var hasMoreNew = newEndIndexExcl > newStartIndex;
@@ -69,19 +77,30 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         // Mismatch on key only
                         if (keyToIndicesLookup == null)
                         {
-                            keyToIndicesLookup = new Dictionary<int, (int oldIndex, int newIndex)>();
-                            BuildKeyToIndicesLookup(keyToIndicesLookup, oldTree, oldStartIndex, oldEndIndexExcl, newTree, newStartIndex, newEndIndexExcl);
+                            keyToIndicesLookup = new Dictionary<int, KeyToIndicesEntry>();
+                            BuildKeyToIndicesLookup(keyToIndicesLookup, ref diffContext, oldStartIndex, oldEndIndexExcl, newStartIndex, newEndIndexExcl);
                         }
 
                         var oldKey = KeyValue(ref oldTree[oldStartIndex]);
                         var newKey = KeyValue(ref newTree[newStartIndex]);
-                        var oldKeyIsInNewTree = oldKey.HasValue && keyToIndicesLookup[oldKey.Value].newIndex >= 0;
-                        var newKeyIsInOldTree = newKey.HasValue && keyToIndicesLookup[newKey.Value].oldIndex >= 0;
+                        var oldKeyIsInNewTree = oldKey.HasValue && keyToIndicesLookup[oldKey.Value].NewIndex >= 0;
+                        var newKeyIsInOldTree = newKey.HasValue && keyToIndicesLookup[newKey.Value].OldIndex >= 0;
                         if (oldKeyIsInNewTree)
                         {
                             if (newKeyIsInOldTree)
                             {
-                                throw new NotImplementedException("Not yet supported: moving items by key");
+                                // It's a move
+                                // Since the recipient of the diff script already has the old frame (the one with oldKey)
+                                // at the current siblingIndex, recurse into oldKey and update its descendants in place.
+                                // Later we'll move the old frame to its new position
+                                AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, keyToIndicesLookup[oldKey.Value].NewIndex);
+                                oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
+                                newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
+                                hasMoreOld = oldEndIndexExcl > oldStartIndex;
+                                hasMoreNew = newEndIndexExcl > newStartIndex;
+                                prevOldSeq = oldSeq;
+                                prevNewSeq = newSeq;
+                                continue;
                             }
                             else
                             {
@@ -174,22 +193,48 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     }
                 }
             }
+
+            // Output the list of moves, if any
+            if (keyToIndicesLookup != null)
+            {
+                foreach (var kvp in keyToIndicesLookup)
+                {
+                    var oldSiblingIndex = kvp.Value.OldSiblingIndex;
+                    var newSiblingIndex = kvp.Value.NewSiblingIndex;
+                    if (oldSiblingIndex >= 0 && newSiblingIndex >= 0)
+                    {
+                        diffContext.Edits.Append(
+                            RenderTreeEdit.MoveFrame(oldSiblingIndex, newSiblingIndex));
+                    }
+                }
+            }
         }
 
-        private static void BuildKeyToIndicesLookup(Dictionary<int, (int oldIndex, int newIndex)> keyToIndicesLookup, RenderTreeFrame[] oldTree, int oldStartIndex, int oldEndIndexExcl, RenderTreeFrame[] newTree, int newStartIndex, int newEndIndexExcl)
+        private static void BuildKeyToIndicesLookup(Dictionary<int, KeyToIndicesEntry> keyToIndicesLookup, ref DiffContext diffContext, int oldStartIndex, int oldEndIndexExcl, int newStartIndex, int newEndIndexExcl)
         {
+            var oldTree = diffContext.OldTree;
+            var newTree = diffContext.NewTree;
+            var siblingIndex = diffContext.SiblingIndex;
             while (oldStartIndex < oldEndIndexExcl)
             {
                 ref var frame = ref oldTree[oldStartIndex];
                 var key = KeyValue(ref frame);
                 if (key.HasValue)
                 {
-                    keyToIndicesLookup[key.Value] = (oldStartIndex, -1);
+                    keyToIndicesLookup[key.Value] = new KeyToIndicesEntry
+                    {
+                        OldIndex = oldStartIndex,
+                        OldSiblingIndex = siblingIndex,
+                        NewIndex = -1,
+                        NewSiblingIndex = -1,
+                    };
                 }
 
                 oldStartIndex = NextSiblingIndex(frame, oldStartIndex);
+                siblingIndex++;
             }
 
+            siblingIndex = diffContext.SiblingIndex;
             while (newStartIndex < newEndIndexExcl)
             {
                 ref var frame = ref newTree[newStartIndex];
@@ -197,12 +242,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 if (key.HasValue)
                 {
                     var keyValue = key.Value;
-                    keyToIndicesLookup[keyValue] = keyToIndicesLookup.ContainsKey(keyValue)
-                        ? (keyToIndicesLookup[keyValue].oldIndex, newStartIndex)
-                        : (-1, newStartIndex);
+                    var entry = keyToIndicesLookup.ContainsKey(keyValue)
+                        ? keyToIndicesLookup[keyValue]
+                        : new KeyToIndicesEntry { OldIndex = -1, OldSiblingIndex = -1 };
+                    entry.NewIndex = newStartIndex;
+                    entry.NewSiblingIndex = siblingIndex;
+                    keyToIndicesLookup[keyValue] = entry;
                 }
 
                 newStartIndex = NextSiblingIndex(frame, newStartIndex);
+                siblingIndex++;
             }
         }
 

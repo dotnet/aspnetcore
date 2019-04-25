@@ -51,5 +51,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// should be updated.
         /// </summary>
         UpdateMarkup = 8,
+
+        /// <summary>
+        /// Indicates that an existing sibling frame should be moved immediately before the specified frame.
+        /// </summary>
+        MoveFrame = 9,
     }
 }

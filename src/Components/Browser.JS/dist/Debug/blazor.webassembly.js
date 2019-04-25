@@ -2093,7 +2093,8 @@ var editReader = {
     editType: function (edit) { return Environment_1.platform.readInt32Field(edit, 0); },
     siblingIndex: function (edit) { return Environment_1.platform.readInt32Field(edit, 4); },
     newTreeIndex: function (edit) { return Environment_1.platform.readInt32Field(edit, 8); },
-    removedAttributeName: function (edit) { return Environment_1.platform.readStringField(edit, 12); },
+    moveToSiblingIndex: function (edit) { return Environment_1.platform.readInt32Field(edit, 8); },
+    removedAttributeName: function (edit) { return Environment_1.platform.readStringField(edit, 16); },
 };
 // Keep in sync with memory layout in RenderTreeFrame.cs
 var frameReader = {
