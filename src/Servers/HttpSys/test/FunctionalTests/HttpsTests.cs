@@ -18,10 +18,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
+    // Flaky doesn't support classes :(
+    // https://github.com/aspnet/Extensions/issues/1568
     public class HttpsTests
     {
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_200OK_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -35,6 +37,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_SendHelloWorld_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, httpContext =>
@@ -50,6 +53,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_EchoHelloWorld_Success()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -67,6 +71,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         public async Task Https_ClientCertNotSent_ClientCertNotPresent()
         {
             using (Utilities.CreateDynamicHttpsServer(out var address, async httpContext =>
@@ -103,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         [OSDontSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task Https_SkipsITlsHandshakeFeatureOnWin7()
         {
@@ -125,6 +131,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2209", FlakyOn.Helix.All)]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task Https_SetsITlsHandshakeFeature()
         {
