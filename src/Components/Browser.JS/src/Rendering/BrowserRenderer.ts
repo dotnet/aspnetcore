@@ -1,7 +1,7 @@
 import { RenderBatch, ArraySegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
 import { EventForDotNet, UIEventArgs } from './EventForDotNet';
-import { LogicalElement, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd } from './LogicalElements';
+import { LogicalElement, MoveListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
@@ -65,6 +65,7 @@ export class BrowserRenderer {
   private applyEdits(batch: RenderBatch, parent: LogicalElement, childIndex: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
+    let moveList: MoveListEntry[] | undefined;
 
     const arraySegmentReader = batch.arraySegmentReader;
     const editReader = batch.editReader;
@@ -88,6 +89,16 @@ export class BrowserRenderer {
         case EditType.removeFrame: {
           const siblingIndex = editReader.siblingIndex(edit);
           removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
+          break;
+        }
+        case EditType.moveFrame: {
+          if (!moveList) {
+            moveList = [];
+          }
+          moveList.push({
+            fromSiblingIndex: childIndexAtCurrentDepth + editReader.siblingIndex(edit),
+            toSiblingIndex: childIndexAtCurrentDepth + editReader.moveToSiblingIndex(edit),
+          });
           break;
         }
         case EditType.setAttribute: {
@@ -150,6 +161,11 @@ export class BrowserRenderer {
           parent = getLogicalParent(parent)!;
           currentDepth--;
           childIndexAtCurrentDepth = currentDepth === 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
+          break;
+        }
+        case EditType.endOfMoveList: {
+          permuteLogicalChildren(parent, moveList!);
+          moveList!.length = 0; // Allow wrapper to be reused, but not contents
           break;
         }
         default: {

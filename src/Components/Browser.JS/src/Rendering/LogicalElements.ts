@@ -28,6 +28,7 @@
 const logicalChildrenPropname = createSymbolOrFallback('_blazorLogicalChildren');
 const logicalParentPropname = createSymbolOrFallback('_blazorLogicalParent');
 const logicalEndSiblingPropname = createSymbolOrFallback('_blazorLogicalEnd');
+export interface MoveListEntry { fromSiblingIndex: number, toSiblingIndex: number, toMarker?: Node, movedElement?: LogicalElement }
 
 export function toLogicalRootCommentElement(start: Comment, end: Comment): LogicalElement {
   // Now that we support start/end comments as component delimiters we are going to be setting up
@@ -135,6 +136,50 @@ export function removeLogicalChild(parent: LogicalElement, childIndex: number) {
   domNodeToRemove.parentNode!.removeChild(domNodeToRemove);
 }
 
+export function permuteLogicalChildren(parent: LogicalElement, moveList: MoveListEntry[]) {
+  // The moveList must represent a valid permutation, i.e., the list of 'from' indices
+  // is distinct, and the list of 'to' indices is a permutation of it. The algorithm
+  // here relies on that assumption.
+
+  // Phase 1: insert markers
+  const siblings = getLogicalChildrenArray(parent);
+  moveList.forEach(moveListEntry => {
+    const marker = moveListEntry.toMarker = document.createComment('marker');
+    const insertBeforeNode = siblings[moveListEntry.toSiblingIndex + 1] as any as Node;
+    if (insertBeforeNode) {
+      insertBeforeNode.parentNode!.insertBefore(marker, insertBeforeNode);
+    } else {
+      appendDomNode(marker, parent);
+    }
+  });
+
+  // Phase 2: move children & remove markers
+  moveList.forEach(moveListEntry => {
+    const insertBefore = moveListEntry.toMarker!;
+    const parentDomNode = insertBefore.parentNode!;
+    const elementToMove = moveListEntry.movedElement = siblings[moveListEntry.fromSiblingIndex];
+    const moveEndNode = findLastDomNodeInRange(elementToMove);
+    let nextToMove = elementToMove as any as Node | null;
+    while (nextToMove) {
+      const nextNext = nextToMove.nextSibling;
+      parentDomNode.insertBefore(nextToMove, insertBefore);
+
+      if (nextToMove === moveEndNode) {
+        break;
+      } else {
+        nextToMove = nextNext;
+      }
+    }
+
+    parentDomNode.removeChild(insertBefore);
+  });
+
+  // Phase 3: update siblings index
+  moveList.forEach(moveListEntry => {
+    siblings[moveListEntry.toSiblingIndex] = moveListEntry.movedElement!;
+  });
+}
+
 export function getLogicalParent(element: LogicalElement): LogicalElement | null {
   return (element[logicalParentPropname] as LogicalElement) || null;
 }
@@ -194,6 +239,25 @@ function appendDomNode(child: Node, parent: LogicalElement) {
 
 function createSymbolOrFallback(fallback: string): symbol | string {
   return typeof Symbol === 'function' ? Symbol() : fallback;
+}
+
+function findLastDomNodeInRange(element: LogicalElement) {
+  if (element instanceof Element) {
+    return element;
+  }
+
+  const nextSibling = getLogicalNextSibling(element);
+  if (nextSibling) {
+    // Simple case: not the last logical sibling, so take the node before the next sibling
+    return (nextSibling as any as Node).previousSibling;
+  } else {
+    // Harder case: there's no logical next-sibling, so recurse upwards until we find
+    // a logical ancestor that does have one, or a physical element
+    const logicalParent = getLogicalParent(element)!;
+    return logicalParent instanceof Element
+      ? logicalParent.lastChild
+      : findLastDomNodeInRange(logicalParent);
+  }
 }
 
 // Nominal type to represent a logical element without needing to allocate any object for instances

@@ -13277,6 +13277,7 @@ var BrowserRenderer = /** @class */ (function () {
     BrowserRenderer.prototype.applyEdits = function (batch, parent, childIndex, edits, referenceFrames) {
         var currentDepth = 0;
         var childIndexAtCurrentDepth = childIndex;
+        var moveList;
         var arraySegmentReader = batch.arraySegmentReader;
         var editReader = batch.editReader;
         var frameReader = batch.frameReader;
@@ -13298,6 +13299,16 @@ var BrowserRenderer = /** @class */ (function () {
                 case RenderBatch_1.EditType.removeFrame: {
                     var siblingIndex = editReader.siblingIndex(edit);
                     LogicalElements_1.removeLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
+                    break;
+                }
+                case RenderBatch_1.EditType.moveFrame: {
+                    if (!moveList) {
+                        moveList = [];
+                    }
+                    moveList.push({
+                        fromSiblingIndex: childIndexAtCurrentDepth + editReader.siblingIndex(edit),
+                        toSiblingIndex: childIndexAtCurrentDepth + editReader.moveToSiblingIndex(edit),
+                    });
                     break;
                 }
                 case RenderBatch_1.EditType.setAttribute: {
@@ -13363,6 +13374,11 @@ var BrowserRenderer = /** @class */ (function () {
                     parent = LogicalElements_1.getLogicalParent(parent);
                     currentDepth--;
                     childIndexAtCurrentDepth = currentDepth === 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
+                    break;
+                }
+                case RenderBatch_1.EditType.endOfMoveList: {
+                    LogicalElements_1.permuteLogicalChildren(parent, moveList);
+                    moveList.length = 0; // Allow wrapper to be reused, but not contents
                     break;
                 }
                 default: {
@@ -14149,6 +14165,47 @@ function removeLogicalChild(parent, childIndex) {
     domNodeToRemove.parentNode.removeChild(domNodeToRemove);
 }
 exports.removeLogicalChild = removeLogicalChild;
+function permuteLogicalChildren(parent, moveList) {
+    // The moveList must represent a valid permutation, i.e., the list of 'from' indices
+    // is distinct, and the list of 'to' indices is a permutation of it. The algorithm
+    // here relies on that assumption.
+    // Phase 1: insert markers
+    var siblings = getLogicalChildrenArray(parent);
+    moveList.forEach(function (moveListEntry) {
+        var marker = moveListEntry.toMarker = document.createComment('marker');
+        var insertBeforeNode = siblings[moveListEntry.toSiblingIndex + 1];
+        if (insertBeforeNode) {
+            insertBeforeNode.parentNode.insertBefore(marker, insertBeforeNode);
+        }
+        else {
+            appendDomNode(marker, parent);
+        }
+    });
+    // Phase 2: move children & remove markers
+    moveList.forEach(function (moveListEntry) {
+        var insertBefore = moveListEntry.toMarker;
+        var parentDomNode = insertBefore.parentNode;
+        var elementToMove = moveListEntry.movedElement = siblings[moveListEntry.fromSiblingIndex];
+        var moveEndNode = findLastDomNodeInRange(elementToMove);
+        var nextToMove = elementToMove;
+        while (nextToMove) {
+            var nextNext = nextToMove.nextSibling;
+            parentDomNode.insertBefore(nextToMove, insertBefore);
+            if (nextToMove === moveEndNode) {
+                break;
+            }
+            else {
+                nextToMove = nextNext;
+            }
+        }
+        parentDomNode.removeChild(insertBefore);
+    });
+    // Phase 3: update siblings index
+    moveList.forEach(function (moveListEntry) {
+        siblings[moveListEntry.toSiblingIndex] = moveListEntry.movedElement;
+    });
+}
+exports.permuteLogicalChildren = permuteLogicalChildren;
 function getLogicalParent(element) {
     return element[logicalParentPropname] || null;
 }
@@ -14210,6 +14267,24 @@ function appendDomNode(child, parent) {
 }
 function createSymbolOrFallback(fallback) {
     return typeof Symbol === 'function' ? Symbol() : fallback;
+}
+function findLastDomNodeInRange(element) {
+    if (element instanceof Element) {
+        return element;
+    }
+    var nextSibling = getLogicalNextSibling(element);
+    if (nextSibling) {
+        // Simple case: not the last logical sibling, so take the node before the next sibling
+        return nextSibling.previousSibling;
+    }
+    else {
+        // Harder case: there's no logical next-sibling, so recurse upwards until we find
+        // a logical ancestor that does have one, or a physical element
+        var logicalParent = getLogicalParent(element);
+        return logicalParent instanceof Element
+            ? logicalParent.lastChild
+            : findLastDomNodeInRange(logicalParent);
+    }
 }
 
 
@@ -14301,6 +14376,9 @@ var OutOfProcessRenderTreeEditReader = /** @class */ (function () {
         return readInt32LE(this.batchDataUint8, edit + 4); // 2nd int
     };
     OutOfProcessRenderTreeEditReader.prototype.newTreeIndex = function (edit) {
+        return readInt32LE(this.batchDataUint8, edit + 8); // 3rd int
+    };
+    OutOfProcessRenderTreeEditReader.prototype.moveToSiblingIndex = function (edit) {
         return readInt32LE(this.batchDataUint8, edit + 8); // 3rd int
     };
     OutOfProcessRenderTreeEditReader.prototype.removedAttributeName = function (edit) {
@@ -14458,6 +14536,8 @@ var EditType;
     EditType[EditType["stepIn"] = 6] = "stepIn";
     EditType[EditType["stepOut"] = 7] = "stepOut";
     EditType[EditType["updateMarkup"] = 8] = "updateMarkup";
+    EditType[EditType["moveFrame"] = 9] = "moveFrame";
+    EditType[EditType["endOfMoveList"] = 10] = "endOfMoveList";
 })(EditType = exports.EditType || (exports.EditType = {}));
 var FrameType;
 (function (FrameType) {
