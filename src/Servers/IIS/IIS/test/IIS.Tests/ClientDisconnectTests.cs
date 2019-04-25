@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Repeat(100)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1798", FlakyOn.All)]
         public async Task ReaderThrowsCancelledException()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
