@@ -14,4 +14,4 @@ You can learn more about Blazor at https://blazor.net.
 
 ## Getting Started
 
-To get started and build your first web app check out our [getting started guide](https://go.microsoft.com/fwlink/?linkid=870449).
+To get started with Blazor and build your first web app check out our [getting started guide](https://go.microsoft.com/fwlink/?linkid=870449).
