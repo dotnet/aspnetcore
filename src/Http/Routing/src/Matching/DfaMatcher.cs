@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     state.Values ??= new RouteValueDictionary();
                     if (!ProcessComplexSegments(candidate.Endpoint, candidate.ComplexSegments, path, segments, state.Values))
                     {
-                        CandidateSet.SetValidatity(ref state, false);
+                        CandidateSet.SetValidity(ref state, false);
                         isMatch = false;
                     }
                 }
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     state.Values ??= new RouteValueDictionary();
                     if (!ProcessConstraints(candidate.Endpoint, candidate.Constraints, httpContext, state.Values))
                     {
-                        CandidateSet.SetValidatity(ref state, false);
+                        CandidateSet.SetValidity(ref state, false);
                         isMatch = false;
                     }
                 }
@@ -183,14 +183,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (policyCount == 0 && _isDefaultEndpointSelector)
             {
-                // Fast path that avoids allocating the candidate set. We can use this when there
-                // are no policies.
+                // Fast path that avoids allocating the candidate set.
+                //
+                // We can use this when there are no policies and we're using the default selector.
                 DefaultEndpointSelector.Select(httpContext, context, candidateState);
                 return Task.CompletedTask;
             }
             else if (policyCount == 0)
             {
-                // Fast path that avoids state machine when there are no policies.
+                // Fast path that avoids a state machine.
+                //
+                // We can use this when there are no policies and a non-default selector.
                 return _selector.SelectAsync(httpContext, context, new CandidateSet(candidateState));
             }
 

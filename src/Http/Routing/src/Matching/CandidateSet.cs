@@ -64,6 +64,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
+        // Used in tests.
         internal CandidateSet(Candidate[] candidates)
         {
             Candidates = new CandidateState[candidates.Length];
@@ -151,10 +152,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             ref var original = ref Candidates[index];
-            SetValidatity(ref original, value);
+            SetValidity(ref original, value);
         }
 
-        internal static void SetValidatity(ref CandidateState candidate, bool value)
+        internal static void SetValidity(ref CandidateState candidate, bool value)
         {
             var originalScore = candidate.Score;
             var score = originalScore >= 0 ^ value ? ~originalScore : originalScore;
