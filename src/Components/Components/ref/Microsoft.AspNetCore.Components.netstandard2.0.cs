@@ -763,6 +763,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void OpenComponent(int sequence, System.Type componentType) { }
         public void OpenComponent<TComponent>(int sequence) where TComponent : Microsoft.AspNetCore.Components.IComponent { }
         public void OpenElement(int sequence, string elementName) { }
+        public void SetKey(object value) { }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct RenderTreeDiff
