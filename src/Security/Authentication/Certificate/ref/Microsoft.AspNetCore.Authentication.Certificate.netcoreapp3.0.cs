@@ -62,7 +62,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     public static partial class X509Certificate2Extensions
     {
         public static bool IsSelfSigned(this System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) { throw null; }
-        public static string SHA256Thumprint(this System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Hosting
