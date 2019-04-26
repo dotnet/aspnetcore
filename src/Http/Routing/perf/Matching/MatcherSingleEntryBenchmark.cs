@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private Matcher _route;
         private Matcher _tree;
 
+        private EndpointSelectorContext _feature;
+
         [GlobalSetup]
         public void Setup()
         {
@@ -33,6 +35,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _dfa = SetupMatcher(CreateDfaMatcherBuilder());
             _route = SetupMatcher(new RouteMatcherBuilder());
             _tree = SetupMatcher(new TreeRouterMatcherBuilder());
+
+            _feature = new EndpointSelectorContext();
         }
 
         private Matcher SetupMatcher(MatcherBuilder builder)
@@ -44,8 +48,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [Benchmark(Baseline = true)]
         public async Task Baseline()
         {
+            var feature = _feature;
             var httpContext = Requests[0];
-            var feature = new EndpointSelectorContext(httpContext);
 
             await _baseline.MatchAsync(httpContext, feature);
             Validate(httpContext, Endpoints[0], feature.Endpoint);
@@ -54,8 +58,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [Benchmark]
         public async Task Dfa()
         {
+            var feature = _feature;
             var httpContext = Requests[0];
-            var feature = new EndpointSelectorContext(httpContext);
 
             await _dfa.MatchAsync(httpContext, feature);
             Validate(httpContext, Endpoints[0], feature.Endpoint);
@@ -64,11 +68,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [Benchmark]
         public async Task LegacyTreeRouter()
         {
-            var httpContext = Requests[0];
-            var feature = new EndpointSelectorContext(httpContext);
+            var feature = _feature;
 
-            //// This is required to make the legacy router implementation work with global routing.
-            //httpContext.Features.Set<IEndpointFeature>(feature);
+            var httpContext = Requests[0];
+
+            // This is required to make the legacy router implementation work with global routing.
+            httpContext.Features.Set<IEndpointFeature>(feature);
 
             await _tree.MatchAsync(httpContext, feature);
             Validate(httpContext, Endpoints[0], feature.Endpoint);
@@ -77,11 +82,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
         [Benchmark]
         public async Task LegacyRouter()
         {
+            var feature = _feature;
             var httpContext = Requests[0];
-            var feature = new EndpointSelectorContext(httpContext);
 
             // This is required to make the legacy router implementation work with global routing.
-            //httpContext.Features.Set<IEndpointFeature>(feature);
+            httpContext.Features.Set<IEndpointFeature>(feature);
 
             await _route.MatchAsync(httpContext, feature);
             Validate(httpContext, Endpoints[0], feature.Endpoint);

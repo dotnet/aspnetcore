@@ -77,6 +77,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (candidates == null)
             {
                 throw new ArgumentNullException(nameof(candidates));

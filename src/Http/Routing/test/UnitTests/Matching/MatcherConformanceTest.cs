@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,10 +21,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             httpContext.Request.Path = path;
             httpContext.RequestServices = CreateServices();
 
-            var context = new EndpointSelectorContext(httpContext)
+            var context = new EndpointSelectorContext()
             {
                 RouteValues = new RouteValueDictionary()
             };
+            httpContext.Features.Set<IEndpointFeature>(context);
+            httpContext.Features.Set<IRouteValuesFeature>(context);
+
             return (httpContext, context);
         }
 

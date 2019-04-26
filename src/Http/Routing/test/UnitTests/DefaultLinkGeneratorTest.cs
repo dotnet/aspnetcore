@@ -635,12 +635,12 @@ namespace Microsoft.AspNetCore.Routing
 
             var linkGenerator = CreateLinkGenerator(endpointControllerAction, endpointController, endpointEmpty, endpointControllerActionParameter);
 
-            var httpContext = CreateHttpContext();
-            // This sets data on the feature directly in the HttpContext
-            var context = new EndpointSelectorContext(httpContext)
+            var context = new EndpointSelectorContext()
             {
                 RouteValues = new RouteValueDictionary(new { controller = "Home", action = "Index", })
             };
+            var httpContext = CreateHttpContext();
+            httpContext.Features.Set<IRouteValuesFeature>(context);
 
             var values = new RouteValueDictionary();
             for (int i = 0; i < routeNames.Length; i++)
@@ -678,11 +678,12 @@ namespace Microsoft.AspNetCore.Routing
 
             var linkGenerator = CreateLinkGenerator(homeIndex, homeLogin);
 
-            var httpContext = CreateHttpContext();
-            var context = new EndpointSelectorContext(httpContext)
+            var context = new EndpointSelectorContext()
             {
                 RouteValues = new RouteValueDictionary(new { controller = "Home", action = "Index", })
             };
+            var httpContext = CreateHttpContext();
+            httpContext.Features.Set<IRouteValuesFeature>(context);
 
             var values = new RouteValueDictionary();
             for (int i = 0; i < routeNames.Length; i++)
@@ -720,7 +721,9 @@ namespace Microsoft.AspNetCore.Routing
 
             var linkGenerator = CreateLinkGenerator(homeIndex, homeLogin);
 
+            var context = new EndpointSelectorContext();
             var httpContext = CreateHttpContext();
+            httpContext.Features.Set<IRouteValuesFeature>(context);
 
             var values = new RouteValueDictionary();
             for (int i = 0; i < routeNames.Length; i++)

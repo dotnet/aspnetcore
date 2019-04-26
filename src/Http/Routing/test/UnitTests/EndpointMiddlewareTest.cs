@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Routing
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new ServiceProvider();
 
-            new EndpointSelectorContext(httpContext)
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = null,
-            };
+            });
 
             RequestDelegate next = (c) =>
             {
@@ -77,10 +77,10 @@ namespace Microsoft.AspNetCore.Routing
                 return Task.CompletedTask;
             };
 
-            new EndpointSelectorContext(httpContext)
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(endpointFunc, EndpointMetadataCollection.Empty, "Test"),
-            };
+            });
 
             RequestDelegate next = (c) =>
             {
@@ -108,10 +108,10 @@ namespace Microsoft.AspNetCore.Routing
                 RequestServices = new ServiceProvider()
             };
 
-            new EndpointSelectorContext(httpContext)
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
-            };
+            });
 
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, RouteOptions);
 
@@ -131,10 +131,10 @@ namespace Microsoft.AspNetCore.Routing
                 RequestServices = new ServiceProvider()
             };
 
-            new EndpointSelectorContext(httpContext)
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
-            };
+            });
 
             httpContext.Items[EndpointMiddleware.AuthorizationMiddlewareInvokedKey] = true;
 
@@ -155,11 +155,10 @@ namespace Microsoft.AspNetCore.Routing
                 RequestServices = new ServiceProvider()
             };
 
-            new EndpointSelectorContext(httpContext)
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
-            };
-
+            });
             var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnhandledSecurityMetadata = true });
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, routeOptions);
 
@@ -179,10 +178,10 @@ namespace Microsoft.AspNetCore.Routing
                 RequestServices = new ServiceProvider()
             };
 
-            new EndpointSelectorContext(httpContext)
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<ICorsMetadata>()), "Test"),
-            };
+            });
 
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, RouteOptions);
 
@@ -202,10 +201,10 @@ namespace Microsoft.AspNetCore.Routing
                 RequestServices = new ServiceProvider()
             };
 
-            new EndpointSelectorContext(httpContext)
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<ICorsMetadata>()), "Test"),
-            };
+            });
 
             httpContext.Items[EndpointMiddleware.CorsMiddlewareInvokedKey] = true;
 
@@ -226,11 +225,10 @@ namespace Microsoft.AspNetCore.Routing
                 RequestServices = new ServiceProvider()
             };
 
-            new EndpointSelectorContext(httpContext)
+            httpContext.Features.Set<IEndpointFeature>(new EndpointSelectorContext()
             {
                 Endpoint = new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"),
-            };
-
+            });
             var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnhandledSecurityMetadata = true });
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, routeOptions);
 
