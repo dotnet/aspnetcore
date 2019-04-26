@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -18,16 +19,18 @@ using Microsoft.Net.Http.Headers;
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal partial class HttpProtocol : IHttpRequestFeature,
-                                        IHttpResponseFeature,
-                                        IResponseBodyPipeFeature,
-                                        IRequestBodyPipeFeature,
-                                        IHttpUpgradeFeature,
-                                        IHttpConnectionFeature,
-                                        IHttpRequestLifetimeFeature,
-                                        IHttpRequestIdentifierFeature,
-                                        IHttpBodyControlFeature,
-                                        IHttpMaxRequestBodySizeFeature,
-                                        IHttpResponseStartFeature
+                                          IHttpResponseFeature,
+                                          IResponseBodyPipeFeature,
+                                          IRequestBodyPipeFeature,
+                                          IHttpUpgradeFeature,
+                                          IHttpConnectionFeature,
+                                          IHttpRequestLifetimeFeature,
+                                          IHttpRequestIdentifierFeature,
+                                          IHttpBodyControlFeature,
+                                          IHttpMaxRequestBodySizeFeature,
+                                          IHttpResponseStartFeature,
+                                          IEndpointFeature,
+                                          IRouteValuesFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -255,6 +258,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     _wrapperObjectsToDispose = new List<IDisposable>();
                 }
                 _wrapperObjectsToDispose.Add(responsePipeWriter);
+            }
+        }
+
+        Endpoint IEndpointFeature.Endpoint
+        {
+            get;
+            set;
+        }
+
+        RouteValueDictionary IRouteValuesFeature.RouteValues
+        {
+            get
+            {
+                return _routeValues ??= new RouteValueDictionary();
+            }
+            set
+            {
+                _routeValues = value;
             }
         }
 

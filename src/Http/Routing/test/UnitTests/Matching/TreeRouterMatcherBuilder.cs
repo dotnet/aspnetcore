@@ -99,11 +99,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public async Task RouteAsync(RouteContext routeContext)
             {
-                var context = (EndpointSelectorContext)routeContext.HttpContext.Features.Get<IEndpointFeature>();
-
-                // This is needed due to a quirk of our tests - they reuse the endpoint feature.
-                context.Endpoint = null;
-                
+                var context = new EndpointSelectorContext(routeContext.HttpContext);
                 await _selector.SelectAsync(routeContext.HttpContext, context, new CandidateSet(_candidates, _values, _scores));
                 if (context.Endpoint != null)
                 {

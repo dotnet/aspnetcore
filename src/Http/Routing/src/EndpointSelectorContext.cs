@@ -3,20 +3,37 @@
 
 using System;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Http.Endpoints;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public sealed class EndpointSelectorContext : IEndpointFeature, IRouteValuesFeature, IRoutingFeature
+    public struct EndpointSelectorContext
     {
-        private RouteData _routeData;
-        private RouteValueDictionary _routeValues;
+        private HttpContext _httpContext;
+
+        public EndpointSelectorContext(HttpContext httpContext)
+        {
+            _httpContext = httpContext;
+        }
 
         /// <summary>
         /// Gets or sets the selected <see cref="Http.Endpoint"/> for the current
         /// request.
         /// </summary>
-        public Endpoint Endpoint { get; set; }
+        public Endpoint Endpoint
+        {
+            get
+            {
+                return _httpContext.GetEndpoint();
+            }
+            set
+            {
+                if (value != null)
+                {
+                    _httpContext.SetEndpoint(value);
+                }
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the currrent
@@ -24,47 +41,14 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         public RouteValueDictionary RouteValues
         {
-            get => _routeValues ?? (_routeValues = new RouteValueDictionary());
-            set
-            {
-                _routeValues = value;
-
-                // RouteData will be created next get with new Values
-                _routeData = null;
-            }
-        }
-
-        /// <summary>
-        /// Gets or sets the <see cref="RouteData"/> for the current request.
-        /// </summary>
-        /// <remarks>
-        /// The setter is not implemented. Use <see cref="RouteValues"/> to set the route values.
-        /// </remarks>
-        RouteData IRoutingFeature.RouteData
-        {
             get
             {
-                if (_routeData == null)
-                {
-                    _routeData = _routeValues == null ? new RouteData() : new RouteData(_routeValues);
-
-                    // Note: DataTokens won't update if someone else overwrites the Endpoint
-                    // after route values has been set. This seems find since endpoints are a new
-                    // feature and DataTokens are for back-compat.
-                    var dataTokensMetadata = Endpoint?.Metadata.GetMetadata<IDataTokensMetadata>();
-                    if (dataTokensMetadata != null)
-                    {
-                        var dataTokens = _routeData.DataTokens;
-                        foreach (var kvp in dataTokensMetadata.DataTokens)
-                        {
-                            _routeData.DataTokens.Add(kvp.Key, kvp.Value);
-                        }
-                    }
-                }
-
-                return _routeData;
+                return _httpContext.Request.RouteValues;
             }
-            set => throw new NotSupportedException();
+            set
+            {
+                _httpContext.Request.RouteValues = value;
+            }
         }
     }
 }
