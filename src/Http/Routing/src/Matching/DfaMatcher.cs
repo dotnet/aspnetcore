@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // set of endpoints before we call the EndpointSelector.
             //
             // `candidateSet` is the mutable state that we pass to the EndpointSelector.
-            var candidateSet = new CandidateSet(candidates);
+            var candidateState = new CandidateState[candidateCount];
 
             for (var i = 0; i < candidateCount; i++)
             {
@@ -111,17 +111,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // candidate: readonly data about the endpoint and how to match
                 // state: mutable storarge for our processing
                 ref var candidate = ref candidates[i];
-                ref var state = ref candidateSet[i];
+                ref var state = ref candidateState[i];
+                state = new CandidateState(candidate.Endpoint, candidate.Score);
 
                 var flags = candidate.Flags;
 
                 // First process all of the parameters and defaults.
-                RouteValueDictionary values;
-                if ((flags & Candidate.CandidateFlags.HasSlots) == 0)
-                {
-                    values = new RouteValueDictionary();
-                }
-                else
+                if ((flags & Candidate.CandidateFlags.HasSlots) != 0)
                 {
                     // The Slots array has the default values of the route values in it.
                     //
@@ -145,10 +141,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         ProcessCatchAll(slots, candidate.CatchAll, path, segments);
                     }
 
-                    values = RouteValueDictionary.FromArray(slots);
+                    state.Values = RouteValueDictionary.FromArray(slots);
                 }
-
-                state.Values = values;
 
                 // Now that we have the route values, we need to process complex segments.
                 // Complex segments go through an old API that requires a fully-materialized
@@ -156,18 +150,20 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var isMatch = true;
                 if ((flags & Candidate.CandidateFlags.HasComplexSegments) != 0)
                 {
-                    if (!ProcessComplexSegments(candidate.Endpoint, candidate.ComplexSegments, path, segments, values))
+                    state.Values ??= new RouteValueDictionary();
+                    if (!ProcessComplexSegments(candidate.Endpoint, candidate.ComplexSegments, path, segments, state.Values))
                     {
-                        candidateSet.SetValidity(i, false);
+                        CandidateSet.SetValidatity(ref state, false);
                         isMatch = false;
                     }
                 }
 
                 if ((flags & Candidate.CandidateFlags.HasConstraints) != 0)
                 {
-                    if (!ProcessConstraints(candidate.Endpoint, candidate.Constraints, httpContext, values))
+                    state.Values ??= new RouteValueDictionary();
+                    if (!ProcessConstraints(candidate.Endpoint, candidate.Constraints, httpContext, state.Values))
                     {
-                        candidateSet.SetValidity(i, false);
+                        CandidateSet.SetValidatity(ref state, false);
                         isMatch = false;
                     }
                 }
@@ -185,13 +181,20 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            if (policyCount == 0)
+            if (policyCount == 0 && _isDefaultEndpointSelector)
             {
-                // Perf: avoid a state machine if there are no polices
-                return _selector.SelectAsync(httpContext, context, candidateSet);
+                // Fast path that avoids allocating the candidate set. We can use this when there
+                // are no policies.
+                DefaultEndpointSelector.Select(httpContext, context, candidateState);
+                return Task.CompletedTask;
+            }
+            else if (policyCount == 0)
+            {
+                // Fast path that avoids state machine when there are no policies.
+                return _selector.SelectAsync(httpContext, context, new CandidateSet(candidateState));
             }
 
-            return SelectEndpointWithPoliciesAsync(httpContext, context, policies, candidateSet);
+            return SelectEndpointWithPoliciesAsync(httpContext, context, policies, new CandidateSet(candidateState));
         }
 
         internal (Candidate[] candidates, IEndpointSelectorPolicy[] policies) FindCandidateSet(

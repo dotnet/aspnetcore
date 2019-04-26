@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
-    internal class DefaultEndpointSelector : EndpointSelector
+    internal sealed class DefaultEndpointSelector : EndpointSelector
     {
         public override Task SelectAsync(
             HttpContext httpContext,
@@ -31,9 +31,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentNullException(nameof(candidateSet));
             }
 
+            Select(httpContext, context, candidateSet.Candidates);
+            return Task.CompletedTask;
+        }
+
+        internal static void Select(
+            HttpContext httpContext,
+            EndpointSelectorContext context,
+            CandidateState[] candidateState)
+        {
             // Fast path: We can specialize for trivial numbers of candidates since there can
             // be no ambiguities
-            switch (candidateSet.Count)
+            switch (candidateState.Length)
             {
                 case 0:
                     {
@@ -43,9 +52,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                 case 1:
                     {
-                        if (candidateSet.IsValidCandidate(0))
+                        ref var state = ref candidateState[0];
+                        if (CandidateSet.IsValidCandidate(ref state))
                         {
-                            ref var state = ref candidateSet[0];
                             context.Endpoint = state.Endpoint;
                             context.RouteValues = state.Values;
                         }
@@ -57,30 +66,28 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     {
                         // Slow path: There's more than one candidate (to say nothing of validity) so we
                         // have to process for ambiguities.
-                        ProcessFinalCandidates(httpContext, context, candidateSet);
+                        ProcessFinalCandidates(httpContext, context, candidateState);
                         break;
                     }
             }
-
-            return Task.CompletedTask;
         }
 
         private static void ProcessFinalCandidates(
             HttpContext httpContext,
             EndpointSelectorContext context,
-            CandidateSet candidateSet)
+            CandidateState[] candidateState)
         {
             Endpoint endpoint = null;
             RouteValueDictionary values = null;
             int? foundScore = null;
-            for (var i = 0; i < candidateSet.Count; i++)
+            for (var i = 0; i < candidateState.Length; i++)
             {
-                if (!candidateSet.IsValidCandidate(i))
+                ref var state = ref candidateState[i];
+                if (!CandidateSet.IsValidCandidate(ref state))
                 {
                     continue;
                 }
 
-                ref var state = ref candidateSet[i];
                 if (foundScore == null)
                 {
                     // This is the first match we've seen - speculatively assign it.
@@ -103,7 +110,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     //
                     // Don't worry about the 'null == state.Score' case, it returns false.
 
-                    ReportAmbiguity(candidateSet);
+                    ReportAmbiguity(candidateState);
 
                     // Unreachable, ReportAmbiguity always throws.
                     throw new NotSupportedException();
@@ -117,16 +124,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        private static void ReportAmbiguity(CandidateSet candidates)
+        private static void ReportAmbiguity(CandidateState[] candidateState)
         {
             // If we get here it's the result of an ambiguity - we're OK with this
             // being a littler slower and more allocatey.
             var matches = new List<Endpoint>();
-            for (var i = 0; i < candidates.Count; i++)
+            for (var i = 0; i < candidateState.Length; i++)
             {
-                if (candidates.IsValidCandidate(i))
+                ref var state = ref candidateState[i];
+                if (CandidateSet.IsValidCandidate(ref state))
                 {
-                    matches.Add(candidates[i].Endpoint);
+                    matches.Add(state.Endpoint);
                 }
             }
 
