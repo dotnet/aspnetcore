@@ -131,10 +131,9 @@ namespace Microsoft.AspNetCore.Routing
         protected (HttpContext httpContext, RouteValueDictionary ambientValues) CreateCurrentRequestContext(
             object ambientValues = null)
         {
-            var feature = new EndpointSelectorContext { RouteValues = new RouteValueDictionary(ambientValues) };
+            
             var context = new DefaultHttpContext();
-            context.Features.Set<IEndpointFeature>(feature);
-            context.Features.Set<IRouteValuesFeature>(feature);
+            var feature = new EndpointSelectorContext(context) { RouteValues = new RouteValueDictionary(ambientValues) };
 
             return (context, feature.RouteValues);
         }

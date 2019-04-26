@@ -633,7 +633,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var (httpContext, context) = CreateContext();
             httpContext.Request.Path = "/test/17";
-            
+
             // Act
             await matcher.MatchAsync(httpContext, context);
 
@@ -727,11 +727,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private (HttpContext httpContext, EndpointSelectorContext context) CreateContext()
         {
-            var context = new EndpointSelectorContext();
-
             var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IEndpointFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
+            var context = new EndpointSelectorContext(httpContext);
 
             return (httpContext, context);
         }

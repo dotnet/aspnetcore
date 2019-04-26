@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public Task Invoke(HttpContext httpContext)
         {
-            var feature = new EndpointSelectorContext();
+            var feature = new EndpointSelectorContext(httpContext);
 
             // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
@@ -97,8 +97,6 @@ namespace Microsoft.AspNetCore.Routing
             {
                 // Set the endpoint feature only on success. This means we won't overwrite any
                 // existing state for related features unless we did something.
-                SetFeatures(httpContext, feature);
-
                 Log.MatchSuccess(_logger, feature);
             }
             else
@@ -107,15 +105,6 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             return _next(httpContext);
-        }
-
-        private static void SetFeatures(HttpContext httpContext, EndpointSelectorContext context)
-        {
-            // For back-compat EndpointSelectorContext implements IEndpointFeature,
-            // IRouteValuesFeature and IRoutingFeature
-            httpContext.Features.Set<IRoutingFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
-            httpContext.Features.Set<IEndpointFeature>(context);
         }
 
         // Initialization is async to avoid blocking threads while reflection and things

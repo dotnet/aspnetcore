@@ -19,13 +19,11 @@ namespace Microsoft.AspNetCore.Routing
         {
             var httpContext = new DefaultHttpContext();
 
-            var context = new EndpointSelectorContext
+            var context = new EndpointSelectorContext(httpContext)
             {
                 RouteValues = new RouteValueDictionary(ambientValues)
             };
 
-            httpContext.Features.Set<IEndpointFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
             return httpContext;
         }
 

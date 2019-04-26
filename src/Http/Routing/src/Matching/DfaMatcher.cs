@@ -34,11 +34,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // All of the logging we do here is at level debug, so we can get away with doing a single check.
             var log = _logger.IsEnabled(LogLevel.Debug);
 
