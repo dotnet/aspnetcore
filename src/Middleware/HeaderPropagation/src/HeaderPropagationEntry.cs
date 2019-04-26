@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HeaderPropagation
@@ -13,44 +12,72 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public class HeaderPropagationEntry
     {
         /// <summary>
-        /// Gets or sets the name of the header to be used by the <see cref="HeaderPropagationMessageHandler"/> for the
+        /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="inboundHeaderName"/>.
+        /// </summary>
+        /// <param name="inboundHeaderName">
+        /// The name of the header to be captured by <see cref="HeaderPropagationMiddleware"/> and added by
+        /// <see cref="HeaderPropagationMessageHandler"/>.
+        /// </param>
+        public HeaderPropagationEntry(string inboundHeaderName)
+        {
+            if (inboundHeaderName == null)
+            {
+                throw new ArgumentNullException(nameof(inboundHeaderName));
+            }
+
+            InboundHeaderName = inboundHeaderName;
+            OutboundHeaderName = inboundHeaderName;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="inboundHeaderName"/>
+        /// and <paramref name="outboundHeaderName"/>
+        /// </summary>
+        /// <param name="inboundHeaderName">
+        /// The name of the header to be captured by <see cref="HeaderPropagationMiddleware"/>.
+        /// </param>
+        ///  <param name="outboundHeaderName">
+        /// The name of the header to be added by <see cref="HeaderPropagationMessageHandler"/>.
+        /// </param>
+        public HeaderPropagationEntry(string inboundHeaderName, string outboundHeaderName)
+        {
+            if (inboundHeaderName == null)
+            {
+                throw new ArgumentNullException(nameof(inboundHeaderName));
+            }
+
+            if (outboundHeaderName == null)
+            {
+                throw new ArgumentNullException(nameof(outboundHeaderName));
+            }
+
+            InboundHeaderName = inboundHeaderName;
+            OutboundHeaderName = outboundHeaderName;
+        }
+
+        /// <summary>
+        /// Gets the name of the header that will be captured by the <see cref="HeaderPropagationMiddleware"/>.
+        /// </summary>
+        public string InboundHeaderName { get; }
+
+        /// <summary>
+        /// Gets the name of the header to be used by the <see cref="HeaderPropagationMessageHandler"/> for the
         /// outbound http requests.
         /// </summary>
-        /// <remarks>
-        /// If <see cref="ValueFactory"/> is present, the value of the header in the outbound calls will be the one
-        /// returned by the factory or, if the factory returns an empty value, the header will be omitted.
-        /// Otherwise, it will be the value of the header in the incoming request named as the key of this entry in
-        /// <see cref="HeaderPropagationOptions.Headers"/> or, if missing or empty, the value specified in
-        /// <see cref="DefaultValue"/> or, if the <see cref="DefaultValue"/> is empty, it will not be
-        /// added to the outbound calls.
-        /// </remarks>
-        public string OutboundHeaderName { get; set; }
+        public string OutboundHeaderName { get; }
 
         /// <summary>
-        /// Gets or sets the default value to be used when the header in the incoming request is missing or empty.
+        /// Gets or sets a filter delegate that can be used to transform the header value.
         /// </summary>
         /// <remarks>
-        /// This value is ignored when <see cref="ValueFactory"/> is set.
-        /// When it is <see cref="StringValues.Empty"/> it has no effect and, if the header is missing or empty in the
-        /// incoming request, it will not be added to outbound calls.
+        /// <para>
+        /// When present, the delegate will be evaluated once per request to provide the transformed
+        /// header value. The delegate will be called regardless of whether a header with the name
+        /// corresponding to <see cref="InboundHeaderName"/> is present in the request. If the result
+        /// of evaluating <see cref="ValueFilter"/> is null or empty, it will not be added to the propagated
+        /// values.
+        /// </para>
         /// </remarks>
-        public StringValues DefaultValue { get; set; }
-
-        /// <summary>
-        /// Gets or sets the value factory to be used.
-        /// It gets as input the inbound header name for this entry as defined in
-        /// <see cref="HeaderPropagationOptions.Headers"/> and the <see cref="HttpContext"/> of the current request.
-        /// </summary>
-        /// <remarks>
-        /// When present, the factory is the only method used to set the value.
-        /// The factory should return <see cref="StringValues.Empty"/> to not add the header.
-        /// When not present, the value will be taken from the header in the incoming request named as the key of this
-        /// entry in <see cref="HeaderPropagationOptions.Headers"/> or, if missing or empty, it will be the values
-        /// specified in <see cref="DefaultValue"/> or, if the <see cref="DefaultValue"/> is empty, the header will not
-        /// be added to the outbound calls.
-        /// Please note the factory is called only once per incoming request and the same value will be used by all the
-        /// outbound calls.
-        /// </remarks>
-        public Func<string, HttpContext, StringValues> ValueFactory { get; set; }
+        public Func<HeaderPropagationContext, StringValues> ValueFilter { get; set; }
     }
 }

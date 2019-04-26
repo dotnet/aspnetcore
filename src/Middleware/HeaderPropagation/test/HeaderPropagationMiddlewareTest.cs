@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInRequest_AddCorrectValue()
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry());
+            Configuration.Headers.Add("in");
             Context.Request.Headers.Add("in", "test");
 
             // Act
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task NoHeaderInRequest_DoesNotAddIt()
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry());
+            Configuration.Headers.Add("in");
 
             // Act
             await Middleware.Invoke(Context);
@@ -73,8 +73,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task MultipleHeadersInRequest_AddAllHeaders()
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry());
-            Configuration.Headers.Add("another", new HeaderPropagationEntry());
+            Configuration.Headers.Add("in");
+            Configuration.Headers.Add("another");
             Context.Request.Headers.Add("in", "test");
             Context.Request.Headers.Add("another", "test2");
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderEmptyInRequest_DoesNotAddIt(string headerValue)
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry());
+            Configuration.Headers.Add(new HeaderPropagationEntry("in"));
             Context.Request.Headers.Add("in", headerValue);
 
             // Act
@@ -107,39 +107,24 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Theory]
         [InlineData(new[] { "default" }, new[] { "default" })]
         [InlineData(new[] { "default", "other" }, new[] { "default", "other" })]
-        public async Task NoHeaderInRequest_AddsDefaultValue(string[] defaultValues,
-            string[] expectedValues)
-        {
-            // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValue = defaultValues });
-
-            // Act
-            await Middleware.Invoke(Context);
-
-            // Assert
-            Assert.Contains("in", State.Headers.Keys);
-            Assert.Equal(expectedValues, State.Headers["in"]);
-        }
-
-        [Theory]
-        [InlineData(new[] { "default" }, new[] { "default" })]
-        [InlineData(new[] { "default", "other" }, new[] { "default", "other" })]
-        public async Task UsesValueFactory(string[] factoryValues,
-            string[] expectedValues)
+        public async Task UsesValueFilter(string[] filterValues, string[] expectedValues)
         {
             // Arrange
             string receivedName = null;
+            StringValues receivedValue = default;
             HttpContext receivedContext = null;
-            Configuration.Headers.Add("in", new HeaderPropagationEntry
+            Configuration.Headers.Add(new HeaderPropagationEntry("in")
             {
-                DefaultValue = "no",
-                ValueFactory = (name, ctx) =>
+                ValueFilter = (context) =>
                 {
-                    receivedName = name;
-                    receivedContext = ctx;
-                    return factoryValues;
+                    receivedValue = context.HeaderValue;
+                    receivedName = context.HeaderName;
+                    receivedContext = context.HttpContext;
+                    return filterValues;
                 }
             });
+
+            Context.Request.Headers.Add("in", "value");
 
             // Act
             await Middleware.Invoke(Context);
@@ -148,17 +133,17 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Assert.Contains("in", State.Headers.Keys);
             Assert.Equal(expectedValues, State.Headers["in"]);
             Assert.Equal("in", receivedName);
+            Assert.Equal(new StringValues("value"), receivedValue);
             Assert.Same(Context, receivedContext);
         }
 
         [Fact]
-        public async Task PreferValueFactory_OverDefaultValuesAndRequestHeader()
+        public async Task PreferValueFilter_OverRequestHeader()
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry
+            Configuration.Headers.Add(new HeaderPropagationEntry("in")
             {
-                DefaultValue = "no",
-                ValueFactory = (name, ctx) => "test"
+                ValueFilter = (context) => "test"
             });
             Context.Request.Headers.Add("in", "no");
 
@@ -171,41 +156,13 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Fact]
-        public async Task EmptyValuesFromValueFactory_DoesNotAddIt()
+        public async Task EmptyValuesFromValueFilter_DoesNotAddIt()
         {
             // Arrange
-            Configuration.Headers.Add("in", new HeaderPropagationEntry
+            Configuration.Headers.Add(new HeaderPropagationEntry("in")
             {
-                ValueFactory = (name, ctx) => StringValues.Empty
+                ValueFilter = (context) => StringValues.Empty
             });
-
-            // Act
-            await Middleware.Invoke(Context);
-
-            // Assert
-            Assert.DoesNotContain("in", State.Headers.Keys);
-        }
-
-        [Fact]
-        public async Task NullEntryInConfiguration_HeaderInRequest_AddsCorrectValue()
-        {
-            // Arrange
-            Configuration.Headers.Add("in", null);
-            Context.Request.Headers.Add("in", "test");
-
-            // Act
-            await Middleware.Invoke(Context);
-
-            // Assert
-            Assert.Contains("in", State.Headers.Keys);
-            Assert.Equal(new[] { "test" }, State.Headers["in"]);
-        }
-
-        [Fact]
-        public async Task NullEntryInConfiguration_NoHeaderInRequest_DoesNotAddHeader()
-        {
-            // Arrange
-            Configuration.Headers.Add("in", null);
 
             // Act
             await Middleware.Invoke(Context);

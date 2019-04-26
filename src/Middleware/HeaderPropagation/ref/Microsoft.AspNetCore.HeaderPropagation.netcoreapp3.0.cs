@@ -10,12 +10,27 @@ namespace Microsoft.AspNetCore.Builder
 }
 namespace Microsoft.AspNetCore.HeaderPropagation
 {
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct HeaderPropagationContext
+    {
+        private readonly object _dummy;
+        public HeaderPropagationContext(Microsoft.AspNetCore.Http.HttpContext httpContext, string headerName, Microsoft.Extensions.Primitives.StringValues headerValue) { throw null; }
+        public string HeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.Extensions.Primitives.StringValues HeaderValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public partial class HeaderPropagationEntry
     {
-        public HeaderPropagationEntry() { }
-        public Microsoft.Extensions.Primitives.StringValues DefaultValue { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public string OutboundHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<string, Microsoft.AspNetCore.Http.HttpContext, Microsoft.Extensions.Primitives.StringValues> ValueFactory { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public HeaderPropagationEntry(string inboundHeaderName) { }
+        public HeaderPropagationEntry(string inboundHeaderName, string outboundHeaderName) { }
+        public string InboundHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string OutboundHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> ValueFilter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
+    public sealed partial class HeaderPropagationEntryCollection : System.Collections.ObjectModel.Collection<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationEntry>
+    {
+        public HeaderPropagationEntryCollection() { }
+        public void Add(string headerName) { }
     }
     public partial class HeaderPropagationMessageHandler : System.Net.Http.DelegatingHandler
     {
@@ -30,12 +45,12 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public partial class HeaderPropagationOptions
     {
         public HeaderPropagationOptions() { }
-        public System.Collections.Generic.IDictionary<string, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationEntry> Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationEntryCollection Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class HeaderPropagationValues
     {
         public HeaderPropagationValues() { }
-        public System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { get { throw null; } }
+        public System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { get { throw null; } set { } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

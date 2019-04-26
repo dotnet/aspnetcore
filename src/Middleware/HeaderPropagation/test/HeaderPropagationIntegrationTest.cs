@@ -19,15 +19,62 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
     public class HeaderPropagationIntegrationTest
     {
         [Fact]
+        public async Task HeaderPropagation_WithoutMiddleware_Throws()
+        {
+            // Arrange
+            Exception captured = null;
+
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddHttpClient("test").AddHeaderPropagation();
+                    services.AddHeaderPropagation(options =>
+                    {
+                        options.Headers.Add("X-TraceId");
+                    });
+                })
+                .Configure(app =>
+                {
+                    // note: no header propagation middleware
+
+                    app.Run(async context =>
+                    {
+                        try
+                        {
+                            var client = context.RequestServices.GetRequiredService<IHttpClientFactory>().CreateClient("test");
+                            await client.GetAsync("http://localhost/"); // will throw
+                        }
+                        catch (Exception ex)
+                        {
+                            captured = ex;
+                        }
+                    });
+                });
+
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage();
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.IsType<InvalidOperationException>(captured);
+            Assert.Equal(
+                "The HeaderPropagationValues.Headers property has not been initialized. Register the header propagation middleware " +
+                "by adding 'app.UseHeaderPropagation() in the 'Configure(...)' method.",
+                captured.Message);
+        }
+
+        [Fact]
         public async Task HeaderInRequest_AddCorrectValue()
         {
             // Arrange
             var handler = new SimpleHandler();
             var builder = CreateBuilder(c =>
-                c.Headers.Add("in", new HeaderPropagationEntry
-                {
-                    OutboundHeaderName = "out",
-                }),
+                c.Headers.Add(new HeaderPropagationEntry("in", "out")),
                 handler);
             var server = new TestServer(builder);
             var client = server.CreateClient();
