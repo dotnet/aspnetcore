@@ -88,11 +88,12 @@ namespace Microsoft.AspNetCore.Routing
         public EndpointNameMetadata(string endpointName) { }
         public string EndpointName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class EndpointSelectorContext : Microsoft.AspNetCore.Http.Features.IEndpointFeature, Microsoft.AspNetCore.Http.Features.IRouteValuesFeature, Microsoft.AspNetCore.Routing.IRoutingFeature
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public partial struct EndpointSelectorContext
     {
-        public EndpointSelectorContext() { }
-        public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        Microsoft.AspNetCore.Routing.RouteData Microsoft.AspNetCore.Routing.IRoutingFeature.RouteData { get { throw null; } set { } }
+        private object _dummy;
+        public EndpointSelectorContext(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
+        public Microsoft.AspNetCore.Http.Endpoint Endpoint { get { throw null; } set { } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { get { throw null; } set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
