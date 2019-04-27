@@ -3,6 +3,8 @@
 
 using System.Net.Http;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
@@ -33,6 +35,35 @@ RenderBody content
 
             // Assert
             Assert.Equal(expected, body, ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2300", FlakyOn.All)]
+        public async Task FlushFollowedByLargeContent()
+        {
+            // Arrange
+            var expected = new string('a', 1024 * 1024);
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("http://localhost/FlushPoint/FlushFollowedByLargeContent");
+
+            // Assert
+            var largeContent = document.RequiredQuerySelector("#large-content");
+            Assert.StartsWith(expected, largeContent.TextContent);
+        }
+
+        [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2300", FlakyOn.All)]
+        public async Task FlushInvokedInComponent()
+        {
+            var expected = new string('a', 1024 * 1024);
+
+            // Act
+            var document = await Client.GetHtmlDocumentAsync("http://localhost/FlushPoint/FlushInvokedInComponent");
+
+            // Assert
+            var largeContent = document.RequiredQuerySelector("#large-content");
+            Assert.StartsWith(expected, largeContent.TextContent);
         }
 
         [Fact]

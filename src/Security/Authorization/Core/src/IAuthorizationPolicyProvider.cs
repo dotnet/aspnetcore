@@ -22,11 +22,5 @@ namespace Microsoft.AspNetCore.Authorization
         /// </summary>
         /// <returns>The default authorization policy.</returns>
         Task<AuthorizationPolicy> GetDefaultPolicyAsync();
-
-        /// <summary>
-        /// Gets the required authorization policy.
-        /// </summary>
-        /// <returns>The required authorization policy.</returns>
-        Task<AuthorizationPolicy> GetRequiredPolicyAsync();
     }
 }

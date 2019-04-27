@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public async Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context)
         {
             var fileContext = new StaticFileContext(context, _options, _matchUrl, _logger, _fileProvider, _contentTypeProvider);
 
@@ -95,52 +95,58 @@ namespace Microsoft.AspNetCore.StaticFiles
             else
             {
                 // If we get here, we can try to serve the file
-                fileContext.ComprehendRequestHeaders();
-                switch (fileContext.GetPreconditionState())
-                {
-                    case StaticFileContext.PreconditionState.Unspecified:
-                    case StaticFileContext.PreconditionState.ShouldProcess:
-                        if (fileContext.IsHeadMethod)
-                        {
-                            await fileContext.SendStatusAsync(Constants.Status200Ok);
-                            return;
-                        }
-
-                        try
-                        {
-                            if (fileContext.IsRangeRequest)
-                            {
-                                await fileContext.SendRangeAsync();
-                                return;
-                            }
-
-                            await fileContext.SendAsync();
-                            _logger.FileServed(fileContext.SubPath, fileContext.PhysicalPath);
-                            return;
-                        }
-                        catch (FileNotFoundException)
-                        {
-                            context.Response.Clear();
-                        }
-                        break;
-                    case StaticFileContext.PreconditionState.NotModified:
-                        _logger.FileNotModified(fileContext.SubPath);
-                        await fileContext.SendStatusAsync(Constants.Status304NotModified);
-                        return;
-
-                    case StaticFileContext.PreconditionState.PreconditionFailed:
-                        _logger.PreconditionFailed(fileContext.SubPath);
-                        await fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
-                        return;
-
-                    default:
-                        var exception = new NotImplementedException(fileContext.GetPreconditionState().ToString());
-                        Debug.Fail(exception.ToString());
-                        throw exception;
-                }
+                return ServeStaticFile(context, fileContext);
             }
 
-            await _next(context);
+            return _next(context);
+        }
+
+        private async Task ServeStaticFile(HttpContext context, StaticFileContext fileContext)
+        {
+            fileContext.ComprehendRequestHeaders();
+            switch (fileContext.GetPreconditionState())
+            {
+                case StaticFileContext.PreconditionState.Unspecified:
+                case StaticFileContext.PreconditionState.ShouldProcess:
+                    if (fileContext.IsHeadMethod)
+                    {
+                        await fileContext.SendStatusAsync(Constants.Status200Ok);
+                        return;
+                    }
+
+                    try
+                    {
+                        if (fileContext.IsRangeRequest)
+                        {
+                            await fileContext.SendRangeAsync();
+                            return;
+                        }
+
+                        await fileContext.SendAsync();
+                        _logger.FileServed(fileContext.SubPath, fileContext.PhysicalPath);
+                        return;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        context.Response.Clear();
+                    }
+                    await _next(context);
+                    return;
+                case StaticFileContext.PreconditionState.NotModified:
+                    _logger.FileNotModified(fileContext.SubPath);
+                    await fileContext.SendStatusAsync(Constants.Status304NotModified);
+                    return;
+
+                case StaticFileContext.PreconditionState.PreconditionFailed:
+                    _logger.PreconditionFailed(fileContext.SubPath);
+                    await fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
+                    return;
+
+                default:
+                    var exception = new NotImplementedException(fileContext.GetPreconditionState().ToString());
+                    Debug.Fail(exception.ToString());
+                    throw exception;
+            }
         }
     }
 }

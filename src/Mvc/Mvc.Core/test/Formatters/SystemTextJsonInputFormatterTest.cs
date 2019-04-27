@@ -8,12 +8,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     public class SystemTextJsonInputFormatterTest : JsonInputFormatterTestBase
     {
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8489")]
-        public override Task JsonFormatterReadsDateTimeValue()
-        {
-            return base.JsonFormatterReadsDateTimeValue();
-        }
-
         [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/8474")]
         public override Task ReadAsync_AddsModelValidationErrorsToModelState()
         {
@@ -36,24 +30,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public override Task ReadAsync_UsesTryAddModelValidationErrorsToModelState()
         {
             return base.ReadAsync_UsesTryAddModelValidationErrorsToModelState();
-        }
-
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36026")]
-        public override Task ReadAsync_ReadsValidArray_AsCollectionOfT()
-        {
-            return base.ReadAsync_ReadsValidArray_AsCollectionOfT();
-        }
-
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36026")]
-        public override Task ReadAsync_ReadsValidArray_AsEnumerableOfT()
-        {
-            return base.ReadAsync_ReadsValidArray_AsEnumerableOfT();
-        }
-
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/36026")]
-        public override Task ReadAsync_ReadsValidArray_AsIListOfT()
-        {
-            return base.ReadAsync_ReadsValidArray_AsIListOfT();
         }
 
         protected override TextInputFormatter GetInputFormatter()

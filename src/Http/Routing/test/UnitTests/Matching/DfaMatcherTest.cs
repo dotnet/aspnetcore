@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
@@ -21,9 +22,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // so we're reusing the services here.
     public class DfaMatcherTest
     {
-        private RouteEndpoint CreateEndpoint(string template, int order, object defaults = null, object requiredValues = null)
+        private RouteEndpoint CreateEndpoint(string template, int order, object defaults = null, object requiredValues = null, object policies = null)
         {
-            return EndpointFactory.CreateRouteEndpoint(template, defaults, requiredValues: requiredValues, order: order, displayName: template);
+            return EndpointFactory.CreateRouteEndpoint(template, defaults, policies, requiredValues, order, displayName: template);
         }
 
         private Matcher CreateDfaMatcher(
@@ -398,6 +399,99 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Arrange
             var endpoint1 = CreateEndpoint("/Teams", 0);
             var endpoint2 = CreateEndpoint("/Teams", 1);
+
+            var endpointSelector = new Mock<EndpointSelector>();
+            endpointSelector
+                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                {
+                    Assert.Equal(2, cs.Count);
+
+                    Assert.Same(endpoint1, cs[0].Endpoint);
+                    Assert.True(cs.IsValidCandidate(0));
+                    Assert.Equal(0, cs[0].Score);
+                    Assert.Null(cs[0].Values);
+
+                    Assert.Same(endpoint2, cs[1].Endpoint);
+                    Assert.True(cs.IsValidCandidate(1));
+                    Assert.Equal(1, cs[1].Score);
+                    Assert.Null(cs[1].Values);
+
+                    f.Endpoint = endpoint2;
+                })
+                .Returns(Task.CompletedTask);
+
+            var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+            var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector: endpointSelector.Object);
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = "/Teams";
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Equal(endpoint2, context.Endpoint);
+        }
+
+        [Fact]
+        public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled_AllocatesDictionaryForRouteParameter()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("/Teams/{x?}", 0);
+            var endpoint2 = CreateEndpoint("/Teams/{x?}", 1);
+
+            var endpointSelector = new Mock<EndpointSelector>();
+            endpointSelector
+                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                {
+                    Assert.Equal(2, cs.Count);
+
+                    Assert.Same(endpoint1, cs[0].Endpoint);
+                    Assert.True(cs.IsValidCandidate(0));
+                    Assert.Equal(0, cs[0].Score);
+                    Assert.Empty(cs[0].Values);
+
+                    Assert.Same(endpoint2, cs[1].Endpoint);
+                    Assert.True(cs.IsValidCandidate(1));
+                    Assert.Equal(1, cs[1].Score);
+                    Assert.Empty(cs[1].Values);
+
+                    f.Endpoint = endpoint2;
+                })
+                .Returns(Task.CompletedTask);
+
+            var endpointDataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint1,
+                endpoint2
+            });
+
+            var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector: endpointSelector.Object);
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = "/Teams";
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Equal(endpoint2, context.Endpoint);
+        }
+
+        [Fact]
+        public async Task MatchAsync_MultipleMatches_EndpointSelectorCalled_AllocatesDictionaryForRouteConstraint()
+        {
+            // Arrange
+            var constraint = new OptionalRouteConstraint(new IntRouteConstraint());
+            var endpoint1 = CreateEndpoint("/Teams", 0, policies: new { x = constraint, });
+            var endpoint2 = CreateEndpoint("/Teams", 1, policies: new { x = constraint, });
 
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector

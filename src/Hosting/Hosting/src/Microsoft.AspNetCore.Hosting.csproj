@@ -12,6 +12,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)RazorViews\*.cs" />
     <Compile Include="$(SharedSourceRoot)StackTrace\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ErrorPage\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

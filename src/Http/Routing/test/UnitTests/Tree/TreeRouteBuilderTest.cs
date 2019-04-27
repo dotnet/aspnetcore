@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text.Encodings.Web;
@@ -248,10 +248,12 @@ namespace Microsoft.AspNetCore.Routing.Tree
             var objectPool = objectPoolProvider.Create(objectPolicy);
 
             var constraintResolver = GetInlineConstraintResolver();
+#pragma warning disable CS0618 // Type or member is obsolete
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
                 objectPool,
                 constraintResolver);
+#pragma warning restore CS0618 // Type or member is obsolete
             return builder;
         }
 

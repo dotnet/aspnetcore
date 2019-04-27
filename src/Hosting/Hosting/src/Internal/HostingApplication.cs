@@ -62,6 +62,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             public long StartTimestamp { get; set; }
             public bool EventLogEnabled { get; set; }
             public Activity Activity { get; set; }
+            internal bool HasDiagnosticListener { get; set; }
         }
     }
 }

@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         private readonly Encoder _encoder;
         private readonly char[] _charBuffer;
         private int _charsDecoded;
+        private bool _disposed;
 
         public TranscodingWriteStream(Stream stream, Encoding targetEncoding)
         {
@@ -154,13 +155,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!_disposed)
             {
+                _disposed = true;
                 ArrayPool<char>.Shared.Return(_charBuffer);
             }
-
-
-            base.Dispose(disposing);
         }
     }
 }

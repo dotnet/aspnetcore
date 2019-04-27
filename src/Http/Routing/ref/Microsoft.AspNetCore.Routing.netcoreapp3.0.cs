@@ -319,7 +319,6 @@ namespace Microsoft.AspNetCore.Routing
         public RouteOptions() { }
         public bool AppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IDictionary<string, System.Type> ConstraintMap { get { throw null; } set { } }
-        public System.Collections.Generic.ICollection<Microsoft.AspNetCore.Routing.EndpointDataSource> EndpointDataSources { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool LowercaseQueryStrings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool LowercaseUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressCheckForUnhandledSecurityMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -491,71 +490,19 @@ namespace Microsoft.AspNetCore.Routing.Constraints
 }
 namespace Microsoft.AspNetCore.Routing.Internal
 {
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct BufferValue
-    {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public BufferValue(string value, bool requiresEncoding) { throw null; }
-        public bool RequiresEncoding { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
     public partial class DfaGraphWriter
     {
         public DfaGraphWriter(System.IServiceProvider services) { }
         public void Write(Microsoft.AspNetCore.Routing.EndpointDataSource dataSource, System.IO.TextWriter writer) { }
     }
-    [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerDisplayString,nq}")]
-    public partial class LinkGenerationDecisionTree
-    {
-        public LinkGenerationDecisionTree(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Tree.OutboundMatch> entries) { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Internal.OutboundMatchResult> GetMatches(Microsoft.AspNetCore.Routing.RouteValueDictionary values, Microsoft.AspNetCore.Routing.RouteValueDictionary ambientValues) { throw null; }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct OutboundMatchResult
-    {
-        private readonly object _dummy;
-        private readonly int _dummyPrimitive;
-        public OutboundMatchResult(Microsoft.AspNetCore.Routing.Tree.OutboundMatch match, bool isFallbackMatch) { throw null; }
-        public bool IsFallbackMatch { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Tree.OutboundMatch Match { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-    }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public partial struct PathTokenizer : System.Collections.Generic.IEnumerable<Microsoft.Extensions.Primitives.StringSegment>, System.Collections.Generic.IReadOnlyCollection<Microsoft.Extensions.Primitives.StringSegment>, System.Collections.Generic.IReadOnlyList<Microsoft.Extensions.Primitives.StringSegment>, System.Collections.IEnumerable
-    {
-        private object _dummy;
-        private int _dummyPrimitive;
-        public PathTokenizer(Microsoft.AspNetCore.Http.PathString path) { throw null; }
-        public int Count { get { throw null; } }
-        public Microsoft.Extensions.Primitives.StringSegment this[int index] { get { throw null; } }
-        public Microsoft.AspNetCore.Routing.Internal.PathTokenizer.Enumerator GetEnumerator() { throw null; }
-        System.Collections.Generic.IEnumerator<Microsoft.Extensions.Primitives.StringSegment> System.Collections.Generic.IEnumerable<Microsoft.Extensions.Primitives.StringSegment>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<Microsoft.Extensions.Primitives.StringSegment>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private object _dummy;
-            private int _dummyPrimitive;
-            public Enumerator(Microsoft.AspNetCore.Routing.Internal.PathTokenizer tokenizer) { throw null; }
-            public Microsoft.Extensions.Primitives.StringSegment Current { get { throw null; } }
-            object System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            public void Reset() { }
-        }
-    }
+    [System.ObsoleteAttribute("This type will be marked as internal in a future release.")]
     public enum SegmentState
     {
         Beginning = 0,
         Inside = 1,
     }
-    public partial class UriBuilderContextPooledObjectPolicy : Microsoft.Extensions.ObjectPool.IPooledObjectPolicy<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext>
-    {
-        public UriBuilderContextPooledObjectPolicy() { }
-        public Microsoft.AspNetCore.Routing.Internal.UriBuildingContext Create() { throw null; }
-        public bool Return(Microsoft.AspNetCore.Routing.Internal.UriBuildingContext obj) { throw null; }
-    }
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString(),nq}")]
+    [System.ObsoleteAttribute("This type will be marked as internal in a future release.")]
     public partial class UriBuildingContext
     {
         public UriBuildingContext(System.Text.Encodings.Web.UrlEncoder urlEncoder) { }
@@ -582,8 +529,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public sealed partial class CandidateSet
     {
         public CandidateSet(Microsoft.AspNetCore.Http.Endpoint[] endpoints, Microsoft.AspNetCore.Routing.RouteValueDictionary[] values, int[] scores) { }
-        public int Count { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public int Count { get { throw null; } }
         public ref Microsoft.AspNetCore.Routing.Matching.CandidateState this[int index] { [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]get { throw null; } }
+        public void ExpandEndpoint(int index, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints, System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> comparer) { }
         public bool IsValidCandidate(int index) { throw null; }
         public void ReplaceEndpoint(int index, Microsoft.AspNetCore.Http.Endpoint endpoint, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { }
         public void SetValidity(int index, bool value) { }
@@ -596,6 +544,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int Score { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary Values { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class EndpointMetadataComparer : System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint>
+    {
+        internal EndpointMetadataComparer() { }
+        int System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint>.Compare(Microsoft.AspNetCore.Http.Endpoint x, Microsoft.AspNetCore.Http.Endpoint y) { throw null; }
     }
     public abstract partial class EndpointMetadataComparer<TMetadata> : System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> where TMetadata : class
     {
@@ -610,23 +563,27 @@ namespace Microsoft.AspNetCore.Routing.Matching
         protected EndpointSelector() { }
         public abstract System.Threading.Tasks.Task SelectAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.EndpointSelectorContext context, Microsoft.AspNetCore.Routing.Matching.CandidateSet candidates);
     }
-    public sealed partial class HostMatcherPolicy : Microsoft.AspNetCore.Routing.MatcherPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointComparerPolicy, Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy
+    public sealed partial class HostMatcherPolicy : Microsoft.AspNetCore.Routing.MatcherPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointComparerPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy, Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy
     {
         public HostMatcherPolicy() { }
         public System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> Comparer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override int Order { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public bool AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        public System.Threading.Tasks.Task ApplyAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.EndpointSelectorContext context, Microsoft.AspNetCore.Routing.Matching.CandidateSet candidates) { throw null; }
         public Microsoft.AspNetCore.Routing.Matching.PolicyJumpTable BuildJumpTable(int exitDestination, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Matching.PolicyJumpTableEdge> edges) { throw null; }
         public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Matching.PolicyNodeEdge> GetEdges(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        bool Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy.AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        bool Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy.AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
     }
-    public sealed partial class HttpMethodMatcherPolicy : Microsoft.AspNetCore.Routing.MatcherPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointComparerPolicy, Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy
+    public sealed partial class HttpMethodMatcherPolicy : Microsoft.AspNetCore.Routing.MatcherPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointComparerPolicy, Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy, Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy
     {
         public HttpMethodMatcherPolicy() { }
         public System.Collections.Generic.IComparer<Microsoft.AspNetCore.Http.Endpoint> Comparer { get { throw null; } }
         public override int Order { get { throw null; } }
-        public bool AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        public System.Threading.Tasks.Task ApplyAsync(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.EndpointSelectorContext context, Microsoft.AspNetCore.Routing.Matching.CandidateSet candidates) { throw null; }
         public Microsoft.AspNetCore.Routing.Matching.PolicyJumpTable BuildJumpTable(int exitDestination, System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Matching.PolicyJumpTableEdge> edges) { throw null; }
         public System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Routing.Matching.PolicyNodeEdge> GetEdges(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        bool Microsoft.AspNetCore.Routing.Matching.IEndpointSelectorPolicy.AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
+        bool Microsoft.AspNetCore.Routing.Matching.INodeBuilderPolicy.AppliesToEndpoints(System.Collections.Generic.IReadOnlyList<Microsoft.AspNetCore.Http.Endpoint> endpoints) { throw null; }
     }
     public partial interface IEndpointComparerPolicy
     {
@@ -725,9 +682,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     }
     public enum RoutePatternParameterKind
     {
-        CatchAll = 2,
-        Optional = 1,
         Standard = 0,
+        Optional = 1,
+        CatchAll = 2,
     }
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString()}")]
     public sealed partial class RoutePatternParameterPart : Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart
@@ -808,12 +765,20 @@ namespace Microsoft.AspNetCore.Routing.Template
     }
     public partial class TemplateBinder
     {
+        [System.ObsoleteAttribute("This constructor is obsolete and will be marked internal in a future release. Use the TemplateBinderFactory service to create TemplateBinder instances.")]
         public TemplateBinder(System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> pool, Microsoft.AspNetCore.Routing.Patterns.RoutePattern pattern, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults, System.Collections.Generic.IEnumerable<string> requiredKeys, System.Collections.Generic.IEnumerable<System.ValueTuple<string, Microsoft.AspNetCore.Routing.IParameterPolicy>> parameterPolicies) { }
+        [System.ObsoleteAttribute("This constructor is obsolete and will be marked internal in a furture release. Use the TemplateBinderFactory service to create TemplateBinder instances.")]
         public TemplateBinder(System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> pool, Microsoft.AspNetCore.Routing.Template.RouteTemplate template, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults) { }
         public string BindValues(Microsoft.AspNetCore.Routing.RouteValueDictionary acceptedValues) { throw null; }
         public Microsoft.AspNetCore.Routing.Template.TemplateValuesResult GetValues(Microsoft.AspNetCore.Routing.RouteValueDictionary ambientValues, Microsoft.AspNetCore.Routing.RouteValueDictionary values) { throw null; }
         public static bool RoutePartsEqual(object a, object b) { throw null; }
         public bool TryProcessConstraints(Microsoft.AspNetCore.Http.HttpContext httpContext, Microsoft.AspNetCore.Routing.RouteValueDictionary combinedValues, out string parameterName, out Microsoft.AspNetCore.Routing.IRouteConstraint constraint) { throw null; }
+    }
+    public abstract partial class TemplateBinderFactory
+    {
+        protected TemplateBinderFactory() { }
+        public abstract Microsoft.AspNetCore.Routing.Template.TemplateBinder Create(Microsoft.AspNetCore.Routing.Patterns.RoutePattern pattern);
+        public abstract Microsoft.AspNetCore.Routing.Template.TemplateBinder Create(Microsoft.AspNetCore.Routing.Template.RouteTemplate template, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults);
     }
     public partial class TemplateMatcher
     {
@@ -901,6 +866,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
     }
     public partial class TreeRouteBuilder
     {
+        [System.ObsoleteAttribute("This constructor will be marked internal in a future release. Use the service provider to create instances of TreeRouteBuilder.")]
         public TreeRouteBuilder(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> objectPool, Microsoft.AspNetCore.Routing.IInlineConstraintResolver constraintResolver) { }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry> InboundEntries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry> OutboundEntries { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
@@ -913,6 +879,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
     public partial class TreeRouter : Microsoft.AspNetCore.Routing.IRouter
     {
         public static readonly string RouteGroupKey;
+        [System.ObsoleteAttribute("This constructor will be marked obsolete in a future release. Use the TreeRouterBuilder to create instances of TreeRouter.")]
         public TreeRouter(Microsoft.AspNetCore.Routing.Tree.UrlMatchingTree[] trees, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry> linkGenerationEntries, System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> objectPool, Microsoft.Extensions.Logging.ILogger routeLogger, Microsoft.Extensions.Logging.ILogger constraintLogger, int version) { }
         public int Version { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Routing.VirtualPathData GetVirtualPath(Microsoft.AspNetCore.Routing.VirtualPathContext context) { throw null; }

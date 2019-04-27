@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes();
 
-        [ConditionalTheory(Skip = "https://github.com/aspnet/AspNetCore/issues/8329")]
+        [ConditionalTheory]
         [MemberData(nameof(TestVariants))]
         public async Task HelloWorld(TestVariant variant)
         {

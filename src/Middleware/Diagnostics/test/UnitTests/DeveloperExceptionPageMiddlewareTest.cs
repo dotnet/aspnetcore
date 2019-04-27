@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -43,6 +44,58 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.NotNull(listener.DiagnosticUnhandledException?.Exception);
             Assert.Null(listener.DiagnosticHandledException?.HttpContext);
             Assert.Null(listener.DiagnosticHandledException?.Exception);
+        }
+
+        [Fact]
+        public async Task ErrorPageWithAcceptHeaderForHtmlReturnsHtml()
+        {
+            // Arrange
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var client = server.CreateClient();
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/html"));
+            var response = await client.GetAsync("/path");
+
+            // Assert
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal("text/html", response.Content.Headers.ContentType.MediaType);
+            Assert.Contains("<html", responseText);
+            Assert.Contains("Test exception", responseText);
+        }
+
+        [Fact]
+        public async Task ErrorPageWithoutAcceptHeaderForHtmlReturnsPlainText()
+        {
+            // Arrange
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseDeveloperExceptionPage();
+                    app.Run(context =>
+                    {
+                        throw new Exception("Test exception");
+                    });
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var response = await server.CreateClient().GetAsync("/path");
+
+            // Assert
+            var responseText = await response.Content.ReadAsStringAsync();
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.MediaType);
+            Assert.Contains("Test exception", responseText);
+            Assert.DoesNotContain("<html", responseText);
         }
 
         [Fact]

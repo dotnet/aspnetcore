@@ -127,6 +127,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return StringValues.Concat(existing, append);
         }
 
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected bool TryGetUnknown(string key, ref StringValues value) => MaybeUnknown?.TryGetValue(key, out value) ?? false;
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        protected bool RemoveUnknown(string key) => MaybeUnknown?.Remove(key) ?? false;
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         protected static int BitCount(long value)
         {

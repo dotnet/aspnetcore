@@ -11,7 +11,7 @@
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Features" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
-    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.NewtonsoftJson" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components.Browser" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Components" />

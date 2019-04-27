@@ -82,6 +82,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             uriHelper.TriggerOnLocationChanged();
         }
 
+        /// <inheritdoc />
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
             _logger.LogDebug($"Log debug {uri} force load {forceLoad}.");

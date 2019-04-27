@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Json;
@@ -59,13 +60,23 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="output">The output writer.</param>
         public static void WriteRequestMessage(HandshakeRequestMessage requestMessage, IBufferWriter<byte> output)
         {
-            var writer = new Utf8JsonWriter(output, new JsonWriterState(new JsonWriterOptions() { SkipValidation = true }));
+            var reusableWriter = ReusableUtf8JsonWriter.Get(output);
 
-            writer.WriteStartObject();
-            writer.WriteString(ProtocolPropertyNameBytes, requestMessage.Protocol, escape: false);
-            writer.WriteNumber(ProtocolVersionPropertyNameBytes, requestMessage.Version, escape: false);
-            writer.WriteEndObject();
-            writer.Flush(isFinalBlock: true);
+            try
+            {
+                var writer = reusableWriter.GetJsonWriter();
+
+                writer.WriteStartObject();
+                writer.WriteString(ProtocolPropertyNameBytes, requestMessage.Protocol);
+                writer.WriteNumber(ProtocolVersionPropertyNameBytes, requestMessage.Version);
+                writer.WriteEndObject();
+                writer.Flush();
+                Debug.Assert(writer.CurrentDepth == 0);
+            }
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
 
             TextMessageFormatter.WriteRecordSeparator(output);
         }
@@ -77,18 +88,28 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="output">The output writer.</param>
         public static void WriteResponseMessage(HandshakeResponseMessage responseMessage, IBufferWriter<byte> output)
         {
-            var writer = new Utf8JsonWriter(output, new JsonWriterState(new JsonWriterOptions() { SkipValidation = true }));
+            var reusableWriter = ReusableUtf8JsonWriter.Get(output);
 
-            writer.WriteStartObject();
-            if (!string.IsNullOrEmpty(responseMessage.Error))
+            try
             {
-                writer.WriteString(ErrorPropertyNameBytes, responseMessage.Error);
+                var writer = reusableWriter.GetJsonWriter();
+
+                writer.WriteStartObject();
+                if (!string.IsNullOrEmpty(responseMessage.Error))
+                {
+                    writer.WriteString(ErrorPropertyNameBytes, responseMessage.Error);
+                }
+
+                writer.WriteNumber(MinorVersionPropertyNameBytes, responseMessage.MinorVersion);
+
+                writer.WriteEndObject();
+                writer.Flush();
+                Debug.Assert(writer.CurrentDepth == 0);
             }
-
-            writer.WriteNumber(MinorVersionPropertyNameBytes, responseMessage.MinorVersion, escape: false);
-
-            writer.WriteEndObject();
-            writer.Flush(isFinalBlock: true);
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
 
             TextMessageFormatter.WriteRecordSeparator(output);
         }
@@ -119,19 +140,17 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    var memberName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-
-                    if (memberName.SequenceEqual(TypePropertyNameBytes))
+                    if (reader.TextEquals(TypePropertyNameBytes))
                     {
                         // a handshake response does not have a type
                         // check the incoming message was not any other type of message
                         throw new InvalidDataException("Expected a handshake response from the server.");
                     }
-                    else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
+                    else if (reader.TextEquals(ErrorPropertyNameBytes))
                     {
                         error = reader.ReadAsString(ErrorPropertyName);
                     }
-                    else if (memberName.SequenceEqual(MinorVersionPropertyNameBytes))
+                    else if (reader.TextEquals(MinorVersionPropertyNameBytes))
                     {
                         minorVersion = reader.ReadAsInt32(MinorVersionPropertyName);
                     }
@@ -180,13 +199,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    var memberName = reader.HasValueSequence ? reader.ValueSequence.ToArray() : reader.ValueSpan;
-
-                    if (memberName.SequenceEqual(ProtocolPropertyNameBytes))
+                    if (reader.TextEquals(ProtocolPropertyNameBytes))
                     {
                         protocol = reader.ReadAsString(ProtocolPropertyName);
                     }
-                    else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
+                    else if (reader.TextEquals(ProtocolVersionPropertyNameBytes))
                     {
                         protocolVersion = reader.ReadAsInt32(ProtocolVersionPropertyName);
                     }

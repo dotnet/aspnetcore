@@ -457,7 +457,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             {
-                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();
+                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.AsEnumerable().ToArray();
                 return Task.CompletedTask;
             }
         }

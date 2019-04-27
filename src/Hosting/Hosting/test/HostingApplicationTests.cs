@@ -11,8 +11,6 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -32,19 +30,75 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         [Fact]
-        public void CreateContextSetsCorrelationIdInScope()
+        public void CreateContextWithDisabledLoggerDoesNotCreateActivity()
         {
             // Arrange
-            var logger = new LoggerWithScopes();
+            var hostingApplication = CreateApplication(out var features);
+
+            // Act
+            hostingApplication.CreateContext(features);
+
+            Assert.Null(Activity.Current);
+        }
+
+        [Fact]
+        public void CreateContextWithEnabledLoggerCreatesActivityAndSetsActivityIdInScope()
+        {
+            // Arrange
+            var logger = new LoggerWithScopes(isEnabled: true);
             var hostingApplication = CreateApplication(out var features, logger: logger);
-            features.Get<IHttpRequestFeature>().Headers["Request-Id"] = "some correlation id";
 
             // Act
             var context = hostingApplication.CreateContext(features);
 
             Assert.Single(logger.Scopes);
             var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
-            Assert.Equal("some correlation id", pairs["CorrelationId"].ToString());
+            Assert.Equal(Activity.Current.Id, pairs["ActivityId"].ToString());
+        }
+
+        [Fact]
+        public void ActivityStopDoesNotFireIfNoListenerAttachedForStart()
+        {
+            // Arrange
+            var diagnosticSource = new DiagnosticListener("DummySource");
+            var logger = new LoggerWithScopes(isEnabled: true);
+            var hostingApplication = CreateApplication(out var features, diagnosticSource: diagnosticSource, logger: logger);
+            var startFired = false;
+            var stopFired = false;
+
+            diagnosticSource.Subscribe(new CallbackDiagnosticListener(pair =>
+            {
+                // This should not fire
+                if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Start")
+                {
+                    startFired = true;
+                }
+
+                // This should not fire
+                if (pair.Key == "Microsoft.AspNetCore.Hosting.HttpRequestIn.Stop")
+                {
+                    stopFired = true;
+                }
+            }),
+            (s, o, arg3) =>
+            {
+                // The events are off
+                return false;
+            });
+
+
+            // Act
+            var context = hostingApplication.CreateContext(features);
+
+            Assert.Single(logger.Scopes);
+            var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
+            Assert.Equal(Activity.Current.Id, pairs["ActivityId"].ToString());
+
+            hostingApplication.DisposeContext(context, exception: null);
+
+            Assert.False(startFired);
+            Assert.False(stopFired);
+            Assert.Null(Activity.Current);
         }
 
         [Fact]
@@ -304,6 +358,34 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Contains(Activity.Current.Baggage, pair => pair.Key == "Key2" && pair.Value == "value2");
         }
 
+        [Fact]
+        public void ActivityOnExportHookIsCalled()
+        {
+            var diagnosticSource = new DiagnosticListener("DummySource");
+            var hostingApplication = CreateApplication(out var features, diagnosticSource: diagnosticSource);
+
+            bool onActivityImportCalled = false;
+            diagnosticSource.Subscribe(
+                observer: new CallbackDiagnosticListener(pair => { }),
+                isEnabled: (s, o, _) => true,
+                onActivityImport: (activity, context) =>
+                {
+                    onActivityImportCalled = true;
+                    Assert.Null(Activity.Current);
+                    Assert.Equal("Microsoft.AspNetCore.Hosting.HttpRequestIn", activity.OperationName);
+                    Assert.NotNull(context);
+                    Assert.IsAssignableFrom<HttpContext>(context);
+
+                    activity.ActivityTraceFlags = ActivityTraceFlags.Recorded;
+                });
+
+            hostingApplication.CreateContext(features);
+
+            Assert.True(onActivityImportCalled);
+            Assert.NotNull(Activity.Current);
+            Assert.True(Activity.Current.Recorded);
+        }
+
 
         private static void AssertProperty<T>(object o, string name)
         {
@@ -326,7 +408,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             httpContextFactory.Setup(s => s.Dispose(It.IsAny<HttpContext>()));
 
             var hostingApplication = new HostingApplication(
-                ctx => Task.FromResult(0),
+                ctx => Task.CompletedTask,
                 logger ?? new NullScopeLogger(),
                 diagnosticSource ?? new NoopDiagnosticSource(),
                 httpContextFactory.Object);
@@ -336,9 +418,15 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
         private class NullScopeLogger : ILogger
         {
+            private readonly bool _isEnabled;
+            public NullScopeLogger(bool isEnabled = false)
+            {
+                _isEnabled = isEnabled;
+            }
+
             public IDisposable BeginScope<TState>(TState state) => null;
 
-            public bool IsEnabled(LogLevel logLevel) => true;
+            public bool IsEnabled(LogLevel logLevel) => _isEnabled;
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
@@ -347,6 +435,12 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
         private class LoggerWithScopes : ILogger
         {
+            private readonly bool _isEnabled;
+            public LoggerWithScopes(bool isEnabled = false)
+            {
+                _isEnabled = isEnabled;
+            }
+
             public IDisposable BeginScope<TState>(TState state)
             {
                 Scopes.Add(state);
@@ -355,7 +449,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             public List<object> Scopes { get; set; } = new List<object>();
 
-            public bool IsEnabled(LogLevel logLevel) => true;
+            public bool IsEnabled(LogLevel logLevel) => _isEnabled;
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
@@ -372,11 +466,14 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
         private class NoopDiagnosticSource : DiagnosticListener
         {
-            public NoopDiagnosticSource() : base("DummyListener")
+            private readonly bool _isEnabled;
+
+            public NoopDiagnosticSource(bool isEnabled = false) : base("DummyListener")
             {
+                _isEnabled = isEnabled;
             }
 
-            public override bool IsEnabled(string name) => true;
+            public override bool IsEnabled(string name) => _isEnabled;
 
             public override void Write(string name, object value)
             {

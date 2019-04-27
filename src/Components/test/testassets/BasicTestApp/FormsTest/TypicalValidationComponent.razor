@@ -39,6 +39,9 @@
     <p class="accepts-terms">
         Accepts terms: <InputCheckbox bind-Value="@person.AcceptsTerms" />
     </p>
+    <p class="is-evil">
+        Is evil: <InputCheckbox bind-Value="@person.IsEvil" />
+    </p>
 
     <button type="submit">Submit</button>
 
@@ -71,6 +74,9 @@
 
         [Required, Range(typeof(bool), "true", "true", ErrorMessage = "Must accept terms")]
         public bool AcceptsTerms { get; set; }
+
+        [Required, Range(typeof(bool), "false", "false", ErrorMessage = "Must not be evil")]
+        public bool IsEvil { get; set; } = true;
 
         [Required, StringLength(20, ErrorMessage = "Description is max 20 chars")]
         public string Description { get; set; }

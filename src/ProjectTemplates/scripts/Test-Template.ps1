@@ -34,9 +34,9 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>")
         $projContent | Set-Content $proj
-        dotnet ef migrations add mvc
-        dotnet publish --configuration Release
-        dotnet bin\Release\netcoreapp3.0\publish\$templateName.dll
+        dotnet.exe ef migrations add mvc
+        dotnet.exe publish --configuration Release
+        dotnet.exe bin\Release\netcoreapp3.0\publish\$templateName.dll
     }
     finally {
         Pop-Location
