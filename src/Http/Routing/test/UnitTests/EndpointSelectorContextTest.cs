@@ -1,60 +1,53 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    // The IRoutingFeature is TBD, we need a way to make it lazy.
     public class EndpointSelectorContextTest
     {
-        //[Fact]
-        //public void RouteData_CanIntializeDataTokens_WithMetadata()
-        //{
-        //    // Arrange
-        //    var expected = new RouteValueDictionary(new { foo = 17, bar = "hello", });
+        [Fact]
+        public void SettingEndpointSetsEndpointOnHttpContext()
+        {
+            var httpContext = new DefaultHttpContext();
+            var ep = new RouteEndpoint(
+                    TestConstants.EmptyRequestDelegate,
+                    RoutePatternFactory.Parse("/"),
+                    0,
+                    new EndpointMetadataCollection(),
+                    "test");
 
-        //    var context = new EndpointSelectorContext()
-        //    {
-        //        Endpoint = new RouteEndpoint(
-        //            TestConstants.EmptyRequestDelegate,
-        //            RoutePatternFactory.Parse("/"),
-        //            0,
-        //            new EndpointMetadataCollection(new DataTokensMetadata(expected)),
-        //            "test"),
-        //    };
+            new EndpointSelectorContext(httpContext)
+            {
+                Endpoint = ep,
+            };
 
-        //    // Act
-        //    var routeData = ((IRoutingFeature)context).RouteData;
+            // Assert
+            var endpoint = httpContext.GetEndpoint();
+            Assert.NotNull(endpoint);
+            Assert.Same(ep, endpoint);
+        }
 
-        //    // Assert
-        //    Assert.NotSame(expected, routeData.DataTokens);
-        //    Assert.Equal(expected.OrderBy(kvp => kvp.Key), routeData.DataTokens.OrderBy(kvp => kvp.Key));
-        //}
+        [Fact]
+        public void SettingRouteValuesSetRouteValuesHttpContext()
+        {
+            var httpContext = new DefaultHttpContext();
+            var routeValues = new RouteValueDictionary(new { A = "1" });
 
-        //[Fact]
-        //public void RouteData_DataTokensIsEmpty_WithoutMetadata()
-        //{
-        //    // Arrange
-        //    var context = new EndpointSelectorContext()
-        //    {
-        //        Endpoint = new RouteEndpoint(
-        //            TestConstants.EmptyRequestDelegate,
-        //            RoutePatternFactory.Parse("/"),
-        //            0,
-        //            new EndpointMetadataCollection(),
-        //            "test"),
-        //    };
+            new EndpointSelectorContext(httpContext)
+            {
+                RouteValues = routeValues
+            };
 
-        //    // Act
-        //    var routeData = ((IRoutingFeature)context).RouteData;
-
-        //    // Assert
-        //    Assert.Empty(routeData.DataTokens);
-        //}
+            // Assert
+            Assert.NotNull(httpContext.Request.RouteValues);
+            Assert.Same(routeValues, httpContext.Request.RouteValues);
+            Assert.Single(httpContext.Request.RouteValues);
+            Assert.Equal("1", httpContext.Request.RouteValues["A"]);
+        }
     }
 }

@@ -822,9 +822,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private (HttpContext httpContext, EndpointSelectorContext context) CreateContext()
         {
             var httpContext = new DefaultHttpContext();
-            var context = new EndpointSelectorContext(httpContext);
 
-            return (httpContext, context);
+            return (httpContext, new EndpointSelectorContext(httpContext));
         }
     }
 }

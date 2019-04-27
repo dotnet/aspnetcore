@@ -303,9 +303,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             httpContext.Request.Path = path;
             httpContext.Request.Scheme = scheme;
 
-            var context = new EndpointSelectorContext(httpContext);
-
-            return (httpContext, context);
+            return (httpContext, new EndpointSelectorContext(httpContext));
         }
 
         internal RouteEndpoint CreateEndpoint(

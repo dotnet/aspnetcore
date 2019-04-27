@@ -20,12 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             httpContext.Request.Method = "TEST";
             httpContext.Request.Path = path;
             httpContext.RequestServices = CreateServices();
-
-            var context = new EndpointSelectorContext(httpContext)
-            {
-                RouteValues = new RouteValueDictionary()
-            };
-            return (httpContext, context);
+            return (httpContext, new EndpointSelectorContext(httpContext));
         }
 
         // The older routing implementations retrieve services when they first execute.

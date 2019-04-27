@@ -352,9 +352,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 httpContext.Request.Headers[AccessControlRequestMethod] = httpMethod;
             }
 
-            var context = new EndpointSelectorContext(httpContext);
-
-            return (httpContext, context);
+            return (httpContext, new EndpointSelectorContext(httpContext));
         }
 
         internal RouteEndpoint CreateEndpoint(

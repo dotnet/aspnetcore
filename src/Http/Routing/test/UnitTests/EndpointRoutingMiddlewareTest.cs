@@ -133,7 +133,6 @@ namespace Microsoft.AspNetCore.Routing
         private HttpContext CreateHttpContext()
         {
             var httpContext = new DefaultHttpContext();
-            var context = new EndpointSelectorContext(httpContext);
             httpContext.RequestServices = new TestServiceProvider();
 
             return httpContext;

@@ -33,10 +33,7 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             var httpContext = CreateHttpContext();
-            var context = new EndpointSelectorContext(httpContext)
-            {
-                RouteValues = new RouteValueDictionary(new { action = "Index", })
-            };
+            httpContext.Request.RouteValues = new RouteValueDictionary(new { action = "Index", });
             httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
 
             // Act

@@ -18,12 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         protected HttpContext CreateHttpContext(object ambientValues = null)
         {
             var httpContext = new DefaultHttpContext();
-
-            var context = new EndpointSelectorContext(httpContext)
-            {
-                RouteValues = new RouteValueDictionary(ambientValues)
-            };
-
+            httpContext.Request.RouteValues = new RouteValueDictionary(ambientValues);
             return httpContext;
         }
 

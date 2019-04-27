@@ -7,14 +7,12 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -133,9 +131,9 @@ namespace Microsoft.AspNetCore.Routing
         {
             
             var context = new DefaultHttpContext();
-            var feature = new EndpointSelectorContext(context) { RouteValues = new RouteValueDictionary(ambientValues) };
+            context.Request.RouteValues = new RouteValueDictionary(ambientValues);
 
-            return (context, feature.RouteValues);
+            return (context, context.Request.RouteValues);
         }
 
         protected void CreateOutboundRouteEntry(TreeRouteBuilder treeRouteBuilder, RouteEndpoint endpoint)
