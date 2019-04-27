@@ -24,8 +24,15 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            var routingFeature = httpContext.Features[typeof(IRoutingFeature)] as IRoutingFeature;
-            return routingFeature?.RouteData;
+            var routingFeature = httpContext.Features.Get<IRoutingFeature>();
+
+            if (routingFeature == null)
+            {
+                // REVIEW: Handle data tokens somehow?
+                return new RouteData(httpContext.Request.RouteValues);
+            }
+
+            return routingFeature.RouteData;
         }
 
         /// <summary>

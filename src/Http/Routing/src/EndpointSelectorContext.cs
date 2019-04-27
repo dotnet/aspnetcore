@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Http.Endpoints;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public struct EndpointSelectorContext
+    public readonly struct EndpointSelectorContext
     {
-        private HttpContext _httpContext;
+        private readonly HttpContext _httpContext;
 
         public EndpointSelectorContext(HttpContext httpContext)
         {
