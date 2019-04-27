@@ -25,14 +25,7 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             var routingFeature = httpContext.Features.Get<IRoutingFeature>();
-
-            if (routingFeature == null)
-            {
-                // REVIEW: Handle data tokens somehow?
-                return new RouteData(httpContext.Request.RouteValues);
-            }
-
-            return routingFeature.RouteData;
+            return routingFeature?.RouteData ?? new RouteData(httpContext.Request.RouteValues);
         }
 
         /// <summary>
@@ -54,8 +47,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            return httpContext.Features.Get<IRoutingFeature>()?.RouteData.Values[key] ??
-                   httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues[key];
+            return httpContext.Features.Get<IRouteValuesFeature>()?.RouteValues[key];
         }
     }
 }

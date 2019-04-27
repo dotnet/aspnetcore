@@ -40,10 +40,15 @@ namespace Microsoft.AspNetCore.Builder
             }
             else
             {
-                httpContext.Features[typeof(IRoutingFeature)] = new RoutingFeature()
+                var routingFeature = new RoutingFeature()
                 {
-                    RouteData = context.RouteData,
+                    RouteData = context.RouteData
                 };
+
+                // Set the RouteValues on the current request
+                httpContext.Request.RouteValues = context.RouteData.Values;
+
+                httpContext.Features.Set<IRoutingFeature>(routingFeature);
 
                 await context.Handler(context.HttpContext);
             }
