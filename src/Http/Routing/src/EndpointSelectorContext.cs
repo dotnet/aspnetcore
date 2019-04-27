@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public EndpointSelectorContext(HttpContext httpContext)
         {
-            _httpContext = httpContext;
+            _httpContext = httpContext ?? throw new ArgumentNullException(nameof(httpContext));
         }
 
         /// <summary>
@@ -28,10 +28,7 @@ namespace Microsoft.AspNetCore.Routing
             }
             set
             {
-                if (value != null)
-                {
-                    _httpContext.SetEndpoint(value);
-                }
+                _httpContext.SetEndpoint(value);
             }
         }
 

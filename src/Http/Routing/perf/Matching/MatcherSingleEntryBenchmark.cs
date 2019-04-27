@@ -11,8 +11,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // Just like TechEmpower Plaintext
     public partial class MatcherSingleEntryBenchmark : EndpointRoutingBenchmarkBase
     {
-        private const int SampleCount = 100;
-
         private BarebonesMatcher _baseline;
         private Matcher _dfa;
         private Matcher _route;
@@ -67,9 +65,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var httpContext = Requests[0];
             var feature = new EndpointSelectorContext(httpContext);
 
-            //// This is required to make the legacy router implementation work with global routing.
-            //httpContext.Features.Set<IEndpointFeature>(feature);
-
             await _tree.MatchAsync(httpContext, feature);
             Validate(httpContext, Endpoints[0], feature.Endpoint);
         }
@@ -79,9 +74,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var httpContext = Requests[0];
             var feature = new EndpointSelectorContext(httpContext);
-
-            // This is required to make the legacy router implementation work with global routing.
-            //httpContext.Features.Set<IEndpointFeature>(feature);
 
             await _route.MatchAsync(httpContext, feature);
             Validate(httpContext, Endpoints[0], feature.Endpoint);

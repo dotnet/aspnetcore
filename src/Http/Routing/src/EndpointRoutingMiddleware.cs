@@ -58,50 +58,68 @@ namespace Microsoft.AspNetCore.Routing
         {
             var feature = new EndpointSelectorContext(httpContext);
 
+            // Store the previous endpoint before matching starts, this lets us restore whatever endpoint was
+            // set at the end of matching if nothing matched
+            var previousEndpoint = feature.Endpoint;
+
+            // We need to set the endpoint to null here so that we can observe any mutations
+            // made by the matcher
+            feature.Endpoint = null;
+
             // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
             var matcherTask = InitializeAsync();
             if (!matcherTask.IsCompletedSuccessfully)
             {
-                return AwaitMatcher(this, httpContext, feature, matcherTask);
+                return AwaitMatcher(this, httpContext, feature, previousEndpoint, matcherTask);
             }
 
             var matchTask = matcherTask.Result.MatchAsync(httpContext, feature);
             if (!matchTask.IsCompletedSuccessfully)
             {
-                return AwaitMatch(this, httpContext, feature, matchTask);
+                return AwaitMatch(this, httpContext, feature, previousEndpoint, matchTask);
             }
 
-            return SetRoutingAndContinue(httpContext, feature);
+            return SetRoutingAndContinue(httpContext, feature, previousEndpoint);
 
             // Awaited fallbacks for when the Tasks do not synchronously complete
-            static async Task AwaitMatcher(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task<Matcher> matcherTask)
+            static async Task AwaitMatcher(EndpointRoutingMiddleware middleware,
+                                           HttpContext httpContext,
+                                           EndpointSelectorContext feature,
+                                           Endpoint previousEndpoint,
+                                           Task<Matcher> matcherTask)
             {
                 var matcher = await matcherTask;
                 await matcher.MatchAsync(httpContext, feature);
-                await middleware.SetRoutingAndContinue(httpContext, feature);
+                await middleware.SetRoutingAndContinue(httpContext, feature, previousEndpoint);
             }
 
-            static async Task AwaitMatch(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task matchTask)
+            static async Task AwaitMatch(EndpointRoutingMiddleware middleware,
+                                         HttpContext httpContext,
+                                         EndpointSelectorContext feature,
+                                         Endpoint previousEndpoint,
+                                         Task matchTask)
             {
                 await matchTask;
-                await middleware.SetRoutingAndContinue(httpContext, feature);
+                await middleware.SetRoutingAndContinue(httpContext, feature, previousEndpoint);
             }
 
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Task SetRoutingAndContinue(HttpContext httpContext, EndpointSelectorContext feature)
+        private Task SetRoutingAndContinue(HttpContext httpContext, EndpointSelectorContext feature, Endpoint previousEndpoint)
         {
-            if (feature.Endpoint != null)
+            // Restore the previous endpoint (which might be null) if it's not set
+            feature.Endpoint ??= previousEndpoint;
+
+            // If there was no mutation of the endpoint then log failure
+            if (ReferenceEquals(feature.Endpoint, previousEndpoint))
             {
-                // Set the endpoint feature only on success. This means we won't overwrite any
-                // existing state for related features unless we did something.
-                Log.MatchSuccess(_logger, feature);
+                Log.MatchFailure(_logger);
             }
             else
             {
-                Log.MatchFailure(_logger);
+                Log.MatchSuccess(_logger, feature);
             }
 
             return _next(httpContext);
