@@ -263,20 +263,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         Endpoint IEndpointFeature.Endpoint
         {
-            get;
-            set;
+            get => _endpoint;
+            set => _endpoint = value;
         }
 
         RouteValueDictionary IRouteValuesFeature.RouteValues
         {
-            get
-            {
-                return _routeValues ??= new RouteValueDictionary();
-            }
-            set
-            {
-                _routeValues = value;
-            }
+            get => _routeValues ??= new RouteValueDictionary();
+            set => _routeValues = value;
         }
 
         protected void ResetHttp1Features()
