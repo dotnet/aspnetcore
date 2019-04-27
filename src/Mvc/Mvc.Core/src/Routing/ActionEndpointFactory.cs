@@ -286,7 +286,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
 
             RequestDelegate requestDelegate = (context) =>
             {
-                var routeData = context.GetRouteData();
+                var routeData = new RouteData();
+                routeData.PushState(router: null, context.Request.RouteValues, dataTokens);
+
                 var actionContext = new ActionContext(context, routeData, action);
 
                 if (invokerFactory == null)
