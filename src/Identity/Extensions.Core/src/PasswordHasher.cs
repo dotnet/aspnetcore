@@ -77,12 +77,12 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return false;
             }
-            var areSame = true;
+            int diff = 0;
             for (var i = 0; i < a.Length; i++)
             {
-                areSame &= (a[i] == b[i]);
+                diff |= (a[i] ^ b[i]);
             }
-            return areSame;
+            return diff == 0;
         }
 
         /// <summary>
