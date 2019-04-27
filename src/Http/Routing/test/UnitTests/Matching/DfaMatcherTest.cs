@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
                 .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
                 .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
                 .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 

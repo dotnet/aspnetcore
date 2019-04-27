@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new XunitException($"Was expected to match '{expected.DisplayName}' but did not match.");
             }
 
-            var actualValues = httpContext.Features.Get<IRouteValuesFeature>().RouteValues;
+            var actualValues = httpContext.Request.RouteValues;
 
             if (actualValues == null)
             {

@@ -62,52 +62,6 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public async Task Invoke_BackCompatGetRouteValue_ValueUsedFromEndpointFeature()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var middleware = CreateMiddleware();
-
-            // Act
-            await middleware.Invoke(httpContext);
-            var routeData = httpContext.GetRouteData();
-            var routeValue = httpContext.GetRouteValue("controller");
-            var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
-
-            // Assert
-            Assert.NotNull(routeData);
-            Assert.Equal("Home", (string)routeValue);
-
-            // changing route data value is reflected in endpoint feature values
-            routeData.Values["testKey"] = "testValue";
-            Assert.Equal("testValue", routeValuesFeature.RouteValues["testKey"]);
-        }
-
-        [Fact]
-        public async Task Invoke_BackCompatGetDataTokens_ValueUsedFromEndpointMetadata()
-        {
-            // Arrange
-            var httpContext = CreateHttpContext();
-
-            var middleware = CreateMiddleware();
-
-            // Act
-            await middleware.Invoke(httpContext);
-            var routeData = httpContext.GetRouteData();
-            var routeValue = httpContext.GetRouteValue("controller");
-            var routeValuesFeature = httpContext.Features.Get<IRouteValuesFeature>();
-
-            // Assert
-            Assert.NotNull(routeData);
-            Assert.Equal("Home", (string)routeValue);
-
-            // changing route data value is reflected in endpoint feature values
-            routeData.Values["testKey"] = "testValue";
-            Assert.Equal("testValue", routeValuesFeature.RouteValues["testKey"]);
-        }
-
-        [Fact]
         public async Task Invoke_InitializationFailure_AllowsReinitialization()
         {
             // Arrange
