@@ -89,9 +89,9 @@ namespace Microsoft.AspNetCore.Routing
         public string EndpointName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public partial struct EndpointSelectorContext
+    public readonly partial struct EndpointSelectorContext
     {
-        private object _dummy;
+        private readonly object _dummy;
         public EndpointSelectorContext(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
         public Microsoft.AspNetCore.Http.Endpoint Endpoint { get { throw null; } set { } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { get { throw null; } set { } }
