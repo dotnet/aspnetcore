@@ -60,6 +60,7 @@ namespace Microsoft.AspNetCore.Routing
             // There's already an endpoint, skip maching completely
             if (feature.Endpoint != null)
             {
+                Log.MatchSkipped(_logger, feature.Endpoint);
                 return _next(httpContext);
             }
 
@@ -178,6 +179,11 @@ namespace Microsoft.AspNetCore.Routing
                 new EventId(2, "MatchFailure"),
                 "Request did not match any endpoints");
 
+            private static readonly Action<ILogger, string, Exception> _matchingSkipped = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                new EventId(3, "MatchingSkipped"),
+                "Endpoint '{EndpointName}' already set, skipping route matching.");
+
             public static void MatchSuccess(ILogger logger, EndpointSelectorContext context)
             {
                 _matchSuccess(logger, context.Endpoint.DisplayName, null);
@@ -186,6 +192,11 @@ namespace Microsoft.AspNetCore.Routing
             public static void MatchFailure(ILogger logger)
             {
                 _matchFailure(logger, null);
+            }
+
+            public static void MatchSkipped(ILogger logger, Endpoint endpoint)
+            {
+                _matchingSkipped(logger, endpoint.DisplayName, null);
             }
         }
     }

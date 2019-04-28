@@ -45,9 +45,8 @@ namespace Microsoft.AspNetCore.Builder
                     RouteData = context.RouteData
                 };
 
-                // Set the RouteValues on the current request
+                // Set the RouteValues on the current request, this is to keep the IRouteValuesFeature inline with the IRoutingFeature
                 httpContext.Request.RouteValues = context.RouteData.Values;
-
                 httpContext.Features.Set<IRoutingFeature>(routingFeature);
 
                 await context.Handler(context.HttpContext);
