@@ -103,7 +103,8 @@ namespace Microsoft.AspNetCore.Mvc
         public FormatterCollection<IInputFormatter> InputFormatters { get; }
 
         /// <summary>
-        /// Gets or sets the flag to buffer the request body in input formatters. Default is <c>false</c>.
+        /// Gets or sets the flag that determines if buffering is disabled for input formatters that
+        /// synchronously read from the HTTP request body.
         /// </summary>
         public bool SuppressInputFormatterBuffering { get; set; }
 
