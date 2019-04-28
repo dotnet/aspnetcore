@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // This is a fast path for single candidate, 0 policies and default selector
             if (candidateCount == 1 && policyCount == 0 && _isDefaultEndpointSelector)
             {
-                ref var candidate = ref candidates[0];
+                ref readonly var candidate = ref candidates[0];
 
                 // Just strict path matching
                 if (candidate.Flags == Candidate.CandidateFlags.None)
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // Reminder!
                 // candidate: readonly data about the endpoint and how to match
                 // state: mutable storarge for our processing
-                ref var candidate = ref candidates[i];
+                ref readonly var candidate = ref candidates[i];
                 ref var state = ref candidateState[i];
                 state = new CandidateState(candidate.Endpoint, candidate.Score);
 
@@ -249,13 +249,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private void ProcessCatchAll(
             KeyValuePair<string, object>[] slots,
-            (string parameterName, int segmentIndex, int slotIndex) catchAll,
+            in (string parameterName, int segmentIndex, int slotIndex) catchAll,
             string path,
             ReadOnlySpan<PathSegment> segments)
         {
-            if (segments.Length > catchAll.segmentIndex)
+            // Read segmentIndex to local both to skip double read from stack value
+            // and to use the same in-bounds validated varaible to access the array.
+            var segmentIndex = catchAll.segmentIndex;
+            if ((uint)segmentIndex < (uint)segments.Length)
             {
-                var segment = segments[catchAll.segmentIndex];
+                var segment = segments[segmentIndex];
                 slots[catchAll.slotIndex] = new KeyValuePair<string, object>(
                     catchAll.parameterName,
                     path.Substring(segment.Start));
