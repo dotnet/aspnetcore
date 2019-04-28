@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.AspNetCore.Http;
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var httpContext = new DefaultHttpContext();
             httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
-            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: true);
             httpContext.Request.ContentType = "application/json";
             var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
@@ -160,19 +161,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.NotNull(result);
             Assert.False(result.HasError);
             var model = Assert.IsType<TestLevelOne>(result.Model);
-
-            Assert.Equal(expectedInt, model.SampleInt);
-            Assert.Equal(expectedString, model.sampleString);
-
-            Assert.True(httpContext.Request.Body.CanSeek);
-            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
-
-            result = await formatter.ReadAsync(context);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.False(result.HasError);
-            model = Assert.IsType<TestLevelOne>(result.Model);
 
             Assert.Equal(expectedInt, model.SampleInt);
             Assert.Equal(expectedString, model.sampleString);
@@ -227,8 +215,9 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var formatter = new XmlDataContractSerializerInputFormatter(new MvcOptions());
             var contentBytes = Encoding.UTF8.GetBytes(input);
             var httpContext = new DefaultHttpContext();
+
             httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
-            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
             httpContext.Request.ContentType = "application/json";
             var context = GetInputFormatterContext(httpContext, typeof(TestLevelOne));
 
@@ -239,19 +228,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             Assert.NotNull(result);
             Assert.False(result.HasError);
             var model = Assert.IsType<TestLevelOne>(result.Model);
-
-            Assert.Equal(expectedInt, model.SampleInt);
-            Assert.Equal(expectedString, model.sampleString);
-
-            Assert.True(httpContext.Request.Body.CanSeek);
-            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
-
-            result = await formatter.ReadAsync(context);
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.False(result.HasError);
-            model = Assert.IsType<TestLevelOne>(result.Model);
 
             Assert.Equal(expectedInt, model.SampleInt);
             Assert.Equal(expectedString, model.sampleString);
@@ -287,9 +263,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
             Assert.Equal(expectedInt, model.SampleInt);
             Assert.Equal(expectedString, model.sampleString);
-
-            // Reading again should fail as buffering request body is disabled
-            await Assert.ThrowsAsync<XmlException>(() => formatter.ReadAsync(context));
         }
 
         [Fact]
