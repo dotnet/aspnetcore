@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing
             return CreateServices().GetRequiredService<DfaMatcherBuilder>();
         }
 
-        private protected static  int[] SampleRequests(int endpointCount, int count)
+        private protected static int[] SampleRequests(int endpointCount, int count)
         {
             // This isn't very high tech, but it's at least regular distribution.
             // We sort the route templates by precedence, so this should result in
@@ -129,7 +129,6 @@ namespace Microsoft.AspNetCore.Routing
         protected (HttpContext httpContext, RouteValueDictionary ambientValues) CreateCurrentRequestContext(
             object ambientValues = null)
         {
-            
             var context = new DefaultHttpContext();
             context.Request.RouteValues = new RouteValueDictionary(ambientValues);
 
