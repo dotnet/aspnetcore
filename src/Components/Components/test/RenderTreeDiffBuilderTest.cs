@@ -104,6 +104,152 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RecognizesKeyedElementInsertions()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("retained key");
+            oldTree.AddContent(1, "Existing");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("new key");
+            newTree.AddContent(1, "Inserted");
+            newTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("retained key");
+            newTree.AddContent(1, "Existing");
+            newTree.CloseElement();
+
+            // Without the key, it would change the text "Existing" to "Inserted", then insert a new "Existing" below it
+            // With the key, it just inserts a new "Inserted" at the top
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("new key", referenceFrames[entry.ReferenceFrameIndex].ElementKey);
+                });
+        }
+
+        [Fact]
+        public void RecognizesKeyedElementDeletions()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("will delete");
+            oldTree.AddContent(1, "First");
+            oldTree.CloseElement();
+
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("will retain");
+            oldTree.AddContent(1, "Second");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("will retain");
+            newTree.AddContent(1, "Second");
+            newTree.CloseElement();
+
+            // Without the key, it changes the text content of "First" to "Second", then deletes the other "Second"
+            // With the key, it just deletes "First"
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
+        }
+
+        [Fact]
+        public void RecognizesKeyedComponentInsertions()
+        {
+            // Arrange
+            oldTree.OpenComponent<CaptureSetParametersComponent>(0);
+            oldTree.SetKey("retained key");
+            oldTree.AddAttribute(1, "ParamName", "Param old value");
+            oldTree.CloseComponent();
+            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false); // Assign initial IDs
+            var oldComponent = (CaptureSetParametersComponent)oldTree.GetFrames().AsEnumerable().First().Component;
+
+            newTree.OpenComponent<CaptureSetParametersComponent>(0);
+            newTree.SetKey("new key");
+            newTree.AddAttribute(1, "ParamName", "New component param value");
+            newTree.CloseComponent();
+
+            newTree.OpenComponent<CaptureSetParametersComponent>(0);
+            newTree.SetKey("retained key");
+            newTree.AddAttribute(1, "ParamName", "Param new value");
+            newTree.CloseComponent();
+
+            // Without the key, it would modify the param on the first component,
+            // then insert a new second component.
+            // With the key, it inserts a new first component, then modifies the
+            // param on the second component.
+
+            // Act
+            var batch = GetRenderedBatch(initializeFromFrames: false);
+            var newComponents = newTree.GetFrames().AsEnumerable()
+                .Where(x => x.FrameType == RenderTreeFrameType.Component)
+                .Select(x => x.Component).Cast<CaptureSetParametersComponent>().ToList();
+
+            // Assert: Inserts new component at position 0
+            Assert.Equal(1, batch.UpdatedComponents.Count);
+            Assert.Collection(batch.UpdatedComponents.Array[0].Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.PrependFrame, 0));
+
+            // Assert: Retains old component instance in position 1, and updates its params
+            Assert.Same(oldComponent, newComponents[1]);
+            Assert.Equal(2, oldComponent.SetParametersCallCount);
+        }
+
+        [Fact]
+        public void RecognizesKeyedComponentDeletions()
+        {
+            // Arrange
+            oldTree.OpenComponent<FakeComponent>(0);
+            oldTree.SetKey("will delete");
+            oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Anything");
+            oldTree.CloseComponent();
+
+            oldTree.OpenComponent<FakeComponent>(0);
+            oldTree.SetKey("will retain");
+            oldTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Retained param value");
+            oldTree.CloseComponent();
+
+            // Instantiate initial components
+            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false);
+            var oldComponents = oldTree.GetFrames().AsEnumerable()
+                .Where(x => x.FrameType == RenderTreeFrameType.Component)
+                .Select(x => x.Component).ToList();
+
+            newTree.OpenComponent<FakeComponent>(0);
+            newTree.SetKey("will retain");
+            newTree.AddAttribute(1, nameof(FakeComponent.StringProperty), "Retained param value");
+            newTree.CloseComponent();
+
+            // Without the key, it updates the param on the first component, then
+            // deletes the second.
+            // With the key, it just deletes the first.
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+            var newComponent = newTree.GetFrames().AsEnumerable().First().Component;
+
+            // Assert
+            Assert.Same(oldComponents[1], newComponent);
+            Assert.Collection(result.Edits,
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
+        }
+
+        [Fact]
         public void RecognizesTrailingSequenceWithinLoopBlockBeingRemoved()
         {
             // Arrange

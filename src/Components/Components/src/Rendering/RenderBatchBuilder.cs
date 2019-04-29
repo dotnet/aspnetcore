@@ -30,6 +30,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
         // Scratch data structure for understanding attribute diffs.
         public Dictionary<string, int> AttributeDiffSet { get; } = new Dictionary<string, int>();
 
+        internal StackObjectPool<Dictionary<object, KeyedItemInfo>> KeyedItemInfoDictionaryPool { get; }
+            = new StackObjectPool<Dictionary<object, KeyedItemInfo>>(maxPreservedItems: 10);
+
         public void ClearStateForCurrentBatch()
         {
             // This method is used to reset the builder back to a default state so it can
