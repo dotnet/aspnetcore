@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Http.Internal
 
             // Check offset in bounds and check if significant bit set
             return (uint)offset < (uint)validChars.Length &&
-                ((validChars[offset] & significantBit) == significantBit);
+                ((validChars[offset] & significantBit) != 0);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
