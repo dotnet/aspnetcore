@@ -8,6 +8,9 @@ namespace Microsoft.AspNetCore.Http.Internal
 {
     internal static class PathStringHelper
     {
+        // uint[] bits uses 1 cache line (Array info + 16 bytes)
+        // bool[] would use 3 cache lines (Array info + 128 bytes)
+        // So we use 128 bits rather than 128 bytes/bools
         private static readonly uint[] ValidPathChars = {
             0b_0000_0000__0000_0000__0000_0000__0000_0000, // 0x00 - 0x1F
             0b_0010_1111__1111_1111__1111_1111__1101_0010, // 0x20 - 0x3F
