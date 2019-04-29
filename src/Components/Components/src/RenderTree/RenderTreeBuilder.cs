@@ -454,13 +454,30 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         /// <param name="value">The value for the key.</param>
         public void SetKey(object value)
         {
-            // This is just a placeholder to enable work in parallel in the
-            // aspnetcore-tooling repo.
-            //
-            // The real implementation will involve multiple overloads, likely:
-            //   SetKey(int value) -- underlying logic
-            //   SetKey<T>(T value) where T: struct -- avoids boxing 'value' before calling .GetHashCode()
-            //   SetKey(object value) -- performs null check before calling .GetHashCode()
+            if (value == null)
+            {
+                throw new ArgumentNullException(nameof(value));
+            }
+
+            var parentFrameIndex = GetCurrentParentFrameIndex();
+            if (!parentFrameIndex.HasValue)
+            {
+                throw new InvalidOperationException("Cannot set a key outside the scope of a component or element.");
+            }
+
+            var parentFrameIndexValue = parentFrameIndex.Value;
+            ref var parentFrame = ref _entries.Buffer[parentFrameIndexValue];
+            switch (parentFrame.FrameType)
+            {
+                case RenderTreeFrameType.Element:
+                    _entries.Buffer[parentFrameIndexValue] = parentFrame.WithElementKey(value);
+                    break;
+                case RenderTreeFrameType.Component:
+                    _entries.Buffer[parentFrameIndexValue] = parentFrame.WithComponentKey(value);
+                    break;
+                default:
+                    throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameType}.");
+            }
         }
 
         private void OpenComponentUnchecked(int sequence, Type componentType)

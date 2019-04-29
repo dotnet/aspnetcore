@@ -2097,7 +2097,7 @@ var editReader = {
 };
 // Keep in sync with memory layout in RenderTreeFrame.cs
 var frameReader = {
-    structLength: 28,
+    structLength: 36,
     frameType: function (frame) { return Environment_1.platform.readInt32Field(frame, 4); },
     subtreeLength: function (frame) { return Environment_1.platform.readInt32Field(frame, 8); },
     elementReferenceCaptureId: function (frame) { return Environment_1.platform.readStringField(frame, 16); },
