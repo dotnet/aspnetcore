@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -95,58 +93,10 @@ namespace Microsoft.AspNetCore.StaticFiles
             else
             {
                 // If we get here, we can try to serve the file
-                return ServeStaticFile(context, fileContext);
+                return fileContext.ServeStaticFile(context, _next);
             }
 
             return _next(context);
-        }
-
-        private async Task ServeStaticFile(HttpContext context, StaticFileContext fileContext)
-        {
-            fileContext.ComprehendRequestHeaders();
-            switch (fileContext.GetPreconditionState())
-            {
-                case StaticFileContext.PreconditionState.Unspecified:
-                case StaticFileContext.PreconditionState.ShouldProcess:
-                    if (fileContext.IsHeadMethod)
-                    {
-                        await fileContext.SendStatusAsync(Constants.Status200Ok);
-                        return;
-                    }
-
-                    try
-                    {
-                        if (fileContext.IsRangeRequest)
-                        {
-                            await fileContext.SendRangeAsync();
-                            return;
-                        }
-
-                        await fileContext.SendAsync();
-                        _logger.FileServed(fileContext.SubPath, fileContext.PhysicalPath);
-                        return;
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        context.Response.Clear();
-                    }
-                    await _next(context);
-                    return;
-                case StaticFileContext.PreconditionState.NotModified:
-                    _logger.FileNotModified(fileContext.SubPath);
-                    await fileContext.SendStatusAsync(Constants.Status304NotModified);
-                    return;
-
-                case StaticFileContext.PreconditionState.PreconditionFailed:
-                    _logger.PreconditionFailed(fileContext.SubPath);
-                    await fileContext.SendStatusAsync(Constants.Status412PreconditionFailed);
-                    return;
-
-                default:
-                    var exception = new NotImplementedException(fileContext.GetPreconditionState().ToString());
-                    Debug.Fail(exception.ToString());
-                    throw exception;
-            }
         }
     }
 }

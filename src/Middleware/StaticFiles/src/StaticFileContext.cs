@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -76,23 +77,6 @@ namespace Microsoft.AspNetCore.StaticFiles
             _ifUnmodifiedSinceState = PreconditionState.Unspecified;
             _range = null;
             _requestType = RequestType.Unspecified;
-        }
-
-        internal enum PreconditionState : byte
-        {
-            Unspecified,
-            NotModified,
-            ShouldProcess,
-            PreconditionFailed
-        }
-
-        [Flags]
-        internal enum RequestType : byte
-        {
-            Unspecified = 0b_000,
-            IsHead = 0b_001,
-            IsGet = 0b_010,
-            IsRange = 0b_100,
         }
 
         private RequestHeaders RequestHeaders => (_requestHeaders ??= _request.GetTypedHeaders());
@@ -364,6 +348,54 @@ namespace Microsoft.AspNetCore.StaticFiles
             return Task.CompletedTask;
         }
 
+        public async Task ServeStaticFile(HttpContext context, RequestDelegate next)
+        {
+            ComprehendRequestHeaders();
+            switch (GetPreconditionState())
+            {
+                case PreconditionState.Unspecified:
+                case PreconditionState.ShouldProcess:
+                    if (IsHeadMethod)
+                    {
+                        await SendStatusAsync(Constants.Status200Ok);
+                        return;
+                    }
+
+                    try
+                    {
+                        if (IsRangeRequest)
+                        {
+                            await SendRangeAsync();
+                            return;
+                        }
+
+                        await SendAsync();
+                        _logger.FileServed(SubPath, PhysicalPath);
+                        return;
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        context.Response.Clear();
+                    }
+                    await next(context);
+                    return;
+                case PreconditionState.NotModified:
+                    _logger.FileNotModified(SubPath);
+                    await SendStatusAsync(Constants.Status304NotModified);
+                    return;
+
+                case PreconditionState.PreconditionFailed:
+                    _logger.PreconditionFailed(SubPath);
+                    await SendStatusAsync(Constants.Status412PreconditionFailed);
+                    return;
+
+                default:
+                    var exception = new NotImplementedException(GetPreconditionState().ToString());
+                    Debug.Fail(exception.ToString());
+                    throw exception;
+            }
+        }
+
         public async Task SendAsync()
         {
             SetCompressionMode();
@@ -459,6 +491,23 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 responseCompressionFeature.Mode = _options.HttpsCompression;
             }
+        }
+
+        internal enum PreconditionState : byte
+        {
+            Unspecified,
+            NotModified,
+            ShouldProcess,
+            PreconditionFailed
+        }
+
+        [Flags]
+        private enum RequestType : byte
+        {
+            Unspecified = 0b_000,
+            IsHead = 0b_001,
+            IsGet = 0b_010,
+            IsRange = 0b_100,
         }
     }
 }
