@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task WriterThrowsCancelledException()
+        public async Task WriterThrowsCanceledException()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
@@ -179,8 +179,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Repeat(500)]
-        public async Task ReaderThrowsCancelledException()
+        [Repeat]
+        public async Task ReaderThrowsCanceledException()
         {
             var readIsAsyncCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
