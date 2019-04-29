@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -100,6 +101,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var connection = new Mock<TransportConnection> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
             var completeFeature = connection.Features.Get<IConnectionCompleteFeature>();
+            var mockLogger = new Mock<ILogger>();
+            connection.Logger = mockLogger.Object;
 
             Assert.NotNull(completeFeature);
             object stateObject = new object();
@@ -109,6 +112,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await dispatcher.OnConnection(connection);
 
             Assert.Equal(stateObject, callbackState);
+            var log = mockLogger.Invocations.First();
+            Assert.Equal("An error occured running an IConnectionCompleteFeature.OnCompleted callback.", log.Arguments[2].ToString());
+            Assert.IsType<InvalidTimeZoneException>(log.Arguments[3]);
         }
     }
 }

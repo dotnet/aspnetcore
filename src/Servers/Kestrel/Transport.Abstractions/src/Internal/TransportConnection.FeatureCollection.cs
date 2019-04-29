@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             OnHeartbeat(action, state);
         }
 
-        public void OnCompleted(Func<object, Task> callback, object state)
+        void IConnectionCompleteFeature.OnCompleted(Func<object, Task> callback, object state)
         {
             if (_onCompleted == null)
             {
@@ -139,8 +140,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                         return FireOnCompletedAwaited(task, onCompleted);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger?.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
                 }
             }
 
@@ -153,8 +155,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             {
                 await currentTask;
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger?.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
             }
 
             while (onCompleted.TryPop(out var entry))
@@ -163,8 +166,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     await entry.Key.Invoke(entry.Value);
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
+                    Logger?.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
                 }
             }
         }
