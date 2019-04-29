@@ -45,14 +45,15 @@ namespace Microsoft.AspNetCore.Authorization
     public partial class AuthorizationMiddleware
     {
         public AuthorizationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.AspNetCore.Authorization.IAuthorizationPolicyProvider policyProvider) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
     public partial class AuthorizationOptions
     {
         public AuthorizationOptions() { }
         public Microsoft.AspNetCore.Authorization.AuthorizationPolicy DefaultPolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool InvokeHandlersAfterFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Authorization.AuthorizationPolicy FallbackPolicy { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool InvokeHandlersAfterFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public void AddPolicy(string name, Microsoft.AspNetCore.Authorization.AuthorizationPolicy policy) { }
         public void AddPolicy(string name, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder> configurePolicy) { }
         public Microsoft.AspNetCore.Authorization.AuthorizationPolicy GetPolicy(string name) { throw null; }
@@ -131,8 +132,8 @@ namespace Microsoft.AspNetCore.Authorization
     {
         public DefaultAuthorizationPolicyProvider(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions> options) { }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetDefaultPolicyAsync() { throw null; }
-        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetPolicyAsync(string policyName) { throw null; }
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetFallbackPolicyAsync() { throw null; }
+        public virtual System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetPolicyAsync(string policyName) { throw null; }
     }
     public partial class DefaultAuthorizationService : Microsoft.AspNetCore.Authorization.IAuthorizationService
     {
@@ -161,8 +162,8 @@ namespace Microsoft.AspNetCore.Authorization
     public partial interface IAuthorizationPolicyProvider
     {
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetDefaultPolicyAsync();
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetPolicyAsync(string policyName);
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetFallbackPolicyAsync();
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationPolicy> GetPolicyAsync(string policyName);
     }
     public partial interface IAuthorizationRequirement
     {
