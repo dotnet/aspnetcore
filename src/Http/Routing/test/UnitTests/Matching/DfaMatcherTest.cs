@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
                 .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
                 .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
                 .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, IEndpointFeature, CandidateSet>((c, f, cs) =>
+                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
@@ -727,7 +727,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var (httpContext, context) = CreateContext();
             httpContext.Request.Path = "/test/17";
-            
+
             // Act
             await matcher.MatchAsync(httpContext, context);
 
@@ -821,13 +821,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private (HttpContext httpContext, EndpointSelectorContext context) CreateContext()
         {
-            var context = new EndpointSelectorContext();
-
             var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IEndpointFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
 
-            return (httpContext, context);
+            return (httpContext, new EndpointSelectorContext(httpContext));
         }
     }
 }
