@@ -20,9 +20,8 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
-    <Reference Include="Microsoft.Bcl.Json.Sources" />
     <Reference Include="System.Buffers" />
-    <Reference Include="System.Runtime.CompilerServices.Unsafe" />
+    <Reference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.0'">
