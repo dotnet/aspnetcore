@@ -160,6 +160,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 index++;
             }
 
+            foreach (var setKey in node.Component.SetKeys)
+            {
+                context.CodeWriter.WriteStartInstanceMethodInvocation("builder", ComponentsApi.RenderTreeBuilder.SetKey);
+                context.CodeWriter.Write(parameters[index].parameterName);
+                context.CodeWriter.WriteEndMethodInvocation();
+
+                index++;
+            }
+
             foreach (var capture in node.Component.Captures)
             {
                 context.CodeWriter.WriteStartInstanceMethodInvocation("builder", capture.IsComponentCapture ? ComponentsApi.RenderTreeBuilder.AddComponentReferenceCapture : ComponentsApi.RenderTreeBuilder.AddElementReferenceCapture);
@@ -198,6 +207,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         typeName = "global::" + typeName;
                     }
                     p.Add(($"__seq{p.Count}", typeName, $"__arg{p.Count}"));
+                }
+
+                foreach (var capture in node.Component.SetKeys)
+                {
+                    p.Add(($"__seq{p.Count}", "object", $"__arg{p.Count}"));
                 }
 
                 foreach (var capture in node.Component.Captures)

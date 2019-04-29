@@ -103,5 +103,9 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddComponentReferenceCapture(int sequence, Action<object> componentReferenceCaptureAction)
         {
         }
+
+        public void SetKey(object key)
+        {
+        }
     }
 }

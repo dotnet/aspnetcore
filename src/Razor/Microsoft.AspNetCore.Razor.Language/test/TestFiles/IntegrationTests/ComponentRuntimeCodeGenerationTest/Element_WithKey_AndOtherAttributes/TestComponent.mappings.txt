@@ -1,0 +1,18 @@
+Source Location: (48:0,48 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+|someObject|
+Generated Location: (987:29,48 [10] )
+|someObject|
+
+Source Location: (78:2,12 [112] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+        private object someObject = new object();
+
+        [Parameter] protected int Min { get; set; }
+    |
+Generated Location: (1233:40,12 [112] )
+|
+        private object someObject = new object();
+
+        [Parameter] protected int Min { get; set; }
+    |
+

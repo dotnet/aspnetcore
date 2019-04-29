@@ -168,5 +168,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             VisitDefault(node);
         }
+
+        public virtual void VisitSetKey(SetKeyIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
     }
 }

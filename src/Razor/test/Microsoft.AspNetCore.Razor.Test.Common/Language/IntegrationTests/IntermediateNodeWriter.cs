@@ -168,6 +168,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.IdentifierToken?.Content);
         }
 
+        public override void VisitSetKey(SetKeyIntermediateNode node)
+        {
+            WriteContentNode(node, node.KeyValueToken?.Content);
+        }
+
         void IExtensionIntermediateNodeVisitor<RouteAttributeExtensionNode>.VisitExtension(RouteAttributeExtensionNode node)
         {
             WriteContentNode(node, node.Template);

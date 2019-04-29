@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public IEnumerable<ReferenceCaptureIntermediateNode> Captures => Children.OfType<ReferenceCaptureIntermediateNode>();
 
+        public IEnumerable<SetKeyIntermediateNode> SetKeys => Children.OfType<SetKeyIntermediateNode>();
+
         public IEnumerable<ComponentChildContentIntermediateNode> ChildContents => Children.OfType<ComponentChildContentIntermediateNode>();
 
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();

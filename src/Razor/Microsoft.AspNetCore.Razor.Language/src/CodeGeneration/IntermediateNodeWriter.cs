@@ -64,6 +64,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             throw new NotSupportedException("This writer does not support components.");
         }
 
+        public virtual void WriteSetKey(CodeRenderingContext context, SetKeyIntermediateNode node)
+        {
+            throw new NotSupportedException("This writer does not support components.");
+        }
+
         public abstract void BeginWriterScope(CodeRenderingContext context, string writer);
 
         public abstract void EndWriterScope(CodeRenderingContext context);

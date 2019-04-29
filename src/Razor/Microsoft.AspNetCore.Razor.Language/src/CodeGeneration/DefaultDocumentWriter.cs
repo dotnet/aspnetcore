@@ -297,6 +297,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.NodeWriter.WriteReferenceCapture(Context, node);
             }
 
+            public override void VisitSetKey(SetKeyIntermediateNode node)
+            {
+                Context.NodeWriter.WriteSetKey(Context, node);
+            }
+
             public override void VisitDefault(IntermediateNode node)
             {
                 Context.RenderChildren(node);

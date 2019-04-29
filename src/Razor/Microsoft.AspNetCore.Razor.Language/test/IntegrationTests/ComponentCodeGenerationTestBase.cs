@@ -2725,6 +2725,68 @@ namespace Test
         }
 
         [Fact]
+        public void GenericComponent_WithKey()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : ComponentBase
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent TItem=int Item=""3"" key=""_someKey"" />
+
+@functions {
+    private object _someKey = new object();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void GenericComponent_WithKey_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : ComponentBase
+    {
+        [Parameter] TItem Item { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent Item=""3"" key=""_someKey"" />
+
+@functions {
+    private object _someKey = new object();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void GenericComponent_WithComponentRef()
         {
             // Arrange
@@ -2821,6 +2883,106 @@ namespace Test.Shared
 @functions {
     MyClass Hello = new MyClass();
 }
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        #endregion
+
+        #region Key
+
+        [Fact]
+        public void Element_WithKey()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<elem attributebefore=""before"" key=""someObject"" attributeafter=""after"">Hello</elem>
+
+@functions {
+    private object someObject = new object();
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Element_WithKey_AndOtherAttributes()
+        {
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<input type=""text"" data-slider-min=""@Min"" key=""@someObject"" />
+
+@functions {
+        private object someObject = new object();
+
+        [Parameter] protected int Min { get; set; }
+    }
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithKey()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<MyComponent ParamBefore=""before"" key=""someDate.Day"" ParamAfter=""after"" />
+
+@functions {
+    private DateTime someDate = DateTime.Now;
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_WithKey_WithChildContent()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+    }
+}
+"));
+
+            // Arrange/Act
+            var generated = CompileToCSharp(@"
+<MyComponent key=""123 + 456"" SomeProp=""val"">
+    Some <el>further</el> content
+</MyComponent>
 ");
 
             // Assert

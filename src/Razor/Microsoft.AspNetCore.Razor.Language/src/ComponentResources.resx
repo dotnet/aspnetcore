@@ -153,6 +153,9 @@
   <data name="ImplementsDirective_TypeToken_Name" xml:space="preserve">
     <value>TypeName</value>
   </data>
+  <data name="KeyTagHelper_Documentation" xml:space="preserve">
+    <value>Ensures that the component or element will be preserved across renders if (and only if) the supplied key value matches.</value>
+  </data>
   <data name="LayoutDirective_Description" xml:space="preserve">
     <value>Declares a layout type for the current document.</value>
   </data>

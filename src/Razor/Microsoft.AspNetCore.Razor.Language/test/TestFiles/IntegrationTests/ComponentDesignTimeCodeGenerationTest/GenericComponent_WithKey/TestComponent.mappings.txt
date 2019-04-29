@@ -1,0 +1,24 @@
+Source Location: (19:0,19 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+|int|
+Generated Location: (889:25,19 [3] )
+|int|
+
+Source Location: (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml)
+|3|
+Generated Location: (1141:34,29 [1] )
+|3|
+
+Source Location: (37:0,37 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+|_someKey|
+Generated Location: (1497:46,37 [8] )
+|_someKey|
+
+Source Location: (65:2,12 [47] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    private object _someKey = new object();
+|
+Generated Location: (1854:63,12 [47] )
+|
+    private object _someKey = new object();
+|
+

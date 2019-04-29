@@ -169,6 +169,15 @@ namespace Microsoft.AspNetCore.Razor.Language {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Ensures that the component or element will be preserved across renders if (and only if) the supplied key value matches..
+        /// </summary>
+        internal static string KeyTagHelper_Documentation {
+            get {
+                return ResourceManager.GetString("KeyTagHelper_Documentation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Declares a layout type for the current document..
         /// </summary>
         internal static string LayoutDirective_Description {

@@ -14,10 +14,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public IEnumerable<ReferenceCaptureIntermediateNode> Captures => Children.OfType<ReferenceCaptureIntermediateNode>();
 
+        public IEnumerable<SetKeyIntermediateNode> SetKeys => Children.OfType<SetKeyIntermediateNode>();
+
         public IEnumerable<IntermediateNode> Body => Children.Where(c =>
         {
             return
                 c as HtmlAttributeIntermediateNode == null &&
+                c as SetKeyIntermediateNode == null &&
                 c as ReferenceCaptureIntermediateNode == null;
         });
 
