@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Repeat(100)]
+        [Repeat(500)]
         public async Task ReaderThrowsCancelledException()
         {
             var readIsAsyncCompletionSource = CreateTaskCompletionSource();
