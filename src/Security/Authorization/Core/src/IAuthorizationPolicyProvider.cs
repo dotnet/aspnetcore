@@ -27,6 +27,6 @@ namespace Microsoft.AspNetCore.Authorization
         /// Gets the fallback authorization policy.
         /// </summary>
         /// <returns>The fallback authorization policy.</returns>
-        Task<AuthorizationPolicy> GetFallbackPolicyAsync() => GetDefaultPolicyAsync();
+        Task<AuthorizationPolicy> GetFallbackPolicyAsync() => Task.FromResult<AuthorizationPolicy>(null);
     }
 }
