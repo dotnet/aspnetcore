@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
     public class LoggingConnectionAdapterTests : LoggedTest
     {
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1753", FlakyOn.Helix.All)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2276", FlakyOn.Helix.All)]
         public async Task LoggingConnectionAdapterCanBeAddedBeforeAndAfterHttpsAdapter()
         {
             await using (var server = new TestServer(context =>

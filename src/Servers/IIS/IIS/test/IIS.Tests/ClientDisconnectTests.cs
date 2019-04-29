@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     public class ClientDisconnectTests : StrictTestServerTests
     {
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2358", FlakyOn.All)]
         public async Task WritesSucceedAfterClientDisconnect()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Repeat(100)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1798", FlakyOn.All)]
         public async Task ReaderThrowsCancelledException()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
