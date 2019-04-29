@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             edi.Throw(); // Re-throw the original if we couldn't handle it
         }
 
-        private Task ClearCacheHeaders(object state)
+        private static Task ClearCacheHeaders(object state)
         {
             var headers = ((HttpResponse)state).Headers;
             headers[HeaderNames.CacheControl] = "no-cache";
