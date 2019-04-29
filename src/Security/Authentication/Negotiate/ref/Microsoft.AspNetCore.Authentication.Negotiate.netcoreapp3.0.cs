@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public AuthenticationFailedContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
         public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class NegotiateChallengeContext : Microsoft.AspNetCore.Authentication.PropertiesContext<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions>
+    public partial class ChallengeContext : Microsoft.AspNetCore.Authentication.PropertiesContext<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions>
     {
-        public NegotiateChallengeContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
+        public ChallengeContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
         public System.Exception AuthenticateFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool Handled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void HandleResponse() { }
@@ -28,10 +28,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public NegotiateEvents() { }
         public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.AuthenticatedContext, System.Threading.Tasks.Task> OnAuthenticated { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.AuthenticationFailedContext, System.Threading.Tasks.Task> OnAuthenticationFailed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateChallengeContext, System.Threading.Tasks.Task> OnChallenge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.Negotiate.ChallengeContext, System.Threading.Tasks.Task> OnChallenge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task Authenticated(Microsoft.AspNetCore.Authentication.Negotiate.AuthenticatedContext context) { throw null; }
         public virtual System.Threading.Tasks.Task AuthenticationFailed(Microsoft.AspNetCore.Authentication.Negotiate.AuthenticationFailedContext context) { throw null; }
-        public virtual System.Threading.Tasks.Task Challenge(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateChallengeContext context) { throw null; }
+        public virtual System.Threading.Tasks.Task Challenge(Microsoft.AspNetCore.Authentication.Negotiate.ChallengeContext context) { throw null; }
     }
     public partial class NegotiateHandler : Microsoft.AspNetCore.Authentication.AuthenticationHandler<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions>, Microsoft.AspNetCore.Authentication.IAuthenticationHandler, Microsoft.AspNetCore.Authentication.IAuthenticationRequestHandler
     {

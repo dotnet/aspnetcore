@@ -9,16 +9,16 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     /// <summary>
     /// State for the Challenge event.
     /// </summary>
-    public class NegotiateChallengeContext : PropertiesContext<NegotiateOptions>
+    public class ChallengeContext : PropertiesContext<NegotiateOptions>
     {
         /// <summary>
-        /// Creates a new <see cref="NegotiateChallengeContext"/>.
+        /// Creates a new <see cref="ChallengeContext"/>.
         /// </summary>
         /// <param name="context"></param>
         /// <param name="scheme"></param>
         /// <param name="options"></param>
         /// <param name="properties"></param>
-        public NegotiateChallengeContext(
+        public ChallengeContext(
             HttpContext context,
             AuthenticationScheme scheme,
             NegotiateOptions options,

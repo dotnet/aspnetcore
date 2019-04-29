@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Invoked before a challenge is sent back to the caller.
         /// </summary>
-        public Func<NegotiateChallengeContext, Task> OnChallenge { get; set; } = context => Task.CompletedTask;
+        public Func<ChallengeContext, Task> OnChallenge { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
@@ -39,6 +39,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <summary>
         /// Invoked before a challenge is sent back to the caller.
         /// </summary>
-        public virtual Task Challenge(NegotiateChallengeContext context) => OnChallenge(context);
+        public virtual Task Challenge(ChallengeContext context) => OnChallenge(context);
     }
 }

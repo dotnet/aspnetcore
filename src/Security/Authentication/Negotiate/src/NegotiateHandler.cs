@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             // Or do we need to send HTTP_1_1_REQUIRED? Or throw here?
             // TODO: Should we invalidate your current auth state?
             var authResult = await HandleAuthenticateOnceSafeAsync();
-            var eventContext = new NegotiateChallengeContext(Context, Scheme, Options, properties)
+            var eventContext = new ChallengeContext(Context, Scheme, Options, properties)
             {
                 AuthenticateFailure = authResult?.Failure
             };
