@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -146,7 +147,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/corefx/issues/37282")]
         public async Task VerifyExpiredSelfSignedFails()
         {
             var server = CreateServer(
@@ -178,7 +180,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/corefx/issues/37282")]
         public async Task VerifyNotYetValidSelfSignedFails()
         {
             var server = CreateServer(
