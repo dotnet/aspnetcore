@@ -31,8 +31,6 @@ namespace Microsoft.AspNetCore.StaticFiles
         private readonly IFileProvider _fileProvider;
         private readonly IContentTypeProvider _contentTypeProvider;
         private string _method;
-        private bool _isGet;
-        private bool _isHead;
         private PathString _subPath;
         private string _contentType;
         private IFileInfo _fileInfo;
@@ -49,7 +47,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         private PreconditionState _ifUnmodifiedSinceState;
 
         private RangeItemHeaderValue _range;
-        private bool _isRangeRequest;
+        private RequestType _requestType;
 
         public StaticFileContext(HttpContext context, StaticFileOptions options, PathString matchUrl, ILogger logger, IFileProvider fileProvider, IContentTypeProvider contentTypeProvider)
         {
@@ -59,14 +57,13 @@ namespace Microsoft.AspNetCore.StaticFiles
             _request = context.Request;
             _response = context.Response;
             _logger = logger;
-            _requestHeaders = _request.GetTypedHeaders();
-            _responseHeaders = _response.GetTypedHeaders();
+            _requestHeaders = null;
+            _responseHeaders = null;
+
             _fileProvider = fileProvider;
             _contentTypeProvider = contentTypeProvider;
 
             _method = null;
-            _isGet = false;
-            _isHead = false;
             _subPath = PathString.Empty;
             _contentType = null;
             _fileInfo = null;
@@ -78,10 +75,10 @@ namespace Microsoft.AspNetCore.StaticFiles
             _ifModifiedSinceState = PreconditionState.Unspecified;
             _ifUnmodifiedSinceState = PreconditionState.Unspecified;
             _range = null;
-            _isRangeRequest = false;
+            _requestType = RequestType.Unspecified;
         }
 
-        internal enum PreconditionState
+        internal enum PreconditionState : byte
         {
             Unspecified,
             NotModified,
@@ -89,14 +86,32 @@ namespace Microsoft.AspNetCore.StaticFiles
             PreconditionFailed
         }
 
+        [Flags]
+        internal enum RequestType : byte
+        {
+            Unspecified = 0b_000,
+            IsHead = 0b_001,
+            IsGet = 0b_010,
+            IsRange = 0b_100,
+        }
+
+        private RequestHeaders RequestHeaders => (_requestHeaders ??= _request.GetTypedHeaders());
+
+        private ResponseHeaders ResponseHeaders => (_responseHeaders ??= _response.GetTypedHeaders());
+
         public bool IsHeadMethod
         {
-            get { return _isHead; }
+            get { return (_requestType & RequestType.IsHead) != 0; }
+        }
+
+        public bool IsGetMethod
+        {
+            get { return (_requestType & RequestType.IsGet) != 0; }
         }
 
         public bool IsRangeRequest
         {
-            get { return _isRangeRequest; }
+            get { return (_requestType & RequestType.IsRange) != 0; }
         }
 
         public string SubPath
@@ -118,9 +133,27 @@ namespace Microsoft.AspNetCore.StaticFiles
         public bool ValidateMethod()
         {
             _method = _request.Method;
-            _isGet = HttpMethods.IsGet(_method);
-            _isHead = HttpMethods.IsHead(_method);
-            return _isGet || _isHead;
+            var isValid = false;
+            if (HttpMethods.IsGet(_method))
+            {
+                _requestType |= RequestType.IsGet;
+                isValid = true;
+            }
+            else
+            {
+                _requestType &= ~RequestType.IsGet;
+            }
+            if (HttpMethods.IsHead(_method))
+            {
+                _requestType |= RequestType.IsHead;
+                isValid = true;
+            }
+            else
+            {
+                _requestType &= ~RequestType.IsHead;
+            }
+
+            return isValid;
         }
 
         // Check if the URL matches any expected paths
@@ -175,8 +208,10 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private void ComputeIfMatch()
         {
+            var requestHeaders = RequestHeaders;
+
             // 14.24 If-Match
-            var ifMatch = _requestHeaders.IfMatch;
+            var ifMatch = requestHeaders.IfMatch;
             if (ifMatch != null && ifMatch.Any())
             {
                 _ifMatchState = PreconditionState.PreconditionFailed;
@@ -191,7 +226,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
 
             // 14.26 If-None-Match
-            var ifNoneMatch = _requestHeaders.IfNoneMatch;
+            var ifNoneMatch = requestHeaders.IfNoneMatch;
             if (ifNoneMatch != null && ifNoneMatch.Any())
             {
                 _ifNoneMatchState = PreconditionState.ShouldProcess;
@@ -208,10 +243,11 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private void ComputeIfModifiedSince()
         {
+            var requestHeaders = RequestHeaders;
             var now = DateTimeOffset.UtcNow;
 
             // 14.25 If-Modified-Since
-            var ifModifiedSince = _requestHeaders.IfModifiedSince;
+            var ifModifiedSince = requestHeaders.IfModifiedSince;
             if (ifModifiedSince.HasValue && ifModifiedSince <= now)
             {
                 bool modified = ifModifiedSince < _lastModified;
@@ -219,7 +255,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
 
             // 14.28 If-Unmodified-Since
-            var ifUnmodifiedSince = _requestHeaders.IfUnmodifiedSince;
+            var ifUnmodifiedSince = requestHeaders.IfUnmodifiedSince;
             if (ifUnmodifiedSince.HasValue && ifUnmodifiedSince <= now)
             {
                 bool unmodified = ifUnmodifiedSince >= _lastModified;
@@ -230,7 +266,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         private void ComputeIfRange()
         {
             // 14.27 If-Range
-            var ifRangeHeader = _requestHeaders.IfRange;
+            var ifRangeHeader = RequestHeaders.IfRange;
             if (ifRangeHeader != null)
             {
                 // If the validator given in the If-Range header field matches the
@@ -242,12 +278,12 @@ namespace Microsoft.AspNetCore.StaticFiles
                 {
                     if (_lastModified > ifRangeHeader.LastModified)
                     {
-                        _isRangeRequest = false;
+                        _requestType &= ~RequestType.IsRange;
                     }
                 }
                 else if (_etag != null && ifRangeHeader.EntityTag != null && !ifRangeHeader.EntityTag.Compare(_etag, useStrongComparison: true))
                 {
-                    _isRangeRequest = false;
+                    _requestType &= ~RequestType.IsRange;
                 }
             }
         }
@@ -259,12 +295,18 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             // A server MUST ignore a Range header field received with a request method other
             // than GET.
-            if (!_isGet)
+            if (!IsGetMethod)
             {
                 return;
             }
 
-            (_isRangeRequest, _range) = RangeHelper.ParseRange(_context, _requestHeaders, _length, _logger);
+            (var isRangeRequest, var range) = RangeHelper.ParseRange(_context, RequestHeaders, _length, _logger);
+
+            _range = range;
+            if (isRangeRequest)
+            {
+                _requestType |= RequestType.IsRange;
+            }
         }
 
         public void ApplyResponseHeaders(int statusCode)
@@ -278,9 +320,11 @@ namespace Microsoft.AspNetCore.StaticFiles
                 {
                     _response.ContentType = _contentType;
                 }
-                _responseHeaders.LastModified = _lastModified;
-                _responseHeaders.ETag = _etag;
-                _responseHeaders.Headers[HeaderNames.AcceptRanges] = "bytes";
+
+                var responseHeaders = ResponseHeaders;
+                responseHeaders.LastModified = _lastModified;
+                responseHeaders.ETag = _etag;
+                responseHeaders.Headers[HeaderNames.AcceptRanges] = "bytes";
             }
             if (statusCode == Constants.Status200Ok)
             {
@@ -358,14 +402,14 @@ namespace Microsoft.AspNetCore.StaticFiles
                 // 14.16 Content-Range - A server sending a response with status code 416 (Requested range not satisfiable)
                 // SHOULD include a Content-Range field with a byte-range-resp-spec of "*". The instance-length specifies
                 // the current length of the selected resource.  e.g. */length
-                _responseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
+                ResponseHeaders.ContentRange = new ContentRangeHeaderValue(_length);
                 ApplyResponseHeaders(Constants.Status416RangeNotSatisfiable);
 
                 _logger.RangeNotSatisfiable(SubPath);
                 return;
             }
 
-            _responseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
+            ResponseHeaders.ContentRange = ComputeContentRange(_range, out var start, out var length);
             _response.ContentLength = length;
             SetCompressionMode();
             ApplyResponseHeaders(Constants.Status206PartialContent);
