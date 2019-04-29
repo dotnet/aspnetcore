@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1798", FlakyOn.All)]
         public async Task ReaderThrowsCancelledException()
         {
-            var requestStartedCompletionSource = CreateTaskCompletionSource();
+            var readIsAsyncCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
 
             Exception exception = null;
@@ -191,10 +191,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var data = new byte[1024];
             using (var testServer = await TestServer.Create(async ctx =>
             {
-                requestStartedCompletionSource.SetResult(true);
                 try
                 {
-                    await ctx.Request.Body.ReadAsync(data, cancellationTokenSource.Token);
+                    var task = ctx.Request.Body.ReadAsync(data, cancellationTokenSource.Token);
+                    readIsAsyncCompletionSource.SetResult(true);
+                    await task;
                 }
                 catch (Exception e)
                 {
@@ -207,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 using (var connection = testServer.CreateConnection())
                 {
                     await SendContentLength1Post(connection);
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await readIsAsyncCompletionSource.Task.DefaultTimeout();
                     cancellationTokenSource.Cancel();
                     await requestCompletedCompletionSource.Task.DefaultTimeout();
                 }
