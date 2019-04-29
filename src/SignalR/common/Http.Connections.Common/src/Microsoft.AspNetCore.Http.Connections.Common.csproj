@@ -20,8 +20,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
-    <Reference Include="System.Buffers" />
     <Reference Include="System.Text.Json" />
+
+    <!-- System.Text.Json brings System.Buffers in transitively. No need for both here. -->
+    <SuppressBaselineReference Include="System.Buffers" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(AspNetCoreMajorMinorVersion)' == '3.0'">

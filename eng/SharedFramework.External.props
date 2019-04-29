@@ -89,6 +89,7 @@
     <_CompilationOnlyReference Include="System.Buffers" />
     <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
     <_CompilationOnlyReference Include="System.Runtime.CompilerServices.Unsafe" />
+    <_CompilationOnlyReference Include="System.Text.Json" />
   </ItemGroup>
 
   <!--
