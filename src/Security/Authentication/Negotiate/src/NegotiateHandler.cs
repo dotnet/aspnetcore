@@ -118,12 +118,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     Logger.LogInformation($"Incomplete-Negotiate, 401 {_verb} {outgoing}");
                     Response.StatusCode = StatusCodes.Status401Unauthorized;
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
-
-                    // TODO: Consider disposing the authState and caching a copy of the user instead.
                     return true;
                 }
 
                 // TODO SPN check? NTLM + CBT only?
+
+                // TODO: Consider disposing the authState and caching a copy of the user instead. You would need to clone that user per-request
+                // to avoid contaimination from claims transformation.
 
                 Logger.LogInformation($"Completed-Negotiate, {_verb} {outgoing}");
                 if (!string.IsNullOrEmpty(outgoing))
@@ -131,12 +132,30 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     // There can be a final blob of data we need to send to the client, but let the request execute as normal.
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
                 }
+
+                // Note we run the Authenticated event in HandleAuthenticateAsync so it is per-request rather than per connection.
             }
             catch (Exception ex)
             {
-                var context = new AuthenticationFailedContext(Context, Scheme, Options) { Exception = ex };
-                await Events.AuthenticationFailed(context);
-                // TODO: Handled, return true/false or rethrow.
+                var errorContext = new AuthenticationFailedContext(Context, Scheme, Options) { Exception = ex };
+                await Events.AuthenticationFailed(errorContext);
+
+                if (errorContext.Result != null)
+                {
+                    if (errorContext.Result.Handled)
+                    {
+                        return true;
+                    }
+                    else if (errorContext.Result.Skipped)
+                    {
+                        return false;
+                    }
+                    else if (errorContext.Result.Failure != null)
+                    {
+                        throw new Exception("An error was returned from the AuthenticationFailed event.", errorContext.Result.Failure);
+                    }
+                }
+
                 throw;
             }
 
@@ -147,13 +166,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// Checks if the current request is authenticated and returns the user.
         /// </summary>
         /// <returns></returns>
-        protected override Task<AuthenticateResult> HandleAuthenticateAsync()
+        protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             if (IsHttp2)
             {
                 // Not supported. We don't throw because Negotiate may be set as the default auth
                 // handler on a server that's running HTTP/1 and HTTP/2.
-                return Task.FromResult(AuthenticateResult.NoResult());
+                return AuthenticateResult.NoResult();
             }
 
             var authState = (INegotiateState)GetConnectionItems()[NegotiateStateKey];
@@ -161,7 +180,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             {
                 Logger.LogDebug($"Cached User");
 
-                // Make a new copy of the user for each request, they are mutable objects
+                // Make a new copy of the user for each request, they are mutable objects and
+                // things like ClaimsTransformation run per request.
                 var identity = authState.GetIdentity();
                 ClaimsPrincipal user;
                 if (identity is WindowsIdentity winIdentity)
@@ -174,15 +194,26 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     user = new ClaimsPrincipal(new ClaimsIdentity(identity));
                 }
 
+                var authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+                {
+                    Principal = user
+                };
+                await Events.OnAuthenticated(authenticatedContext);
+
+                if (authenticatedContext.Result != null)
+                {
+                    return authenticatedContext.Result;
+                }
+
                 var ticket = new AuthenticationTicket(user, Scheme.Name);
-                return Task.FromResult(AuthenticateResult.Success(ticket));
+                return AuthenticateResult.Success(ticket);
             }
 
-            return Task.FromResult(AuthenticateResult.NoResult());
+            return AuthenticateResult.NoResult();
         }
 
         /// <summary>
-        /// Issues a 401 WWW-Authenticate challenge.
+        /// Issues a 401 WWW-Authenticate Negotiate challenge.
         /// </summary>
         /// <param name="properties"></param>
         /// <returns></returns>
@@ -219,6 +250,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             return connectionItems;
         }
 
+        // TODO: Remove
         private static void DisposeState(object state)
         {
             ((IDisposable)state).Dispose();

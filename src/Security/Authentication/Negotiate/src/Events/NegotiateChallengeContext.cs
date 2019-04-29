@@ -6,8 +6,18 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
+    /// <summary>
+    /// State for the Challenge event.
+    /// </summary>
     public class NegotiateChallengeContext : PropertiesContext<NegotiateOptions>
     {
+        /// <summary>
+        /// Creates a new <see cref="NegotiateChallengeContext"/>.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="scheme"></param>
+        /// <param name="options"></param>
+        /// <param name="properties"></param>
         public NegotiateChallengeContext(
             HttpContext context,
             AuthenticationScheme scheme,

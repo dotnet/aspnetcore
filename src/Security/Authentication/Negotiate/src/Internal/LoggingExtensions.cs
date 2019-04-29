@@ -5,6 +5,7 @@ using System;
 
 namespace Microsoft.Extensions.Logging
 {
+    // TODO: Update these
     internal static class LoggingExtensions
     {
         private static Action<ILogger, Exception> _tokenValidationFailed;

@@ -17,26 +17,28 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public Func<AuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// Invoked when a protocol message is first received.
+        /// Invoked after the authentication is complete and a ClaimsIdentity has been generated.
         /// </summary>
-        public Func<MessageReceivedContext, Task> OnMessageReceived { get; set; } = context => Task.CompletedTask;
-
-        /// <summary>
-        /// Invoked after the security token has passed validation and a ClaimsIdentity has been generated.
-        /// </summary>
-        public Func<TokenValidatedContext, Task> OnTokenValidated { get; set; } = context => Task.CompletedTask;
+        public Func<AuthenticatedContext, Task> OnAuthenticated { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked before a challenge is sent back to the caller.
         /// </summary>
         public Func<NegotiateChallengeContext, Task> OnChallenge { get; set; } = context => Task.CompletedTask;
 
+        /// <summary>
+        /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
+        /// </summary>
         public virtual Task AuthenticationFailed(AuthenticationFailedContext context) => OnAuthenticationFailed(context);
 
-        public virtual Task MessageReceived(MessageReceivedContext context) => OnMessageReceived(context);
+        /// <summary>
+        /// Invoked after the authentication is complete and a ClaimsIdentity has been generated.
+        /// </summary>
+        public virtual Task Authenticated(AuthenticatedContext context) => OnAuthenticated(context);
 
-        public virtual Task TokenValidated(TokenValidatedContext context) => OnTokenValidated(context);
-
+        /// <summary>
+        /// Invoked before a challenge is sent back to the caller.
+        /// </summary>
         public virtual Task Challenge(NegotiateChallengeContext context) => OnChallenge(context);
     }
 }

@@ -9,9 +9,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     public class NegotiateOptions : AuthenticationSchemeOptions
     {
         /// <summary>
-        /// The object provided by the application to process events raised by the bearer authentication handler.
-        /// The application may implement the interface fully, or it may create an instance of NegotiateEvents
-        /// and assign delegates only to the events it wants to process.
+        /// The object provided by the application to process events raised by the negotiate authentication handler.
+        /// The application may use the existing NegotiateEvents instance and assign delegates only to the events it
+        /// wants to process. The application may also replace it with its own derived instance.
         /// </summary>
         public new NegotiateEvents Events
         {

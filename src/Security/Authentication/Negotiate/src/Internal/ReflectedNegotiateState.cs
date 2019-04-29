@@ -6,7 +6,6 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 using System.Security.Authentication;
-using System.Security.Claims;
 using System.Security.Principal;
 
 namespace Microsoft.AspNetCore.Authentication.Negotiate
@@ -24,7 +23,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var ntAuthType = typeof(AuthenticationException).Assembly.GetType("System.Net.NTAuthentication");
             var constructor = ntAuthType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
             // internal NTAuthentication(bool isServer, string package, NetworkCredential credential, string spn, ContextFlagsPal requestedContextFlags, ChannelBinding channelBinding)
-            // string spn = "HTTP/chrross-coredev.redmond.corp.microsoft.com";
             var credential = CredentialCache.DefaultCredentials;
             _instance = constructor.Invoke(new object[] { true, "Negotiate", credential, null, 0, null });
             _getOutgoingBlob = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
