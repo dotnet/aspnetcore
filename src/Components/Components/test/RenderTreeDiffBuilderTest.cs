@@ -169,6 +169,37 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void RecognizesSimultaneousKeyedElementInsertionsAndDeletions()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "container");
+            oldTree.SetKey("original key");
+            oldTree.AddContent(1, "Original");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "container");
+            newTree.SetKey("new key");
+            newTree.AddContent(1, "Inserted");
+            newTree.CloseElement();
+
+            // Without the key, it would change the text "Original" to "Inserted"
+            // With the key, it deletes the old element and inserts the new element
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("new key", referenceFrames[entry.ReferenceFrameIndex].ElementKey);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
         public void RecognizesKeyedComponentInsertions()
         {
             // Arrange
@@ -247,6 +278,47 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Same(oldComponents[1], newComponent);
             Assert.Collection(result.Edits,
                 entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 0));
+        }
+
+        [Fact]
+        public void RecognizesSimultaneousKeyedComponentInsertionsAndDeletions()
+        {
+            // Arrange
+            oldTree.OpenComponent<FakeComponent>(0);
+            oldTree.SetKey("original key");
+            oldTree.CloseComponent();
+
+            // Instantiate initial component
+            GetRenderedBatch(new RenderTreeBuilder(renderer), oldTree, false);
+            var oldComponent = oldTree.GetFrames().AsEnumerable()
+                .Where(x => x.FrameType == RenderTreeFrameType.Component)
+                .Select(x => x.Component).Single();
+            Assert.NotNull(oldComponent);
+
+            newTree.OpenComponent<FakeComponent>(0);
+            newTree.SetKey("new key");
+            newTree.CloseComponent();
+
+            // Without the key, it would retain the component
+            // With the key, it deletes the old component and inserts the new component
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+            var newComponent = newTree.GetFrames().AsEnumerable()
+                .Where(x => x.FrameType == RenderTreeFrameType.Component)
+                .Select(x => x.Component).Single();
+
+            // Assert
+            Assert.NotNull(newComponent);
+            Assert.NotSame(oldComponent, newComponent);
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("new key", referenceFrames[entry.ReferenceFrameIndex].ComponentKey);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
         }
 
         [Fact]
