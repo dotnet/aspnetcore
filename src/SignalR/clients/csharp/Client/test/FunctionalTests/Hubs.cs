@@ -249,12 +249,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             return output.Reader;
         }
 
-        public static async IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source)
+        public static IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source)
         {
-            await foreach(var item in source)
-            {
-                yield return item;
-            }
+            return source;
         }
     }
 
