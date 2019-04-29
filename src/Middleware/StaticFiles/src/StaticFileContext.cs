@@ -83,36 +83,18 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private ResponseHeaders ResponseHeaders => (_responseHeaders ??= _response.GetTypedHeaders());
 
-        public bool IsHeadMethod
-        {
-            get { return (_requestType & RequestType.IsHead) != 0; }
-        }
+        public bool IsHeadMethod => (_requestType & RequestType.IsHead) != 0;
 
-        public bool IsGetMethod
-        {
-            get { return (_requestType & RequestType.IsGet) != 0; }
-        }
+        public bool IsGetMethod => (_requestType & RequestType.IsGet) != 0;
 
-        public bool IsRangeRequest
-        {
-            get { return (_requestType & RequestType.IsRange) != 0; }
-        }
+        public bool IsRangeRequest => (_requestType & RequestType.IsRange) != 0;
 
-        public string SubPath
-        {
-            get { return _subPath.Value; }
-        }
+        public string SubPath => _subPath.Value;
 
-        public string PhysicalPath
-        {
-            get { return _fileInfo?.PhysicalPath; }
-        }
+        public string PhysicalPath => _fileInfo?.PhysicalPath;
 
-        public bool ValidateNoEndpoint()
-        {
-            // Return true because we only want to run if there is no endpoint.
-            return _context.GetEndpoint() == null;
-        }
+        // Return true because we only want to run if there is no endpoint.
+        public bool ValidateNoEndpoint() => _context.GetEndpoint() == null;
 
         public bool ValidateMethod()
         {
@@ -141,10 +123,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         }
 
         // Check if the URL matches any expected paths
-        public bool ValidatePath()
-        {
-            return Helpers.TryMatchPath(_context, _matchUrl, forDirectory: false, subpath: out _subPath);
-        }
+        public bool ValidatePath() => Helpers.TryMatchPath(_context, _matchUrl, forDirectory: false, subpath: out _subPath);
 
         public bool LookupContentType()
         {
@@ -322,10 +301,7 @@ namespace Microsoft.AspNetCore.StaticFiles
         }
 
         public PreconditionState GetPreconditionState()
-        {
-            return GetMaxPreconditionState(_ifMatchState, _ifNoneMatchState,
-                _ifModifiedSinceState, _ifUnmodifiedSinceState);
-        }
+            => GetMaxPreconditionState(_ifMatchState, _ifNoneMatchState, _ifModifiedSinceState, _ifUnmodifiedSinceState);
 
         private static PreconditionState GetMaxPreconditionState(params PreconditionState[] states)
         {
