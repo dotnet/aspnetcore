@@ -83,11 +83,11 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         private ResponseHeaders ResponseHeaders => (_responseHeaders ??= _response.GetTypedHeaders());
 
-        public bool IsHeadMethod => (_requestType & RequestType.IsHead) != 0;
+        public bool IsHeadMethod => _requestType.HasFlag(RequestType.IsHead);
 
-        public bool IsGetMethod => (_requestType & RequestType.IsGet) != 0;
+        public bool IsGetMethod => _requestType.HasFlag(RequestType.IsGet);
 
-        public bool IsRangeRequest => (_requestType & RequestType.IsRange) != 0;
+        public bool IsRangeRequest => _requestType.HasFlag(RequestType.IsRange);
 
         public string SubPath => _subPath.Value;
 
@@ -105,18 +105,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                 _requestType |= RequestType.IsGet;
                 isValid = true;
             }
-            else
-            {
-                _requestType &= ~RequestType.IsGet;
-            }
-            if (HttpMethods.IsHead(_method))
+            else if (HttpMethods.IsHead(_method))
             {
                 _requestType |= RequestType.IsHead;
                 isValid = true;
-            }
-            else
-            {
-                _requestType &= ~RequestType.IsHead;
             }
 
             return isValid;
@@ -359,12 +351,10 @@ namespace Microsoft.AspNetCore.StaticFiles
                     _logger.FileNotModified(SubPath);
                     await SendStatusAsync(Constants.Status304NotModified);
                     return;
-
                 case PreconditionState.PreconditionFailed:
                     _logger.PreconditionFailed(SubPath);
                     await SendStatusAsync(Constants.Status412PreconditionFailed);
                     return;
-
                 default:
                     var exception = new NotImplementedException(GetPreconditionState().ToString());
                     Debug.Fail(exception.ToString());
