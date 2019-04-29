@@ -87,7 +87,21 @@ namespace Microsoft.AspNetCore.StaticFiles
 
         public bool IsGetMethod => _requestType.HasFlag(RequestType.IsGet);
 
-        public bool IsRangeRequest => _requestType.HasFlag(RequestType.IsRange);
+        public bool IsRangeRequest
+        {
+            get => _requestType.HasFlag(RequestType.IsRange);
+            private set
+            {
+                if (value)
+                {
+                    _requestType |= RequestType.IsRange;
+                }
+                else
+                {
+                    _requestType &= ~RequestType.IsRange;
+                }
+            }
+        }
 
         public string SubPath => _subPath.Value;
 
@@ -233,12 +247,12 @@ namespace Microsoft.AspNetCore.StaticFiles
                 {
                     if (_lastModified > ifRangeHeader.LastModified)
                     {
-                        _requestType &= ~RequestType.IsRange;
+                        IsRangeRequest = false;
                     }
                 }
                 else if (_etag != null && ifRangeHeader.EntityTag != null && !ifRangeHeader.EntityTag.Compare(_etag, useStrongComparison: true))
                 {
-                    _requestType &= ~RequestType.IsRange;
+                    IsRangeRequest = false;
                 }
             }
         }
@@ -258,10 +272,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             (var isRangeRequest, var range) = RangeHelper.ParseRange(_context, RequestHeaders, _length, _logger);
 
             _range = range;
-            if (isRangeRequest)
-            {
-                _requestType |= RequestType.IsRange;
-            }
+            IsRangeRequest = isRangeRequest;
         }
 
         public void ApplyResponseHeaders(int statusCode)
