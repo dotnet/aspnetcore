@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         // See also: tools/CodeGenerator/TransportConnectionFeatureCollection.cs
 
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
+        private bool _completed;
 
         string IHttpConnectionFeature.ConnectionId
         {
@@ -109,6 +110,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         void IConnectionCompleteFeature.OnCompleted(Func<object, Task> callback, object state)
         {
+            if (_completed)
+            {
+                throw new InvalidOperationException("The connection is already complete.");
+            }
+
             if (_onCompleted == null)
             {
                 _onCompleted = new Stack<KeyValuePair<Func<object, Task>, object>>();
@@ -116,8 +122,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
-        public Task FireOnCompleted()
+        public Task CompleteAsync()
         {
+            if (_completed)
+            {
+                throw new InvalidOperationException("The connection is already complete.");
+            }
+
+            _completed = true;
             var onCompleted = _onCompleted;
 
             if (onCompleted == null || onCompleted.Count == 0)
@@ -125,10 +137,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 return Task.CompletedTask;
             }
 
-            return FireOnCompletedMayAwait(onCompleted);
+            return CompleteAsyncMayAwait(onCompleted);
         }
 
-        private Task FireOnCompletedMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        private Task CompleteAsyncMayAwait(Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
             while (onCompleted.TryPop(out var entry))
             {
@@ -137,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                     var task = entry.Key.Invoke(entry.Value);
                     if (!ReferenceEquals(task, Task.CompletedTask))
                     {
-                        return FireOnCompletedAwaited(task, onCompleted);
+                        return CompleteAsyncAwaited(task, onCompleted);
                     }
                 }
                 catch (Exception ex)
@@ -149,7 +161,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             return Task.CompletedTask;
         }
 
-        private async Task FireOnCompletedAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
+        private async Task CompleteAsyncAwaited(Task currentTask, Stack<KeyValuePair<Func<object, Task>, object>> onCompleted)
         {
             try
             {

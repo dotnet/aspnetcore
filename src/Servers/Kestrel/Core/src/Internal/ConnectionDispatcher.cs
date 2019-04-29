@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                await connectionContext.FireOnCompleted();
+                await connectionContext.CompleteAsync();
 
                 Log.ConnectionStop(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStop(connectionContext);
