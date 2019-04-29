@@ -31,7 +31,9 @@ namespace Microsoft.AspNetCore.Authorization
         /// Gets or sets the fallback authorization policy used by <see cref="AuthorizationPolicy.CombineAsync(IAuthorizationPolicyProvider, IEnumerable{IAuthorizeData})"/>
         /// when no IAuthorizeData have been provided. As a result, the <see cref="AuthorizationMiddleware"/> uses the fallback policy
         /// if there are no <see cref="IAuthorizeData"/> instances for a resource. If a resource has any <see cref="IAuthorizeData"/>
-        /// then they are evaluated instead of the fallback policy. By default the fallback policy is null, and is not used in any way by the default <see cref="IAuthorizationService"/>.
+        /// then they are evaluated instead of the fallback policy. By default the fallback policy is null, and usually will have no 
+        /// effect unless you have the <see cref="AuthorizationMiddleware"/> middleware in your pipeline. It is not used in any way by the 
+        /// default <see cref="IAuthorizationService"/>.
         /// </summary>
         public AuthorizationPolicy FallbackPolicy { get; set; }
 
