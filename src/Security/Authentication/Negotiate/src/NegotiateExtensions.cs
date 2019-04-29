@@ -49,6 +49,13 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The original builder.</returns>
         public static AuthenticationBuilder AddNegotiate(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<NegotiateOptions> configureOptions)
         {
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable($"ASPNETCORE_TOKEN")))
+            {
+                throw new NotSupportedException(
+                    "The Negotiate authentication handler must not be used with IIS out-of-process mode or similar reverse proxies that share connections between users."
+                    + " Use the Windows Authentication features available within IIS or IIS Express.");
+            }
+
             return builder.AddScheme<NegotiateOptions, NegotiateHandler>(authenticationScheme, displayName, configureOptions);
         }
     }
