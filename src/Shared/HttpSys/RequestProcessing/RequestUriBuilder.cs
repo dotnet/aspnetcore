@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 
         public static string DecodeAndUnescapePath(Span<byte> rawUrlBytes)
         {
-            Debug.Assert(rawUrlBytes.Length == 0, "Length of the URL cannot be zero.");
+            Debug.Assert(rawUrlBytes.Length > 0, "Length of the URL cannot be zero.");
             var rawPath = RawUrlHelper.GetPath(rawUrlBytes);
 
             if (rawPath.Length == 0)
