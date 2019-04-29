@@ -16,16 +16,37 @@ namespace Microsoft.AspNetCore.SignalR
     internal class StreamTracker
     {
         private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("BuildStream"));
+        private static readonly MethodInfo _convertToStream = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("ConvertStream"));
         private ConcurrentDictionary<string, IStreamConverter> _lookup = new ConcurrentDictionary<string, IStreamConverter>();
 
         /// <summary>
         /// Creates a new stream and returns the ChannelReader for it as an object.
         /// </summary>
-        public object AddStream(string streamId, Type itemType)
+        public object AddStream(string streamId, Type itemType, Type type)
         {
+
             var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, Array.Empty<object>());
             _lookup[streamId] = newConverter;
-            return newConverter.GetReaderAsObject();
+            var reader = newConverter.GetReaderAsObject();
+
+            // Check if we have an IAsyncEnumerable here and wrap the channel provided by AddStream
+            if (ReflectionHelper.IsIAsyncEnumerable(type))
+            {
+                return _convertToStream.MakeGenericMethod(itemType).Invoke(null, new object[] { reader });
+            }
+
+            return reader;
+        }
+
+        private static async IAsyncEnumerable<T> ConvertStream<T>(ChannelReader<T> reader)
+        {
+            while (await reader.WaitToReadAsync())
+            {
+                while (reader.TryRead(out var item))
+                {
+                    yield return (T)item;
+                }
+            }
         }
 
         private bool TryGetConverter(string streamId, out IStreamConverter converter)

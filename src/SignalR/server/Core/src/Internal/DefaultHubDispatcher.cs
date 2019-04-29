@@ -279,13 +279,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 {
                                     Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
                                     var itemType = descriptor.StreamingParameters[streamPointer];
-                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
-
-                                    // Check if we have an IAsyncEnumerable here and wrap the channel provided by AddStream
-                                    if (ReflectionHelper.IsIAsyncEnumerable(descriptor.OriginalParameterTypes[parameterPointer]))
-                                    {
-                                        arguments[parameterPointer] = _convertToStream.MakeGenericMethod(itemType).Invoke(null, new object[] { arguments[parameterPointer] });
-                                    }
+                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
+                                        itemType, descriptor.OriginalParameterTypes[parameterPointer]);
 
                                     streamPointer++;
                                 }
@@ -386,17 +381,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 if (disposeScope)
                 {
                     await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
-                }
-            }
-        }
-
-        private static async IAsyncEnumerable<T> ConvertStream<T>(ChannelReader<T> reader)
-        {
-            while (await reader.WaitToReadAsync())
-            {
-                while (reader.TryRead(out var item))
-                {
-                    yield return (T)item;
                 }
             }
         }

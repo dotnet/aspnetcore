@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
                 try
                 {
-                    async IAsyncEnumerable<int> clientStreamData()
+                    async IAsyncEnumerable<int> ClientStreamData()
                     {
                         for (var i = 0; i < 5; i++)
                         {
@@ -376,12 +376,12 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                             await Task.Delay(10);
                         }
                     }
-                    var stream = clientStreamData();
+                    var stream = ClientStreamData();
 
                     await connection.StartAsync().OrTimeout();
                     var expectedValue = 0;
                     var streamTo = 5;
-                    var asyncEnumerable = connection.StreamAsyncCore<int>("StreamIAsyncConsumer", new object[] { stream });
+                    var asyncEnumerable = connection.StreamAsync<int>("StreamIAsyncConsumer", stream );
                     await foreach (var streamValue in asyncEnumerable)
                     {
                         Assert.Equal(expectedValue, streamValue);
