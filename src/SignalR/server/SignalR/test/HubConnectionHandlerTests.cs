@@ -9,7 +9,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 using MessagePack;
 using MessagePack.Formatters;
@@ -212,7 +211,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
         }
-
 
         [Fact]
         public async Task CanLoadHubContext()
