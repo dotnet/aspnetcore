@@ -48,8 +48,7 @@ namespace Microsoft.AspNetCore.SignalR
         public bool? EnableDetailedErrors { get; set; } = null;
 
         /// <summary>
-        /// Gets or sets a value indicating whether detailed error messages are sent to the client.
-        /// Detailed error messages include details from exceptions thrown on the server.
+        /// Gets or sets the max buffer size for client upload streams.
         /// </summary>
         public int? StreamBufferCapacity { get; set; } = null;
     }

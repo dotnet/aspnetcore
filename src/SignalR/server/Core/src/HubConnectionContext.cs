@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="clientTimeoutInterval">Clients we haven't heard from in this interval are assumed to have disconnected.</param>
-        /// <param name="streamBufferCapacity">Fill this in.</param>
+        /// <param name="streamBufferCapacity">The buffer size for client upload streams</param>
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval, int streamBufferCapacity)
         {
             _connectionContext = connectionContext;
