@@ -71,6 +71,7 @@
     -->
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Cryptography.Pkcs"                  Version="$(SystemSecurityCryptographyPkcsPackageVersion)" />
     <_TransitiveExternalAspNetCoreAppReference Include="System.Security.Permissions"                        Version="$(SystemSecurityPermissionsPackageVersion)" />
+    <_TransitiveExternalAspNetCoreAppReference Include="System.Diagnostics.EventLog"                        Version="$(SystemDiagnosticsEventLogPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsServicingBuild)' == 'true' ">
