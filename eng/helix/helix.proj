@@ -7,7 +7,7 @@
   <Import Project="$(RepositoryRoot)\build\repo.props" />
 
   <ItemGroup>
-    <HelixTargetQueue Include="@(HelixAvailibleTargetQueue)" />
+    <HelixTargetQueue Include="@(HelixAvailableTargetQueue)" />
   </ItemGroup>
 
   <PropertyGroup>

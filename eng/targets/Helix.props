@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
-        <HelixProjectPlatform Include="@(HelixAvailblePlatform)" />
+        <HelixProjectPlatform Include="@(HelixAvailablePlatform)" />
 
         <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.sh" />
         <HelixContent Include="$(RepositoryRoot)eng\helix\vstest\runtests.cmd" />
