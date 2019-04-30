@@ -135,6 +135,15 @@ public:
         VOID
     );
 
+    static
+        void
+        ReadStdErrHandle(
+            LPVOID pContext
+        );
+
+    void
+        ReadStdErrHandleInternal();
+
 private:
     VOID
     CleanUp();
@@ -283,6 +292,9 @@ private:
     HANDLE                  m_hListeningProcessHandle;
     HANDLE                  m_hProcessWaitHandle;
     HANDLE                  m_hShutdownHandle;
+    HANDLE                  m_hReadThread;
+    HANDLE                  m_hStdErrWritePipe;
+    std::wstringstream      m_output;
     //
     // m_hChildProcessHandle is the handle to process created by
     // m_hProcessHandle process if it does.

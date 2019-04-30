@@ -523,6 +523,7 @@ SERVER_PROCESS::PostStartCheck(
     }
 
     dwTickCount = GetTickCount();
+    // TODO this loop has issues... lots of issues.
     do
     {
         DWORD processStatus = 0;
@@ -535,14 +536,6 @@ SERVER_PROCESS::PostStartCheck(
                 if (GetExitCodeProcess(m_hProcessHandle, &processStatus) && processStatus != STILL_ACTIVE)
                 {
                     hr = E_APPLICATION_ACTIVATION_EXEC_FAILURE;
-                    strEventMsg.SafeSnwprintf(
-                        ASPNETCORE_EVENT_PROCESS_START_STATUS_ERROR_MSG,
-                        m_struAppFullPath.QueryStr(),
-                        m_struPhysicalPath.QueryStr(),
-                        m_struCommandLine.QueryStr(),
-                        hr,
-                        m_dwProcessId,
-                        processStatus);
                     goto Finished;
                 }
             }
@@ -956,12 +949,23 @@ SERVER_PROCESS::StartProcess(
 Finished:
     if (FAILED_LOG(hr) || m_fReady == FALSE)
     {
+        if (m_hStdErrWritePipe != NULL)
+        {
+            if (m_hStdErrWritePipe != INVALID_HANDLE_VALUE)
+            {
+                CloseHandle(m_hStdErrWritePipe);
+            }
+
+            m_hStdErrWritePipe = NULL;
+        }
+
         if (m_hStdoutHandle != NULL)
         {
             if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
             {
                 CloseHandle(m_hStdoutHandle);
             }
+
             m_hStdoutHandle = NULL;
         }
 
@@ -976,7 +980,8 @@ Finished:
             m_struAppFullPath.QueryStr(),
             m_struPhysicalPath.QueryStr(),
             m_struCommandLine.QueryStr(),
-            m_dwPort);
+            m_dwPort,
+            m_output.str().c_str());
     }
     return hr;
 }
@@ -1022,22 +1027,28 @@ SERVER_PROCESS::SetupStdHandles(
 
     DBG_ASSERT(pStartupInfo);
 
+    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    saAttr.bInheritHandle = TRUE;
+    saAttr.lpSecurityDescriptor = NULL;
+
     if (!m_fStdoutLogEnabled)
     {
+             CreatePipe(&m_hStdoutHandle, &m_hStdErrWritePipe, &saAttr, 0 /*nSize*/);
+
+        // Read the stderr handle on a separate thread until we get 30Kb.
+        m_hReadThread = CreateThread(
+            nullptr,       // default security attributes
+            0,          // default stack size
+            reinterpret_cast<LPTHREAD_START_ROUTINE>(ReadStdErrHandle),
+            this,       // thread function arguments
+            0,          // default creation flags
+            nullptr);      // receive thread identifier
+
         pStartupInfo->dwFlags = STARTF_USESTDHANDLES;
         pStartupInfo->hStdInput = INVALID_HANDLE_VALUE;
-        pStartupInfo->hStdError = INVALID_HANDLE_VALUE;
-        pStartupInfo->hStdOutput = INVALID_HANDLE_VALUE;
+        pStartupInfo->hStdError = m_hStdErrWritePipe;
+        pStartupInfo->hStdOutput = m_hStdErrWritePipe;
         return hr;
-    }
-    if (m_hStdoutHandle != NULL && m_hStdoutHandle != INVALID_HANDLE_VALUE)
-    {
-        if (!CloseHandle(m_hStdoutHandle))
-        {
-            hr = HRESULT_FROM_WIN32(GetLastError());
-            goto Finished;
-        }
-        m_hStdoutHandle = NULL;
     }
 
     hr = FILE_UTILITY::ConvertPathToFullPath(
@@ -1069,10 +1080,6 @@ SERVER_PROCESS::SetupStdHandles(
     {
         goto Finished;
     }
-
-    saAttr.nLength = sizeof(SECURITY_ATTRIBUTES);
-    saAttr.bInheritHandle = TRUE;
-    saAttr.lpSecurityDescriptor = NULL;
 
     m_hStdoutHandle = CreateFileW(m_struFullLogFile.QueryStr(),
         FILE_WRITE_DATA,
@@ -1116,6 +1123,52 @@ Finished:
         m_struFullLogFile.Reset();
     }
     return hr;
+}
+
+
+void
+SERVER_PROCESS::ReadStdErrHandle(
+    LPVOID pContext
+)
+{
+    auto pLoggingProvider = static_cast<SERVER_PROCESS*>(pContext);
+    DBG_ASSERT(pLoggingProvider != NULL);
+    pLoggingProvider->ReadStdErrHandleInternal();
+}
+
+void
+SERVER_PROCESS::ReadStdErrHandleInternal()
+{
+    std::string tempBuffer;
+    tempBuffer.resize(4096);
+    size_t m_charactersLeft = 30000;
+
+    // If ReadFile ever returns false, exit the thread
+    DWORD dwNumBytesRead = 0;
+    while (true)
+    {
+        if (ReadFile(m_hStdoutHandle,
+            tempBuffer.data(),
+            4096,
+            &dwNumBytesRead,
+            nullptr))
+        {
+            auto text = to_wide_string(tempBuffer.substr(0, dwNumBytesRead), GetConsoleOutputCP());
+            auto const writeSize = min(m_charactersLeft, text.size());
+            m_output.write(text.c_str(), writeSize);
+            m_charactersLeft -= writeSize;
+        }
+        else
+        {
+            auto hr = GetLastError();
+            if (hr)
+            {
+                return;
+            }
+
+            return;
+        }
+    }
 }
 
 HRESULT

@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             if (DeployerSelector.HasNewHandler)
             {
-                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Last 30KB characters of captured stdout and stderr logs:\r\n{output}";
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. First 30KB characters of captured stdout and stderr logs:\r\n{output}";
             }
             else
             {
@@ -217,13 +217,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
         }
 
-        public static string OutOfProcessFailedToStart(IISDeploymentResult deploymentResult)
+        public static string OutOfProcessFailedToStart(IISDeploymentResult deploymentResult, string output)
         {
             if (DeployerSelector.HasNewShim)
             {
                 return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' failed to start process with " +
                     $"commandline '(.*)' with multiple retries. " +
-                    $"Failed to bind to port '(.*)'. See previous warnings for details.";
+                    $"Failed to bind to port '(.*)'. First 30KB characters of captured stdout and stderr logs from multiple retries:\r\n{output}";
             }
             else
             {

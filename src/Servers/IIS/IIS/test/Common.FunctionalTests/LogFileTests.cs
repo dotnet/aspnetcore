@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
             else
             {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult), Logger);
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, ""), Logger);
             }
         }
 
@@ -218,6 +218,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
 
             Assert.Single(Directory.GetFiles(_logFolderPath), Helpers.GetExpectedLogName(deploymentResult, _logFolderPath));
+        }
+
+        [ConditionalFact]
+        public async Task CaptureLogsForOutOfProcessWhenProcessFailsToStart()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWrite");
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, "Wow!"), Logger);
         }
 
         private static string ReadLogs(string logPath)
