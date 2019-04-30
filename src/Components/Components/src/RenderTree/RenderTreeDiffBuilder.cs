@@ -218,14 +218,12 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     foreach (var keyValuePair in keyedItemInfos)
                     {
                         var value = keyValuePair.Value;
-                        var oldSiblingIndex = value.OldSiblingIndex;
-                        var newSiblingIndex = value.NewSiblingIndex;
-                        if (oldSiblingIndex.HasValue && newSiblingIndex.HasValue)
+                        if (value.OldSiblingIndex >= 0 && value.NewSiblingIndex >= 0)
                         {
                             // This item moved
                             hasPermutations = true;
                             diffContext.Edits.Append(
-                                RenderTreeEdit.PermutationListEntry(oldSiblingIndex.Value, newSiblingIndex.Value));
+                                RenderTreeEdit.PermutationListEntry(value.OldSiblingIndex, value.NewSiblingIndex));
                         }
                     }
 
@@ -255,7 +253,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var key = KeyValue(ref frame);
                 if (key != null)
                 {
-                    result[key] = new KeyedItemInfo { OldIndex = oldStartIndex, NewIndex = -1 };
+                    result[key] = new KeyedItemInfo(oldStartIndex, -1);
                 }
 
                 oldStartIndex = NextSiblingIndex(frame, oldStartIndex);
@@ -268,8 +266,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 if (key != null)
                 {
                     result[key] = result.TryGetValue(key, out var existingEntry)
-                        ? new KeyedItemInfo { OldIndex = existingEntry.OldIndex, NewIndex = newStartIndex }
-                        : new KeyedItemInfo { OldIndex = -1, NewIndex = newStartIndex };
+                        ? new KeyedItemInfo(existingEntry.OldIndex, newStartIndex)
+                        : new KeyedItemInfo(-1, newStartIndex);
                 }
 
                 newStartIndex = NextSiblingIndex(frame, newStartIndex);

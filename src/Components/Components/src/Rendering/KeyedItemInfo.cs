@@ -9,7 +9,15 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         public int OldIndex;
         public int NewIndex;
-        public int? OldSiblingIndex;
-        public int? NewSiblingIndex;
+        public int OldSiblingIndex;
+        public int NewSiblingIndex;
+
+        public KeyedItemInfo(int oldIndex, int newIndex)
+        {
+            OldIndex = oldIndex;
+            NewIndex = newIndex;
+            OldSiblingIndex = -1;
+            NewSiblingIndex = -1;
+        }
     }
 }
