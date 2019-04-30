@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class ComponentEndpointConventionBuilderExtensions
     {
-        public static TBuilder AddComponent<TBuilder>(this TBuilder builder, System.Type componentType, string selector) where TBuilder : Microsoft.AspNetCore.SignalR.HubEndpointConventionBuilder { throw null; }
+        public static TBuilder AddComponent<TBuilder>(this TBuilder builder, System.Type componentType, string selector) where TBuilder : Microsoft.AspNetCore.SignalR.IHubEndpointConventionBuilder { throw null; }
     }
     public static partial class ComponentEndpointRouteBuilderExtensions
     {
@@ -93,9 +93,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 }
 namespace Microsoft.AspNetCore.SignalR
 {
-    public partial class ComponentEndpointConventionBuilder : Microsoft.AspNetCore.SignalR.HubEndpointConventionBuilder
+    public sealed partial class ComponentEndpointConventionBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder, Microsoft.AspNetCore.SignalR.IHubEndpointConventionBuilder
     {
-        internal ComponentEndpointConventionBuilder() : base (default(Microsoft.AspNetCore.Builder.IEndpointConventionBuilder)) { }
+        internal ComponentEndpointConventionBuilder() { }
+        public void Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder> convention) { }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

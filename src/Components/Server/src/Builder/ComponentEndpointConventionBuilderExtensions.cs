@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds <paramref name="componentType"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
         /// The selector will default to the component name in lowercase.
         /// </summary>
-        /// <param name="builder">The <see cref="HubEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="IHubEndpointConventionBuilder"/>.</param>
         /// <param name="componentType">The component type.</param>
         /// <param name="selector">The component selector in the DOM for the <paramref name="componentType"/>.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static TBuilder AddComponent<TBuilder>(this TBuilder builder, Type componentType, string selector) where TBuilder : HubEndpointConventionBuilder
+        public static TBuilder AddComponent<TBuilder>(this TBuilder builder, Type componentType, string selector) where TBuilder : IHubEndpointConventionBuilder
         {
             if (builder == null)
             {
