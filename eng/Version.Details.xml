@@ -285,10 +285,6 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>b38492576f2ad4025dda6ad49a83324804f9ff9c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Bcl.Json.Sources" Version="4.6.0-preview6.19222.12" CoherentParentDependency="Microsoft.NETCore.App">
-      <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>a78bd0c13887e26372aafdffb8f06be26563c4a8</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.CSharp" Version="4.6.0-preview6.19229.2" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>7066a0cac2cadd21ca144cc78d1b1fab9b1f9cd7</Sha>
@@ -354,6 +350,10 @@
       <Sha>7066a0cac2cadd21ca144cc78d1b1fab9b1f9cd7</Sha>
     </Dependency>
     <Dependency Name="System.Text.Encodings.Web" Version="4.6.0-preview6.19229.2" CoherentParentDependency="Microsoft.NETCore.App">
+      <Uri>https://github.com/dotnet/corefx</Uri>
+      <Sha>7066a0cac2cadd21ca144cc78d1b1fab9b1f9cd7</Sha>
+    </Dependency>
+    <Dependency Name="System.Text.Json" Version="4.6.0-preview6.19229.2" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>7066a0cac2cadd21ca144cc78d1b1fab9b1f9cd7</Sha>
     </Dependency>

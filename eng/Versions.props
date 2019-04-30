@@ -22,7 +22,6 @@
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview6-27629-07</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview6-27629-07</MicrosoftNETCoreAppPackageVersion>
     <!-- Packages from dotnet/corefx -->
-    <MicrosoftBclJsonSourcesPackageVersion>4.6.0-preview6.19222.12</MicrosoftBclJsonSourcesPackageVersion>
     <MicrosoftCSharpPackageVersion>4.6.0-preview6.19229.2</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview6.19229.2</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview6.19229.2</SystemComponentModelAnnotationsPackageVersion>
@@ -40,6 +39,7 @@
     <SystemSecurityPrincipalWindowsPackageVersion>4.6.0-preview6.19229.2</SystemSecurityPrincipalWindowsPackageVersion>
     <SystemServiceProcessServiceControllerPackageVersion>4.6.0-preview6.19229.2</SystemServiceProcessServiceControllerPackageVersion>
     <SystemTextEncodingsWebPackageVersion>4.6.0-preview6.19229.2</SystemTextEncodingsWebPackageVersion>
+    <SystemTextJsonPackageVersion>4.6.0-preview6.19229.2</SystemTextJsonPackageVersion>
     <SystemThreadingChannelsPackageVersion>4.6.0-preview6.19229.2</SystemThreadingChannelsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview6.19229.2</MicrosoftNETCorePlatformsPackageVersion>
