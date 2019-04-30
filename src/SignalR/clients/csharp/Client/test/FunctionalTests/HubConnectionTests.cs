@@ -360,8 +360,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [InlineData("json")]
         [InlineData("messagepack")]
-        [LogLevel(LogLevel.Trace)]
-        public async Task IAsyncEnumerableServerParam(string protocolName)
+        public async Task CanStreamToHubWithIAsyncEnumerableMethodArg(string protocolName)
         {
             var protocol = HubProtocols[protocolName];
             using (StartServer<Startup>(out var server))
@@ -403,6 +402,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 }
             }
         }
+
+
 
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]

@@ -21,19 +21,13 @@ namespace Microsoft.AspNetCore.SignalR
         /// <summary>
         /// Creates a new stream and returns the ChannelReader for it as an object.
         /// </summary>
-        public object AddStream(string streamId, Type itemType, Type type)
+        public object AddStream(string streamId, Type itemType, Type targetType)
         {
-
             var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, Array.Empty<object>());
             _lookup[streamId] = newConverter;
-            var reader = newConverter.GetReaderAsObject(ReflectionHelper.IsIAsyncEnumerable(type));
+            var reader = newConverter.GetReaderAsObject(targetType);
 
             return reader;
-        }
-
-        private static IAsyncEnumerable<T> ConvertStream<T>(ChannelReader<T> reader)
-        {
-            return reader.ReadAllAsync();
         }
 
         private bool TryGetConverter(string streamId, out IStreamConverter converter)
@@ -87,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR
         private interface IStreamConverter
         {
             Type GetItemType();
-            object GetReaderAsObject(bool isIAsyncEnumerable = false);
+            object GetReaderAsObject(Type type);
             Task WriteToStream(object item);
             void TryComplete(Exception ex);
         }
@@ -108,9 +102,9 @@ namespace Microsoft.AspNetCore.SignalR
                 return typeof(T);
             }
 
-            public object GetReaderAsObject(bool isIAsyncEnumerable)
+            public object GetReaderAsObject(Type type)
             {
-                if (isIAsyncEnumerable)
+                if (ReflectionHelper.IsIAsyncEnumerable(type))
                 {
                     return _channel.Reader.ReadAllAsync();
                 }
