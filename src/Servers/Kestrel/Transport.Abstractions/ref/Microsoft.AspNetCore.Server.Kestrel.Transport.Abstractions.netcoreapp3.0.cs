@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         ThreadPool = 1,
         Inline = 2,
     }
-    public abstract partial class TransportConnection : Microsoft.AspNetCore.Connections.ConnectionContext, Microsoft.AspNetCore.Connections.Features.IConnectionHeartbeatFeature, Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature, Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature, Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature, Microsoft.AspNetCore.Connections.Features.IMemoryPoolFeature, Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IApplicationTransportFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportSchedulerFeature, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
+    public abstract partial class TransportConnection : Microsoft.AspNetCore.Connections.ConnectionContext, Microsoft.AspNetCore.Connections.Features.IConnectionCompleteFeature, Microsoft.AspNetCore.Connections.Features.IConnectionHeartbeatFeature, Microsoft.AspNetCore.Connections.Features.IConnectionIdFeature, Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature, Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature, Microsoft.AspNetCore.Connections.Features.IConnectionTransportFeature, Microsoft.AspNetCore.Connections.Features.IMemoryPoolFeature, Microsoft.AspNetCore.Http.Features.IFeatureCollection, Microsoft.AspNetCore.Http.Features.IHttpConnectionFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IApplicationTransportFeature, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportSchedulerFeature, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {
         protected readonly System.Threading.CancellationTokenSource _connectionClosingCts;
         public TransportConnection() { }
@@ -73,6 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public override System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } set { } }
         public System.Net.IPAddress LocalAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int LocalPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        protected internal virtual Microsoft.Extensions.Logging.ILogger Logger { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Buffers.MemoryPool<byte> MemoryPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         System.Collections.Generic.IDictionary<object, object> Microsoft.AspNetCore.Connections.Features.IConnectionItemsFeature.Items { get { throw null; } set { } }
         System.Threading.CancellationToken Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature.ConnectionClosed { get { throw null; } set { } }
@@ -96,6 +97,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public int RemotePort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override System.IO.Pipelines.IDuplexPipe Transport { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override void Abort(Microsoft.AspNetCore.Connections.ConnectionAbortedException abortReason) { }
+        public System.Threading.Tasks.Task CompleteAsync() { throw null; }
+        void Microsoft.AspNetCore.Connections.Features.IConnectionCompleteFeature.OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
         void Microsoft.AspNetCore.Connections.Features.IConnectionHeartbeatFeature.OnHeartbeat(System.Action<object> action, object state) { }
         void Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeFeature.Abort() { }
         void Microsoft.AspNetCore.Connections.Features.IConnectionLifetimeNotificationFeature.RequestClose() { }

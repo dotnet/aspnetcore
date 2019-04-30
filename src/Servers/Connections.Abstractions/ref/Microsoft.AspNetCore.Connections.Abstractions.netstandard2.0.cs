@@ -100,6 +100,10 @@ namespace Microsoft.AspNetCore.Connections
 }
 namespace Microsoft.AspNetCore.Connections.Features
 {
+    public partial interface IConnectionCompleteFeature
+    {
+        void OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state);
+    }
     public partial interface IConnectionHeartbeatFeature
     {
         void OnHeartbeat(System.Action<object> action, object state);
