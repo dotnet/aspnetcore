@@ -81,10 +81,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 keyedItemInfos = BuildKeyToInfoLookup(diffContext, oldStartIndex, oldEndIndexExcl, newStartIndex, newEndIndexExcl);
                             }
 
-                            var oldKeyItemInfo = keyedItemInfos[oldKey];
-                            var newKeyItemInfo = keyedItemInfos[newKey];
-                            var oldKeyIsInNewTree = oldKey != null && oldKeyItemInfo.NewIndex >= 0 && oldKeyItemInfo.IsUnique;
-                            var newKeyIsInOldTree = newKey != null && newKeyItemInfo.OldIndex >= 0 && newKeyItemInfo.IsUnique;
+                            var oldKeyItemInfo = oldKey != null ? keyedItemInfos[oldKey] : new KeyedItemInfo(-1, -1, false);
+                            var newKeyItemInfo = newKey != null ? keyedItemInfos[newKey] : new KeyedItemInfo(-1, -1, false);
+                            var oldKeyIsInNewTree = oldKeyItemInfo.NewIndex >= 0 && oldKeyItemInfo.IsUnique;
+                            var newKeyIsInOldTree = newKeyItemInfo.OldIndex >= 0 && newKeyItemInfo.IsUnique;
                             if (oldKeyIsInNewTree && newKeyIsInOldTree)
                             {
                                 // It's a move

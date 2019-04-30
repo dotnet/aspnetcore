@@ -397,6 +397,62 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void HandlesKeyBeingAdded()
+        {
+            // This is an anomolous situation that can't occur with .razor components.
+            // It represents the case where, for the same sequence number, we have an
+            // old frame without a key and a new frame with a key.
+
+            // Arrange
+            oldTree.OpenElement(0, "el");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "el");
+            newTree.SetKey("some key");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                // Insert new
+                edit =>
+                {
+                    AssertEdit(edit, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal("some key", referenceFrames[edit.ReferenceFrameIndex].ElementKey);
+                },
+                // Delete old
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
+        public void HandlesKeyBeingRemoved()
+        {
+            // This is an anomolous situation that can't occur with .razor components.
+            // It represents the case where, for the same sequence number, we have an
+            // old frame with a key and a new frame without a key.
+
+            // Arrange
+            oldTree.OpenElement(0, "el");
+            oldTree.SetKey("some key");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "el");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                // Insert new
+                edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0),
+                // Delete old
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
         public void RecognizesTrailingSequenceWithinLoopBlockBeingRemoved()
         {
             // Arrange
