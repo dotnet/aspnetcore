@@ -8,7 +8,6 @@
 
     <AssemblyName>Microsoft.Extensions.ApiDescription.Tasks</AssemblyName>
     <Description>MSBuild tasks and targets for code generation</Description>
-    <EnableApiCheck>false</EnableApiCheck>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSource>false</IncludeSource>
     <IncludeSymbols>false</IncludeSymbols>

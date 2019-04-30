@@ -5,7 +5,6 @@
     <Description>ASP.NET Core API Authorization package powered by Identity Server.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;apiauth;identity</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
