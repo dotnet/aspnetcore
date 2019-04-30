@@ -51,6 +51,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var prevNewSeq = -1;
             var oldTree = diffContext.OldTree;
             var newTree = diffContext.NewTree;
+            var matchWithNewTreeIndex = -1; // Only used when action == DiffAction.Match
             Dictionary<object, KeyedItemInfo> keyedItemInfos = null;
 
             try
@@ -70,6 +71,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         {
                             // Sequence and keys match
                             action = DiffAction.Match;
+                            matchWithNewTreeIndex = newStartIndex;
                         }
                         else
                         {
@@ -79,12 +81,27 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 keyedItemInfos = BuildKeyToInfoLookup(diffContext, oldStartIndex, oldEndIndexExcl, newStartIndex, newEndIndexExcl);
                             }
 
-                            var oldKeyIsInNewTree = oldKey != null && keyedItemInfos[oldKey].NewIndex >= 0;
-                            var newKeyIsInOldTree = newKey != null && keyedItemInfos[newKey].OldIndex >= 0;
+                            var oldKeyItemInfo = keyedItemInfos[oldKey];
+                            var newKeyItemInfo = keyedItemInfos[newKey];
+                            var oldKeyIsInNewTree = oldKey != null && oldKeyItemInfo.NewIndex >= 0;
+                            var newKeyIsInOldTree = newKey != null && newKeyItemInfo.OldIndex >= 0;
                             if (oldKeyIsInNewTree && newKeyIsInOldTree)
                             {
                                 // It's a move
-                                throw new NotImplementedException("Not yet supported: moving items by key");
+                                // Since the recipient of the diff script already has the old frame (the one with oldKey)
+                                // at the current siblingIndex, recurse into oldKey and update its descendants in place.
+                                // We re-order the frames afterwards.
+                                action = DiffAction.Match;
+                                matchWithNewTreeIndex = oldKeyItemInfo.NewIndex;
+
+                                // Track the post-edit sibling indices of the moved items
+                                // Since diffContext.SiblingIndex only increases, we can be sure the values we
+                                // write at this point will remain correct, because there won't be any further
+                                // insertions/deletions at smaller sibling indices.
+                                oldKeyItemInfo.OldSiblingIndex = diffContext.SiblingIndex;
+                                keyedItemInfos[oldKey] = oldKeyItemInfo;
+                                newKeyItemInfo.NewSiblingIndex = diffContext.SiblingIndex;
+                                keyedItemInfos[newKey] = newKeyItemInfo;
                             }
                             else
                             {
@@ -168,7 +185,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     switch (action)
                     {
                         case DiffAction.Match:
-                            AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, newStartIndex);
+                            AppendDiffEntriesForFramesWithSameSequence(ref diffContext, oldStartIndex, matchWithNewTreeIndex);
                             oldStartIndex = NextSiblingIndex(oldTree[oldStartIndex], oldStartIndex);
                             newStartIndex = NextSiblingIndex(newTree[newStartIndex], newStartIndex);
                             hasMoreOld = oldEndIndexExcl > oldStartIndex;
@@ -196,6 +213,30 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 if (keyedItemInfos != null)
                 {
+                    #region "Write permutations list"
+                    var hasPermutations = false;
+                    foreach (var keyValuePair in keyedItemInfos)
+                    {
+                        var value = keyValuePair.Value;
+                        var oldSiblingIndex = value.OldSiblingIndex;
+                        var newSiblingIndex = value.NewSiblingIndex;
+                        if (oldSiblingIndex.HasValue && newSiblingIndex.HasValue)
+                        {
+                            // This item moved
+                            hasPermutations = true;
+                            diffContext.Edits.Append(
+                                RenderTreeEdit.PermutationListEntry(oldSiblingIndex.Value, newSiblingIndex.Value));
+                        }
+                    }
+
+                    if (hasPermutations)
+                    {
+                        // It's much easier for the recipient to handle if we're explicit about
+                        // when the list is finished
+                        diffContext.Edits.Append(RenderTreeEdit.PermutationListEnd());
+                    }
+                    #endregion
+
                     keyedItemInfos.Clear();
                     diffContext.KeyedItemInfoDictionaryPool.Return(keyedItemInfos);
                 }

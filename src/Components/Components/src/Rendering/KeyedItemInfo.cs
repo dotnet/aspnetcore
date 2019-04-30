@@ -9,5 +9,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
     {
         public int OldIndex;
         public int NewIndex;
+        public int? OldSiblingIndex;
+        public int? NewSiblingIndex;
     }
 }
