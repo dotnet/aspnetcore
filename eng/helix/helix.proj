@@ -1,7 +1,4 @@
-<Project DefaultTargets="Test">
-
-  <!-- Version included until we get global.json generation to support this SDK. -->
-  <Sdk Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19105.2" />
+<Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
 
   <Import Project="$(RepositoryRoot)\eng\targets\Helix.Common.props" />
   <Import Project="$(RepositoryRoot)\build\repo.props" />
