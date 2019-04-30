@@ -11,30 +11,9 @@ namespace Microsoft.AspNetCore.SignalR
     /// </summary>
     public class JsonHubProtocolOptions
     {
-        internal readonly JsonSerializerOptions _serializerOptions;
-
-        public JsonHubProtocolOptions()
-        {
-            _serializerOptions = JsonHubProtocol.CreateDefaultSerializerSettings();
-        }
-
-        public bool IgnoreNullValues { get => _serializerOptions.IgnoreNullValues; set => _serializerOptions.IgnoreNullValues = value; }
-        public bool WriteIndented { get => _serializerOptions.WriteIndented; set => _serializerOptions.WriteIndented = value; }
-        public bool AllowTrailingCommas { get => _serializerOptions.AllowTrailingCommas; set => _serializerOptions.AllowTrailingCommas = value; }
-        public bool UseCamelCase
-        {
-            get => _serializerOptions.PropertyNamingPolicy == JsonNamingPolicy.CamelCase;
-            set
-            {
-                if (value)
-                {
-                    _serializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                }
-                else
-                {
-                    _serializerOptions.PropertyNamingPolicy = null;
-                }
-            }
-        }
+        /// <summary>
+        /// Gets or sets the settings used to serialize invocation arguments and return values.
+        /// </summary>
+        public JsonSerializerOptions PayloadSerializerSettings { get; set; } = JsonHubProtocol.CreateDefaultSerializerSettings();
     }
 }

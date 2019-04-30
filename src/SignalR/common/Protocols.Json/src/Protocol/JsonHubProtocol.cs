@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
         /// <param name="options">The options used to initialize the protocol.</param>
         public JsonHubProtocol(IOptions<JsonHubProtocolOptions> options)
         {
-            _payloadSerializerOptions = options.Value._serializerOptions;
+            _payloadSerializerOptions = options.Value.PayloadSerializerSettings;
         }
 
         /// <inheritdoc />
