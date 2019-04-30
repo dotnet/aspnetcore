@@ -45,6 +45,7 @@ try {
     Write-Host "Checking that Versions.props and Version.Details.xml match"
     [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
     [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
+    $globalJson = Get-Content $repoRoot/global.json | ConvertFrom-Json
 
     $versionVars = New-Object 'System.Collections.Generic.HashSet[string]'
     foreach ($vars in $versionProps.SelectNodes("//PropertyGroup[`@Label=`"Automated`"]/*")) {
@@ -53,7 +54,6 @@ try {
 
     foreach ($dep in $versionDetails.SelectNodes('//Dependency')) {
         Write-Verbose "Found $dep"
-        $globalJson = Get-Content -Raw $repoRoot/global.json | ConvertFrom-Json
 
         $expectedVersion = $dep.Version
 
@@ -87,7 +87,6 @@ try {
                     -filepath "$repoRoot\eng\Versions.props"
             }
         }
-
     }
 
     foreach ($unexpectedVar in $versionVars) {
