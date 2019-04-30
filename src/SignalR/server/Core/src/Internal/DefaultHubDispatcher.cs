@@ -27,8 +27,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         private readonly ILogger<HubDispatcher<THub>> _logger;
         private readonly bool _enableDetailedErrors;
 
-        private static readonly MethodInfo _convertToStream = typeof(DefaultHubDispatcher<THub>).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("ConvertStream"));
-
         public DefaultHubDispatcher(IServiceScopeFactory serviceScopeFactory, IHubContext<THub> hubContext, IOptions<HubOptions<THub>> hubOptions,
             IOptions<HubOptions> globalHubOptions, ILogger<DefaultHubDispatcher<THub>> logger)
         {
