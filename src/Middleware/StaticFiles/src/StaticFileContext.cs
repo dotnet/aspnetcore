@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
@@ -23,60 +22,69 @@ namespace Microsoft.AspNetCore.StaticFiles
     internal struct StaticFileContext
     {
         private const int StreamCopyBufferSize = 64 * 1024;
+
         private readonly HttpContext _context;
         private readonly StaticFileOptions _options;
-        private readonly PathString _matchUrl;
         private readonly HttpRequest _request;
         private readonly HttpResponse _response;
         private readonly ILogger _logger;
         private readonly IFileProvider _fileProvider;
-        private readonly IContentTypeProvider _contentTypeProvider;
-        private string _method;
-        private PathString _subPath;
-        private string _contentType;
-        private IFileInfo _fileInfo;
-        private long _length;
-        private DateTimeOffset _lastModified;
-        private EntityTagHeaderValue _etag;
+        private readonly string _method;
+        private readonly string _contentType;
 
+        private IFileInfo _fileInfo;
+        private EntityTagHeaderValue _etag;
         private RequestHeaders _requestHeaders;
         private ResponseHeaders _responseHeaders;
+        private RangeItemHeaderValue _range;
+
+        private long _length;
+        private readonly PathString _subPath;
+        private DateTimeOffset _lastModified;
 
         private PreconditionState _ifMatchState;
         private PreconditionState _ifNoneMatchState;
         private PreconditionState _ifModifiedSinceState;
         private PreconditionState _ifUnmodifiedSinceState;
 
-        private RangeItemHeaderValue _range;
         private RequestType _requestType;
 
-        public StaticFileContext(HttpContext context, StaticFileOptions options, PathString matchUrl, ILogger logger, IFileProvider fileProvider, IContentTypeProvider contentTypeProvider)
+        public StaticFileContext(HttpContext context, StaticFileOptions options, ILogger logger, IFileProvider fileProvider, string contentType, PathString subPath)
         {
             _context = context;
             _options = options;
-            _matchUrl = matchUrl;
             _request = context.Request;
             _response = context.Response;
             _logger = logger;
+            _fileProvider = fileProvider;
+            _method = _request.Method;
+            _contentType = contentType;
+            _fileInfo = null;
+            _etag = null;
             _requestHeaders = null;
             _responseHeaders = null;
+            _range = null;
 
-            _fileProvider = fileProvider;
-            _contentTypeProvider = contentTypeProvider;
-
-            _method = null;
-            _subPath = PathString.Empty;
-            _contentType = null;
-            _fileInfo = null;
             _length = 0;
+            _subPath = subPath;
             _lastModified = new DateTimeOffset();
-            _etag = null;
             _ifMatchState = PreconditionState.Unspecified;
             _ifNoneMatchState = PreconditionState.Unspecified;
             _ifModifiedSinceState = PreconditionState.Unspecified;
             _ifUnmodifiedSinceState = PreconditionState.Unspecified;
-            _range = null;
-            _requestType = RequestType.Unspecified;
+
+            if (HttpMethods.IsGet(_method))
+            {
+                _requestType = RequestType.IsGet;
+            }
+            else if (HttpMethods.IsHead(_method))
+            {
+                _requestType = RequestType.IsHead;
+            }
+            else
+            {
+                _requestType = RequestType.Unspecified;
+            }
         }
 
         private RequestHeaders RequestHeaders => (_requestHeaders ??= _request.GetTypedHeaders());
@@ -106,46 +114,6 @@ namespace Microsoft.AspNetCore.StaticFiles
         public string SubPath => _subPath.Value;
 
         public string PhysicalPath => _fileInfo?.PhysicalPath;
-
-        // Return true because we only want to run if there is no endpoint.
-        public bool ValidateNoEndpoint() => _context.GetEndpoint() == null;
-
-        public bool ValidateMethod()
-        {
-            _method = _request.Method;
-            var isValid = false;
-            if (HttpMethods.IsGet(_method))
-            {
-                _requestType |= RequestType.IsGet;
-                isValid = true;
-            }
-            else if (HttpMethods.IsHead(_method))
-            {
-                _requestType |= RequestType.IsHead;
-                isValid = true;
-            }
-
-            return isValid;
-        }
-
-        // Check if the URL matches any expected paths
-        public bool ValidatePath() => Helpers.TryMatchPath(_context, _matchUrl, forDirectory: false, subpath: out _subPath);
-
-        public bool LookupContentType()
-        {
-            if (_contentTypeProvider.TryGetContentType(_subPath.Value, out _contentType))
-            {
-                return true;
-            }
-
-            if (_options.ServeUnknownFileTypes)
-            {
-                _contentType = _options.DefaultContentType;
-                return true;
-            }
-
-            return false;
-        }
 
         public bool LookupFileInfo()
         {

@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -68,25 +69,73 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            var fileContext = new StaticFileContext(context, _options, _matchUrl, _logger, _fileProvider, _contentTypeProvider);
-
-            if (!fileContext.ValidateNoEndpoint())
+            if (!ValidateNoEndpoint(context))
             {
                 _logger.EndpointMatched();
             }
-            else if (!fileContext.ValidateMethod())
+            else if (!ValidateMethod(context))
             {
                 _logger.RequestMethodNotSupported(context.Request.Method);
             }
-            else if (!fileContext.ValidatePath())
+            else if (!ValidatePath(context, _matchUrl, out var subPath))
             {
-                _logger.PathMismatch(fileContext.SubPath);
+                _logger.PathMismatch(subPath);
             }
-            else if (!fileContext.LookupContentType())
+            else if (!LookupContentType(_contentTypeProvider, _options, subPath, out var contentType))
             {
-                _logger.FileTypeNotSupported(fileContext.SubPath);
+                _logger.FileTypeNotSupported(subPath);
             }
-            else if (!fileContext.LookupFileInfo())
+            else
+            {
+                // If we get here, we can try to serve the file
+                return TryServeStaticFile(context, contentType, subPath);
+            }
+
+            return _next(context);
+        }
+
+        // Return true because we only want to run if there is no endpoint.
+        private static bool ValidateNoEndpoint(HttpContext context) => context.GetEndpoint() == null;
+
+        private static bool ValidateMethod(HttpContext context)
+        {
+            var method = context.Request.Method;
+            var isValid = false;
+            if (HttpMethods.IsGet(method))
+            {
+                isValid = true;
+            }
+            else if (HttpMethods.IsHead(method))
+            {
+                isValid = true;
+            }
+
+            return isValid;
+        }
+
+        internal static bool ValidatePath(HttpContext context, PathString matchUrl, out PathString subPath) => Helpers.TryMatchPath(context, matchUrl, forDirectory: false, out subPath);
+
+        internal static bool LookupContentType(IContentTypeProvider contentTypeProvider, StaticFileOptions options, PathString subPath, out string contentType)
+        {
+            if (contentTypeProvider.TryGetContentType(subPath.Value, out contentType))
+            {
+                return true;
+            }
+
+            if (options.ServeUnknownFileTypes)
+            {
+                contentType = options.DefaultContentType;
+                return true;
+            }
+
+            return false;
+        }
+
+        private Task TryServeStaticFile(HttpContext context, string contentType, PathString subPath)
+        {
+            var fileContext = new StaticFileContext(context, _options, _logger, _fileProvider, contentType, subPath);
+
+            if (!fileContext.LookupFileInfo())
             {
                 _logger.FileNotFound(fileContext.SubPath);
             }
