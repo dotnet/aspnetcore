@@ -63,7 +63,7 @@ namespace Microsoft.Extensions.Http.Logging
                 EventIds.PipelineStart, 
                 "Start processing HTTP request {HttpMethod} {Uri}");
 
-            private static readonly Action<ILogger, double, HttpStatusCode, Exception> _requestPipelineEnd = LoggerMessage.Define<double, HttpStatusCode>(
+            private static readonly Action<ILogger, double, int, Exception> _requestPipelineEnd = LoggerMessage.Define<double, int>(
                 LogLevel.Information,
                 EventIds.PipelineEnd,
                 "End processing HTTP request after {ElapsedMilliseconds}ms - {StatusCode}");
@@ -90,7 +90,7 @@ namespace Microsoft.Extensions.Http.Logging
 
             public static void RequestPipelineEnd(ILogger logger, HttpResponseMessage response, TimeSpan duration)
             {
-                _requestPipelineEnd(logger, duration.TotalMilliseconds, response.StatusCode, null);
+                _requestPipelineEnd(logger, duration.TotalMilliseconds, (int)response.StatusCode, null);
 
                 if (logger.IsEnabled(LogLevel.Trace))
                 {
