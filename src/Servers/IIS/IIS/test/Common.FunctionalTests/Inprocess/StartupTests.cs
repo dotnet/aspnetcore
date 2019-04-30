@@ -607,6 +607,28 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [ConditionalFact]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [RequiresNewHandler]
+        public async Task ExceptionIsLoggedToEventLogAndPutInResponseDuringHostingStartupProcess()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} ThrowInStartup");
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(result.IsSuccessStatusCode);
+
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.Contains("InvalidOperationException", content);
+            Assert.Contains("TestSite.Program.Main", content);
+            Assert.Contains("From Configure", content);
+
+            StopServer();
+
+            VerifyDotnetRuntimeEventLog(deploymentResult);
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
         public async Task ExceptionIsNotLoggedToResponseWhenStartupHookIsDisabled()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
