@@ -80,6 +80,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Assert.Equal(1, serviceProvider.GetRequiredService<IOptions<HubOptions>>().Value.SupportedProtocols.Count);
             Assert.Equal(0, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.SupportedProtocols.Count);
         }
+
+        [Fact]
+        public void StreamBufferCapacityGetSet()
+        {
+            var serviceCollection = new ServiceCollection();
+
+            serviceCollection.AddSignalR().AddHubOptions<CustomHub>(options =>
+            {
+                options.StreamBufferCapacity = 42;
+            });
+
+            var serviceProvider = serviceCollection.BuildServiceProvider();
+            Assert.Equal(42, serviceProvider.GetRequiredService<IOptions<HubOptions<CustomHub>>>().Value.StreamBufferCapacity);
+        }
     }
 
     public class CustomHub : Hub
