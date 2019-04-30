@@ -358,30 +358,32 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [InlineData("json")]
+        [InlineData("messagepack")]
         [LogLevel(LogLevel.Trace)]
-        public async Task IAsyncEnumerableServerParam(string protocolName, HttpTransportType transportType, string path)
+        public async Task IAsyncEnumerableServerParam(string protocolName)
         {
             var protocol = HubProtocols[protocolName];
             using (StartServer<Startup>(out var server))
             {
-                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.WebSockets, protocol, LoggerFactory);
                 try
                 {
-                    async IAsyncEnumerable<int> ClientStreamData()
+                    async IAsyncEnumerable<int> ClientStreamData(int value)
                     {
-                        for (var i = 0; i < 5; i++)
+                        for (var i = 0; i < value; i++)
                         {
                             yield return i;
                             await Task.Delay(10);
                         }
                     }
-                    var stream = ClientStreamData();
+
+                    var streamTo = 5;
+                    var stream = ClientStreamData(streamTo);
 
                     await connection.StartAsync().OrTimeout();
                     var expectedValue = 0;
-                    var streamTo = 5;
-                    var asyncEnumerable = connection.StreamAsync<int>("StreamIAsyncConsumer", stream );
+                    var asyncEnumerable = connection.StreamAsync<int>("StreamIAsyncConsumer", stream);
                     await foreach (var streamValue in asyncEnumerable)
                     {
                         Assert.Equal(expectedValue, streamValue);

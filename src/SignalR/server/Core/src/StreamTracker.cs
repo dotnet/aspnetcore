@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.SignalR
     internal class StreamTracker
     {
         private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("BuildStream"));
-        private static readonly MethodInfo _convertToStream = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("ConvertStream"));
         private ConcurrentDictionary<string, IStreamConverter> _lookup = new ConcurrentDictionary<string, IStreamConverter>();
 
         /// <summary>
@@ -27,26 +26,14 @@ namespace Microsoft.AspNetCore.SignalR
 
             var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, Array.Empty<object>());
             _lookup[streamId] = newConverter;
-            var reader = newConverter.GetReaderAsObject();
-
-            // Check if we have an IAsyncEnumerable here and wrap the channel provided by AddStream
-            if (ReflectionHelper.IsIAsyncEnumerable(type))
-            {
-                return _convertToStream.MakeGenericMethod(itemType).Invoke(null, new object[] { reader });
-            }
+            var reader = newConverter.GetReaderAsObject(ReflectionHelper.IsIAsyncEnumerable(type));
 
             return reader;
         }
 
-        private static async IAsyncEnumerable<T> ConvertStream<T>(ChannelReader<T> reader)
+        private static IAsyncEnumerable<T> ConvertStream<T>(ChannelReader<T> reader)
         {
-            while (await reader.WaitToReadAsync())
-            {
-                while (reader.TryRead(out var item))
-                {
-                    yield return (T)item;
-                }
-            }
+            return reader.ReadAllAsync();
         }
 
         private bool TryGetConverter(string streamId, out IStreamConverter converter)
@@ -100,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR
         private interface IStreamConverter
         {
             Type GetItemType();
-            object GetReaderAsObject();
+            object GetReaderAsObject(bool isIAsyncEnumerable = false);
             Task WriteToStream(object item);
             void TryComplete(Exception ex);
         }
@@ -121,9 +108,16 @@ namespace Microsoft.AspNetCore.SignalR
                 return typeof(T);
             }
 
-            public object GetReaderAsObject()
+            public object GetReaderAsObject(bool isIAsyncEnumerable)
             {
-                return _channel.Reader;
+                if (isIAsyncEnumerable)
+                {
+                    return _channel.Reader.ReadAllAsync();
+                }
+                else
+                {
+                    return _channel.Reader;
+                }
             }
 
             public Task WriteToStream(object o)
