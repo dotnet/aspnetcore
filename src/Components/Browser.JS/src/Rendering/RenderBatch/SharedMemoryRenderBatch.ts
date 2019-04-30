@@ -83,7 +83,7 @@ const diffReader = {
 
 // Keep in sync with memory layout in RenderTreeEdit.cs
 const editReader = {
-  structLength: 16,
+  structLength: 20,
   editType: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 0) as EditType,
   siblingIndex: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 4),
   newTreeIndex: (edit: RenderTreeEdit) => platform.readInt32Field(edit as any, 8),

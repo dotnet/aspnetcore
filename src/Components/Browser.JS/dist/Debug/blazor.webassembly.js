@@ -2173,7 +2173,7 @@ var diffReader = {
 };
 // Keep in sync with memory layout in RenderTreeEdit.cs
 var editReader = {
-    structLength: 16,
+    structLength: 20,
     editType: function (edit) { return Environment_1.platform.readInt32Field(edit, 0); },
     siblingIndex: function (edit) { return Environment_1.platform.readInt32Field(edit, 4); },
     newTreeIndex: function (edit) { return Environment_1.platform.readInt32Field(edit, 8); },
