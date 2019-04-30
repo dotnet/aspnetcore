@@ -89,6 +89,7 @@
     <MicrosoftExtensionsLoggingConsolePackageVersion>3.0.0-preview6.19229.8</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>3.0.0-preview6.19229.8</MicrosoftExtensionsLoggingDebugPackageVersion>
     <MicrosoftExtensionsLoggingEventSourcePackageVersion>3.0.0-preview6.19229.8</MicrosoftExtensionsLoggingEventSourcePackageVersion>
+    <MicrosoftExtensionsLoggingEventLogPackageVersion>3.0.0-preview6.19229.8</MicrosoftExtensionsLoggingEventLogPackageVersion>
     <MicrosoftExtensionsLoggingPackageVersion>3.0.0-preview6.19229.8</MicrosoftExtensionsLoggingPackageVersion>
     <MicrosoftExtensionsLoggingTestingPackageVersion>3.0.0-preview6.19229.8</MicrosoftExtensionsLoggingTestingPackageVersion>
     <MicrosoftExtensionsLoggingTraceSourcePackageVersion>3.0.0-preview6.19229.8</MicrosoftExtensionsLoggingTraceSourcePackageVersion>

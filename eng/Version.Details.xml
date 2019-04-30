@@ -225,6 +225,10 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>b38492576f2ad4025dda6ad49a83324804f9ff9c</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="3.0.0-preview6.19229.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+      <Uri>https://github.com/aspnet/Extensions</Uri>
+      <Sha>b38492576f2ad4025dda6ad49a83324804f9ff9c</Sha>
+    </Dependency>
     <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="3.0.0-preview6.19229.8" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>b38492576f2ad4025dda6ad49a83324804f9ff9c</Sha>

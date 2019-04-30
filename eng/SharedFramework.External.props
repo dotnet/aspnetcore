@@ -40,6 +40,7 @@
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Console"                         Version="$(MicrosoftExtensionsLoggingConsolePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.Debug"                           Version="$(MicrosoftExtensionsLoggingDebugPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventSource"                     Version="$(MicrosoftExtensionsLoggingEventSourcePackageVersion)" />
+    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.EventLog"                        Version="$(MicrosoftExtensionsLoggingEventLogPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging.TraceSource"                     Version="$(MicrosoftExtensionsLoggingTraceSourcePackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.Logging"                                 Version="$(MicrosoftExtensionsLoggingPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.ObjectPool"                              Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
