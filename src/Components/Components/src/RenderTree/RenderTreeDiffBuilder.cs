@@ -83,8 +83,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
                             var oldKeyItemInfo = keyedItemInfos[oldKey];
                             var newKeyItemInfo = keyedItemInfos[newKey];
-                            var oldKeyIsInNewTree = oldKey != null && oldKeyItemInfo.NewIndex >= 0;
-                            var newKeyIsInOldTree = newKey != null && newKeyItemInfo.OldIndex >= 0;
+                            var oldKeyIsInNewTree = oldKey != null && oldKeyItemInfo.NewIndex >= 0 && oldKeyItemInfo.IsUnique;
+                            var newKeyIsInOldTree = newKey != null && newKeyItemInfo.OldIndex >= 0 && newKeyItemInfo.IsUnique;
                             if (oldKeyIsInNewTree && newKeyIsInOldTree)
                             {
                                 // It's a move
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 var key = KeyValue(ref frame);
                 if (key != null)
                 {
-                    result[key] = new KeyedItemInfo(oldStartIndex, -1);
+                    result[key] = new KeyedItemInfo(oldStartIndex, -1, isUnique: !result.ContainsKey(key));
                 }
 
                 oldStartIndex = NextSiblingIndex(frame, oldStartIndex);
@@ -266,8 +266,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 if (key != null)
                 {
                     result[key] = result.TryGetValue(key, out var existingEntry)
-                        ? new KeyedItemInfo(existingEntry.OldIndex, newStartIndex)
-                        : new KeyedItemInfo(-1, newStartIndex);
+                        ? new KeyedItemInfo(existingEntry.OldIndex, newStartIndex, isUnique: existingEntry.NewIndex < 0)
+                        : new KeyedItemInfo(-1, newStartIndex, isUnique: true);
                 }
 
                 newStartIndex = NextSiblingIndex(frame, newStartIndex);
