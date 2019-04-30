@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _socket = socket;
             MemoryPool = memoryPool;
             _scheduler = scheduler;
+            Logger = trace;
             _trace = trace;
 
             var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
