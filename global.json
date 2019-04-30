@@ -3,6 +3,7 @@
     "version": "3.0.100-preview4-011136"
   },
   "msbuild-sdks": {
-    "Yarn.MSBuild": "1.13.0"
+    "Yarn.MSBuild": "1.13.0",
+    "Microsoft.DotNet.Helix.Sdk": "2.0.0-beta.19105.2"
   }
 }

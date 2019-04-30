@@ -45,6 +45,7 @@ try {
     Write-Host "Checking that Versions.props and Version.Details.xml match"
     [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
     [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
+    $globalJson = Get-Content $repoRoot/global.json | ConvertFrom-Json
 
     $versionVars = New-Object 'System.Collections.Generic.HashSet[string]'
     foreach ($vars in $versionProps.SelectNodes("//PropertyGroup[`@Label=`"Automated`"]/*")) {
@@ -53,24 +54,38 @@ try {
 
     foreach ($dep in $versionDetails.SelectNodes('//Dependency')) {
         Write-Verbose "Found $dep"
-        $varName = $dep.Name -replace '\.',''
-        $varName = $varName -replace '\-',''
-        $varName = "${varName}PackageVersion"
-        $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
-        if (-not $versionVar) {
-            LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
-            continue
-        }
-
-        $versionVars.Remove($varName) | Out-Null
 
         $expectedVersion = $dep.Version
-        $actualVersion = $versionVar.InnerText
 
-        if ($expectedVersion -ne $actualVersion) {
-            LogError `
-                "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
-                -filepath "$repoRoot\eng\Versions.props"
+        if ($dep.Name -in $globalJson.'msbuild-sdks'.PSObject.Properties.Name) {
+
+            $actualVersion = $globalJson.'msbuild-sdks'.($dep.Name)
+
+            if ($expectedVersion -ne $actualVersion) {
+                LogError `
+                    "MSBuild SDK version '$($dep.Name)' in global.json does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
+                    -filepath "$repoRoot\global.json"
+            }
+        }
+        else {
+            $varName = $dep.Name -replace '\.',''
+            $varName = $varName -replace '\-',''
+            $varName = "${varName}PackageVersion"
+
+            $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
+            $actualVersion = $versionVar.InnerText
+            $versionVars.Remove($varName) | Out-Null
+
+            if (-not $versionVar) {
+                LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
+                continue
+            }
+
+            if ($expectedVersion -ne $actualVersion) {
+                LogError `
+                    "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
+                    -filepath "$repoRoot\eng\Versions.props"
+            }
         }
     }
 
