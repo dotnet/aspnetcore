@@ -25,9 +25,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, Array.Empty<object>());
             _lookup[streamId] = newConverter;
-            var reader = newConverter.GetReaderAsObject(targetType);
-
-            return reader;
+            return newConverter.GetReaderAsObject(targetType);
         }
 
         private bool TryGetConverter(string streamId, out IStreamConverter converter)
