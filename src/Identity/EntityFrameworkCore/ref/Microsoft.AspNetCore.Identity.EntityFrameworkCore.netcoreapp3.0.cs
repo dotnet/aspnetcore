@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     {
         public RoleStore(TContext context, Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer = null) { }
         public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Identity.IdentityErrorDescriber ErrorDescriber { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Linq.IQueryable<TRole> Roles { get { throw null; } }
         public virtual System.Threading.Tasks.Task AddClaimAsync(TRole role, System.Security.Claims.Claim claim, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     {
         public UserOnlyStore(TContext context, Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer = null) : base (default(Microsoft.AspNetCore.Identity.IdentityErrorDescriber)) { }
         public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected Microsoft.EntityFrameworkCore.DbSet<TUserClaim> UserClaims { get { throw null; } }
         protected Microsoft.EntityFrameworkCore.DbSet<TUserLogin> UserLogins { get { throw null; } }
         public override System.Linq.IQueryable<TUser> Users { get { throw null; } }
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     {
         public UserStore(TContext context, Microsoft.AspNetCore.Identity.IdentityErrorDescriber describer = null) : base (default(Microsoft.AspNetCore.Identity.IdentityErrorDescriber)) { }
         public bool AutoSaveChanges { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public virtual TContext Context { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override System.Linq.IQueryable<TUser> Users { get { throw null; } }
         public override System.Threading.Tasks.Task AddClaimsAsync(TUser user, System.Collections.Generic.IEnumerable<System.Security.Claims.Claim> claims, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public override System.Threading.Tasks.Task AddLoginAsync(TUser user, Microsoft.AspNetCore.Identity.UserLoginInfo login, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
