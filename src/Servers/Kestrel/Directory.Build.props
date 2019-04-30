@@ -6,8 +6,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- https://github.com/aspnet/KestrelHttpServer/issues/2350 -->
-    <EnableApiCheck>false</EnableApiCheck>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)shared\</KestrelSharedSourceRoot>
   </PropertyGroup>
 
