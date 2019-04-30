@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>
         /// Gets the database context for this store.
         /// </summary>
-        public TContext Context { get; private set; }
+        public virtual TContext Context { get; private set; }
 
         private DbSet<TUser> UsersSet { get { return Context.Set<TUser>(); } }
         private DbSet<TRole> Roles { get { return Context.Set<TRole>(); } }

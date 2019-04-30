@@ -8,7 +8,7 @@
     <DisableDefaultTargets>true</DisableDefaultTargets>
     <DisableDefaultItems>true</DisableDefaultItems>
     <BuildSolutions>false</BuildSolutions>
-    <BuildSiteExtensions Condition="'$(TargetRuntimeIdentifier)' == 'win-x64' OR '$(TargetRuntimeIdentifier)' == 'win-x86'">true</BuildSiteExtensions>
+    <BuildSiteExtensions Condition="('$(TargetRuntimeIdentifier)' == 'win-x64' OR '$(TargetRuntimeIdentifier)' == 'win-x86') AND '$(BuildSiteExtensions)' == ''">true</BuildSiteExtensions>
 
     <OverridePackageOutputPath>false</OverridePackageOutputPath>
 

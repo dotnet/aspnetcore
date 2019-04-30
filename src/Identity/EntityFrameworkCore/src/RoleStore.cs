@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         /// <summary>
         /// Gets the database context for this store.
         /// </summary>
-        public TContext Context { get; private set; }
+        public virtual TContext Context { get; private set; }
 
         /// <summary>
         /// Gets or sets the <see cref="IdentityErrorDescriber"/> for any error that occurred with the current operation.
