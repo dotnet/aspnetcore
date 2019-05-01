@@ -113,14 +113,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     return true;
                 }
 
-                // TODO SPN check? NTLM + CBT only?
-
-                // TODO: Consider disposing the authState and caching a copy of the user instead. You would need to clone that user per-request
-                // to avoid contaimination from claims transformation.
-
-                Logger.LogDebug($"Completed Negotiate, Negotiate");
-                if (!string.IsNullOrEmpty(outgoing))
+                if (string.IsNullOrEmpty(outgoing))
                 {
+                    Logger.LogDebug($"Completed Negotiate.");
+                }
+                else
+                {
+                    Logger.LogDebug($"Completed Negotiate with additional data.");
                     // There can be a final blob of data we need to send to the client, but let the request execute as normal.
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
                 }
@@ -168,40 +167,38 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             }
 
             var authState = (INegotiateState)GetConnectionItems()[NegotiateStateKey];
-            if (authState != null && authState.IsCompleted)
+            if (authState?.IsCompleted != true)
             {
-                Logger.LogDebug($"Cached User");
-
-                // Make a new copy of the user for each request, they are mutable objects and
-                // things like ClaimsTransformation run per request.
-                var identity = authState.GetIdentity();
-                ClaimsPrincipal user;
-                if (identity is WindowsIdentity winIdentity)
-                {
-                    user = new WindowsPrincipal(winIdentity);
-                    Response.RegisterForDispose(winIdentity);
-                }
-                else
-                {
-                    user = new ClaimsPrincipal(new ClaimsIdentity(identity));
-                }
-
-                var authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
-                {
-                    Principal = user
-                };
-                await Events.OnAuthenticated(authenticatedContext);
-
-                if (authenticatedContext.Result != null)
-                {
-                    return authenticatedContext.Result;
-                }
-
-                var ticket = new AuthenticationTicket(user, Scheme.Name);
-                return AuthenticateResult.Success(ticket);
+                return AuthenticateResult.NoResult();
             }
 
-            return AuthenticateResult.NoResult();
+            // Make a new copy of the user for each request, they are mutable objects and
+            // things like ClaimsTransformation run per request.
+            var identity = authState.GetIdentity();
+            ClaimsPrincipal user;
+            if (identity is WindowsIdentity winIdentity)
+            {
+                user = new WindowsPrincipal(winIdentity);
+                Response.RegisterForDispose(winIdentity);
+            }
+            else
+            {
+                user = new ClaimsPrincipal(new ClaimsIdentity(identity));
+            }
+
+            var authenticatedContext = new AuthenticatedContext(Context, Scheme, Options)
+            {
+                Principal = user
+            };
+            await Events.OnAuthenticated(authenticatedContext);
+
+            if (authenticatedContext.Result != null)
+            {
+                return authenticatedContext.Result;
+            }
+
+            var ticket = new AuthenticationTicket(user, Scheme.Name);
+            return AuthenticateResult.Success(ticket);
         }
 
         /// <summary>
@@ -214,12 +211,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             // TODO: Verify clients will downgrade from HTTP/2 to HTTP/1?
             // Or do we need to send HTTP_1_1_REQUIRED? Or throw here?
             // TODO: Should we invalidate your current auth state?
-            var authResult = await HandleAuthenticateOnceSafeAsync();
-            var eventContext = new ChallengeContext(Context, Scheme, Options, properties)
-            {
-                AuthenticateFailure = authResult?.Failure
-            };
-
+            var eventContext = new ChallengeContext(Context, Scheme, Options, properties);
             await Events.Challenge(eventContext);
             if (eventContext.Handled)
             {
