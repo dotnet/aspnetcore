@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class HttpRequestStream : ReadOnlyPipeStream
+    internal sealed class HttpRequestStream : ReadOnlyPipeStream
     {
         private HttpRequestPipeReader _pipeReader;
         private readonly IHttpBodyControlFeature _bodyControl;

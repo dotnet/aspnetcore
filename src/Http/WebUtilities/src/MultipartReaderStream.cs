@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
-    internal class MultipartReaderStream : Stream
+    internal sealed class MultipartReaderStream : Stream
     {
         private readonly MultipartBoundary _boundary;
         private readonly BufferedReadStream _innerStream;

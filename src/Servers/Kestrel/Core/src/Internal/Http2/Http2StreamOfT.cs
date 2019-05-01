@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal class Http2Stream<TContext> : Http2Stream
+    internal sealed class Http2Stream<TContext> : Http2Stream
     {
         private readonly IHttpApplication<TContext> _application;
 
