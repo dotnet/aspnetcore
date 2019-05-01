@@ -23,7 +23,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             builder.AddDirective(Directive, FileKinds.Component);
-            builder.Features.Add(new ComponentCodeDirectivePass());
         }
     }
 }
