@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Dictionary<string, int> AttributeDiffSet { get; } = new Dictionary<string, int>();
 
         internal StackObjectPool<Dictionary<object, KeyedItemInfo>> KeyedItemInfoDictionaryPool { get; }
-            = new StackObjectPool<Dictionary<object, KeyedItemInfo>>(maxPreservedItems: 10);
+            = new StackObjectPool<Dictionary<object, KeyedItemInfo>>(maxPreservedItems: 10, () => new Dictionary<object, KeyedItemInfo>());
 
         public void ClearStateForCurrentBatch()
         {

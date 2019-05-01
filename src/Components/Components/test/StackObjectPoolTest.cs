@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void CanGetInstances()
         {
             // Arrange
-            var stackObjectPool = new StackObjectPool<object>(10);
+            var stackObjectPool = new StackObjectPool<object>(10, () => new object());
 
             // Act
             var instance1 = stackObjectPool.Get();
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void CanReturnInstances()
         {
             // Arrange
-            var stackObjectPool = new StackObjectPool<object>(10);
+            var stackObjectPool = new StackObjectPool<object>(10, () => new object());
             var instance1 = stackObjectPool.Get();
             var instance2 = stackObjectPool.Get();
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void ReusesInstancesInPoolUpToCapacity()
         {
             // Arrange
-            var stackObjectPool = new StackObjectPool<object>(10);
+            var stackObjectPool = new StackObjectPool<object>(10, () => new object());
             var instance1 = stackObjectPool.Get();
             var instance2 = stackObjectPool.Get();
             stackObjectPool.Return(instance2);
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void SuppliesTransientInstancesWhenExceedingCapacity()
         {
             // Arrange
-            var stackObjectPool = new StackObjectPool<object>(1);
+            var stackObjectPool = new StackObjectPool<object>(1, () => new object());
 
             // Act 1: Returns distinct instances beyond capacity
             var instance1 = stackObjectPool.Get();
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void CannotReturnWhenEmpty()
         {
             // Arrange
-            var stackObjectPool = new StackObjectPool<object>(10);
+            var stackObjectPool = new StackObjectPool<object>(10, () => new object());
 
             // Act/Assert
             var ex = Assert.Throws<InvalidOperationException>(() =>
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void CannotReturnMismatchingTrackedItem()
         {
             // Arrange
-            var stackObjectPool = new StackObjectPool<object>(10);
+            var stackObjectPool = new StackObjectPool<object>(10, () => new object());
             var instance1 = stackObjectPool.Get();
             var instance2 = stackObjectPool.Get();
 

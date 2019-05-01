@@ -9,16 +9,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     // balanced as in a stack. It retains up to 'maxPreservedItems' instances in
     // memory, then for any further requests it supplies untracked instances.
 
-    internal class StackObjectPool<T> where T : class, new()
+    internal class StackObjectPool<T> where T : class
     {
         private readonly int _maxPreservedItems;
+        private readonly Func<T> _instanceFactory;
         private readonly T[] _contents;
         private int _numSuppliedItems;
         private int _numTrackedItems;
 
-        public StackObjectPool(int maxPreservedItems)
+        public StackObjectPool(int maxPreservedItems, Func<T> instanceFactory)
         {
             _maxPreservedItems = maxPreservedItems;
+            _instanceFactory = instanceFactory ?? throw new ArgumentNullException(nameof(instanceFactory));
             _contents = new T[_maxPreservedItems];
         }
 
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 if (_numTrackedItems < _numSuppliedItems)
                 {
                     // Need to allocate a new one
-                    var newItem = new T();
+                    var newItem = _instanceFactory();
                     _contents[_numTrackedItems++] = newItem;
                     return newItem;
                 }
@@ -44,7 +46,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             else
             {
                 // Pool is full; return untracked instance
-                return new T();
+                return _instanceFactory();
             }
         }
 
