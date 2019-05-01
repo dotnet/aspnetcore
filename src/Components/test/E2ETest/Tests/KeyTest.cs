@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                     new Node("new1", "Inserted before") { IsNew = true },
                     new Node("orig1", "A"),
                     new Node("new2", "Inserted between") { IsNew = true },
-                    new Node("orig2", "B"),
+                    new Node("orig2", "B edited"),
                     new Node("new3", "Inserted after") { IsNew = true },
                 });
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 after: new[]
                 {
                     new Node("orig2", "B"),
-                    new Node("orig4", "D"),
+                    new Node("orig4", "D edited"),
                 });
         }
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                after: new[]
                {
                    new Node(null, "Inserted before") { IsNew = true },
-                   new Node("orig1", "A"),
+                   new Node("orig1", "A edited"),
                    new Node(null, "Inserted between") { IsNew = true },
                    new Node("orig2", "B"),
                    new Node(null, "Inserted after") { IsNew = true },
@@ -101,8 +101,49 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 },
                 after: new[]
                 {
-                    new Node("orig2", "B"),
+                    new Node("orig2", "B edited"),
                     new Node("orig4", "D"),
+                });
+        }
+
+        [Fact]
+        public void CanReorder()
+        {
+            PerformTest(
+                before: new[]
+                {
+                    new Node("keyA", "A",
+                        new Node("keyA1", "A1"),
+                        new Node("keyA2", "A2"),
+                        new Node("keyA3", "A3")),
+                    new Node("keyB", "B",
+                        new Node("keyB1", "B1"),
+                        new Node("keyB2", "B2"),
+                        new Node("keyB3", "B3")),
+                    new Node("keyC", "C",
+                        new Node("keyC1", "C1"),
+                        new Node("keyC2", "C2"),
+                        new Node("keyC3", "C3")),
+                },
+                after: new[]
+                {
+                    // We're implicitly verifying that all the component instances were preserved,
+                    // because we're not marking any with "IsNew = true"
+                    new Node("keyC", "C", // Rotate all three (ABC->CAB)
+                        // Swap first and last
+                        new Node("keyC3", "C3"),
+                        new Node("keyC2", "C2 edited"),
+                        new Node("keyC1", "C1")),
+                    new Node("keyA", "A",
+                        // Swap first two
+                        new Node("keyA2", "A2 edited"),
+                        new Node("keyA1", "A1"),
+                        new Node("keyA3", "A3")),
+                    new Node("keyB", "B edited",
+                        // Swap last two
+                        new Node("keyB1", "B1"),
+                        new Node("keyB3", "B3"),
+                        new Node("keyB2", "B2 edited")),
                 });
         }
 
