@@ -384,9 +384,9 @@
       <Uri>https://github.com/aspnet/Extensions</Uri>
       <Sha>ca3c0daf0c13fd82f060f07f526bd1cacca8ba21</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19225.5">
+    <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19229.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>d37270268a65592cae630f1b979b70f74d4614dd</Sha>
+      <Sha>a7a250e9c13147134543c35fef2fb81f19592edf</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19105.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
