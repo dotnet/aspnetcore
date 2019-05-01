@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class ThrowingWasUpgradedWriteOnlyStream : WriteOnlyStream
+    internal sealed class ThrowingWasUpgradedWriteOnlyStream : WriteOnlyStream
     {
         public override bool CanSeek => false;
 

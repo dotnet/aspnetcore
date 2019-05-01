@@ -472,7 +472,7 @@ namespace Microsoft.AspNetCore.Http
             => string.IsNullOrEmpty(s) ? new PathString(s) : FromUriComponent(s);
     }
 
-    internal class PathStringConverter : TypeConverter
+    internal sealed class PathStringConverter : TypeConverter
     {
         public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
             => sourceType == typeof(string) 

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
 {
-    internal class ClosedStream : Stream
+    internal sealed class ClosedStream : Stream
     {
         private static readonly Task<int> ZeroResultTask = Task.FromResult(result: 0);
 
