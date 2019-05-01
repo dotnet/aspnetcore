@@ -16,12 +16,12 @@ namespace Microsoft.AspNetCore.SignalR
     internal class StreamTracker
     {
         private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("BuildStream"));
-        private readonly int _streamBufferCapacity = 10;
+        private readonly object[] _streamBufferCapacityArg;
         private ConcurrentDictionary<string, IStreamConverter> _lookup = new ConcurrentDictionary<string, IStreamConverter>();
 
-        public StreamTracker(int streamBufferCapacity)
+        public StreamTracker(int streamBufferCapacity = 10)
         {
-            _streamBufferCapacity = streamBufferCapacity;
+            _streamBufferCapacityArg = new object[] { streamBufferCapacity };
         }
 
         /// <summary>
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         public object AddStream(string streamId, Type itemType)
         {
-            var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, new object[] { _streamBufferCapacity });
+            var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamBufferCapacityArg);
             _lookup[streamId] = newConverter;
             return newConverter.GetReaderAsObject();
         }
