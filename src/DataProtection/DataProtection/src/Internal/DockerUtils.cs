@@ -11,13 +11,13 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 {
     internal static class DockerUtils
     {
-        private static Lazy<bool> _isDocker = new Lazy<bool>(IsProcessRunningInDocker);
+        private static Lazy<bool> _isContainer = new Lazy<bool>(IsProcessRunningInContainer);
 
-        public static bool IsDocker => _isDocker.Value;
+        public static bool IsContainer => _isContainer.Value;
 
         public static bool IsVolumeMountedFolder(DirectoryInfo directory)
         {
-            if (!IsDocker)
+            if (!IsContainer)
             {
                 return false;
             }
@@ -77,14 +77,21 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
             return false;
         }
 
-        private static bool IsProcessRunningInDocker()
+        private static bool IsProcessRunningInContainer()
         {
+            // Official .NET Core images (Windows and Linux) set this. So trust it if it's there.
+            if(string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINERS"), "true", StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // we currently don't have a good way to detect if running in a Windows container
                 return false;
             }
 
+            // Try to detect docker using the cgroups process 1 is in.
             const string procFile = "/proc/1/cgroup";
             if (!File.Exists(procFile))
             {
