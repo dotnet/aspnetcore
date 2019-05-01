@@ -353,10 +353,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     return $"Attribute: (seq={Sequence}, id={AttributeEventHandlerId}) '{AttributeName}'='{AttributeValue}'";
 
                 case RenderTreeFrameType.Component:
-                    return $"Component: (seq={Sequence}, len={ComponentSubtreeLength}) {ComponentType}";
+                    return $"Component: (seq={Sequence}, key={ComponentKey ?? "(none)"}, len={ComponentSubtreeLength}) {ComponentType}";
 
                 case RenderTreeFrameType.Element:
-                    return $"Element: (seq={Sequence}, len={ElementSubtreeLength}) {ElementName}";
+                    return $"Element: (seq={Sequence}, key={ElementKey ?? "(none)"}, len={ElementSubtreeLength}) {ElementName}";
 
                 case RenderTreeFrameType.Region:
                     return $"Region: (seq={Sequence}, len={RegionSubtreeLength})";
