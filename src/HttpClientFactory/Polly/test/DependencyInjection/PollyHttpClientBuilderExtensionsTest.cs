@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -344,6 +344,74 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task AddPolicyHandlerFromRegistry_PolicySelectorWithKey_AddsPolicyHandler()
+        {
+            var serviceCollection = new ServiceCollection();
+            var registry = serviceCollection.AddPolicyRegistry();
+            HttpMessageHandlerBuilder builder = null;
+
+            // Act1
+            serviceCollection.AddHttpClient("Service")
+                .AddPolicyHandler(
+                (sp, req, key) =>
+                {
+                    return RetryPolicy;
+                },
+                (r) =>
+                {
+                    return r.RequestUri.Host;
+                }
+                )
+                .ConfigureHttpMessageHandlerBuilder(b =>
+                {
+                    b.PrimaryHandler = PrimaryHandler;
+                    builder = b;
+                });
+
+            var services = serviceCollection.BuildServiceProvider();
+            var factory = services.GetRequiredService<IHttpClientFactory>();
+
+            // Act2
+            var client = factory.CreateClient("Service");
+            // Assert
+            Assert.NotNull(client);
+
+            Assert.Collection(
+                builder.AdditionalHandlers,
+                h => Assert.IsType<LoggingScopeHttpMessageHandler>(h),
+                h => Assert.IsType<PolicyHttpMessageHandler>(h),
+                h => Assert.IsType<LoggingHttpMessageHandler>(h));
+
+            // Act 3
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://host1/Service1/");
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.True(registry.ContainsKey("host1"));
+            Assert.Equal(1, registry.Count);
+
+            // Act 4
+            request = new HttpRequestMessage(HttpMethod.Get, "http://host1/Service1/");
+            response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.True(registry.ContainsKey("host1"));
+            Assert.Equal(1, registry.Count);
+
+            // Act 4
+            request = new HttpRequestMessage(HttpMethod.Get, "http://host2/Service1/");
+            response = await client.SendAsync(request);
+
+            // Assert policy count
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+            Assert.Equal(2, registry.Count);
+            Assert.True(registry.ContainsKey("host1"));
+            Assert.True(registry.ContainsKey("host2"));
         }
 
         // Throws an exception or fails on even numbered requests, otherwise succeeds.
