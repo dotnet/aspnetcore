@@ -397,18 +397,25 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void HandlesInsertionOfUnkeyedItemBeforeKey()
+        public void HandlesInsertionOfUnkeyedItemsAroundKey()
         {
+            // The fact that the new sequence numbers are descending makes this
+            // problematic if it prefers matching by sequence over key.
+            // However, since the policy is to prefer key over sequence, it works OK.
+
             // Arrange
             oldTree.OpenElement(1, "el");
             oldTree.SetKey("some key");
             oldTree.CloseElement();
 
-            newTree.OpenElement(0, "other");
+            newTree.OpenElement(2, "other");
             newTree.CloseElement();
 
             newTree.OpenElement(1, "el");
             newTree.SetKey("some key");
+            newTree.CloseElement();
+
+            newTree.OpenElement(0, "other 2");
             newTree.CloseElement();
 
             // Act
@@ -416,18 +423,26 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0));
+                edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0),
+                edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 2));
         }
 
         [Fact]
-        public void HandlesDeletionOfUnkeyedItemBeforeKey()
+        public void HandlesDeletionOfUnkeyedItemsAroundKey()
         {
+            // The fact that the old sequence numbers are descending makes this
+            // problematic if it prefers matching by sequence over key.
+            // However, since the policy is to prefer key over sequence, it works OK.
+
             // Arrange
-            oldTree.OpenElement(0, "other");
+            oldTree.OpenElement(2, "other");
             oldTree.CloseElement();
 
             oldTree.OpenElement(1, "el");
             oldTree.SetKey("some key");
+            oldTree.CloseElement();
+
+            oldTree.OpenElement(0, "other 2");
             oldTree.CloseElement();
 
             newTree.OpenElement(1, "el");
@@ -439,7 +454,8 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Assert
             Assert.Collection(result.Edits,
-                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 0));
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 0),
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 1));
         }
 
         [Fact]
