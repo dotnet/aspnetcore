@@ -174,7 +174,7 @@
     <CastleCorePackageVersion>4.2.1</CastleCorePackageVersion>
     <FSharpCorePackageVersion>4.2.1</FSharpCorePackageVersion>
     <GoogleProtobufPackageVersion>3.7.0</GoogleProtobufPackageVersion>
-    <GrpcAspNetCoreServerPackageVersion>0.1.21-dev201904300701</GrpcAspNetCoreServerPackageVersion>
+    <GrpcAspNetCoreServerPackageVersion>0.1.21-dev201905010701</GrpcAspNetCoreServerPackageVersion>
     <GrpcToolsPackageVersion>1.20.0-pre3</GrpcToolsPackageVersion>
     <IdentityServer4AspNetIdentityPackageVersion>3.0.0-preview3.4</IdentityServer4AspNetIdentityPackageVersion>
     <IdentityServer4EntityFrameworkPackageVersion>3.0.0-preview3.4</IdentityServer4EntityFrameworkPackageVersion>
