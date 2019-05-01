@@ -3,15 +3,14 @@
 
 namespace Microsoft.AspNetCore.Components.Rendering
 {
-    // Used internally during diffing to track what we know about
-    // keyed items and their positions
-    internal struct KeyedItemInfo
+    // Used internally during diffing to track what we know about keyed items and their positions
+    internal readonly struct KeyedItemInfo
     {
-        public int OldIndex;
-        public int NewIndex;
-        public int OldSiblingIndex;
-        public int NewSiblingIndex;
-        public bool IsUnique;
+        public readonly int OldIndex;
+        public readonly int NewIndex;
+        public readonly int OldSiblingIndex;
+        public readonly int NewSiblingIndex;
+        public readonly bool IsUnique;
 
         public KeyedItemInfo(int oldIndex, int newIndex, bool isUnique)
         {
@@ -30,5 +29,18 @@ namespace Microsoft.AspNetCore.Components.Rendering
             // Guidance for developers is therefore to use distinct keys.
             IsUnique = isUnique;
         }
+
+        private KeyedItemInfo(in KeyedItemInfo copyFrom, int oldSiblingIndex, int newSiblingIndex)
+        {
+            this = copyFrom;
+            OldSiblingIndex = oldSiblingIndex;
+            NewSiblingIndex = newSiblingIndex;
+        }
+
+        public KeyedItemInfo WithOldSiblingIndex(int oldSiblingIndex)
+            => new KeyedItemInfo(this, oldSiblingIndex, NewSiblingIndex);
+
+        public KeyedItemInfo WithNewSiblingIndex(int newSiblingIndex)
+            => new KeyedItemInfo(this, OldSiblingIndex, newSiblingIndex);
     }
 }

@@ -127,10 +127,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 // Since diffContext.SiblingIndex only increases, we can be sure the values we
                                 // write at this point will remain correct, because there won't be any further
                                 // insertions/deletions at smaller sibling indices.
-                                oldKeyItemInfo.OldSiblingIndex = diffContext.SiblingIndex;
-                                keyedItemInfos[oldKey] = oldKeyItemInfo;
-                                newKeyItemInfo.NewSiblingIndex = diffContext.SiblingIndex;
-                                keyedItemInfos[newKey] = newKeyItemInfo;
+                                keyedItemInfos[oldKey] = oldKeyItemInfo.WithOldSiblingIndex(diffContext.SiblingIndex);
+                                keyedItemInfos[newKey] = newKeyItemInfo.WithNewSiblingIndex(diffContext.SiblingIndex);
                             }
                             else if (!hasMoreNew)
                             {
