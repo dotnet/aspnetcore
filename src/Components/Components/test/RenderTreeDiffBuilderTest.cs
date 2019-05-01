@@ -397,6 +397,52 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void HandlesInsertionOfUnkeyedItemBeforeKey()
+        {
+            // Arrange
+            oldTree.OpenElement(1, "el");
+            oldTree.SetKey("some key");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(0, "other");
+            newTree.CloseElement();
+
+            newTree.OpenElement(1, "el");
+            newTree.SetKey("some key");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                edit => AssertEdit(edit, RenderTreeEditType.PrependFrame, 0));
+        }
+
+        [Fact]
+        public void HandlesDeletionOfUnkeyedItemBeforeKey()
+        {
+            // Arrange
+            oldTree.OpenElement(0, "other");
+            oldTree.CloseElement();
+
+            oldTree.OpenElement(1, "el");
+            oldTree.SetKey("some key");
+            oldTree.CloseElement();
+
+            newTree.OpenElement(1, "el");
+            newTree.SetKey("some key");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                edit => AssertEdit(edit, RenderTreeEditType.RemoveFrame, 0));
+        }
+
+        [Fact]
         public void HandlesKeyBeingAdded()
         {
             // This is an anomolous situation that can't occur with .razor components.
