@@ -49,6 +49,63 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
+        [Fact]
+        public void CanDelete()
+        {
+            PerformTest(
+                before: new[]
+                {
+                    new Node("orig1", "A"), // Will delete first
+                    new Node("orig2", "B"),
+                    new Node("orig3", "C"), // Will delete in middle
+                    new Node("orig4", "D"),
+                    new Node("orig5", "E"), // Will delete at end
+                },
+                after: new[]
+                {
+                    new Node("orig2", "B"),
+                    new Node("orig4", "D"),
+                });
+        }
+
+        [Fact]
+        public void CanInsertUnkeyed()
+        {
+            PerformTest(
+               before: new[]
+               {
+                    new Node("orig1", "A"),
+                    new Node("orig2", "B"),
+               },
+               after: new[]
+               {
+                   new Node(null, "Inserted before") { IsNew = true },
+                   new Node("orig1", "A"),
+                   new Node(null, "Inserted between") { IsNew = true },
+                   new Node("orig2", "B"),
+                   new Node(null, "Inserted after") { IsNew = true },
+               });
+        }
+
+        [Fact]
+        public void CanDeleteUnkeyed()
+        {
+            PerformTest(
+                before: new[]
+                {
+                    new Node(null, "A"), // Will delete first
+                    new Node("orig2", "B"),
+                    new Node(null, "C"), // Will delete in middle
+                    new Node("orig4", "D"),
+                    new Node(null, "E"), // Will delete at end
+                },
+                after: new[]
+                {
+                    new Node("orig2", "B"),
+                    new Node("orig4", "D"),
+                });
+        }
+
         private void PerformTest(Node[] before, Node[] after)
         {
             var rootBefore = new Node(null, "root", before);
