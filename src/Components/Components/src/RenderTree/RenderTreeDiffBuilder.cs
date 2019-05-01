@@ -173,7 +173,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 {
                                     // If both old and new have now looped back, we must reset their 'looped back'
                                     // tracker so we can treat them as proceeding through the same loop block
-                                    prevOldSeq = prevNewSeq = -1;
+                                    prevOldSeq = -1;
+                                    prevNewSeq = -1;
                                 }
                             }
                             else if (oldLoopedBack)
