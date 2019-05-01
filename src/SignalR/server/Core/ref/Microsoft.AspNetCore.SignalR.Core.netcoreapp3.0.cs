@@ -128,6 +128,7 @@ namespace Microsoft.AspNetCore.SignalR
     public partial class HubConnectionContext
     {
         public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.TimeSpan clientTimeoutInterval) { }
         public HubConnectionContext(Microsoft.AspNetCore.Connections.ConnectionContext connectionContext, System.TimeSpan keepAliveInterval, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.TimeSpan clientTimeoutInterval, int streamBufferCapacity) { }
         public virtual System.Threading.CancellationToken ConnectionAborted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public virtual string ConnectionId { get { throw null; } }
