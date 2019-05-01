@@ -80,11 +80,13 @@ namespace Test
         [Fact]
         public void Bind_InvalidUseOfDirective_DoesNotThrow()
         {
+            // We're looking for VS crash issues. Meaning if the parser returns
+            // diagnostics we don't want to throw.
             var generated = CompileToCSharp(@"
 <input type=""text"" bind=""@page"" />
 @functions {
     public string page { get; set; } = ""text"";
-}");
+}", throwOnFailure: false);
 
             // Assert
             Assert.Collection(

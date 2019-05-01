@@ -11,10 +11,10 @@ TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cs
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ1000: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ1036: Invalid tag helper directive look up text '"'. The correct look up text format is: "name, assemblyName".
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(11,2): Error RZ1018: Directive 'tagHelperPrefix' must have a value.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,2): Error RZ1018: Directive 'tagHelperPrefix' must have a value.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,1): Error RZ2001: The 'tagHelperPrefix' directive may only occur once per document.
-TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,18): Error RZ1000: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,2): Error RZ1018: Directive 'tagHelperPrefix' must have a value.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,1): Error RZ2001: The 'tagHelperPrefix' directive may only occur once per document.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,18): Error RZ1000: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,18): Error RZ1020: Invalid tag helper directive 'tagHelperPrefix' value. '"' is not allowed in prefix '"'.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(15,10): Error RZ1013: The 'inherits' directive expects a type name.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(16,1): Error RZ2001: The 'inherits' directive may only occur once per document.

@@ -27,7 +27,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             AddAllDiagnostics(node);
 
-            return diagnostics?.ToList() ?? EmptyDiagnostics;
+            var allOrderedDiagnostics = diagnostics?.OrderBy(diagnostic => diagnostic.Span.AbsoluteIndex);
+
+            return allOrderedDiagnostics?.ToList() ?? EmptyDiagnostics;
 
             void AddAllDiagnostics(IntermediateNode n)
             {

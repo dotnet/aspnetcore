@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 throw new ArgumentNullException(nameof(source));
             }
-            
+
             var parser = new RazorParser(options ?? RazorParserOptions.CreateDefault());
             return parser.Parse(source);
         }

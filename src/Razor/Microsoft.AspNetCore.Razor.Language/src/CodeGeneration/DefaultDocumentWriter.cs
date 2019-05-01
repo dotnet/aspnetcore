@@ -42,10 +42,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             context.Visitor.VisitDocument(documentNode);
 
             var cSharp = context.CodeWriter.GenerateCode();
+
+            var allOrderedDiagnostics = context.Diagnostics.OrderBy(diagnostic => diagnostic.Span.AbsoluteIndex);
             return new DefaultRazorCSharpDocument(
                 cSharp,
                 _options,
-                context.Diagnostics.ToArray(),
+                allOrderedDiagnostics.ToArray(),
                 context.SourceMappings.ToArray(),
                 context.LinePragmas.ToArray());
         }

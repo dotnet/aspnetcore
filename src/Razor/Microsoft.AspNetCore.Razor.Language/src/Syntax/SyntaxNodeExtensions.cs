@@ -55,6 +55,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             return (TNode)node.WithDiagnostics(allDiagnostics);
         }
 
+        /// <summary>
+        /// Gets top-level and nested diagnostics from the <paramref name="node"/>.
+        /// </summary>
+        /// <typeparam name="TNode">The type of syntax node.</typeparam>
+        /// <param name="node">The syntax node.</param>
+        /// <returns>The list of <see cref="RazorDiagnostic"/>s.</returns>
+        public static IReadOnlyList<RazorDiagnostic> GetAllDiagnostics<TNode>(this TNode node) where TNode : SyntaxNode
+        {
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            var walker = new DiagnosticSyntaxWalker();
+            walker.Visit(node);
+
+            return walker.Diagnostics;
+        }
+
         public static SourceLocation GetSourceLocation(this SyntaxNode node, RazorSourceDocument source)
         {
             if (node == null)
@@ -219,6 +238,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax
             var tokens = node.DescendantNodesAndSelf().Where(n => n.IsToken).Cast<SyntaxToken>();
             var content = string.Concat(tokens.Select(t => t.Content));
             return content;
+        }
+
+        private class DiagnosticSyntaxWalker : SyntaxWalker
+        {
+            private readonly List<RazorDiagnostic> _diagnostics;
+
+            public DiagnosticSyntaxWalker()
+            {
+                _diagnostics = new List<RazorDiagnostic>();
+            }
+
+            public IReadOnlyList<RazorDiagnostic> Diagnostics => _diagnostics;
+
+            public override void Visit(SyntaxNode node)
+            {
+                if (node?.ContainsDiagnostics == true)
+                {
+                    var diagnostics = node.GetDiagnostics();
+
+                    _diagnostics.AddRange(diagnostics);
+
+                    base.Visit(node);
+                }
+            }
         }
     }
 }
