@@ -59,23 +59,48 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 while (hasMoreOld || hasMoreNew)
                 {
                     DiffAction action;
-                    var oldSeq = hasMoreOld ? oldTree[oldStartIndex].Sequence : int.MaxValue;
-                    var newSeq = hasMoreNew ? newTree[newStartIndex].Sequence : int.MaxValue;
 
-                    if (oldSeq == newSeq)
+                    #region "Read keys and sequence numbers"
+                    int oldSeq, newSeq;
+                    object oldKey, newKey;
+                    if (hasMoreOld)
                     {
-                        #region "Get diff action for matching sequence numbers"
-                        var oldKey = KeyValue(ref oldTree[oldStartIndex]);
-                        var newKey = KeyValue(ref newTree[newStartIndex]);
+                        ref var oldFrame = ref oldTree[oldStartIndex];
+                        oldSeq = oldFrame.Sequence;
+                        oldKey = KeyValue(ref oldFrame);
+                    }
+                    else
+                    {
+                        oldSeq = int.MaxValue;
+                        oldKey = null;
+                    }
+
+                    if (hasMoreNew)
+                    {
+                        ref var newFrame = ref newTree[newStartIndex];
+                        newSeq = newFrame.Sequence;
+                        newKey = KeyValue(ref newFrame);
+                    }
+                    else
+                    {
+                        newSeq = int.MaxValue;
+                        newKey = null;
+                    }
+                    #endregion
+
+                    // If there's a key on either side, prefer matching by key not sequence
+                    if (oldKey != null || newKey != null)
+                    {
+                        #region "Get diff action by matching on key"
                         if (Equals(oldKey, newKey))
                         {
-                            // Sequence and keys match
+                            // Keys match
                             action = DiffAction.Match;
                             matchWithNewTreeIndex = newStartIndex;
                         }
                         else
                         {
-                            // Sequence matches, but key doesn't
+                            // Keys don't match
                             if (keyedItemInfos == null)
                             {
                                 keyedItemInfos = BuildKeyToInfoLookup(diffContext, oldStartIndex, oldEndIndexExcl, newStartIndex, newEndIndexExcl);
@@ -85,6 +110,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                             var newKeyItemInfo = newKey != null ? keyedItemInfos[newKey] : new KeyedItemInfo(-1, -1, false);
                             var oldKeyIsInNewTree = oldKeyItemInfo.NewIndex >= 0 && oldKeyItemInfo.IsUnique;
                             var newKeyIsInOldTree = newKeyItemInfo.OldIndex >= 0 && newKeyItemInfo.IsUnique;
+
+                            // If either key is not in the other tree, we can handle it as an insert or a delete
+                            // on this iteration. We're only forced to use the move logic that's not the case
+                            // (i.e., both keys are in both trees)
                             if (oldKeyIsInNewTree && newKeyIsInOldTree)
                             {
                                 // It's a move
@@ -103,80 +132,95 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                                 newKeyItemInfo.NewSiblingIndex = diffContext.SiblingIndex;
                                 keyedItemInfos[newKey] = newKeyItemInfo;
                             }
+                            else if (!hasMoreNew)
+                            {
+                                // If we've run out of new items, we must be looking at just an old item, so delete it
+                                action = DiffAction.Delete;
+                            }
                             else
                             {
                                 // It's an insertion or a deletion, or both
                                 // If the new key is in both trees, but the old key isn't, then the old item was deleted
                                 // Otherwise, it's either an insertion or *both* insertion+deletion, so pick insertion and get the deletion on the next iteration if needed
-                                action = newKeyIsInOldTree ? DiffAction.Delete: DiffAction.Insert;
+                                action = newKeyIsInOldTree ? DiffAction.Delete : DiffAction.Insert;
                             }
                         }
                         #endregion
                     }
                     else
                     {
-                        #region "Get diff action for non-matching sequence numbers"
-                        // Sequence doesn't match
-                        var oldLoopedBack = oldSeq <= prevOldSeq;
-                        var newLoopedBack = newSeq <= prevNewSeq;
-                        if (oldLoopedBack == newLoopedBack)
+                        #region "Get diff action by matching on sequence number"
+                        // Neither side is keyed, so match by sequence number
+                        if (oldSeq == newSeq)
                         {
-                            // Both sequences are proceeding through the same loop block, so do a simple
-                            // preordered merge join (picking from whichever side brings us closer to being
-                            // back in sync)
-                            action = newSeq < oldSeq ? DiffAction.Insert : DiffAction.Delete;
-
-                            if (oldLoopedBack)
-                            {
-                                // If both old and new have now looped back, we must reset their 'looped back'
-                                // tracker so we can treat them as proceeding through the same loop block
-                                prevOldSeq = prevNewSeq = -1;
-                            }
-                        }
-                        else if (oldLoopedBack)
-                        {
-                            // Old sequence looped back but new one didn't
-                            // The new sequence either has some extra trailing elements in the current loop block
-                            // which we should insert, or omits some old trailing loop blocks which we should delete
-                            // TODO: Find a way of not recomputing this next flag on every iteration
-                            var newLoopsBackLater = false;
-                            for (var testIndex = newStartIndex + 1; testIndex < newEndIndexExcl; testIndex++)
-                            {
-                                if (newTree[testIndex].Sequence < newSeq)
-                                {
-                                    newLoopsBackLater = true;
-                                    break;
-                                }
-                            }
-
-                            // If the new sequence loops back later to an earlier point than this,
-                            // then we know it's part of the existing loop block (so should be inserted).
-                            // If not, then it's unrelated to the previous loop block (so we should treat
-                            // the old items as trailing loop blocks to be removed).
-                            action = newLoopsBackLater ? DiffAction.Insert : DiffAction.Delete;
+                            // Sequences match
+                            action = DiffAction.Match;
+                            matchWithNewTreeIndex = newStartIndex;
                         }
                         else
                         {
-                            // New sequence looped back but old one didn't
-                            // The old sequence either has some extra trailing elements in the current loop block
-                            // which we should delete, or the new sequence has extra trailing loop blocks which we
-                            // should insert
-                            // TODO: Find a way of not recomputing this next flag on every iteration
-                            var oldLoopsBackLater = false;
-                            for (var testIndex = oldStartIndex + 1; testIndex < oldEndIndexExcl; testIndex++)
+                            // Sequences don't match
+                            var oldLoopedBack = oldSeq <= prevOldSeq;
+                            var newLoopedBack = newSeq <= prevNewSeq;
+                            if (oldLoopedBack == newLoopedBack)
                             {
-                                if (oldTree[testIndex].Sequence < oldSeq)
+                                // Both sequences are proceeding through the same loop block, so do a simple
+                                // preordered merge join (picking from whichever side brings us closer to being
+                                // back in sync)
+                                action = newSeq < oldSeq ? DiffAction.Insert : DiffAction.Delete;
+
+                                if (oldLoopedBack)
                                 {
-                                    oldLoopsBackLater = true;
-                                    break;
+                                    // If both old and new have now looped back, we must reset their 'looped back'
+                                    // tracker so we can treat them as proceeding through the same loop block
+                                    prevOldSeq = prevNewSeq = -1;
                                 }
                             }
+                            else if (oldLoopedBack)
+                            {
+                                // Old sequence looped back but new one didn't
+                                // The new sequence either has some extra trailing elements in the current loop block
+                                // which we should insert, or omits some old trailing loop blocks which we should delete
+                                // TODO: Find a way of not recomputing this next flag on every iteration
+                                var newLoopsBackLater = false;
+                                for (var testIndex = newStartIndex + 1; testIndex < newEndIndexExcl; testIndex++)
+                                {
+                                    if (newTree[testIndex].Sequence < newSeq)
+                                    {
+                                        newLoopsBackLater = true;
+                                        break;
+                                    }
+                                }
 
-                            // If the old sequence loops back later to an earlier point than this,
-                            // then we know it's part of the existing loop block (so should be removed).
-                            // If not, then it's unrelated to the previous loop block (so we should treat
-                            // the new items as trailing loop blocks to be inserted).
-                            action = oldLoopsBackLater ? DiffAction.Delete : DiffAction.Insert;
+                                // If the new sequence loops back later to an earlier point than this,
+                                // then we know it's part of the existing loop block (so should be inserted).
+                                // If not, then it's unrelated to the previous loop block (so we should treat
+                                // the old items as trailing loop blocks to be removed).
+                                action = newLoopsBackLater ? DiffAction.Insert : DiffAction.Delete;
+                            }
+                            else
+                            {
+                                // New sequence looped back but old one didn't
+                                // The old sequence either has some extra trailing elements in the current loop block
+                                // which we should delete, or the new sequence has extra trailing loop blocks which we
+                                // should insert
+                                // TODO: Find a way of not recomputing this next flag on every iteration
+                                var oldLoopsBackLater = false;
+                                for (var testIndex = oldStartIndex + 1; testIndex < oldEndIndexExcl; testIndex++)
+                                {
+                                    if (oldTree[testIndex].Sequence < oldSeq)
+                                    {
+                                        oldLoopsBackLater = true;
+                                        break;
+                                    }
+                                }
+
+                                // If the old sequence loops back later to an earlier point than this,
+                                // then we know it's part of the existing loop block (so should be removed).
+                                // If not, then it's unrelated to the previous loop block (so we should treat
+                                // the new items as trailing loop blocks to be inserted).
+                                action = oldLoopsBackLater ? DiffAction.Delete : DiffAction.Insert;
+                            }
                         }
                         #endregion
                     }
