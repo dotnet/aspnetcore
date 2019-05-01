@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>CSharp Analyzers for ASP.NET Core MVC.</Description>
-    <PackageTags>aspnetcore;aspnetcoremvc</PackageTags>
+    <Description>CSharp Analyzers for ASP.NET Core.</Description>
+    <PackageTags>aspnetcore</PackageTags>
      <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
     <IsShippingPackage>false</IsShippingPackage>
 

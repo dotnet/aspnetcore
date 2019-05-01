@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="../../Analyzers/src/StartupFacts.cs" Link="%(FileName)%(Extension)" />
+    <Compile Include="../../Analyzers/src/StartupSymbols.cs" Link="%(FileName)%(Extension)" />
+    <Compile Include="../../Analyzers/src/SymbolNames.cs" Link="%(FileName)%(Extension)" />
+  </ItemGroup>
+</Project>
