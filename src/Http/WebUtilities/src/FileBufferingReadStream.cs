@@ -303,7 +303,8 @@ namespace Microsoft.AspNetCore.WebUtilities
                             await _buffer.WriteAsync(rentedBuffer, 0, copyRead, cancellationToken);
                             copyRead = oldBuffer.Read(rentedBuffer, 0, rentedBuffer.Length);
                         }
-                    }finally
+                    }
+                    finally
                     {
                         _bytePool.Return(rentedBuffer);
                     }
