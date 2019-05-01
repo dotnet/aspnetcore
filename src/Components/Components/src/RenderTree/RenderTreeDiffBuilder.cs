@@ -253,12 +253,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     }
                     #endregion
                 }
-            }
-            finally
-            {
+
+                #region "Write permutations list"
                 if (keyedItemInfos != null)
                 {
-                    #region "Write permutations list"
                     var hasPermutations = false;
                     foreach (var keyValuePair in keyedItemInfos)
                     {
@@ -278,8 +276,13 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                         // when the list is finished
                         diffContext.Edits.Append(RenderTreeEdit.PermutationListEnd());
                     }
-                    #endregion
-
+                }
+                #endregion
+            }
+            finally
+            {
+                if (keyedItemInfos != null)
+                {
                     keyedItemInfos.Clear();
                     diffContext.KeyedItemInfoDictionaryPool.Return(keyedItemInfos);
                 }
