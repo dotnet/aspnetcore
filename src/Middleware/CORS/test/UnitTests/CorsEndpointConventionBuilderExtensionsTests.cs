@@ -55,6 +55,19 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             Assert.True(metadata.Policy.AllowAnyOrigin);
         }
 
+        [Fact]
+        public void WithCorsPolicy_ChainedCall_ReturnedBuilderIsDerivedType()
+        {
+            // Arrange
+            var testConventionBuilder = new TestEndpointConventionBuilder();
+
+            // Act
+            var builder = testConventionBuilder.WithCorsPolicy("TestPolicyName");
+
+            // Assert
+            Assert.True(builder.TestProperty);
+        }
+
         private class TestEndpointBuilder : EndpointBuilder
         {
             public override Endpoint Build()
@@ -66,6 +79,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
             public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();
+            public bool TestProperty { get; } = true;
 
             public void Add(Action<EndpointBuilder> convention)
             {

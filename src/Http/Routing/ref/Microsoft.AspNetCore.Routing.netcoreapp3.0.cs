@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class RoutingEndpointConventionBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireHost(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params string[] hosts) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithDisplayName(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, System.Func<Microsoft.AspNetCore.Builder.EndpointBuilder, string> func) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithDisplayName(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, string displayName) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithMetadata(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params object[] items) { throw null; }
+        public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, System.Func<Microsoft.AspNetCore.Builder.EndpointBuilder, string> func) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, string displayName) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder WithMetadata<TBuilder>(this TBuilder builder, params object[] items) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Routing
