@@ -1,11 +1,11 @@
-Source Location: (51:2,12 [106] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (46:2,7 [106] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
     private void Increment(UIChangeEventArgs e) {
         counter++;
     }
 |
-Generated Location: (1224:30,12 [106] )
+Generated Location: (1219:30,7 [106] )
 |
     private int counter;
     private void Increment(UIChangeEventArgs e) {

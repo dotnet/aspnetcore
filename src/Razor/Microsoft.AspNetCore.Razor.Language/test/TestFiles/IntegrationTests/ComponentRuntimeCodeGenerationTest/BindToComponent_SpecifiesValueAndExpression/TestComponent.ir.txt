@@ -19,5 +19,5 @@ Document -
                     ComponentAttribute - (25:0,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => ParentValue
-            CSharpCode - (54:1,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (54:1,12 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n
+            CSharpCode - (49:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (49:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

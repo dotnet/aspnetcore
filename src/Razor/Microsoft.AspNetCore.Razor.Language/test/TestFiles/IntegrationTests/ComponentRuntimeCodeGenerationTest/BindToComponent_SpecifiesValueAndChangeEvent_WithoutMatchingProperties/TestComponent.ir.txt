@@ -16,5 +16,5 @@ Document -
                     ComponentAttribute - (35:0,35 [11] x:\dir\subdir\Test\TestComponent.cshtml) - OnChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
-            CSharpCode - (64:1,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (64:1,12 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n
+            CSharpCode - (59:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (59:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

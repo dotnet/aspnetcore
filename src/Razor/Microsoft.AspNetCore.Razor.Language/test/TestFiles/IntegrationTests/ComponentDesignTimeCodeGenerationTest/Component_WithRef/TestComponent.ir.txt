@@ -24,7 +24,7 @@ Document -
                             IntermediateToken - (63:0,63 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
                 HtmlContent - (72:0,72 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (72:0,72 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (193:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (193:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (88:2,12 [104] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (88:2,12 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n
+                HtmlContent - (188:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (188:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (83:2,7 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (83:2,7 [104] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Test.MyComponent myInstance;\n    public void Foo() { System.GC.KeepAlive(myInstance); }\n

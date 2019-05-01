@@ -11,5 +11,5 @@ Document -
                     HtmlAttribute - (5:0,5 [10] x:\dir\subdir\Test\TestComponent.cshtml) -  attr= - 
                         CSharpExpressionAttributeValue - (11:0,11 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (12:0,12 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Foo
-            CSharpCode - (36:1,16 [29] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (36:1,16 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        int Foo = 18;\n    
+            CSharpCode - (31:1,11 [29] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (31:1,11 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        int Foo = 18;\n    

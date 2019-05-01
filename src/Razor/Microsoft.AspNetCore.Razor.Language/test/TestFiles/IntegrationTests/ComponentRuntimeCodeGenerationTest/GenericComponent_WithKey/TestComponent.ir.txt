@@ -13,5 +13,5 @@ Document -
                     ComponentAttribute - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         IntermediateToken - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
                     SetKey - (37:0,37 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _someKey
-            CSharpCode - (65:2,12 [47] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (65:2,12 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n
+            CSharpCode - (60:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (60:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n

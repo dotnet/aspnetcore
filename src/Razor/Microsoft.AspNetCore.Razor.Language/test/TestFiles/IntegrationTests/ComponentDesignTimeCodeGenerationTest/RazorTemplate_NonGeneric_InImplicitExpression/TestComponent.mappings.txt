@@ -8,11 +8,11 @@ Source Location: (28:0,28 [1] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (882:26,0 [1] )
 |)|
 
-Source Location: (43:1,12 [54] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (38:1,7 [54] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     object RenderPerson(RenderFragment p) => null;
 |
-Generated Location: (1067:35,12 [54] )
+Generated Location: (1062:35,7 [54] )
 |
     object RenderPerson(RenderFragment p) => null;
 |

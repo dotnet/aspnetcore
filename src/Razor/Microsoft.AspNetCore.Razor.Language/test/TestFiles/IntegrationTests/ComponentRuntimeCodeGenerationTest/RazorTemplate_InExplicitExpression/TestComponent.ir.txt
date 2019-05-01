@@ -14,5 +14,5 @@ Document -
                             CSharpExpression - (34:0,34 [11] x:\dir\subdir\Test\TestComponent.cshtml)
                                 IntermediateToken - (34:0,34 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                     IntermediateToken - (51:0,51 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - )
-            CSharpCode - (67:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (67:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n\n    object RenderPerson(RenderFragment<Person> p) => null;\n
+            CSharpCode - (62:1,7 [138] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (62:1,7 [138] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n\n    object RenderPerson(RenderFragment<Person> p) => null;\n

@@ -3,11 +3,11 @@ Source Location: (26:0,26 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1006:25,26 [7] )
 |OnClick|
 
-Source Location: (53:2,12 [62] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (48:2,7 [62] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |
-Generated Location: (1514:45,12 [62] )
+Generated Location: (1509:45,7 [62] )
 |
     private Action<UIMouseEventArgs> OnClick { get; set; }
 |

@@ -15,5 +15,5 @@ Document -
                         CSharpExpressionAttributeValue - (36:0,36 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Min
                     ReferenceCapture - (48:0,48 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _element
-            CSharpCode - (76:2,12 [161] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (76:2,12 [161] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private ElementRef _element;\n\n        [Parameter] protected int Min { get; set; }\n        public void Foo() { System.GC.KeepAlive(_element); }\n    
+            CSharpCode - (71:2,7 [161] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (71:2,7 [161] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private ElementRef _element;\n\n        [Parameter] protected int Min { get; set; }\n        public void Foo() { System.GC.KeepAlive(_element); }\n    

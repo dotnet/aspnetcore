@@ -3,11 +3,11 @@ Source Location: (36:0,36 [10] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (817:21,36 [10] )
 |someObject|
 
-Source Location: (99:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (94:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private object someObject = new object();
 |
-Generated Location: (1108:33,12 [49] )
+Generated Location: (1103:33,7 [49] )
 |
     private object someObject = new object();
 |

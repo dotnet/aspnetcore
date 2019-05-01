@@ -20,5 +20,5 @@ Document -
                             IntermediateToken - (55:0,55 [13] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentBgColor
                         HtmlAttributeValue - (68:0,68 [1] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (68:0,68 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;
-            CSharpCode - (87:1,12 [132] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (87:1,12 [132] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentBgColor { get; set; } = "#FFFFFF";\n\n    public void OnComponentHover(UIMouseEventArgs e)\n    {\n    }\n
+            CSharpCode - (82:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (82:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentBgColor { get; set; } = "#FFFFFF";\n\n    public void OnComponentHover(UIMouseEventArgs e)\n    {\n    }\n

@@ -29,7 +29,7 @@ Document -
                             IntermediateToken - (68:0,68 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Html - ;
                 HtmlContent - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - (220:7,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (220:7,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (87:1,12 [132] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (87:1,12 [132] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentBgColor { get; set; } = "#FFFFFF";\n\n    public void OnComponentHover(UIMouseEventArgs e)\n    {\n    }\n
+                HtmlContent - (215:7,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (215:7,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (82:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (82:1,7 [132] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentBgColor { get; set; } = "#FFFFFF";\n\n    public void OnComponentHover(UIMouseEventArgs e)\n    {\n    }\n

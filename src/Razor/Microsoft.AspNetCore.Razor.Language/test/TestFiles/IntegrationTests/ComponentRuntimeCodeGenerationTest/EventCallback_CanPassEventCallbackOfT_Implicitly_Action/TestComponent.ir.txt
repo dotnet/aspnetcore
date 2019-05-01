@@ -11,5 +11,5 @@ Document -
                     ComponentAttribute - (22:0,22 [10] x:\dir\subdir\Test\TestComponent.cshtml) - OnClick - AttributeStructure.DoubleQuotes
                         CSharpExpression - (23:0,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (23:0,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Increment
-            CSharpCode - (51:2,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (51:2,12 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n
+            CSharpCode - (46:2,7 [87] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (46:2,7 [87] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment() {\n        counter++;\n    }\n

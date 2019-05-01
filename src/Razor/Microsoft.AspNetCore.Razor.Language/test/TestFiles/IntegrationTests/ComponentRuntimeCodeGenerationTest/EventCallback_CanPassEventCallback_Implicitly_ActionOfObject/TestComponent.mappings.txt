@@ -1,11 +1,11 @@
-Source Location: (51:2,12 [95] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (46:2,7 [95] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
     private void Increment(object e) {
         counter++;
     }
 |
-Generated Location: (1124:30,12 [95] )
+Generated Location: (1119:30,7 [95] )
 |
     private int counter;
     private void Increment(object e) {

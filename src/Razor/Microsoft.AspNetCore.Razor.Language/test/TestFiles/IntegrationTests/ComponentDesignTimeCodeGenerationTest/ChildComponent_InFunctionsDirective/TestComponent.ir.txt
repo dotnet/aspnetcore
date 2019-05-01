@@ -21,8 +21,8 @@ Document -
                     IntermediateToken - (56:2,2 [32] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderChildComponent(builder); 
                 HtmlContent - (91:3,0 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (91:3,0 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (105:4,12 [75] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (105:4,12 [75] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder builder)\n    {\n        
-            Component - (180:7,8 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-            CSharpCode - (195:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (195:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    }\n
+            CSharpCode - (100:4,7 [75] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (100:4,7 [75] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder builder)\n    {\n        
+            Component - (175:7,8 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+            CSharpCode - (190:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (190:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    }\n

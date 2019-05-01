@@ -13,5 +13,5 @@ Document -
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
                             IntermediateToken - (48:1,17 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - OnClick
                             IntermediateToken -  - CSharp - )
-            CSharpCode - (73:2,12 [73] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (73:2,12 [73] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Task OnClick() \n    {\n        return Task.CompletedTask;\n    }\n
+            CSharpCode - (68:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (68:2,7 [73] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Task OnClick() \n    {\n        return Task.CompletedTask;\n    }\n

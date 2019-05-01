@@ -28,7 +28,7 @@ namespace Test
         #pragma warning restore 1998
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     private Action<UIMouseEventArgs> OnClick { get; set; }
 
 #line default

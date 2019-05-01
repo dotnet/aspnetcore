@@ -15,5 +15,5 @@ Document -
                     ComponentAttribute -  - ParamAfter - AttributeStructure.DoubleQuotes
                         HtmlContent - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-            CSharpCode - (90:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (90:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private DateTime someDate = DateTime.Now;\n
+            CSharpCode - (85:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (85:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private DateTime someDate = DateTime.Now;\n

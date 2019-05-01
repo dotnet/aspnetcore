@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Razor.Language.Test
+namespace Microsoft.AspNetCore.Razor.Language
 {
     public class RazorProjectEngineTest
     {
@@ -47,6 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
                 features,
                 feature => Assert.IsType<ComponentBindLoweringPass>(feature),
                 feature => Assert.IsType<ComponentChildContentDiagnosticPass>(feature),
+                feature => Assert.IsType<ComponentCodeDirectivePass>(feature),
                 feature => Assert.IsType<ComponentComplexAttributeContentPass>(feature),
                 feature => Assert.IsType<ComponentDocumentClassifierPass>(feature),
                 feature => Assert.IsType<ComponentEventHandlerLoweringPass>(feature),

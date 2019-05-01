@@ -74,7 +74,7 @@ __o = ChildContent(item2);
         #pragma warning restore 1998
 #nullable restore
 #line 12 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     [Parameter] TItem1 Item1 { get; set; }
     [Parameter] List<TItem2> Items2 { get; set; }
     [Parameter] RenderFragment<TItem2> ChildContent { get; set; }

@@ -1,9 +1,9 @@
-Source Location: (76:2,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (71:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }
 |
-Generated Location: (1635:41,12 [88] )
+Generated Location: (1630:41,7 [88] )
 |
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }

@@ -33,7 +33,7 @@ __o = RenderPerson((builder2) => {
         #pragma warning restore 1998
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     object RenderPerson(RenderFragment p) => null;
 
 #line default

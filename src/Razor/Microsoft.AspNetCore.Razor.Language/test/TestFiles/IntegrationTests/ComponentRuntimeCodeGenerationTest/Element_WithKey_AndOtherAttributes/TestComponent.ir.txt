@@ -15,5 +15,5 @@ Document -
                         CSharpExpressionAttributeValue - (36:0,36 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Min
                     SetKey - (48:0,48 [10] x:\dir\subdir\Test\TestComponent.cshtml) - someObject
-            CSharpCode - (78:2,12 [112] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (78:2,12 [112] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private object someObject = new object();\n\n        [Parameter] protected int Min { get; set; }\n    
+            CSharpCode - (73:2,7 [112] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (73:2,7 [112] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private object someObject = new object();\n\n        [Parameter] protected int Min { get; set; }\n    

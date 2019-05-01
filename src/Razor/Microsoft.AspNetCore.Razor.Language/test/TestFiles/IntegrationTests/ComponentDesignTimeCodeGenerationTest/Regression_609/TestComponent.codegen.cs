@@ -54,7 +54,7 @@ __o = typeof(User);
         #pragma warning restore 1998
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public string UserName { get; set; }
     public bool UserIsActive { get; set; }
 

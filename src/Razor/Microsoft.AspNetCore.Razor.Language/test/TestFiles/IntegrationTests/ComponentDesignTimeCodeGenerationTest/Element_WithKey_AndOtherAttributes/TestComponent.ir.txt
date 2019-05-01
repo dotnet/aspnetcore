@@ -24,7 +24,7 @@ Document -
                     SetKey - (48:0,48 [10] x:\dir\subdir\Test\TestComponent.cshtml) - someObject
                 HtmlContent - (62:0,62 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (62:0,62 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (191:6,5 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (191:6,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (78:2,12 [112] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (78:2,12 [112] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private object someObject = new object();\n\n        [Parameter] protected int Min { get; set; }\n    
+                HtmlContent - (186:6,5 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (186:6,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (73:2,7 [112] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (73:2,7 [112] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private object someObject = new object();\n\n        [Parameter] protected int Min { get; set; }\n    

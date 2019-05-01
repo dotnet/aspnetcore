@@ -25,8 +25,8 @@ Document -
                             IntermediateToken -  - CSharp - __value => Value = __value
                 HtmlContent - (30:0,30 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (30:0,30 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (44:1,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (44:1,12 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
+            CSharpCode - (39:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (39:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

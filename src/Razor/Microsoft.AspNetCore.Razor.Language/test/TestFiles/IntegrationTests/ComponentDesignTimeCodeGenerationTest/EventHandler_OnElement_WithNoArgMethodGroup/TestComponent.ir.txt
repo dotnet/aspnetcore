@@ -22,5 +22,5 @@ Document -
                             IntermediateToken -  - CSharp - )
                 HtmlContent - (28:0,28 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (28:0,28 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (42:1,12 [31] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (42:1,12 [31] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void OnClick() {\n    }\n
+            CSharpCode - (37:1,7 [31] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (37:1,7 [31] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void OnClick() {\n    }\n

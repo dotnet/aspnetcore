@@ -45,7 +45,7 @@ __o = typeof(MyComponent);
         #pragma warning restore 1998
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public string ParentValue { get; set; } = "42";
 
 #line default

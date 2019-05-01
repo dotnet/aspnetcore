@@ -28,5 +28,5 @@ Document -
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
                 HtmlContent - (56:0,56 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (56:0,56 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (70:1,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (70:1,12 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n
+            CSharpCode - (65:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (65:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

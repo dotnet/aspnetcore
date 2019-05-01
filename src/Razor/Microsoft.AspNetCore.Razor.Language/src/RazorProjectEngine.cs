@@ -211,6 +211,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new ComponentImportProjectFeature());
 
             // Directives (conditional on file kind)
+            ComponentCodeDirective.Register(builder);
             ComponentInjectDirective.Register(builder);
             ComponentLayoutDirective.Register(builder);
             ComponentPageDirective.Register(builder);

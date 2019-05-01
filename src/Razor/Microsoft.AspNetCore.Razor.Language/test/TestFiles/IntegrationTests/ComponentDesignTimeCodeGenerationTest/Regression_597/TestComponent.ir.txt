@@ -25,7 +25,7 @@ Document -
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => y = __value, y)
                 HtmlContent - (22:0,22 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (22:0,22 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - (61:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (61:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (36:1,12 [24] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (36:1,12 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n
+                HtmlContent - (56:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (56:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (31:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (31:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n

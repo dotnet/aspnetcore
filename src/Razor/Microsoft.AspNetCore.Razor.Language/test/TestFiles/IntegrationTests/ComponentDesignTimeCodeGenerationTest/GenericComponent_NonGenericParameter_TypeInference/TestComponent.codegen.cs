@@ -55,7 +55,7 @@ __o = typeof(MyComponent<>);
         #pragma warning restore 1998
 #nullable restore
 #line 4 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     MyClass Hello = new MyClass();
 
 #line default

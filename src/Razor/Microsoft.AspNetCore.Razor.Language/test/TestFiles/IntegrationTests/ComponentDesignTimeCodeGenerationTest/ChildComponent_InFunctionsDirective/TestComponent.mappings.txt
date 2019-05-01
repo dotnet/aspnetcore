@@ -8,22 +8,22 @@ Source Location: (56:2,2 [32] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1016:31,2 [32] )
 | RenderChildComponent(builder); |
 
-Source Location: (105:4,12 [75] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (100:4,7 [75] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     void RenderChildComponent(RenderTreeBuilder builder)
     {
         |
-Generated Location: (1231:40,12 [75] )
+Generated Location: (1226:40,7 [75] )
 |
     void RenderChildComponent(RenderTreeBuilder builder)
     {
         |
 
-Source Location: (195:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (190:7,23 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     }
 |
-Generated Location: (1738:60,23 [9] )
+Generated Location: (1733:60,23 [9] )
 |
     }
 |

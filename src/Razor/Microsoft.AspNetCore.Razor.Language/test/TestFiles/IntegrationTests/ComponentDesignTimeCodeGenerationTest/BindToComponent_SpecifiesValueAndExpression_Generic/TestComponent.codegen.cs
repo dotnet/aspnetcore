@@ -41,7 +41,7 @@ __o = typeof(MyComponent<>);
         #pragma warning restore 1998
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public DateTime ParentValue { get; set; } = DateTime.Now;
 
 #line default

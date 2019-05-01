@@ -3,11 +3,11 @@ Source Location: (12:0,12 [11] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (928:25,12 [11] )
 |ParentValue|
 
-Source Location: (41:1,12 [55] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (36:1,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string ParentValue { get; set; } = "hi";
 |
-Generated Location: (1278:36,12 [55] )
+Generated Location: (1273:36,7 [55] )
 |
     public string ParentValue { get; set; } = "hi";
 |

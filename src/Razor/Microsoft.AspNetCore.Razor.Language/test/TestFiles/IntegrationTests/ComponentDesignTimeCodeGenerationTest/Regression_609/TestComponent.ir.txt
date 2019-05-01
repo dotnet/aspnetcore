@@ -33,7 +33,7 @@ Document -
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, UserIsActive)
                 HtmlContent - (60:0,60 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (60:0,60 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (165:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (165:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (76:2,12 [88] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (76:2,12 [88] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string UserName { get; set; }\n    public bool UserIsActive { get; set; }\n
+                HtmlContent - (160:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (160:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (71:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (71:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string UserName { get; set; }\n    public bool UserIsActive { get; set; }\n

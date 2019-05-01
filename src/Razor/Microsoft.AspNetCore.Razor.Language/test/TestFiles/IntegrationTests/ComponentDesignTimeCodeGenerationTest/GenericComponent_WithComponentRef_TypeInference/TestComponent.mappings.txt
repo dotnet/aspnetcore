@@ -8,12 +8,12 @@ Source Location: (27:0,27 [3] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1139:33,27 [3] )
 |_my|
 
-Source Location: (50:2,12 [90] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (45:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private MyComponent<int> _my;
     public void Foo() { System.GC.KeepAlive(_my); }
 |
-Generated Location: (1517:51,12 [90] )
+Generated Location: (1512:51,7 [90] )
 |
     private MyComponent<int> _my;
     public void Foo() { System.GC.KeepAlive(_my); }

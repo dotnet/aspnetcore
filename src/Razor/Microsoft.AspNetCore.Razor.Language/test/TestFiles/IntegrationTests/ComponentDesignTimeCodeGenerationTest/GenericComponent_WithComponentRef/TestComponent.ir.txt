@@ -22,7 +22,7 @@ Document -
                     ReferenceCapture - (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - _my
                 HtmlContent - (44:0,44 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (44:0,44 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (151:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (151:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (60:2,12 [90] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (60:2,12 [90] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private MyComponent<int> _my;\n    public void Foo() { System.GC.KeepAlive(_my); }\n
+                HtmlContent - (146:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (146:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (55:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (55:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private MyComponent<int> _my;\n    public void Foo() { System.GC.KeepAlive(_my); }\n

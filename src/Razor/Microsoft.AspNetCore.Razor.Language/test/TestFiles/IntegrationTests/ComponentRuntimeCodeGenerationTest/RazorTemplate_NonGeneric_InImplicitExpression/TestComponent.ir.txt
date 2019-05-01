@@ -12,5 +12,5 @@ Document -
                     Template - (15:0,15 [13] x:\dir\subdir\Test\TestComponent.cshtml)
                         MarkupBlock -  - <div>HI</div>
                     IntermediateToken - (28:0,28 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - )
-            CSharpCode - (43:1,12 [54] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (43:1,12 [54] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    object RenderPerson(RenderFragment p) => null;\n
+            CSharpCode - (38:1,7 [54] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (38:1,7 [54] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    object RenderPerson(RenderFragment p) => null;\n

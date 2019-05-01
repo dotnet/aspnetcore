@@ -30,5 +30,5 @@ Document -
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format)
                 HtmlContent - (63:0,63 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (63:0,63 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (77:1,12 [135] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (77:1,12 [135] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n\n    public string Format { get; set; } = "MM/dd/yyyy";\n
+            CSharpCode - (72:1,7 [135] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (72:1,7 [135] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n\n    public string Format { get; set; } = "MM/dd/yyyy";\n

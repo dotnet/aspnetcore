@@ -13,11 +13,11 @@ Source Location: (48:1,28 [5] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1266:40,28 [5] )
 |Hello|
 
-Source Location: (73:3,12 [38] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (68:3,7 [38] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     MyClass Hello = new MyClass();
 |
-Generated Location: (1620:57,12 [38] )
+Generated Location: (1615:57,7 [38] )
 |
     MyClass Hello = new MyClass();
 |

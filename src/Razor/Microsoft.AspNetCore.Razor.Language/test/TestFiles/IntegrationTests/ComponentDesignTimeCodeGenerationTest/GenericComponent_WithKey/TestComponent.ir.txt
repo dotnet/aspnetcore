@@ -22,7 +22,7 @@ Document -
                     SetKey - (37:0,37 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _someKey
                 HtmlContent - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (113:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (113:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (65:2,12 [47] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (65:2,12 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n
+                HtmlContent - (108:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (108:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (60:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (60:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n

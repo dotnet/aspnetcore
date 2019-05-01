@@ -38,5 +38,5 @@ Document -
                     IntermediateToken - (176:9,8 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n}
                 HtmlContent - (179:10,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (179:10,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (193:11,12 [164] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (193:11,12 [164] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    [Parameter] TItem1 Item1 { get; set; }\n    [Parameter] List<TItem2> Items2 { get; set; }\n    [Parameter] RenderFragment<TItem2> ChildContent { get; set; }\n
+            CSharpCode - (188:11,7 [164] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (188:11,7 [164] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    [Parameter] TItem1 Item1 { get; set; }\n    [Parameter] List<TItem2> Items2 { get; set; }\n    [Parameter] RenderFragment<TItem2> ChildContent { get; set; }\n

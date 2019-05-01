@@ -21,5 +21,5 @@ Document -
                     HtmlAttribute - (25:0,25 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, "MM/dd/yyyy")
-            CSharpCode - (80:1,12 [77] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (80:1,12 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n
+            CSharpCode - (75:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (75:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n

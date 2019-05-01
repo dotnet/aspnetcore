@@ -3,21 +3,21 @@ Source Location: (56:2,2 [32] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (748:24,2 [32] )
 | RenderChildComponent(builder); |
 
-Source Location: (105:4,12 [67] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (100:4,7 [67] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     void RenderChildComponent(RenderTreeBuilder builder)
     {
 |
-Generated Location: (963:33,12 [67] )
+Generated Location: (958:33,7 [67] )
 |
     void RenderChildComponent(RenderTreeBuilder builder)
     {
 |
 
-Source Location: (197:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (192:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |    }
 |
-Generated Location: (1328:46,0 [7] )
+Generated Location: (1323:46,0 [7] )
 |    }
 |
 

@@ -39,7 +39,7 @@ namespace Test
         #pragma warning restore 1998
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
         private ElementRef _element;
 
         [Parameter] protected int Min { get; set; }

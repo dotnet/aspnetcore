@@ -19,5 +19,5 @@ Document -
                     HtmlAttribute - (40:0,40 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
-            CSharpCode - (70:1,12 [50] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (70:1,12 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n
+            CSharpCode - (65:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (65:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

@@ -39,7 +39,7 @@ using System.Threading.Tasks;
         #pragma warning restore 1998
 #nullable restore
 #line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     Task OnClick() 
     {
         return Task.CompletedTask;

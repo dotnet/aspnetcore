@@ -20,7 +20,7 @@ Document -
                             IntermediateToken - (12:0,12 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Foo
                 HtmlContent - (18:0,18 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (18:0,18 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    
-                HtmlContent - (66:3,5 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (66:3,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (36:1,16 [29] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (36:1,16 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        int Foo = 18;\n    
+                HtmlContent - (61:3,5 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (61:3,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (31:1,11 [29] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (31:1,11 [29] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        int Foo = 18;\n    

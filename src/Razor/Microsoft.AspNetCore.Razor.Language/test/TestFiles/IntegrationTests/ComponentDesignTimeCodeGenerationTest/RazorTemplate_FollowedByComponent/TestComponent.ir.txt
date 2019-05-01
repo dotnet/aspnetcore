@@ -34,5 +34,5 @@ Document -
                             IntermediateToken - (132:4,18 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
                 HtmlContent - (148:5,14 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (148:5,14 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-            CSharpCode - (164:7,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (164:7,12 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n
+            CSharpCode - (159:7,7 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (159:7,7 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n

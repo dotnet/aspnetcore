@@ -20,5 +20,5 @@ Document -
                             IntermediateToken - (23:0,23 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Increment
                 HtmlContent - (35:0,35 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (35:0,35 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-            CSharpCode - (51:2,12 [95] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (51:2,12 [95] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment(object e) {\n        counter++;\n    }\n
+            CSharpCode - (46:2,7 [95] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (46:2,7 [95] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private int counter;\n    private void Increment(object e) {\n        counter++;\n    }\n

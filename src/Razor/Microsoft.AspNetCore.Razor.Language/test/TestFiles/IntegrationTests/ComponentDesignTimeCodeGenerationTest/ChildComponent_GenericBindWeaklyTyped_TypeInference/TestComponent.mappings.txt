@@ -8,11 +8,11 @@ Source Location: (23:0,23 [5] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1193:33,23 [5] )
 |Value|
 
-Source Location: (56:1,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (51:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     string Value;
 |
-Generated Location: (1661:50,12 [21] )
+Generated Location: (1656:50,7 [21] )
 |
     string Value;
 |

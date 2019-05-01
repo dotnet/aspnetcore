@@ -17,14 +17,14 @@ Generated Location: (1307:41,67 [3] )
 |;
 |
 
-Source Location: (89:3,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (84:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     class Person
     {
         public string Name { get; set; }
     }
 |
-Generated Location: (1491:50,12 [76] )
+Generated Location: (1486:50,7 [76] )
 |
     class Person
     {

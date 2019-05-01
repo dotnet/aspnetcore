@@ -19,8 +19,8 @@ Document -
                     ComponentAttribute - (23:0,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => Value = __value, Value)
-            CSharpCode - (56:1,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (56:1,12 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
+            CSharpCode - (51:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (51:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

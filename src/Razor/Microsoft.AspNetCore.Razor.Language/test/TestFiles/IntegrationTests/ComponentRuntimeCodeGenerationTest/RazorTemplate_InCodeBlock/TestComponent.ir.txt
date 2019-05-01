@@ -15,5 +15,5 @@ Document -
                             IntermediateToken - (54:1,50 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                 CSharpCode - (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (71:1,67 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ;\n
-            CSharpCode - (89:3,12 [76] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (89:3,12 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n
+            CSharpCode - (84:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (84:3,7 [76] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    class Person\n    {\n        public string Name { get; set; }\n    }\n

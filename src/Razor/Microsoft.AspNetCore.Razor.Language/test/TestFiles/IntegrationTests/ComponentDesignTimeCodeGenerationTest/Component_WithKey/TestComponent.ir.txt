@@ -24,7 +24,7 @@ Document -
                             IntermediateToken - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
                 HtmlContent - (74:0,74 [4] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (74:0,74 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (140:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (140:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (90:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (90:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private DateTime someDate = DateTime.Now;\n
+                HtmlContent - (135:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (135:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (85:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (85:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private DateTime someDate = DateTime.Now;\n

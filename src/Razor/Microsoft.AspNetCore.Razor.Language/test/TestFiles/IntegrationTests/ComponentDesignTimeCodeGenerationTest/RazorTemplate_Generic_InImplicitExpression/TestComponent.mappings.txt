@@ -13,7 +13,7 @@ Source Location: (50:0,50 [1] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1061:33,0 [1] )
 |)|
 
-Source Location: (65:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (60:1,7 [138] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     class Person
     {
@@ -22,7 +22,7 @@ Source Location: (65:1,12 [138] x:\dir\subdir\Test\TestComponent.cshtml)
 
     object RenderPerson(RenderFragment<Person> p) => null;
 |
-Generated Location: (1246:42,12 [138] )
+Generated Location: (1241:42,7 [138] )
 |
     class Person
     {

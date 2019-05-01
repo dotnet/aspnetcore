@@ -18,5 +18,5 @@ Document -
                     ComponentAttribute - (36:0,36 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
-            CSharpCode - (57:1,12 [21] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (57:1,12 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
+            CSharpCode - (52:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (52:1,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n

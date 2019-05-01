@@ -14,8 +14,8 @@ Document -
                     ComponentAttribute - (47:1,27 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Foo - AttributeStructure.DoubleQuotes
                         CSharpExpression - (48:1,28 [5] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (48:1,28 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Hello
-            CSharpCode - (73:3,12 [38] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (73:3,12 [38] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    MyClass Hello = new MyClass();\n
+            CSharpCode - (68:3,7 [38] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (68:3,7 [38] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    MyClass Hello = new MyClass();\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

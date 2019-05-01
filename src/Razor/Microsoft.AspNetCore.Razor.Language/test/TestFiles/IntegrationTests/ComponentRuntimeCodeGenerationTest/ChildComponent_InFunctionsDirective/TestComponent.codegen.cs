@@ -31,7 +31,7 @@ using Microsoft.AspNetCore.Components.RenderTree;
         #pragma warning restore 1998
 #nullable restore
 #line 5 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     void RenderChildComponent(RenderTreeBuilder builder)
     {
 

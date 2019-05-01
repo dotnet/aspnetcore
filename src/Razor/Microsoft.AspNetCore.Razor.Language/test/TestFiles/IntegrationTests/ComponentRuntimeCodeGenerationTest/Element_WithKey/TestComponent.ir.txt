@@ -17,5 +17,5 @@ Document -
                     HtmlAttribute -  - attributeafter=" - "
                         HtmlAttributeValue - (64:0,64 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (64:0,64 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-            CSharpCode - (99:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (99:2,12 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object someObject = new object();\n
+            CSharpCode - (94:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (94:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object someObject = new object();\n

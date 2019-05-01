@@ -19,8 +19,8 @@ Document -
                     ComponentAttribute - (29:0,29 [11] x:\dir\subdir\Test\TestComponent.cshtml) - SomeParamExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => ParentValue
-            CSharpCode - (58:1,12 [65] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (58:1,12 [65] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime ParentValue { get; set; } = DateTime.Now;\n
+            CSharpCode - (53:1,7 [65] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (53:1,7 [65] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime ParentValue { get; set; } = DateTime.Now;\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

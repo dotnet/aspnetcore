@@ -10,12 +10,12 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 CSharpCode - (56:2,2 [32] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (56:2,2 [32] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -  RenderChildComponent(builder); 
-            CSharpCode - (105:4,12 [67] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (105:4,12 [67] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder builder)\n    {\n
-            HtmlContent - (172:7,0 [8] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (172:7,0 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html -         
-            Component - (180:7,8 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-            HtmlContent - (195:7,23 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (195:7,23 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (197:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (197:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -     }\n
+            CSharpCode - (100:4,7 [67] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (100:4,7 [67] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    void RenderChildComponent(RenderTreeBuilder builder)\n    {\n
+            HtmlContent - (167:7,0 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (167:7,0 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html -         
+            Component - (175:7,8 [15] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+            HtmlContent - (190:7,23 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (190:7,23 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (192:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (192:8,0 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp -     }\n

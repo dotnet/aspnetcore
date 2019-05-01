@@ -1,8 +1,8 @@
-Source Location: (58:1,12 [65] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (53:1,7 [65] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public DateTime ParentValue { get; set; } = DateTime.Now;
 |
-Generated Location: (1175:28,12 [65] )
+Generated Location: (1170:28,7 [65] )
 |
     public DateTime ParentValue { get; set; } = DateTime.Now;
 |

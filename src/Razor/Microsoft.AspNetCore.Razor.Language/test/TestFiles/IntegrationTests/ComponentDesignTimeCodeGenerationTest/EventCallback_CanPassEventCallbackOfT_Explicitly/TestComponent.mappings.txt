@@ -3,14 +3,14 @@ Source Location: (24:0,24 [63] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1158:25,24 [63] )
 |EventCallback.Factory.Create<UIMouseEventArgs>(this, Increment)|
 
-Source Location: (107:2,12 [87] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (102:2,7 [87] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private int counter;
     private void Increment() {
         counter++;
     }
 |
-Generated Location: (1720:45,12 [87] )
+Generated Location: (1715:45,7 [87] )
 |
     private int counter;
     private void Increment() {

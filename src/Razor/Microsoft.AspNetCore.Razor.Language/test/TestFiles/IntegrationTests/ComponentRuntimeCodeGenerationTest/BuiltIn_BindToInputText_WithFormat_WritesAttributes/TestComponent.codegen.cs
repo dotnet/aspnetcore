@@ -30,7 +30,7 @@ namespace Test
         #pragma warning restore 1998
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-            
+       
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 
 #line default
