@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Security.Principal;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -231,20 +230,17 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 if (connection != null)
                 {
                     context.Features.Set<IConnectionItemsFeature>(connection);
-                    context.Features.Set<IConnectionLifetimeFeature>(connection);
+                    context.Features.Set<IConnectionCompleteFeature>(connection);
                 }
             });
         }
 
-        // TODO: Replace IConnectionLifetimeFeature with IConnectionCompleteFeature
-        private class TestConnection : IConnectionItemsFeature,  IConnectionLifetimeFeature
+        private class TestConnection : IConnectionItemsFeature, IConnectionCompleteFeature
         {
             public IDictionary<object, object> Items { get; set; } = new ConnectionItems();
-            public CancellationToken ConnectionClosed { get; set; }
 
-            public void Abort()
+            public void OnCompleted(Func<object, Task> callback, object state)
             {
-                throw new NotImplementedException();
             }
         }
 

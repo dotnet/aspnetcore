@@ -101,15 +101,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 if (authState == null)
                 {
-                    // TODO: IConnectionLifetimeFeature would fire mid-request.
-                    // Replace with IConnectionCompleteFeature.OnCompleted. https://github.com/aspnet/AspNetCore/pull/9754
-                    var connectionLifetimeFeature = Context.Features.Get<IConnectionLifetimeFeature>();
-                    if (connectionLifetimeFeature == null)
-                    {
-                        throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionLifetimeFeature)} like Kestrel.");
-                    }
                     connectionItems[NegotiateStateKey] = authState = Options.StateFactory.CreateInstance();
-                    connectionLifetimeFeature.ConnectionClosed.UnsafeRegister(DisposeState, authState);
+                    RegisterForConnectionDispose(authState);
                 }
 
                 var outgoing = authState.GetOutgoingBlob(token);
@@ -250,10 +243,20 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             return connectionItems;
         }
 
-        // TODO: Remove
-        private static void DisposeState(object state)
+        private void RegisterForConnectionDispose(INegotiateState authState)
+        {
+            var connectionCompleteFeature = Context.Features.Get<IConnectionCompleteFeature>();
+            if (connectionCompleteFeature == null)
+            {
+                throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionCompleteFeature)} like Kestrel.");
+            }
+            connectionCompleteFeature.OnCompleted(DisposeState, authState);
+        }
+
+        private static Task DisposeState(object state)
         {
             ((IDisposable)state).Dispose();
+            return Task.CompletedTask;
         }
     }
 }
