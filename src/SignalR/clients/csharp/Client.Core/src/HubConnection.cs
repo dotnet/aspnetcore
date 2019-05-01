@@ -72,7 +72,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         // Transient state to a connection
         private ConnectionState _connectionState;
-        private int _serverProtocolMinorVersion;
 
         /// <summary>
         /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
@@ -952,8 +951,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                         throw new HubException(
                                             $"Unable to complete handshake with the server due to an error: {message.Error}");
                                     }
-
-                                    _serverProtocolMinorVersion = message.MinorVersion;
 
                                     break;
                                 }
