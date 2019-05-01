@@ -147,6 +147,62 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
+        [Fact]
+        public void CanReorderInsertDeleteAndEdit_WithAndWithoutKeys()
+        {
+            // This test is a complex bundle of many types of changes happening simultaneously
+            PerformTest(
+                before: new[]
+                {
+                    new Node("keyA", "A",
+                        new Node("keyA1", "A1"),
+                        new Node(null, "A2 unkeyed"),
+                        new Node("keyA3", "A3"),
+                        new Node("keyA4", "A4")),
+                    new Node("keyB", "B",
+                        new Node(null, "B1 unkeyed"),
+                        new Node("keyB2", "B2"),
+                        new Node("keyB3", "B3"),
+                        new Node("keyB4", "B4")),
+                    new Node("keyC", "C",
+                        new Node("keyC1", "C1"),
+                        new Node("keyC2", "C2"),
+                        new Node("keyC3", "C3"),
+                        new Node(null, "C4 unkeyed")),
+                },
+                after: new[]
+                {
+                    // Swapped A and C
+                    new Node("keyC", "C",
+                        // C1-4 were reordered
+                        // C5 was inserted
+                        new Node("keyC5", "C5 inserted") { IsNew = true },
+                        new Node("keyC2", "C2"),
+                        // C6 was inserted with no key
+                        new Node(null, "C6 unkeyed inserted") { IsNew = true },
+                        // C1 was edited
+                        new Node("keyC1", "C1 edited"),
+                        new Node("keyC3", "C3")
+                        // C4 unkeyed was deleted
+                        ),
+                    // B was deleted
+                    // D was inserted
+                    new Node("keyD", "D inserted",
+                        new Node("keyB1", "D1") { IsNew = true }, // Matches an old key, but treated as new because we don't move between parents
+                        new Node("keyD2", "D2") { IsNew = true },
+                        new Node(null, "D3 unkeyed") { IsNew = true })
+                        { IsNew = true },
+                    new Node("keyA", "A",
+                        new Node("keyA1", "A1"),
+                        // A2 (unkeyed) was edited
+                        new Node(null, "A2 unkeyed edited"),
+                        new Node("keyA3", "A3"),
+                        // A4 was deleted
+                        // A5 was inserted
+                        new Node("keyA5", "A5 inserted") { IsNew = true }),
+                });
+        }
+
         private void PerformTest(Node[] before, Node[] after)
         {
             var rootBefore = new Node(null, "root", before);
