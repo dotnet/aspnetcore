@@ -470,10 +470,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             switch (parentFrame.FrameType)
             {
                 case RenderTreeFrameType.Element:
-                    _entries.Buffer[parentFrameIndexValue] = parentFrame.WithElementKey(value);
+                    parentFrame = parentFrame.WithElementKey(value); // It's a ref var, so this writes to the array
                     break;
                 case RenderTreeFrameType.Component:
-                    _entries.Buffer[parentFrameIndexValue] = parentFrame.WithComponentKey(value);
+                    parentFrame = parentFrame.WithComponentKey(value); // It's a ref var, so this writes to the array
                     break;
                 default:
                     throw new InvalidOperationException($"Cannot set a key on a frame of type {parentFrame.FrameType}.");
