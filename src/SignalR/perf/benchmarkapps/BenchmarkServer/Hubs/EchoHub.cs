@@ -46,7 +46,7 @@ namespace BenchmarkServer.Hubs
         }
 
         public override Task OnConnectedAsync() {
-            _connectionCount++;
+            var newConnectionCount = Interlocked.Increment(ref _connectionCount);
             _peakConnectionCount = Math.Max(_connectionCount, _peakConnectionCount);
             LogConnections("Connected");
             return Task.CompletedTask;
