@@ -22,10 +22,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     /// </summary>
     public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthenticationRequestHandler
     {
-        private static string NegotiateStateKey = nameof(INegotiateState);
-        // TODO: CONFIG?
-        private static string _verb = "Negotiate";// "NTLM";
-        private static string _prefix = _verb + " ";
+        private const string NegotiateStateKey = nameof(INegotiateState);
+        private const string NegotiateVerb = "Negotiate";
+        private const string AuthHeaderPrefix = NegotiateVerb + " ";
 
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
@@ -89,9 +88,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 var authorization = authorizationHeader.ToString();
                 Logger.LogTrace($"Authorization: " + authorization);
                 string token = null;
-                if (authorization.StartsWith(_prefix, StringComparison.OrdinalIgnoreCase))
+                if (authorization.StartsWith(AuthHeaderPrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    token = authorization.Substring(_prefix.Length).Trim();
+                    token = authorization.Substring(AuthHeaderPrefix.Length).Trim();
                 }
                 else
                 {
@@ -108,9 +107,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 var outgoing = authState.GetOutgoingBlob(token);
                 if (!authState.IsCompleted)
                 {
-                    Logger.LogInformation($"Incomplete-Negotiate, 401 {_verb} {outgoing}");
+                    Logger.LogInformation("Incomplete Negotiate, 401 Negotiate challenge");
                     Response.StatusCode = StatusCodes.Status401Unauthorized;
-                    Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
+                    Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
                     return true;
                 }
 
@@ -119,11 +118,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 // TODO: Consider disposing the authState and caching a copy of the user instead. You would need to clone that user per-request
                 // to avoid contaimination from claims transformation.
 
-                Logger.LogInformation($"Completed-Negotiate, {_verb} {outgoing}");
+                Logger.LogDebug($"Completed Negotiate, Negotiate");
                 if (!string.IsNullOrEmpty(outgoing))
                 {
                     // There can be a final blob of data we need to send to the client, but let the request execute as normal.
-                    Response.Headers.Append(HeaderNames.WWWAuthenticate, $"{_verb} {outgoing}");
+                    Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
                 }
 
                 // Note we run the Authenticated event in HandleAuthenticateAsync so it is per-request rather than per connection.
@@ -227,9 +226,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 return;
             }
 
-            Logger.LogDebug($"Challenged");
+            Logger.LogDebug($"Challenged 401 Negotiate");
             Response.StatusCode = StatusCodes.Status401Unauthorized;
-            Response.Headers.Append(HeaderNames.WWWAuthenticate, _verb);
+            Response.Headers.Append(HeaderNames.WWWAuthenticate, NegotiateVerb);
         }
 
         private IDictionary<object, object> GetConnectionItems()
