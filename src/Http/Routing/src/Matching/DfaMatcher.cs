@@ -228,13 +228,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             for (var i = 0; i < captures.Length; i++)
             {
-                var parameterName = captures[i].parameterName;
-                if (segments.Length > captures[i].segmentIndex)
+                (var parameterName, var segmentIndex, var slotIndex) = captures[i];
+                
+                if ((uint)segmentIndex < (uint)segments.Length)
                 {
-                    var segment = segments[captures[i].segmentIndex];
+                    var segment = segments[segmentIndex];
                     if (parameterName != null && segment.Length > 0)
                     {
-                        slots[captures[i].slotIndex] = new KeyValuePair<string, object>(
+                        slots[slotIndex] = new KeyValuePair<string, object>(
                             parameterName,
                             path.Substring(segment.Start, segment.Length));
                     }
@@ -249,7 +250,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             ReadOnlySpan<PathSegment> segments)
         {
             // Read segmentIndex to local both to skip double read from stack value
-            // and to use the same in-bounds validated varaible to access the array.
+            // and to use the same in-bounds validated variable to access the array.
             var segmentIndex = catchAll.segmentIndex;
             if ((uint)segmentIndex < (uint)segments.Length)
             {
@@ -271,7 +272,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 (var complexSegment, var segmentIndex) = complexSegments[i];
                 var segment = segments[segmentIndex];
-                var text = path.Substring(segment.Start, segment.Length);
+                var text = path.AsSpan(segment.Start, segment.Length);
                 if (!RoutePatternMatcher.MatchComplexSegment(complexSegment, text, values))
                 {
                     Logger.CandidateRejectedByComplexSegment(_logger, path, endpoint, complexSegment);
