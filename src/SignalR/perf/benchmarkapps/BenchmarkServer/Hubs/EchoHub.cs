@@ -53,7 +53,7 @@ namespace BenchmarkServer.Hubs
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
-            _connectionCount--;
+            Interlocked.Decrement(ref _connectionCount);
             LogConnections("Disconnected");
             return Task.CompletedTask;
         }
