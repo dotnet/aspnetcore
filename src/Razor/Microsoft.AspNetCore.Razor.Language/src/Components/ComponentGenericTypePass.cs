@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     else if (childContent.IsParameterized)
                     {
                         // This is a weakly typed parameterized child content, treat it as RenderFragment<object>
-                        childContent.TypeName = ComponentsApi.RenderFragment.FullTypeName + "<System.Object>";
+                        //childContent.TypeName = ComponentsApi.RenderFragment.FullTypeName + "<System.Object>";
                     }
                     else
                     {
