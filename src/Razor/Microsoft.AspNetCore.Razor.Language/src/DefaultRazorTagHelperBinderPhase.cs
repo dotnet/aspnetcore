@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (FileKinds.IsComponent(codeDocument.GetFileKind()) &&
                 (parserOptions == null || parserOptions.FeatureFlags.AllowComponentFileKind))
             {
-                codeDocument.TryComputeNamespaceAndClass(out var currentNamespace, out var _);
+                codeDocument.TryComputeNamespace(fallbackToRootNamespace: true, out var currentNamespace);
                 visitor = new ComponentDirectiveVisitor(codeDocument.Source.FilePath, descriptors, currentNamespace);
             }
             else

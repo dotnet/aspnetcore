@@ -117,6 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 FunctionsDirective.Register(builder);
                 ImplementsDirective.Register(builder);
                 InheritsDirective.Register(builder);
+                NamespaceDirective.Register(builder);
 
                 AddComponentFeatures(builder);
             }

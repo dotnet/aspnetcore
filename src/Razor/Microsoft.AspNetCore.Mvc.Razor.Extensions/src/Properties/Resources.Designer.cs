@@ -207,48 +207,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorParser_InvalidPropertyType"), p0, p1, p2);
 
         /// <summary>
-        /// Specify the base namespace for the page.
-        /// </summary>
-        internal static string NamespaceDirective_Description
-        {
-            get => GetString("NamespaceDirective_Description");
-        }
-
-        /// <summary>
-        /// Specify the base namespace for the page.
-        /// </summary>
-        internal static string FormatNamespaceDirective_Description()
-            => GetString("NamespaceDirective_Description");
-
-        /// <summary>
-        /// The namespace for the page.
-        /// </summary>
-        internal static string NamespaceDirective_NamespaceToken_Description
-        {
-            get => GetString("NamespaceDirective_NamespaceToken_Description");
-        }
-
-        /// <summary>
-        /// The namespace for the page.
-        /// </summary>
-        internal static string FormatNamespaceDirective_NamespaceToken_Description()
-            => GetString("NamespaceDirective_NamespaceToken_Description");
-
-        /// <summary>
-        /// Namespace
-        /// </summary>
-        internal static string NamespaceDirective_NamespaceToken_Name
-        {
-            get => GetString("NamespaceDirective_NamespaceToken_Name");
-        }
-
-        /// <summary>
-        /// Namespace
-        /// </summary>
-        internal static string FormatNamespaceDirective_NamespaceToken_Name()
-            => GetString("NamespaceDirective_NamespaceToken_Name");
-
-        /// <summary>
         /// The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.
         /// </summary>
         internal static string PageDirectiveCannotBeImported

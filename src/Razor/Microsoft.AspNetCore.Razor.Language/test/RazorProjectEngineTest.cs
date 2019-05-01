@@ -90,7 +90,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
                 feature.Directives,
                 directive => Assert.Same(FunctionsDirective.Directive, directive),
                 directive => Assert.Same(ImplementsDirective.Directive, directive),
-                directive => Assert.Same(InheritsDirective.Directive, directive));
+                directive => Assert.Same(InheritsDirective.Directive, directive),
+                directive => Assert.Same(NamespaceDirective.Directive, directive));
         }
 
         private static void AssertDefaultTargetExtensions(RazorProjectEngine engine)

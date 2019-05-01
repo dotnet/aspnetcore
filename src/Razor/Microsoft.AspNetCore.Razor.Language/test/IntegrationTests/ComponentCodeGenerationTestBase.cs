@@ -1570,6 +1570,50 @@ namespace AnotherTest
             CompileToAssembly(generated);
         }
 
+        [Fact]
+        public void Component_WithNamespaceDirective()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class HeaderComponent : ComponentBase
+    {
+        [Parameter]
+        string Header { get; set; }
+    }
+}
+
+namespace AnotherTest
+{
+    public class FooterComponent : ComponentBase
+    {
+        [Parameter]
+        string Footer { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Test
+@namespace AnotherTest
+
+<HeaderComponent Header='head'>
+</HeaderComponent>
+<FooterComponent Footer='feet'>
+</FooterComponent>
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
         #endregion
 
         #region EventCallback
@@ -3581,6 +3625,75 @@ namespace Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated, throwOnFailure: false);
+        }
+
+        [Fact]
+        public void Component_NamespaceDirective_InImports()
+        {
+            // Arrange
+            var importContent = @"
+@using System.Text
+@using System.Reflection
+@namespace New.Test
+";
+            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+            ImportItems.Add(importItem);
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace New.Test
+{
+    public class Counter : ComponentBase
+    {
+        public int Count { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<Counter />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void Component_NamespaceDirective_OverrideImports()
+        {
+            // Arrange
+            var importContent = @"
+@using System.Text
+@using System.Reflection
+@namespace Import.Test
+";
+            var importItem = CreateProjectItem("_Imports.razor", importContent, FileKinds.ComponentImport);
+            ImportItems.Add(importItem);
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace New.Test
+{
+    public class Counter2 : ComponentBase
+    {
+        public int Count { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp("Pages/Counter.razor", @"
+@namespace New.Test
+<Counter2 />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
         }
         #endregion
 

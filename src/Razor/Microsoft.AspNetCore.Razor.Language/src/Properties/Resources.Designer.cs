@@ -1898,6 +1898,48 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatRewriter_InsufficientStack()
             => GetString("Rewriter_InsufficientStack");
 
+        /// <summary>
+        /// Specify the base namespace for the document.
+        /// </summary>
+        internal static string NamespaceDirective_Description
+        {
+            get => GetString("NamespaceDirective_Description");
+        }
+
+        /// <summary>
+        /// Specify the base namespace for the document.
+        /// </summary>
+        internal static string FormatNamespaceDirective_Description()
+            => GetString("NamespaceDirective_Description");
+
+        /// <summary>
+        /// The namespace for the document.
+        /// </summary>
+        internal static string NamespaceDirective_NamespaceToken_Description
+        {
+            get => GetString("NamespaceDirective_NamespaceToken_Description");
+        }
+
+        /// <summary>
+        /// The namespace for the document.
+        /// </summary>
+        internal static string FormatNamespaceDirective_NamespaceToken_Description()
+            => GetString("NamespaceDirective_NamespaceToken_Description");
+
+        /// <summary>
+        /// Namespace
+        /// </summary>
+        internal static string NamespaceDirective_NamespaceToken_Name
+        {
+            get => GetString("NamespaceDirective_NamespaceToken_Name");
+        }
+
+        /// <summary>
+        /// Namespace
+        /// </summary>
+        internal static string FormatNamespaceDirective_NamespaceToken_Name()
+            => GetString("NamespaceDirective_NamespaceToken_Name");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

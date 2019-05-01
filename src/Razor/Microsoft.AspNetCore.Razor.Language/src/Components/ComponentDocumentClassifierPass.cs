@@ -54,7 +54,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             ClassDeclarationIntermediateNode @class,
             MethodDeclarationIntermediateNode method)
         {
-            if (!codeDocument.TryComputeNamespaceAndClass(out var computedNamespace, out var computedClass))
+            if (!codeDocument.TryComputeNamespace(fallbackToRootNamespace: true, out var computedNamespace) ||
+                !TryComputeClassName(codeDocument, out var computedClass))
             {
                 // If we can't compute a nice namespace (no relative path) then just generate something
                 // mangled.
@@ -116,6 +117,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     TypeName = ComponentsApi.RenderTreeBuilder.FullTypeName,
                 });
             }
+        }
+
+        private bool TryComputeClassName(RazorCodeDocument codeDocument, out string className)
+        {
+            className = null;
+            if (codeDocument.Source.FilePath == null || codeDocument.Source.RelativePath == null)
+            {
+                return false;
+            }
+
+            var relativePath = NormalizePath(codeDocument.Source.RelativePath);
+            className = CSharpIdentifier.SanitizeIdentifier(Path.GetFileNameWithoutExtension(relativePath));
+            return true;
+        }
+
+        private static string NormalizePath(string path)
+        {
+            path = path.Replace('\\', '/');
+
+            return path;
         }
     }
 }

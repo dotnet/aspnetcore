@@ -542,4 +542,13 @@ Instead, wrap the contents of the block in "{{}}":
   <data name="Rewriter_InsufficientStack" xml:space="preserve">
     <value>Not enough stack space to continue parsing this document. Razor doesn't support deeply nested elements.</value>
   </data>
+  <data name="NamespaceDirective_Description" xml:space="preserve">
+    <value>Specify the base namespace for the document.</value>
+  </data>
+  <data name="NamespaceDirective_NamespaceToken_Description" xml:space="preserve">
+    <value>The namespace for the document.</value>
+  </data>
+  <data name="NamespaceDirective_NamespaceToken_Name" xml:space="preserve">
+    <value>Namespace</value>
+  </data>
 </root>

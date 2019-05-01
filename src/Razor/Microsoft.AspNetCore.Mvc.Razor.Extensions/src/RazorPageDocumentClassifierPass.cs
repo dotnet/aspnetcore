@@ -48,12 +48,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
 
-            @namespace.Content = "AspNetCore";
+            if (!codeDocument.TryComputeNamespace(fallbackToRootNamespace: false, out var namespaceName))
+            {
+                @namespace.Content = "AspNetCore";
+            }
+            else
+            {
+                @namespace.Content = namespaceName;
+            }
 
-            @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";
-
-            var filePath = codeDocument.Source.RelativePath ?? codeDocument.Source.FilePath;
-            if (string.IsNullOrEmpty(filePath))
+            if (!TryComputeClassName(codeDocument, out var className))
             {
                 // It's possible for a Razor document to not have a file path.
                 // Eg. When we try to generate code for an in memory document like default imports.
@@ -62,9 +66,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
             else
             {
-                @class.ClassName = GetClassNameFromPath(filePath);
+                @class.ClassName = className;
             }
 
+            @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";
             @class.Modifiers.Clear();
             @class.Modifiers.Add("public");
 
@@ -141,6 +146,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 options.ParseLeadingDirectives = true;
             }
+        }
+
+        private bool TryComputeClassName(RazorCodeDocument codeDocument, out string className)
+        {
+            var filePath = codeDocument.Source.RelativePath ?? codeDocument.Source.FilePath;
+            if (string.IsNullOrEmpty(filePath))
+            {
+                className = null;
+                return false;
+            }
+
+            className = GetClassNameFromPath(filePath);
+            return true;
         }
 
         private static string GetClassNameFromPath(string path)
