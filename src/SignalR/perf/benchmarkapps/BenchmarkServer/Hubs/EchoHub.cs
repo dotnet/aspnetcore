@@ -38,7 +38,8 @@ namespace BenchmarkServer.Hubs
         public static string Status => $"{_connectionCount} current, {_peakConnectionCount} peak.";
 
         public void LogConnections(string label) {
-            if (_connectionCount < 1000 || _connectionCount % 100 == 0)
+            var connectionCount = Interlocked.Read(ref _connectionCount);
+            if (connectionCount < 100 || connectionCount % 100 == 0)
             {
                 var timeSinceServerStart = DateTime.Now.Subtract(_serverStart).ToString(@"hh\:mm\:ss");
                 Console.WriteLine($"[{timeSinceServerStart}] {label}: {Status}");
