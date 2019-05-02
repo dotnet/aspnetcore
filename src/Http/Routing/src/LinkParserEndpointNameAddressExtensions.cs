@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Routing
         /// Attempts to parse the provided <paramref name="path"/> using the route pattern
         /// specified by the <see cref="Endpoint"/> matching <paramref name="endpointName"/>.
         /// </summary>
-        /// <param name="parser">The <see cref="LinkGenerator"/>.</param>
+        /// <param name="parser">The <see cref="LinkParser"/>.</param>
         /// <param name="endpointName">The endpoint name. Used to resolve endpoints.</param>
         /// <param name="path">The URI path to parse.</param>
         /// <returns>

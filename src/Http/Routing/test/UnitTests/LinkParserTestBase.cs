@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Routing
             return new DefaultLinkParser(
                 new DefaultParameterPolicyFactory(routeOptions, serviceProvider),
                 new CompositeEndpointDataSource(routeOptions.Value.EndpointDataSources),
-                NullLogger<DefaultLinkParser>.Instance,
+                serviceProvider.GetRequiredService<ILoggerFactory>().CreateLogger<DefaultLinkParser>(),
                 serviceProvider);
         }
     }

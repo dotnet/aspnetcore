@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing
                 var endpoint = endpoints[i];
                 if (TryParse(endpoint, path, out var values))
                 {
-                    Log.PathParsingSucceeded(_logger, path, endpoints);
+                    Log.PathParsingSucceeded(_logger, path, endpoint);
                     return values;
                 }
             }
@@ -84,7 +84,6 @@ namespace Microsoft.AspNetCore.Routing
 
             return endpoints;
         }
-
 
         private MatcherState CreateRoutePatternMatcher(RouteEndpoint endpoint)
         {
@@ -190,10 +189,10 @@ namespace Microsoft.AspNetCore.Routing
                 EventIds.EndpointsNotFound,
                 "No endpoints found for address {Address}");
 
-            private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _pathParsingSucceeded = LoggerMessage.Define<IEnumerable<string>, string>(
+            private static readonly Action<ILogger, string, string, Exception> _pathParsingSucceeded = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 EventIds.PathParsingSucceeded,
-                "Path parsing succeeded for endpoints {Endpoints} and URI path {URI}");
+                "Path parsing succeeded for endpoint {Endpoint} and URI path {URI}");
 
             private static readonly Action<ILogger, IEnumerable<string>, string, Exception> _pathParsingFailed = LoggerMessage.Define<IEnumerable<string>, string>(
                 LogLevel.Debug,
@@ -214,12 +213,12 @@ namespace Microsoft.AspNetCore.Routing
                 _endpointsNotFound(logger, address, null);
             }
 
-            public static void PathParsingSucceeded(ILogger logger, PathString path, IEnumerable<Endpoint> endpoints)
+            public static void PathParsingSucceeded(ILogger logger, PathString path, Endpoint endpoint)
             {
                 // Checking level again to avoid allocation on the common path
                 if (logger.IsEnabled(LogLevel.Debug))
                 {
-                    _pathParsingSucceeded(logger, endpoints.Select(e => e.DisplayName), path.Value, null);
+                    _pathParsingSucceeded(logger, endpoint.DisplayName, path.Value, null);
                 }
             }
 
