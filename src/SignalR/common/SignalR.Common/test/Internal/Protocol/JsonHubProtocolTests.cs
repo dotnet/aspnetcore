@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             var protocolOptions = new JsonHubProtocolOptions()
             {
-                PayloadSerializerSettings = new JsonSerializerOptions()
+                PayloadSerializerOptions = new JsonSerializerOptions()
                 {
                     IgnoreNullValues = ignoreNullValues,
                     PropertyNamingPolicy = useCamelCase ? JsonNamingPolicy.CamelCase : null
