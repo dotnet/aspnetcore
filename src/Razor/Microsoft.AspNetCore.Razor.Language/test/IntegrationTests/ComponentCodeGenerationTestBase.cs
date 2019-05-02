@@ -2656,6 +2656,39 @@ namespace Test
         }
 
         [Fact]
+        public void ChildComponent_NonGenericParameterizedChildContent_TypeInference()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent<TItem> : ComponentBase
+    {
+        [Parameter] TItem Item { get; set; }
+
+        [Parameter] RenderFragment<TItem> GenericFragment { get; set; }
+
+        [Parameter] RenderFragment<int> IntFragment { get; set; }
+    }
+}
+"));
+
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent Item=""@(""hi"")"">
+  <GenericFragment>@context.ToLower()</GenericFragment>
+  <IntFragment>@context</IntFragment>
+</MyComponent>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
         public void GenericComponent_WithFullyQualifiedTagName()
         {
             // Arrange
