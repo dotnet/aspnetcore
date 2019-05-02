@@ -15,22 +15,22 @@ namespace Microsoft.AspNetCore.Http.Connections
     {
         // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ConnectionIdPropertyName = "connectionId";
-        private static ReadOnlySpan<byte> ConnectionIdPropertyNameBytes => new byte[] { (byte)'c', (byte)'o', (byte)'n', (byte)'n', (byte)'e', (byte)'c', (byte)'t', (byte)'i', (byte)'o', (byte)'n', (byte)'I', (byte)'d' };
+        private static JsonEncodedText ConnectionIdPropertyNameBytes => JsonEncodedText.Encode(ConnectionIdPropertyName);
         private const string UrlPropertyName = "url";
-        private static ReadOnlySpan<byte> UrlPropertyNameBytes => new byte[] { (byte)'u', (byte)'r', (byte)'l' };
+        private static JsonEncodedText UrlPropertyNameBytes => JsonEncodedText.Encode(UrlPropertyName);
         private const string AccessTokenPropertyName = "accessToken";
-        private static ReadOnlySpan<byte> AccessTokenPropertyNameBytes => new byte[] { (byte)'a', (byte)'c', (byte)'c', (byte)'e', (byte)'s', (byte)'s', (byte)'T', (byte)'o', (byte)'k', (byte)'e', (byte)'n' };
+        private static JsonEncodedText AccessTokenPropertyNameBytes => JsonEncodedText.Encode(AccessTokenPropertyName);
         private const string AvailableTransportsPropertyName = "availableTransports";
-        private static ReadOnlySpan<byte> AvailableTransportsPropertyNameBytes => new byte[] { (byte)'a', (byte)'v', (byte)'a', (byte)'i', (byte)'l', (byte)'a', (byte)'b', (byte)'l', (byte)'e', (byte)'T', (byte)'r', (byte)'a', (byte)'n', (byte)'s', (byte)'p', (byte)'o', (byte)'r', (byte)'t', (byte)'s' };
+        private static JsonEncodedText AvailableTransportsPropertyNameBytes => JsonEncodedText.Encode(AvailableTransportsPropertyName);
         private const string TransportPropertyName = "transport";
-        private static ReadOnlySpan<byte> TransportPropertyNameBytes => new byte[] { (byte)'t', (byte)'r', (byte)'a', (byte)'n', (byte)'s', (byte)'p', (byte)'o', (byte)'r', (byte)'t' };
+        private static JsonEncodedText TransportPropertyNameBytes => JsonEncodedText.Encode(TransportPropertyName);
         private const string TransferFormatsPropertyName = "transferFormats";
-        private static ReadOnlySpan<byte> TransferFormatsPropertyNameBytes => new byte[] { (byte)'t', (byte)'r', (byte)'a', (byte)'n', (byte)'s', (byte)'f', (byte)'e', (byte)'r', (byte)'F', (byte)'o', (byte)'r', (byte)'m', (byte)'a', (byte)'t', (byte)'s' };
+        private static JsonEncodedText TransferFormatsPropertyNameBytes => JsonEncodedText.Encode(TransferFormatsPropertyName);
         private const string ErrorPropertyName = "error";
-        private static ReadOnlySpan<byte> ErrorPropertyNameBytes => new byte[] { (byte)'e', (byte)'r', (byte)'r', (byte)'o', (byte)'r' };
+        private static JsonEncodedText ErrorPropertyNameBytes => JsonEncodedText.Encode(ErrorPropertyName);
 
         // Used to detect ASP.NET SignalR Server connection attempt
-        private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => new byte[] { (byte)'P', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l', (byte)'V', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
+        private static JsonEncodedText ProtocolVersionPropertyNameBytes => JsonEncodedText.Encode("ProtocolVersion");
 
         public static void WriteResponse(NegotiationResponse response, IBufferWriter<byte> output)
         {
@@ -120,19 +120,19 @@ namespace Microsoft.AspNetCore.Http.Connections
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.PropertyName:
-                            if (reader.TextEquals(UrlPropertyNameBytes))
+                            if (reader.TextEquals(UrlPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 url = reader.ReadAsString(UrlPropertyName);
                             }
-                            else if (reader.TextEquals(AccessTokenPropertyNameBytes))
+                            else if (reader.TextEquals(AccessTokenPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 accessToken = reader.ReadAsString(AccessTokenPropertyName);
                             }
-                            else if (reader.TextEquals(ConnectionIdPropertyNameBytes))
+                            else if (reader.TextEquals(ConnectionIdPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 connectionId = reader.ReadAsString(ConnectionIdPropertyName);
                             }
-                            else if (reader.TextEquals(AvailableTransportsPropertyNameBytes))
+                            else if (reader.TextEquals(AvailableTransportsPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
                                 reader.EnsureArrayStart();
@@ -150,11 +150,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                                     }
                                 }
                             }
-                            else if (reader.TextEquals(ErrorPropertyNameBytes))
+                            else if (reader.TextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
                             }
-                            else if (reader.TextEquals(ProtocolVersionPropertyNameBytes))
+                            else if (reader.TextEquals(ProtocolVersionPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 throw new InvalidOperationException("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                             }
@@ -221,11 +221,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                     case JsonTokenType.PropertyName:
                         var memberName = reader.ValueSpan;
 
-                        if (memberName.SequenceEqual(TransportPropertyNameBytes))
+                        if (memberName.SequenceEqual(TransportPropertyNameBytes.EncodedUtf8Bytes))
                         {
                             availableTransport.Transport = reader.ReadAsString(TransportPropertyName);
                         }
-                        else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes))
+                        else if (memberName.SequenceEqual(TransferFormatsPropertyNameBytes.EncodedUtf8Bytes))
                         {
                             reader.CheckRead();
                             reader.EnsureArrayStart();
