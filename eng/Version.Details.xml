@@ -53,241 +53,241 @@
       <Uri>https://github.com/aspnet/EntityFrameworkCore</Uri>
       <Sha>24afd0772942a591edc7e40eabe61d469e8d17d4</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.Analyzer.Testing" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.BenchmarkRunner.Sources" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ActivatorUtilities.Sources" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ActivatorUtilities.Sources" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Caching.Abstractions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Caching.Memory" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Caching.SqlServer" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Caching.StackExchangeRedis" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.CommandLineUtils.Sources" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Abstractions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.AzureKeyVault" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Binder" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.CommandLine" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.FileExtensions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Json" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.KeyPerFile" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.KeyPerFile" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.UserSecrets" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration.Xml" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Configuration" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Configuration" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.DependencyInjection" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.DiagnosticAdapter" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks.Abstractions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Diagnostics.HealthChecks" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Abstractions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Composite" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileProviders.Physical" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.FileSystemGlobbing" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.HashCodeCombiner.Sources" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Hosting.Abstractions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Hosting" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Hosting" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.HostFactoryResolver.Sources" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Http" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Http" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Localization.Abstractions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Localization.Abstractions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Localization" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Localization" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Abstractions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.AzureAppServices" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Configuration" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Console" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Debug" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.EventSource" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.EventLog" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.TraceSource" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging.Testing" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Logging" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Logging" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ObjectPool" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Options.ConfigurationExtensions" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Options.DataAnnotations" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Options" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Options" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.Primitives" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.Primitives" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.TypeNameHelper.Sources" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.TypeNameHelper.Sources" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.ValueStopwatch.Sources" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.WebEncoders" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Extensions.WebEncoders" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.Internal.Extensions.Refs" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.JSInterop" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.JSInterop" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
-    <Dependency Name="Mono.WebAssembly.Interop" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Mono.WebAssembly.Interop" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
     <Dependency Name="Microsoft.CSharp" Version="4.6.0-preview6.19251.7" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>
@@ -365,13 +365,13 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0b1daee821fbb20df5daf002fd3b1d070d1380cf</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview6-27701-13" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.Extensions.DependencyModel" Version="3.0.0-preview6-27701-15" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>0c975c4ccbf3ff51913031be7e089aa70aad2318</Sha>
+      <Sha>c5eff03d4f9c0745bb4bcc088487ea8e89bb35a2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27701-13" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="Microsoft.NETCore.App" Version="3.0.0-preview6-27701-15" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>0c975c4ccbf3ff51913031be7e089aa70aad2318</Sha>
+      <Sha>c5eff03d4f9c0745bb4bcc088487ea8e89bb35a2</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
@@ -380,9 +380,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>0b1daee821fbb20df5daf002fd3b1d070d1380cf</Sha>
     </Dependency>
-    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Internal.AspNetCore.Analyzers" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.GenAPI" Version="1.0.0-beta.19229.8">
       <Uri>https://github.com/dotnet/arcade</Uri>
@@ -392,9 +392,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>000</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview6.19251.7" CoherentParentDependency="Microsoft.EntityFrameworkCore">
+    <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview6.19251.9" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
-      <Sha>a1fc7cd8c347b75a38daadeab9e7d6535474d395</Sha>
+      <Sha>33f20e20e36b9714d24d3db6dcaca0fe6c039c71</Sha>
     </Dependency>
   </ToolsetDependencies>
 </Dependencies>
