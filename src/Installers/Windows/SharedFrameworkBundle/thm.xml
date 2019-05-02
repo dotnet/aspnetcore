@@ -17,8 +17,8 @@
         <Button Name="HelpCancelButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.HelpCloseButton)</Button>
     </Page>
     <Page Name="Install">
-        <Text X="11" Y="90" Width="-11" Height="30" FontId="3">Welcome to the #(loc.Caption).</Text>
-        <Hypertext Name="EulaAndPrivacyHyperlink" X="11" Y="131" Width="-11" Height="51" TabStop="yes" FontId="3" HideWhenDisabled="yes">[WixBundleName] &lt;a href="https://go.microsoft.com/fwlink/?LinkId=320539"&gt;license terms&lt;/a&gt; and &lt;a href="https://go.microsoft.com/fwlink/?LinkId=786378"&gt;privacy statement&lt;/a&gt;.</Hypertext>
+        <Text X="11" Y="90" Width="-11" Height="30" FontId="3">#(loc.Welcome)</Text>
+        <Hypertext Name="EulaAndPrivacyHyperlink" X="11" Y="131" Width="-11" Height="51" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.EulaPrivacy)</Hypertext>
         <Checkbox Name="EulaAcceptCheckbox" X="-11" Y="-41" Width="260" Height="17" TabStop="yes" FontId="3" HideWhenDisabled="yes">#(loc.InstallAcceptCheckbox)</Checkbox>
         <Button Name="OptionsButton" X="-171" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.InstallOptionsButton)</Button>
         <Button Name="InstallButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">#(loc.InstallInstallButton)</Button>
