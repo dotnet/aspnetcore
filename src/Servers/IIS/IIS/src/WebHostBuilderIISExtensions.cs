@@ -30,9 +30,6 @@ namespace Microsoft.AspNetCore.Hosting
             // Check if in process
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.IsAspNetCoreModuleLoaded())
             {
-                // Startup Errors are now reported by ANCM directly.
-                hostBuilder.CaptureStartupErrors(false);
-
                 var iisConfigData = NativeMethods.HttpGetApplicationProperties();
                 // Trim trailing slash to be consistent with other servers
                 var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
