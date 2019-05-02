@@ -376,6 +376,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <SharedFxContent Include="$(ProjectDepsFilePath)" />
       <SharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
       <SharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
+      <SharedFxContent Include="$(RepositoryRoot)THIRD-PARTY-NOTICES.txt" />
     </ItemGroup>
   </Target>
 
