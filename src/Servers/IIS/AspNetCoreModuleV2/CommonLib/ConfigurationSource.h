@@ -13,6 +13,7 @@
 #define CS_WINDOWS_AUTHENTICATION_SECTION                L"system.webServer/security/authentication/windowsAuthentication"
 #define CS_BASIC_AUTHENTICATION_SECTION                  L"system.webServer/security/authentication/basicAuthentication"
 #define CS_ANONYMOUS_AUTHENTICATION_SECTION              L"system.webServer/security/authentication/anonymousAuthentication"
+#define CS_MAX_REQUEST_BODY_SIZE_SECTION                 L"system.webServer/security/requestFiltering"
 
 class ConfigurationSource: NonCopyable
 {

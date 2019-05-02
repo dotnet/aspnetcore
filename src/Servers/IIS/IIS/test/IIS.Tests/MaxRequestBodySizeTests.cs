@@ -120,6 +120,36 @@ namespace IIS.Tests
         }
 
         [ConditionalFact]
+        public async Task DoesNotRejectRequestWithChunkedExceedingGlobalLimitIfLimitDisabledPerRequest()
+        {
+            using (var testServer = await TestServer.Create(
+                async ctx =>
+                {
+                    var feature = ctx.Features.Get<IHttpMaxRequestBodySizeFeature>();
+                    Assert.Equal(0, feature.MaxRequestBodySize);
+                    feature.MaxRequestBodySize = null;
+
+                    await ctx.Request.Body.ReadAsync(new byte[2000]);
+
+                }, LoggerFactory, new IISServerOptions { MaxRequestBodySize = 0 }))
+            {
+                using (var connection = testServer.CreateConnection())
+                {
+                    await connection.Send(
+                        "POST / HTTP/1.1",
+                        $"Transfer-Encoding: chunked",
+                        "Host: localhost",
+                        "",
+                        "1",
+                        "a",
+                        "0",
+                        "");
+                    await connection.Receive("HTTP/1.1 200 OK");
+                }
+            }
+        }
+
+        [ConditionalFact]
         public async Task DoesNotRejectBodylessGetRequestWithZeroMaxRequestBodySize()
         {
             using (var testServer = await TestServer.Create(

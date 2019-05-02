@@ -44,6 +44,7 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     m_fWindowsAuthEnabled(false),
     m_fBasicAuthEnabled(false),
     m_fAnonymousAuthEnabled(false),
+    m_dwMaxRequestBodySize(INFINITE),
     m_dwStartupTimeLimitInMS(INFINITE),
     m_dwShutdownTimeLimitInMS(INFINITE)
 {
@@ -70,6 +71,16 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
 
     const auto anonAuthSection = configurationSource.GetSection(CS_ANONYMOUS_AUTHENTICATION_SECTION);
     m_fAnonymousAuthEnabled = anonAuthSection && anonAuthSection->GetBool(CS_ENABLED).value_or(false);
+
+    const auto maxRequestBodySize = configurationSource.GetSection(CS_MAX_REQUEST_BODY_SIZE_SECTION);
+    if (maxRequestBodySize != nullptr)
+    {
+        auto requestLimitSection = maxRequestBodySize->GetSection(L"requestLimits").value_or(nullptr);
+        if (requestLimitSection != nullptr)
+        {
+            m_dwMaxRequestBodySize = requestLimitSection->GetLong(L"maxAllowedContentLength").value_or(INFINITE);
+        }
+    }
 
     if (pSite != nullptr)
     {

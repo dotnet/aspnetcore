@@ -98,23 +98,22 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                     var read = await AsyncIO.ReadAsync(memory);
 
-                    _consumedBytes += read;
-
                     // End of body
                     if (read == 0)
                     {
                         break;
                     }
 
-                    if (_consumedBytes > MaxRequestBodySize)
-                    {
-                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
-                    }
-
                     // Read was not canceled because of incoming write or IO stopping
                     if (read != -1)
                     {
+                        _consumedBytes += read;
                         _bodyInputPipe.Writer.Advance(read);
+                    }
+
+                    if (_consumedBytes > MaxRequestBodySize)
+                    {
+                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
                     }
 
                     var result = await _bodyInputPipe.Writer.FlushAsync();

@@ -191,6 +191,7 @@ struct IISConfigurationData
     BOOL fBasicAuthEnabled;
     BOOL fAnonymousAuthEnable;
     BSTR pwzBindings;
+    DWORD maxRequestBodySize;
 };
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
@@ -216,6 +217,7 @@ http_get_application_properties(
 
     auto const serverAddresses = BindingInformation::Format(pConfiguration.QueryBindings(), pInProcessApplication->QueryApplicationVirtualPath());
     pIISCofigurationData->pwzBindings = SysAllocString(serverAddresses.c_str());
+    pIISCofigurationData->maxRequestBodySize = pInProcessApplication->QueryConfig().QueryMaxRequestBodySizeLimit();
     return S_OK;
 }
 
