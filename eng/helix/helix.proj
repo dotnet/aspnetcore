@@ -33,7 +33,7 @@
   </PropertyGroup>
 
   <Target Name="Gather" BeforeTargets="Build">
-    <MSBuild Projects="@(ProjectToBuild)"
+    <MSBuild Projects="C:\Github\AspNetCore\src\Http\Authentication.Core\test\Microsoft.AspNetCore.Authentication.Core.Test.csproj"
               Targets="CreateHelixPayload"
               SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="HelixWorkItem" />
