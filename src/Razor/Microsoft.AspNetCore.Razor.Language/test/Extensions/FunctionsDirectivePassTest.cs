@@ -72,9 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 node => CSharpCode(" var value = true; ", node));
 
             var method = @class.Children[0];
-            Children(
-                method,
-                node => Assert.IsType<DirectiveIntermediateNode>(node));
+            Assert.Empty(method.Children);
         }
 
         [Fact]
@@ -113,9 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 node => CSharpCode(" var value = true; ", node));
 
             var method = @class.Children[0];
-            Children(
-                method,
-                node => Assert.IsType<DirectiveIntermediateNode>(node));
+            Assert.Empty(method.Children);
         }
 
         [Fact]
@@ -161,10 +157,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var method = @class.Children[0];
             Children(
                 method,
-                node => Assert.IsType<HtmlContentIntermediateNode>(node),
-                node => Assert.IsType<DirectiveIntermediateNode>(node),
-                node => Assert.IsType<DirectiveIntermediateNode>(node),
-                node => Assert.IsType<DirectiveIntermediateNode>(node));
+                node => Assert.IsType<HtmlContentIntermediateNode>(node));
         }
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)

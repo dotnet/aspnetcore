@@ -18,28 +18,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
-            var directiveNodes = new List<IntermediateNode>();
-            foreach (var functions in documentNode.FindDirectiveReferences(FunctionsDirective.Directive))
-            {
-                directiveNodes.Add(functions.Node);
-            }
+            var directiveNodes = new List<IntermediateNodeReference>();
+            directiveNodes.AddRange(documentNode.FindDirectiveReferences(FunctionsDirective.Directive));
 
             if (FileKinds.IsComponent(codeDocument.GetFileKind()))
             {
-                foreach (var code in documentNode.FindDirectiveReferences(ComponentCodeDirective.Directive))
-                {
-                    directiveNodes.Add(code.Node);
-                }
+                directiveNodes.AddRange(documentNode.FindDirectiveReferences(ComponentCodeDirective.Directive));
             }
 
             // Now we have all the directive nodes, we want to add them to the end of the class node in document order.
-            var orderedDirectives = directiveNodes.OrderBy(n => n.Source?.AbsoluteIndex);
-            foreach (var node in orderedDirectives)
+            var orderedDirectives = directiveNodes.OrderBy(n => n.Node.Source?.AbsoluteIndex);
+            foreach (var directiveReference in orderedDirectives)
             {
+                var node = directiveReference.Node;
                 for (var i = 0; i < node.Children.Count; i++)
                 {
                     @class.Children.Add(node.Children[i]);
                 }
+
+                // We don't want to keep the original directive node around anymore.
+                // Otherwise this can cause unintended side effects in the subsequent passes.
+                directiveReference.Remove();
             }
         }
     }
