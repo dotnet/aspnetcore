@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.DataProtection.Repositories
 
             try
             {
-                if (DockerUtils.IsContainer && !DockerUtils.IsVolumeMountedFolder(Directory))
+                if (ContainerUtils.IsContainer && !ContainerUtils.IsVolumeMountedFolder(Directory))
                 {
                     // warn users that keys may be lost when running in docker without a volume mounted folder
                     _logger.UsingEphemeralFileSystemLocationInContainer(Directory.FullName);
