@@ -19,13 +19,13 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     }
     public partial class HeaderPropagationMessageHandler : System.Net.Http.DelegatingHandler
     {
-        public HeaderPropagationMessageHandler(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues values) { }
+        public HeaderPropagationMessageHandler(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> options, Microsoft.AspNetCore.Http.IHttpContextAccessor accessor) { }
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
     }
     public partial class HeaderPropagationMiddleware
     {
-        public HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues values) { }
-        public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
+        public HeaderPropagationMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> options) { }
+        public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues values) { throw null; }
     }
     public partial class HeaderPropagationOptions
     {
