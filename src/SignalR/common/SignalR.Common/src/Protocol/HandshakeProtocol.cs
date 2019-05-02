@@ -20,13 +20,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ProtocolPropertyName = "protocol";
-        private static ReadOnlySpan<byte> ProtocolPropertyNameBytes => new byte[] { (byte)'p', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l' };
+        private static JsonEncodedText ProtocolPropertyNameBytes => JsonEncodedText.Encode(ProtocolPropertyName);
         private const string ProtocolVersionPropertyName = "version";
-        private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => new byte[] { (byte)'v', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
+        private static JsonEncodedText ProtocolVersionPropertyNameBytes => JsonEncodedText.Encode(ProtocolVersionPropertyName);
         private const string ErrorPropertyName = "error";
-        private static ReadOnlySpan<byte> ErrorPropertyNameBytes => new byte[] { (byte)'e', (byte)'r', (byte)'r', (byte)'o', (byte)'r' };
+        private static JsonEncodedText ErrorPropertyNameBytes => JsonEncodedText.Encode(ErrorPropertyName);
         private const string TypePropertyName = "type";
-        private static ReadOnlySpan<byte> TypePropertyNameBytes => new byte[] { (byte)'t', (byte)'y', (byte)'p', (byte)'e' };
+        private static JsonEncodedText TypePropertyNameBytes => JsonEncodedText.Encode(TypePropertyName);
 
         private static ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>> _messageCache = new ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>>();
 
@@ -135,13 +135,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (reader.TextEquals(TypePropertyNameBytes))
+                    if (reader.TextEquals(TypePropertyNameBytes.EncodedUtf8Bytes))
                     {
                         // a handshake response does not have a type
                         // check the incoming message was not any other type of message
                         throw new InvalidDataException("Expected a handshake response from the server.");
                     }
-                    else if (reader.TextEquals(ErrorPropertyNameBytes))
+                    else if (reader.TextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                     {
                         error = reader.ReadAsString(ErrorPropertyName);
                     }
@@ -190,11 +190,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             {
                 if (reader.TokenType == JsonTokenType.PropertyName)
                 {
-                    if (reader.TextEquals(ProtocolPropertyNameBytes))
+                    if (reader.TextEquals(ProtocolPropertyNameBytes.EncodedUtf8Bytes))
                     {
                         protocol = reader.ReadAsString(ProtocolPropertyName);
                     }
-                    else if (reader.TextEquals(ProtocolVersionPropertyNameBytes))
+                    else if (reader.TextEquals(ProtocolVersionPropertyNameBytes.EncodedUtf8Bytes))
                     {
                         protocolVersion = reader.ReadAsInt32(ProtocolVersionPropertyName);
                     }
