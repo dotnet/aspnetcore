@@ -10,10 +10,12 @@ namespace BenchmarkServer.Hubs
 {
     public class EchoHub : Hub
     {
-        private static int _connectionCount = 0;
-        private static int _peakConnectionCount = 0;
+        private EchoHubConnectionCounter _counter;
 
-        static DateTime _serverStart = DateTime.Now;
+        public EchoHub(EchoHubConnectionCounter counter)
+        {
+            _counter = counter;
+        }
 
         public async Task Broadcast(int duration)
         {
@@ -35,27 +37,14 @@ namespace BenchmarkServer.Hubs
             Console.WriteLine("Broadcast exited: Sent {0} messages", sent);
         }
 
-        public static string Status => $"{_connectionCount} current, {_peakConnectionCount} peak.";
-
-        public void LogConnections(string label) {
-            var connectionCount = Interlocked.Read(ref _connectionCount);
-            if (connectionCount < 100 || connectionCount % 100 == 0)
-            {
-                var timeSinceServerStart = DateTime.Now.Subtract(_serverStart).ToString(@"hh\:mm\:ss");
-                Console.WriteLine($"[{timeSinceServerStart}] {label}: {Status}");
-            }
-        }
-
-        public override Task OnConnectedAsync() {
-            var newConnectionCount = Interlocked.Increment(ref _connectionCount);
-            _peakConnectionCount = Math.Max(_connectionCount, _peakConnectionCount);
-            LogConnections("Connected");
+        public override Task OnConnectedAsync()
+        {
+            _counter?.Connected();
             return Task.CompletedTask;
         }
 
         public override Task OnDisconnectedAsync(Exception exception) {
-            Interlocked.Decrement(ref _connectionCount);
-            LogConnections("Disconnected");
+            _counter?.Disconnected();
             return Task.CompletedTask;
         }
 
