@@ -160,7 +160,6 @@ and are generated based on the last package release.
     <LatestPackageReference Include="System.Text.Json" Version="$(SystemTextJsonPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Channels" Version="$(SystemThreadingChannelsPackageVersion)" />
     <LatestPackageReference Include="System.Threading.Tasks.Extensions" Version="$(SystemThreadingTasksExtensionsPackageVersion)" />
-    <LatestPackageReference Include="Utf8Json" Version="$(Utf8JsonPackageVersion)" />
     <LatestPackageReference Include="xunit.abstractions" Version="$(XunitAbstractionsPackageVersion)" />
     <LatestPackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
     <LatestPackageReference Include="xunit.assert" Version="$(XunitAssertPackageVersion)" />
