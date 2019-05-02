@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public partial class HeaderPropagationValues
     {
         public HeaderPropagationValues() { }
-        public System.Collections.Generic.IDictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { get { throw null; } }
+        public System.Collections.Generic.IReadOnlyDictionary<string, Microsoft.Extensions.Primitives.StringValues> Headers { get { throw null; } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

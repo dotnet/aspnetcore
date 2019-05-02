@@ -12,16 +12,26 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     /// </summary>
     public class HeaderPropagationValues
     {
+        private static readonly IReadOnlyDictionary<string, StringValues> _emptyHeaders = new Dictionary<string, StringValues>(capacity: 0);
+
         private Dictionary<string, StringValues> _headers;
 
-        /// <summary>
-        /// Gets the headers values collected by the <see cref="HeaderPropagationMiddleware"/> from the current request that can be propagated.
-        /// </summary>
-        public IDictionary<string, StringValues> Headers
+        internal Dictionary<string, StringValues> InputHeaders
         {
             get
             {
                 return _headers ??= new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
+            }
+        }
+
+        /// <summary>
+        /// Gets the headers values collected by the <see cref="HeaderPropagationMiddleware"/> from the current request that can be propagated.
+        /// </summary>
+        public IReadOnlyDictionary<string, StringValues> Headers
+        {
+            get
+            {
+                return _headers ?? _emptyHeaders;
             }
         }
     }

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -44,7 +43,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
                 if (incomingValues.Count >= 1)
                 {
-                    values.Headers.TryAdd(headerName, incomingValues);
+                    values.InputHeaders.TryAdd(headerName, incomingValues);
                 }
             }
 

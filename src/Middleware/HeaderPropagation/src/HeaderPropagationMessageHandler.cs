@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     /// </summary>
     public class HeaderPropagationMessageHandler : DelegatingHandler
     {
+        private readonly IHttpContextAccessor _accessor;
         private readonly HeaderPropagationValues _values;
         private readonly HeaderPropagationOptions _options;
 
@@ -34,9 +35,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             }
 
             _options = options.Value;
-
-            var values = accessor.HttpContext?.RequestServices.GetService<HeaderPropagationValues>();
-             _values = values ?? throw new ArgumentNullException(nameof(values));
+            _accessor = accessor;
         }
 
         // For testing
@@ -65,6 +64,12 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// <returns>The task object representing the asynchronous operation.</returns>
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            var inputValues = _accessor?.HttpContext?.RequestServices.GetService<HeaderPropagationValues>() ??
+                _values ??
+                throw new InvalidOperationException($"There is no active request. {nameof(SendAsync)} has been called after request has finished.");
+
+            var inputHeaders = inputValues.Headers;
+
             foreach ((var headerName, var entry) in _options.Headers)
             {
                 var outputName = string.IsNullOrEmpty(entry?.OutboundHeaderName) ? headerName : entry.OutboundHeaderName;
@@ -74,23 +79,23 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 if (!request.Headers.TryGetValues(outputName, out var _) &&
                     !(hasContent && request.Content.Headers.TryGetValues(outputName, out var _)))
                 {
-                    if (_values.Headers.TryGetValue(headerName, out var stringValues) &&
+                    if (inputHeaders.TryGetValue(headerName, out var stringValues) &&
                         !StringValues.IsNullOrEmpty(stringValues))
                     {
                         if (stringValues.Count == 1)
                         {
-                            var value = (string)stringValues;
-                            if (!request.Headers.TryAddWithoutValidation(outputName, value) && hasContent)
+                            var outputValue = (string)stringValues;
+                            if (!request.Headers.TryAddWithoutValidation(outputName, outputValue) && hasContent)
                             {
-                                request.Content.Headers.TryAddWithoutValidation(outputName, value);
+                                request.Content.Headers.TryAddWithoutValidation(outputName, outputValue);
                             }
                         }
                         else
                         {
-                            var values = (string[])stringValues;
-                            if (!request.Headers.TryAddWithoutValidation(outputName, values) && hasContent)
+                            var outputValues = (string[])stringValues;
+                            if (!request.Headers.TryAddWithoutValidation(outputName, outputValues) && hasContent)
                             {
-                                request.Content.Headers.TryAddWithoutValidation(outputName, values);
+                                request.Content.Headers.TryAddWithoutValidation(outputName, outputValues);
                             }
                         }
                     }

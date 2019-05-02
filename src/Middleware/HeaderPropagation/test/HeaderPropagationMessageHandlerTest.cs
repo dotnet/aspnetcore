@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             Configuration.Headers.Add("in", new HeaderPropagationEntry { OutboundHeaderName = "out" });
-            State.Headers.Add("in", "test");
+            State.InputHeaders.Add("in", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             Configuration.Headers.Add("in", new HeaderPropagationEntry { OutboundHeaderName = "out" });
-            State.Headers.Add("in", new[] { "one", "two" });
+            State.InputHeaders.Add("in", new[] { "one", "two" });
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_RequestWithContent_ContentHeaderPresent_DoesNotAddIt()
         {
             Configuration.Headers.Add("in", new HeaderPropagationEntry() { OutboundHeaderName = "Content-Type" });
-            State.Headers.Add("in", "test");
+            State.InputHeaders.Add("in", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage() { Content = new StringContent("test") });
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_RequestWithContent_ContentHeaderNotPresent_AddValue()
         {
             Configuration.Headers.Add("in", new HeaderPropagationEntry() { OutboundHeaderName = "Content-Language" });
-            State.Headers.Add("in", "test");
+            State.InputHeaders.Add("in", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage() { Content = new StringContent("test") });
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_WithMultipleValues_RequestWithContent_ContentHeaderNotPresent_AddAllValues()
         {
             Configuration.Headers.Add("in", new HeaderPropagationEntry() { OutboundHeaderName = "Content-Language" });
-            State.Headers.Add("in", new[] { "one", "two" });
+            State.InputHeaders.Add("in", new[] { "one", "two" });
 
             // Act
             await Client.SendAsync(new HttpRequestMessage() { Content = new StringContent("test") });
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             Configuration.Headers.Add("in", new HeaderPropagationEntry());
-            State.Headers.Add("in", "test");
+            State.InputHeaders.Add("in", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_NotInOptions_DoesNotAddIt()
         {
             // Arrange
-            State.Headers.Add("inout", "test");
+            State.InputHeaders.Add("inout", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
@@ -156,8 +156,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Arrange
             Configuration.Headers.Add("inout", new HeaderPropagationEntry());
             Configuration.Headers.Add("another", new HeaderPropagationEntry());
-            State.Headers.Add("inout", "test");
-            State.Headers.Add("another", "test2");
+            State.InputHeaders.Add("inout", "test");
+            State.InputHeaders.Add("another", "test2");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             Configuration.Headers.Add("inout", new HeaderPropagationEntry());
-            State.Headers.Add("inout", headerValue);
+            State.InputHeaders.Add("inout", headerValue);
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             string[] expectedValues)
         {
             // Arrange
-            State.Headers.Add("inout", "test");
+            State.InputHeaders.Add("inout", "test");
             Configuration.Headers.Add("inout", new HeaderPropagationEntry());
 
             var request = new HttpRequestMessage();
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         {
             // Arrange
             Configuration.Headers.Add("in", null);
-            State.Headers.Add("in", "test");
+            State.InputHeaders.Add("in", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
