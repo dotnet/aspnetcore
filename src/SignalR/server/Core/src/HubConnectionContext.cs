@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     Log.HandshakeComplete(_logger, Protocol.Name);
 
-                                    await WriteHandshakeResponseAsync(new HandshakeResponseMessage(Protocol.MinorVersion));
+                                    await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
                                     return true;
                                 }
                             }

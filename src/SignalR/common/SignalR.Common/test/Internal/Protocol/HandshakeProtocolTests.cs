@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
@@ -57,17 +57,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.True(HandshakeProtocol.TryParseResponseMessage(ref message, out var response));
 
             Assert.Equal("dummy", response.Error);
-        }
-
-        [Theory]
-        [InlineData("{\"error\":\"\",\"minorVersion\":34}\u001e", 34)]
-        [InlineData("{\"error\":\"flump flump flump\",\"minorVersion\":112}\u001e", 112)]
-        public void ParsingResponseMessageGivesMinorVersion(string json, int version)
-        {
-            var message = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(json));
-
-            Assert.True(HandshakeProtocol.TryParseResponseMessage(ref message, out var response));
-            Assert.Equal(version, response.MinorVersion);
         }
 
         [Fact]
