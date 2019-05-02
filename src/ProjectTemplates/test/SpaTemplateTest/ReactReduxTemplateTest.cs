@@ -17,6 +17,7 @@ namespace Templates.Test.SpaTemplateTest
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.Azp.Windows)]
         public Task ReactReduxTemplate_Works_NetCore()
             => SpaTemplateImplAsync("reactredux", "reactredux", useLocalDb: false, usesAuth: false);
     }

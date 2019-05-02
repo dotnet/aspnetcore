@@ -24,6 +24,7 @@ namespace Templates.Test
         public Project Project { get; private set; }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
         public async Task RazorComponentsTemplateWorks()
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverside", Output);

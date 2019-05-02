@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             using (var alg384 = SHA384.Create())
             {
                 byte[] hash;
-                if(isSha256)
+                if (isSha256)
                 {
                     hash = alg256.ComputeHash(respStream);
                 }
@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var slnDir = GetSolutionDir();
