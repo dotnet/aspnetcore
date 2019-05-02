@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         public MessagePackHubProtocol() { }
         public MessagePackHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.MessagePackHubProtocolOptions> options) { }
-        public int MinorVersion { get { throw null; } }
         public string Name { get { throw null; } }
         public Microsoft.AspNetCore.Connections.TransferFormat TransferFormat { get { throw null; } }
         public int Version { get { throw null; } }
