@@ -199,7 +199,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public static ChannelReader<string> StreamEcho(ChannelReader<string> source)
         {
             var output = Channel.CreateUnbounded<string>();
-            _ = Task.Run(async () => {
+            _ = Task.Run(async () =>
+            {
                 try
                 {
                     while (await source.WaitToReadAsync())
@@ -259,6 +260,32 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             return Clients.Caller.SendAsync("NewProtocolMethodClient");
         }
+    }
+
+    public class StreamBufferHub : Hub
+    {
+        public async Task AcceptStream(ChannelReader<string> source, ChannelReader<string> blocker)
+        {
+
+            while (await blocker.WaitToReadAsync())
+            {
+                while (blocker.TryRead(out var item))
+                {
+                    if (item.Equals("unblock", StringComparison.OrdinalIgnoreCase))
+                    {
+                        while (await source.WaitToReadAsync())
+                        {
+                            while (source.TryRead(out var innerItem))
+                            {
+                                Console.WriteLine(innerItem);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
     }
 
     [Authorize(JwtBearerDefaults.AuthenticationScheme)]
