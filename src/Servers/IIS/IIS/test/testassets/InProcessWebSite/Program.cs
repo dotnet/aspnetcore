@@ -140,6 +140,7 @@ namespace TestSite
                     return 0;
                 case "ThrowInStartupGenericHost":
                     {
+#if !FORWARDCOMPAT
                         var host = new HostBuilder().ConfigureWebHost((c) =>
                         {
                             c.ConfigureLogging((_, factory) =>
@@ -153,8 +154,8 @@ namespace TestSite
                                    
 
                         host.Build().Run();
+#endif
                     }
-
                     return 0;
                 default:
                     return StartServer();
