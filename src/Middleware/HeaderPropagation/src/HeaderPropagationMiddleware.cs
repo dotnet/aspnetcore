@@ -18,9 +18,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     {
         private readonly RequestDelegate _next;
         private readonly HeaderPropagationOptions _options;
-        private readonly HeaderPropagationValues _values;
 
-        public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
+        public HeaderPropagationMiddleware(RequestDelegate next, IOptions<HeaderPropagationOptions> options)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 
@@ -30,18 +29,22 @@ namespace Microsoft.AspNetCore.HeaderPropagation
             }
             _options = options.Value;
 
-            _values = values ?? throw new ArgumentNullException(nameof(values));
         }
 
-        public Task Invoke(HttpContext context)
+        public Task Invoke(HttpContext context, HeaderPropagationValues values)
         {
+            if (values is null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             foreach ((var headerName, var entry) in _options.Headers)
             {
-                var values = GetValues(headerName, entry, context);
+                var incomingValues = GetValues(headerName, entry, context);
 
-                if (!StringValues.IsNullOrEmpty(values))
+                if (incomingValues.Count >= 1)
                 {
-                    _values.Headers.TryAdd(headerName, values);
+                    values.Headers.TryAdd(headerName, incomingValues);
                 }
             }
 

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HeaderPropagation
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     /// </summary>
     public class HeaderPropagationValues
     {
-        private readonly static AsyncLocal<Dictionary<string, StringValues>> _headers = new AsyncLocal<Dictionary<string, StringValues>>();
+        private Dictionary<string, StringValues> _headers;
 
         /// <summary>
         /// Gets the headers values collected by the <see cref="HeaderPropagationMiddleware"/> from the current request that can be propagated.
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         {
             get
             {
-                return _headers.Value ?? (_headers.Value = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase));
+                return _headers ??= new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
             }
         }
     }

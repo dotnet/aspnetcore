@@ -22,7 +22,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.TryAddSingleton<HeaderPropagationValues>();
+            // DefaultHttpClientFactory creates a child scope, so we need to use the Singleton IHttpContextAccessor
+            // to reach through it to access RequestServices to get the request scoped HeaderPropagationValues.
+            services.AddHttpContextAccessor();
+            services.TryAddScoped<HeaderPropagationValues>();
             services.TryAddTransient<HeaderPropagationMessageHandler>();
 
             return services;

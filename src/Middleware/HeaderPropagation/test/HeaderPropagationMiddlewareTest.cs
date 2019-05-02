@@ -17,9 +17,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Next = ctx => Task.CompletedTask;
             Configuration = new HeaderPropagationOptions();
             State = new HeaderPropagationValues();
-            Middleware = new HeaderPropagationMiddleware(Next,
-                new OptionsWrapper<HeaderPropagationOptions>(Configuration),
-                State);
+            Middleware = new HeaderPropagationMiddleware(Next, new OptionsWrapper<HeaderPropagationOptions>(Configuration));
         }
 
         public DefaultHttpContext Context { get; set; }
@@ -36,7 +34,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Context.Request.Headers.Add("in", "test");
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.Contains("in", State.Headers.Keys);
@@ -50,7 +48,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Configuration.Headers.Add("in", new HeaderPropagationEntry());
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.Empty(State.Headers);
@@ -63,7 +61,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Context.Request.Headers.Add("in", "test");
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.Empty(State.Headers);
@@ -79,7 +77,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Context.Request.Headers.Add("another", "test2");
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.Contains("in", State.Headers.Keys);
@@ -98,7 +96,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Context.Request.Headers.Add("in", headerValue);
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.DoesNotContain("in", State.Headers.Keys);
@@ -114,7 +112,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Configuration.Headers.Add("in", new HeaderPropagationEntry { DefaultValue = defaultValues });
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.Contains("in", State.Headers.Keys);
@@ -142,7 +140,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             });
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.Contains("in", State.Headers.Keys);
@@ -163,7 +161,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Context.Request.Headers.Add("in", "no");
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.Contains("in", State.Headers.Keys);
@@ -180,7 +178,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             });
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.DoesNotContain("in", State.Headers.Keys);
@@ -194,7 +192,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Context.Request.Headers.Add("in", "test");
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.Contains("in", State.Headers.Keys);
@@ -208,7 +206,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             Configuration.Headers.Add("in", null);
 
             // Act
-            await Middleware.Invoke(Context);
+            await Middleware.Invoke(Context, State);
 
             // Assert
             Assert.DoesNotContain("in", State.Headers.Keys);

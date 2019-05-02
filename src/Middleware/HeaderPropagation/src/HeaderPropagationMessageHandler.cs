@@ -5,8 +5,10 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.HeaderPropagation
 {
@@ -22,9 +24,23 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// Creates a new instance of the <see cref="HeaderPropagationMessageHandler"/>.
         /// </summary>
         /// <param name="options">The options that define which headers are propagated.</param>
-        /// <param name="values">The values of the headers to be propagated populated by the
-        /// <see cref="HeaderPropagationMiddleware"/>.</param>
-        public HeaderPropagationMessageHandler(IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
+        /// <param name="accessor">The <see cref="IHttpContextAccessor"/> to access the request scoped <see cref="HeaderPropagationValues"/>
+        /// of the headers to be propagated populated by the <see cref="HeaderPropagationMiddleware"/>.</param>
+        public HeaderPropagationMessageHandler(IOptions<HeaderPropagationOptions> options, IHttpContextAccessor accessor)
+        {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            _options = options.Value;
+
+            var values = accessor.HttpContext?.RequestServices.GetService<HeaderPropagationValues>();
+             _values = values ?? throw new ArgumentNullException(nameof(values));
+        }
+
+        // For testing
+        internal HeaderPropagationMessageHandler(IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
         {
             if (options == null)
             {
