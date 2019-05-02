@@ -11,8 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    // Skipping tests as they NullRef and bigger refactoring is taking place https://github.com/aspnet/EntityFrameworkCore/issues/12795
-    internal class RoleStoreTest
+    public class RoleStoreTest
     {
         [Fact]
         public async Task CanCreateUsingAddRoleManager()

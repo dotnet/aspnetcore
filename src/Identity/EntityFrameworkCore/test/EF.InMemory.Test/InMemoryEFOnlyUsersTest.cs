@@ -9,8 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
-    // Skipping tests as they NullRef and bigger refactoring is taking place https://github.com/aspnet/EntityFrameworkCore/issues/12795
-    internal class InMemoryEFOnlyUsersTest : UserManagerSpecificationTestBase<IdentityUser, string>
+    public class InMemoryEFOnlyUsersTest : UserManagerSpecificationTestBase<IdentityUser, string>
     {
         protected override object CreateTestContext()
             => new InMemoryContext<IdentityUser>(new DbContextOptionsBuilder().Options);
