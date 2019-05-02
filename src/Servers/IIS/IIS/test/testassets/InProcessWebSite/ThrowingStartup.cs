@@ -7,9 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace TestSite
 {
-    internal class ThrowingStartup
+    public class ThrowingStartup
     {
-
         public void ConfigureServices(IServiceCollection serviceCollection)
         {
             throw new InvalidOperationException("From ConfigureServices");

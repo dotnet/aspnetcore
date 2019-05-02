@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace TestSite
@@ -134,6 +135,24 @@ namespace TestSite
                                        .Build();
 
                         host.Run();
+                    }
+
+                    return 0;
+                case "ThrowInStartupGenericHost":
+                    {
+                        var host = new HostBuilder().ConfigureWebHost((c) =>
+                        {
+                            c.ConfigureLogging((_, factory) =>
+                            {
+                                factory.AddConsole();
+                                factory.AddFilter("Console", level => level >= LogLevel.Information);
+                            })
+                            .UseIIS()
+                            .UseStartup<ThrowingStartup>();
+                        });
+                                   
+
+                        host.Build().Run();
                     }
 
                     return 0;

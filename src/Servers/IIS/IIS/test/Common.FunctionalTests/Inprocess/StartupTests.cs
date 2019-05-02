@@ -604,13 +604,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             VerifyDotnetRuntimeEventLog(deploymentResult);
         }
 
-        [ConditionalFact]
+        [ConditionalTheory]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         [RequiresNewHandler]
-        public async Task ExceptionIsLoggedToEventLogAndPutInResponseDuringHostingStartupProcess()
+        [InlineData("ThrowInStartup")]
+        [InlineData("ThrowInStartupGenericHost")]
+        public async Task ExceptionIsLoggedToEventLogAndPutInResponseDuringHostingStartupProcess(string startupType)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-            deploymentParameters.TransformArguments((a, _) => $"{a} ThrowInStartup");
+            deploymentParameters.TransformArguments((a, _) => $"{a} {startupType}");
 
             var deploymentResult = await DeployAsync(deploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/");
