@@ -731,18 +731,24 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await channel.Writer.WriteAsync("3").AsTask().OrTimeout();
                     await channel.Writer.WriteAsync("4").AsTask().OrTimeout();
                     //Assert.Equal("2", await channel.ReadAsync().AsTask().OrTimeout());
-                    //channel.Writer.Complete();
                     var echoTcs = new TaskCompletionSource<string>();
                     connection.On<string>("Echo", message =>
                     {
                         echoTcs.SetResult(message);
                     });
 
-                    await connection.SendAsync(nameof(TestHub.Echo), "Hello, World!").OrTimeout();
+                    await connection.SendAsync(nameof(TestHub.CallEcho), "Hello, World!").OrTimeout();
+                    await Task.Delay(2000);
+
                     Assert.False(echoTcs.Task.IsCompleted);
                     await secondChannel.Writer.WriteAsync("unblock");
-                    Assert.Equal("Test", await echoTcs.Task.OrTimeout());
+                    //await channel.ReadAsync().AsTask().OrTimeout();
+                    //await channel.ReadAsync().AsTask().OrTimeout();
+                    //await channel.ReadAsync().AsTask().OrTimeout();
+                    //await channel.ReadAsync().AsTask().OrTimeout()
+                    Assert.Equal("Hello, World!", await echoTcs.Task.OrTimeout());
 
+                    channel.Writer.Complete();
 
 
                     //var channel = await connection.InvokeAsync<string>("AcceptStream", stream).OrTimeout();

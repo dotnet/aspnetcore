@@ -285,7 +285,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
+
+
         public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+        public async Task CallEcho(string message)
+        {
+            await Clients.Client(Context.ConnectionId).SendAsync("Echo", message);
+        }
     }
 
     [Authorize(JwtBearerDefaults.AuthenticationScheme)]

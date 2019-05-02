@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     .AddMessagePackProtocol()
                     .AddHubOptions<StreamBufferHub>(options =>
                     {
-                        options.StreamBufferCapacity = 1;
+                        options.StreamBufferCapacity = 2;
                     });
 
             services.AddSingleton<IUserIdProvider, HeaderUserIdProvider>();
