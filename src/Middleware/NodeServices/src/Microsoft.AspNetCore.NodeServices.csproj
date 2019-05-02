@@ -21,7 +21,7 @@
 
   <Target Name="YarnInstall">
     <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
-    <Yarn Command="install" />
+    <Yarn Command="install --mutex file" />
   </Target>
 
   <Target Name="_IsCustomRestoreTargetSupported" Returns="@(CustomRestoreTargets)" Condition="'$(BuildNodeJs)' == 'true'">
