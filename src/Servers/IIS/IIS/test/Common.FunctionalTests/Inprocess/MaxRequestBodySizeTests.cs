@@ -30,5 +30,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBody", new StringContent("test"));
             Assert.Equal(HttpStatusCode.RequestEntityTooLarge, result.StatusCode);
         }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task SetIISLimitMaxRequestBodySizeE2EWorks()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.ServerConfigActionList.Add(
+                (config, _) => {
+                    config
+                        .RequiredElement("system.webServer")
+                        .GetOrAdd("security")
+                        .GetOrAdd("requestFiltering")
+                        .GetOrAdd("requestLimits", "maxAllowedContentLength", "1");
+                });
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var result = await deploymentResult.HttpClient.PostAsync("/ReadRequestBody", new StringContent("test"));
+            // IIS returns a 404 instead of a 413... 
+            Assert.Equal(HttpStatusCode.NotFound, result.StatusCode);
+        }
     }
 }

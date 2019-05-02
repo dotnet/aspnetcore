@@ -342,7 +342,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNumberOrNullRequired);
                 }
-
+                if (value > _options.IisMaxRequestSizeLimit)
+                {
+                    _logger.LogWarning("Cannot increase request size past IIS limit.");
+                }
                 MaxRequestBodySize = value;
             }
         }
