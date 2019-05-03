@@ -45,7 +45,7 @@ namespace FunctionalTests
             {
                 // we are running the same tests with JSON and MsgPack protocols and having
                 // consistent casing makes it cleaner to verify results
-                options.UseCamelCase = false;
+                options.PayloadSerializerOptions.PropertyNamingPolicy = null;
             })
             .AddMessagePackProtocol();
 

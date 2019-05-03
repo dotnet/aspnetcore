@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Options;
@@ -24,8 +25,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             var protocolOptions = new JsonHubProtocolOptions()
             {
-                IgnoreNullValues = ignoreNullValues,
-                UseCamelCase = useCamelCase,
+                PayloadSerializerOptions = new JsonSerializerOptions()
+                {
+                    IgnoreNullValues = ignoreNullValues,
+                    PropertyNamingPolicy = useCamelCase ? JsonNamingPolicy.CamelCase : null
+                }
             };
 
             return new JsonHubProtocol(Options.Create(protocolOptions));
