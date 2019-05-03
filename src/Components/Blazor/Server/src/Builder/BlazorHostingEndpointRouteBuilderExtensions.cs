@@ -23,7 +23,10 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <typeparam name="TClientApp">A type in the client-side application.</typeparam>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <param name="filePath">The relative path to the entry point of the client-side application.</param>
+        /// <param name="filePath">
+        /// The relative path to the entry point of the client-side application. The path is relative to the
+        /// <see cref="IWebHostEnvironment.WebRootPath"/>, commonly <c>wwwroot</c>.
+        /// </param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         /// <remarks>
         /// <para>
@@ -51,8 +54,12 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds a low-priority endpoint that will serve the the file specified by <paramref name="filePath"/> from the client-side
         /// Blazor application specified by <paramref name="clientAssemblyFilePath"/>.
         /// </summary>
-        /// <param name="clientAssemblyFilePath">The file path of the client-side Blazor application assembly.</param>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="clientAssemblyFilePath">The file path of the client-side Blazor application assembly.</param>
+        /// <param name="filePath">
+        /// The relative path to the entry point of the client-side application. The path is relative to the
+        /// <see cref="IWebHostEnvironment.WebRootPath"/>, commonly <c>wwwroot</c>.
+        /// </param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         /// <remarks>
         /// <para>
@@ -87,8 +94,11 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <typeparam name="TClientApp">A type in the client-side application.</typeparam>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
-        /// <param name="pattern">The route pattern to match</param>
-        /// <param name="filePath">The relative path to the entry point of the client-side application.</param>
+        /// <param name="pattern">The route pattern to match.</param>
+        /// <param name="filePath">
+        /// The relative path to the entry point of the client-side application. The path is relative to the
+        /// <see cref="IWebHostEnvironment.WebRootPath"/>, commonly <c>wwwroot</c>.
+        /// </param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         /// <remarks>
         /// <para>
@@ -114,7 +124,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            return MapFallbackToClientSideBlazor(endpoints, typeof(TClientApp).Assembly.Location, filePath);
+            return MapFallbackToClientSideBlazor(endpoints, typeof(TClientApp).Assembly.Location, pattern, filePath);
         }
 
         /// <summary>
@@ -124,6 +134,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="clientAssemblyFilePath">The file path of the client-side Blazor application assembly.</param>
         /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
         /// <param name="pattern">The route pattern to match.</param>
+        /// <param name="filePath">
+        /// The relative path to the entry point of the client-side application. The path is relative to the
+        /// <see cref="IWebHostEnvironment.WebRootPath"/>, commonly <c>wwwroot</c>.
+        /// </param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         /// <remarks>
         /// <para>
