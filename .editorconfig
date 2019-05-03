@@ -1,7 +1,0 @@
-root = true
-insert_final_newline = true
-trim_trailing_whitespace = true
-
-[*.{props,targets,config,xml}]
-indent_size = 2
-indent_style = space
