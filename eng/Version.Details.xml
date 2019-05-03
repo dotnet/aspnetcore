@@ -388,9 +388,9 @@
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>ea9b2530a1559dd6426730aba52fca1924db2b65</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19251.6">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="2.0.0-beta.19253.2">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>ea9b2530a1559dd6426730aba52fca1924db2b65</Sha>
+      <Sha>e31dd0f6fd12a136a2310a308d235c360703b221</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.Testing" Version="3.0.0-preview6.19252.2" CoherentParentDependency="Microsoft.EntityFrameworkCore">
       <Uri>https://github.com/aspnet/Extensions</Uri>
