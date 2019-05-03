@@ -11,15 +11,17 @@ namespace Microsoft.AspNetCore.Mvc
     public class NonSeekableReadStream : Stream
     {
         private Stream _inner;
+        private readonly bool _allowSyncReads;
 
-        public NonSeekableReadStream(byte[] data)
-            : this(new MemoryStream(data))
+        public NonSeekableReadStream(byte[] data, bool allowSyncReads = true)
+            : this(new MemoryStream(data), allowSyncReads)
         {
         }
 
-        public NonSeekableReadStream(Stream inner)
+        public NonSeekableReadStream(Stream inner, bool allowSyncReads)
         {
             _inner = inner;
+            _allowSyncReads = allowSyncReads;
         }
 
         public override bool CanRead => _inner.CanRead;
@@ -61,6 +63,11 @@ namespace Microsoft.AspNetCore.Mvc
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            if (!_allowSyncReads)
+            {
+                throw new InvalidOperationException("Cannot perform synchronous reads");
+            }
+
             count = Math.Max(count, 1);
             return _inner.Read(buffer, offset, count);
         }

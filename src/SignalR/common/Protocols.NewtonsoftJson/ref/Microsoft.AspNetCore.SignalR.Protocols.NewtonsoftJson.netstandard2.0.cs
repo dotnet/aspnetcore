@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         public NewtonsoftJsonHubProtocol() { }
         public NewtonsoftJsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.NewtonsoftJsonHubProtocolOptions> options) { }
-        public int MinorVersion { get { throw null; } }
         public string Name { get { throw null; } }
         public Newtonsoft.Json.JsonSerializer PayloadSerializer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Connections.TransferFormat TransferFormat { get { throw null; } }

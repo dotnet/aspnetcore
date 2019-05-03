@@ -11,7 +11,9 @@ using System.Threading.Tasks;
 using AngleSharp.Dom.Html;
 using AngleSharp.Parser.Html;
 using Microsoft.AspNetCore.Certificates.Generation;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.CommandLineUtils;
+using Microsoft.Extensions.Logging.Abstractions;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Edge;
 using Xunit;
@@ -137,7 +139,11 @@ namespace Templates.Test.Helpers
                 else
                 {
                     Assert.True(string.Equals(anchor.Href, expectedLink), $"Expected next link to be {expectedLink} but it was {anchor.Href}.");
-                    var result = await _httpClient.GetAsync(anchor.Href);
+                    var result = await RetryHelper.RetryRequest(async () =>
+                    {
+                        return await _httpClient.GetAsync(anchor.Href);
+                    }, logger: NullLogger.Instance);
+
                     Assert.True(IsSuccessStatusCode(result), $"{anchor.Href} is a broken link!");
                 }
             }
