@@ -195,7 +195,6 @@
     <SerilogSinksFilePackageVersion>4.0.0</SerilogSinksFilePackageVersion>
     <StackExchangeRedisPackageVersion>2.0.513</StackExchangeRedisPackageVersion>
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
-    <Utf8JsonPackageVersion>1.3.7</Utf8JsonPackageVersion>
     <XunitAbstractionsPackageVersion>2.0.3</XunitAbstractionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
     <XunitVersion>2.4.1</XunitVersion>
