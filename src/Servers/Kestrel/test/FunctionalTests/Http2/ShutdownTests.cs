@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -21,7 +22,6 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-    [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Curl requires a custom install to support HTTP/2, see https://askubuntu.com/questions/884899/how-do-i-install-curl-with-http2-support")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     {
@@ -32,14 +32,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         public ShutdownTests()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Client = new HttpClient(new HttpClientHandler
             {
-                // We don't want the default SocketsHttpHandler, it doesn't support HTTP/2 yet.
-                Client = new HttpClient(new WinHttpHandler
-                {
-                    ServerCertificateValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                });
-            }
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            })
+            {
+                DefaultRequestVersion = new Version(2, 0),
+            };
         }
 
         [ConditionalFact]
