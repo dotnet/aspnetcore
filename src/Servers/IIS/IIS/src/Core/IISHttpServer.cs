@@ -102,14 +102,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            if (!_httpServerHandle.IsAllocated)
-            {
-                // StopAsync can be called without calling StartAsync, which will try to drain requests.
-                // If there was an exception in hosting, the callback to drain native requests will not be set,
-                // which will cause the server to trigger ungraceful shutdown
-                return Task.CompletedTask;
-            }
-
             _nativeApplication.StopIncomingRequests();
             _cancellationTokenRegistration = cancellationToken.Register((shutdownSignal) =>
             {

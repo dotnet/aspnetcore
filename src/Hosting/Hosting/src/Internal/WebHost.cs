@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private ILogger _logger;
 
         private bool _stopped;
+        private bool _startedServer;
 
         // Used for testing only
         internal WebHostOptions Options => _options;
@@ -151,6 +152,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
             var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
             await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
+            _startedServer = true;
 
             // Fire IApplicationLifetime.Started
             _applicationLifetime?.NotifyStarted();
@@ -330,7 +332,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Fire IApplicationLifetime.Stopping
             _applicationLifetime?.StopApplication();
 
-            if (Server != null)
+            if (Server != null && _startedServer)
             {
                 await Server.StopAsync(cancellationToken).ConfigureAwait(false);
             }

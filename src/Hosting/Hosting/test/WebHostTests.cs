@@ -1024,6 +1024,25 @@ namespace Microsoft.AspNetCore.Hosting
             providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
         }
 
+        [Fact]
+        public async Task DoesNotCallServerStopIfServerStartHasNotBeenCalled()
+        {
+            var server = new Mock<IServer>();
+
+            using (var host = CreateBuilder()
+               .ConfigureServices(services =>
+               {
+                   services.AddSingleton(server.Object);
+               })
+               .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+               .Build())
+            {
+                await host.StopAsync();
+            }
+
+            server.VerifyNoOtherCalls();
+        }
+
         public class BadConfigureServicesStartup
         {
             public void ConfigureServices(IServiceCollection services, int gunk) { }
