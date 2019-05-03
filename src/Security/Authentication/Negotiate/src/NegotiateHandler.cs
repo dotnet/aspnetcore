@@ -171,7 +171,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             if (IsHttp2)
             {
                 // Not supported. We don't throw because Negotiate may be set as the default auth
-                // handler on a server that's running HTTP/1 and HTTP/2.
+                // handler on a server that's running HTTP/1 and HTTP/2. We'll challenge HTTP/2 requests
+                // that require auth and they'll downgrade to HTTP/1.1.
                 return AuthenticateResult.NoResult();
             }
 
@@ -199,14 +200,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             {
                 Principal = user
             };
-            await Events.OnAuthenticated(authenticatedContext);
+            await Events.Authenticated(authenticatedContext);
 
             if (authenticatedContext.Result != null)
             {
                 return authenticatedContext.Result;
             }
 
-            var ticket = new AuthenticationTicket(user, Scheme.Name);
+            var ticket = new AuthenticationTicket(authenticatedContext.Principal, authenticatedContext.Properties, Scheme.Name);
             return AuthenticateResult.Success(ticket);
         }
 
