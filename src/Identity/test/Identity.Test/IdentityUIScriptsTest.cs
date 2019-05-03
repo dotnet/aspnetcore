@@ -11,6 +11,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Identity.Test
 
         [Theory]
         [MemberData(nameof(ScriptWithFallbackSrcData))]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.Azp.MacOS)]
         public async Task IdentityUI_ScriptTags_FallbackSourceContent_Matches_CDNContent(ScriptTag scriptTag)
         {
             var slnDir = GetSolutionDir();
