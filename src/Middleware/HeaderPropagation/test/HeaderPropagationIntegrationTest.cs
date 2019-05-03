@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Arrange
             var handler = new SimpleHandler();
             var builder = CreateBuilder(c =>
-                c.Headers.Add(new HeaderPropagationEntry("in", "out")),
+                c.Headers.Add("in", "out"),
                 handler);
             var server = new TestServer(builder);
             var client = server.CreateClient();

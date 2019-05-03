@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Primitives;
 
 namespace HeaderPropagationSample
 {
@@ -19,32 +20,28 @@ namespace HeaderPropagationSample
         {
             services.AddRouting();
 
-            // A configuration similar to https://github.com/apache/incubator-zipkin-b3-propagation
-            // but without sampling.
+            // A sample for configuration for propagating an A/B testing header. If we see
+            // the X-BetaFeatures header then we forward it to outgoing calls. If we don't
+            // see it, then we generate a new value randomly.
             //
-            // To see this in action, send a request to / that includes headers like:
-            // X-TraceId: 43a3cb27-f494-42c4-a05b-09fb256b9021
-            // X-SpanId: 32756e86-0bef-409b-8dbc-86e6f8ddcea9
+            // To see this in action, send a request to /
+            // - If you do not specify X-BetaFeatures the server will generate a new value
+            // - If you specify X-BetaFeatures then you will see the value propagated
             //
-            // This demonstrates three common uses of header propagation:
+            // This demonstrates two common uses of header propagation:
             // 1. Forward a header as-is
-            // 2. Forward a header using a different header name
-            // 3. Generate a new header value, or conditionally generate a header value
+            // 2. Generate a new header value, or conditionally generate a header value
+            //
+            // It's also easy to forward a header with a different name, using Add(string, string)
             services.AddHeaderPropagation(options =>
             {
-                // Propagate the X-TraceId as a representation of the overall transaction.
-                options.Headers.Add("X-TraceId");
+                // Propagate the X-BetaFeatures if present.
+                options.Headers.Add("X-BetaFeatures");
 
-                // Propagate the X-SpanId as X-ParentSpanId to represent the 'parent' of this HTTP call.
-                options.Headers.Add(new HeaderPropagationEntry("X-SpanId", "X-ParentSpanId"));
-
-                // Generate a new X-SpanId to represent this call, if it's being traced.
-                options.Headers.Add(new HeaderPropagationEntry("X-SpanId")
+                // Generate a new X-BetaFeatures if not present.
+                options.Headers.Add("X-BetaFeatures", context =>
                 {
-                    ValueFilter = (context) =>
-                    {
-                        return context.HttpContext.Request.Headers.ContainsKey("X-TraceId") ? Guid.NewGuid().ToString() : null;
-                    },
+                    return GenerateBetaFeatureOptions();
                 });
             });
 
@@ -97,6 +94,35 @@ namespace HeaderPropagationSample
                     }
                 });
             });
+        }
+
+        private static StringValues GenerateBetaFeatureOptions()
+        {
+            var features = new string[]
+            {
+                "Widgets",
+                "Social",
+                "Speedy-Checkout",
+            };
+
+            var threshold = 0.80; // 20% chance for each feature in beta.
+
+            var random = new Random();
+            var values = new List<string>();
+            for (var i = 0; i < features.Length; i++)
+            {
+                if (random.NextDouble() > threshold)
+                {
+                    values.Add(features[i]);
+                }
+            }
+
+            if (values.Count == 0)
+            {
+                return new StringValues("none");
+            }
+
+            return new StringValues(values.ToArray());
         }
     }
 }

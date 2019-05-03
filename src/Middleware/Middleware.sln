@@ -279,7 +279,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{8CDBD9C6-9
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{179A159B-87EA-4353-BE92-4FB6CC05BC7D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HeaderPropagationSample", "HeaderPropagation\samples\HeaderPropagationSample\HeaderPropagationSample\HeaderPropagationSample.csproj", "{E9E4B3B8-3E3F-481B-AA67-4328D99DD5FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeaderPropagationSample", "HeaderPropagation\samples\HeaderPropagationSample\HeaderPropagationSample\HeaderPropagationSample.csproj", "{E9E4B3B8-3E3F-481B-AA67-4328D99DD5FF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

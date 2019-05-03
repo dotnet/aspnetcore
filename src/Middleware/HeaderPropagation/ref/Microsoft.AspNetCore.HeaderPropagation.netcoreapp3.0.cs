@@ -21,16 +21,18 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     }
     public partial class HeaderPropagationEntry
     {
-        public HeaderPropagationEntry(string inboundHeaderName) { }
-        public HeaderPropagationEntry(string inboundHeaderName, string outboundHeaderName) { }
+        public HeaderPropagationEntry(string inboundHeaderName, string outboundHeaderName, System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> valueFilter) { }
         public string InboundHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string OutboundHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> ValueFilter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> ValueFilter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public sealed partial class HeaderPropagationEntryCollection : System.Collections.ObjectModel.Collection<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationEntry>
     {
         public HeaderPropagationEntryCollection() { }
         public void Add(string headerName) { }
+        public void Add(string headerName, System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> valueFilter) { }
+        public void Add(string inboundHeaderName, string outboundHeaderName) { }
+        public void Add(string inboundHeaderName, string outboundHeaderName, System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> valueFilter) { }
     }
     public partial class HeaderPropagationMessageHandler : System.Net.Http.DelegatingHandler
     {

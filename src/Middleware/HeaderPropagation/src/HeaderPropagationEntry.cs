@@ -12,26 +12,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public class HeaderPropagationEntry
     {
         /// <summary>
-        /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="inboundHeaderName"/>.
-        /// </summary>
-        /// <param name="inboundHeaderName">
-        /// The name of the header to be captured by <see cref="HeaderPropagationMiddleware"/> and added by
-        /// <see cref="HeaderPropagationMessageHandler"/>.
-        /// </param>
-        public HeaderPropagationEntry(string inboundHeaderName)
-        {
-            if (inboundHeaderName == null)
-            {
-                throw new ArgumentNullException(nameof(inboundHeaderName));
-            }
-
-            InboundHeaderName = inboundHeaderName;
-            OutboundHeaderName = inboundHeaderName;
-        }
-
-        /// <summary>
-        /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="inboundHeaderName"/>
-        /// and <paramref name="outboundHeaderName"/>
+        /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="inboundHeaderName"/>,
+        /// <paramref name="outboundHeaderName"/>, and 
         /// </summary>
         /// <param name="inboundHeaderName">
         /// The name of the header to be captured by <see cref="HeaderPropagationMiddleware"/>.
@@ -39,7 +21,13 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         ///  <param name="outboundHeaderName">
         /// The name of the header to be added by <see cref="HeaderPropagationMessageHandler"/>.
         /// </param>
-        public HeaderPropagationEntry(string inboundHeaderName, string outboundHeaderName)
+        /// <param name="valueFilter">
+        /// A filter delegate that can be used to transform the header value. May be null.
+        /// </param>
+        public HeaderPropagationEntry(
+            string inboundHeaderName,
+            string outboundHeaderName,
+            Func<HeaderPropagationContext, StringValues> valueFilter)
         {
             if (inboundHeaderName == null)
             {
@@ -53,6 +41,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
             InboundHeaderName = inboundHeaderName;
             OutboundHeaderName = outboundHeaderName;
+            ValueFilter = valueFilter; // May be null
         }
 
         /// <summary>
@@ -78,6 +67,6 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// values.
         /// </para>
         /// </remarks>
-        public Func<HeaderPropagationContext, StringValues> ValueFilter { get; set; }
+        public Func<HeaderPropagationContext, StringValues> ValueFilter { get; }
     }
 }

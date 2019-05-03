@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_AddCorrectValue()
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry("in", "out"));
+            Configuration.Headers.Add("in", "out");
             State.Headers.Add("out", "test");
 
             // Act
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_WithMultipleValues_AddAllValues()
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry("in", "out"));
+            Configuration.Headers.Add("in", "out");
             State.Headers.Add("out", new[] { "one", "two" });
 
             // Act
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_RequestWithContent_ContentHeaderPresent_DoesNotAddIt()
         {
-            Configuration.Headers.Add(new HeaderPropagationEntry("in", "Content-Type"));
+            Configuration.Headers.Add("in", "Content-Type");
             State.Headers.Add("in", "test");
 
             // Act
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_RequestWithContent_ContentHeaderNotPresent_AddValue()
         {
-            Configuration.Headers.Add(new HeaderPropagationEntry("in", "Content-Language"));
+            Configuration.Headers.Add("in", "Content-Language");
             State.Headers.Add("Content-Language", "test");
 
             // Act
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_WithMultipleValues_RequestWithContent_ContentHeaderNotPresent_AddAllValues()
         {
-            Configuration.Headers.Add(new HeaderPropagationEntry("in", "Content-Language"));
+            Configuration.Headers.Add("in", "Content-Language");
             State.Headers.Add("Content-Language", new[] { "one", "two" });
 
             // Act

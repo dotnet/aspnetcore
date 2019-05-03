@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderEmptyInRequest_DoesNotAddIt(string headerValue)
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry("in"));
+            Configuration.Headers.Add("in");
             Context.Request.Headers.Add("in", headerValue);
 
             // Act
@@ -113,15 +113,12 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             string receivedName = null;
             StringValues receivedValue = default;
             HttpContext receivedContext = null;
-            Configuration.Headers.Add(new HeaderPropagationEntry("in")
+            Configuration.Headers.Add("in", context =>
             {
-                ValueFilter = (context) =>
-                {
-                    receivedValue = context.HeaderValue;
-                    receivedName = context.HeaderName;
-                    receivedContext = context.HttpContext;
-                    return filterValues;
-                }
+                receivedValue = context.HeaderValue;
+                receivedName = context.HeaderName;
+                receivedContext = context.HttpContext;
+                return filterValues;
             });
 
             Context.Request.Headers.Add("in", "value");
@@ -141,10 +138,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task PreferValueFilter_OverRequestHeader()
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry("in")
-            {
-                ValueFilter = (context) => "test"
-            });
+            Configuration.Headers.Add("in", context => "test");
             Context.Request.Headers.Add("in", "no");
 
             // Act
@@ -159,16 +153,29 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task EmptyValuesFromValueFilter_DoesNotAddIt()
         {
             // Arrange
-            Configuration.Headers.Add(new HeaderPropagationEntry("in")
-            {
-                ValueFilter = (context) => StringValues.Empty
-            });
+            Configuration.Headers.Add("in", (context) => StringValues.Empty);
 
             // Act
             await Middleware.Invoke(Context);
 
             // Assert
             Assert.DoesNotContain("in", State.Headers.Keys);
+        }
+
+        [Fact]
+        public async Task MultipleEntries_AddsFirstToProduceValue()
+        {
+            // Arrange
+            Configuration.Headers.Add("in");
+            Configuration.Headers.Add("in", (context) => StringValues.Empty);
+            Configuration.Headers.Add("in", (context) => "Test");
+
+            // Act
+            await Middleware.Invoke(Context);
+
+            // Assert
+            Assert.Contains("in", State.Headers.Keys);
+            Assert.Equal("Test", State.Headers["in"]);
         }
     }
 }
