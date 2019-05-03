@@ -71,9 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 node => CSharpCode(" var value = true; ", node));
 
             var method = @class.Children[0];
-            Children(
-                method,
-                node => Assert.IsType<DirectiveIntermediateNode>(node));
+            Assert.Empty(method.Children);
         }
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorProjectEngine projectEngine)

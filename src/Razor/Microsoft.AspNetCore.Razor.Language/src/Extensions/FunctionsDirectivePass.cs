@@ -21,6 +21,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     @class.Children.Add(functions.Node.Children[i]);
                 }
+
+                // We don't want to keep the original directive node around anymore.
+                // Otherwise this can cause unintended side effects in the subsequent passes.
+                functions.Remove();
             }
         }
     }
