@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     }
     public partial class FileBufferingReadStream : System.IO.Stream
     {
+        public FileBufferingReadStream(System.IO.Stream inner, int memoryThreshold) { }
         public FileBufferingReadStream(System.IO.Stream inner, int memoryThreshold, long? bufferLimit, System.Func<string> tempFileDirectoryAccessor) { }
         public FileBufferingReadStream(System.IO.Stream inner, int memoryThreshold, long? bufferLimit, System.Func<string> tempFileDirectoryAccessor, System.Buffers.ArrayPool<byte> bytePool) { }
         public FileBufferingReadStream(System.IO.Stream inner, int memoryThreshold, long? bufferLimit, string tempFileDirectory) { }
