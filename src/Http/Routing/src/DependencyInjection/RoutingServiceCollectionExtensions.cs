@@ -85,6 +85,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
             services.TryAddSingleton<IEndpointAddressScheme<string>, EndpointNameAddressScheme>();
             services.TryAddSingleton<IEndpointAddressScheme<RouteValuesAddress>, RouteValuesAddressScheme>();
+            services.TryAddSingleton<LinkParser, DefaultLinkParser>();
 
             //
             // Endpoint Selection
