@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var server = await CreateServerAsync();
 
-            var ex = await Assert.ThrowsAsync<NotSupportedException>(() => SendAsync(server, "/expectanonymous", connection: null));
+            var ex = await Assert.ThrowsAsync<NotSupportedException>(() => SendAsync(server, "/Anonymous1", connection: null));
             Assert.Equal("Negotiate authentication requires a server that supports IConnectionItemsFeature like Kestrel.", ex.Message);
         }
 
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var server = await CreateServerAsync();
 
-            var result = await SendAsync(server, "/expectanonymous", new TestConnection());
+            var result = await SendAsync(server, "/Anonymous1", new TestConnection());
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
         }
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var server = await CreateServerAsync();
 
-            var result = await SendAsync(server, "/expectanonymous", connection: null, http2: true);
+            var result = await SendAsync(server, "/Anonymous2", connection: null, http2: true);
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
         }
 
@@ -54,18 +55,18 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var server = await CreateServerAsync();
 
-            var result = await SendAsync(server, "/requireauth", new TestConnection());
+            var result = await SendAsync(server, "/Authenticate", new TestConnection());
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
             Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
 
         [Fact]
-        // TODO: Verify clients will downgrade to HTTP/1? Or do we need to send HTTP_1_1_REQUIRED?
         public async Task Anonymous_ChallengeHttp2_401Negotiate()
         {
             var server = await CreateServerAsync();
 
-            var result = await SendAsync(server, "/requireauth", connection: null, http2: true);
+            var result = await SendAsync(server, "/Authenticate", connection: null, http2: true);
+            // Clients will downgrade to HTTP/1.1 and authenticate.
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
             Assert.Equal("Negotiate", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public async Task Stage1Auth_401NegotiateServerBlob1()
         {
             var server = await CreateServerAsync();
-            var result = await SendAsync(server, "/notexecuted", new TestConnection(), "Negotiate ClientBlob1");
+            var result = await SendAsync(server, "/404", new TestConnection(), "Negotiate ClientBlob1");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
             Assert.Equal("Negotiate ServerBlob1", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var testConnection = new TestConnection();
             await Stage1Auth(server, testConnection);
 
-            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => SendAsync(server, "/notexecuted", testConnection));
+            var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => SendAsync(server, "/404", testConnection));
             Assert.Equal("An anonymous request was received in between authentication handshake requests.", ex.Message);
         }
 
@@ -95,7 +96,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var server = await CreateServerAsync();
 
-            var ex = await Assert.ThrowsAsync<TrueException>(() => SendAsync(server, "/requireauth", new TestConnection(), "Negotiate ClientBlob2"));
+            var ex = await Assert.ThrowsAsync<TrueException>(() => SendAsync(server, "/404", new TestConnection(), "Negotiate ClientBlob2"));
             Assert.Equal("Stage1Complete", ex.UserMessage);
         }
 
@@ -114,20 +115,18 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var testConnection = new TestConnection();
             await Stage1And2Auth(server, testConnection);
 
-            var result = await SendAsync(server, "/requireauth", testConnection);
+            var result = await SendAsync(server, "/Authenticate", testConnection);
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
             Assert.False(result.Response.Headers.ContainsKey(HeaderNames.WWWAuthenticate));
         }
 
         [Fact]
-        public async Task AuthHeaderAfterCompleted_Throws()
+        public async Task AuthHeaderAfterCompleted_ReAuthenticates()
         {
             var server = await CreateServerAsync();
             var testConnection = new TestConnection();
             await Stage1And2Auth(server, testConnection);
-
-            var ex = await Assert.ThrowsAsync<FalseException>(() => SendAsync(server, "/notexecuted", testConnection, "Negotiate ClientBlob2"));
-            Assert.Equal("IsCompleted", ex.UserMessage);
+            await Stage1And2Auth(server, testConnection);
         }
 
         private static async Task Stage1And2Auth(TestServer server, TestConnection testConnection)
@@ -138,14 +137,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         private static async Task Stage1Auth(TestServer server, TestConnection testConnection)
         {
-            var result = await SendAsync(server, "/notexecuted", testConnection, "Negotiate ClientBlob1");
+            var result = await SendAsync(server, "/404", testConnection, "Negotiate ClientBlob1");
             Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
             Assert.Equal("Negotiate ServerBlob1", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
 
         private static async Task Stage2Auth(TestServer server, TestConnection testConnection)
         {
-            var result = await SendAsync(server, "/requireauth", testConnection, "Negotiate ClientBlob2");
+            var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientBlob2");
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
             Assert.Equal("Negotiate ServerBlob2", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
@@ -154,6 +153,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             var builder = new HostBuilder()
                 .ConfigureServices(services => services
+                    .AddRouting()
                     .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
                     .AddNegotiate(options =>
                     {
@@ -165,9 +165,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     webHostBuilder.UseTestServer();
                     webHostBuilder.Configure(app =>
                     {
+                        app.UseRouting();
                         app.UseAuthentication();
-                        app.Run(TestApp);
-
+                        app.UseEndpoints(ConfigureEndpoints);
                     });                
                 });
 
@@ -175,14 +175,23 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             return server;
         }
 
-        private static async Task TestApp(HttpContext context)
+        private static void ConfigureEndpoints(IEndpointRouteBuilder builder)
         {
-            if (context.Request.Path == new PathString("/expectanonymous"))
+            builder.Map("/Anonymous1", context =>
             {
+                Assert.Equal("HTTP/1.1", context.Request.Protocol);
                 Assert.False(context.User.Identity.IsAuthenticated, "Anonymous");
-                return;
-            }
-            else if (context.Request.Path == new PathString("/requireauth"))
+                return Task.CompletedTask;
+            });
+
+            builder.Map("/Anonymous2", context =>
+            {
+                Assert.Equal("HTTP/2", context.Request.Protocol);
+                Assert.False(context.User.Identity.IsAuthenticated, "Anonymous");
+                return Task.CompletedTask;
+            });
+
+            builder.Map("/Authenticate", async context =>
             {
                 if (!context.User.Identity.IsAuthenticated)
                 {
@@ -190,38 +199,44 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     return;
                 }
 
+                Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
                 var name = context.User.Identity.Name;
                 Assert.False(string.IsNullOrEmpty(name), "name");
                 await context.Response.WriteAsync(name);
-            }
-            else if (context.Request.Path == new PathString("/unauthorized"))
+            });
+
+            builder.Map("/AlreadyAuthenticated", async context =>
             {
-                // Simulate Authorization failure 
+                Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
+                Assert.True(context.User.Identity.IsAuthenticated, "Authenticated");
+                var name = context.User.Identity.Name;
+                Assert.False(string.IsNullOrEmpty(name), "name");
+                await context.Response.WriteAsync(name);
+            });
+
+            builder.Map("/Unauthorized", async context =>
+            {
+                // Simulate Authorization failure
                 var result = await context.AuthenticateAsync();
                 await context.ChallengeAsync();
-            }
-            else if (context.Request.Path == new PathString("/signIn"))
+            });
+
+            builder.Map("/SignIn", context =>
             {
-                await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
-            }
-            else if (context.Request.Path == new PathString("/signOut"))
+                return Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
+            });
+
+            builder.Map("/signOut", context =>
             {
-                await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
-            }
-            else
-            {
-                throw new NotImplementedException(context.Request.Path);
-            }
+                return Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync());
+            });
         }
 
         private static Task<HttpContext> SendAsync(TestServer server, string path, TestConnection connection, string authorizationHeader = null, bool http2 = false)
         {
             return server.SendAsync(context =>
             {
-                if (http2)
-                {
-                    context.Request.Protocol = "HTTP/2";
-                }
+                context.Request.Protocol = http2 ? "HTTP/2" : "HTTP/1.1";
                 context.Request.Path = path;
                 if (!string.IsNullOrEmpty(authorizationHeader))
                 {
@@ -253,20 +268,29 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             private bool Stage1Complete { get; set; }
             public bool IsCompleted { get; private set; }
+            public bool IsDisposed { get; private set; }
 
             public void Dispose()
             {
-                throw new NotImplementedException();
+                IsDisposed = true;
             }
 
             public IIdentity GetIdentity()
             {
+                if (IsDisposed)
+                {
+                    throw new ObjectDisposedException(nameof(TestNegotiateState));
+                }
                 Assert.True(IsCompleted, nameof(IsCompleted));
-                return new GenericIdentity("name", "Negotiate");
+                return new GenericIdentity("name", "Kerberos");
             }
 
             public string GetOutgoingBlob(string incomingBlob)
             {
+                if (IsDisposed)
+                {
+                    throw new ObjectDisposedException(nameof(TestNegotiateState));
+                }
                 Assert.False(IsCompleted, nameof(IsCompleted));
                 switch (incomingBlob)
                 {

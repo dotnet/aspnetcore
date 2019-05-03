@@ -26,11 +26,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             : base(context, scheme, options, properties) { }
 
         /// <summary>
-        /// Any failures encountered during the authentication process.
-        /// </summary>
-        public Exception AuthenticateFailure { get; set; }
-
-        /// <summary>
         /// If true, will skip any default logic for this challenge.
         /// </summary>
         public bool Handled { get; private set; }

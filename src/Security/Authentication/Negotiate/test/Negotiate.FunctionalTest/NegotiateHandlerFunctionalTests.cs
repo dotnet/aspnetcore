@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -25,129 +25,207 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     public class NegotiateHandlerFunctionalTests
     {
-        [ConditionalFact]
-        public async Task Anonymous_NoChallenge_NoOps()
+        private static readonly Version Http11Version = new Version(1, 1);
+        private static readonly Version Http2Version = new Version(2, 0);
+
+        public static IEnumerable<object[]> Http11And2 =>
+            new List<object[]>
+            {
+                new object[] { Http11Version },
+                new object[] { Http2Version },
+            };
+
+        static NegotiateHandlerFunctionalTests()
+        {
+            AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2Support", true); // TODO: Remove after rebasing
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(Http11And2))]
+        public async Task Anonymous_NoChallenge_NoOps(Version version)
         {
             using var host = await CreateHostAsync();
-            using var client = CreateClient(host);
-            var result = await client.GetAsync("/expectanonymous");
+            using var client = CreateSocketHttpClient(host);
+            // client.DefaultRequestVersion = version;
+
+            var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Anonymous" + version.Major) { Version = version });
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
             Assert.False(result.Headers.Contains(HeaderNames.WWWAuthenticate));
+            Assert.Equal(version, result.Version);
         }
 
-        // TODO: Ensure this is using HTTP2. Needs SSL.
-        [ConditionalFact]
-        public async Task Anonymous_Http2_NoOps()
+        [ConditionalTheory]
+        [MemberData(nameof(Http11And2))]
+        public async Task Anonymous_Challenge_401Negotiate(Version version)
         {
             using var host = await CreateHostAsync();
-            using var client = CreateClient(host);
-            var result = await client.GetAsync("/expectanonymous");
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.False(result.Headers.Contains(HeaderNames.WWWAuthenticate));
-        }
+            // WinHttpHandler can't disable default credentials on localhost, use SocketHttpHandler.
+            using var client = CreateSocketHttpClient(host);
+            // client.DefaultRequestVersion = version;
 
-        [ConditionalFact]
-        public async Task Anonymous_Challenge_401Negotiate()
-        {
-            using var host = await CreateHostAsync();
-            using var client = CreateClient(host);
-            var result = await client.GetAsync("/requireauth");
+            var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Authenticate") { Version = version });
             Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
             Assert.Equal("Negotiate", result.Headers.WwwAuthenticate.ToString());
+            Assert.Equal(version, result.Version);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(Http11And2))]
+        public async Task DefautCredentials_Success(Version version)
+        {
+            using var host = await CreateHostAsync();
+            // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade HTTP/2. WinHttpHandler does.
+            using var client = CreateWinHttpClient(host);
+            // client.DefaultRequestVersion = version;
+
+            var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Authenticate") { Version = version });
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades.
+        }
+
+        public static IEnumerable<object[]> HttpOrders =>
+            new List<object[]>
+            {
+                new object[] { Http11Version, Http11Version },
+                new object[] { Http11Version, Http2Version },
+                new object[] { Http2Version, Http11Version },
+            };
+
+        [ConditionalTheory]
+        [MemberData(nameof(HttpOrders))]
+        public async Task RequestAfterAuth_ReUses1(Version first, Version second)
+        {
+            using var host = await CreateHostAsync();
+            // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade HTTP/2. WinHttpHandler does.
+            using var client = CreateWinHttpClient(host);
+            // client.DefaultRequestVersion = first;
+
+            var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Authenticate") { Version = first });
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http11Version, result.Version); // Http/2 downgrades
+
+            // Re-uses the 1.1 connection.
+            result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/AlreadyAuthenticated") { Version = second });
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http11Version, result.Version);
         }
 
         [ConditionalFact]
-        // TODO: Ensure this is using HTTP2. Needs SSL.
-        // TODO: Verify clients will downgrade to HTTP/1? Or do we need to send HTTP_1_1_REQUIRED?
-        public async Task Anonymous_ChallengeHttp2_401Negotiate()
+        public async Task RequestAfterAuth_Http2Then2_Success()
         {
             using var host = await CreateHostAsync();
-            using var client = CreateClient(host);
-            var result = await client.GetAsync("/requireauth");
+            // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade HTTP/2. WinHttpHandler does.
+            using var client = CreateWinHttpClient(host);
+            // client.DefaultRequestVersion = Http2Version;
+
+            // Falls back to HTTP/1.1 after trying HTTP/2.
+            var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Authenticate") { Version = Http2Version });
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http11Version, result.Version);
+
+            // Tries HTTP/2, falls back to HTTP/1.1 and re-authenticates.
+            result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Authenticate") { Version = Http2Version });
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http11Version, result.Version);
+        }
+
+        [ConditionalFact]
+        public async Task RequestAfterAuth_Http2Then2Anonymous_Success()
+        {
+            using var host = await CreateHostAsync();
+            // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade HTTP/2. WinHttpHandler does.
+            using var client = CreateWinHttpClient(host);
+            // client.DefaultRequestVersion = Http2Version;
+
+            // Falls back to HTTP/1.1 after trying HTTP/2.
+            var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Authenticate") { Version = Http2Version });
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http11Version, result.Version);
+
+            // Makes an anonymous HTTP/2 request
+            result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Anonymous2") { Version = Http2Version });
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http2Version, result.Version);
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(Http11And2))]
+        public async Task Unauthorized_401Negotiate(Version version)
+        {
+            using var host = await CreateHostAsync();
+            // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade. WinHttpHandler does.
+            using var client = CreateWinHttpClient(host);
+            // client.DefaultRequestVersion = version;
+
+            var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Unauthorized") { Version = version });
             Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
             Assert.Equal("Negotiate", result.Headers.WwwAuthenticate.ToString());
+            Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades.
         }
 
-        [ConditionalFact]
-        public async Task DefautCredentials_Success()
+        [ConditionalTheory]
+        [MemberData(nameof(Http11And2))]
+        public async Task UnauthorizedAfterAuthenticated_Success(Version version)
         {
             using var host = await CreateHostAsync();
-            using var client = CreateClient(host, useDefaultCredentials: true);
-            var result = await client.GetAsync("/requireauth");
+            // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade. WinHttpHandler does.
+            using var client = CreateWinHttpClient(host);
+            // client.DefaultRequestVersion = version;
+
+            var result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Authenticate") { Version = version });
             Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.False(result.Headers.Contains(HeaderNames.WWWAuthenticate)); // TODO: Why is this empty
-        }
+            Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades.
 
-        [ConditionalFact]
-        public async Task AnonymousAfterAuthenticated_Success()
-        {
-            using var host = await CreateHostAsync();
-            using var client = CreateClient(host, useDefaultCredentials: true);
-            var result = await client.GetAsync("/requireauth");
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.False(result.Headers.Contains(HeaderNames.WWWAuthenticate)); // TODO: Why is this empty
-
-            result = await client.GetAsync("/requireauth");
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.False(result.Headers.Contains(HeaderNames.WWWAuthenticate));
-        }
-
-        [ConditionalFact]
-        public async Task Unauthorized_401Negotiate()
-        {
-            using var host = await CreateHostAsync();
-            using var client = CreateClient(host, useDefaultCredentials: true);
-
-            var result = await client.GetAsync("/unauthorized");
+            result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Unauthorized") { Version = version });
             Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
             Assert.Equal("Negotiate", result.Headers.WwwAuthenticate.ToString());
-        }
-
-        [ConditionalFact(Skip = "Client bug? It tries to re-authenticate when the connection is already authenticated.")]
-        public async Task UnauthorizedAfterAuthenticated_Success()
-        {
-            using var host = await CreateHostAsync();
-            using var client = CreateClient(host, useDefaultCredentials: true);
-            var result = await client.GetAsync("/requireauth");
-            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
-            Assert.False(result.Headers.Contains(HeaderNames.WWWAuthenticate)); // TODO: Why is this empty
-
-            result = await client.GetAsync("/unauthorized");
-            Assert.Equal(HttpStatusCode.Unauthorized, result.StatusCode);
-            Assert.Equal("Negotiate", result.Headers.WwwAuthenticate.ToString());
+            Assert.Equal(Http11Version, result.Version); // HTTP/2 downgrades.
         }
 
         private static Task<IHost> CreateHostAsync(Action<NegotiateOptions> configureOptions = null)
         {
             var builder = new HostBuilder()
                 .ConfigureServices(services => services
+                    .AddRouting()
                     .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
                     .AddNegotiate(configureOptions))
                 .ConfigureWebHost(webHostBuilder =>
                 {
                     webHostBuilder.UseKestrel(options =>
                     {
-                        options.Listen(IPAddress.Loopback, 0);
+                        options.Listen(IPAddress.Loopback, 0, endpoint =>
+                        {
+                            endpoint.UseHttps("testCert.pfx", "testPassword");
+                        });
                     });
                     webHostBuilder.Configure(app =>
                     {
+                        app.UseRouting();
                         app.UseAuthentication();
-                        app.Run(TestApp);
-
+                        app.UseEndpoints(ConfigureEndpoints);
                     });                
                 });
 
             return builder.StartAsync();
         }
 
-        private static async Task TestApp(HttpContext context)
+        private static void ConfigureEndpoints(IEndpointRouteBuilder builder)
         {
-            if (context.Request.Path == new PathString("/expectanonymous"))
+            builder.Map("/Anonymous1", context =>
             {
+                Assert.Equal("HTTP/1.1", context.Request.Protocol);
                 Assert.False(context.User.Identity.IsAuthenticated, "Anonymous");
-                return;
-            }
-            else if (context.Request.Path == new PathString("/requireauth"))
+                return Task.CompletedTask;
+            });
+
+            builder.Map("/Anonymous2", context =>
+            {
+                Assert.Equal("HTTP/2", context.Request.Protocol);
+                Assert.False(context.User.Identity.IsAuthenticated, "Anonymous");
+                return Task.CompletedTask;
+            });
+
+            builder.Map("/Authenticate", async context =>
             {
                 if (!context.User.Identity.IsAuthenticated)
                 {
@@ -155,29 +233,54 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     return;
                 }
 
+                Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
                 var name = context.User.Identity.Name;
                 Assert.False(string.IsNullOrEmpty(name), "name");
                 await context.Response.WriteAsync(name);
-            }
-            else if (context.Request.Path == new PathString("/unauthorized"))
+            });
+
+            builder.Map("/AlreadyAuthenticated", async context =>
             {
-                // Simulate Authorization failure 
+                Assert.Equal("HTTP/1.1", context.Request.Protocol); // Not HTTP/2
+                Assert.True(context.User.Identity.IsAuthenticated, "Authenticated");
+                var name = context.User.Identity.Name;
+                Assert.False(string.IsNullOrEmpty(name), "name");
+                await context.Response.WriteAsync(name);
+            });
+
+            builder.Map("/Unauthorized", async context =>
+            {
+                // Simulate Authorization failure
                 var result = await context.AuthenticateAsync();
                 await context.ChallengeAsync();
-            }
-            else
-            {
-                throw new NotImplementedException(context.Request.Path);
-            }
+            });
         }
 
-        private static HttpClient CreateClient(IHost host, bool useDefaultCredentials = false)
+        // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade. WinHttpHandler does.
+        private static HttpClient CreateWinHttpClient(IHost host)
         {
             var address = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.First();
+
+            // WinHttpHandler always uses default credentials on localhost
+            return new HttpClient(new WinHttpHandler()
+            {
+                ServerCertificateValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+            })
+            {
+                BaseAddress = new Uri(address)
+            };
+        }
+
+        // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade. WinHttpHandler does.
+        private static HttpClient CreateSocketHttpClient(IHost host, bool useDefaultCredentials = false)
+        {
+            var address = host.Services.GetRequiredService<IServer>().Features.Get<IServerAddressesFeature>().Addresses.First();
+
             return new HttpClient(new HttpClientHandler()
-                {
-                    UseDefaultCredentials = useDefaultCredentials
-                })
+            {
+                UseDefaultCredentials = useDefaultCredentials,
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
+            })
             {
                 BaseAddress = new Uri(address)
             };

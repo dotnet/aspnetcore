@@ -98,6 +98,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     return false;
                 }
 
+                // WinHttpHandler re-authenticates an existing connection if it gets another challenge on subsequent requests.
+                if (authState?.IsCompleted == true)
+                {
+                    Logger.LogDebug("Negotiate data received for an already authenticated connection, Re-authenticating");
+                    authState.Dispose();
+                    authState = null;
+                }
+
                 if (authState == null)
                 {
                     connectionItems[NegotiateStateKey] = authState = Options.StateFactory.CreateInstance();
@@ -105,6 +113,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 }
 
                 var outgoing = authState.GetOutgoingBlob(token);
+
                 if (!authState.IsCompleted)
                 {
                     Logger.LogInformation("Incomplete Negotiate, 401 Negotiate challenge");
@@ -208,9 +217,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            // TODO: Verify clients will downgrade from HTTP/2 to HTTP/1?
-            // Or do we need to send HTTP_1_1_REQUIRED? Or throw here?
-            // TODO: Should we invalidate your current auth state?
+            // We allow issuing a challenge from an HTTP/2 request. Browser clients will gracefully downgrade to HTTP/1.1.
+            // SocketHttpHandler will not downgrade (https://github.com/dotnet/corefx/issues/35195), but WinHttpHandler will.
             var eventContext = new ChallengeContext(Context, Scheme, Options, properties);
             await Events.Challenge(eventContext);
             if (eventContext.Handled)
