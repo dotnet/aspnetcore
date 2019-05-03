@@ -220,6 +220,20 @@ namespace Microsoft.AspNetCore.Server.IIS
         internal static string FormatBadRequest()
             => GetString("BadRequest");
 
+        /// <summary>
+        /// Increasing the MaxRequestBodySize conflicts with the max value for IIS limit maxAllowedContentLength. HTTP requests that have a content length greater than maxAllowedContentLength will still be rejected by IIS. You can disable the limit by either removing or setting the maxAllowedContentLength value to a higher limit.
+        /// </summary>
+        internal static string MaxRequestLimitWarning
+        {
+            get => GetString("MaxRequestLimitWarning");
+        }
+
+        /// <summary>
+        /// Increasing the MaxRequestBodySize conflicts with the max value for IIS limit maxAllowedContentLength. HTTP requests that have a content length greater than maxAllowedContentLength will still be rejected by IIS. You can disable the limit by either removing or setting the maxAllowedContentLength value to a higher limit.
+        /// </summary>
+        internal static string FormatMaxRequestLimitWarning()
+            => GetString("MaxRequestLimitWarning");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

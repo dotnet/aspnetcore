@@ -112,7 +112,7 @@ namespace TestSite
                             .UseIIS()
                             .ConfigureServices(services =>
                             {
-                                services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 1);
+                                services.Configure<IISServerOptions>(options => options.MaxRequestBodySize = 2);
                             })
                             .UseStartup<Startup>()
                             .Build();

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
 using Microsoft.AspNetCore.Server.IIS.Core.IO;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
@@ -342,10 +343,12 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 {
                     throw new ArgumentOutOfRangeException(nameof(value), CoreStrings.NonNegativeNumberOrNullRequired);
                 }
+
                 if (value > _options.IisMaxRequestSizeLimit)
                 {
-                    _logger.LogWarning("Cannot increase request size past IIS limit.");
+                    _logger.LogWarning(CoreStrings.MaxRequestLimitWarning);
                 }
+
                 MaxRequestBodySize = value;
             }
         }

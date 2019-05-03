@@ -162,4 +162,7 @@
   <data name="BadRequest" xml:space="preserve">
     <value>Bad request.</value>
   </data>
+  <data name="MaxRequestLimitWarning" xml:space="preserve">
+    <value>Increasing the MaxRequestBodySize conflicts with the max value for IIS limit maxAllowedContentLength. HTTP requests that have a content length greater than maxAllowedContentLength will still be rejected by IIS. You can disable the limit by either removing or setting the maxAllowedContentLength value to a higher limit.</value>
+  </data>
 </root>

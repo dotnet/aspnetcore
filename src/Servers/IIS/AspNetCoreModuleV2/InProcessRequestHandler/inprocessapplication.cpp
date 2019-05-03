@@ -252,7 +252,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         }
 
         // Used to make .NET Runtime always log to event log when there is an unhandled exception.
-        LOG_LAST_ERROR_IF(SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1"));
+        LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1"));
 
         bool clrThreadExited;
         {
