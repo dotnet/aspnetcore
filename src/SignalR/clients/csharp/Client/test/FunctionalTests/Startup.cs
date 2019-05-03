@@ -24,11 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSignalR(options => options.EnableDetailedErrors = true)
-                    .AddMessagePackProtocol()
-                    .AddHubOptions<StreamBufferHub>(options =>
-                    {
-                        options.StreamBufferCapacity = 2;
-                    });
+                    .AddMessagePackProtocol();
 
             services.AddSingleton<IUserIdProvider, HeaderUserIdProvider>();
             services.AddAuthorization(options =>
@@ -67,7 +63,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 endpoints.MapHub<TestHub>("/default");
                 endpoints.MapHub<DynamicTestHub>("/dynamic");
                 endpoints.MapHub<TestHubT>("/hubT");
-                endpoints.MapHub<StreamBufferHub>("/stream");
                 endpoints.MapHub<HubWithAuthorization>("/authorizedhub");
                 endpoints.MapHub<HubWithAuthorization2>("/authorizedhub2")
                       .RequireAuthorization(new AuthorizeAttribute(JwtBearerDefaults.AuthenticationScheme));

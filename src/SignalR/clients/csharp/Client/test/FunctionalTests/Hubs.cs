@@ -262,40 +262,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
     }
 
-    public class StreamBufferHub : Hub
-    {
-        public async Task AcceptStream(ChannelReader<string> source, ChannelReader<string> blocker)
-        {
-
-            while (await blocker.WaitToReadAsync())
-            {
-                while (blocker.TryRead(out var item))
-                {
-                    if (item.Equals("unblock", StringComparison.OrdinalIgnoreCase))
-                    {
-                        while (await source.WaitToReadAsync())
-                        {
-                            while (source.TryRead(out var innerItem))
-                            {
-                                Console.WriteLine(innerItem);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
-
-
-        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
-
-        public async Task CallEcho(string message)
-        {
-            await Clients.Client(Context.ConnectionId).SendAsync("Echo", message);
-        }
-    }
-
     [Authorize(JwtBearerDefaults.AuthenticationScheme)]
     public class HubWithAuthorization : Hub
     {

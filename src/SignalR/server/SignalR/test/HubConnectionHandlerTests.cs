@@ -2912,6 +2912,37 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task StreamUploadBufferCapacityBlocksOtherInvocations()
+        {
+            var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider(services =>
+            {
+                services.Configure<HubOptions>(options =>
+                {
+                    options.StreamBufferCapacity = 1;
+                });
+            });
+
+            var connectionHandler = serviceProvider.GetService<HubConnectionHandler<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
+                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamDontRead), new[] { "id" }, Array.Empty<object>());
+
+                foreach (var letter in new[] { "A", "B", "C", "D", "E" })
+                {
+                    await client.SendHubMessageAsync(new StreamItemMessage("id", letter)).OrTimeout();
+                }
+
+                var ex = await Assert.ThrowsAsync<TimeoutException>(async () =>
+                {
+                    await client.SendInvocationAsync("Echo", "test");
+                    var result = (CompletionMessage)await client.ReadAsync().OrTimeout(5000);
+                });
+            }
+        }
+
+        [Fact]
         public async Task UploadStringsToConcat()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
