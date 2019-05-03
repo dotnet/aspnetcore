@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.BuildOutputContainsLine(result, $@"CompileResource: {Path.Combine("..", "LinkedDir", "LinkedFile.cshtml")} /LinkedFileOut/LinkedFile.cshtml");
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1931")]
+        [Fact]
         [InitializeTestProject("SimpleMvc")]
         public async Task Build_WithViews_ProducesDepsFileWithCompilationContext_ButNoReferences()
         {
