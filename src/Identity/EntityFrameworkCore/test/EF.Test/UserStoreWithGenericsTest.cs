@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             Assert.Contains("AddEntityFrameworkStores", e.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanAddRemoveUserClaimWithIssuer()
         {
             if (ShouldSkipDbTests())
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             Assert.Equal(0, userClaims.Count);
         }
 
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task RemoveClaimWithIssuerOnlyAffectsUser()
         {
             if (ShouldSkipDbTests())
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             Assert.Equal(3, userClaims2.Count);
         }
 
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanReplaceUserClaimWithIssuer()
         {
             if (ShouldSkipDbTests())

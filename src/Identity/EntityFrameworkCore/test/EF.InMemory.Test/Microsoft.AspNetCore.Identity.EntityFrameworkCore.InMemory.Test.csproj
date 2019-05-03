@@ -4,6 +4,11 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- These tests are skipped. See issue EntityFrameworkCore#12795 -->
+    <SkipTests>true</SkipTests>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(IdentityTestSharedSourceRoot)**\*.cs" />
   </ItemGroup>

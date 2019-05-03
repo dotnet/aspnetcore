@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             Assert.NotEqual(userA.PasswordHash, userB.PasswordHash);
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "See issue EntityFrameworkCore#12795")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]

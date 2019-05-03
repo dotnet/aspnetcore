@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             IdentityResultAssert.IsSuccess(await userManager.DeleteAsync(user));
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "See issue EntityFrameworkCore#12795")]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]

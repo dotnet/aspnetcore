@@ -550,7 +550,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanCreateUserNoPassword()
         {
             if (ShouldSkipDbTests())
@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanCreateUserAddLogin()
         {
             if (ShouldSkipDbTests())
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanCreateUserLoginAndAddPassword()
         {
             if (ShouldSkipDbTests())
@@ -646,7 +646,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanCreateUserAddRemoveLogin()
         {
             if (ShouldSkipDbTests())
@@ -729,7 +729,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanAddRemoveUserClaim()
         {
             if (ShouldSkipDbTests())
@@ -762,7 +762,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task RemoveClaimOnlyAffectsUser()
         {
             if (ShouldSkipDbTests())
@@ -799,7 +799,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanReplaceUserClaim()
         {
             if (ShouldSkipDbTests())
@@ -826,7 +826,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task ReplaceUserClaimOnlyAffectsUser()
         {
             if (ShouldSkipDbTests())

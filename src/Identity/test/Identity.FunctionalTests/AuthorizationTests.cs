@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 "/Identity/Account/Logout",
             };
 
-        [Theory]
+        [Theory(Skip = "See issue EntityFrameworkCore#12795")]
         [MemberData(nameof(RouteableAuthorizedPages))]
         public async Task AuthenticatedUserCanAccessAuthorizedPages(string url)
         {

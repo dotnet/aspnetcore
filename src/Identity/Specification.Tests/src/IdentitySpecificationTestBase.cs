@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Fact]
+        [Fact(Skip = "See issue EntityFrameworkCore#12795")]
         public async Task CanAddRemoveRoleClaim()
         {
             if (ShouldSkipDbTests())
