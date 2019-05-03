@@ -9,7 +9,6 @@ using System.IO;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Protocol
 {
@@ -20,13 +19,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ProtocolPropertyName = "protocol";
-        private static JsonEncodedText ProtocolPropertyNameBytes => JsonEncodedText.Encode(ProtocolPropertyName);
+        private static JsonEncodedText ProtocolPropertyNameBytes = JsonEncodedText.Encode(ProtocolPropertyName);
         private const string ProtocolVersionPropertyName = "version";
-        private static JsonEncodedText ProtocolVersionPropertyNameBytes => JsonEncodedText.Encode(ProtocolVersionPropertyName);
+        private static JsonEncodedText ProtocolVersionPropertyNameBytes = JsonEncodedText.Encode(ProtocolVersionPropertyName);
         private const string ErrorPropertyName = "error";
-        private static JsonEncodedText ErrorPropertyNameBytes => JsonEncodedText.Encode(ErrorPropertyName);
+        private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
         private const string TypePropertyName = "type";
-        private static JsonEncodedText TypePropertyNameBytes => JsonEncodedText.Encode(TypePropertyName);
+        private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
 
         private static ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>> _messageCache = new ConcurrentDictionary<IHubProtocol, ReadOnlyMemory<byte>>();
 
