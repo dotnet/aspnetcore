@@ -3,14 +3,20 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
 using Microsoft.Extensions.CommandLineUtils;
+using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace PackageBaselineGenerator
 {
@@ -26,11 +32,13 @@ namespace PackageBaselineGenerator
 
         private readonly CommandOption _source;
         private readonly CommandOption _output;
+        private readonly CommandOption _update;
 
         public Program()
         {
             _source = Option("-s|--source <SOURCE>", "The NuGet v2 source of the package to fetch", CommandOptionType.SingleValue);
             _output = Option("-o|--output <OUT>", "The generated file output path", CommandOptionType.SingleValue);
+            _update = Option("-u|--update", "Regenerate the input (Baseline.xml) file.", CommandOptionType.NoValue);
 
             Invoke = () => Run().GetAwaiter().GetResult();
         }
@@ -40,19 +48,28 @@ namespace PackageBaselineGenerator
             var source = _source.HasValue()
                 ? _source.Value()
                 : "https://www.nuget.org/api/v2/package";
+            if (_output.HasValue() && _update.HasValue())
+            {
+                await Error.WriteLineAsync("'--output' and '--update' options must not be used together.");
+                return 1;
+            }
 
-            var packageCache = Environment.GetEnvironmentVariable("NUGET_PACKAGES") != null
-                ? Environment.GetEnvironmentVariable("NUGET_PACKAGES")
-                : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
-
-            var tempDir = Path.Combine(Directory.GetCurrentDirectory(), "obj", "tmp");
-            Directory.CreateDirectory(tempDir);
-
-            var input = XDocument.Load(Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml"));
+            var inputPath = Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml");
+            var input = XDocument.Load(inputPath);
+            if (_update.HasValue())
+            {
+                return await RunUpdateAsync(inputPath, input, source);
+            }
 
             var output = _output.HasValue()
                 ? _output.Value()
                 : Path.Combine(Directory.GetCurrentDirectory(), "Baseline.Designer.props");
+
+            var packageCache = Environment.GetEnvironmentVariable("NUGET_PACKAGES") ??
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".nuget", "packages");
+
+            var tempDir = Path.Combine(Directory.GetCurrentDirectory(), "obj", "tmp");
+            Directory.CreateDirectory(tempDir);
 
             var baselineVersion = input.Root.Attribute("Version").Value;
 
@@ -87,7 +104,6 @@ namespace PackageBaselineGenerator
                     }
                 }
 
-
                 using (var reader = new PackageArchiveReader(nupkgPath))
                 {
                     var first = true;
@@ -121,12 +137,166 @@ namespace PackageBaselineGenerator
                 Encoding = Encoding.UTF8,
                 Indent = true,
             };
+
             using (var writer = XmlWriter.Create(output, settings))
             {
                 doc.Save(writer);
             }
 
             return 0;
+        }
+
+        private async Task<int> RunUpdateAsync(string documentPath, XDocument document, string source)
+        {
+            var packageSource = new PackageSource(source);
+            var providers = Repository.Provider.GetCoreV3(); // Get v2 and v3 API support
+            var sourceRepository = new SourceRepository(packageSource, providers);
+            var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
+            var logger = new Logger(Error, Out);
+            using var cacheContext = new SourceCacheContext
+            {
+                NoCache = true,
+            };
+
+            var versionAttribute = document.Root.Attribute("Version");
+            var hasChanged = await TryUpdateVersionAsync(
+                versionAttribute,
+                "Microsoft.AspNetCore.App",
+                packageMetadataResource,
+                logger,
+                cacheContext);
+
+            foreach (var package in document.Root.Descendants("Package"))
+            {
+                var id = package.Attribute("Id").Value;
+                versionAttribute = package.Attribute("Version");
+                var attributeChanged = await TryUpdateVersionAsync(
+                    versionAttribute,
+                    id,
+                    packageMetadataResource,
+                    logger,
+                    cacheContext);
+
+                hasChanged |= attributeChanged;
+            }
+
+            if (hasChanged)
+            {
+                await Out.WriteLineAsync($"Updating {documentPath}.");
+
+                using var stream = File.OpenWrite(documentPath);
+                var settings = new XmlWriterSettings
+                {
+                    Async = true,
+                    CheckCharacters = true,
+                    CloseOutput = false,
+                    Indent = true,
+                    IndentChars = "  ",
+                    NewLineOnAttributes = false,
+                    OmitXmlDeclaration = true,
+                    WriteEndDocumentOnClose = true,
+                };
+
+                using var writer = XmlWriter.Create(stream, settings);
+                await document.SaveAsync(writer, CancellationToken.None);
+            }
+            else
+            {
+                await Out.WriteLineAsync("No new versions found");
+            }
+
+            return 0;
+        }
+
+        private static async Task<bool> TryUpdateVersionAsync(
+            XAttribute versionAttribute,
+            string packageId,
+            PackageMetadataResource packageMetadataResource,
+            ILogger logger,
+            SourceCacheContext cacheContext)
+        {
+            var searchMetadata = await packageMetadataResource.GetMetadataAsync(
+                packageId,
+                includePrerelease: false,
+                includeUnlisted: false,
+                sourceCacheContext: cacheContext,
+                log: logger,
+                token: CancellationToken.None);
+
+            var currentVersion = NuGetVersion.Parse(versionAttribute.Value);
+            var versionRange = new VersionRange(currentVersion, new FloatRange(NuGetVersionFloatBehavior.Patch));
+            var latestVersion = versionRange.FindBestMatch(
+                searchMetadata.Select(metadata => metadata.Identity.Version));
+
+            var hasChanged = false;
+            if (latestVersion != currentVersion)
+            {
+                hasChanged = true;
+                versionAttribute.Value = latestVersion.ToNormalizedString();
+            }
+
+            return hasChanged;
+        }
+
+        private class Logger : ILogger
+        {
+            private readonly TextWriter _error;
+            private readonly TextWriter _out;
+
+            public Logger(TextWriter error, TextWriter @out)
+            {
+                _error = error;
+                _out = @out;
+            }
+
+            public void Log(LogLevel level, string data)
+            {
+                switch (level)
+                {
+                    case LogLevel.Debug:
+                        LogDebug(data);
+                        break;
+                    case LogLevel.Error:
+                        LogError(data);
+                        break;
+                    case LogLevel.Information:
+                        LogInformation(data);
+                        break;
+                    case LogLevel.Minimal:
+                        LogMinimal(data);
+                        break;
+                    case LogLevel.Verbose:
+                        LogVerbose(data);
+                        break;
+                    case LogLevel.Warning:
+                        LogWarning(data);
+                        break;
+                }
+            }
+
+            public void Log(ILogMessage message) => Log(message.Level, message.Message);
+
+            public Task LogAsync(LogLevel level, string data)
+            {
+                Log(level, data);
+                return Task.CompletedTask;
+            }
+
+            public Task LogAsync(ILogMessage message) => LogAsync(message.Level, message.Message);
+
+            public void LogDebug(string data) => _out.WriteLine($"Debug: {data}");
+
+            public void LogError(string data) => _error.WriteLine($"Error: {data}");
+
+            public void LogInformation(string data) => _out.WriteLine($"Information: {data}");
+
+            public void LogInformationSummary(string data) => _out.WriteLine($"Summary: {data}");
+
+            public void LogMinimal(string data) => _out.WriteLine($"Minimal: {data}");
+
+            public void LogVerbose(string data) => _out.WriteLine($"Verbose: {data}");
+
+            public void LogWarning(string data) => _out.WriteLine($"Warning: {data}");
         }
     }
 }

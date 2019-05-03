@@ -5,10 +5,11 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <StartArguments>-o "$(MSBuildThisFileDirectory)../../Baseline.Designer.props"</StartArguments>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)../../</StartWorkingDirectory>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.Packaging" Version="4.8.0" />
+    <PackageReference Include="NuGet.Protocol" Version="4.8.2" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.0" />
   </ItemGroup>
 
