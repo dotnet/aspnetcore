@@ -59,6 +59,14 @@ namespace Microsoft.AspNetCore.TestHost
                 scheme = (scheme == "ws") ? "http" : scheme;
                 scheme = (scheme == "wss") ? "https" : scheme;
                 request.Scheme = scheme;
+                if (!request.Host.HasValue)
+                {
+                    request.Host = HostString.FromUriComponent(uri);
+                    if (uri.IsDefaultPort)
+                    {
+                        request.Host = new HostString(request.Host.Host);
+                    }
+                }
                 request.Path = PathString.FromUriComponent(uri);
                 request.PathBase = PathString.Empty;
                 if (request.Path.StartsWithSegments(_pathBase, out var remainder))
