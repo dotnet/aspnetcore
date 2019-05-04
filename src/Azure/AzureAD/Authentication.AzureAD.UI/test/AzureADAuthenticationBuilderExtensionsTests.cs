@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
+using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -238,6 +238,28 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public void AddAzureAD_ThrowsWhenInstanceIsNotSet()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            services.AddAuthentication()
+                .AddAzureAD(o => { });
+
+            var provider = services.BuildServiceProvider();
+            var azureADOptionsMonitor = provider.GetService<IOptionsMonitor<AzureADOptions>>();
+
+            var expectedMessage = "The 'Instance' option must be provided.";
+
+            // Act & Assert
+            var exception = Assert.Throws<OptionsValidationException>(
+                () => azureADOptionsMonitor.Get(AzureADDefaults.AuthenticationScheme));
+
+            Assert.Contains(expectedMessage, exception.Failures);
+        }
+
+        [Fact]
         public void AddAzureADBearer_AddsAllAuthenticationHandlers()
         {
             // Arrange
@@ -399,6 +421,28 @@ namespace Microsoft.AspNetCore.Authentication
                 () => azureADOptionsMonitor.Get(AzureADDefaults.AuthenticationScheme));
 
             Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public void AddAzureADBearer_ThrowsWhenInstanceIsNotSet()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            services.AddSingleton<ILoggerFactory>(new NullLoggerFactory());
+
+            services.AddAuthentication()
+                .AddAzureADBearer(o => { });
+
+            var provider = services.BuildServiceProvider();
+            var azureADOptionsMonitor = provider.GetService<IOptionsMonitor<AzureADOptions>>();
+
+            var expectedMessage = "The 'Instance' option must be provided.";
+
+            // Act & Assert
+            var exception = Assert.Throws<OptionsValidationException>(
+                () => azureADOptionsMonitor.Get(AzureADDefaults.AuthenticationScheme));
+
+            Assert.Contains(expectedMessage, exception.Failures);
         }
     }
 }
