@@ -444,7 +444,7 @@ namespace Microsoft.Net.Http.Headers
                 for (int i = 0; i < result.Length; i++)
                 {
                     var c = result[i];
-                    if ((int)c > 0x7f || c == '\n')
+                    if ((int)c > 0x7f || (int)c < 0x20)
                     {
                         c = '_'; // Replace out-of-range characters
                     }
@@ -465,14 +465,14 @@ namespace Microsoft.Net.Http.Headers
                 && value.EndsWith("\"", StringComparison.Ordinal);
         }
 
-        // tspecials are required to be in a quoted string. Only non-ascii and new-line needs to be encoded.
+        // tspecials are required to be in a quoted string. Only non-ascii needs to be encoded.
         private bool RequiresEncoding(StringSegment input)
         {
             Contract.Assert(input != null);
 
             for (int i = 0; i < input.Length; i++)
             {
-                if ((int)input[i] > 0x7f || input[i] == '\n')
+                if ((int)input[i] > 0x7f || input[i] < 0x20)
                 {
                     return true;
                 }
