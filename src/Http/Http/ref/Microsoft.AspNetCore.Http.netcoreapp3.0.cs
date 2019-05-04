@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         public void Initialize(int revision) { }
         public override void OnCompleted(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
         public override void OnStarting(System.Func<object, System.Threading.Tasks.Task> callback, object state) { }
-        public override void Redirect(string location, bool permanent) { }
+        public override void Redirect(string location, bool permanent, bool preserveMethod) { }
         public override System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public void Uninitialize() { }
     }

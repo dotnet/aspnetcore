@@ -294,7 +294,8 @@ namespace Microsoft.AspNetCore.Http
         public abstract void OnStarting(System.Func<object, System.Threading.Tasks.Task> callback, object state);
         public virtual void OnStarting(System.Func<System.Threading.Tasks.Task> callback) { }
         public virtual void Redirect(string location) { }
-        public abstract void Redirect(string location, bool permanent);
+        public virtual void Redirect(string location, bool permanent) { }
+        public abstract void Redirect(string location, bool permanent, bool preserveMethod);
         public virtual void RegisterForDispose(System.IDisposable disposable) { }
         public virtual void RegisterForDisposeAsync(System.IAsyncDisposable disposable) { }
         public abstract System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
