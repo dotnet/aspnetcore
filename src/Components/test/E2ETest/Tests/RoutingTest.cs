@@ -292,6 +292,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void CanFollowLinkToNotAComponent()
+        {
+            SetUrlViaPushState("/");
+
+            var app = MountTestComponent<TestRouter>();
+            app.FindElement(By.LinkText("Not a component")).Click();
+            Browser.Equal("Not a component!", () => Browser.FindElement(By.Id("test-info")).Text);
+        }
+
+        [Fact]
         public void CanNavigateProgrammatically()
         {
             SetUrlViaPushState("/");

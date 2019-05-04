@@ -14,8 +14,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// </summary>
     public class RemoteUriHelper : UriHelperBase
     {
-        private IJSRuntime _jsRuntime;
         private readonly ILogger<RemoteUriHelper> _logger;
+        private IJSRuntime _jsRuntime;
 
         /// <summary>
         /// Creates a new <see cref="RemoteUriHelper"/> instance.
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public override void InitializeState(string uriAbsolute, string baseUriAbsolute)
         {
             base.InitializeState(uriAbsolute, baseUriAbsolute);
-            TriggerOnLocationChanged();
+            TriggerOnLocationChanged(isinterceptedLink: false);
         }
 
         /// <summary>
@@ -52,11 +52,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             {
                 throw new InvalidOperationException("JavaScript runtime already initialized.");
             }
+
             _jsRuntime = jsRuntime;
+
             _jsRuntime.InvokeAsync<object>(
-                    Interop.EnableNavigationInterception,
-                    typeof(RemoteUriHelper).Assembly.GetName().Name,
-                    nameof(NotifyLocationChanged));
+                Interop.ListenForNavigationEvents,
+                typeof(RemoteUriHelper).Assembly.GetName().Name,
+                nameof(NotifyLocationChanged));
 
             _logger.LogDebug($"{nameof(RemoteUriHelper)} initialized.");
         }
@@ -65,7 +67,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(NotifyLocationChanged))]
-        public static void NotifyLocationChanged(string uriAbsolute)
+        public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink)
         {
             var circuit = CircuitHost.Current;
             if (circuit == null)
@@ -79,13 +81,13 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             uriHelper.SetAbsoluteUri(uriAbsolute);
 
             uriHelper._logger.LogDebug($"Location changed to '{uriAbsolute}'.");
-            uriHelper.TriggerOnLocationChanged();
+            uriHelper.TriggerOnLocationChanged(isInterceptedLink);
         }
 
         /// <inheritdoc />
         protected override void NavigateToCore(string uri, bool forceLoad)
         {
-            _logger.LogDebug($"Log debug {uri} force load {forceLoad}.");
+            _logger.LogDebug($"{uri} force load {forceLoad}.");
 
             if (_jsRuntime == null)
             {

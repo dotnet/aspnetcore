@@ -1,5 +1,6 @@
 @page
-@using ComponentsApp.App
+@using ComponentsApp.App.Pages
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
 
 <!DOCTYPE html>
 <html>
@@ -12,7 +13,8 @@
     <link href="css/site.css" rel="stylesheet" />
 </head>
 <body>
-    <app>@(await Html.RenderComponentAsync<App>(new { Name = "Guest" }))</app>
+    @** Using a non router component here to ensure having that does not cause link interception *@
+    <app>@(await Html.RenderComponentAsync<Greeter>())</app>
 
     <script src="_framework/blazor.server.js" autostart="false"></script>
     <script>
@@ -25,5 +27,11 @@
             window['__aspnetcore__testing__blazor__started__'] = true;
         });
     </script>
+    <footer class="footer">
+        <div id="test-info">Regular Razor Page</div>
+        <div class="container">
+            <a asp-page="/">Index</a>
+        </div>
+    </footer>
 </body>
 </html>

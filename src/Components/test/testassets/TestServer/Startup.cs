@@ -2,6 +2,7 @@ using BasicTestApp;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -59,6 +60,7 @@ namespace TestServer
 
                 subdirApp.UseEndpoints(endpoints =>
                 {
+                    endpoints.Map("NotAComponent.html", context => context.Response.WriteAsync("<div id=\"test-info\">Not a component!</div>"));
                     endpoints.MapBlazorHub(typeof(Index), selector: "root");
                     endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
                 });

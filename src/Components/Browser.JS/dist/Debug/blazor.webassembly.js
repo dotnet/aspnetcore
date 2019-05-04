@@ -2450,62 +2450,66 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 __webpack_require__(/*! @dotnet/jsinterop */ "../node_modules/@dotnet/jsinterop/dist/Microsoft.JSInterop.js");
-var hasRegisteredEventListeners = false;
+var hasRegisteredNavigationInterception = false;
+var hasRegisteredNavigationEventListeners = false;
 // Will be initialized once someone registers
 var notifyLocationChangedCallback = null;
 // These are the functions we're making available for invocation from .NET
 exports.internalFunctions = {
+    listenForNavigationEvents: listenForNavigationEvents,
     enableNavigationInterception: enableNavigationInterception,
     navigateTo: navigateTo,
     getBaseURI: function () { return document.baseURI; },
     getLocationHref: function () { return location.href; },
 };
-function enableNavigationInterception(assemblyName, functionName) {
-    if (hasRegisteredEventListeners || assemblyName === undefined || functionName === undefined) {
+function listenForNavigationEvents(assemblyName, functionName) {
+    if (hasRegisteredNavigationEventListeners || assemblyName === undefined || functionName === undefined) {
         return;
     }
     notifyLocationChangedCallback = { assemblyName: assemblyName, functionName: functionName };
-    hasRegisteredEventListeners = true;
+    hasRegisteredNavigationEventListeners = true;
+    window.addEventListener('popstate', function () { return notifyLocationChanged(false); });
+}
+function enableNavigationInterception() {
+    if (hasRegisteredNavigationInterception) {
+        return;
+    }
+    hasRegisteredNavigationInterception = true;
     document.addEventListener('click', function (event) {
+        if (event.button !== 0 || eventHasSpecialKey(event)) {
+            // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
+            return;
+        }
         // Intercept clicks on all <a> elements where the href is within the <base href> URI space
         // We must explicitly check if it has an 'href' attribute, because if it doesn't, the result might be null or an empty string depending on the browser
         var anchorTarget = findClosestAncestor(event.target, 'A');
         var hrefAttributeName = 'href';
-        if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName) && event.button === 0) {
-            var href = anchorTarget.getAttribute(hrefAttributeName);
-            var absoluteHref = toAbsoluteUri(href);
+        if (anchorTarget && anchorTarget.hasAttribute(hrefAttributeName)) {
             var targetAttributeValue = anchorTarget.getAttribute('target');
             var opensInSameFrame = !targetAttributeValue || targetAttributeValue === '_self';
-            // Don't stop ctrl/meta-click (etc) from opening links in new tabs/windows
-            if (isWithinBaseUriSpace(absoluteHref) && !eventHasSpecialKey(event) && opensInSameFrame) {
+            if (!opensInSameFrame) {
+                return;
+            }
+            var href = anchorTarget.getAttribute(hrefAttributeName);
+            var absoluteHref = toAbsoluteUri(href);
+            if (isWithinBaseUriSpace(absoluteHref)) {
                 event.preventDefault();
-                performInternalNavigation(absoluteHref);
+                performInternalNavigation(absoluteHref, true);
             }
         }
     });
-    window.addEventListener('popstate', handleInternalNavigation);
 }
-function navigateTo(uri, forceLoad) {
-    var absoluteUri = toAbsoluteUri(uri);
-    if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-        performInternalNavigation(absoluteUri);
-    }
-    else {
-        location.href = uri;
-    }
-}
-exports.navigateTo = navigateTo;
-function performInternalNavigation(absoluteInternalHref) {
+function performInternalNavigation(absoluteInternalHref, interceptedLink) {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
-    handleInternalNavigation();
+    notifyLocationChanged(interceptedLink);
 }
-function handleInternalNavigation() {
+function notifyLocationChanged(interceptedLink) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
                     if (!notifyLocationChangedCallback) return [3 /*break*/, 2];
-                    return [4 /*yield*/, DotNet.invokeMethodAsync(notifyLocationChangedCallback.assemblyName, notifyLocationChangedCallback.functionName, location.href)];
+                    return [4 /*yield*/, DotNet.invokeMethodAsync(notifyLocationChangedCallback.assemblyName, notifyLocationChangedCallback.functionName, location.href, interceptedLink)];
                 case 1:
                     _a.sent();
                     _a.label = 2;
@@ -2514,6 +2518,16 @@ function handleInternalNavigation() {
         });
     });
 }
+function navigateTo(uri, forceLoad) {
+    var absoluteUri = toAbsoluteUri(uri);
+    if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
+        performInternalNavigation(absoluteUri, false);
+    }
+    else {
+        location.href = uri;
+    }
+}
+exports.navigateTo = navigateTo;
 var testAnchor;
 function toAbsoluteUri(relativeUri) {
     testAnchor = testAnchor || document.createElement('a');

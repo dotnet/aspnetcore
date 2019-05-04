@@ -14,4 +14,8 @@
     <Reference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\Browser\src\BrowserUriHelperInterop.cs" LinkBase="Routing" />
+  </ItemGroup>
+
 </Project>

@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Components
     }
     public partial interface IUriHelper
     {
-        event System.EventHandler<string> OnLocationChanged;
+        event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged;
         string GetAbsoluteUri();
         string GetBaseUri();
         void NavigateTo(string uri);
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class UriHelperBase : Microsoft.AspNetCore.Components.IUriHelper
     {
         protected UriHelperBase() { }
-        public event System.EventHandler<string> OnLocationChanged { add { } remove { } }
+        public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged { add { } remove { } }
         protected virtual void EnsureInitialized() { }
         public string GetAbsoluteUri() { throw null; }
         public virtual string GetBaseUri() { throw null; }
@@ -611,7 +611,7 @@ namespace Microsoft.AspNetCore.Components
         protected void SetAbsoluteUri(string uri) { }
         public System.Uri ToAbsoluteUri(string href) { throw null; }
         public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
-        protected void TriggerOnLocationChanged() { }
+        protected void TriggerOnLocationChanged(bool isinterceptedLink) { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Forms
@@ -849,6 +849,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 }
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct LocationChangedEventArgs
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public LocationChangedEventArgs(string location, bool isNavigationIntercepted) { throw null; }
+        public bool IsNavigationIntercepted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public enum NavLinkMatch
     {
         Prefix = 0,

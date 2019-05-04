@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
@@ -205,6 +203,21 @@ window.Blazor._internal.forceCloseConnection();");
             Browser.FindElement(By.Id("cause-error")).Click();
             Browser.True(() => Browser.Manage().Logs.GetLog(LogType.Browser)
                 .Any(l => l.Level == LogLevel.Info && l.Message.Contains("Connection disconnected.")));
+        }
+
+        [Fact]
+        public void LinksToNonComponentsWork()
+        {
+            // Navigation to a Razor Page when Router is involved.
+            Browser.FindElement(By.LinkText("Links")).Click();
+            Browser.Equal("Blazor links page", () => Browser.FindElement(By.Id("test-info")).Text);
+
+            Browser.FindElement(By.LinkText("Regular Razor Page")).Click();
+            Browser.Equal("Regular Razor Page", () => Browser.FindElement(By.Id("test-info")).Text);
+
+            // Navigation from a Razor page without a router component should work.
+            Browser.FindElement(By.LinkText("Index")).Click();
+            Browser.Equal("Hello, world!", () => Browser.FindElement(By.CssSelector("h1#index")).Text);
         }
 
     }
