@@ -30,7 +30,13 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 throw new ArgumentNullException(nameof(context));
             }
 
-            return Task.FromResult(_options.GetPolicy(policyName ?? _options.DefaultPolicyName));
+            policyName ??= _options.DefaultPolicyName;
+            if (_options.PolicyMap.TryGetValue(policyName, out var result))
+            {
+                return result.policyTask;
+            }
+
+            return Task.FromResult<CorsPolicy>(null);
         }
     }
 }
