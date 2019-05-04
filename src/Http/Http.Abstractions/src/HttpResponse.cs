@@ -120,7 +120,16 @@ namespace Microsoft.AspNetCore.Http
         /// <param name="location">The URL to redirect the client to. This must be properly encoded for use in http headers
         /// where only ASCII characters are allowed.</param>
         /// <param name="permanent"><c>True</c> if the redirect is permanent (301), otherwise <c>false</c> (302).</param>
-        public abstract void Redirect(string location, bool permanent);
+        public virtual void Redirect(string location, bool permanent) => Redirect(location, permanent, preserveMethod: false);
+
+        /// <summary>
+        /// Returns a redirect response (HTTP 301, HTTP 302, HTTP 307 or HTTP 308) to the client.
+        /// </summary>
+        /// <param name="location">The URL to redirect the client to. This must be properly encoded for use in http headers
+        /// where only ASCII characters are allowed.</param>
+        /// <param name="permanent"><c>True</c> if the redirect is permanent (301 or 308), otherwise <c>false</c> (302 or 307).</param>
+        /// <param name="preserveMethod"><c>True</c> if the redirect needs to reuse the method and body (308 or 307), otherwise <c>false</c> (301 or 302).</param>
+        public abstract void Redirect(string location, bool permanent, bool preserveMethod);
 
         /// <summary>
         /// Starts the response by calling OnStarting() and making headers unmodifiable.

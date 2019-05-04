@@ -135,15 +135,29 @@ namespace Microsoft.AspNetCore.Http.Internal
             HttpResponseFeature.OnCompleted(callback, state);
         }
 
-        public override void Redirect(string location, bool permanent)
+        public override void Redirect(string location, bool permanent, bool preserveMethod)
         {
-            if (permanent)
+            if (preserveMethod)
             {
-                HttpResponseFeature.StatusCode = 301;
+                if (permanent)
+                {
+                    HttpResponseFeature.StatusCode = 308;
+                }
+                else
+                {
+                    HttpResponseFeature.StatusCode = 307;
+                }
             }
             else
             {
-                HttpResponseFeature.StatusCode = 302;
+                if (permanent)
+                {
+                    HttpResponseFeature.StatusCode = 301;
+                }
+                else
+                {
+                    HttpResponseFeature.StatusCode = 302;
+                }
             }
 
             Headers[HeaderNames.Location] = location;
