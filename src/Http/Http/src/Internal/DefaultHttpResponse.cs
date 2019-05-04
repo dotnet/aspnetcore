@@ -136,15 +136,15 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         public override void Redirect(string location, bool permanent)
+        {
+            if (permanent)
             {
-                if (permanent)
-                {
-                    HttpResponseFeature.StatusCode = 301;
-                }
-                else
-                {
-                    HttpResponseFeature.StatusCode = 302;
-                }
+                HttpResponseFeature.StatusCode = 301;
+            }
+            else
+            {
+                HttpResponseFeature.StatusCode = 302;
+            }
 
             Headers[HeaderNames.Location] = location;
         }
