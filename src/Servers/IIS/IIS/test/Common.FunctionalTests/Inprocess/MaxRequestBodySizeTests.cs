@@ -56,6 +56,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         [ConditionalFact]
         [RequiresNewHandler]
+        public async Task IISRejectsContentLengthTooLargeByDefault()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            using (var connection = new TestConnection(deploymentResult.HttpClient.BaseAddress.Port))
+            {
+                await connection.Send(
+                    "POST /HelloWorld HTTP/1.1",
+                    $"Content-Length: 30000001",
+                    "Host: localhost",
+                    "",
+                    "A");
+                await connection.Receive("HTTP/1.1 404 Not Found");
+            }
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
         public async Task SetIISLimitMaxRequestBodyLogsWarning()
         {

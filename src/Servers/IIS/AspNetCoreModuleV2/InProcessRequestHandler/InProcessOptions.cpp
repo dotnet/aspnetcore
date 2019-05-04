@@ -72,13 +72,22 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     const auto anonAuthSection = configurationSource.GetSection(CS_ANONYMOUS_AUTHENTICATION_SECTION);
     m_fAnonymousAuthEnabled = anonAuthSection && anonAuthSection->GetBool(CS_ENABLED).value_or(false);
 
-    const auto maxRequestBodySize = configurationSource.GetSection(CS_MAX_REQUEST_BODY_SIZE_SECTION);
-    if (maxRequestBodySize != nullptr)
+    const auto moduleSection = configurationSource.GetSection(CS_MODULES_SECTION);
+    const auto requestFilteringSection = configurationSource.GetSection(CS_MAX_REQUEST_BODY_SIZE_SECTION);
+    if (requestFilteringSection != nullptr)
     {
-        auto requestLimitSection = maxRequestBodySize->GetSection(L"requestLimits").value_or(nullptr);
+        // The requestFiltering section is enabled by default in most scenarios. However, if the value
+        // maxAllowedContentLength isn't set, it defaults to 30_000_000 in IIS.
+        // The section element won't be defined if the feature is disabled, so the presence of the section tells
+        // us whether there should be a default or not.
+        auto requestLimitSection = requestFilteringSection->GetSection(L"requestLimits").value_or(nullptr);
         if (requestLimitSection != nullptr)
         {
-            m_dwMaxRequestBodySize = requestLimitSection->GetLong(L"maxAllowedContentLength").value_or(INFINITE);
+            m_dwMaxRequestBodySize = requestLimitSection->GetLong(L"maxAllowedContentLength").value_or(30000000);
+        }
+        else
+        {
+            m_dwMaxRequestBodySize = 30000000;
         }
     }
 
