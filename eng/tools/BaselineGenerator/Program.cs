@@ -36,7 +36,7 @@ namespace PackageBaselineGenerator
 
         public Program()
         {
-            _source = Option("-s|--source <SOURCE>", "The NuGet v2 source of the package to fetch", CommandOptionType.SingleValue);
+            _source = Option("-s|--packageSource <SOURCE>", "The NuGet source of packages to fetch", CommandOptionType.SingleValue);
             _output = Option("-o|--output <OUT>", "The generated file output path", CommandOptionType.SingleValue);
             _update = Option("-u|--update", "Regenerate the input (Baseline.xml) file.", CommandOptionType.NoValue);
 
@@ -46,8 +46,8 @@ namespace PackageBaselineGenerator
         private async Task<int> Run()
         {
             var source = _source.HasValue()
-                ? _source.Value()
-                : "https://www.nuget.org/api/v2/package";
+                ? _source.Value().TrimEnd('/')
+                : "https://www.nuget.org/api/v2";
             if (_output.HasValue() && _update.HasValue())
             {
                 await Error.WriteLineAsync("'--output' and '--update' options must not be used together.");
@@ -56,9 +56,21 @@ namespace PackageBaselineGenerator
 
             var inputPath = Path.Combine(Directory.GetCurrentDirectory(), "Baseline.xml");
             var input = XDocument.Load(inputPath);
+            var packageSource = new PackageSource(source);
+            var providers = Repository.Provider.GetCoreV3(); // Get v2 and v3 API support
+            var sourceRepository = new SourceRepository(packageSource, providers);
             if (_update.HasValue())
             {
-                return await RunUpdateAsync(inputPath, input, source);
+                return await RunUpdateAsync(inputPath, input, sourceRepository);
+            }
+
+            var feedType = await sourceRepository.GetFeedType(CancellationToken.None);
+            var feedV3 = feedType == FeedType.HttpV3;
+            var packageBase = source + "/package";
+            if (feedV3)
+            {
+                var resources = await sourceRepository.GetResourceAsync<ServiceIndexResourceV3>();
+                packageBase = resources.GetServiceEntryUri(ServiceTypes.PackageBaseAddress).ToString().TrimEnd('/');
             }
 
             var output = _output.HasValue()
@@ -81,7 +93,6 @@ namespace PackageBaselineGenerator
                         new XElement("AspNetCoreBaselineVersion", baselineVersion))));
 
             var client = new HttpClient();
-
             foreach (var pkg in input.Root.Descendants("Package"))
             {
                 var id = pkg.Attribute("Id").Value;
@@ -95,31 +106,32 @@ namespace PackageBaselineGenerator
 
                 if (!File.Exists(nupkgPath))
                 {
-                    var url = $"{source}/{id}/{version}";
-                    using (var file = File.Create(nupkgPath))
+                    var url = feedV3 ?
+                        $"{packageBase}/{id.ToLowerInvariant()}/{version}/{id.ToLowerInvariant()}.{version}.nupkg" :
+                        $"{packageBase}/{id}/{version}";
+
+                    Console.WriteLine($"Downloading {url}");
+                    using (var response = await client.GetStreamAsync(url))
                     {
-                        Console.WriteLine($"Downloading {url}");
-                        var response = await client.GetStreamAsync(url);
-                        await response.CopyToAsync(file);
+                        using (var file = File.Create(nupkgPath))
+                        {
+                            await response.CopyToAsync(file);
+                        }
                     }
                 }
 
                 using (var reader = new PackageArchiveReader(nupkgPath))
                 {
-                    var first = true;
+                    doc.Root.Add(new XComment($" Package: {id}"));
+
+                    var propertyGroup = new XElement(
+                        "PropertyGroup",
+                        new XAttribute("Condition", $" '$(PackageId)' == '{id}' "),
+                        new XElement("BaselinePackageVersion", version));
+                    doc.Root.Add(propertyGroup);
+
                     foreach (var group in reader.NuspecReader.GetDependencyGroups())
                     {
-                        if (first)
-                        {
-                            first = false;
-                            doc.Root.Add(new XComment($" Package: {id}"));
-
-                            var propertyGroup = new XElement("PropertyGroup",
-                                new XAttribute("Condition", $" '$(PackageId)' == '{id}' "),
-                                new XElement("BaselinePackageVersion", version));
-                            doc.Root.Add(propertyGroup);
-                        }
-
                         var itemGroup = new XElement("ItemGroup", new XAttribute("Condition", $" '$(PackageId)' == '{id}' AND '$(TargetFramework)' == '{group.TargetFramework.GetShortFolderName()}' "));
                         doc.Root.Add(itemGroup);
 
@@ -143,53 +155,54 @@ namespace PackageBaselineGenerator
                 doc.Save(writer);
             }
 
+            Console.WriteLine($"Generated file in {output}");
+
             return 0;
         }
 
-        private async Task<int> RunUpdateAsync(string documentPath, XDocument document, string source)
+        private async Task<int> RunUpdateAsync(
+            string documentPath,
+            XDocument document,
+            SourceRepository sourceRepository)
         {
-            var packageSource = new PackageSource(source);
-            var providers = Repository.Provider.GetCoreV3(); // Get v2 and v3 API support
-            var sourceRepository = new SourceRepository(packageSource, providers);
             var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>();
             var logger = new Logger(Error, Out);
-            using var cacheContext = new SourceCacheContext
+            var hasChanged = false;
+            using (var cacheContext = new SourceCacheContext { NoCache = true })
             {
-                NoCache = true,
-            };
-
-            var versionAttribute = document.Root.Attribute("Version");
-            var hasChanged = await TryUpdateVersionAsync(
-                versionAttribute,
-                "Microsoft.AspNetCore.App",
-                packageMetadataResource,
-                logger,
-                cacheContext);
-
-            foreach (var package in document.Root.Descendants("Package"))
-            {
-                var id = package.Attribute("Id").Value;
-                versionAttribute = package.Attribute("Version");
-                var attributeChanged = await TryUpdateVersionAsync(
+                var versionAttribute = document.Root.Attribute("Version");
+                hasChanged = await TryUpdateVersionAsync(
                     versionAttribute,
-                    id,
+                    "Microsoft.AspNetCore.App",
                     packageMetadataResource,
                     logger,
                     cacheContext);
 
-                hasChanged |= attributeChanged;
+                foreach (var package in document.Root.Descendants("Package"))
+                {
+                    var id = package.Attribute("Id").Value;
+                    versionAttribute = package.Attribute("Version");
+                    var attributeChanged = await TryUpdateVersionAsync(
+                        versionAttribute,
+                        id,
+                        packageMetadataResource,
+                        logger,
+                        cacheContext);
+
+                    hasChanged |= attributeChanged;
+                }
             }
 
             if (hasChanged)
             {
                 await Out.WriteLineAsync($"Updating {documentPath}.");
 
-                using var stream = File.OpenWrite(documentPath);
                 var settings = new XmlWriterSettings
                 {
                     Async = true,
                     CheckCharacters = true,
                     CloseOutput = false,
+                    Encoding = Encoding.UTF8,
                     Indent = true,
                     IndentChars = "  ",
                     NewLineOnAttributes = false,
@@ -197,8 +210,13 @@ namespace PackageBaselineGenerator
                     WriteEndDocumentOnClose = true,
                 };
 
-                using var writer = XmlWriter.Create(stream, settings);
-                await document.SaveAsync(writer, CancellationToken.None);
+                using (var stream = File.OpenWrite(documentPath))
+                {
+                    using (var writer = XmlWriter.Create(stream, settings))
+                    {
+                        await document.SaveAsync(writer, CancellationToken.None);
+                    }
+                }
             }
             else
             {
@@ -218,15 +236,24 @@ namespace PackageBaselineGenerator
             var searchMetadata = await packageMetadataResource.GetMetadataAsync(
                 packageId,
                 includePrerelease: false,
-                includeUnlisted: false,
+                includeUnlisted: true, // Microsoft.AspNetCore.DataOrotection.Redis package is not listed.
                 sourceCacheContext: cacheContext,
                 log: logger,
                 token: CancellationToken.None);
 
             var currentVersion = NuGetVersion.Parse(versionAttribute.Value);
-            var versionRange = new VersionRange(currentVersion, new FloatRange(NuGetVersionFloatBehavior.Patch));
+            var versionRange = new VersionRange(
+                currentVersion,
+                new FloatRange(NuGetVersionFloatBehavior.Patch, currentVersion));
+
             var latestVersion = versionRange.FindBestMatch(
                 searchMetadata.Select(metadata => metadata.Identity.Version));
+
+            if (latestVersion == null)
+            {
+                logger.LogWarning($"Unable to find latest version of '{packageId}'.");
+                return false;
+            }
 
             var hasChanged = false;
             if (latestVersion != currentVersion)
