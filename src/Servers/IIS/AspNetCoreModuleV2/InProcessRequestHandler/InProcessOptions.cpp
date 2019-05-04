@@ -72,7 +72,6 @@ InProcessOptions::InProcessOptions(const ConfigurationSource &configurationSourc
     const auto anonAuthSection = configurationSource.GetSection(CS_ANONYMOUS_AUTHENTICATION_SECTION);
     m_fAnonymousAuthEnabled = anonAuthSection && anonAuthSection->GetBool(CS_ENABLED).value_or(false);
 
-    const auto moduleSection = configurationSource.GetSection(CS_MODULES_SECTION);
     const auto requestFilteringSection = configurationSource.GetSection(CS_MAX_REQUEST_BODY_SIZE_SECTION);
     if (requestFilteringSection != nullptr)
     {
