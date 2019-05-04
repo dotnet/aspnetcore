@@ -203,7 +203,7 @@ namespace Interop.FunctionalTests
 
         public static async Task RunTest(string testId, int port, bool https, ILogger logger)
         {
-            var tempFile = Path.GetTempPath() + Guid.NewGuid() + ".xml";
+            var tempFile = Path.Combine(Environment.CurrentDirectory, "temp") + Guid.NewGuid() + ".xml";
             using (var process = new Process())
             {
                 process.StartInfo.FileName = GetToolLocation();
