@@ -1043,6 +1043,27 @@ namespace Microsoft.AspNetCore.Hosting
             server.VerifyNoOtherCalls();
         }
 
+        [Fact]
+        public async Task DoesNotCallServerStopIfServerStartHasNotBeenCalledIHostedService()
+        {
+            var server = new Mock<IServer>();
+
+            using (var host = CreateBuilder()
+               .ConfigureServices(services =>
+               {
+                   services.AddSingleton(server.Object);
+                   services.AddSingleton<IHostedService, TestHostedService>();
+               })
+               .UseStartup("Microsoft.AspNetCore.Hosting.Tests")
+               .Build())
+            {
+                var svc = (TestHostedService)host.Services.GetRequiredService<IHostedService>();
+                await svc.StopAsync(default);
+            }
+
+            server.VerifyNoOtherCalls();
+        }
+
         public class BadConfigureServicesStartup
         {
             public void ConfigureServices(IServiceCollection services, int gunk) { }

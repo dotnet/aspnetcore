@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             // Fire the IHostedService.Stop
-            if (_hostedServiceExecutor != null)
+            if (_hostedServiceExecutor != null && !_startedServer)
             {
                 await _hostedServiceExecutor.StopAsync(cancellationToken).ConfigureAwait(false);
             }
