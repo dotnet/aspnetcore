@@ -1,6 +1,6 @@
 {
   "sdk": {
-    "version": "3.0.100-preview4-011136"
+    "version": "3.0.100-preview5-011568"
   },
   "msbuild-sdks": {
     "Yarn.MSBuild": "1.13.0",
