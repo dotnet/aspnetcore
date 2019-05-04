@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Runtime.TagHelpers
                 var task = tagHelpers[i].ProcessAsync(tagHelperContext, tagHelperOutput);
                 if (!task.IsCompletedSuccessfully)
                 {
-                    return Awaited(task, executionContext, i, count);
+                    return Awaited(task, executionContext, i + 1, count);
                 }
             }
 
