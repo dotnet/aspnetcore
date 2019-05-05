@@ -465,7 +465,7 @@ namespace Microsoft.Net.Http.Headers
                 && value.EndsWith("\"", StringComparison.Ordinal);
         }
 
-        // tspecials are required to be in a quoted string. Only non-ascii needs to be encoded.
+        // tspecials are required to be in a quoted string.  Only non-ascii needs to be encoded.
         private bool RequiresEncoding(StringSegment input)
         {
             Contract.Assert(input != null);
