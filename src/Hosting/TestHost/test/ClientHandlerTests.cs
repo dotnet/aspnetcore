@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-                Assert.Equal("HTTP/2.0", context.Request.Protocol);
+                Assert.Equal("HTTP/1.1", context.Request.Protocol);
                 Assert.Equal("GET", context.Request.Method);
                 Assert.Equal("https", context.Request.Scheme);
                 Assert.Equal("/A/Path", context.Request.PathBase.Value);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-                Assert.Equal("HTTP/2.0", features.Get<IHttpRequestFeature>().Protocol);
+                Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
                 Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
                 Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
                 Assert.Equal("/A/Path", features.Get<IHttpRequestFeature>().PathBase);

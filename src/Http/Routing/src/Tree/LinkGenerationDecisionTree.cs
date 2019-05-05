@@ -113,14 +113,20 @@ namespace Microsoft.AspNetCore.Routing.Tree
         {
             // Any entries in node.Matches have had all their required values satisfied, so add them
             // to the results.
-            for (var i = 0; i < node.Matches.Count; i++)
+            var matches = node.Matches;
+            // Read interface .Count once rather than per iteration
+            var matchesCount = matches.Count;
+            for (var i = 0; i < matchesCount; i++)
             {
-                results.Add(new OutboundMatchResult(node.Matches[i], isFallbackPath));
+                results.Add(new OutboundMatchResult(matches[i], isFallbackPath));
             }
 
-            for (var i = 0; i < node.Criteria.Count; i++)
+            var criteria = node.Criteria;
+            // Read interface .Count once rather than per iteration
+            var criteriaCount = criteria.Count;
+            for (var i = 0; i < criteriaCount; i++)
             {
-                var criterion = node.Criteria[i];
+                var criterion = criteria[i];
                 var key = criterion.Key;
 
                 if (values.TryGetValue(key, out var value))

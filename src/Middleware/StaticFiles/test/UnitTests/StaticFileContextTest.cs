@@ -22,14 +22,18 @@ namespace Microsoft.AspNetCore.StaticFiles
         {
             // Arrange
             var options = new StaticFileOptions();
-            var context = new StaticFileContext(new DefaultHttpContext(), options, PathString.Empty, NullLogger.Instance, new TestFileProvider(), new FileExtensionContentTypeProvider());
+            var httpContext = new DefaultHttpContext();
+            var pathString = PathString.Empty;
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, new TestFileProvider(), contentType, subPath);
 
             // Act
-            var validateResult = context.ValidatePath();
             var lookupResult = context.LookupFileInfo();
 
             // Assert
             Assert.True(validateResult);
+            Assert.False(contentTypeResult);
             Assert.False(lookupResult);
         }
 
@@ -46,13 +50,17 @@ namespace Microsoft.AspNetCore.StaticFiles
             var pathString = new PathString("/test");
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Path = new PathString("/test/foo.txt");
-            var context = new StaticFileContext(httpContext, options, pathString, NullLogger.Instance, fileProvider, new FileExtensionContentTypeProvider());
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
+
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
 
             // Act
-            context.ValidatePath();
             var result = context.LookupFileInfo();
 
             // Assert
+            Assert.True(validateResult);
+            Assert.True(contentTypeResult);
             Assert.True(result);
         }
 
@@ -70,10 +78,14 @@ namespace Microsoft.AspNetCore.StaticFiles
             var httpsCompressionFeature = new TestHttpsCompressionFeature();
             httpContext.Features.Set<IHttpsCompressionFeature>(httpsCompressionFeature);
             httpContext.Request.Path = new PathString("/test/foo.txt");
-            var context = new StaticFileContext(httpContext, options, pathString, NullLogger.Instance, fileProvider, new FileExtensionContentTypeProvider());
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
 
-            context.ValidatePath();
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
+
             var result = context.LookupFileInfo();
+            Assert.True(validateResult);
+            Assert.True(contentTypeResult);
             Assert.True(result);
 
             await context.SendAsync();
@@ -95,10 +107,14 @@ namespace Microsoft.AspNetCore.StaticFiles
             var httpsCompressionFeature = new TestHttpsCompressionFeature();
             httpContext.Features.Set<IHttpsCompressionFeature>(httpsCompressionFeature);
             httpContext.Request.Path = new PathString("/test/bar.txt");
-            var context = new StaticFileContext(httpContext, options, pathString, NullLogger.Instance, fileProvider, new FileExtensionContentTypeProvider());
+            var validateResult = StaticFileMiddleware.ValidatePath(httpContext, pathString, out var subPath);
+            var contentTypeResult = StaticFileMiddleware.LookupContentType(new FileExtensionContentTypeProvider(), options, subPath, out var contentType);
 
-            context.ValidatePath();
+            var context = new StaticFileContext(httpContext, options, NullLogger.Instance, fileProvider, contentType, subPath);
+
             var result = context.LookupFileInfo();
+            Assert.True(validateResult);
+            Assert.True(contentTypeResult);
             Assert.False(result);
 
             Assert.Equal(HttpsCompressionMode.Default, httpsCompressionFeature.Mode);

@@ -20,7 +20,6 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-    [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Curl requires a custom install to support HTTP/2, see https://askubuntu.com/questions/884899/how-do-i-install-curl-with-http2-support")]
     [SkipOnHelix(Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
     public class HandshakeTests : LoggedTest
@@ -31,14 +30,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         public HandshakeTests()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Client = new HttpClient(new HttpClientHandler
             {
-                // We don't want the default SocketsHttpHandler, it doesn't support HTTP/2 yet.
-                Client = new HttpClient(new WinHttpHandler
-                {
-                    ServerCertificateValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                });
-            }
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            })
+            {
+                DefaultRequestVersion = new Version(2, 0),
+            };
         }
 
         [ConditionalFact]
