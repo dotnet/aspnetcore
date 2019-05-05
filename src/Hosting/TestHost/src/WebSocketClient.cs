@@ -61,11 +61,9 @@ namespace Microsoft.AspNetCore.TestHost
                 request.Scheme = scheme;
                 if (!request.Host.HasValue)
                 {
-                    request.Host = HostString.FromUriComponent(uri);
-                    if (uri.IsDefaultPort)
-                    {
-                        request.Host = new HostString(request.Host.Host);
-                    }
+                    request.Host = uri.IsDefaultPort
+                        ? new HostString(HostString.FromUriComponent(uri).Host)
+                        : HostString.FromUriComponent(uri);
                 }
                 request.Path = PathString.FromUriComponent(uri);
                 request.PathBase = PathString.Empty;
