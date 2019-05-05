@@ -57,9 +57,9 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
     }
     public enum HealthStatus
     {
+        Unhealthy = 0,
         Degraded = 1,
         Healthy = 2,
-        Unhealthy = 0,
     }
     public partial interface IHealthCheck
     {
