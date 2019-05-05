@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return new CancelableTypedAsyncEnumerable<T>(asyncEnumerable, cts);
         }
 
-        public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, CancellationToken cancellationToken = default)
+        public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await foreach (var item in channel.ReadAllAsync(cancellationToken))
             {
