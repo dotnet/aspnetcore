@@ -41,9 +41,9 @@ namespace Microsoft.AspNetCore.Blazor.Http
 {
     public enum FetchCredentialsOption
     {
-        Include = 2,
         Omit = 0,
         SameOrigin = 1,
+        Include = 2,
     }
     public partial class WebAssemblyHttpMessageHandler : System.Net.Http.HttpMessageHandler
     {

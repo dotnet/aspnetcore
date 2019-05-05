@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             return new HubConnectionContext(connection, TimeSpan.FromSeconds(15), NullLoggerFactory.Instance)
             {
-                Protocol = protocol ?? new NewtonsoftJsonHubProtocol(),
+                Protocol = protocol ?? new JsonHubProtocol(),
                 UserIdentifier = userIdentifier,
             };
         }

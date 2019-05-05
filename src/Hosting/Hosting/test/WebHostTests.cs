@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -238,7 +239,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7291
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2244", FlakyOn.Helix.All)]
         public async Task WebHostStopAsyncUsesDefaultTimeoutIfNoTokenProvided()
         {
             var data = new Dictionary<string, string>
@@ -973,6 +974,54 @@ namespace Microsoft.AspNetCore.Hosting
 
             var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
             Assert.Contains("ConfigureServices", ex.Message);
+        }
+
+        [Fact]
+        public void Dispose_DisposesAppConfiguration()
+        {
+            var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
+            providerMock.Setup(d => d.Dispose());
+
+            var sourceMock = new Mock<IConfigurationSource>();
+            sourceMock.Setup(s => s.Build(It.IsAny<IConfigurationBuilder>()))
+                .Returns((ConfigurationProvider)providerMock.Object);
+
+            var host = CreateBuilder()
+                .ConfigureAppConfiguration(configuration =>
+                {
+                    configuration.Add(sourceMock.Object);
+                })
+                .Build();
+
+            providerMock.Verify(c => c.Dispose(), Times.Never);
+
+            host.Dispose();
+
+            providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
+        }
+
+        [Fact]
+        public async Task DisposeAsync_DisposesAppConfiguration()
+        {
+            var providerMock = new Mock<ConfigurationProvider>().As<IDisposable>();
+            providerMock.Setup(d => d.Dispose());
+
+            var sourceMock = new Mock<IConfigurationSource>();
+            sourceMock.Setup(s => s.Build(It.IsAny<IConfigurationBuilder>()))
+                .Returns((ConfigurationProvider)providerMock.Object);
+
+            var host = CreateBuilder()
+                .ConfigureAppConfiguration(configuration =>
+                {
+                    configuration.Add(sourceMock.Object);
+                })
+                .Build();
+
+            providerMock.Verify(c => c.Dispose(), Times.Never);
+
+            await ((IAsyncDisposable)host).DisposeAsync();
+
+            providerMock.Verify(c => c.Dispose(), Times.AtLeastOnce());
         }
 
         public class BadConfigureServicesStartup

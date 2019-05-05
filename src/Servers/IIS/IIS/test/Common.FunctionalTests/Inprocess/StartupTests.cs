@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -105,13 +107,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7972
         [ConditionalTheory]
         [InlineData(RuntimeArchitecture.x64)]
         [InlineData(RuntimeArchitecture.x86)]
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2221", FlakyOn.Helix.All)]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
@@ -481,6 +483,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
 
         private static Dictionary<string, Func<IISDeploymentParameters, string>> StandaloneConfigTransformations = InitStandaloneConfigTransformations();
+
         public static IEnumerable<object[]> StandaloneConfigTransformationsScenarios => StandaloneConfigTransformations.ToTheoryData();
 
         [ConditionalTheory]
@@ -570,6 +573,116 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             startWaitHandle.Set();
 
             await request;
+        }
+
+        [ConditionalTheory]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
+        [InlineData("ASPNETCORE_ENVIRONMENT", "Development")]
+        [InlineData("DOTNET_ENVIRONMENT", "deVelopment")]
+        [InlineData("ASPNETCORE_DETAILEDERRORS", "1")]
+        [InlineData("ASPNETCORE_DETAILEDERRORS", "TRUE")]
+        public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabled(string environmentVariable, string value)
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+
+            // Deployment parameters by default set ASPNETCORE_DETAILEDERRORS to true
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "";
+            deploymentParameters.EnvironmentVariables[environmentVariable] = value;
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(result.IsSuccessStatusCode);
+
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.Contains("InvalidOperationException", content);
+            Assert.Contains("TestSite.Program.Main", content);
+
+            StopServer();
+
+            VerifyDotnetRuntimeEventLog(deploymentResult);
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewHandler]
+        public async Task ExceptionIsNotLoggedToResponseWhenStartupHookIsDisabled()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "";
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
+            deploymentParameters.HandlerSettings["callStartupHook"] = "false";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(result.IsSuccessStatusCode);
+
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("InvalidOperationException", content);
+
+            StopServer();
+
+            VerifyDotnetRuntimeEventLog(deploymentResult);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task ExceptionIsLoggedToEventLogDoesNotWriteToResponse()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+
+            // Deployment parameters by default set ASPNETCORE_DETAILEDERRORS to true
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(result.IsSuccessStatusCode);
+
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("InvalidOperationException", content);
+
+            StopServer();
+
+            VerifyDotnetRuntimeEventLog(deploymentResult);
+        }
+
+        private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)
+        {
+            var entries = GetEventLogsFromDotnetRuntime(deploymentResult);
+
+            var expectedRegex = new Regex("Exception Info: System\\.InvalidOperationException:", RegexOptions.Singleline);
+            var matchedEntries = entries.Where(entry => expectedRegex.IsMatch(entry.Message)).ToArray();
+            // There isn't a process ID to filter on here, so there can be duplicate entries from other tests.
+            Assert.True(matchedEntries.Length > 0);
+        }
+
+        private static IEnumerable<EventLogEntry> GetEventLogsFromDotnetRuntime(IISDeploymentResult deploymentResult)
+        {
+            var processStartTime = deploymentResult.HostProcess.StartTime.AddSeconds(-5);
+            var eventLog = new EventLog("Application");
+
+            for (var i = eventLog.Entries.Count - 1; i >= 0; i--)
+            {
+                var eventLogEntry = eventLog.Entries[i];
+                if (eventLogEntry.TimeGenerated < processStartTime)
+                {
+                    // If event logs is older than the process start time, we didn't find a match.
+                    break;
+                }
+
+                if (eventLogEntry.ReplacementStrings == null)
+                {
+                    continue;
+                }
+
+                if (eventLogEntry.Source == ".NET Runtime")
+                {
+                    yield return eventLogEntry;
+                }
+            }
         }
 
         private static void MoveApplication(

@@ -43,6 +43,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
 
+        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
+
+        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
+
         public string GetUserIdentifier()
         {
             return Context.UserIdentifier;
@@ -121,6 +125,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
+
+        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
+
+        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
     }
 
     public class TestHubT : Hub<ITestHub>
@@ -151,6 +159,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         public ChannelReader<string> StreamEcho(ChannelReader<string> source) => TestHubMethodsImpl.StreamEcho(source);
+
+        public ChannelReader<int> StreamEchoInt(ChannelReader<int> source) => TestHubMethodsImpl.StreamEchoInt(source);
+
+        public IAsyncEnumerable<int> StreamIAsyncConsumer(IAsyncEnumerable<int> source) => source;
     }
 
     internal static class TestHubMethodsImpl
@@ -194,6 +206,30 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             var output = Channel.CreateUnbounded<string>();
             _ = Task.Run(async () => {
+                try
+                {
+                    while (await source.WaitToReadAsync())
+                    {
+                        while (source.TryRead(out var item))
+                        {
+                            await output.Writer.WriteAsync(item);
+                        }
+                    }
+                }
+                finally
+                {
+                    output.Writer.TryComplete();
+                }
+            });
+
+            return output.Reader;
+        }
+
+        public static ChannelReader<int> StreamEchoInt(ChannelReader<int> source)
+        {
+            var output = Channel.CreateUnbounded<int>();
+            _ = Task.Run(async () =>
+            {
                 try
                 {
                     while (await source.WaitToReadAsync())

@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Http.Extensions
     /// </summary>
     public static class UriHelper
     {
-        private const string ForwardSlash = "/";
-        private const string Pound = "#";
-        private const string QuestionMark = "?";
+        private const char ForwardSlash = '/';
+        private const char Hash = '#';
+        private const char QuestionMark = '?';
         private const string SchemeDelimiter = "://";
 
         /// <summary>
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
             path = new PathString();
             query = new QueryString();
             fragment = new FragmentString();
-            var startIndex = uri.IndexOf(SchemeDelimiter);
+            var startIndex = uri.IndexOf(SchemeDelimiter, StringComparison.Ordinal);
 
             if (startIndex < 0)
             {
@@ -115,10 +115,9 @@ namespace Microsoft.AspNetCore.Http.Extensions
             // PERF: Calculate the end of the scheme for next IndexOf
             startIndex += SchemeDelimiter.Length;
 
-            var searchIndex = -1;
+            int searchIndex;
             var limit = uri.Length;
-
-            if ((searchIndex = uri.IndexOf(Pound, startIndex)) >= 0 && searchIndex < limit)
+            if ((searchIndex = uri.IndexOf(Hash, startIndex)) >= 0 && searchIndex < limit)
             {
                 fragment = FragmentString.FromUriComponent(uri.Substring(searchIndex));
                 limit = searchIndex;

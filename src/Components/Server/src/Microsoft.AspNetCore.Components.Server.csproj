@@ -7,17 +7,9 @@
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>CS0436;$(NoWarn)</NoWarn>
+    <DefineConstants>$(DefineConstants);MESSAGEPACK_INTERNAL</DefineConstants>
   </PropertyGroup>
-
-  <!-- Producing this package requires building with NodeJS enabled. -->
-  <PropertyGroup Condition="'$(BuildNodeJS)' == 'false'">
-    <IsPackable>false</IsPackable>
-    <GenerateEmbeddedFilesManifest>false</GenerateEmbeddedFilesManifest>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(ComponentsSharedSourceRoot)\src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
-  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Browser" />
@@ -27,11 +19,6 @@
     <Reference Include="Microsoft.Extensions.Caching.Memory" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />
     <Reference Include="Microsoft.Extensions.FileProviders.Embedded" />
-
-    <!--
-      Temporary until we move the prerendering APIs into this assembly.
-    -->
-    <Reference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" />
   </ItemGroup>
 
   <PropertyGroup>
@@ -39,6 +26,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
+
     <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
     <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
     <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\MemoryBufferWriter.cs" LinkBase="BlazorPack" />
@@ -55,17 +44,18 @@
     <Compile Include="$(MessagePackRoot)FloatBits.cs" LinkBase="BlazorPack\MessagePack" />
     <Compile Include="$(MessagePackRoot)Internal\DateTimeConstants.cs" LinkBase="BlazorPack\MessagePack" />
     <Compile Include="$(MessagePackRoot)StringEncoding.cs" LinkBase="BlazorPack\MessagePack" />
+    <Compile Include="$(MessagePackRoot)SequencePool.cs" LinkBase="BlazorPack\MessagePack" />
     <Compile Include="$(MessagePackRoot)SequenceReader.cs" LinkBase="BlazorPack\MessagePack" />
     <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildNodeJS)' != 'false'">
-    <!-- We need .Browser.JS to build first so we can embed its .js output -->
-    <EmbeddedResource Include="..\..\Browser.JS\src\dist\blazor.server.js" LogicalName="_framework\%(Filename)%(Extension)" />
-  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js" LogicalName="_framework/%(Filename)%(Extension)" />
 
-  <Target Name="_EnsureBrowserJS" BeforeTargets="CoreCompile" Condition="'$(BuildNodeJS)' != 'false'">
-    <MSBuild Projects="..\..\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" Targets="Build" />
-  </Target>
+    <EmbeddedResource
+      Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map"
+      LogicalName="_framework/%(Filename)%(Extension)"
+      Condition="Exists('..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map')" />
+  </ItemGroup>
 
 </Project>

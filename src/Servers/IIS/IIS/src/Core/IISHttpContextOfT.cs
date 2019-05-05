@@ -31,12 +31,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = _application.CreateContext(this);
+
                 await _application.ProcessRequestAsync(context);
-                // TODO Verification of Response
-                //if (Volatile.Read(ref _requestAborted) == 0)
-                //{
-                //    VerifyResponseContentLength();
-                //}
             }
             catch (Exception ex)
             {
@@ -59,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                 }
             }
 
-            if (Volatile.Read(ref _requestAborted) == 0)
+            if (!_requestAborted)
             {
                 await ProduceEnd();
             }

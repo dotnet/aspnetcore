@@ -50,7 +50,7 @@ function getConnectionBuilder(transportType?: HttpTransportType, url?: string, o
 
 describe("hubConnection", () => {
     eachTransportAndProtocol((transportType, protocol) => {
-        describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", async () => {
+        describe("using " + protocol.name + " over " + HttpTransportType[transportType] + " transport", () => {
             it("can invoke server method and receive result", (done) => {
                 const message = "你好，世界！";
 
@@ -457,12 +457,11 @@ describe("hubConnection", () => {
 
                 const complexObject = {
                     ByteArray: protocol.name === "json"
-                        ? "aGVsbG8="
+                        ? new Array(0x68, 0x65, 0x6c, 0x6c, 0x6f)
                         : new Uint8Array([0x68, 0x65, 0x6c, 0x6c, 0x6f]),
                     DateTime: protocol.name === "json"
                         ? "2002-04-01T10:20:15Z"
                         : new Date(Date.UTC(2002, 3, 1, 10, 20, 15)), // Apr 1, 2002, 10:20:15am UTC
-                    GUID: "00010203-0405-0607-0706-050403020100",
                     IntArray: [0x01, 0x02, 0x03, 0xff],
                     String: "Hello, World!",
                 };
@@ -500,12 +499,11 @@ describe("hubConnection", () => {
 
                 const complexObject = {
                     ByteArray: protocol.name === "json"
-                        ? "AQID"
+                        ? new Array(0x1, 0x2, 0x3)
                         : new Uint8Array([0x1, 0x2, 0x3]),
                     DateTime: protocol.name === "json"
                         ? "2000-01-01T00:00:00Z"
                         : new Date(Date.UTC(2000, 0, 1)),
-                    GUID: "00010203-0405-0607-0706-050403020100",
                     IntArray: [0x01, 0x02, 0x03],
                     String: "hello world",
                 };

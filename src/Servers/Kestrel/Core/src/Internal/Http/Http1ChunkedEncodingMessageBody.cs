@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     /// <summary>
     ///   http://tools.ietf.org/html/rfc2616#section-3.6.1
     /// </summary>
-    internal class Http1ChunkedEncodingMessageBody : Http1MessageBody
+    internal sealed class Http1ChunkedEncodingMessageBody : Http1MessageBody
     {
         // byte consts don't have a data type annotation so we pre-cast it
         private const byte ByteCR = (byte)'\r';
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestBodyPipe.Reset();
         }
 
-        protected void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
+        private void Copy(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer)
         {
             if (readableBuffer.IsSingleSegment)
             {
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _pumpTask = PumpAsync();
         }
 
-        protected bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
+        private bool Read(ReadOnlySequence<byte> readableBuffer, PipeWriter writableBuffer, out SequencePosition consumed, out SequencePosition examined)
         {
             consumed = default;
             examined = default;

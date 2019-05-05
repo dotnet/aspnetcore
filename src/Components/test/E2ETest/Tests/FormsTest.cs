@@ -244,17 +244,27 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var appElement = MountTestComponent<TypicalValidationComponent>();
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
+            var isEvilInput = appElement.FindElement(By.ClassName("is-evil")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // Correct initial checkedness
+            Assert.False(acceptsTermsInput.Selected);
+            Assert.True(isEvilInput.Selected);
 
             // Validates on edit
             Browser.Equal("valid", () => acceptsTermsInput.GetAttribute("class"));
+            Browser.Equal("valid", () => isEvilInput.GetAttribute("class"));
             acceptsTermsInput.Click();
+            isEvilInput.Click();
             Browser.Equal("modified valid", () => acceptsTermsInput.GetAttribute("class"));
+            Browser.Equal("modified valid", () => isEvilInput.GetAttribute("class"));
 
             // Can become invalid
             acceptsTermsInput.Click();
+            isEvilInput.Click();
             Browser.Equal("modified invalid", () => acceptsTermsInput.GetAttribute("class"));
-            Browser.Equal(new[] { "Must accept terms" }, messagesAccessor);
+            Browser.Equal("modified invalid", () => isEvilInput.GetAttribute("class"));
+            Browser.Equal(new[] { "Must accept terms", "Must not be evil" }, messagesAccessor);
         }
 
         [Fact]

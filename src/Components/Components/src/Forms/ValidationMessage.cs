@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         [Parameter] public Expression<Func<T>> For { get; private set; }
 
         /// <summary>`
-        /// Constructs an instance of <see cref="ValidationSummary"/>.
+        /// Constructs an instance of <see cref="ValidationMessage{T}"/>.
         /// </summary>
         public ValidationMessage()
         {

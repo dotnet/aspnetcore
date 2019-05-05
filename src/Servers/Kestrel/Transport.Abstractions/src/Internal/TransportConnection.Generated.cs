@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private static readonly Type IConnectionLifetimeFeatureType = typeof(IConnectionLifetimeFeature);
         private static readonly Type IConnectionHeartbeatFeatureType = typeof(IConnectionHeartbeatFeature);
         private static readonly Type IConnectionLifetimeNotificationFeatureType = typeof(IConnectionLifetimeNotificationFeature);
+        private static readonly Type IConnectionCompleteFeatureType = typeof(IConnectionCompleteFeature);
 
         private object _currentIHttpConnectionFeature;
         private object _currentIConnectionIdFeature;
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private object _currentIConnectionLifetimeFeature;
         private object _currentIConnectionHeartbeatFeature;
         private object _currentIConnectionLifetimeNotificationFeature;
+        private object _currentIConnectionCompleteFeature;
 
         private int _featureRevision;
 
@@ -50,6 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             _currentIConnectionLifetimeFeature = this;
             _currentIConnectionHeartbeatFeature = this;
             _currentIConnectionLifetimeNotificationFeature = this;
+            _currentIConnectionCompleteFeature = this;
 
         }
 
@@ -145,6 +148,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     feature = _currentIConnectionLifetimeNotificationFeature;
                 }
+                else if (key == IConnectionCompleteFeatureType)
+                {
+                    feature = _currentIConnectionCompleteFeature;
+                }
                 else if (MaybeExtra != null)
                 {
                     feature = ExtraFeatureGet(key);
@@ -197,6 +204,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     _currentIConnectionLifetimeNotificationFeature = value;
                 }
+                else if (key == IConnectionCompleteFeatureType)
+                {
+                    _currentIConnectionCompleteFeature = value;
+                }
                 else
                 {
                     ExtraFeatureSet(key, value);
@@ -246,6 +257,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             else if (typeof(TFeature) == typeof(IConnectionLifetimeNotificationFeature))
             {
                 feature = (TFeature)_currentIConnectionLifetimeNotificationFeature;
+            }
+            else if (typeof(TFeature) == typeof(IConnectionCompleteFeature))
+            {
+                feature = (TFeature)_currentIConnectionCompleteFeature;
             }
             else if (MaybeExtra != null)
             {
@@ -298,6 +313,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             {
                 _currentIConnectionLifetimeNotificationFeature = feature;
             }
+            else if (typeof(TFeature) == typeof(IConnectionCompleteFeature))
+            {
+                _currentIConnectionCompleteFeature = feature;
+            }
             else
             {
                 ExtraFeatureSet(typeof(TFeature), feature);
@@ -345,6 +364,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             if (_currentIConnectionLifetimeNotificationFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IConnectionLifetimeNotificationFeatureType, _currentIConnectionLifetimeNotificationFeature);
+            }
+            if (_currentIConnectionCompleteFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IConnectionCompleteFeatureType, _currentIConnectionCompleteFeature);
             }
 
             if (MaybeExtra != null)

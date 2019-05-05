@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
+    internal class ResponseCachingPolicyProvider : IResponseCachingPolicyProvider
     {
         public virtual bool AttemptResponseCaching(ResponseCachingContext context)
         {
@@ -33,12 +33,12 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         public virtual bool AllowCacheLookup(ResponseCachingContext context)
         {
-            var request = context.HttpContext.Request;
+            var requestHeaders = context.HttpContext.Request.Headers;
 
             // Verify request cache-control parameters
-            if (!StringValues.IsNullOrEmpty(request.Headers[HeaderNames.CacheControl]))
+            if (!StringValues.IsNullOrEmpty(requestHeaders[HeaderNames.CacheControl]))
             {
-                if (HeaderUtilities.ContainsCacheDirective(request.Headers[HeaderNames.CacheControl], CacheControlHeaderValue.NoCacheString))
+                if (HeaderUtilities.ContainsCacheDirective(requestHeaders[HeaderNames.CacheControl], CacheControlHeaderValue.NoCacheString))
                 {
                     context.Logger.RequestWithNoCacheNotCacheable();
                     return false;
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
             else
             {
                 // Support for legacy HTTP 1.0 cache directive
-                if (HeaderUtilities.ContainsCacheDirective(request.Headers[HeaderNames.Pragma], CacheControlHeaderValue.NoCacheString))
+                if (HeaderUtilities.ContainsCacheDirective(requestHeaders[HeaderNames.Pragma], CacheControlHeaderValue.NoCacheString))
                 {
                     context.Logger.RequestWithPragmaNoCacheNotCacheable();
                     return false;

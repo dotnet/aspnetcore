@@ -184,10 +184,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
     }
     public enum ConditionType
     {
-        IntComp = 3,
-        PropertyTest = 1,
         Regex = 0,
+        PropertyTest = 1,
         StringComp = 2,
+        IntComp = 3,
     }
     public partial class CookieActionFactory
     {
@@ -216,12 +216,12 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
     }
     public enum FlagType
     {
+        EscapeBackreference = 0,
         Chain = 1,
         Cookie = 2,
         DiscardPath = 3,
-        End = 5,
         Env = 4,
-        EscapeBackreference = 0,
+        End = 5,
         Forbidden = 6,
         Gone = 7,
         Handler = 8,
@@ -232,8 +232,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
         NoSubReq = 13,
         NoVary = 14,
         Or = 15,
-        PassThrough = 17,
         Proxy = 16,
+        PassThrough = 17,
         QSAppend = 18,
         QSDiscard = 19,
         QSLast = 20,
@@ -243,20 +243,20 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
     }
     public enum OperationType
     {
-        Directory = 7,
+        None = 0,
         Equal = 1,
-        Executable = 13,
-        ExistingFile = 9,
-        ExistingUrl = 12,
         Greater = 2,
         GreaterEqual = 3,
         Less = 4,
         LessEqual = 5,
-        None = 0,
         NotEqual = 6,
+        Directory = 7,
         RegularFile = 8,
-        Size = 11,
+        ExistingFile = 9,
         SymbolicLink = 10,
+        Size = 11,
+        ExistingUrl = 12,
+        Executable = 13,
     }
     public partial class ParsedModRewriteInput
     {
@@ -283,10 +283,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.ApacheModRewrite
     }
     public enum SegmentType
     {
-        ConditionParameter = 2,
         Literal = 0,
-        RuleParameter = 3,
         ServerParameter = 1,
+        ConditionParameter = 2,
+        RuleParameter = 3,
     }
     public static partial class ServerVariables
     {
@@ -307,11 +307,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
 {
     public enum ActionType
     {
-        AbortRequest = 4,
-        CustomResponse = 3,
         None = 0,
-        Redirect = 2,
         Rewrite = 1,
+        Redirect = 2,
+        CustomResponse = 3,
+        AbortRequest = 4,
     }
     public partial class Condition
     {
@@ -384,20 +384,20 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     }
     public enum MatchType
     {
-        IsDirectory = 2,
-        IsFile = 1,
         Pattern = 0,
+        IsFile = 1,
+        IsDirectory = 2,
     }
     public enum PatternSyntax
     {
         ECMAScript = 0,
-        ExactMatch = 2,
         Wildcard = 1,
+        ExactMatch = 2,
     }
     public enum RedirectType
     {
-        Found = 302,
         Permanent = 301,
+        Found = 302,
         SeeOther = 303,
         Temporary = 307,
     }

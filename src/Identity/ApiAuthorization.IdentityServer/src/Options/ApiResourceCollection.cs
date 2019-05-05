@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -48,18 +48,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
                 }
 
                 throw new InvalidOperationException($"ApiResource '{key}' not found.");
-            }
-        }
-
-        /// <summary>
-        /// Adds the resources in <paramref name="resources"/> to the collection.
-        /// </summary>
-        /// <param name="resources">The list of <see cref="ApiResource"/> to add.</param>
-        public void AddRange(IEnumerable<ApiResource> resources)
-        {
-            foreach (var resource in resources)
-            {
-                Add(resource);
             }
         }
 

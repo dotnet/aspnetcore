@@ -658,6 +658,7 @@ namespace Microsoft.AspNetCore.Routing
             var expected = "/Home/Index?name=" + UrlEncoder.Default.Encode(nameRouteValue);
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddOptions();
             services.AddRouting();
             // This test encoder should not be used by Routing and should always use the default one.
             services.AddSingleton<UrlEncoder>(new UrlTestEncoder());
@@ -1520,6 +1521,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
+            services.AddOptions();
             services.AddRouting();
 
             var context = new DefaultHttpContext

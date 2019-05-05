@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal static class MatcherAssert
     {
+        public static void AssertRouteValuesEqual(object expectedValues, RouteValueDictionary actualValues)
+        {
+            AssertRouteValuesEqual(new RouteValueDictionary(expectedValues), actualValues);
+        }
+
+        public static void AssertRouteValuesEqual(RouteValueDictionary expectedValues, RouteValueDictionary actualValues)
+        {
+            if (expectedValues.Count != actualValues.Count ||
+                !expectedValues.OrderBy(kvp => kvp.Key).SequenceEqual(actualValues.OrderBy(kvp => kvp.Key)))
+            {
+                throw new XunitException(
+                    $"Expected values:{FormatRouteValues(expectedValues)} Actual values: {FormatRouteValues(actualValues)}.");
+            }
+        }
+
         public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected)
         {
             AssertMatch(context, httpContext, expected, new RouteValueDictionary());
@@ -53,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new XunitException($"Was expected to match '{expected.DisplayName}' but did not match.");
             }
 
-            var actualValues = httpContext.Features.Get<IRouteValuesFeature>().RouteValues;
+            var actualValues = httpContext.Request.RouteValues;
 
             if (actualValues == null)
             {
@@ -93,7 +108,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private static string FormatRouteValues(RouteValueDictionary values)
         {
-            return "{" + string.Join(", ", values.Select(kvp => $"{kvp.Key} = '{kvp.Value}'")) + "}";
+            return values == null ? "{}" : "{" + string.Join(", ", values.Select(kvp => $"{kvp.Key} = '{kvp.Value}'")) + "}";
         }
     }
 }

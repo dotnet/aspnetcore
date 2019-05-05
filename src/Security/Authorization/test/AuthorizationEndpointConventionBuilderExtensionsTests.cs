@@ -70,9 +70,23 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.Null(authMetadata.Policy);
         }
 
+        [Fact]
+        public void RequireAuthorization_ChainedCall()
+        {
+            // Arrange
+            var builder = new TestEndpointConventionBuilder();
+
+            // Act
+            var chainedBuilder = builder.RequireAuthorization();
+
+            // Assert
+            Assert.True(chainedBuilder.TestProperty);
+        }
+
         private class TestEndpointConventionBuilder : IEndpointConventionBuilder
         {
             public IList<Action<EndpointBuilder>> Conventions { get; } = new List<Action<EndpointBuilder>>();
+            public bool TestProperty { get; } = true;
 
             public void Add(Action<EndpointBuilder> convention)
             {

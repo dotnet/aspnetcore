@@ -1705,7 +1705,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("ReferenceToNewtonsoftJsonRequired"), p0, p1, p2, p3, p4);
 
         /// <summary>
-        /// Collection bound to '{0}' exceeded {1}.{2} ({3}). This limit is a safeguard against incorrect model binders and models. Address issues in '{4}'. For example, this type may have a property with a model binder that always succeeds. See the {0}.{1} documentation for more information.
+        /// Collection bound to '{0}' exceeded {1}.{2} ({3}). This limit is a safeguard against incorrect model binders and models. Address issues in '{4}'. For example, this type may have a property with a model binder that always succeeds. See the {1}.{2} documentation for more information.
         /// </summary>
         internal static string ModelBinding_ExceededMaxModelBindingCollectionSize
         {
@@ -1713,7 +1713,7 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         /// <summary>
-        /// Collection bound to '{0}' exceeded {1}.{2} ({3}). This limit is a safeguard against incorrect model binders and models. Address issues in '{4}'. For example, this type may have a property with a model binder that always succeeds. See the {0}.{1} documentation for more information.
+        /// Collection bound to '{0}' exceeded {1}.{2} ({3}). This limit is a safeguard against incorrect model binders and models. Address issues in '{4}'. For example, this type may have a property with a model binder that always succeeds. See the {1}.{2} documentation for more information.
         /// </summary>
         internal static string FormatModelBinding_ExceededMaxModelBindingCollectionSize(object p0, object p1, object p2, object p3, object p4)
             => string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_ExceededMaxModelBindingCollectionSize"), p0, p1, p2, p3, p4);
@@ -1731,6 +1731,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         /// </summary>
         internal static string FormatModelBinding_ExceededMaxModelBindingRecursionDepth(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("ModelBinding_ExceededMaxModelBindingRecursionDepth"), p0, p1, p2, p3);
+
+        /// <summary>
+        /// Property '{0}.{1}' must be an instance of type '{2}'.
+        /// </summary>
+        internal static string Property_MustBeInstanceOfType
+        {
+            get => GetString("Property_MustBeInstanceOfType");
+        }
+
+        /// <summary>
+        /// Property '{0}.{1}' must be an instance of type '{2}'.
+        /// </summary>
+        internal static string FormatProperty_MustBeInstanceOfType(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Property_MustBeInstanceOfType"), p0, p1, p2);
 
         private static string GetString(string name, params string[] formatterNames)
         {

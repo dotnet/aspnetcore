@@ -24,6 +24,7 @@
     <PropertyGroup>
       <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
       <NuspecProperties>
+      configuration=$(Configuration);
       version=$(PackageVersion);
       publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
       componentsversion=$(ComponentsPackageVersion);

@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Http;
 
@@ -16,21 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// </summary>
     public sealed class CandidateSet
     {
-        private const int BitVectorSize = 32;
-
-        // Cannot be readonly because we need to modify it in place.
-        private BitVector32 _validity;
-        private readonly BitArray _largeCapactityValidity;
-
-        // We inline storage for 4 candidates here to avoid allocations in common
-        // cases. There's no real reason why 4 is important, it just seemed like 
-        // a plausible number.
-        private CandidateState _state0;
-        private CandidateState _state1;
-        private CandidateState _state2;
-        private CandidateState _state3;
-
-        private CandidateState[] _additionalCandidates;
+        internal CandidateState[] Candidates;
 
         /// <summary>
         /// <para>
@@ -67,122 +57,32 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentException($"The provided {nameof(endpoints)}, {nameof(values)}, and {nameof(scores)} must have the same length.");
             }
 
-            Count = endpoints.Length;
-
-            switch (endpoints.Length)
+            Candidates = new CandidateState[endpoints.Length];
+            for (var i = 0; i < endpoints.Length; i++)
             {
-                case 0:
-                    return;
-
-                case 1:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    break;
-
-                case 2:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
-                    break;
-
-                case 3:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
-                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
-                    break;
-
-                case 4:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
-                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
-                    _state3 = new CandidateState(endpoints[3], values[3], scores[3]);
-                    break;
-
-                default:
-                    _state0 = new CandidateState(endpoints[0], values[0], scores[0]);
-                    _state1 = new CandidateState(endpoints[1], values[1], scores[1]);
-                    _state2 = new CandidateState(endpoints[2], values[2], scores[2]);
-                    _state3 = new CandidateState(endpoints[3], values[3], scores[3]);
-
-                    _additionalCandidates = new CandidateState[endpoints.Length - 4];
-                    for (var i = 4; i < endpoints.Length; i++)
-                    {
-                        _additionalCandidates[i - 4] = new CandidateState(endpoints[i], values[i], scores[i]);
-                    }
-                    break;
-            }
-
-            // Initialize validity to valid by default.
-            if (Count < BitVectorSize)
-            {
-                // Sets the bit for each candidate that exists (bits > Count will be 0).
-                _validity = new BitVector32(unchecked((int)~(0xFFFFFFFFu << Count)));
-            }
-            else
-            {
-                _largeCapactityValidity = new BitArray(Count, defaultValue: true);
+                Candidates[i] = new CandidateState(endpoints[i], values[i], scores[i]);
             }
         }
 
+        // Used in tests.
         internal CandidateSet(Candidate[] candidates)
         {
-            Count = candidates.Length;
-
-            switch (candidates.Length)
+            Candidates = new CandidateState[candidates.Length];
+            for (var i = 0; i < candidates.Length; i++)
             {
-                case 0:
-                    return;
-
-                case 1:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    break;
-
-                case 2:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
-                    break;
-
-                case 3:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
-                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
-                    break;
-
-                case 4:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
-                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
-                    _state3 = new CandidateState(candidates[3].Endpoint, candidates[3].Score);
-                    break;
-
-                default:
-                    _state0 = new CandidateState(candidates[0].Endpoint, candidates[0].Score);
-                    _state1 = new CandidateState(candidates[1].Endpoint, candidates[1].Score);
-                    _state2 = new CandidateState(candidates[2].Endpoint, candidates[2].Score);
-                    _state3 = new CandidateState(candidates[3].Endpoint, candidates[3].Score);
-
-                    _additionalCandidates = new CandidateState[candidates.Length - 4];
-                    for (var i = 4; i < candidates.Length; i++)
-                    {
-                        _additionalCandidates[i - 4] = new CandidateState(candidates[i].Endpoint, candidates[i].Score);
-                    }
-                    break;
+                Candidates[i] = new CandidateState(candidates[i].Endpoint, candidates[i].Score);
             }
+        }
 
-            // Initialize validity to valid by default.
-            if (Count < BitVectorSize)
-            {
-                // Sets the bit for each candidate that exists (bits > Count will be 0).
-                _validity = new BitVector32(unchecked((int)~(0xFFFFFFFFu << Count)));
-            }
-            else
-            {
-                _largeCapactityValidity = new BitArray(Count, defaultValue: true);
-            }
+        internal CandidateSet(CandidateState[] candidates)
+        {
+            Candidates = candidates;
         }
 
         /// <summary>
         /// Gets the count of candidates in the set.
         /// </summary>
-        public int Count { get; }
+        public int Count => Candidates.Length;
 
         /// <summary>
         /// Gets the <see cref="CandidateState"/> associated with the candidate <see cref="Endpoint"/>
@@ -207,23 +107,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     ThrowIndexArgumentOutOfRangeException();
                 }
 
-                switch (index)
-                {
-                    case 0:
-                        return ref _state0;
-
-                    case 1:
-                        return ref _state1;
-
-                    case 2:
-                        return ref _state2;
-
-                    case 3:
-                        return ref _state3;
-
-                    default:
-                        return ref _additionalCandidates[index - 4];
-                }
+                return ref Candidates[index];
             }
         }
 
@@ -233,7 +117,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// </summary>
         /// <param name="index">The candidate index.</param>
         /// <returns>
-        /// <c>true</c> if the candidate at position <paramref name="index"/> is considered value
+        /// <c>true</c> if the candidate at position <paramref name="index"/> is considered valid
         /// for the current request, otherwise <c>false</c>.
         /// </returns>
         public bool IsValidCandidate(int index)
@@ -244,15 +128,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
 
-            if (Count < BitVectorSize)
-            {
-                // Get the n-th bit
-                return _validity[0x00000001 << index];
-            }
-            else
-            {
-                return _largeCapactityValidity[index];
-            }
+            return IsValidCandidate(ref Candidates[index]);
+        }
+
+        internal static bool IsValidCandidate(ref CandidateState candidate)
+        {
+            return candidate.Score >= 0;
         }
 
         /// <summary>
@@ -270,15 +151,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
 
-            if (Count < BitVectorSize)
-            {
-                // Set the n-th bit
-                _validity[0x00000001 << index] = value;
-            }
-            else
-            {
-                _largeCapactityValidity[index] = value;
-            }
+            ref var original = ref Candidates[index];
+            SetValidity(ref original, value);
+        }
+
+        internal static void SetValidity(ref CandidateState candidate, bool value)
+        {
+            var originalScore = candidate.Score;
+            var score = originalScore >= 0 ^ value ? ~originalScore : originalScore;
+            candidate = new CandidateState(candidate.Endpoint, candidate.Values, score);
         }
 
         /// <summary>
@@ -288,7 +169,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <param name="index">The candidate index.</param>
         /// <param name="endpoint">
         /// The <see cref="Endpoint"/> to replace the original <see cref="Endpoint"/> at
-        /// the <paramref name="index"/>. If <paramref name="endpoint"/> the candidate will be marked
+        /// the <paramref name="index"/>. If <paramref name="endpoint"/> is <c>null</c>. the candidate will be marked
         /// as invalid.
         /// </param>
         /// <param name="values">
@@ -302,29 +183,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 ThrowIndexArgumentOutOfRangeException();
             }
-
-            switch (index)
-            {
-                case 0:
-                    _state0 = new CandidateState(endpoint, values, _state0.Score);
-                    break;
-
-                case 1:
-                    _state1 = new CandidateState(endpoint, values, _state1.Score);
-                    break;
-
-                case 2:
-                    _state2 = new CandidateState(endpoint, values, _state2.Score);
-                    break;
-
-                case 3:
-                    _state3 = new CandidateState(endpoint, values, _state3.Score);
-                    break;
-
-                default:
-                    _additionalCandidates[index - 4] = new CandidateState(endpoint, values, _additionalCandidates[index - 4].Score);
-                    break;
-            }
+            
+            Candidates[index] = new CandidateState(endpoint, values, Candidates[index].Score);
 
             if (endpoint == null)
             {
@@ -332,9 +192,188 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
+        /// <summary>
+        /// Replaces the <see cref="Endpoint"/> at the provided <paramref name="index"/> with the
+        /// provided <paramref name="endpoints"/>.
+        /// </summary>
+        /// <param name="index">The candidate index.</param>
+        /// <param name="endpoints">
+        /// The list of endpoints <see cref="Endpoint"/> to replace the original <see cref="Endpoint"/> at
+        /// the <paramref name="index"/>. If <paramref name="endpoints"/> is empty, the candidate will be marked
+        /// as invalid.
+        /// </param>
+        /// <param name="comparer">
+        /// The endpoint comparer used to order the endpoints. Can be retrieved from the service provider as
+        /// type <see cref="EndpointMetadataComparer"/>.
+        /// </param>
+        /// <remarks>
+        /// <para>
+        /// This method supports replacing a dynamic endpoint with a collection of endpoints, and relying on
+        /// <see cref="IEndpointSelectorPolicy"/> implementations to disambiguate further.
+        /// </para>
+        /// <para>
+        /// The endpoint being replace should have a unique score value. The score is the combination of route
+        /// patter precedence, order, and policy metadata evaluation. A dynamic endpoint will not function
+        /// correctly if other endpoints exist with the same score.
+        /// </para>
+        /// </remarks>
+        public void ExpandEndpoint(int index, IReadOnlyList<Endpoint> endpoints, IComparer<Endpoint> comparer)
+        {
+            // Friendliness for inlining
+            if ((uint)index >= Count)
+            {
+                ThrowIndexArgumentOutOfRangeException();
+            }
+
+            if (endpoints == null)
+            {
+                ThrowArgumentNullException(nameof(endpoints));
+            }
+
+            if (comparer == null)
+            {
+                ThrowArgumentNullException(nameof(comparer));
+            }
+
+            // First we need to verify that the score of what we're replacing is unique.
+            ValidateUniqueScore(index);
+
+            switch (endpoints.Count)
+            {
+                case 0:
+                    ReplaceEndpoint(index, null, null);
+                    break;
+
+                case 1:
+                    ReplaceEndpoint(index, endpoints[0], Candidates[index].Values);
+                    break;
+
+                default:
+
+                    var score = GetOriginalScore(index);
+                    var values = Candidates[index].Values;
+
+                    // Adding candidates requires expanding the array and computing new score values for the new candidates.
+                    var original = Candidates;
+                    var candidates = new CandidateState[original.Length - 1 + endpoints.Count];
+                    Candidates = candidates;
+
+                    // Since the new endpoints have an unknown ordering relationship to each other, we need to:
+                    // - order them
+                    // - assign scores
+                    // - offset everything that comes after
+                    //
+                    // If the inputs look like:
+                    //
+                    // score 0: A1
+                    // score 0: A2
+                    // score 1: B
+                    // score 2: C <-- being expanded
+                    // score 3: D
+                    //
+                    // Then the result should look like:
+                    //
+                    // score 0: A1
+                    // score 0: A2
+                    // score 1: B
+                    // score 2: `C1
+                    // score 3: `C2
+                    // score 4: D
+
+                    // Candidates before index can be copied unchanged.
+                    for (var i = 0; i < index; i++)
+                    {
+                        candidates[i] = original[i];
+                    }
+
+                    var buffer = endpoints.ToArray();
+                    Array.Sort<Endpoint>(buffer, comparer);
+
+                    // Add the first new endpoint with the current score
+                    candidates[index] = new CandidateState(buffer[0], values, score);
+
+                    var scoreOffset = 0;
+                    for (var i = 1; i < buffer.Length; i++)
+                    {
+                        var cmp = comparer.Compare(buffer[i - 1], buffer[i]);
+
+                        // This should not be possible. This would mean that sorting is wrong.
+                        Debug.Assert(cmp <= 0);
+                        if (cmp == 0)
+                        {
+                            // Score is unchanged.
+                        }
+                        else if (cmp < 0)
+                        {
+                            // Endpoint is lower priority, higher score.
+                            scoreOffset++;
+                        }
+
+                        Candidates[i + index] = new CandidateState(buffer[i], values, score + scoreOffset);
+                    }
+
+                    for (var i = index + 1; i < original.Length; i++)
+                    {
+                        Candidates[i + endpoints.Count - 1] = new CandidateState(original[i].Endpoint, original[i].Values, original[i].Score + scoreOffset);
+                    }
+
+                    break;
+                    
+            }
+        }
+
+        // Returns the *positive* score value. Score is used to track valid/invalid which can cause it to be negative.
+        //
+        // This is the original score and used to determine if there are ambiguities.
+        private int GetOriginalScore(int index)
+        {
+            var score = Candidates[index].Score;
+            return score >= 0 ? score : ~score;
+        }
+
+        private void ValidateUniqueScore(int index)
+        {
+            var score = GetOriginalScore(index);
+
+            var count = 0;
+            var candidates = Candidates;
+            for (var i = 0; i < candidates.Length; i++)
+            {
+                if (GetOriginalScore(i) == score)
+                {
+                    count++;
+                }
+            }
+
+            Debug.Assert(count > 0);
+            if (count > 1)
+            {
+                // Uh-oh. We don't allow duplicates with ExpandEndpoint because that will do unpredictable things.
+                var duplicates = new List<Endpoint>();
+                for (var i = 0; i < candidates.Length; i++)
+                {
+                    if (GetOriginalScore(i) == score)
+                    {
+                        duplicates.Add(candidates[i].Endpoint);
+                    }
+                }
+
+                var message =
+                    $"Using {nameof(ExpandEndpoint)} requires that the replaced endpoint have a unique priority. " +
+                    $"The following endpoints were found with the same priority:" + Environment.NewLine +
+                    string.Join(Environment.NewLine, duplicates.Select(e => e.DisplayName));
+                throw new InvalidOperationException(message);
+            }
+        }
+
         private static void ThrowIndexArgumentOutOfRangeException()
         {
             throw new ArgumentOutOfRangeException("index");
+        }
+
+        private static void ThrowArgumentNullException(string parameter)
+        {
+            throw new ArgumentNullException(parameter);
         }
     }
 }

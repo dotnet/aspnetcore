@@ -29,16 +29,12 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private static readonly string ProtocolName = "messagepack";
         private static readonly int ProtocolVersion = 1;
-        private static readonly int ProtocolMinorVersion = 0;
 
         /// <inheritdoc />
         public string Name => ProtocolName;
 
         /// <inheritdoc />
         public int Version => ProtocolVersion;
-
-        /// <inheritdoc />
-        public int MinorVersion => ProtocolMinorVersion;
 
         /// <inheritdoc />
         public TransferFormat TransferFormat => TransferFormat.Binary;
@@ -210,12 +206,21 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             return ApplyHeaders(headers, new StreamInvocationMessage(invocationId, target, arguments, streams));
         }
 
-        private static StreamItemMessage CreateStreamItemMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
+        private static HubMessage CreateStreamItemMessage(byte[] input, ref int offset, IInvocationBinder binder, IFormatterResolver resolver)
         {
             var headers = ReadHeaders(input, ref offset);
             var invocationId = ReadInvocationId(input, ref offset);
-            var itemType = binder.GetStreamItemType(invocationId);
-            var value = DeserializeObject(input, ref offset, itemType, "item", resolver);
+            object value;
+            try
+            {
+                var itemType = binder.GetStreamItemType(invocationId);
+                value = DeserializeObject(input, ref offset, itemType, "item", resolver);
+            }
+            catch (Exception ex)
+            {
+                return new StreamBindingFailureMessage(invocationId, ExceptionDispatchInfo.Capture(ex));
+            }
+
             return ApplyHeaders(headers, new StreamItemMessage(invocationId, value));
         }
 

@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
@@ -27,6 +29,19 @@ namespace Microsoft.AspNetCore.Builder
         }
 
         [Fact]
+        public void RequireHost_ChainedCall_ReturnedBuilderIsDerivedType()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            // Act
+            var chainedBuilder = builder.RequireHost("test");
+
+            // Assert
+            Assert.True(chainedBuilder.TestProperty);
+        }
+
+        [Fact]
         public void WithDisplayName_String_SetsDisplayName()
         {
             // Arrange
@@ -38,6 +53,19 @@ namespace Microsoft.AspNetCore.Builder
             // Assert
             var endpoint = builder.Build();
             Assert.Equal("test", endpoint.DisplayName);
+        }
+
+        [Fact]
+        public void WithDisplayName_ChainedCall_ReturnedBuilderIsDerivedType()
+        {
+            // Arrange
+            var builder = CreateBuilder();
+
+            // Act
+            var chainedBuilder = builder.WithDisplayName("test");
+
+            // Assert
+            Assert.True(chainedBuilder.TestProperty);
         }
 
         [Fact]
@@ -74,12 +102,48 @@ namespace Microsoft.AspNetCore.Builder
             Assert.Equal("test", @string);
         }
 
-        private DefaultEndpointConventionBuilder CreateBuilder()
+        [Fact]
+        public void WithMetadata_ChainedCall_ReturnedBuilderIsDerivedType()
         {
-            return new DefaultEndpointConventionBuilder(new RouteEndpointBuilder(
+            // Arrange
+            var builder = CreateBuilder();
+
+            // Act
+            var chainedBuilder = builder.WithMetadata("test");
+
+            // Assert
+            Assert.True(chainedBuilder.TestProperty);
+        }
+
+        private TestEndpointConventionBuilder CreateBuilder()
+        {
+            var conventionBuilder = new DefaultEndpointConventionBuilder(new RouteEndpointBuilder(
                 TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse("/test"),
                 order: 0));
+
+            return new TestEndpointConventionBuilder(conventionBuilder);
+        }
+
+        private class TestEndpointConventionBuilder : IEndpointConventionBuilder
+        {
+            private DefaultEndpointConventionBuilder _endpointConventionBuilder;
+            public bool TestProperty { get; } = true;
+
+            public TestEndpointConventionBuilder(DefaultEndpointConventionBuilder endpointConventionBuilder)
+            {
+                _endpointConventionBuilder = endpointConventionBuilder;
+            }
+
+            public void Add(Action<EndpointBuilder> convention)
+            {
+                _endpointConventionBuilder.Add(convention);
+            }
+
+            public Endpoint Build()
+            {
+                return _endpointConventionBuilder.Build();
+            }
         }
     }
 }

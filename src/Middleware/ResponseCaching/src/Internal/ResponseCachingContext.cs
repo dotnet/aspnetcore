@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.ResponseCaching.Internal
 {
-    public class ResponseCachingContext
+    internal class ResponseCachingContext
     {
         private DateTimeOffset? _responseDate;
         private bool _parsedResponseDate;
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
 
         public TimeSpan? CachedEntryAge { get; internal set; }
 
-        public CachedVaryByRules CachedVaryByRules { get; internal set; }
+        public CachedVaryByRules CachedVaryByRules { get; set; }
 
         internal ILogger Logger { get; }
 

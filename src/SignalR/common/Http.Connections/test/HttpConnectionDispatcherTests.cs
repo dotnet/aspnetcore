@@ -1360,7 +1360,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var services = new ServiceCollection();
                 services.AddOptions();
                 services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorizationPolicyEvaluator();
                 services.AddAuthorization(o =>
                 {
                     o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
@@ -1406,7 +1405,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var services = new ServiceCollection();
                 services.AddOptions();
                 services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorizationPolicyEvaluator();
                 services.AddAuthorization(o =>
                 {
                     o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
@@ -1455,7 +1453,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var services = new ServiceCollection();
                 services.AddOptions();
                 services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorizationPolicyEvaluator();
                 services.AddAuthorization(o =>
                 {
                     o.AddPolicy("test", policy =>
@@ -1515,7 +1512,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var services = new ServiceCollection();
                 services.AddOptions();
                 services.AddSingleton<TestConnectionHandler>();
-                services.AddAuthorizationPolicyEvaluator();
                 services.AddAuthorization(o =>
                 {
                     o.AddPolicy("test", policy =>
@@ -1610,7 +1606,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         policy.AddAuthenticationSchemes("Default");
                     });
                 });
-                services.AddAuthorizationPolicyEvaluator();
                 services.AddLogging();
                 services.AddAuthenticationCore(o =>
                 {
@@ -1672,7 +1667,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                         policy.AddAuthenticationSchemes("Default");
                     });
                 });
-                services.AddAuthorizationPolicyEvaluator();
                 services.AddLogging();
                 services.AddAuthenticationCore(o =>
                 {
@@ -2083,7 +2077,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/8138", FlakyOn.All)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1975", FlakyOn.All)]
         public async Task ErrorDuringPollWillCloseConnection()
         {
             bool ExpectedErrors(WriteContext writeContext)

@@ -172,7 +172,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IModelExpressionProvider>(s => s.GetRequiredService<ModelExpressionProvider>());
             services.TryAddSingleton<ValidationHtmlAttributeProvider, DefaultValidationHtmlAttributeProvider>();
 
-            services.TryAddSingleton<IJsonHelper, DefaultJsonHelper>();
+            services.TryAddSingleton<IJsonHelper, SystemTextJsonHelper>();
 
             //
             // View Components

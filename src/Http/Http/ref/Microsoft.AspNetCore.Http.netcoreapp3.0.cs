@@ -249,7 +249,6 @@ namespace Microsoft.AspNetCore.Http.Features
         public RequestServicesFeature(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.Extensions.DependencyInjection.IServiceScopeFactory scopeFactory) { }
         public System.IServiceProvider RequestServices { get { throw null; } set { } }
         public void Dispose() { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
     }
     public partial class ResponseBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature
@@ -306,7 +305,6 @@ namespace Microsoft.AspNetCore.Http.Internal
     }
     public static partial class BufferingHelper
     {
-        public static string TempDirectory { get { throw null; } }
         public static Microsoft.AspNetCore.Http.HttpRequest EnableRewind(this Microsoft.AspNetCore.Http.HttpRequest request, int bufferThreshold = 30720, long? bufferLimit = default(long?)) { throw null; }
         public static Microsoft.AspNetCore.WebUtilities.MultipartSection EnableRewind(this Microsoft.AspNetCore.WebUtilities.MultipartSection section, System.Action<System.IDisposable> registerForDispose, int bufferThreshold = 30720, long? bufferLimit = default(long?)) { throw null; }
     }
@@ -406,7 +404,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         public ItemsDictionary() { }
         public ItemsDictionary(System.Collections.Generic.IDictionary<object, object> items) { }
-        public System.Collections.Generic.IDictionary<object, object> Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IDictionary<object, object> Items { get { throw null; } }
         int System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.Count { get { throw null; } }
         bool System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<System.Object,System.Object>>.IsReadOnly { get { throw null; } }
         object System.Collections.Generic.IDictionary<System.Object,System.Object>.this[object key] { get { throw null; } set { } }

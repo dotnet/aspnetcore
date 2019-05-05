@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.User(userId).Send(message);
         }
 
-        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        public Task SendToMultipleUsers(List<string> userIds, string message)
         {
             return Clients.Users(userIds).Send(message);
         }
@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Clients.User(userId).Send(message);
         }
 
-        public Task SendToMultipleUsers(IReadOnlyList<string> userIds, string message)
+        public Task SendToMultipleUsers(List<string> userIds, string message)
         {
             return Clients.Users(userIds).Send(message);
         }

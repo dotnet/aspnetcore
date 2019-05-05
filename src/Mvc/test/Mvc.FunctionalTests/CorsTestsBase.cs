@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task CorsFilter_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnController()
+        public async Task Cors_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnController()
         {
             // Arrange
             var url = "http://localhost/api/store/actionusingcontrollercorssettings";
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task CorsFilter_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnAction()
+        public async Task Cors_RunsBeforeOtherAuthorizationFilters_UsesPolicySpecifiedOnAction()
         {
             // Arrange
             var url = "http://localhost/api/store/actionwithcorssettings";
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task DisableCorsFilter_RunsBeforeOtherAuthorizationFilters()
+        public async Task DisableCors_RunsBeforeOtherAuthorizationFilters()
         {
             // Controller enables authorization and Cors, the action has a DisableCorsAttribute.
             // We expect the CorsMiddleware to execute and no-op
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task CorsFilter_OnAction_PreferredOverController_AndAuthorizationFiltersRunAfterCors()
+        public async Task Cors_OnAction_PreferredOverController_AndAuthorizationFiltersRunAfterCors()
         {
             // Arrange
             var request = new HttpRequestMessage(
@@ -397,6 +397,22 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Nothing gets executed for a pre-flight request.
             var content = await response.Content.ReadAsStringAsync();
             Assert.Empty(content);
+        }
+
+        [Fact]
+        public async Task Cors_WithoutOriginHeader_Works()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(
+                HttpMethod.Put,
+                "http://localhost/Cors/EditUserComment?userComment=abcd");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
+            Assert.Empty(response.Headers);
         }
     }
 }

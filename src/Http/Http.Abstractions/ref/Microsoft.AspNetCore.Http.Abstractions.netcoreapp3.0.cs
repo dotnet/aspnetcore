@@ -1,6 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore.Authorization
+{
+    public partial interface IAllowAnonymous
+    {
+    }
+    public partial interface IAuthorizeData
+    {
+        string AuthenticationSchemes { get; set; }
+        string Policy { get; set; }
+        string Roles { get; set; }
+    }
+}
 namespace Microsoft.AspNetCore.Builder
 {
     public abstract partial class EndpointBuilder
@@ -87,6 +99,12 @@ namespace Microsoft.AspNetCore.Builder.Extensions
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
 }
+namespace Microsoft.AspNetCore.Cors.Infrastructure
+{
+    public partial interface ICorsMetadata
+    {
+    }
+}
 namespace Microsoft.AspNetCore.Http
 {
     public abstract partial class ConnectionInfo
@@ -117,9 +135,9 @@ namespace Microsoft.AspNetCore.Http
     }
     public enum CookieSecurePolicy
     {
+        SameAsRequest = 0,
         Always = 1,
         None = 2,
-        SameAsRequest = 0,
     }
     public partial class Endpoint
     {

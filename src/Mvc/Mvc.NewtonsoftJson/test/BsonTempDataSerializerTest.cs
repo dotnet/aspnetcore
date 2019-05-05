@@ -213,6 +213,28 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
             testProvider.EnsureObjectCanBeSerialized(value);
         }
 
+        [Fact]
+        public override void RoundTripTest_GuidToString()
+        {
+            // Documents the behavior of round-tripping a Guid value as a string
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = Guid.NewGuid();
+            var input = new Dictionary<string, object>
+            {
+                { key, value.ToString() }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<string>(values[key]);
+            Assert.Equal(value.ToString(), roundTripValue);
+        }
+
         private class TestItem
         {
             public int DummyInt { get; set; }

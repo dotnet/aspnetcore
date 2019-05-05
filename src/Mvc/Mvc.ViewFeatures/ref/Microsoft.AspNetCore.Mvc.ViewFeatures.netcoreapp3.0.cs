@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context) { }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context, Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate next) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.PartialViewResult PartialView() { throw null; }
@@ -234,8 +233,8 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     }
     public enum Html5DateRenderingMode
     {
-        CurrentCulture = 1,
         Rfc3339 = 0,
+        CurrentCulture = 1,
     }
     public static partial class HtmlHelperDisplayExtensions
     {
@@ -576,10 +575,10 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     }
     public enum TagRenderMode
     {
-        EndTag = 2,
         Normal = 0,
-        SelfClosing = 3,
         StartTag = 1,
+        EndTag = 2,
+        SelfClosing = 3,
     }
     public static partial class ViewComponentHelperExtensions
     {
@@ -1204,7 +1203,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     }
     public partial class ViewComponentResultExecutor : Microsoft.AspNetCore.Mvc.Infrastructure.IActionResultExecutor<Microsoft.AspNetCore.Mvc.ViewComponentResult>
     {
+        [System.ObsoleteAttribute("This constructor is obsolete and will be removed in a future version.")]
         public ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataDictionaryFactory) { }
+        public ViewComponentResultExecutor(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions> mvcHelperOptions, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Text.Encodings.Web.HtmlEncoder htmlEncoder, Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider modelMetadataProvider, Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory tempDataDictionaryFactory, Microsoft.AspNetCore.Mvc.Infrastructure.IHttpResponseStreamWriterFactory writerFactory) { }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task ExecuteAsync(Microsoft.AspNetCore.Mvc.ActionContext context, Microsoft.AspNetCore.Mvc.ViewComponentResult result) { throw null; }
     }

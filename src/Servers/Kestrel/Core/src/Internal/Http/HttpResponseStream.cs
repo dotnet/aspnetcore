@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class HttpResponseStream : WriteOnlyPipeStream
+    internal sealed class HttpResponseStream : WriteOnlyPipeStream
     {
         private readonly HttpResponsePipeWriter _pipeWriter;
         private readonly IHttpBodyControlFeature _bodyControl;

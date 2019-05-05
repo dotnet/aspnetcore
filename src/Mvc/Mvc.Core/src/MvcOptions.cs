@@ -103,9 +103,16 @@ namespace Microsoft.AspNetCore.Mvc
         public FormatterCollection<IInputFormatter> InputFormatters { get; }
 
         /// <summary>
-        /// Gets or sets the flag to buffer the request body in input formatters. Default is <c>false</c>.
+        /// Gets or sets a value that determines if buffering is disabled for input formatters that
+        /// synchronously read from the HTTP request body.
         /// </summary>
-        public bool SuppressInputFormatterBuffering { get; set; } = false;
+        public bool SuppressInputFormatterBuffering { get; set; }
+
+        /// <summary>
+        /// Gets or sets the flag that determines if buffering is disabled for output formatters that
+        /// synchronously write to the HTTP response body.
+        /// </summary>
+        public bool SuppressOutputFormatterBuffering { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum number of validation errors that are allowed by this application before further
@@ -325,16 +332,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public JsonSerializerOptions SerializerOptions { get; } = new JsonSerializerOptions
         {
-            // Allow for the payload to have null values for some inputs (under-binding)
-            IgnoreNullPropertyValueOnRead = true,
+            // Limit the object graph we'll consume to a fixed depth. This prevents stackoverflow exceptions
+            // from deserialization errors that might occur from deeply nested objects.
+            // This value is the same for model binding and Json.Net's serialization.
+            MaxDepth = DefaultMaxModelBindingRecursionDepth,
 
-            ReaderOptions = new JsonReaderOptions
-            {
-                // Limit the object graph we'll consume to a fixed depth. This prevents stackoverflow exceptions
-                // from deserialization errors that might occur from deeply nested objects.
-                // This value is to be kept in sync with JsonSerializerSettingsProvider.DefaultMaxDepth
-                MaxDepth = DefaultMaxModelBindingRecursionDepth,
-            },
+            // Use camel casing for properties
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         };
 
         IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator() => _switches.GetEnumerator();

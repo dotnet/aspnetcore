@@ -227,7 +227,10 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static IMvcCoreBuilder AddControllersWithViewsCore(IServiceCollection services)
         {
-            var builder = AddControllersCore(services).AddViews().AddRazorViewEngine();
+            var builder = AddControllersCore(services)
+                .AddViews()
+                .AddRazorViewEngine()
+                .AddCacheTagHelper();
 
             AddTagHelpersFrameworkParts(builder.PartManager);
 

@@ -45,6 +45,7 @@ try {
     Write-Host "Checking that Versions.props and Version.Details.xml match"
     [xml] $versionProps = Get-Content "$repoRoot/eng/Versions.props"
     [xml] $versionDetails = Get-Content "$repoRoot/eng/Version.Details.xml"
+    $globalJson = Get-Content $repoRoot/global.json | ConvertFrom-Json
 
     $versionVars = New-Object 'System.Collections.Generic.HashSet[string]'
     foreach ($vars in $versionProps.SelectNodes("//PropertyGroup[`@Label=`"Automated`"]/*")) {
@@ -53,24 +54,38 @@ try {
 
     foreach ($dep in $versionDetails.SelectNodes('//Dependency')) {
         Write-Verbose "Found $dep"
-        $varName = $dep.Name -replace '\.',''
-        $varName = $varName -replace '\-',''
-        $varName = "${varName}PackageVersion"
-        $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
-        if (-not $versionVar) {
-            LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
-            continue
-        }
-
-        $versionVars.Remove($varName) | Out-Null
 
         $expectedVersion = $dep.Version
-        $actualVersion = $versionVar.InnerText
 
-        if ($expectedVersion -ne $actualVersion) {
-            LogError `
-                "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
-                -filepath "$repoRoot\eng\Versions.props"
+        if ($dep.Name -in $globalJson.'msbuild-sdks'.PSObject.Properties.Name) {
+
+            $actualVersion = $globalJson.'msbuild-sdks'.($dep.Name)
+
+            if ($expectedVersion -ne $actualVersion) {
+                LogError `
+                    "MSBuild SDK version '$($dep.Name)' in global.json does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
+                    -filepath "$repoRoot\global.json"
+            }
+        }
+        else {
+            $varName = $dep.Name -replace '\.',''
+            $varName = $varName -replace '\-',''
+            $varName = "${varName}PackageVersion"
+
+            $versionVar = $versionProps.SelectSingleNode("//PropertyGroup[`@Label=`"Automated`"]/$varName")
+            $actualVersion = $versionVar.InnerText
+            $versionVars.Remove($varName) | Out-Null
+
+            if (-not $versionVar) {
+                LogError "Missing version variable '$varName' in the 'Automated' property group in $repoRoot/eng/Versions.props"
+                continue
+            }
+
+            if ($expectedVersion -ne $actualVersion) {
+                LogError `
+                    "Version variable '$varName' does not match the value in Version.Details.xml. Expected '$expectedVersion', actual '$actualVersion'" `
+                    -filepath "$repoRoot\eng\Versions.props"
+            }
         }
     }
 
@@ -130,6 +145,11 @@ try {
         & $dotnet run -p "$repoRoot/eng/tools/BaselineGenerator/"
     }
 
+    Write-Host "Re-generating Browser.JS files"
+    Invoke-Block {
+        & $dotnet build "$repoRoot\src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj"
+    }
+
     Write-Host "Run git diff to check for pending changes"
 
     # Redirect stderr to stdout because PowerShell does not consistently handle output to stderr
@@ -138,7 +158,7 @@ try {
     if ($changedFiles) {
         foreach ($file in $changedFiles) {
             $filePath = Resolve-Path "${repoRoot}/${file}"
-            LogError "Generated code is not up to date in $file." -filepath $filePath
+            LogError "Generated code is not up to date in $file. You might need to regenerate the reference assemblies or project list (see docs/ReferenceAssemblies.md and docs/ReferenceResolution.md)" -filepath $filePath
             & git --no-pager diff --ignore-space-at-eol $filePath
         }
     }

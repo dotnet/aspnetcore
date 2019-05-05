@@ -6,7 +6,6 @@
     <RazorLangVersion Condition="'$(SupportPagesAndViews)' != 'True'">3.0</RazorLangVersion>
     <AddRazorSupportForMvc Condition="'$(SupportPagesAndViews)' == 'True'">true</AddRazorSupportForMvc>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.RazorClassLibrary1</RootNamespace>
-    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(SupportPagesAndViews)' == 'True'">

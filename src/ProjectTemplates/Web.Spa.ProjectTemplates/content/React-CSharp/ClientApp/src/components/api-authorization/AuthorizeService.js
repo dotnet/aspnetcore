@@ -310,6 +310,11 @@ export class AuthorizeService {
         });
 
         this.userManager = new UserManager(settings);
+
+        this.userManager.events.addUserSignedOut(async () => {
+            await this.userManager.removeUser();
+            this.updateState(undefined);
+        });
     }
 
     static get instance() { return authService }

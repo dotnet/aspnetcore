@@ -104,11 +104,11 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         private Task ClearCacheHeaders(object state)
         {
-            var response = (HttpResponse)state;
-            response.Headers[HeaderNames.CacheControl] = "no-cache";
-            response.Headers[HeaderNames.Pragma] = "no-cache";
-            response.Headers[HeaderNames.Expires] = "-1";
-            response.Headers.Remove(HeaderNames.ETag);
+            var headers = ((HttpResponse)state).Headers;
+            headers[HeaderNames.CacheControl] = "no-cache";
+            headers[HeaderNames.Pragma] = "no-cache";
+            headers[HeaderNames.Expires] = "-1";
+            headers.Remove(HeaderNames.ETag);
             return Task.CompletedTask;
         }
     }

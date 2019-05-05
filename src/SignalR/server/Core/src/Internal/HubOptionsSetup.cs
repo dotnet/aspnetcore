@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         internal static TimeSpan DefaultClientTimeoutInterval => TimeSpan.FromSeconds(30);
 
-        internal const int DefaultMaximumMessageSize = 32 * 1024 * 1024;
+        internal const int DefaultMaximumMessageSize = 32 * 1024;
 
         private readonly List<string> _defaultProtocols = new List<string>();
 

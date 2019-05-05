@@ -104,7 +104,7 @@ AddConfigSection(
 	if (aspNetCoreNode == NULL)
 	{
 		RETURN_IF_FAILED(hr = pXMLDoc->createElement(section, &element));
-		
+
 		RETURN_IF_FAILED(hr = element->setAttribute(name, CComVariant(aspNetCore)));
 
 		RETURN_IF_FAILED(hr = element->setAttribute(overrideMode, CComVariant(allow)));
@@ -130,7 +130,6 @@ RemoveConfigSection(
     IXMLDOMNode* webServerNode;
     IXMLDOMNode* aspNetCoreNode;
     IXMLDOMNode* tempNode;
-    IXMLDOMElement* element;
     STRU customActionData;
 
     CComBSTR selectLanguage = SysAllocString(L"SelectionLanguage");

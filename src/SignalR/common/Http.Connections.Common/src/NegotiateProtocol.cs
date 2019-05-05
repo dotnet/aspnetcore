@@ -4,8 +4,8 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Internal;
 
@@ -30,64 +30,73 @@ namespace Microsoft.AspNetCore.Http.Connections
         private static ReadOnlySpan<byte> ErrorPropertyNameBytes => new byte[] { (byte)'e', (byte)'r', (byte)'r', (byte)'o', (byte)'r' };
 
         // Used to detect ASP.NET SignalR Server connection attempt
-        private const string ProtocolVersionPropertyName = "ProtocolVersion";
         private static ReadOnlySpan<byte> ProtocolVersionPropertyNameBytes => new byte[] { (byte)'P', (byte)'r', (byte)'o', (byte)'t', (byte)'o', (byte)'c', (byte)'o', (byte)'l', (byte)'V', (byte)'e', (byte)'r', (byte)'s', (byte)'i', (byte)'o', (byte)'n' };
 
         public static void WriteResponse(NegotiationResponse response, IBufferWriter<byte> output)
         {
-            var writer = new Utf8JsonWriter(output, new JsonWriterState(new JsonWriterOptions() { SkipValidation = true }));
-            writer.WriteStartObject();
+            var reusableWriter = ReusableUtf8JsonWriter.Get(output);
 
-            if (!string.IsNullOrEmpty(response.Url))
+            try
             {
-                writer.WriteString(UrlPropertyNameBytes, response.Url, escape: false);
-            }
+                var writer = reusableWriter.GetJsonWriter();
+                writer.WriteStartObject();
 
-            if (!string.IsNullOrEmpty(response.AccessToken))
-            {
-                writer.WriteString(AccessTokenPropertyNameBytes, response.AccessToken, escape: false);
-            }
-
-            if (!string.IsNullOrEmpty(response.ConnectionId))
-            {
-                writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId, escape: false);
-            }
-
-            writer.WriteStartArray(AvailableTransportsPropertyNameBytes, escape: false);
-
-            if (response.AvailableTransports != null)
-            {
-                foreach (var availableTransport in response.AvailableTransports)
+                if (!string.IsNullOrEmpty(response.Url))
                 {
-                    writer.WriteStartObject();
-                    if (availableTransport.Transport != null)
-                    {
-                        writer.WriteString(TransportPropertyNameBytes, availableTransport.Transport, escape: false);
-                    }
-                    else
-                    {
-                        // Might be able to remove this after https://github.com/dotnet/corefx/issues/34632 is resolved
-                        writer.WriteNull(TransportPropertyNameBytes, escape: false);
-                    }
-                    writer.WriteStartArray(TransferFormatsPropertyNameBytes, escape: false);
-
-                    if (availableTransport.TransferFormats != null)
-                    {
-                        foreach (var transferFormat in availableTransport.TransferFormats)
-                        {
-                            writer.WriteStringValue(transferFormat, escape: false);
-                        }
-                    }
-
-                    writer.WriteEndArray();
-                    writer.WriteEndObject();
+                    writer.WriteString(UrlPropertyNameBytes, response.Url);
                 }
+
+                if (!string.IsNullOrEmpty(response.AccessToken))
+                {
+                    writer.WriteString(AccessTokenPropertyNameBytes, response.AccessToken);
+                }
+
+                if (!string.IsNullOrEmpty(response.ConnectionId))
+                {
+                    writer.WriteString(ConnectionIdPropertyNameBytes, response.ConnectionId);
+                }
+
+                writer.WriteStartArray(AvailableTransportsPropertyNameBytes);
+
+                if (response.AvailableTransports != null)
+                {
+                    foreach (var availableTransport in response.AvailableTransports)
+                    {
+                        writer.WriteStartObject();
+                        if (availableTransport.Transport != null)
+                        {
+                            writer.WriteString(TransportPropertyNameBytes, availableTransport.Transport);
+                        }
+                        else
+                        {
+                            // Might be able to remove this after https://github.com/dotnet/corefx/issues/34632 is resolved
+                            writer.WriteNull(TransportPropertyNameBytes);
+                        }
+                        writer.WriteStartArray(TransferFormatsPropertyNameBytes);
+
+                        if (availableTransport.TransferFormats != null)
+                        {
+                            foreach (var transferFormat in availableTransport.TransferFormats)
+                            {
+                                writer.WriteStringValue(transferFormat);
+                            }
+                        }
+
+                        writer.WriteEndArray();
+                        writer.WriteEndObject();
+                    }
+                }
+
+                writer.WriteEndArray();
+                writer.WriteEndObject();
+
+                writer.Flush();
+                Debug.Assert(writer.CurrentDepth == 0);
             }
-
-            writer.WriteEndArray();
-            writer.WriteEndObject();
-
-            writer.Flush(isFinalBlock: true);
+            finally
+            {
+                ReusableUtf8JsonWriter.Return(reusableWriter);
+            }
         }
 
         public static NegotiationResponse ParseResponse(ReadOnlySpan<byte> content)
@@ -111,21 +120,19 @@ namespace Microsoft.AspNetCore.Http.Connections
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.PropertyName:
-                            var memberName = reader.ValueSpan;
-
-                            if (memberName.SequenceEqual(UrlPropertyNameBytes))
+                            if (reader.TextEquals(UrlPropertyNameBytes))
                             {
                                 url = reader.ReadAsString(UrlPropertyName);
                             }
-                            else if (memberName.SequenceEqual(AccessTokenPropertyNameBytes))
+                            else if (reader.TextEquals(AccessTokenPropertyNameBytes))
                             {
                                 accessToken = reader.ReadAsString(AccessTokenPropertyName);
                             }
-                            else if (memberName.SequenceEqual(ConnectionIdPropertyNameBytes))
+                            else if (reader.TextEquals(ConnectionIdPropertyNameBytes))
                             {
                                 connectionId = reader.ReadAsString(ConnectionIdPropertyName);
                             }
-                            else if (memberName.SequenceEqual(AvailableTransportsPropertyNameBytes))
+                            else if (reader.TextEquals(AvailableTransportsPropertyNameBytes))
                             {
                                 reader.CheckRead();
                                 reader.EnsureArrayStart();
@@ -143,11 +150,11 @@ namespace Microsoft.AspNetCore.Http.Connections
                                     }
                                 }
                             }
-                            else if (memberName.SequenceEqual(ErrorPropertyNameBytes))
+                            else if (reader.TextEquals(ErrorPropertyNameBytes))
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
                             }
-                            else if (memberName.SequenceEqual(ProtocolVersionPropertyNameBytes))
+                            else if (reader.TextEquals(ProtocolVersionPropertyNameBytes))
                             {
                                 throw new InvalidOperationException("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                             }

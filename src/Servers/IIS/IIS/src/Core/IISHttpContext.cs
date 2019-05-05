@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
 using System.Net;
+using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -59,7 +60,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Task _writeBodyTask;
 
         private bool _wasUpgraded;
-        protected int _requestAborted;
 
         protected Pipe _bodyInputPipe;
         protected OutputProducer _bodyOutput;
@@ -67,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private const string NtlmString = "NTLM";
         private const string NegotiateString = "Negotiate";
         private const string BasicString = "Basic";
-
 
         internal unsafe IISHttpContext(
             MemoryPool<byte> memoryPool,
@@ -185,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             var rawUrlInBytes = GetRawUrlInBytes();
 
             // Pre Windows 10 RS2 applicationInitialization request might not have pRawUrl set, fallback to cocked url
-            if (rawUrlInBytes == null)
+            if (rawUrlInBytes.Length == 0)
             {
                 return GetCookedUrl().GetAbsPath();
             }
@@ -194,9 +193,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // check and skip it
             if (rawUrlInBytes.Length > 0 && rawUrlInBytes[rawUrlInBytes.Length - 1] == 0)
             {
-                var newRawUrlInBytes = new byte[rawUrlInBytes.Length - 1];
-                Array.Copy(rawUrlInBytes, newRawUrlInBytes, newRawUrlInBytes.Length);
-                rawUrlInBytes = newRawUrlInBytes;
+                rawUrlInBytes = rawUrlInBytes.Slice(0, rawUrlInBytes.Length - 1);
             }
 
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
@@ -509,7 +506,16 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     wi.Dispose();
                 }
 
-                _abortedCts?.Dispose();
+                // Lock to prevent CancelRequestAbortedToken from attempting to cancel a disposed CTS.
+                CancellationTokenSource localAbortCts = null;
+
+                lock (_abortLock)
+                {
+                    localAbortCts = _abortedCts;
+                    _abortedCts = null;
+                }
+
+                localAbortCts?.Dispose();
 
                 disposedValue = true;
             }

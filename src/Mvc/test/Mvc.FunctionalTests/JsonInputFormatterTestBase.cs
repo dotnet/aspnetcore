@@ -1,10 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Xunit;
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var sampleInputInt = 10;
-            var input = "{\"SampleInt\":10}";
+            var input = "{\"sampleInt\":10}";
             var content = new StringContent(input, Encoding.UTF8, requestContentType);
 
             // Act
@@ -43,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("application/json", "{\"SampleInt\":10}", 10)]
+        [InlineData("application/json", "{\"sampleInt\":10}", 10)]
         [InlineData("application/json", "{}", 0)]
         public async Task JsonInputFormatter_IsModelStateValid_ForValidContentType(
             string requestContentType,
@@ -100,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonInputFormatter_Returns415UnsupportedMediaType_ForEmptyContentType()
         {
             // Arrange
-            var jsonInput = "{\"SampleInt\":10}";
+            var jsonInput = "{\"sampleInt\":10}";
             var content = new StringContent(jsonInput, Encoding.UTF8, "application/json");
             content.Headers.Clear();
 
@@ -112,7 +114,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("application/json", "{\"SampleInt\":10}", 10)]
+        [InlineData("application/json", "{\"sampleInt\":10}", 10)]
         [InlineData("application/json", "{}", 0)]
         public async Task JsonInputFormatter_IsModelStateValid_ForTransferEncodingChunk(
             string requestContentType,
@@ -133,6 +135,5 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expectedSampleIntValue.ToString(), responseBody);
         }
-
     }
 }

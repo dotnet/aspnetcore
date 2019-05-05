@@ -195,10 +195,9 @@ if (sauce) {
 }
 
 function runKarma(karmaConfig) {
-    return new Promise<karma.TestResults>((resolve, reject) => {
-        const server = new karma.Server(karmaConfig);
-        server.on("run_complete", (browsers, results) => {
-            return resolve(results);
+    return new Promise<number>((resolve, reject) => {
+        const server = new karma.Server(karmaConfig, (exitCode: number) => {
+            resolve(exitCode);
         });
         server.start();
     });
@@ -351,12 +350,10 @@ function runJest(httpsUrl: string, httpUrl: string) {
         if (config.browsers.length === 0) {
             console.log("Unable to locate any suitable browsers. Skipping browser functional tests.");
         } else {
-            karmaExit = (await runKarma(conf)).exitCode;
-        }
-
-        if (karmaExit) {
+            karmaExit = (await runKarma(conf));
             console.log(`karma exit code: ${karmaExit}`);
         }
+
         console.log(`jest exit code: ${jestExit}`);
 
         process.exit(jestExit !== 0 ? jestExit : karmaExit);

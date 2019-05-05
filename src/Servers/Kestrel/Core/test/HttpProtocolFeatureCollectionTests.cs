@@ -127,6 +127,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection[typeof(IHttpMinResponseDataRateFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpBodyControlFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpResponseStartFeature)] = CreateHttp1Connection();
+            _collection[typeof(IRouteValuesFeature)] = CreateHttp1Connection();
+            _collection[typeof(IEndpointFeature)] = CreateHttp1Connection();
 
             CompareGenericGetterToIndexer();
 
@@ -148,6 +150,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection.Set<IHttpMinResponseDataRateFeature>(CreateHttp1Connection());
             _collection.Set<IHttpBodyControlFeature>(CreateHttp1Connection());
             _collection.Set<IHttpResponseStartFeature>(CreateHttp1Connection());
+            _collection.Set<IRouteValuesFeature>(CreateHttp1Connection());
+            _collection.Set<IEndpointFeature>(CreateHttp1Connection());
 
             CompareGenericGetterToIndexer();
 

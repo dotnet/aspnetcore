@@ -41,6 +41,9 @@
     <IncludePath>$(ProjectDir)..\include;$(IncludePath)</IncludePath>
     <TargetName>iiscommon</TargetName>
   </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <VCToolsVersion />
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <SDLCheck>true</SDLCheck>

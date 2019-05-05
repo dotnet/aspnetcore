@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             var dataSource = (PageActionEndpointDataSource)CreateDataSource(mockDescriptorProvider.Object);
 
-            dataSource.Add((b) =>
+            dataSource.DefaultBuilder.Add((b) =>
             {
                 b.Metadata.Add("Hi there");
             });

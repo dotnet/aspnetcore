@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
 
@@ -53,38 +53,63 @@ namespace Microsoft.AspNetCore.Routing
             _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
-            var feature = new EndpointSelectorContext();
+            var feature = new EndpointSelectorContext(httpContext);
+
+            // There's already an endpoint, skip maching completely
+            if (feature.Endpoint != null)
+            {
+                Log.MatchSkipped(_logger, feature.Endpoint);
+                return _next(httpContext);
+            }
 
             // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
-            var matcher = await InitializeAsync();
-
-            await matcher.MatchAsync(httpContext, feature);
-            if (feature.Endpoint != null)
+            var matcherTask = InitializeAsync();
+            if (!matcherTask.IsCompletedSuccessfully)
             {
-                // Set the endpoint feature only on success. This means we won't overwrite any
-                // existing state for related features unless we did something.
-                SetFeatures(httpContext, feature);
-
-                Log.MatchSuccess(_logger, feature);
+                return AwaitMatcher(this, httpContext, feature, matcherTask);
             }
-            else
+
+            var matchTask = matcherTask.Result.MatchAsync(httpContext, feature);
+            if (!matchTask.IsCompletedSuccessfully)
+            {
+                return AwaitMatch(this, httpContext, feature, matchTask);
+            }
+
+            return SetRoutingAndContinue(httpContext, feature);
+
+            // Awaited fallbacks for when the Tasks do not synchronously complete
+            static async Task AwaitMatcher(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task<Matcher> matcherTask)
+            {
+                var matcher = await matcherTask;
+                await matcher.MatchAsync(httpContext, feature);
+                await middleware.SetRoutingAndContinue(httpContext, feature);
+            }
+
+            static async Task AwaitMatch(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task matchTask)
+            {
+                await matchTask;
+                await middleware.SetRoutingAndContinue(httpContext, feature);
+            }
+
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Task SetRoutingAndContinue(HttpContext httpContext, EndpointSelectorContext feature)
+        {
+            // If there was no mutation of the endpoint then log failure
+            if (feature.Endpoint is null)
             {
                 Log.MatchFailure(_logger);
             }
+            else
+            {
+                Log.MatchSuccess(_logger, feature);
+            }
 
-            await _next(httpContext);
-        }
-
-        private static void SetFeatures(HttpContext httpContext, EndpointSelectorContext context)
-        {
-            // For back-compat EndpointSelectorContext implements IEndpointFeature,
-            // IRouteValuesFeature and IRoutingFeature
-            httpContext.Features.Set<IRoutingFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
-            httpContext.Features.Set<IEndpointFeature>(context);
+            return _next(httpContext);
         }
 
         // Initialization is async to avoid blocking threads while reflection and things
@@ -154,6 +179,11 @@ namespace Microsoft.AspNetCore.Routing
                 new EventId(2, "MatchFailure"),
                 "Request did not match any endpoints");
 
+            private static readonly Action<ILogger, string, Exception> _matchingSkipped = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                new EventId(3, "MatchingSkipped"),
+                "Endpoint '{EndpointName}' already set, skipping route matching.");
+
             public static void MatchSuccess(ILogger logger, EndpointSelectorContext context)
             {
                 _matchSuccess(logger, context.Endpoint.DisplayName, null);
@@ -162,6 +192,11 @@ namespace Microsoft.AspNetCore.Routing
             public static void MatchFailure(ILogger logger)
             {
                 _matchFailure(logger, null);
+            }
+
+            public static void MatchSkipped(ILogger logger, Endpoint endpoint)
+            {
+                _matchingSkipped(logger, endpoint.DisplayName, null);
             }
         }
     }

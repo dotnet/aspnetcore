@@ -2,6 +2,7 @@
   <PropertyGroup>
     <OutputInRepoRoot>true</OutputInRepoRoot>
     <ToolSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ToolSharedSourceRoot>
+    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />

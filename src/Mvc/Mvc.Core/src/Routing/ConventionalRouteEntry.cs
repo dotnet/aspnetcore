@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Patterns;
 
@@ -15,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         public readonly string RouteName;
         public readonly RouteValueDictionary DataTokens;
         public readonly int Order;
+        public readonly IReadOnlyList<Action<EndpointBuilder>> Conventions;
 
         public ConventionalRouteEntry(
             string routeName,
@@ -22,11 +24,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             RouteValueDictionary defaults,
             IDictionary<string, object> constraints,
             RouteValueDictionary dataTokens,
-            int order)
+            int order,
+            List<Action<EndpointBuilder>> conventions)
         {
             RouteName = routeName;
             DataTokens = dataTokens;
             Order = order;
+            Conventions = conventions;
 
             try
             {

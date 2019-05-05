@@ -12,5 +12,11 @@ namespace RoutingWebSite.Areas.Admin
         {
             return Content("Hello from fallback controller: " + Url.Action());
         }
+
+        [HttpPost]
+        public ActionResult Index(int x)
+        {
+            return Content("Hello from fallback controller POST: " + Url.Action());
+        }
     }
 }

@@ -10,22 +10,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Class | AttributeTargets.Method)]
     public sealed class RequiresIISAttribute : Attribute, ITestCondition
     {
-        public bool IsMet { get ; } = IISExpressAncmSchema.SupportsInProcessHosting;
+        public bool IsMet => IISExpressAncmSchema.SupportsInProcessHosting;
 
-        public string SkipReason { get; } = IISExpressAncmSchema.SkipReason;
+        public string SkipReason => IISExpressAncmSchema.SkipReason;
 
-        public RequiresIISAttribute()
-        {
-            // https://github.com/aspnet/AspNetCore/issues/8329
-            if (Environment.OSVersion.Version.Major == 6 &&
-                Environment.OSVersion.Version.Minor == 1)
-            {
-                IsMet = false;
-                SkipReason = "Skipped on Windows 7";
-            }
-        }
+        public RequiresIISAttribute() { }
 
-        public RequiresIISAttribute(IISCapability capabilities) : this()
+        public RequiresIISAttribute(IISCapability capabilities)
         {
             // IISCapabilities aren't pertinent to IISExpress
         }

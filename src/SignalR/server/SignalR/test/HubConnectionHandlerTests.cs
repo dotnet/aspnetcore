@@ -2934,7 +2934,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Object not supported yet")]
         public async Task UploadStreamedObjects()
         {
             var serviceProvider = HubConnectionHandlerTestUtils.CreateServiceProvider();
@@ -2998,7 +2998,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Cyclic parsing is not supported yet")]
         public async Task ConnectionAbortedIfSendFailsWithProtocolError()
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -3028,7 +3028,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Magic auto cast not supported")]
         public async Task UploadStreamItemInvalidTypeAutoCasts()
         {
             using (StartVerifiableLog())
@@ -3050,6 +3050,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await client.SendHubMessageAsync(CompletionMessage.Empty("id")).OrTimeout();
                     var response = (CompletionMessage)await client.ReadAsync().OrTimeout();
 
+                    Assert.Null(response.Error);
                     Assert.Equal("510", response.Result);
                 }
             }
@@ -3062,7 +3063,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var testProtocol = new Mock<IHubProtocol>();
                 testProtocol.Setup(m => m.Name).Returns("CustomProtocol");
-                testProtocol.Setup(m => m.MinorVersion).Returns(112);
                 testProtocol.Setup(m => m.IsVersionSupported(It.IsAny<int>())).Returns(true);
                 testProtocol.Setup(m => m.TransferFormat).Returns(TransferFormat.Binary);
 
@@ -3074,7 +3074,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
                     Assert.NotNull(client.HandshakeResponseMessage);
-                    Assert.Equal(112, client.HandshakeResponseMessage.MinorVersion);
 
                     client.Dispose();
                     await connectionHandlerTask.OrTimeout();

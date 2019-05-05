@@ -14,15 +14,22 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     internal class DynamicControllerEndpointMatcherPolicy : MatcherPolicy, IEndpointSelectorPolicy
     {
         private readonly DynamicControllerEndpointSelector _selector;
+        private readonly EndpointMetadataComparer _comparer;
 
-        public DynamicControllerEndpointMatcherPolicy(DynamicControllerEndpointSelector selector)
+        public DynamicControllerEndpointMatcherPolicy(DynamicControllerEndpointSelector selector, EndpointMetadataComparer comparer)
         {
             if (selector == null)
             {
                 throw new ArgumentNullException(nameof(selector));
             }
 
+            if (comparer == null)
+            {
+                throw new ArgumentNullException(nameof(comparer));
+            }
+
             _selector = selector;
+            _comparer = comparer;
         }
 
         public override int Order => int.MinValue + 100;
@@ -59,12 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
-
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
+            
             if (candidates == null)
             {
                 throw new ArgumentNullException(nameof(candidates));
@@ -99,8 +101,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                         "{ " + string.Join(", ", metadata.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}")) + " }.");
                 }
 
-                var replacement = endpoints[0];
-                
                 // We need to provide the route values associated with this endpoint, so that features
                 // like URL generation work.
                 var values = new RouteValueDictionary(metadata.Values);
@@ -111,7 +111,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     values.TryAdd(kvp.Key, kvp.Value);
                 }
 
-                candidates.ReplaceEndpoint(i, replacement, values);
+                // Update the route values
+                candidates.ReplaceEndpoint(i, endpoint, values);
+
+                // Expand the list of endpoints
+                candidates.ExpandEndpoint(i, endpoints, _comparer);
             }
 
             return Task.CompletedTask;

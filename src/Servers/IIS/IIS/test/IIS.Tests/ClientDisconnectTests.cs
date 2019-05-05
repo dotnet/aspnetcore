@@ -5,10 +5,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
@@ -18,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     public class ClientDisconnectTests : StrictTestServerTests
     {
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2358", FlakyOn.All)]
         public async Task WritesSucceedAfterClientDisconnect()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
@@ -52,8 +55,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831", FlakyOn.All)]
-        public async Task WritesCancelledWhenUsingAbortedToken()
+        [Repeat(20)]
+        public async Task WritesCanceledWhenUsingAbortedToken()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
@@ -69,6 +72,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     while (true)
                     {
                         await ctx.Response.Body.WriteAsync(data, ctx.RequestAborted);
+                        await Task.Delay(10); // Small delay to not constantly call WriteAsync.
                     }
                 }
                 catch (Exception e)
@@ -134,7 +138,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        public async Task WriterThrowsCancelledException()
+        public async Task WriterThrowsCanceledException()
         {
             var requestStartedCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
@@ -175,10 +179,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1831", FlakyOn.All)]
-        public async Task ReaderThrowsCancelledException()
+        [Repeat]
+        public async Task ReaderThrowsCanceledException()
         {
-            var requestStartedCompletionSource = CreateTaskCompletionSource();
+            var readIsAsyncCompletionSource = CreateTaskCompletionSource();
             var requestCompletedCompletionSource = CreateTaskCompletionSource();
 
             Exception exception = null;
@@ -187,10 +191,11 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var data = new byte[1024];
             using (var testServer = await TestServer.Create(async ctx =>
             {
-                requestStartedCompletionSource.SetResult(true);
                 try
                 {
-                    await ctx.Request.Body.ReadAsync(data, cancellationTokenSource.Token);
+                    var task = ctx.Request.Body.ReadAsync(data, cancellationTokenSource.Token);
+                    readIsAsyncCompletionSource.SetResult(true);
+                    await task;
                 }
                 catch (Exception e)
                 {
@@ -203,7 +208,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 using (var connection = testServer.CreateConnection())
                 {
                     await SendContentLength1Post(connection);
-                    await requestStartedCompletionSource.Task.DefaultTimeout();
+                    await readIsAsyncCompletionSource.Task.DefaultTimeout();
                     cancellationTokenSource.Cancel();
                     await requestCompletedCompletionSource.Task.DefaultTimeout();
                 }

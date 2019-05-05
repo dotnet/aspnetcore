@@ -16,6 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template.Tests
 {
+#pragma warning disable CS0618 // Type or member is obsolete
     public class TemplateBinderTests
     {
         private readonly IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
@@ -1480,4 +1481,5 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             public Dictionary<string, string> Parameters { get; private set; }
         }
     }
+#pragma warning restore CS0618 // Type or member is obsolete
 }

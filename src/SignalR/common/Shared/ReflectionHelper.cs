@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Channels;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -13,6 +15,13 @@ namespace Microsoft.AspNetCore.SignalR
         public static bool IsStreamingType(Type type, bool mustBeDirectType = false)
         {
             // TODO #2594 - add Streams here, to make sending files easy
+
+#if NETCOREAPP3_0
+            if (IsIAsyncEnumerable(type))
+            {
+                return true;
+            }
+#endif
             do
             {
                 if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ChannelReader<>))
@@ -25,5 +34,27 @@ namespace Microsoft.AspNetCore.SignalR
 
             return false;
         }
+
+#if NETCOREAPP3_0
+        public static bool IsIAsyncEnumerable(Type type)
+        {
+            if (type.IsGenericType)
+            {
+                return type.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>);
+            }
+
+            return type.GetInterfaces().Any(t =>
+            {
+                if (t.IsGenericType)
+                {
+                    return t.GetGenericTypeDefinition() == typeof(IAsyncEnumerable<>);
+                }
+                else
+                {
+                    return false;
+                }
+            });
+        }
+#endif
     }
 }

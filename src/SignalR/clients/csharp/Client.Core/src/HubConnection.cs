@@ -42,7 +42,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly SemaphoreSlim _connectionLock = new SemaphoreSlim(1, 1);
 
         private static readonly MethodInfo _sendStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals("SendStreamItems"));
-
+#if NETCOREAPP3_0
+        private static readonly MethodInfo _sendIAsyncStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals("SendIAsyncEnumerableStreamItems"));
+#endif
         // Persistent across all connections
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
@@ -70,7 +72,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         // Transient state to a connection
         private ConnectionState _connectionState;
-        private int _serverProtocolMinorVersion;
 
         /// <summary>
         /// Occurs when the connection is closed. The connection could be closed due to an error or due to either the server or client intentionally
@@ -533,13 +534,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             LaunchStreams(readers, cancellationToken);
-
             return channel;
         }
 
         private Dictionary<string, object> PackageStreamingParams(ref object[] args, out List<string> streamIds)
         {
-            // lazy initialized, to avoid allocating unecessary dictionaries
             Dictionary<string, object> readers = null;
             streamIds = null;
             var newArgs = new List<object>(args.Length);
@@ -572,7 +571,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             args = newArgs.ToArray();
-
             return readers;
         }
 
@@ -590,6 +588,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // For each stream that needs to be sent, run a "send items" task in the background.
                 // This reads from the channel, attaches streamId, and sends to server.
                 // A single background thread here quickly gets messy.
+#if NETCOREAPP3_0
+                if (ReflectionHelper.IsIAsyncEnumerable(reader.GetType()))
+                {
+                    _ = _sendIAsyncStreamItemsMethod
+                        .MakeGenericMethod(reader.GetType().GetInterface("IAsyncEnumerable`1").GetGenericArguments())
+                        .Invoke(this, new object[] { kvp.Key.ToString(), reader, cancellationToken });
+                    continue;
+                }
+#endif
                 _ = _sendStreamItemsMethod
                     .MakeGenericMethod(reader.GetType().GetGenericArguments())
                     .Invoke(this, new object[] { kvp.Key.ToString(), reader, cancellationToken });
@@ -597,23 +604,51 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         // this is called via reflection using the `_sendStreamItems` field
-        private async Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
+        private Task SendStreamItems<T>(string streamId, ChannelReader<T> reader, CancellationToken token)
         {
-            Log.StartingStream(_logger, streamId);
-
-            var combinedToken = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token).Token;
-
-            string responseError = null;
-            try
+            async Task ReadChannelStream(CancellationTokenSource tokenSource)
             {
-                while (await reader.WaitToReadAsync(combinedToken))
+                while (await reader.WaitToReadAsync(tokenSource.Token))
                 {
-                    while (!combinedToken.IsCancellationRequested && reader.TryRead(out var item))
+                    while (!tokenSource.Token.IsCancellationRequested && reader.TryRead(out var item))
                     {
                         await SendWithLock(new StreamItemMessage(streamId, item));
                         Log.SendingStreamItem(_logger, streamId);
                     }
                 }
+            }
+
+            return CommonStreaming(streamId, token, ReadChannelStream);
+        }
+
+#if NETCOREAPP3_0
+        // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
+        private Task SendIAsyncEnumerableStreamItems<T>(string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
+        {
+            async Task ReadAsyncEnumerableStream(CancellationTokenSource tokenSource)
+            {
+                var streamValues = AsyncEnumerableAdapters.MakeCancelableTypedAsyncEnumerable(stream, tokenSource);
+
+                await foreach (var streamValue in streamValues)
+                {
+                    await SendWithLock(new StreamItemMessage(streamId, streamValue));
+                    Log.SendingStreamItem(_logger, streamId);
+                }
+            }
+
+            return CommonStreaming(streamId, token, ReadAsyncEnumerableStream);
+        }
+#endif
+
+        private async Task CommonStreaming(string streamId, CancellationToken token, Func<CancellationTokenSource, Task> createAndConsumeStream)
+        {
+            var cts = CancellationTokenSource.CreateLinkedTokenSource(_uploadStreamToken, token);
+
+            Log.StartingStream(_logger, streamId);
+            string responseError = null;
+            try
+            {
+                await createAndConsumeStream(cts);
             }
             catch (OperationCanceledException)
             {
@@ -916,8 +951,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                         throw new HubException(
                                             $"Unable to complete handshake with the server due to an error: {message.Error}");
                                     }
-
-                                    _serverProtocolMinorVersion = message.MinorVersion;
 
                                     break;
                                 }

@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var contentBytes = Encoding.UTF8.GetBytes(content);
             var httpContext = new DefaultHttpContext();
             httpContext.Features.Set<IHttpResponseFeature>(new TestResponseFeature());
-            httpContext.Request.Body = new NonSeekableReadStream(contentBytes);
+            httpContext.Request.Body = new NonSeekableReadStream(contentBytes, allowSyncReads: false);
             httpContext.Request.ContentType = "application/json";
 
             var formatterContext = CreateInputFormatterContext(typeof(User), httpContext);
@@ -52,18 +52,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.False(result.HasError);
 
             var userModel = Assert.IsType<User>(result.Model);
-            Assert.Equal("Person Name", userModel.Name);
-            Assert.Equal(30, userModel.Age);
-
-            Assert.True(httpContext.Request.Body.CanSeek);
-            httpContext.Request.Body.Seek(0L, SeekOrigin.Begin);
-
-            result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-
-            userModel = Assert.IsType<User>(result.Model);
             Assert.Equal("Person Name", userModel.Name);
             Assert.Equal(30, userModel.Age);
         }
@@ -102,13 +90,6 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var userModel = Assert.IsType<User>(result.Model);
             Assert.Equal("Person Name", userModel.Name);
             Assert.Equal(30, userModel.Age);
-
-            Assert.False(httpContext.Request.Body.CanSeek);
-            result = await formatter.ReadAsync(formatterContext);
-
-            // Assert
-            Assert.False(result.HasError);
-            Assert.Null(result.Model);
         }
 
         [Fact]
