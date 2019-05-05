@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.TestHost
                     app.Run(context =>
                     {
                         context.Abort();
-                        return Task.FromResult(0);
+                        return Task.CompletedTask;
                     });
                 });
             var server = new TestServer(builder);
