@@ -1,3 +1,5 @@
+using System;
+
 public class EchoHubConnectionCounter
 {
 
@@ -10,7 +12,7 @@ public class EchoHubConnectionCounter
 
     public string Status
     {
-        get 
+        get
         {
             lock (_lock)
             {
@@ -44,7 +46,9 @@ public class EchoHubConnectionCounter
     }
 
     public void Disconnected() {
-        Interlocked.Decrement(ref _connectionCount);
-            LogConnections("Disconnected");
+        lock (_lock) {
+            _connectionCount--;
+        }
+        LogConnections("Disconnected");
     }
 }
