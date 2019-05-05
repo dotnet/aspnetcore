@@ -381,8 +381,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             builder.AppendHtml(", \"");
 
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < attributes.Count; i++)
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 var attribute = attributes[i];
                 if (string.Equals(attribute.Name, HrefAttributeName, StringComparison.OrdinalIgnoreCase))
@@ -440,8 +441,10 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             builder.AppendHtml("[");
             var firstAdded = false;
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < fallbackHrefs.Count; i++)
+
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var fallbackHrefsCount = fallbackHrefs.Count;
+            for (var i = 0; i < fallbackHrefsCount; i++)
             {
                 if (firstAdded)
                 {
@@ -498,8 +501,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var addHref = true;
 
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < attributes.Count; i++)
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 var attribute = attributes[i];
 

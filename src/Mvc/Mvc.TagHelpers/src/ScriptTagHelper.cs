@@ -331,8 +331,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                     var addSrc = true;
 
-                    // Perf: Avoid allocating enumerator
-                    for (var i = 0; i < attributes.Count; i++)
+                    // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+                    var attributesCount = attributes.Count;
+                    for (var i = 0; i < attributesCount; i++)
                     {
                         var attribute = attributes[i];
                         if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
@@ -434,8 +435,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var addSrc = true;
 
-            // Perf: Avoid allocating enumerator
-            for (var i = 0; i < attributes.Count; i++)
+            // Perf: Avoid allocating enumerator and read interface .Count once rather than per iteration
+            var attributesCount = attributes.Count;
+            for (var i = 0; i < attributesCount; i++)
             {
                 var attribute = attributes[i];
                 if (!attribute.Name.Equals(SrcAttributeName, StringComparison.OrdinalIgnoreCase))
