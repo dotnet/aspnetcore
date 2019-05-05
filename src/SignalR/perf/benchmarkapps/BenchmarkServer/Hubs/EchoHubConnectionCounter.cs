@@ -2,11 +2,10 @@ using System;
 
 public class EchoHubConnectionCounter
 {
-
     private int _connectionCount;
     private int _peakConnectionCount;
 
-    private Object _lock;
+    private readonly object _lock = new object();
 
     private DateTime _start = DateTime.Now;
 
