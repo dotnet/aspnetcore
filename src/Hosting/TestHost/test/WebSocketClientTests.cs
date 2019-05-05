@@ -13,23 +13,24 @@ namespace Microsoft.AspNetCore.TestHost.Tests
 {
     public class WebSocketClientTests
     {
-        [Fact]
-        public async Task ConnectAsync_ShouldSetRequestProperties()
+        [Theory]
+        [InlineData("http://localhost/connect", "localhost")]
+        [InlineData("http://localhost:80/connect", "localhost")]
+        [InlineData("http://localhost:81/connect", "localhost:81")]
+        public async Task ConnectAsync_ShouldSetRequestProperties(string requestUri, string expectedHost)
         {
             HttpRequest capturedRequest = null;
 
             using (var testServer = new TestServer(new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.Use(async (ctx, next) =>
+                    app.Run(ctx =>
                     {
                         if (ctx.Request.Path.StartsWithSegments("/connect"))
                         {
                             capturedRequest = ctx.Request;
-                            return;
                         }
-
-                        await next();
+                        return Task.FromResult(0);
                     });
                 })))
             {
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.TestHost.Tests
                 try
                 {
                     await client.ConnectAsync(
-                        uri: new Uri(testServer.BaseAddress, "/connect"),
+                        uri: new Uri(requestUri),
                         cancellationToken: default(CancellationToken));
                 }
                 catch
@@ -48,7 +49,7 @@ namespace Microsoft.AspNetCore.TestHost.Tests
             }
 
             Assert.Equal("http", capturedRequest.Scheme);
-            Assert.Equal("localhost", capturedRequest.Host.Value);
+            Assert.Equal(expectedHost, capturedRequest.Host.Value);
             Assert.Equal("/connect", capturedRequest.Path);
         }
     }
