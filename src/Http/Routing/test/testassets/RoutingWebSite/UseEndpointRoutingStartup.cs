@@ -173,7 +173,7 @@ namespace RoutingWebSite
             app.UseRouting();
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapGet("api/get/{id}", (context) => context.Response.WriteAsync($"{name} - API Get {context.GetRouteData().Values["id"]}"));
+                endpoints.MapGet("api/get/{id}", (context) => context.Response.WriteAsync($"{name} - API Get {context.Request.RouteValues["id"]}"));
             });
         }
     }

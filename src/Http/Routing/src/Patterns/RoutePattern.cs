@@ -139,9 +139,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(name));
             }
 
-            for (var i = 0; i < Parameters.Count; i++)
+            var parameters = Parameters;
+            // Read interface .Count once rather than per iteration
+            var parametersCount = parameters.Count;
+            for (var i = 0; i < parametersCount; i++)
             {
-                var parameter = Parameters[i];
+                var parameter = parameters[i];
                 if (string.Equals(parameter.Name, name, StringComparison.OrdinalIgnoreCase))
                 {
                     return parameter;

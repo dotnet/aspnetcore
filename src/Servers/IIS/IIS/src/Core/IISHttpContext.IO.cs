@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         /// <param name="memory"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal async Task<int> ReadAsync(Memory<byte> memory, CancellationToken cancellationToken)
+        internal async ValueTask<int> ReadAsync(Memory<byte> memory, CancellationToken cancellationToken)
         {
             if (!_hasRequestReadingStarted)
             {
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                             break;
                         }
 
-                        flush = flush | result.IsCanceled;
+                        flush |= result.IsCanceled;
 
                         if (flush)
                         {

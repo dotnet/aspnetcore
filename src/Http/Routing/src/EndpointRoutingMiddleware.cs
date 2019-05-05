@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
 
@@ -56,7 +55,14 @@ namespace Microsoft.AspNetCore.Routing
 
         public Task Invoke(HttpContext httpContext)
         {
-            var feature = new EndpointSelectorContext();
+            var feature = new EndpointSelectorContext(httpContext);
+
+            // There's already an endpoint, skip maching completely
+            if (feature.Endpoint != null)
+            {
+                Log.MatchSkipped(_logger, feature.Endpoint);
+                return _next(httpContext);
+            }
 
             // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
@@ -93,29 +99,17 @@ namespace Microsoft.AspNetCore.Routing
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private Task SetRoutingAndContinue(HttpContext httpContext, EndpointSelectorContext feature)
         {
-            if (feature.Endpoint != null)
-            {
-                // Set the endpoint feature only on success. This means we won't overwrite any
-                // existing state for related features unless we did something.
-                SetFeatures(httpContext, feature);
-
-                Log.MatchSuccess(_logger, feature);
-            }
-            else
+            // If there was no mutation of the endpoint then log failure
+            if (feature.Endpoint is null)
             {
                 Log.MatchFailure(_logger);
             }
+            else
+            {
+                Log.MatchSuccess(_logger, feature);
+            }
 
             return _next(httpContext);
-        }
-
-        private static void SetFeatures(HttpContext httpContext, EndpointSelectorContext context)
-        {
-            // For back-compat EndpointSelectorContext implements IEndpointFeature,
-            // IRouteValuesFeature and IRoutingFeature
-            httpContext.Features.Set<IRoutingFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
-            httpContext.Features.Set<IEndpointFeature>(context);
         }
 
         // Initialization is async to avoid blocking threads while reflection and things
@@ -185,6 +179,11 @@ namespace Microsoft.AspNetCore.Routing
                 new EventId(2, "MatchFailure"),
                 "Request did not match any endpoints");
 
+            private static readonly Action<ILogger, string, Exception> _matchingSkipped = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                new EventId(3, "MatchingSkipped"),
+                "Endpoint '{EndpointName}' already set, skipping route matching.");
+
             public static void MatchSuccess(ILogger logger, EndpointSelectorContext context)
             {
                 _matchSuccess(logger, context.Endpoint.DisplayName, null);
@@ -193,6 +192,11 @@ namespace Microsoft.AspNetCore.Routing
             public static void MatchFailure(ILogger logger)
             {
                 _matchFailure(logger, null);
+            }
+
+            public static void MatchSkipped(ILogger logger, Endpoint endpoint)
+            {
+                _matchingSkipped(logger, endpoint.DisplayName, null);
             }
         }
     }

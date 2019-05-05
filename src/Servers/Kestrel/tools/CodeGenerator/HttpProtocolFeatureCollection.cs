@@ -19,6 +19,8 @@ namespace CodeGenerator
                 "IServiceProvidersFeature",
                 "IHttpRequestLifetimeFeature",
                 "IHttpConnectionFeature",
+                "IRouteValuesFeature",
+                "IEndpointFeature"
             };
 
             var commonFeatures = new[]
@@ -70,7 +72,9 @@ namespace CodeGenerator
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpBodyControlFeature",
-                "IHttpResponseStartFeature"
+                "IHttpResponseStartFeature",
+                "IRouteValuesFeature",
+                "IEndpointFeature"
             };
             
             var usings = $@"

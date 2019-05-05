@@ -145,8 +145,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     }
     public enum OpenIdConnectRedirectBehavior
     {
-        FormPost = 1,
         RedirectGet = 0,
+        FormPost = 1,
     }
     public partial class RedirectContext : Microsoft.AspNetCore.Authentication.PropertiesContext<Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectOptions>
     {

@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -12,8 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class GeneratedCodeTests
     {
-        [ConditionalFact] 
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6720
+        [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2223", FlakyOn.Helix.All)]
         public void GeneratedCodeIsUpToDate()
         {
             var repositoryRoot = typeof(GeneratedCodeTests).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>().First(f => string.Equals(f.Key, "RepositoryRoot", StringComparison.OrdinalIgnoreCase)).Value;

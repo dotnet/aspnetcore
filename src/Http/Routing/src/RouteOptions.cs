@@ -3,13 +3,28 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace Microsoft.AspNetCore.Routing
 {
     public class RouteOptions
     {
-        public ICollection<EndpointDataSource> EndpointDataSources { get; internal set; }
+        private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
+        private ICollection<EndpointDataSource> _endpointDataSources;
+
+        /// <summary>
+        /// Gets a collection of <see cref="EndpointDataSource"/> instances configured with routing.
+        /// </summary>
+        internal ICollection<EndpointDataSource> EndpointDataSources
+        {
+            get
+            {
+                Debug.Assert(_endpointDataSources != null, "Endpoint data sources should have been set in DI.");
+                return _endpointDataSources;
+            }
+            set => _endpointDataSources = value;
+        }
 
         /// <summary>
         /// Gets or sets a value indicating whether all generated paths URLs are lower-case. 
@@ -47,8 +62,6 @@ namespace Microsoft.AspNetCore.Routing
         /// this check if it does not match your application's requirements.
         /// </remarks>
         public bool SuppressCheckForUnhandledSecurityMetadata { get; set; }
-
-        private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
 
         public IDictionary<string, Type> ConstraintMap
         {

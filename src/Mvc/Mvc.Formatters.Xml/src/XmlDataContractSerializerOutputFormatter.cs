@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         public XmlWriterSettings WriterSettings { get; }
 
         /// <summary>
-        /// Gets or sets the <see cref="DataContractSerializerSettings"/> used to configure the 
+        /// Gets or sets the <see cref="DataContractSerializerSettings"/> used to configure the
         /// <see cref="DataContractSerializer"/>.
         /// </summary>
         public DataContractSerializerSettings SerializerSettings
@@ -284,6 +284,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
                 if (fileBufferingWriteStream != null)
                 {
+                    response.ContentLength = fileBufferingWriteStream.Length;
                     await fileBufferingWriteStream.DrainBufferAsync(response.Body);
                 }
             }

@@ -277,7 +277,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 {
                                     Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
                                     var itemType = descriptor.StreamingParameters[streamPointer];
-                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
+                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
+                                        itemType, descriptor.OriginalParameterTypes[parameterPointer]);
+
                                     streamPointer++;
                                 }
                                 else

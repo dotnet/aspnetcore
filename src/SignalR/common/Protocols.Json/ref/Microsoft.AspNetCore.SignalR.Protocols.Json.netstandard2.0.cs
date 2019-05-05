@@ -6,10 +6,7 @@ namespace Microsoft.AspNetCore.SignalR
     public partial class JsonHubProtocolOptions
     {
         public JsonHubProtocolOptions() { }
-        public bool AllowTrailingCommas { get { throw null; } set { } }
-        public bool IgnoreNullValues { get { throw null; } set { } }
-        public bool UseCamelCase { get { throw null; } set { } }
-        public bool WriteIndented { get { throw null; } set { } }
+        public System.Text.Json.Serialization.JsonSerializerOptions PayloadSerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
 namespace Microsoft.AspNetCore.SignalR.Protocol
@@ -18,7 +15,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     {
         public JsonHubProtocol() { }
         public JsonHubProtocol(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.SignalR.JsonHubProtocolOptions> options) { }
-        public int MinorVersion { get { throw null; } }
         public string Name { get { throw null; } }
         public Microsoft.AspNetCore.Connections.TransferFormat TransferFormat { get { throw null; } }
         public int Version { get { throw null; } }

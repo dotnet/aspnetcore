@@ -358,6 +358,52 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
+        [InlineData("json")]
+        [InlineData("messagepack")]
+        public async Task CanStreamToHubWithIAsyncEnumerableMethodArg(string protocolName)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.WebSockets, protocol, LoggerFactory);
+                try
+                {
+                    async IAsyncEnumerable<int> ClientStreamData(int value)
+                    {
+                        for (var i = 0; i < value; i++)
+                        {
+                            yield return i;
+                            await Task.Delay(10);
+                        }
+                    }
+
+                    var streamTo = 5;
+                    var stream = ClientStreamData(streamTo);
+
+                    await connection.StartAsync().OrTimeout();
+                    var expectedValue = 0;
+                    var asyncEnumerable = connection.StreamAsync<int>("StreamIAsyncConsumer", stream);
+                    await foreach (var streamValue in asyncEnumerable)
+                    {
+                        Assert.Equal(expectedValue, streamValue);
+                        expectedValue++;
+                    }
+
+                    Assert.Equal(streamTo, expectedValue);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
         public async Task StreamAsyncTest(string protocolName, HttpTransportType transportType, string path)

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class ZeroContentLengthMessageBody : MessageBody
+    internal sealed class ZeroContentLengthMessageBody : MessageBody
     {
         public ZeroContentLengthMessageBody(bool keepAlive)
             : base(null, null)

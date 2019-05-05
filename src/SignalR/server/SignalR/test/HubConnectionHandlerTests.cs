@@ -2231,7 +2231,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact(Skip = "Camel case is not the default yet")]
+        [Fact]
         public async Task JsonHubProtocolUsesCamelCasingByDefault()
         {
             using (StartVerifiableLog())
@@ -3063,7 +3063,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var testProtocol = new Mock<IHubProtocol>();
                 testProtocol.Setup(m => m.Name).Returns("CustomProtocol");
-                testProtocol.Setup(m => m.MinorVersion).Returns(112);
                 testProtocol.Setup(m => m.IsVersionSupported(It.IsAny<int>())).Returns(true);
                 testProtocol.Setup(m => m.TransferFormat).Returns(TransferFormat.Binary);
 
@@ -3075,7 +3074,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
 
                     Assert.NotNull(client.HandshakeResponseMessage);
-                    Assert.Equal(112, client.HandshakeResponseMessage.MinorVersion);
 
                     client.Dispose();
                     await connectionHandlerTask.OrTimeout();

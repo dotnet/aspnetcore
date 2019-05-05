@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -64,6 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private readonly HttpConnectionContext _context;
         private DefaultHttpContext _httpContext;
+        private RouteValueDictionary _routeValues;
+        private Endpoint _endpoint;
 
         protected string _methodText = null;
         private string _scheme = null;
@@ -326,6 +329,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _onStarting?.Clear();
             _onCompleted?.Clear();
+            _routeValues?.Clear();
 
             _requestProcessingStatus = RequestProcessingStatus.RequestPending;
             _autoChunk = false;
@@ -340,6 +344,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             TraceIdentifier = null;
             Method = HttpMethod.None;
             _methodText = null;
+            _endpoint = null;
             PathBase = null;
             Path = null;
             RawTarget = null;

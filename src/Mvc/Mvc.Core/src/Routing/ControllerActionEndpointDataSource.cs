@@ -3,14 +3,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Mvc.Routing
 {
@@ -27,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             : base(actions)
         {
             _endpointFactory = endpointFactory;
-            
+ 
             _routes = new List<ConventionalRouteEntry>();
 
             // In traditional conventional routing setup, the routes defined by a user have a order
@@ -38,13 +36,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             // This is for scenarios dealing with migrating existing Router based code to Endpoint Routing world.
             _order = 1;
 
+            DefaultBuilder = new ControllerActionEndpointConventionBuilder(Lock, Conventions);
+
             // IMPORTANT: this needs to be the last thing we do in the constructor. 
             // Change notifications can happen immediately!
             Subscribe();
         }
 
+        public ControllerActionEndpointConventionBuilder DefaultBuilder { get; }
 
-        public void AddRoute(
+        public ControllerActionEndpointConventionBuilder AddRoute(
             string routeName,
             string pattern,
             RouteValueDictionary defaults,
@@ -53,7 +54,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             lock (Lock)
             {
-                _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _order++));
+                var conventions = new List<Action<EndpointBuilder>>();
+                _routes.Add(new ConventionalRouteEntry(routeName, pattern, defaults, constraints, dataTokens, _order++, conventions));
+                return new ControllerActionEndpointConventionBuilder(Lock, conventions);
             }
         }
 
@@ -61,6 +64,11 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         {
             var endpoints = new List<Endpoint>();
             var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            // MVC guarantees that when two of it's endpoints have the same route name they are equivalent.
+            //
+            // However, Endpoint Routing requires Endpoint Names to be unique.
+            var routeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             // For each controller action - add the relevant endpoints.
             //
@@ -72,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             {
                 if (actions[i] is ControllerActionDescriptor action)
                 {
-                    _endpointFactory.AddEndpoints(endpoints, action, _routes, conventions);
+                    _endpointFactory.AddEndpoints(endpoints, routeNames, action, _routes, conventions);
 
                     if (_routes.Count > 0)
                     {
@@ -91,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             for (var i = 0; i < _routes.Count; i++)
             {
                 var route = _routes[i];
-                _endpointFactory.AddConventionalLinkGenerationRoute(endpoints, keys, route, conventions);
+                _endpointFactory.AddConventionalLinkGenerationRoute(endpoints, routeNames, keys, route, conventions);
             }
 
             return endpoints;

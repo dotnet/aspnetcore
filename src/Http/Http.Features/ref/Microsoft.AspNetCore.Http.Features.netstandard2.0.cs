@@ -84,8 +84,8 @@ namespace Microsoft.AspNetCore.Http
     }
     public enum SameSiteMode
     {
-        Lax = 1,
         None = 0,
+        Lax = 1,
         Strict = 2,
     }
     public partial class WebSocketAcceptContext
@@ -133,9 +133,9 @@ namespace Microsoft.AspNetCore.Http.Features
     }
     public enum HttpsCompressionMode
     {
-        Compress = 2,
         Default = 0,
         DoNotCompress = 1,
+        Compress = 2,
     }
     public partial interface IFeatureCollection : System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<System.Type, object>>, System.Collections.IEnumerable
     {

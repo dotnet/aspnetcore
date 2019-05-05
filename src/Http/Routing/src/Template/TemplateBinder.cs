@@ -521,16 +521,20 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
             }
 
-            for (var i = 0; i < _pattern.PathSegments.Count; i++)
+            var segments = _pattern.PathSegments;
+            // Read interface .Count once rather than per iteration
+            var segmentsCount = segments.Count;
+            for (var i = 0; i < segmentsCount; i++)
             {
                 Debug.Assert(context.BufferState == SegmentState.Beginning);
                 Debug.Assert(context.UriState == SegmentState.Beginning);
 
-                var segment = _pattern.PathSegments[i];
-
-                for (var j = 0; j < segment.Parts.Count; j++)
+                var parts = segments[i].Parts;
+                // Read interface .Count once rather than per iteration
+                var partsCount = parts.Count;
+                for (var j = 0; j < partsCount; j++)
                 {
-                    var part = segment.Parts[j];
+                    var part = parts[j];
 
                     if (part is RoutePatternLiteralPart literalPart)
                     {
@@ -581,7 +585,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                             // for format, so we remove '.' and generate 5.
                             if (!context.Accept(converted, parameterPart.EncodeSlashes))
                             {
-                                if (j != 0 && parameterPart.IsOptional && (separatorPart = segment.Parts[j - 1] as RoutePatternSeparatorPart) != null)
+                                if (j != 0 && parameterPart.IsOptional && (separatorPart = parts[j - 1] as RoutePatternSeparatorPart) != null)
                                 {
                                     context.Remove(separatorPart.Content);
                                 }

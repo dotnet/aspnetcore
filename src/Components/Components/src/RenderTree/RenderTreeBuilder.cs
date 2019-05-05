@@ -448,6 +448,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             OpenComponentUnchecked(sequence, componentType);
         }
 
+        /// <summary>
+        /// Assigns the specified key value to the current element or component.
+        /// </summary>
+        /// <param name="value">The value for the key.</param>
+        public void SetKey(object value)
+        {
+            // This is just a placeholder to enable work in parallel in the
+            // aspnetcore-tooling repo.
+            //
+            // The real implementation will involve multiple overloads, likely:
+            //   SetKey(int value) -- underlying logic
+            //   SetKey<T>(T value) where T: struct -- avoids boxing 'value' before calling .GetHashCode()
+            //   SetKey(object value) -- performs null check before calling .GetHashCode()
+        }
+
         private void OpenComponentUnchecked(int sequence, Type componentType)
         {
             _openElementIndices.Push(_entries.Count);

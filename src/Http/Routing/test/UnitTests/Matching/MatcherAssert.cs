@@ -12,6 +12,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal static class MatcherAssert
     {
+        public static void AssertRouteValuesEqual(object expectedValues, RouteValueDictionary actualValues)
+        {
+            AssertRouteValuesEqual(new RouteValueDictionary(expectedValues), actualValues);
+        }
+
+        public static void AssertRouteValuesEqual(RouteValueDictionary expectedValues, RouteValueDictionary actualValues)
+        {
+            if (expectedValues.Count != actualValues.Count ||
+                !expectedValues.OrderBy(kvp => kvp.Key).SequenceEqual(actualValues.OrderBy(kvp => kvp.Key)))
+            {
+                throw new XunitException(
+                    $"Expected values:{FormatRouteValues(expectedValues)} Actual values: {FormatRouteValues(actualValues)}.");
+            }
+        }
+
         public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected)
         {
             AssertMatch(context, httpContext, expected, new RouteValueDictionary());
@@ -53,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new XunitException($"Was expected to match '{expected.DisplayName}' but did not match.");
             }
 
-            var actualValues = httpContext.Features.Get<IRouteValuesFeature>().RouteValues;
+            var actualValues = httpContext.Request.RouteValues;
 
             if (actualValues == null)
             {

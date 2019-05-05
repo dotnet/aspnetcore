@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The endpoint convention builder.</param>
         /// <param name="authorizeData">A collection of <see cref="IAuthorizeData"/>.</param>
         /// <returns>The original convention builder parameter.</returns>
-        public static IEndpointConventionBuilder RequireAuthorization(this IEndpointConventionBuilder builder, params IAuthorizeData[] authorizeData)
+        public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, params IAuthorizeData[] authorizeData) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="builder">The endpoint convention builder.</param>
         /// <param name="policyNames">A collection of policy names.</param>
         /// <returns>The original convention builder parameter.</returns>
-        public static IEndpointConventionBuilder RequireAuthorization(this IEndpointConventionBuilder builder, params string[] policyNames)
+        public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder, params string[] policyNames) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="builder">The endpoint convention builder.</param>
         /// <returns>The original convention builder parameter.</returns>
-        public static IEndpointConventionBuilder RequireAuthorization(this IEndpointConventionBuilder builder)
+        public static TBuilder RequireAuthorization<TBuilder>(this TBuilder builder) where TBuilder : IEndpointConventionBuilder
         {
             if (builder == null)
             {

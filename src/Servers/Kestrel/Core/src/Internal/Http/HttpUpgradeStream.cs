@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal class HttpUpgradeStream : Stream
+    internal sealed class HttpUpgradeStream : Stream
     {
         private readonly Stream _requestStream;
         private readonly Stream _responseStream;

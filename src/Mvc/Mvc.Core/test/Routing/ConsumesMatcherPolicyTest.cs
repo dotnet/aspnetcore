@@ -532,7 +532,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext()
             {
                 Request =
@@ -540,6 +539,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     ContentType = "application/json",
                 },
             };
+            var context = new EndpointSelectorContext(httpContext);
 
             var policy = CreatePolicy();
 
@@ -562,7 +562,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext()
             {
                 Request =
@@ -570,6 +569,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     ContentType = "application/json",
                 },
             };
+            var context = new EndpointSelectorContext(httpContext);
 
             var policy = CreatePolicy();
 
@@ -592,7 +592,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext()
             {
                 Request =
@@ -600,6 +599,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     ContentType = "application/json",
                 },
             };
+            var context = new EndpointSelectorContext(httpContext);
 
             var policy = CreatePolicy();
 

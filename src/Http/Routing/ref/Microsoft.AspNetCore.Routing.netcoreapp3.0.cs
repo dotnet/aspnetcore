@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class RoutingEndpointConventionBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder RequireHost(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params string[] hosts) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithDisplayName(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, System.Func<Microsoft.AspNetCore.Builder.EndpointBuilder, string> func) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithDisplayName(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, string displayName) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithMetadata(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, params object[] items) { throw null; }
+        public static TBuilder RequireHost<TBuilder>(this TBuilder builder, params string[] hosts) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, System.Func<Microsoft.AspNetCore.Builder.EndpointBuilder, string> func) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder WithDisplayName<TBuilder>(this TBuilder builder, string displayName) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder WithMetadata<TBuilder>(this TBuilder builder, params object[] items) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Routing
@@ -88,11 +88,12 @@ namespace Microsoft.AspNetCore.Routing
         public EndpointNameMetadata(string endpointName) { }
         public string EndpointName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public sealed partial class EndpointSelectorContext : Microsoft.AspNetCore.Http.Features.IEndpointFeature, Microsoft.AspNetCore.Http.Features.IRouteValuesFeature, Microsoft.AspNetCore.Routing.IRoutingFeature
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct EndpointSelectorContext
     {
-        public EndpointSelectorContext() { }
-        public Microsoft.AspNetCore.Http.Endpoint Endpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        Microsoft.AspNetCore.Routing.RouteData Microsoft.AspNetCore.Routing.IRoutingFeature.RouteData { get { throw null; } set { } }
+        private readonly object _dummy;
+        public EndpointSelectorContext(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
+        public Microsoft.AspNetCore.Http.Endpoint Endpoint { get { throw null; } set { } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { get { throw null; } set { } }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Class | System.AttributeTargets.Method, AllowMultiple=false, Inherited=false)]
@@ -191,6 +192,15 @@ namespace Microsoft.AspNetCore.Routing
         public static string GetPathByRouteValues(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string routeName, object values, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
         public static string GetUriByRouteValues(this Microsoft.AspNetCore.Routing.LinkGenerator generator, Microsoft.AspNetCore.Http.HttpContext httpContext, string routeName, object values, string scheme = null, Microsoft.AspNetCore.Http.HostString? host = default(Microsoft.AspNetCore.Http.HostString?), Microsoft.AspNetCore.Http.PathString? pathBase = default(Microsoft.AspNetCore.Http.PathString?), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
         public static string GetUriByRouteValues(this Microsoft.AspNetCore.Routing.LinkGenerator generator, string routeName, object values, string scheme, Microsoft.AspNetCore.Http.HostString host, Microsoft.AspNetCore.Http.PathString pathBase = default(Microsoft.AspNetCore.Http.PathString), Microsoft.AspNetCore.Http.FragmentString fragment = default(Microsoft.AspNetCore.Http.FragmentString), Microsoft.AspNetCore.Routing.LinkOptions options = null) { throw null; }
+    }
+    public abstract partial class LinkParser
+    {
+        protected LinkParser() { }
+        public abstract Microsoft.AspNetCore.Routing.RouteValueDictionary ParsePathByAddress<TAddress>(TAddress address, Microsoft.AspNetCore.Http.PathString path);
+    }
+    public static partial class LinkParserEndpointNameAddressExtensions
+    {
+        public static Microsoft.AspNetCore.Routing.RouteValueDictionary ParsePathByEndpointName(this Microsoft.AspNetCore.Routing.LinkParser parser, string endpointName, Microsoft.AspNetCore.Http.PathString path) { throw null; }
     }
     public abstract partial class MatcherPolicy
     {
@@ -319,7 +329,6 @@ namespace Microsoft.AspNetCore.Routing
         public RouteOptions() { }
         public bool AppendTrailingSlash { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Collections.Generic.IDictionary<string, System.Type> ConstraintMap { get { throw null; } set { } }
-        public System.Collections.Generic.ICollection<Microsoft.AspNetCore.Routing.EndpointDataSource> EndpointDataSources { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool LowercaseQueryStrings { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool LowercaseUrls { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressCheckForUnhandledSecurityMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -683,9 +692,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     }
     public enum RoutePatternParameterKind
     {
-        CatchAll = 2,
-        Optional = 1,
         Standard = 0,
+        Optional = 1,
+        CatchAll = 2,
     }
     [System.Diagnostics.DebuggerDisplayAttribute("{DebuggerToString()}")]
     public sealed partial class RoutePatternParameterPart : Microsoft.AspNetCore.Routing.Patterns.RoutePatternPart

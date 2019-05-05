@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         public void AddApiResource(string name, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder> configure) { }
         public void AddIdentityServerJwt(string name, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ApiResourceBuilder> configure) { }
         public void AddRange(params IdentityServer4.Models.ApiResource[] resources) { }
-        public void AddRange(System.Collections.Generic.IEnumerable<IdentityServer4.Models.ApiResource> resources) { }
     }
     public static partial class ApplicationProfiles
     {
@@ -84,7 +83,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         public void AddIdentityServerSPA(string clientId, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder> configure) { }
         public void AddNativeApp(string clientId, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder> configure) { }
         public void AddRange(params IdentityServer4.Models.Client[] clients) { }
-        public void AddRange(System.Collections.Generic.IEnumerable<IdentityServer4.Models.Client> clients) { }
         public void AddSPA(string clientId, System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.ClientBuilder> configure) { }
     }
     [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("*", Attributes="[asp-apiauth-parameters]")]
@@ -129,7 +127,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         public void AddProfile() { }
         public void AddProfile(System.Action<Microsoft.AspNetCore.ApiAuthorization.IdentityServer.IdentityResourceBuilder> configure) { }
         public void AddRange(params IdentityServer4.Models.IdentityResource[] identityResources) { }
-        public void AddRange(System.Collections.Generic.IEnumerable<IdentityServer4.Models.IdentityResource> identityResources) { }
     }
     public partial class IdentityServerJwtConstants
     {

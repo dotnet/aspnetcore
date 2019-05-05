@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             bufferingStream.Write(input, 0, input.Length);
 
             // Assert
+            Assert.Equal(input.Length, bufferingStream.Length);
+
             // We should have written content to memory
             var pagedByteBuffer = bufferingStream.PagedByteBuffer;
             Assert.Equal(input, ReadBufferedContent(pagedByteBuffer));
@@ -52,6 +54,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             // Assert
             var pageBuffer = bufferingStream.PagedByteBuffer;
             var fileStream = bufferingStream.FileStream;
+
+            Assert.Equal(input.Length, bufferingStream.Length);
 
             // File should have been created.
             Assert.Null(fileStream);
@@ -238,6 +242,8 @@ namespace Microsoft.AspNetCore.WebUtilities
             Assert.NotNull(fileStream);
             var fileBytes = ReadFileContent(fileStream);
 
+            Assert.Equal(input.Length, bufferingStream.Length);
+
             Assert.Equal(new byte[] { 1, 2, 3, 4, 5, }, fileBytes);
             Assert.Equal(new byte[] { 6, 7 }, ReadBufferedContent(pageBuffer));
         }
@@ -344,6 +350,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // Assert
             Assert.Equal(input, memoryStream.ToArray());
+            Assert.Equal(0, bufferingStream.Length);
         }
 
         [Fact]
@@ -360,6 +367,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             // Assert
             Assert.Equal(input, memoryStream.ToArray());
+            Assert.Equal(0, bufferingStream.Length);
         }
 
         public void Dispose()

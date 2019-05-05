@@ -55,18 +55,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// Adds the clients in <paramref name="clients"/> to the collection.
         /// </summary>
         /// <param name="clients">The list of <see cref="Client"/> to add.</param>
-        public void AddRange(IEnumerable<Client> clients)
-        {
-            foreach (var client in clients)
-            {
-                Add(client);
-            }
-        }
-
-        /// <summary>
-        /// Adds the clients in <paramref name="clients"/> to the collection.
-        /// </summary>
-        /// <param name="clients">The list of <see cref="Client"/> to add.</param>
         public void AddRange(params Client[] clients)
         {
             foreach (var client in clients)

@@ -20,9 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// </summary>
     public sealed class CandidateSet
     {
-        private const int BitVectorSize = 32;
-
-        private CandidateState[] _candidates;
+        internal CandidateState[] Candidates;
 
         /// <summary>
         /// <para>
@@ -59,26 +57,32 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentException($"The provided {nameof(endpoints)}, {nameof(values)}, and {nameof(scores)} must have the same length.");
             }
 
-            _candidates = new CandidateState[endpoints.Length];
+            Candidates = new CandidateState[endpoints.Length];
             for (var i = 0; i < endpoints.Length; i++)
             {
-                _candidates[i] = new CandidateState(endpoints[i], values[i], scores[i]);
+                Candidates[i] = new CandidateState(endpoints[i], values[i], scores[i]);
             }
         }
 
+        // Used in tests.
         internal CandidateSet(Candidate[] candidates)
         {
-            _candidates = new CandidateState[candidates.Length];
+            Candidates = new CandidateState[candidates.Length];
             for (var i = 0; i < candidates.Length; i++)
             {
-                _candidates[i] = new CandidateState(candidates[i].Endpoint, candidates[i].Score);
+                Candidates[i] = new CandidateState(candidates[i].Endpoint, candidates[i].Score);
             }
+        }
+
+        internal CandidateSet(CandidateState[] candidates)
+        {
+            Candidates = candidates;
         }
 
         /// <summary>
         /// Gets the count of candidates in the set.
         /// </summary>
-        public int Count => _candidates.Length;
+        public int Count => Candidates.Length;
 
         /// <summary>
         /// Gets the <see cref="CandidateState"/> associated with the candidate <see cref="Endpoint"/>
@@ -103,7 +107,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     ThrowIndexArgumentOutOfRangeException();
                 }
 
-                return ref _candidates[index];
+                return ref Candidates[index];
             }
         }
 
@@ -124,7 +128,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
 
-            return _candidates[index].Score >= 0;
+            return IsValidCandidate(ref Candidates[index]);
+        }
+
+        internal static bool IsValidCandidate(ref CandidateState candidate)
+        {
+            return candidate.Score >= 0;
         }
 
         /// <summary>
@@ -142,8 +151,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
 
-            ref var original = ref _candidates[index];
-            _candidates[index] = new CandidateState(original.Endpoint, original.Values, original.Score >= 0 ^ value ? ~original.Score : original.Score);
+            ref var original = ref Candidates[index];
+            SetValidity(ref original, value);
+        }
+
+        internal static void SetValidity(ref CandidateState candidate, bool value)
+        {
+            var originalScore = candidate.Score;
+            var score = originalScore >= 0 ^ value ? ~originalScore : originalScore;
+            candidate = new CandidateState(candidate.Endpoint, candidate.Values, score);
         }
 
         /// <summary>
@@ -168,7 +184,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 ThrowIndexArgumentOutOfRangeException();
             }
             
-            _candidates[index] = new CandidateState(endpoint, values, _candidates[index].Score);
+            Candidates[index] = new CandidateState(endpoint, values, Candidates[index].Score);
 
             if (endpoint == null)
             {
@@ -229,18 +245,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     break;
 
                 case 1:
-                    ReplaceEndpoint(index, endpoints[0], _candidates[index].Values);
+                    ReplaceEndpoint(index, endpoints[0], Candidates[index].Values);
                     break;
 
                 default:
 
                     var score = GetOriginalScore(index);
-                    var values = _candidates[index].Values;
+                    var values = Candidates[index].Values;
 
                     // Adding candidates requires expanding the array and computing new score values for the new candidates.
-                    var original = _candidates;
+                    var original = Candidates;
                     var candidates = new CandidateState[original.Length - 1 + endpoints.Count];
-                    _candidates = candidates;
+                    Candidates = candidates;
 
                     // Since the new endpoints have an unknown ordering relationship to each other, we need to:
                     // - order them
@@ -293,12 +309,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             scoreOffset++;
                         }
 
-                        _candidates[i + index] = new CandidateState(buffer[i], values, score + scoreOffset);
+                        Candidates[i + index] = new CandidateState(buffer[i], values, score + scoreOffset);
                     }
 
                     for (var i = index + 1; i < original.Length; i++)
                     {
-                        _candidates[i + endpoints.Count - 1] = new CandidateState(original[i].Endpoint, original[i].Values, original[i].Score + scoreOffset);
+                        Candidates[i + endpoints.Count - 1] = new CandidateState(original[i].Endpoint, original[i].Values, original[i].Score + scoreOffset);
                     }
 
                     break;
@@ -311,7 +327,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // This is the original score and used to determine if there are ambiguities.
         private int GetOriginalScore(int index)
         {
-            var score = _candidates[index].Score;
+            var score = Candidates[index].Score;
             return score >= 0 ? score : ~score;
         }
 
@@ -320,7 +336,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var score = GetOriginalScore(index);
 
             var count = 0;
-            var candidates = _candidates;
+            var candidates = Candidates;
             for (var i = 0; i < candidates.Length; i++)
             {
                 if (GetOriginalScore(i) == score)

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,15 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             httpContext.Request.Method = "TEST";
             httpContext.Request.Path = path;
             httpContext.RequestServices = CreateServices();
-
-            var context = new EndpointSelectorContext()
-            {
-                RouteValues = new RouteValueDictionary()
-            };
-            httpContext.Features.Set<IEndpointFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
-
-            return (httpContext, context);
+            return (httpContext, new EndpointSelectorContext(httpContext));
         }
 
         // The older routing implementations retrieve services when they first execute.

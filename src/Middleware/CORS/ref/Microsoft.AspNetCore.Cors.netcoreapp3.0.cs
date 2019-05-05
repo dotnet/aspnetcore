@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class CorsEndpointConventionBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithCorsPolicy(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder> configurePolicy) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder WithCorsPolicy(this Microsoft.AspNetCore.Builder.IEndpointConventionBuilder builder, string policyName) { throw null; }
+        public static TBuilder WithCorsPolicy<TBuilder>(this TBuilder builder, System.Action<Microsoft.AspNetCore.Cors.Infrastructure.CorsPolicyBuilder> configurePolicy) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
+        public static TBuilder WithCorsPolicy<TBuilder>(this TBuilder builder, string policyName) where TBuilder : Microsoft.AspNetCore.Builder.IEndpointConventionBuilder { throw null; }
     }
     public static partial class CorsMiddlewareExtensions
     {

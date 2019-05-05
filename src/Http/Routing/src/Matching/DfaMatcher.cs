@@ -34,11 +34,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             // All of the logging we do here is at level debug, so we can get away with doing a single check.
             var log = _logger.IsEnabled(LogLevel.Debug);
 
@@ -76,7 +71,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // This is a fast path for single candidate, 0 policies and default selector
             if (candidateCount == 1 && policyCount == 0 && _isDefaultEndpointSelector)
             {
-                ref var candidate = ref candidates[0];
+                ref readonly var candidate = ref candidates[0];
 
                 // Just strict path matching
                 if (candidate.Flags == Candidate.CandidateFlags.None)
@@ -101,7 +96,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // set of endpoints before we call the EndpointSelector.
             //
             // `candidateSet` is the mutable state that we pass to the EndpointSelector.
-            var candidateSet = new CandidateSet(candidates);
+            var candidateState = new CandidateState[candidateCount];
 
             for (var i = 0; i < candidateCount; i++)
             {
@@ -110,18 +105,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // Reminder!
                 // candidate: readonly data about the endpoint and how to match
                 // state: mutable storarge for our processing
-                ref var candidate = ref candidates[i];
-                ref var state = ref candidateSet[i];
+                ref readonly var candidate = ref candidates[i];
+                ref var state = ref candidateState[i];
+                state = new CandidateState(candidate.Endpoint, candidate.Score);
 
                 var flags = candidate.Flags;
 
                 // First process all of the parameters and defaults.
-                RouteValueDictionary values;
-                if ((flags & Candidate.CandidateFlags.HasSlots) == 0)
-                {
-                    values = new RouteValueDictionary();
-                }
-                else
+                if ((flags & Candidate.CandidateFlags.HasSlots) != 0)
                 {
                     // The Slots array has the default values of the route values in it.
                     //
@@ -145,10 +136,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         ProcessCatchAll(slots, candidate.CatchAll, path, segments);
                     }
 
-                    values = RouteValueDictionary.FromArray(slots);
+                    state.Values = RouteValueDictionary.FromArray(slots);
                 }
-
-                state.Values = values;
 
                 // Now that we have the route values, we need to process complex segments.
                 // Complex segments go through an old API that requires a fully-materialized
@@ -156,18 +145,20 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var isMatch = true;
                 if ((flags & Candidate.CandidateFlags.HasComplexSegments) != 0)
                 {
-                    if (!ProcessComplexSegments(candidate.Endpoint, candidate.ComplexSegments, path, segments, values))
+                    state.Values ??= new RouteValueDictionary();
+                    if (!ProcessComplexSegments(candidate.Endpoint, candidate.ComplexSegments, path, segments, state.Values))
                     {
-                        candidateSet.SetValidity(i, false);
+                        CandidateSet.SetValidity(ref state, false);
                         isMatch = false;
                     }
                 }
 
                 if ((flags & Candidate.CandidateFlags.HasConstraints) != 0)
                 {
-                    if (!ProcessConstraints(candidate.Endpoint, candidate.Constraints, httpContext, values))
+                    state.Values ??= new RouteValueDictionary();
+                    if (!ProcessConstraints(candidate.Endpoint, candidate.Constraints, httpContext, state.Values))
                     {
-                        candidateSet.SetValidity(i, false);
+                        CandidateSet.SetValidity(ref state, false);
                         isMatch = false;
                     }
                 }
@@ -185,13 +176,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            if (policyCount == 0)
+            if (policyCount == 0 && _isDefaultEndpointSelector)
             {
-                // Perf: avoid a state machine if there are no polices
-                return _selector.SelectAsync(httpContext, context, candidateSet);
+                // Fast path that avoids allocating the candidate set.
+                //
+                // We can use this when there are no policies and we're using the default selector.
+                DefaultEndpointSelector.Select(httpContext, context, candidateState);
+                return Task.CompletedTask;
+            }
+            else if (policyCount == 0)
+            {
+                // Fast path that avoids a state machine.
+                //
+                // We can use this when there are no policies and a non-default selector.
+                return _selector.SelectAsync(httpContext, context, new CandidateSet(candidateState));
             }
 
-            return SelectEndpointWithPoliciesAsync(httpContext, context, policies, candidateSet);
+            return SelectEndpointWithPoliciesAsync(httpContext, context, policies, new CandidateSet(candidateState));
         }
 
         internal (Candidate[] candidates, IEndpointSelectorPolicy[] policies) FindCandidateSet(
@@ -227,13 +228,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             for (var i = 0; i < captures.Length; i++)
             {
-                var parameterName = captures[i].parameterName;
-                if (segments.Length > captures[i].segmentIndex)
+                (var parameterName, var segmentIndex, var slotIndex) = captures[i];
+                
+                if ((uint)segmentIndex < (uint)segments.Length)
                 {
-                    var segment = segments[captures[i].segmentIndex];
+                    var segment = segments[segmentIndex];
                     if (parameterName != null && segment.Length > 0)
                     {
-                        slots[captures[i].slotIndex] = new KeyValuePair<string, object>(
+                        slots[slotIndex] = new KeyValuePair<string, object>(
                             parameterName,
                             path.Substring(segment.Start, segment.Length));
                     }
@@ -243,13 +245,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private void ProcessCatchAll(
             KeyValuePair<string, object>[] slots,
-            (string parameterName, int segmentIndex, int slotIndex) catchAll,
+            in (string parameterName, int segmentIndex, int slotIndex) catchAll,
             string path,
             ReadOnlySpan<PathSegment> segments)
         {
-            if (segments.Length > catchAll.segmentIndex)
+            // Read segmentIndex to local both to skip double read from stack value
+            // and to use the same in-bounds validated variable to access the array.
+            var segmentIndex = catchAll.segmentIndex;
+            if ((uint)segmentIndex < (uint)segments.Length)
             {
-                var segment = segments[catchAll.segmentIndex];
+                var segment = segments[segmentIndex];
                 slots[catchAll.slotIndex] = new KeyValuePair<string, object>(
                     catchAll.parameterName,
                     path.Substring(segment.Start));
@@ -267,7 +272,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 (var complexSegment, var segmentIndex) = complexSegments[i];
                 var segment = segments[segmentIndex];
-                var text = path.Substring(segment.Start, segment.Length);
+                var text = path.AsSpan(segment.Start, segment.Length);
                 if (!RoutePatternMatcher.MatchComplexSegment(complexSegment, text, values))
                 {
                     Logger.CandidateRejectedByComplexSegment(_logger, path, endpoint, complexSegment);
