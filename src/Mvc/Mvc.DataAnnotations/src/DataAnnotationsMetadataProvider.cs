@@ -23,11 +23,17 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         IDisplayMetadataProvider,
         IValidationMetadataProvider
     {
+        // The [Nullable] attribute is synthesized by the compiler. It's best to just compare the type name.
+        private const string NullableAttributeFullTypeName = "System.Runtime.CompilerServices.NullableAttribute";
+        private const string NullableFlagsFieldName = "NullableFlags";
+
         private readonly IStringLocalizerFactory _stringLocalizerFactory;
+        private readonly MvcOptions _options;
         private readonly MvcDataAnnotationsLocalizationOptions _localizationOptions;
 
         public DataAnnotationsMetadataProvider(
-            IOptions<MvcDataAnnotationsLocalizationOptions> options,
+            MvcOptions options,
+            IOptions<MvcDataAnnotationsLocalizationOptions> localizationOptions,
             IStringLocalizerFactory stringLocalizerFactory)
         {
             if (options == null)
@@ -35,7 +41,13 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _localizationOptions = options.Value;
+            if (localizationOptions == null)
+            {
+                throw new ArgumentNullException(nameof(localizationOptions));
+            }
+
+            _options = options;
+            _localizationOptions = localizationOptions.Value;
             _stringLocalizerFactory = stringLocalizerFactory;
         }
 
@@ -328,6 +340,19 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // RequiredAttribute marks a property as required by validation - this means that it
             // must have a non-null value on the model during validation.
             var requiredAttribute = attributes.OfType<RequiredAttribute>().FirstOrDefault();
+
+            // For non-nullable reference types, treat them as-if they had an implicit [Required].
+            // This allows the developer to specify [Required] to customize the error message, so
+            // if they already have [Required] then there's no need for us to do this check.
+            if (!_options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes &&
+                requiredAttribute == null && 
+                !context.Key.ModelType.IsValueType && 
+                IsNonNullable(context.Attributes))
+            {
+                requiredAttribute = new RequiredAttribute();
+                attributes.Add(requiredAttribute);
+            }
+
             if (requiredAttribute != null)
             {
                 context.ValidationMetadata.IsRequired = true;
@@ -379,6 +404,27 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
 
             return string.Empty;
+        }
+
+        // Internal for testing
+        internal static bool IsNonNullable(IEnumerable<object> attributes)
+        {
+            // [Nullable] is compiler synthesized, comparing by name. 
+            var nullableAtttribute = attributes
+                .Where(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName))
+                .FirstOrDefault();
+
+            // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
+            if (nullableAtttribute != null &&
+                nullableAtttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
+                field.GetValue(nullableAtttribute) is byte[] flags
+                && flags.Length >= 0
+                && flags[0] == 1)
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

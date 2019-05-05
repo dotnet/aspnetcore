@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -101,6 +102,25 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets a list of <see cref="IInputFormatter"/>s that are used by this application.
         /// </summary>
         public FormatterCollection<IInputFormatter> InputFormatters { get; }
+
+        /// <summary>
+        /// Gets or sets a value that detemines if the inference of <see cref="RequiredAttribute"/> for
+        /// for properties and parameters of non-nullable reference types is suppressed. If <c>false</c> 
+        /// (the default), then all non-nullable reference types will behave as-if <c>[Required]</c> has 
+        /// been applied. If <c>true</c>, this behavior will be suppressed; nullable reference types and 
+        /// non-nullable reference types will behave the same for the purposes of validation.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// This option controls whether MVC model binding and validation treats nullable and non-nullable 
+        /// reference types differently. 
+        /// </para>
+        /// <para>
+        /// By default, MVC will treat a non-nullable reference type parameters and properties as-if 
+        /// <c>[Required]</c> has been applied, resulting in validation errors when no value was bound.
+        /// </para>
+        /// </remarks>
+        public bool SuppressImplicitRequiredAttributeForNonNullableReferenceTypes { get; set; }
 
         /// <summary>
         /// Gets or sets a value that determines if buffering is disabled for input formatters that
