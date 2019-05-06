@@ -19,12 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class NonNullableReferenceTypesTest : IClassFixture<MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting>>
     {
-        // Some tests require comparing the actual response body against an expected response baseline
-        // so they require a reference to the assembly on which the resources are located, in order to
-        // make the tests less verbose, we get a reference to the assembly with the resources and we
-        // use it on all the rest of the tests.
-        private static readonly Assembly _resourcesAssembly = typeof(BasicTests).GetTypeInfo().Assembly;
-
         public NonNullableReferenceTypesTest(MvcTestFixture<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             Client = fixture.CreateDefaultClient();
@@ -42,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetAsync("http://localhost/NonNullable");
 
             // Assert 1
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             var document = parser.Parse(content);
@@ -66,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert 2
             //
             // OK means there were validation errors.
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             content = await response.Content.ReadAsStringAsync();
 
             document = parser.Parse(content);
@@ -84,7 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.GetAsync("http://localhost/NonNullable");
 
             // Assert 1
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             var document = parser.Parse(content);
@@ -110,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert 2
             //
             // Redirect means there were no validation errors.
-            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
         }
     }
 }

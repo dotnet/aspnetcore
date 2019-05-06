@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // This allows the developer to specify [Required] to customize the error message, so
             // if they already have [Required] then there's no need for us to do this check.
             if (!_options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes &&
-                requiredAttribute == null && 
+                requiredAttribute == null &&
                 !context.Key.ModelType.IsValueType &&
 
                 // Look specifically at attributes on the property/parameter. [Nullable] on
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         // Internal for testing
         internal static bool IsNonNullable(IEnumerable<object> attributes)
         {
-            // [Nullable] is compiler synthesized, comparing by name. 
+            // [Nullable] is compiler synthesized, comparing by name.
             var nullableAttribute = attributes
                 .Where(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName, StringComparison.Ordinal))
                 .FirstOrDefault();
@@ -429,15 +429,15 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             }
 
             // We don't handle cases where generics and NNRT are used. This runs into a
-            // fundamental limitation of ModelMetadata - we a single the Type and Property/Parameter
+            // fundamental limitation of ModelMetadata - we use a single Type and Property/Parameter
             // to look up the metadata. However when generics are involved and NNRT is in use
             // the distance between the [Nullable] and member we're looking at is potentially
-            // unbounded. 
+            // unbounded.
             //
             // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
             if (nullableAttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
-                field.GetValue(nullableAttribute) is byte[] flags && 
-                flags.Length >= 0 && 
+                field.GetValue(nullableAttribute) is byte[] flags &&
+                flags.Length >= 0 &&
                 flags[0] == 1) // First element is the property/parameter type.
             {
                 return true;
