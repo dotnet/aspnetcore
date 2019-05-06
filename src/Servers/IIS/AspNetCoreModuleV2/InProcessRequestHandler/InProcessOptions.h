@@ -94,6 +94,12 @@ public:
         return m_dwShutdownTimeLimitInMS;
     }
 
+    DWORD
+    QueryMaxRequestBodySizeLimit() const
+    {
+        return m_dwMaxRequestBodySize;
+    }
+
     const std::map<std::wstring, std::wstring, ignore_case_comparer>&
     QueryEnvironmentVariables() const
     {
@@ -128,6 +134,7 @@ private:
     bool                           m_fAnonymousAuthEnabled;
     DWORD                          m_dwStartupTimeLimitInMS;
     DWORD                          m_dwShutdownTimeLimitInMS;
+    DWORD                          m_dwMaxRequestBodySize;
     std::map<std::wstring, std::wstring, ignore_case_comparer> m_environmentVariables;
     std::vector<BindingInformation> m_bindingInformation;
 

@@ -191,12 +191,13 @@ struct IISConfigurationData
     BOOL fBasicAuthEnabled;
     BOOL fAnonymousAuthEnable;
     BSTR pwzBindings;
+    DWORD maxRequestBodySize;
 };
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
 http_get_application_properties(
-    _In_ IISConfigurationData* pIISCofigurationData
+    _In_ IISConfigurationData* pIISConfigurationData
 )
 {
     auto pInProcessApplication = IN_PROCESS_APPLICATION::GetInstance();
@@ -207,15 +208,16 @@ http_get_application_properties(
 
     const auto& pConfiguration = pInProcessApplication->QueryConfig();
 
-    pIISCofigurationData->pInProcessApplication = pInProcessApplication;
-    pIISCofigurationData->pwzFullApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationPhysicalPath().c_str());
-    pIISCofigurationData->pwzVirtualApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationVirtualPath().c_str());
-    pIISCofigurationData->fWindowsAuthEnabled = pConfiguration.QueryWindowsAuthEnabled();
-    pIISCofigurationData->fBasicAuthEnabled = pConfiguration.QueryBasicAuthEnabled();
-    pIISCofigurationData->fAnonymousAuthEnable = pConfiguration.QueryAnonymousAuthEnabled();
+    pIISConfigurationData->pInProcessApplication = pInProcessApplication;
+    pIISConfigurationData->pwzFullApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationPhysicalPath().c_str());
+    pIISConfigurationData->pwzVirtualApplicationPath = SysAllocString(pInProcessApplication->QueryApplicationVirtualPath().c_str());
+    pIISConfigurationData->fWindowsAuthEnabled = pConfiguration.QueryWindowsAuthEnabled();
+    pIISConfigurationData->fBasicAuthEnabled = pConfiguration.QueryBasicAuthEnabled();
+    pIISConfigurationData->fAnonymousAuthEnable = pConfiguration.QueryAnonymousAuthEnabled();
 
     auto const serverAddresses = BindingInformation::Format(pConfiguration.QueryBindings(), pInProcessApplication->QueryApplicationVirtualPath());
-    pIISCofigurationData->pwzBindings = SysAllocString(serverAddresses.c_str());
+    pIISConfigurationData->pwzBindings = SysAllocString(serverAddresses.c_str());
+    pIISConfigurationData->maxRequestBodySize = pInProcessApplication->QueryConfig().QueryMaxRequestBodySizeLimit();
     return S_OK;
 }
 

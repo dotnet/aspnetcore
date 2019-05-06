@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Streams _streams;
 
         private volatile bool _hasResponseStarted;
-        private volatile bool _hasRequestReadingStarted;
 
         private int _statusCode;
         private string _reasonPhrase;
@@ -50,6 +49,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
         protected Exception _applicationException;
+        protected BadHttpRequestException _requestRejectedException;
+
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IISHttpServer _server;
 
@@ -112,6 +113,9 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private HeaderCollection HttpResponseHeaders { get; set; }
         internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
 
+        private bool HasStartedConsumingRequestBody { get; set; }
+        public long? MaxRequestBodySize { get; set; }
+
         protected void InitializeContext()
         {
             _thisHandle = GCHandle.Alloc(this);
@@ -155,6 +159,8 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     User = WindowsUser;
                 }
             }
+
+            MaxRequestBodySize = _options.MaxRequestBodySize;
 
             ResetFeatureCollection();
 
@@ -282,9 +288,14 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         private void InitializeRequestIO()
         {
-            Debug.Assert(!_hasRequestReadingStarted);
+            Debug.Assert(!HasStartedConsumingRequestBody);
 
-            _hasRequestReadingStarted = true;
+            if (RequestHeaders.ContentLength > MaxRequestBodySize)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
+            }
+
+            HasStartedConsumingRequestBody = true;
 
             EnsureIOInitialized();
 
@@ -308,7 +319,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         protected Task ProduceEnd()
         {
-            if (_applicationException != null)
+            if (_requestRejectedException != null || _applicationException != null)
             {
                 if (HasResponseStarted)
                 {
@@ -318,6 +329,10 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
                 // If the request was rejected, the error state has already been set by SetBadRequestState and
                 // that should take precedence.
+                if (_requestRejectedException != null)
+                {
+                    SetErrorResponseException(_requestRejectedException);
+                }
                 else
                 {
                     // 500 Internal Server Error
@@ -459,6 +474,23 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     }
                 }
             }
+        }
+
+        public void SetBadRequestState(BadHttpRequestException ex)
+        {
+            Log.ConnectionBadRequest(_logger, RequestConnectionId, ex);
+
+            if (!HasResponseStarted)
+            {
+                SetErrorResponseException(ex);
+            }
+
+            _requestRejectedException = ex;
+        }
+
+        private void SetErrorResponseException(BadHttpRequestException ex)
+        {
+            SetErrorResponseHeaders(ex.StatusCode);
         }
 
         protected void ReportApplicationError(Exception ex)
