@@ -331,18 +331,8 @@
   <data name="ParseError_Sections_Cannot_Be_Nested" xml:space="preserve">
     <value>Section blocks ("{0}") cannot be nested.  Only one level of section blocks are allowed.</value>
   </data>
-  <data name="ParseError_SingleLine_ControlFlowStatements_Not_Allowed" xml:space="preserve">
-    <value>Expected a "{0}" but found a "{1}".  Block statements must be enclosed in "{{" and "}}".  You cannot use single-statement control-flow statements in CSHTML pages. For example, the following is not allowed:
-
-@if(isLoggedIn)
-    &lt;p&gt;Hello, @user&lt;/p&gt;
-
-Instead, wrap the contents of the block in "{{}}":
-
-@if(isLoggedIn) {{
-    &lt;p&gt;Hello, @user&lt;/p&gt;
-}}</value>
-    <comment>{0} is only ever a single character</comment>
+  <data name="ParseError_SingleLine_ControlFlowStatements_CannotContainMarkup" xml:space="preserve">
+    <value>Single-statement control-flow statements in Razor documents statements cannot contain markup. Markup should be enclosed in "{{" and "}}".</value>
   </data>
   <data name="ParseError_TextTagCannotContainAttributes" xml:space="preserve">
     <value>"&lt;text&gt;" and "&lt;/text&gt;" tags cannot contain attributes.</value>

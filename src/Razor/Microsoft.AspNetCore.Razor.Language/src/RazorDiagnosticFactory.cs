@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static readonly RazorDiagnosticDescriptor Parsing_SingleLineControlFlowStatementsNotAllowed =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}1008",
-                () => Resources.ParseError_SingleLine_ControlFlowStatements_Not_Allowed,
+                () => Resources.ParseError_SingleLine_ControlFlowStatements_CannotContainMarkup,
                 RazorDiagnosticSeverity.Error);
-        public static RazorDiagnostic CreateParsing_SingleLineControlFlowStatementsNotAllowed(SourceSpan location, string expected, string actual)
+        public static RazorDiagnostic CreateParsing_SingleLineControlFlowStatementsCannotContainMarkup(SourceSpan location)
         {
-            return RazorDiagnostic.Create(Parsing_SingleLineControlFlowStatementsNotAllowed, location, expected, actual);
+            return RazorDiagnostic.Create(Parsing_SingleLineControlFlowStatementsNotAllowed, location);
         }
 
         internal static readonly RazorDiagnosticDescriptor Parsing_AtInCodeMustBeFollowedByColonParenOrIdentifierStart =

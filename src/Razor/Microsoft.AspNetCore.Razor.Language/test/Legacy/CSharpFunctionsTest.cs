@@ -9,6 +9,45 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpFunctionsTest : ParserTestBase
     {
         [Fact]
+        public void Functions_SingleLineControlFlowStatement_Error()
+        {
+            ParseDocumentTest(
+                RazorLanguageVersion.Version_3_0,
+                @"
+@functions {
+    string GetAnnouncmentText(string message)
+    {
+        if (message.Length > 0) <p>Message: @message</p>
+
+        if (message == null)
+            // Nothing to render
+            <p>Message was null</p>
+
+        if (DateTime.Now.ToBinary() % 2 == 0)
+            @: <p>The time: @time</p>
+
+        if (message != null) @@SomeGitHubUserName <strong>@message</strong>
+    }
+}
+", new[] { FunctionsDirective.Directive, }, designTime: false);
+        }
+
+        [Fact]
+        public void Functions_SingleLineControlFlowStatement()
+        {
+            ParseDocumentTest(
+                RazorLanguageVersion.Version_3_0,
+                @"
+@functions {
+    string GetAnnouncmentText(string message)
+    {
+        if (message.Length > 0) return ""Anouncement: "" + message;
+    }
+}
+", new[] { FunctionsDirective.Directive, }, designTime: false);
+        }
+
+        [Fact]
         public void MarkupInFunctionsBlock_DoesNotParseWhenNotSupported()
         {
             ParseDocumentTest(

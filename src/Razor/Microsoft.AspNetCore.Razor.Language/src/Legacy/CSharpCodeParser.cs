@@ -1756,14 +1756,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (!EndOfFile)
             {
-                // Check for "{" to make sure we're at a block
-                if (!At(SyntaxKind.LeftBrace))
+                // If it's a block control flow statement the current syntax token will be a LeftBrace {,
+                // otherwise we're acting on a single line control flow statement which cannot allow markup.
+
+                if (At(SyntaxKind.LessThan))
                 {
+                    // if (...) <p>Hello World</p>
                     Context.ErrorSink.OnError(
-                        RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsNotAllowed(
-                            new SourceSpan(CurrentStart, CurrentToken.Content.Length),
-                            Language.GetSample(SyntaxKind.LeftBrace),
-                            CurrentToken.Content));
+                        RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsCannotContainMarkup(
+                            new SourceSpan(CurrentStart, CurrentToken.Content.Length)));
+                }
+                else if (At(SyntaxKind.Transition) && NextIs(SyntaxKind.Colon))
+                {
+                    // if (...) @: <p>The time is @DateTime.Now</p>
+                    Context.ErrorSink.OnError(
+                        RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsCannotContainMarkup(
+                            new SourceSpan(CurrentStart, contentLength: 2 /* @: */)));
+                }
+                else if (At(SyntaxKind.Transition) && NextIs(SyntaxKind.Transition))
+                {
+                    // if (...) @@JohnDoe <strong>Hi!</strong>
+                    Context.ErrorSink.OnError(
+                        RazorDiagnosticFactory.CreateParsing_SingleLineControlFlowStatementsCannotContainMarkup(
+                            new SourceSpan(CurrentStart, contentLength: 2 /* @@ */)));
                 }
 
                 // Parse the statement and then we're done

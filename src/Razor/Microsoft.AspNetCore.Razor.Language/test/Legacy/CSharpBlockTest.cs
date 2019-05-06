@@ -9,6 +9,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpBlockTest : ParserTestBase
     {
         [Fact]
+        public void CSharpBlock_SingleLineControlFlowStatement_Error()
+        {
+            ParseDocumentTest(
+@"@{
+    var time = DateTime.Now;
+    if (time.ToBinary() % 2 == 0) <p>The time: @time</p>
+
+    if (time.ToBinary() %3 == 0)
+        // For some reason we want to render the time now?
+        <p>The confusing time: @time</p>
+
+    if (time.ToBinary() % 4 == 0)
+        @: <p>The time: @time</p>
+
+    if (time.ToBinary() % 5 == 0) @@SomeGitHubUserName <strong>Hi!</strong>
+}");
+        }
+
+        [Fact]
+        public void CSharpBlock_SingleLineControlFlowStatement()
+        {
+            ParseDocumentTest(
+@"@{
+    var time = DateTime.Now;
+    if (time.ToBinary() % 2 == 0) @time
+}");
+        }
+
+        [Fact]
         public void LocalFunctionsWithRazor()
         {
             ParseDocumentTest(

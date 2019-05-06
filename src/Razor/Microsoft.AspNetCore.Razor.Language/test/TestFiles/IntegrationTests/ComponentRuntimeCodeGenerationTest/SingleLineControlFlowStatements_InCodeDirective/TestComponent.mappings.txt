@@ -1,0 +1,24 @@
+Source Location: (61:2,7 [209] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    void RenderChildComponent(RenderTreeBuilder builder)
+    {
+        var output = string.Empty;
+        if (builder == null) output = "Builder is null!";
+        else output = "Builder is not null!";
+|
+Generated Location: (802:26,7 [209] )
+|
+    void RenderChildComponent(RenderTreeBuilder builder)
+    {
+        var output = string.Empty;
+        if (builder == null) output = "Builder is null!";
+        else output = "Builder is not null!";
+|
+
+Source Location: (302:9,0 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+|    }
+|
+Generated Location: (1529:52,0 [7] )
+|    }
+|
+

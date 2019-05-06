@@ -1,0 +1,13 @@
+Source Location: (56:2,2 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+|
+    var output = string.Empty;
+    if (builder == null) output = "Builder is null!";
+    else output = "Builder is not null!";
+|
+Generated Location: (748:24,2 [132] )
+|
+    var output = string.Empty;
+    if (builder == null) output = "Builder is null!";
+    else output = "Builder is not null!";
+|
+

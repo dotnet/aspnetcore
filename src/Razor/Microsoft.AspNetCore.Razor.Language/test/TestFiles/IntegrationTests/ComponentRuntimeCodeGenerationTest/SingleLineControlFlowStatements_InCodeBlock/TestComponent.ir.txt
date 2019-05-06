@@ -1,0 +1,23 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        UsingDirective - (1:0,1 [51] x:\dir\subdir\Test\TestComponent.cshtml) - Microsoft.AspNetCore.Components.RenderTree
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                CSharpCode - (56:2,2 [132] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (56:2,2 [132] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    var output = string.Empty;\n    if (builder == null) output = "Builder is null!";\n    else output = "Builder is not null!";\n
+                HtmlContent - (188:6,0 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (188:6,0 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html -     
+                MarkupElement - (192:6,4 [22] x:\dir\subdir\Test\TestComponent.cshtml) - p
+                    HtmlContent - (195:6,7 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (195:6,7 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Output: 
+                    CSharpExpression - (204:6,16 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (204:6,16 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - output
+                HtmlContent - (214:6,26 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (214:6,26 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                CSharpCode - (216:7,0 [0] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (216:7,0 [0] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 

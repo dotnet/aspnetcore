@@ -20,6 +20,52 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         #region Basics
 
         [Fact]
+        public void SingleLineControlFlowStatements_InCodeDirective()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.RenderTree;
+
+@code {
+    void RenderChildComponent(RenderTreeBuilder builder)
+    {
+        var output = string.Empty;
+        if (builder == null) output = ""Builder is null!"";
+        else output = ""Builder is not null!"";
+        <p>Output: @output</p>
+    }
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void SingleLineControlFlowStatements_InCodeBlock()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+@using Microsoft.AspNetCore.Components.RenderTree;
+
+@{
+    var output = string.Empty;
+    if (builder == null) output = ""Builder is null!"";
+    else output = ""Builder is not null!"";
+    <p>Output: @output</p>
+}");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+            CompileToAssembly(generated);
+        }
+        [Fact]
         public void ChildComponent_InFunctionsDirective()
         {
             // Arrange

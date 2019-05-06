@@ -17,6 +17,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         #region Runtime
         [Fact]
+        public void SingleLineControlFlowStatements_Runtime()
+        {
+            RunTimeTest();
+        }
+
+        [Fact]
         public void CSharp8_Runtime()
         {
             RunTimeTest();
@@ -485,6 +491,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         #endregion
 
         #region DesignTime
+        [Fact]
+        public void SingleLineControlFlowStatements_DesignTime()
+        {
+            DesignTimeTest();
+        }
+
         [Fact]
         public void CSharp8_DesignTime()
         {
