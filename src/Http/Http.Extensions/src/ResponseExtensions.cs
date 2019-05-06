@@ -35,11 +35,11 @@ namespace Microsoft.AspNetCore.Http
         {
             if (preserveMethod)
             {
-                response.StatusCode = permanent ? 308 : 307;
+                response.StatusCode = permanent ? StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
             }
             else
             {
-                response.StatusCode = permanent ? 301 : 302;
+                response.StatusCode = permanent ? StatusCodes.Status301MovedPermanently : StatusCodes.Status302Found;
             }
 
             response.Headers[HeaderNames.Location] = location;

@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         {
             var location = "http://localhost/redirect";
             var context = new DefaultHttpContext();
-            context.Response.StatusCode = (int)HttpStatusCode.OK;
+            context.Response.StatusCode = StatusCodes.Status200OK;
 
             context.Response.Redirect(location, permanent, preserveMethod);
 
