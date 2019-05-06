@@ -1,24 +1,22 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Threading;
+using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Http.Features
+namespace Microsoft.AspNetCore.TestHost
 {
     internal class RequestLifetimeFeature : IHttpRequestLifetimeFeature
     {
-        private readonly CancellationTokenSource _abortableCancellationTokenSource = new CancellationTokenSource();
-        private CancellationTokenSource _linkedCancellationTokenSource;
+        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
-        public CancellationToken RequestAborted
+        public RequestLifetimeFeature()
         {
-            get => _linkedCancellationTokenSource?.Token ?? _abortableCancellationTokenSource.Token;
-            set => _linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
-                    token1: _abortableCancellationTokenSource.Token,
-                    token2: value);
+            RequestAborted = _cancellationTokenSource.Token;
         }
 
-        public void Abort() => _abortableCancellationTokenSource.Cancel();
+        public CancellationToken RequestAborted { get; set; }
+
+        public void Abort() => _cancellationTokenSource.Cancel();
     }
 }
