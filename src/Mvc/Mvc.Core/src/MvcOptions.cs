@@ -119,6 +119,11 @@ namespace Microsoft.AspNetCore.Mvc
         /// By default, MVC will treat a non-nullable reference type parameters and properties as-if 
         /// <c>[Required]</c> has been applied, resulting in validation errors when no value was bound.
         /// </para>
+        /// <para>
+        /// MVC does not support non-nullable reference type annotations on type arguments and type parameter
+        /// contraints. The framework will not infer any validation attributes for generic-typed properties
+        /// or collection elements.
+        /// </para>
         /// </remarks>
         public bool SuppressImplicitRequiredAttributeForNonNullableReferenceTypes { get; set; }
 

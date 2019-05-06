@@ -884,6 +884,7 @@ namespace Microsoft.AspNetCore.Mvc
         public System.Text.Json.Serialization.JsonSerializerOptions SerializerOptions { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int? SslPort { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressAsyncSuffixInActionNames { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool SuppressImplicitRequiredAttributeForNonNullableReferenceTypes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressInputFormatterBuffering { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool SuppressOutputFormatterBuffering { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool ValidateComplexTypesIfChildValidationFails { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }

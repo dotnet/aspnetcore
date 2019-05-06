@@ -410,16 +410,25 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
         internal static bool IsNonNullable(IEnumerable<object> attributes)
         {
             // [Nullable] is compiler synthesized, comparing by name. 
-            var nullableAtttribute = attributes
-                .Where(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName))
+            var nullableAttribute = attributes
+                .Where(a => string.Equals(a.GetType().FullName, NullableAttributeFullTypeName, StringComparison.Ordinal))
                 .FirstOrDefault();
+            if (nullableAttribute == null)
+            {
+                return false;
+            }
 
+            // We don't handle cases where generics and NNRT are used. This runs into a
+            // fundamental limitation of ModelMetadata - we a single the Type and Property/Parameter
+            // to look up the metadata. However when generics are involved and NNRT is in use
+            // the distance between the [Nullable] and member we're looking at is potentially
+            // unbounded. 
+            //
             // See: https://github.com/dotnet/roslyn/blob/master/docs/features/nullable-reference-types.md#annotations
-            if (nullableAtttribute != null &&
-                nullableAtttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
-                field.GetValue(nullableAtttribute) is byte[] flags
-                && flags.Length >= 0
-                && flags[0] == 1)
+            if (nullableAttribute.GetType().GetField(NullableFlagsFieldName) is FieldInfo field &&
+                field.GetValue(nullableAttribute) is byte[] flags && 
+                flags.Length >= 0 && 
+                flags[0] == 1) // First element is the property/parameter type.
             {
                 return true;
             }
