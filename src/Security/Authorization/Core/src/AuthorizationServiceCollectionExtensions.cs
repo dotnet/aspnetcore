@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        public static IServiceCollection AddAuthorization(this IServiceCollection services)
+        public static IServiceCollection AddAuthorizationCore(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <param name="configure">An action delegate to configure the provided <see cref="AuthorizationOptions"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        public static IServiceCollection AddAuthorization(this IServiceCollection services, Action<AuthorizationOptions> configure)
+        public static IServiceCollection AddAuthorizationCore(this IServiceCollection services, Action<AuthorizationOptions> configure)
         {
             if (services == null)
             {
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.Configure(configure);
-            return services.AddAuthorization();
+            return services.AddAuthorizationCore();
         }
     }
 }

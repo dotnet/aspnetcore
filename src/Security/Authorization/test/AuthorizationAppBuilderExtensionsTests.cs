@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Test.TestObjects;
@@ -64,7 +62,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.Equal(
                 "Unable to find the required services. Please add all the required services by calling " +
-                "'IServiceCollection.AddAuthorizationPolicyEvaluator' inside the call to 'ConfigureServices(...)' " +
+                "'IServiceCollection.AddAuthorization' inside the call to 'ConfigureServices(...)' " +
                 "in the application startup code.",
                 ex.Message);
         }
@@ -73,7 +71,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         {
             var services = new ServiceCollection();
 
-            services.AddAuthorizationPolicyEvaluator();
+            services.AddAuthorization();
             services.AddLogging();
             services.AddSingleton(authenticationService);
 

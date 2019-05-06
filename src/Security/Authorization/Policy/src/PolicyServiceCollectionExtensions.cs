@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -13,18 +14,27 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class PolicyServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds authorization policy services to the specified <see cref="IServiceCollection" />. 
+        /// Adds authorization policy services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        public static IServiceCollection AddAuthorizationPolicyEvaluator(this IServiceCollection services)
+        public static IServiceCollection AddAuthorization(this IServiceCollection services)
+            => services.AddAuthorization(_ => { });
+
+        /// <summary>
+        /// Adds authorization policy services to the specified <see cref="IServiceCollection" />. 
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <param name="configure">An action delegate to configure the provided <see cref="AuthorizationOptions"/>.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddAuthorization(this IServiceCollection services, Action<AuthorizationOptions> configure)
         {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddAuthorization();
+            services.AddAuthorizationCore(configure);
             services.TryAddSingleton<AuthorizationPolicyMarkerService>();
             services.TryAdd(ServiceDescriptor.Transient<IPolicyEvaluator, PolicyEvaluator>());
             return services;
