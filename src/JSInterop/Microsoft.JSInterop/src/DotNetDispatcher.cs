@@ -171,10 +171,15 @@ namespace Microsoft.JSInterop
             {
                 return methodInfo.Invoke(targetInstance, suppliedArgs);
             }
-            catch (TargetInvocationException tie) when (tie.InnerException != null)
+            catch (TargetInvocationException tie)
             {
-                ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
-                throw null; // unreachable
+                if (tie.InnerException != null)
+                {
+                    ExceptionDispatchInfo.Capture(tie.InnerException).Throw();
+                    throw null; // unreached
+                }
+
+                throw;
             }
         }
 
