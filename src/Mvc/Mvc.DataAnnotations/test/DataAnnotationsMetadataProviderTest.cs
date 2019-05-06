@@ -1161,7 +1161,8 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 
             // Assert
             Assert.True(context.ValidationMetadata.IsRequired);
-            Assert.Single(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+            var attribute = Assert.Single(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute);
+            Assert.True(((RequiredAttribute)attribute).AllowEmptyStrings); // non-Default for [Required]
         }
 
         [Fact]
@@ -1185,6 +1186,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             Assert.True(context.ValidationMetadata.IsRequired);
             var attribute = Assert.Single(context.ValidationMetadata.ValidatorMetadata, m => m is RequiredAttribute a);
             Assert.Equal("Test", ((RequiredAttribute)attribute).ErrorMessage);
+            Assert.False(((RequiredAttribute)attribute).AllowEmptyStrings); // Default for [Required]
         }
 
         [Fact]

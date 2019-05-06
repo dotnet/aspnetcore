@@ -349,7 +349,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
                 !context.Key.ModelType.IsValueType && 
                 IsNonNullable(context.Attributes))
             {
-                requiredAttribute = new RequiredAttribute();
+                // Since this behavior specifically relates to non-null-ness, we will use the non-default
+                // option to tolerate empty/whitespace strings. empty/whitespace INPUT will still result in
+                // a validation error by default because we convert empty/whitespace strings to null
+                // unless you say otherwise.
+                requiredAttribute = new RequiredAttribute()
+                {
+                    AllowEmptyStrings = true,
+                };
                 attributes.Add(requiredAttribute);
             }
 
