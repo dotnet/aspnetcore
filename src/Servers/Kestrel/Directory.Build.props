@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <KestrelRoot>$(MSBuildThisFileDirectory)</KestrelRoot>
     <KestrelSharedSourceRoot>$(MSBuildThisFileDirectory)shared\</KestrelSharedSourceRoot>
   </PropertyGroup>
 

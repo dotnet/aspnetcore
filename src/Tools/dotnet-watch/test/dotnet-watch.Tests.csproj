@@ -32,10 +32,16 @@
     <RemoveDir Directories="$(TargetDir)TestProjects" Condition="Exists('$(TargetDir)TestProjects')" />
   </Target>
 
-  <Target Name="PublishDotNetWatch" BeforeTargets="Build">
+  <Target Name="PublishDotNetWatchOnBuild" BeforeTargets="Build">
     <MSBuild Projects="..\src\dotnet-watch.csproj"
       Targets="Publish"
       Properties="PublishDir=$(OutputPath)\tool\;Configuration=$(Configuration)" />
+  </Target>
+
+  <Target Name="PublishDotNetWatchOnPublish" BeforeTargets="Publish">
+    <MSBuild Projects="..\src\dotnet-watch.csproj"
+      Targets="Publish"
+      Properties="PublishDir=$(PublishDir)\tool\;Configuration=$(Configuration)" />
   </Target>
 
 </Project>

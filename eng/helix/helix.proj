@@ -15,7 +15,7 @@
     <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
     <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">false</WaitForWorkItemCompletion>
     <FailOnMissionControlTestFailure>false</FailOnMissionControlTestFailure>
-    <EnableAzurePipelinesReporter>false</EnableAzurePipelinesReporter>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <IsExternal>true</IsExternal>
     <Creator>aspnetcore</Creator>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
