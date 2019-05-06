@@ -6,8 +6,4 @@
     <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authorization.Common.Abstractions" />
-  </ItemGroup>
-
 </Project>
