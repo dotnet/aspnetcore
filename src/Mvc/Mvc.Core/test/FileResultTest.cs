@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc
                     { "\\", "attachment; filename=\"\\\\\"; filename*=UTF-8''%5C" },
 
                     // Values that need to be specially encoded (Base64, see rfc2047)
-                    { "a\nb", "attachment; filename=\"a\nb\"; filename*=UTF-8''a%0Ab" },
+                    { "a\nb", "attachment; filename=a_b; filename*=UTF-8''a%0Ab" },
 
                     // Values with non unicode characters
                     { "résumé.txt", "attachment; filename=r_sum_.txt; filename*=UTF-8''r%C3%A9sum%C3%A9.txt" },
