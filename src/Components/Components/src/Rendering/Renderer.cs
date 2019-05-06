@@ -523,12 +523,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 await updateDisplayTask;
             }
-            catch when (updateDisplayTask.IsCanceled)
+            catch // avoiding exception filters for AOT runtimes
             {
-                return;
-            }
-            catch when (updateDisplayTask.IsFaulted)
-            {
+                if (updateDisplayTask.IsCanceled)
+                {
+                    return;
+                }
+
                 HandleException(updateDisplayTask.Exception);
                 return;
             }
