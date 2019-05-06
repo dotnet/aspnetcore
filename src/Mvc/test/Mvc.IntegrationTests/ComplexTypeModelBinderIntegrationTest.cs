@@ -1717,7 +1717,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         {
             public string Name { get; set; }
 
-            public KeyValuePair<string, int> ProductId { get; set; }
+            public KeyValuePair<string, int>? ProductId { get; set; }
         }
 
         [Fact]

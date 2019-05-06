@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
-                ParameterType = typeof(KeyValuePair<string, int>)
+                ParameterType = typeof(KeyValuePair<string, int>?)
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
@@ -482,7 +482,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
-                ParameterType = typeof(KeyValuePair<string, Person>)
+                ParameterType = typeof(KeyValuePair<string, Person>?)
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
