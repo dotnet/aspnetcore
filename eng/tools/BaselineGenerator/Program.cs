@@ -36,7 +36,7 @@ namespace PackageBaselineGenerator
 
         public Program()
         {
-            _source = Option("-s|--packageSource <SOURCE>", "The NuGet source of packages to fetch", CommandOptionType.SingleValue);
+            _source = Option("-s|--package-source <SOURCE>", "The NuGet source of packages to fetch", CommandOptionType.SingleValue);
             _output = Option("-o|--output <OUT>", "The generated file output path", CommandOptionType.SingleValue);
             _update = Option("-u|--update", "Regenerate the input (Baseline.xml) file.", CommandOptionType.NoValue);
 
