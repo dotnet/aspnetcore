@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     /// </summary>
     public static class HandshakeProtocol
     {
-        // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ProtocolPropertyName = "protocol";
         private static JsonEncodedText ProtocolPropertyNameBytes = JsonEncodedText.Encode(ProtocolPropertyName);
         private const string ProtocolVersionPropertyName = "version";

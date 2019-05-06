@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     /// </summary>
     public sealed class JsonHubProtocol : IHubProtocol
     {
-        // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ResultPropertyName = "result";
         private static JsonEncodedText ResultPropertyNameBytes = JsonEncodedText.Encode(ResultPropertyName);
         private const string ItemPropertyName = "item";
