@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization.Common;
 
 namespace Microsoft.AspNetCore.Authorization
 {
@@ -143,7 +144,8 @@ namespace Microsoft.AspNetCore.Authorization
                         var policy = await policyProvider.GetPolicyAsync(authorizeDatum.Policy);
                         if (policy == null)
                         {
-                            throw new InvalidOperationException(Resources.FormatException_AuthorizationPolicyNotFound(authorizeDatum.Policy));
+                            throw new InvalidOperationException(
+                                string.Format(Resources.Exception_AuthorizationPolicyNotFound, authorizeDatum.Policy));
                         }
                         policyBuilder.Combine(policy);
                         useDefaultPolicy = false;
