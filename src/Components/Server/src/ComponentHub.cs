@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.Server
     /// <summary>
     /// A SignalR hub that accepts connections to an ASP.NET Core Components application.
     /// </summary>
-    public sealed class ComponentHub : Hub
+    internal sealed class ComponentHub : Hub
     {
         private static readonly object CircuitKey = new object();
         private readonly CircuitFactory _circuitFactory;

@@ -55,18 +55,11 @@ namespace TestServer
             {
                 subdirApp.UseClientSideBlazorFiles<BasicTestApp.Startup>();
 
-                // The following two lines are equivalent to:
-                //     endpoints.MapComponentsHub<Index>();
-                //
-                // However it's expressed using routing as a way of checking that
-                // we're not relying on any extra magic inside MapComponentsHub, since it's
-                // important that people can set up these bits of middleware manually (e.g., to
-                // swap in UseAzureSignalR instead of UseSignalR).
                 subdirApp.UseRouting();
 
                 subdirApp.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath).AddComponent(typeof(Index), selector: "root");
+                    endpoints.MapBlazorHub(typeof(Index), selector: "root");
                     endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
                 });
             });
