@@ -80,7 +80,9 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
         private static bool IsProcessRunningInContainer()
         {
             // Official .NET Core images (Windows and Linux) set this. So trust it if it's there.
-            if(string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINERS"), "true", StringComparison.OrdinalIgnoreCase))
+            // We check both DOTNET_RUNNING_IN_CONTAINER (the current name) and DOTNET_RUNNING_IN_CONTAINERS (a deprecated name used in some images).
+            if(string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), "true", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINERS"), "true", StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
