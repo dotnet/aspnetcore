@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.DataProtection.Test
 {
-    public class DockerUtilsTests
+    public class ContainerUtilsTests
     {
         // example of content from /proc/self/mounts
         private static readonly string[] fstab = new []
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.DataProtection.Test
         [InlineData("../dir")]
         public void DeterminesFolderIsNotMounted(string directory)
         {
-            Assert.False(DockerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
+            Assert.False(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
         }
 
         [ConditionalTheory]
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.DataProtection.Test
         [InlineData("/app/subdir/two/")]
         public void DeterminesFolderIsMounted(string directory)
         {
-            Assert.True(DockerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
+            Assert.True(ContainerUtils.IsDirectoryMounted(new DirectoryInfo(directory), fstab));
         }
     }
 }
