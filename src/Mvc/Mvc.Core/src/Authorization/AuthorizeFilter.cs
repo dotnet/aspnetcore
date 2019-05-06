@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
         private MvcOptions _mvcOptions;
-        private AuthorizationPolicy _effectivePolicy;
 
         /// <summary>
         /// Initializes a new <see cref="AuthorizeFilter"/> instance.
@@ -110,12 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
         private async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
         {
-            if (_effectivePolicy != null)
-            {
-                return _effectivePolicy;
-            }
-
-            var effectivePolicy = Policy;
+            var effectivePolicy = await ComputePolicyAsync();
 
             if (_mvcOptions == null) 
             {
@@ -130,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 }
 
                 // Combine all authorize filters into single effective policy that's only run on the closest filter
-                AuthorizationPolicyBuilder builder = null;
+                AuthorizationPolicyBuilder builder = new Authorization(effectivePolicy);
                 for (var i = 0; i < context.Filters.Count; i++)
                 {
                     if (ReferenceEquals(this, context.Filters[i]))
@@ -140,31 +134,12 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                     
                     if (context.Filters[i] is AuthorizeFilter authorizeFilter)
                     {
-                        builder = builder ?? new AuthorizationPolicyBuilder(effectivePolicy);
-                        builder.Combine(authorizeFilter.Policy);
+                        // Combine using the explicit policy, or the dynamic policy provider
+                        builder.Combine(await authorizeFilter.ComputePolicyAsync());
                     }
                 }
 
-                effectivePolicy = builder?.Build() ?? effectivePolicy;
-            }
-
-            if (effectivePolicy == null)
-            {
-                if (PolicyProvider == null)
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatAuthorizeFilter_AuthorizationPolicyCannotBeCreated(
-                            nameof(AuthorizationPolicy),
-                            nameof(IAuthorizationPolicyProvider)));
-                }
-
-                effectivePolicy = await AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
-            }
-
-            // We can cache the effective policy when there is no custom policy provider 
-            if (PolicyProvider == null)
-            {
-                _effectivePolicy = effectivePolicy;
+                effectivePolicy = builder.Build();
             }
 
             return effectivePolicy;
