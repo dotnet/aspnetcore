@@ -22,7 +22,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddConnections(this IServiceCollection services)
         {
             services.AddRouting();
-            services.AddAuthorization();
+            services.AddAuthorizationPolicyEvaluator();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IConfigureOptions<ConnectionOptions>, ConnectionOptionsSetup>());
             services.TryAddSingleton<HttpConnectionDispatcher>();
             services.TryAddSingleton<HttpConnectionManager>();

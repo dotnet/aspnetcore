@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
             }).AddCookie();
 
-            services.AddAuthorization();
+            services.AddAuthorizationPolicyEvaluator();
         }
 
         public void Configure(IApplicationBuilder app)

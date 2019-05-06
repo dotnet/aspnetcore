@@ -102,6 +102,8 @@ namespace FunctionalTests
                         }
                     };
                 });
+
+            services.AddAuthorizationPolicyEvaluator();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
