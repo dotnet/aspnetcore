@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class FallbackEndpointRouteBuilderExtensions
     {
+        public static readonly string DefaultPattern;
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallback(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
         public static Microsoft.AspNetCore.Builder.IEndpointConventionBuilder MapFallback(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string pattern, Microsoft.AspNetCore.Http.RequestDelegate requestDelegate) { throw null; }
     }
