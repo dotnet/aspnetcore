@@ -12,6 +12,8 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
     internal static class ContainerUtils
     {
         private static Lazy<bool> _isContainer = new Lazy<bool>(IsProcessRunningInContainer);
+        private const string RunningInContainerVariableName = "DOTNET_RUNNING_IN_CONTAINER";
+        private const string DeprecatedRunningInContainerVariableName = "DOTNET_RUNNING_IN_CONTAINERS";
 
         public static bool IsContainer => _isContainer.Value;
 
@@ -81,8 +83,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
         {
             // Official .NET Core images (Windows and Linux) set this. So trust it if it's there.
             // We check both DOTNET_RUNNING_IN_CONTAINER (the current name) and DOTNET_RUNNING_IN_CONTAINERS (a deprecated name used in some images).
-            if(string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER"), "true", StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINERS"), "true", StringComparison.OrdinalIgnoreCase))
+            if (GetBooleanEnvVar(RunningInContainerVariableName) || GetBooleanEnvVar(DeprecatedRunningInContainerVariableName))
             {
                 return true;
             }
@@ -103,6 +104,13 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
             var lines = File.ReadAllLines(procFile);
             // typically the last line in the file is "1:name=openrc:/docker"
             return lines.Reverse().Any(l => l.EndsWith("name=openrc:/docker", StringComparison.Ordinal));
+        }
+
+        private static bool GetBooleanEnvVar(string envVarName)
+        {
+            var value = Environment.GetEnvironmentVariable(envVarName);
+            return string.Equals(value, "1", StringComparison.Ordinal) ||
+                string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
         }
     }
 }
