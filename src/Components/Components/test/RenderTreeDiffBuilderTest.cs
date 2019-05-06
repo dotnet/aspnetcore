@@ -2104,6 +2104,53 @@ namespace Microsoft.AspNetCore.Components.Test
                 entry => AssertEdit(entry, RenderTreeEditType.PermutationListEnd, 0));
         }
 
+        [Fact]
+        public void CanChangeFrameTypeWithMatchingSequenceNumber()
+        {
+            oldTree.OpenElement(0, "some elem");
+            oldTree.AddContent(1, "Hello!");
+            oldTree.CloseElement();
+
+            newTree.AddContent(0, "some text");
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("some text", referenceFrames[entry.ReferenceFrameIndex].TextContent);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        }
+
+        [Fact]
+        public void CanChangeFrameTypeWithMatchingKey()
+        {
+            oldTree.OpenComponent<FakeComponent>(0);
+            oldTree.CloseComponent();
+
+            newTree.OpenElement(0, "some elem");
+            newTree.SetKey("my key");
+            newTree.CloseElement();
+
+            // Act
+            var (result, referenceFrames) = GetSingleUpdatedComponent();
+
+            // Assert
+            Assert.Collection(result.Edits,
+                entry =>
+                {
+                    AssertEdit(entry, RenderTreeEditType.PrependFrame, 0);
+                    Assert.Equal(0, entry.ReferenceFrameIndex);
+                    Assert.Equal("some elem", referenceFrames[entry.ReferenceFrameIndex].ElementName);
+                },
+                entry => AssertEdit(entry, RenderTreeEditType.RemoveFrame, 1));
+        }
+
         private (RenderTreeDiff, RenderTreeFrame[]) GetSingleUpdatedComponent(bool initializeFromFrames = false)
         {
             var result = GetSingleUpdatedComponentWithBatch(initializeFromFrames);

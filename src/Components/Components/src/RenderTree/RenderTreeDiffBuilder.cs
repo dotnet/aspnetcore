@@ -511,11 +511,21 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ref var oldFrame = ref oldTree[oldFrameIndex];
             ref var newFrame = ref newTree[newFrameIndex];
 
+            // This can't happen for sequence-matched frames from .razor components, but it can happen if you write your
+            // builder logic manually or if two dissimilar frames matched by key. Treat as completely unrelated.
+            var newFrameType = newFrame.FrameType;
+            if (oldFrame.FrameType != newFrameType)
+            {
+                InsertNewFrame(ref diffContext, newFrameIndex);
+                RemoveOldFrame(ref diffContext, oldFrameIndex);
+                return;
+            }
+
             // We can assume that the old and new frames are of the same type, because they correspond
             // to the same sequence number (and if not, the behaviour is undefined).
             // TODO: Consider supporting dissimilar types at same sequence for custom IComponent implementations.
             //       It should only be a matter of calling RemoveOldFrame+InsertNewFrame
-            switch (newFrame.FrameType)
+            switch (newFrameType)
             {
                 case RenderTreeFrameType.Text:
                     {
