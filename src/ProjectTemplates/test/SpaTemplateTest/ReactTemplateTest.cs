@@ -3,6 +3,8 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -21,6 +23,7 @@ namespace Templates.Test.SpaTemplateTest
             => SpaTemplateImplAsync("reactnoauth", "react", useLocalDb: false, usesAuth: false);
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2243", FlakyOn.All)]
         public Task ReactTemplate_IndividualAuth_NetCore()
             => SpaTemplateImplAsync("reactindividual", "react", useLocalDb: false, usesAuth: true);
 
