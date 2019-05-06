@@ -15,7 +15,7 @@
     <MessageFile Remove="@(MessageFile)" />
   </ItemGroup>
 
-  <Target Name="CreateVersionHeader" BeforeTargets="PrepareForBuild">
+  <Target Name="CreateVersionHeader" DependsOnTargets="InitializeSourceControlInformation" BeforeTargets="PrepareForBuild">
     <ItemGroup>
       <VersionHeaderContents Include="// Copyright (c) .NET Foundation. All rights reserved." />
       <VersionHeaderContents Include="// Licensed under the MIT License. See LICENSE.txt in the project root for license information." />
@@ -27,7 +27,7 @@
       <VersionHeaderContents Include="#define ProductVersion $(AspNetCoreModuleVersionMajor),$(AspNetCoreMinorVersion),$(AssemblyBuild),$(AspNetCorePatchVersion)" />
       <VersionHeaderContents Include="#define ProductVersionStr &quot;$(AspNetCoreModuleVersionMajor).$(AspNetCoreMinorVersion).$(AssemblyBuild).$(AspNetCorePatchVersion)\0&quot;" />
       <VersionHeaderContents Include="#define PlatformToolset &quot;$(PlatformToolset)\0&quot;" />
-      <VersionHeaderContents Include="#define CommitHash &quot;$(CommitHash)\0&quot;" />
+      <VersionHeaderContents Include="#define CommitHash &quot;$(SourceRevisionId)\0&quot;" />
     </ItemGroup>
 
     <ItemGroup>
