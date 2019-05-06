@@ -164,7 +164,7 @@ try {
     [string[]] $filterArgs = @()
 
     if ($TestRuntimeIdentifier) {
-        $filterArgs += '--filter',"rid: $TestRuntimeIdentifier"
+        $filterArgs += '--filter',"Name~rid: $TestRuntimeIdentifier"
     }
 
     Invoke-Block { & $dotnet test `
