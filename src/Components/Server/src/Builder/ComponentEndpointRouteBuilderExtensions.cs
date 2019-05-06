@@ -5,7 +5,6 @@ using System;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.SignalR;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -52,6 +51,37 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             return endpoints.MapBlazorHub(typeof(TComponent), selector, ComponentHub.DefaultPath);
+        }
+
+        /// <summary>
+        /// Maps the SignalR <see cref="ComponentHub"/> to the path <see cref="ComponentHub.DefaultPath"/> and associates
+        /// the component <paramref name="type"/> to this hub instance as the given DOM <paramref name="selector"/>.
+        /// </summary>
+        /// <param name="endpoints">The <see cref="IEndpointRouteBuilder"/>.</param>
+        /// <param name="type">The first <see cref="IComponent"/> associated with this <see cref="ComponentHub"/>.</param>
+        /// <param name="selector">The selector for the component.</param>
+        /// <returns>The <see cref="ComponentEndpointConventionBuilder"/>.</returns>
+        public static ComponentEndpointConventionBuilder MapBlazorHub(
+            this IEndpointRouteBuilder endpoints,
+            Type type,
+            string selector)
+        {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (type == null)
+            {
+                throw new ArgumentNullException(nameof(type));
+            }
+
+            if (selector == null)
+            {
+                throw new ArgumentNullException(nameof(selector));
+            }
+
+            return endpoints.MapBlazorHub(type, selector, ComponentHub.DefaultPath);
         }
 
         /// <summary>
