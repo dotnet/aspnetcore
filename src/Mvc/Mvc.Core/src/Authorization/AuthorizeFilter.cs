@@ -24,7 +24,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
         private MvcOptions _mvcOptions;
-        private AuthorizationPolicy _effectivePolicy;
 
         /// <summary>
         /// Initializes a new <see cref="AuthorizeFilter"/> instance.
@@ -128,13 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
         private async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
         {
-            if (_effectivePolicy != null)
-            {
-                return _effectivePolicy;
-            }
-
             var effectivePolicy = await ComputePolicyAsync();
-            var canCache = PolicyProvider == null;
 
             if (_mvcOptions == null) 
             {
@@ -161,17 +154,10 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                     {
                         // Combine using the explicit policy, or the dynamic policy provider
                         builder.Combine(await authorizeFilter.ComputePolicyAsync());
-                        canCache = canCache && authorizeFilter.PolicyProvider == null;
                     }
                 }
 
-                effectivePolicy = builder?.Build() ?? effectivePolicy;
-            }
-
-            // We can cache the effective policy when there is no custom policy provider
-            if (canCache)
-            {
-                _effectivePolicy = effectivePolicy;
+                effectivePolicy = builder.Build();
             }
 
             return effectivePolicy;
