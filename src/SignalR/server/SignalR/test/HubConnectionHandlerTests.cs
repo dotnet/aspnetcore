@@ -2927,7 +2927,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             using (var client = new TestClient())
             {
                 var connectionHandlerTask = await client.ConnectAsync(connectionHandler).OrTimeout();
-                await client.BeginUploadStreamAsync("invocation", nameof(MethodHub.StreamDontRead), new[] { "id" }, Array.Empty<object>());
+                await client.BeginUploadStreamAsync("invocationId", nameof(MethodHub.StreamDontRead), new[] { "id" }, Array.Empty<object>()).OrTimeout();
 
                 foreach (var letter in new[] { "A", "B", "C", "D", "E" })
                 {
