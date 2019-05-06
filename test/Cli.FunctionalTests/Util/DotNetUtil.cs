@@ -64,8 +64,8 @@ namespace Cli.FunctionalTests.Util
             var runtimeVersionString = Regex.Match(info, runtimeVersionPattern, RegexOptions.RightToLeft).Groups[1].Value;
             var runtimeVersion = SemanticVersion.Parse(runtimeVersionString);
 
-            // Supported version range is [2.1.300,2.2.100] (inclusive)
-            if (sdkVersion >= new SemanticVersion(2, 1, 300) && sdkVersion <= new SemanticVersion(2, 2, 100))
+            // Supported version range is [2.1.300,2.2.210] (inclusive)
+            if (sdkVersion >= new SemanticVersion(2, 1, 300) && sdkVersion <= new SemanticVersion(2, 2, 210))
             {
                 return (sdkVersion, runtimeVersion);
             }
