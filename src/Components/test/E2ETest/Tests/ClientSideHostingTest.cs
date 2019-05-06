@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
@@ -37,34 +38,35 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void MapFallbackToClientSideBlazor_FilePath()
         {
-            Navigate("/filepath", noReload: true);
+            Navigate("/filepath");
             WaitUntilLoaded();
-            Assert.NotNull(Browser.FindElement(By.Id("test-selector")).Text);
+            Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }
 
         [Fact]
         public void MapFallbackToClientSideBlazor_Pattern_FilePath()
         {
-            Navigate("/pattern_filepath/test", noReload: true);
+            Navigate("/pattern_filepath/test");
             WaitUntilLoaded();
-            Assert.NotNull(Browser.FindElement(By.Id("test-selector")).Text);
+            Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }
 
         [Fact]
         public void MapFallbackToClientSideBlazor_AssemblyPath_FilePath()
         {
-            Navigate("/assemblypath_filepath", noReload: true);
+            Navigate("/assemblypath_filepath");
             WaitUntilLoaded();
-            Assert.NotNull(Browser.FindElement(By.Id("test-selector")).Text);
+            Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }
 
         [Fact]
         public void MapFallbackToClientSideBlazor_AssemblyPath_Pattern_FilePath()
         {
-            Navigate("/assemblypath_pattern_filepath/test", noReload: true);
+            Navigate("/assemblypath_pattern_filepath/test");
             WaitUntilLoaded();
-            Assert.NotNull(Browser.FindElement(By.Id("test-selector")).Text);
+            Assert.NotNull(Browser.FindElement(By.Id("test-selector")));
         }
+
 
         private void WaitUntilLoaded()
         {
