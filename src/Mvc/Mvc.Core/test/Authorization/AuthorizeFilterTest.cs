@@ -514,26 +514,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         [Fact]
-        public async Task GetEffectivePolicyAsync_ReturnsCurrentPolicy_WhenNoEndpointMetadataIsAvailable()
-        {
-            // Arrange
-            var policy = new AuthorizationPolicyBuilder()
-                .RequireAssertion(_ => true)
-                .Build();
-            var filter = new AuthorizeFilter(policy);
-
-            var context = new AuthorizationFilterContext(ActionContext, new[] { filter });
-
-            // Act
-            var effectivePolicy = await filter.GetEffectivePolicyAsync(context);
-
-            // Assert
-            //
-            // Verify the policy is cached
-            Assert.Same(effectivePolicy, await filter.GetEffectivePolicyAsync(context));
-        }
-
-        [Fact]
         public async Task GetEffectivePolicyAsync_CombinesPoliciesFromAuthFilters()
         {
             // Arrange
