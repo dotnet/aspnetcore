@@ -245,8 +245,8 @@ namespace Templates.Test.SpaTemplateTest
                 var badEntries = entries.Where(e => new LogLevel[] { LogLevel.Warning, LogLevel.Severe }.Contains(e.Level));
 
                 badEntries = badEntries.Where(e =>
-                    !e.Message.EndsWith("failed: WebSocket is closed before the connection is established.")
-                    || !e.Message.EndsWith("[WDS] Disconnected!"));
+                    !e.Message.Contains("failed: WebSocket is closed before the connection is established.")
+                    || !e.Message.Contains("[WDS] Disconnected!"));
 
                 Assert.True(badEntries.Count() == 0, "There were Warnings or Errors from the browser." + Environment.NewLine + string.Join(Environment.NewLine, badEntries));
             }
