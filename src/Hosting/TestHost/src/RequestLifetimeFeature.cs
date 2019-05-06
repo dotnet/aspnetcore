@@ -8,14 +8,17 @@ namespace Microsoft.AspNetCore.Http.Features
 {
     internal class RequestLifetimeFeature : IHttpRequestLifetimeFeature
     {
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+        private readonly CancellationTokenSource _abortableCancellationTokenSource = new CancellationTokenSource();
+        private CancellationTokenSource _linkedCancellationTokenSource;
 
         public CancellationToken RequestAborted
         {
-            get => _cancellationTokenSource.Token;
-            set => throw new NotSupportedException();
+            get => _linkedCancellationTokenSource?.Token ?? _abortableCancellationTokenSource.Token;
+            set => _linkedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
+                    token1: _abortableCancellationTokenSource.Token,
+                    token2: value);
         }
 
-        public void Abort() => _cancellationTokenSource.Cancel();
+        public void Abort() => _abortableCancellationTokenSource.Cancel();
     }
 }
