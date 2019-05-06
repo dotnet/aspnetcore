@@ -346,8 +346,11 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             // if they already have [Required] then there's no need for us to do this check.
             if (!_options.SuppressImplicitRequiredAttributeForNonNullableReferenceTypes &&
                 requiredAttribute == null && 
-                !context.Key.ModelType.IsValueType && 
-                IsNonNullable(context.Attributes))
+                !context.Key.ModelType.IsValueType &&
+
+                // Look specifically at attributes on the property/parameter. [Nullable] on
+                // the type has a different meaning.
+                IsNonNullable(context.ParameterAttributes ?? context.PropertyAttributes ?? Array.Empty<object>()))
             {
                 // Since this behavior specifically relates to non-null-ness, we will use the non-default
                 // option to tolerate empty/whitespace strings. empty/whitespace INPUT will still result in

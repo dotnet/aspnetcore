@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
-                ParameterType = typeof(KeyValuePair<string, int>?)
+                ParameterType = typeof(KeyValuePair<string, int>)
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
@@ -337,9 +337,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.Equal(new KeyValuePair<string, int>(), modelBindingResult.Model);
 
-            Assert.Empty(modelState);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "Key").Value;
+            Assert.Single(entry.Errors);
         }
 
         private class Person
@@ -482,7 +484,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var parameter = new ParameterDescriptor()
             {
                 Name = "parameter",
-                ParameterType = typeof(KeyValuePair<string, Person>?)
+                ParameterType = typeof(KeyValuePair<string, Person>)
             };
 
             var testContext = ModelBindingTestHelper.GetTestContext(request =>
@@ -500,9 +502,14 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.Equal(new KeyValuePair<string, Person>(), modelBindingResult.Model);
 
-            Assert.Empty(modelState);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
+            Assert.Equal(2, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, kvp => kvp.Key == "Key").Value;
+            Assert.Single(entry.Errors);
+
+            entry = Assert.Single(modelState, kvp => kvp.Key == "Value").Value;
+            Assert.Single(entry.Errors);
         }
 
         [Fact]

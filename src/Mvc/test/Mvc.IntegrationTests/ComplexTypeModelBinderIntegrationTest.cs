@@ -1715,9 +1715,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
         private class Order8
         {
-            public string Name { get; set; }
+            public string Name { get; set; } = default!;
 
-            public KeyValuePair<string, int>? ProductId { get; set; }
+            public KeyValuePair<string, int> ProductId { get; set; }
         }
 
         [Fact]
@@ -1869,13 +1869,15 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", model.Name);
             Assert.Equal(default, model.ProductId);
 
-            Assert.Single(modelState);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
 
             var entry = Assert.Single(modelState, e => e.Key == "parameter.Name").Value;
             Assert.Equal("bill", entry.AttemptedValue);
             Assert.Equal("bill", entry.RawValue);
+
+            entry = Assert.Single(modelState, e => e.Key == "parameter.ProductId.Key").Value;
+            Assert.Single(entry.Errors);
         }
 
         [Fact]
@@ -1916,9 +1918,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(model.Name);
             Assert.Equal(default, model.ProductId);
 
-            Assert.Empty(modelState);
-            Assert.Equal(0, modelState.ErrorCount);
-            Assert.True(modelState.IsValid);
+            Assert.Equal(1, modelState.ErrorCount);
+            Assert.False(modelState.IsValid);
+
+            var entry = Assert.Single(modelState, e => e.Key == "ProductId.Key").Value;
+            Assert.Single(entry.Errors);
         }
 
         private class Car4

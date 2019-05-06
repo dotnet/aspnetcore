@@ -2818,6 +2818,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public ValidationMetadataProviderContext(Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity key, Microsoft.AspNetCore.Mvc.ModelBinding.ModelAttributes attributes) { }
         public System.Collections.Generic.IReadOnlyList<object> Attributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ModelMetadataIdentity Key { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public System.Collections.Generic.IReadOnlyList<object> ParameterAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IReadOnlyList<object> PropertyAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Collections.Generic.IReadOnlyList<object> TypeAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.ValidationMetadata ValidationMetadata { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
