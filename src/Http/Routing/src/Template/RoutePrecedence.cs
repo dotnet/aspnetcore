@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -36,6 +37,24 @@ namespace Microsoft.AspNetCore.Routing.Template
             return precedence;
         }
 
+        // See description on ComputeInbound(RouteTemplate)
+        internal static decimal ComputeInbound(RoutePattern routePattern)
+        {
+            var precedence = 0m;
+
+            for (var i = 0; i < routePattern.PathSegments.Count; i++)
+            {
+                var segment = routePattern.PathSegments[i];
+
+                var digit = ComputeInboundPrecedenceDigit(segment);
+                Debug.Assert(digit >= 0 && digit < 10);
+
+                precedence += decimal.Divide(digit, (decimal)Math.Pow(10, i));
+            }
+
+            return precedence;
+        }
+
         // Compute the precedence for generating a url
         // e.g.: /api/template          == 5.5
         //       /api/template/{id}     == 5.53
@@ -50,6 +69,26 @@ namespace Microsoft.AspNetCore.Routing.Template
             for (var i = 0; i < template.Segments.Count; i++)
             {
                 var segment = template.Segments[i];
+
+                var digit = ComputeOutboundPrecedenceDigit(segment);
+                Debug.Assert(digit >= 0 && digit < 10);
+
+                precedence += decimal.Divide(digit, (decimal)Math.Pow(10, i));
+            }
+
+            return precedence;
+        }
+
+        // see description on ComputeOutbound(RouteTemplate)
+        internal static decimal ComputeOutbound(RoutePattern routePattern)
+        {
+            // Each precedence digit corresponds to one decimal place. For example, 3 segments with precedences 2, 1,
+            // and 4 results in a combined precedence of 2.14 (decimal).
+            var precedence = 0m;
+
+            for (var i = 0; i < routePattern.PathSegments.Count; i++)
+            {
+                var segment = routePattern.PathSegments[i];
 
                 var digit = ComputeOutboundPrecedenceDigit(segment);
                 Debug.Assert(digit >= 0 && digit < 10);
@@ -92,6 +131,38 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
+        // See description on ComputeOutboundPrecedenceDigit(TemplateSegment segment)
+        private static int ComputeOutboundPrecedenceDigit(RoutePatternPathSegment pathSegment)
+        {
+            if (pathSegment.Parts.Count > 1)
+            {
+                return 4;
+            }
+
+            var part = pathSegment.Parts[0];
+            if (part.IsLiteral)
+            {
+                return 5;
+            }
+            else if (part is RoutePatternParameterPart parameterPart)
+            {
+                Debug.Assert(parameterPart != null);
+                var digit = parameterPart.IsCatchAll ? 1 : 3;
+
+                if (parameterPart.ParameterPolicies.Count > 0)
+                {
+                    digit++;
+                }
+
+                return digit;
+            }
+            else
+            {
+                // Unreachable
+                throw new NotSupportedException();
+            }
+        }
+
         // Segments have the following order:
         // 1 - Literal segments
         // 2 - Constrained parameter segments / Multi-part segments
@@ -125,6 +196,41 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
 
                 return digit;
+            }
+        }
+
+        // see description on ComputeInboundPrecedenceDigit(TemplateSegment segment)
+        private static int ComputeInboundPrecedenceDigit(RoutePatternPathSegment pathSegment)
+        {
+            if (pathSegment.Parts.Count > 1)
+            {
+                // Multi-part segments should appear after literal segments and along with parameter segments
+                return 2;
+            }
+
+            var part = pathSegment.Parts[0];
+            // Literal segments always go first
+            if (part.IsLiteral)
+            {
+                return 1;
+            }
+            else if (part is RoutePatternParameterPart parameterPart)
+            {
+                var digit = parameterPart.IsCatchAll ? 5 : 3;
+
+                // If there is a route constraint for the parameter, reduce order by 1
+                // Constrained parameters end up with order 2, Constrained catch alls end up with order 4
+                if (parameterPart.ParameterPolicies.Count > 0)
+                {
+                    digit--;
+                }
+
+                return digit;
+            }
+            else
+            {
+                // Unreachable
+                throw new NotSupportedException();
             }
         }
     }

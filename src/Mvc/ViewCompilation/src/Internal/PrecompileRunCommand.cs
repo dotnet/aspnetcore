@@ -179,7 +179,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             // Post process the compilation - run ExpressionRewritter and any user specified callbacks.            
             compilation = ExpressionRewriter.Rewrite(compilation);
             var compilationContext = new RoslynCompilationContext(compilation);
+#pragma warning disable CS0618 // Type or member is obsolete
             MvcServiceProvider.ViewEngineOptions.CompilationCallback(compilationContext);
+#pragma warning restore CS0618 // Type or member is obsolete
             compilation  = AssemblyMetadataGenerator.AddAssemblyMetadata(
                 compiler, 
                 compilationContext.Compilation,

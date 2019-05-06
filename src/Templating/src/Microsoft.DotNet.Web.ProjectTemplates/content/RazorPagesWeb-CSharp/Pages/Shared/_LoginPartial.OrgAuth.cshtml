@@ -9,39 +9,49 @@
 
 #endif *@
 
+<ul class="navbar-nav">
 @*#if (IndividualB2CAuth)
 @if (User.Identity.IsAuthenticated)
 {
-    <ul class="nav navbar-nav navbar-right">
         @if (!string.IsNullOrEmpty(options.EditProfilePolicyId))
         {
-            <li><a asp-area="AzureADB2C" asp-controller="Account" asp-action="EditProfile">Hello @User.Identity.Name!</a></li>
+            <li class="nav-item">
+                <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="EditProfile">
+                    <span class="nav-text text-dark">Hello @User.Identity.Name!</span>
+                </a>
+            </li>
         }
         else
         {
-            <li class="navbar-text">Hello @User.Identity.Name!</li>
+            <li class="nav-item">
+                <span class="nav-text text-dark">Hello @User.Identity.Name!</span>
+            </li>
         }
-        <li><a asp-area="AzureADB2C" asp-controller="Account" asp-action="SignOut">Sign out</a></li>
-    </ul>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="SignOut">Sign out</a>
+        </li>
 }
 else
 {
-    <ul class="nav navbar-nav navbar-right">
-        <li><a asp-area="AzureADB2C" asp-controller="Account" asp-action="SignIn">Sign in</a></li>
-    </ul>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="AzureADB2C" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
 }
 #else
 @if (User.Identity.IsAuthenticated)
 {
-    <ul class="nav navbar-nav navbar-right">
-        <li class="navbar-text">Hello @User.Identity.Name!</li>
-        <li><a asp-area="AzureAD" asp-controller="Account" asp-action="SignOut">Sign out</a></li>
-    </ul>
+        <li class="nav-item">
+            <span class="nav-text text-dark">Hello @User.Identity.Name!</span>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="AzureAD" asp-controller="Account" asp-action="SignOut">Sign out</a>
+        </li>
 }
 else
 {
-    <ul class="nav navbar-nav navbar-right">
-        <li><a asp-area="AzureAD" asp-controller="Account" asp-action="SignIn">Sign in</a></li>
-    </ul>
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-area="AzureAD" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
 }
 #endif *@
+</ul>

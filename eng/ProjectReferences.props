@@ -13,8 +13,9 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Cryptography.Internal" ProjectPath="$(RepositoryRoot)src\DataProtection\Cryptography.Internal\src\Microsoft.AspNetCore.Cryptography.Internal.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" ProjectPath="$(RepositoryRoot)src\DataProtection\Cryptography.KeyDerivation\src\Microsoft.AspNetCore.Cryptography.KeyDerivation.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection" ProjectPath="$(RepositoryRoot)src\DataProtection\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.EntityFrameworkCore" ProjectPath="$(RepositoryRoot)src\DataProtection\EntityFrameworkCore\src\Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Extensions" ProjectPath="$(RepositoryRoot)src\DataProtection\Extensions\src\Microsoft.AspNetCore.DataProtection.Extensions.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.Redis" ProjectPath="$(RepositoryRoot)src\DataProtection\Redis\src\Microsoft.AspNetCore.DataProtection.Redis.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.StackExchangeRedis" ProjectPath="$(RepositoryRoot)src\DataProtection\StackExchangeRedis\src\Microsoft.AspNetCore.DataProtection.StackExchangeRedis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DataProtection.SystemWeb" ProjectPath="$(RepositoryRoot)src\DataProtection\SystemWeb\src\Microsoft.AspNetCore.DataProtection.SystemWeb.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Antiforgery" ProjectPath="$(RepositoryRoot)src\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Hosting.Abstractions" ProjectPath="$(RepositoryRoot)src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj" />
@@ -35,6 +36,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Routing" ProjectPath="$(RepositoryRoot)src\Http\Routing\src\Microsoft.AspNetCore.Routing.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.WebUtilities" ProjectPath="$(RepositoryRoot)src\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Html.Abstractions" ProjectPath="$(RepositoryRoot)src\Html\Abstractions\src\Microsoft.AspNetCore.Html.Abstractions.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.ApiAuthorization.IdentityServer" ProjectPath="$(RepositoryRoot)src\Identity\ApiAuthorization.IdentityServer\src\Microsoft.AspNetCore.ApiAuthorization.IdentityServer.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity" ProjectPath="$(RepositoryRoot)src\Identity\Core\src\Microsoft.AspNetCore.Identity.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" ProjectPath="$(RepositoryRoot)src\Identity\EntityFrameworkCore\src\Microsoft.AspNetCore.Identity.EntityFrameworkCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.Extensions.Identity.Core" ProjectPath="$(RepositoryRoot)src\Identity\Extensions.Core\src\Microsoft.Extensions.Identity.Core.csproj" />
@@ -44,6 +46,8 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Connections.Abstractions" ProjectPath="$(RepositoryRoot)src\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.HttpSys" ProjectPath="$(RepositoryRoot)src\Servers\HttpSys\src\Microsoft.AspNetCore.Server.HttpSys.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IISIntegration" ProjectPath="$(RepositoryRoot)src\Servers\IIS\IISIntegration\src\Microsoft.AspNetCore.Server.IISIntegration.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IIS" ProjectPath="$(RepositoryRoot)src\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.IntegrationTesting.IIS" ProjectPath="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Core" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel.Https" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Https\src\Microsoft.AspNetCore.Server.Kestrel.Https.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Server.Kestrel" ProjectPath="$(RepositoryRoot)src\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj" />
@@ -69,6 +73,8 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.Abstractions" ProjectPath="$(RepositoryRoot)src\Middleware\Diagnostics.Abstractions\src\Microsoft.AspNetCore.Diagnostics.Abstractions.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" ProjectPath="$(RepositoryRoot)src\Middleware\Diagnostics.EntityFrameworkCore\src\Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics" ProjectPath="$(RepositoryRoot)src\Middleware\Diagnostics\src\Microsoft.AspNetCore.Diagnostics.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" ProjectPath="$(RepositoryRoot)src\Middleware\HealthChecks.EntityFrameworkCore\src\Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Diagnostics.HealthChecks" ProjectPath="$(RepositoryRoot)src\Middleware\HealthChecks\src\Microsoft.AspNetCore.Diagnostics.HealthChecks.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.HostFiltering" ProjectPath="$(RepositoryRoot)src\Middleware\HostFiltering\src\Microsoft.AspNetCore.HostFiltering.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpOverrides" ProjectPath="$(RepositoryRoot)src\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.HttpsPolicy" ProjectPath="$(RepositoryRoot)src\Middleware\HttpsPolicy\src\Microsoft.AspNetCore.HttpsPolicy.csproj" />
@@ -91,7 +97,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Design" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Design\src\Microsoft.AspNetCore.Razor.Design.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Language" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Language\src\Microsoft.AspNetCore.Razor.Language.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Runtime" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Runtime\src\Microsoft.AspNetCore.Razor.Runtime.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Tasks" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Tasks\src\Microsoft.AspNetCore.Razor.Tasks.csproj" />
     <ProjectReferenceProvider Include="rzc" ProjectPath="$(RepositoryRoot)src\Razor\Razor.Tools\src\rzc.csproj" />
     <ProjectReferenceProvider Include="dotnet-razorpagegenerator" ProjectPath="$(RepositoryRoot)src\Razor\RazorPageGenerator\src\dotnet-razorpagegenerator.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor" ProjectPath="$(RepositoryRoot)src\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj" />
@@ -100,9 +105,10 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim.Version1_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Razor.Test.MvcShim" ProjectPath="$(RepositoryRoot)src\Razor\test\testassets\Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepositoryRoot)src\Mvc\Extensions.ApiDescription.Design\src\Microsoft.Extensions.ApiDescription.Design.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Abstractions" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Abstractions\src\Microsoft.AspNetCore.Mvc.Abstractions.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Analyzers.Experimental" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Analyzers.Experimental\src\Microsoft.AspNetCore.Mvc.Analyzers.Experimental.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Analyzers" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Analyzers\src\Microsoft.AspNetCore.Mvc.Analyzers.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Api.Analyzers\src\Microsoft.AspNetCore.Mvc.Api.Analyzers.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ApiExplorer" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.ApiExplorer\src\Microsoft.AspNetCore.Mvc.ApiExplorer.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Core" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Cors" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.Cors\src\Microsoft.AspNetCore.Mvc.Cors.csproj" />
@@ -117,8 +123,6 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.ViewFeatures" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.ViewFeatures\src\Microsoft.AspNetCore.Mvc.ViewFeatures.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc.WebApiCompatShim\src\Microsoft.AspNetCore.Mvc.WebApiCompatShim.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc" ProjectPath="$(RepositoryRoot)src\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TestCommon" ProjectPath="$(RepositoryRoot)src\Mvc\shared\Mvc.TestCommon\Microsoft.AspNetCore.Mvc.TestCommon.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.TestDiagnosticListener" ProjectPath="$(RepositoryRoot)src\Mvc\shared\Mvc.TestDiagnosticListener\Microsoft.AspNetCore.Mvc.TestDiagnosticListener.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" ProjectPath="$(RepositoryRoot)src\Mvc\ViewCompilation\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" ProjectPath="$(RepositoryRoot)src\Azure\ApplicationInsights.HostingStartup\src\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" ProjectPath="$(RepositoryRoot)src\Azure\AzureAD\Authentication.AzureAD.UI\src\Microsoft.AspNetCore.Authentication.AzureAD.UI.csproj" />
@@ -136,5 +140,7 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Core" ProjectPath="$(RepositoryRoot)src\SignalR\server\Core\src\Microsoft.AspNetCore.SignalR.Core.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Redis" ProjectPath="$(RepositoryRoot)src\SignalR\server\Redis\src\Microsoft.AspNetCore.SignalR.Redis.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR" ProjectPath="$(RepositoryRoot)src\SignalR\server\SignalR\src\Microsoft.AspNetCore.SignalR.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepositoryRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj" />
+    <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" ProjectPath="$(RepositoryRoot)src\SignalR\server\StackExchangeRedis\src\Microsoft.AspNetCore.SignalR.StackExchangeRedis.csproj" />
   </ItemGroup>
 </Project>

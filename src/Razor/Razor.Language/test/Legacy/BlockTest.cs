@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Arrange
             var spanBuilder = new SpanBuilder(SourceLocation.Zero);
-            spanBuilder.Accept(new HtmlSymbol("hello", HtmlSymbolType.Text));
+            spanBuilder.Accept(new HtmlToken("hello", HtmlTokenType.Text));
             var span = spanBuilder.Build();
             var blockBuilder = new BlockBuilder()
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var parentBlock = blockBuilder.Build();
             var originalBlockLength = parentBlock.Length;
             spanBuilder = new SpanBuilder(SourceLocation.Zero);
-            spanBuilder.Accept(new HtmlSymbol("hi", HtmlSymbolType.Text));
+            spanBuilder.Accept(new HtmlToken("hi", HtmlTokenType.Text));
             span.ReplaceWith(spanBuilder);
             
             // Wire up parents now so we can re-trigger ChildChanged to cause cache refresh.

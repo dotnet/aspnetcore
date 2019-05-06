@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (_fileCompletionInfoPtr == IntPtr.Zero)
             {
-                var fileCompletionInfo = new FILE_COMPLETION_INFORMATION() { Key = IntPtr.Zero, Port = IntPtr.Zero };
+                var fileCompletionInfo = new FILE_COMPLETION_INFORMATION { Key = IntPtr.Zero, Port = IntPtr.Zero };
                 _fileCompletionInfoPtr = Marshal.AllocHGlobal(Marshal.SizeOf(fileCompletionInfo));
                 Marshal.StructureToPtr(fileCompletionInfo, _fileCompletionInfoPtr, false);
             }

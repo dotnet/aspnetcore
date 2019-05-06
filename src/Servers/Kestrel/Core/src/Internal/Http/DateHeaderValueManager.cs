@@ -19,20 +19,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private DateHeaderValues _dateValues;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DateHeaderValueManager"/> class.
-        /// </summary>
-        public DateHeaderValueManager()
-            : this(systemClock: new SystemClock())
-        {
-        }
-
-        // Internal for testing
-        internal DateHeaderValueManager(ISystemClock systemClock)
-        {
-            SetDateValues(systemClock.UtcNow);
-        }
-
-        /// <summary>
         /// Returns a value representing the current server date/time for use in the HTTP "Date" response header
         /// in accordance with http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.18
         /// </summary>
@@ -56,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Buffer.BlockCopy(_datePreambleBytes, 0, dateBytes, 0, _datePreambleBytes.Length);
             Encoding.ASCII.GetBytes(dateValue, 0, dateValue.Length, dateBytes, _datePreambleBytes.Length);
 
-            var dateValues = new DateHeaderValues()
+            var dateValues = new DateHeaderValues
             {
                 Bytes = dateBytes,
                 String = dateValue

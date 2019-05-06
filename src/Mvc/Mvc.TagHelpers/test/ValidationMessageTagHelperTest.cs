@@ -357,10 +357,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Theory]
-        [InlineData("Content of validation message", "Content of validation message")]
-        [InlineData("\r\n  \r\n", "New HTML")]
+        [InlineData("Content of validation message", "Content of validation message", "New HTML")]
+        [InlineData("\r\n  \r\n", null, "New HTML")]
         public async Task ProcessAsync_MergesTagBuilderFromGenerateValidationMessage(
             string childContent,
+            string expectedMessage,
             string expectedOutputContent)
         {
             // Arrange
@@ -375,7 +376,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     It.IsAny<ViewContext>(),
                     It.IsAny<ModelExplorer>(),
                     It.IsAny<string>(),
-                    It.IsAny<string>(),
+                    expectedMessage,
                     It.IsAny<string>(),
                     It.IsAny<object>()))
                 .Returns(tagBuilder);

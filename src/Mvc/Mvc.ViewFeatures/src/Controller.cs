@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets <see cref="ViewDataDictionary"/> used by <see cref="ViewResult"/> and <see cref="ViewBag"/>.
         /// </summary>
         /// <remarks>
-        /// By default, this property is intiailized when <see cref="Controllers.IControllerActivator"/> activates
+        /// By default, this property is initialized when <see cref="Controllers.IControllerActivator"/> activates
         /// controllers.
         /// <para>
         /// This property can be accessed after the controller has been activated, for example, in a controller action

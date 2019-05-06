@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
-using Microsoft.AspNetCore.Mvc.TestCommon;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Rendering

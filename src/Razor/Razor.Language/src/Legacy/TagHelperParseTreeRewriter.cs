@@ -136,8 +136,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // scope. Block scopes are special cases in Razor such as @<p> would cause an error because there's no
                 // matching end </p> tag in the template block scope and therefore doesn't make sense as a tag helper.
                 BuildMalformedTagHelpers(_trackerStack.Count - activeTrackers, errorSink);
-
-                Debug.Assert(activeTrackers == _trackerStack.Count);
             }
 
             BuildCurrentlyTrackedBlock();
@@ -370,12 +368,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     // We can assume the first span will always contain attributename=" and the last span will always
                     // contain the final quote. Therefore, if the values not quoted there's no ending quote to skip.
                     var childOffset = 0;
-                    if (childSpan.Symbols.Count > 0)
+                    if (childSpan.Tokens.Count > 0)
                     {
-                        var potentialQuote = childSpan.Symbols[childSpan.Symbols.Count - 1] as HtmlSymbol;
+                        var potentialQuote = childSpan.Tokens[childSpan.Tokens.Count - 1] as HtmlToken;
                         if (potentialQuote != null &&
-                            (potentialQuote.Type == HtmlSymbolType.DoubleQuote ||
-                            potentialQuote.Type == HtmlSymbolType.SingleQuote))
+                            (potentialQuote.Type == HtmlTokenType.DoubleQuote ||
+                            potentialQuote.Type == HtmlTokenType.SingleQuote))
                         {
                             childOffset = 1;
                         }
@@ -391,9 +389,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         else
                         {
                             var valueChildSpan = (Span)valueChild;
-                            for (var k = 0; k < valueChildSpan.Symbols.Count; k++)
+                            for (var k = 0; k < valueChildSpan.Tokens.Count; k++)
                             {
-                                _attributeValueBuilder.Append(valueChildSpan.Symbols[k].Content);
+                                _attributeValueBuilder.Append(valueChildSpan.Tokens[k].Content);
                             }
                         }
                     }
@@ -404,43 +402,43 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                     var afterEquals = false;
                     var atValue = false;
-                    var endValueMarker = childSpan.Symbols.Count;
+                    var endValueMarker = childSpan.Tokens.Count;
 
                     // Entire attribute is a string
                     for (var j = 0; j < endValueMarker; j++)
                     {
-                        var htmlSymbol = (HtmlSymbol)childSpan.Symbols[j];
+                        var htmlToken = (HtmlToken)childSpan.Tokens[j];
 
                         if (!afterEquals)
                         {
-                            afterEquals = htmlSymbol.Type == HtmlSymbolType.Equals;
+                            afterEquals = htmlToken.Type == HtmlTokenType.Equals;
                             continue;
                         }
 
                         if (!atValue)
                         {
-                            atValue = htmlSymbol.Type != HtmlSymbolType.WhiteSpace &&
-                                htmlSymbol.Type != HtmlSymbolType.NewLine;
+                            atValue = htmlToken.Type != HtmlTokenType.WhiteSpace &&
+                                htmlToken.Type != HtmlTokenType.NewLine;
 
                             if (atValue)
                             {
-                                if (htmlSymbol.Type == HtmlSymbolType.DoubleQuote ||
-                                    htmlSymbol.Type == HtmlSymbolType.SingleQuote)
+                                if (htmlToken.Type == HtmlTokenType.DoubleQuote ||
+                                    htmlToken.Type == HtmlTokenType.SingleQuote)
                                 {
                                     endValueMarker--;
                                 }
                                 else
                                 {
-                                    // Current symbol is considered the value (unquoted). Add its content to the
+                                    // Current token is considered the value (unquoted). Add its content to the
                                     // attribute value builder before we move past it.
-                                    _attributeValueBuilder.Append(htmlSymbol.Content);
+                                    _attributeValueBuilder.Append(htmlToken.Content);
                                 }
                             }
 
                             continue;
                         }
 
-                        _attributeValueBuilder.Append(htmlSymbol.Content);
+                        _attributeValueBuilder.Append(htmlToken.Content);
                     }
                 }
 
@@ -642,11 +640,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // If our tag end is not a markup span it means it's some sort of code SyntaxTreeNode (not a valid format)
             if (tagEnd != null && tagEnd.Kind == SpanKindInternal.Markup)
             {
-                var endSymbol = tagEnd.Symbols.Count > 0 ?
-                    tagEnd.Symbols[tagEnd.Symbols.Count - 1] as HtmlSymbol :
+                var endToken = tagEnd.Tokens.Count > 0 ?
+                    tagEnd.Tokens[tagEnd.Tokens.Count - 1] as HtmlToken :
                     null;
 
-                if (endSymbol != null && endSymbol.Type == HtmlSymbolType.CloseAngle)
+                if (endToken != null && endToken.Type == HtmlTokenType.CloseAngle)
                 {
                     return false;
                 }
@@ -793,25 +791,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             var childSpan = (Span)child;
-            HtmlSymbol textSymbol = null;
-            for (var i = 0; i < childSpan.Symbols.Count; i++)
+            HtmlToken textToken = null;
+            for (var i = 0; i < childSpan.Tokens.Count; i++)
             {
-                var symbol = childSpan.Symbols[i] as HtmlSymbol;
+                var token = childSpan.Tokens[i] as HtmlToken;
 
-                if (symbol != null &&
-                    (symbol.Type & (HtmlSymbolType.WhiteSpace | HtmlSymbolType.Text)) == symbol.Type)
+                if (token != null &&
+                    (token.Type & (HtmlTokenType.WhiteSpace | HtmlTokenType.Text)) == token.Type)
                 {
-                    textSymbol = symbol;
+                    textToken = token;
                     break;
                 }
             }
 
-            if (textSymbol == null)
+            if (textToken == null)
             {
                 return null;
             }
 
-            return textSymbol.Type == HtmlSymbolType.WhiteSpace ? null : textSymbol.Content;
+            return textToken.Type == HtmlTokenType.WhiteSpace ? null : textToken.Content;
         }
 
         private static bool IsEndTag(Block tagBlock)
@@ -820,10 +818,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             var childSpan = (Span)tagBlock.Children.First();
 
-            // We grab the symbol that could be forward slash
-            var relevantSymbol = (HtmlSymbol)childSpan.Symbols[childSpan.Symbols.Count == 1 ? 0 : 1];
+            // We grab the token that could be forward slash
+            var relevantToken = (HtmlToken)childSpan.Tokens[childSpan.Tokens.Count == 1 ? 0 : 1];
 
-            return relevantSymbol.Type == HtmlSymbolType.ForwardSlash;
+            return relevantToken.Type == HtmlTokenType.ForwardSlash;
         }
 
         internal static bool IsComment(Span span)

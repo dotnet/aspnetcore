@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI.Internal
     /// directly from your code.This API may change or be removed in future releases
     /// </summary>
     [AllowAnonymous]
+    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
     public class ErrorModel : PageModel
     {
         /// <summary>
@@ -31,7 +32,6 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI.Internal
         /// This API supports infrastructure and is not intended to be used
         /// directly from your code.This API may change or be removed in future releases
         /// </summary>
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public void OnGet()
         {
             RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier;

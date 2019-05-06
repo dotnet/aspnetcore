@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Routing.Logging
             _matchedRoute = LoggerMessage.Define<string, string>(
                 LogLevel.Debug,
                 1,
-                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'.");
+                "Request successfully matched the route with name '{RouteName}' and template '{RouteTemplate}'");
         }
 
         public static void MatchedRoute(

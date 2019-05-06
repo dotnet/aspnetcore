@@ -196,11 +196,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             else if (required)
             {
                 // If the section is not found, and it is not optional, throw an error.
-                var message = Resources.FormatSectionNotDefined(
-                    ViewContext.ExecutingFilePath,
-                    sectionName,
-                    ViewContext.View.Path);
-                throw new InvalidOperationException(message);
+                var viewContext = ViewContext;
+                throw new InvalidOperationException(
+                    Resources.FormatSectionNotDefined(
+                        viewContext.ExecutingFilePath,
+                        sectionName,
+                        viewContext.View.Path));
             }
             else
             {

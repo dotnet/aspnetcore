@@ -15,18 +15,23 @@ namespace Microsoft.AspNetCore.Razor.Language
             var syntaxTree = codeDocument.GetSyntaxTree();
             ThrowForMissingDocumentDependency(syntaxTree);
 
-            var feature = Engine.Features.OfType<ITagHelperFeature>().FirstOrDefault();
-            if (feature == null)
+            var descriptors = codeDocument.GetTagHelpers();
+            if (descriptors == null)
             {
-                // No feature, nothing to do.
-                return;
+                var feature = Engine.Features.OfType<ITagHelperFeature>().FirstOrDefault();
+                if (feature == null)
+                {
+                    // No feature, nothing to do.
+                    return;
+                }
+
+                descriptors = feature.GetDescriptors();
             }
 
             // We need to find directives in all of the *imports* as well as in the main razor file
             //
             // The imports come logically before the main razor file and are in the order they
             // should be processed.
-            var descriptors = feature.GetDescriptors();
             var visitor = new DirectiveVisitor(descriptors);
             var imports = codeDocument.GetImportSyntaxTrees();
             if (imports != null)

@@ -7,7 +7,12 @@ namespace FunctionalTests
 {
     public class CoreCLRApplicationTestFixture<TStartup> : ApplicationTestFixture
     {
-        private const string TargetFramework = "netcoreapp2.1";
+        private const string TargetFramework =
+#if NETCOREAPP2_2
+            "netcoreapp2.2";
+#else
+#error Target frameworks need to be updated
+#endif
 
         public CoreCLRApplicationTestFixture()
             : this(typeof(TStartup).Assembly.GetName().Name, null)

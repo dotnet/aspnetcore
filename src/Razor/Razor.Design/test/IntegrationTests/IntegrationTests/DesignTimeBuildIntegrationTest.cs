@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -34,6 +35,34 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             // during a design time build.
             Assert.DoesNotContain("RazorCoreGenerate", result.Output);
             Assert.DoesNotContain("RazorCoreCompile", result.Output);
+        }
+
+        [Fact]
+        [InitializeTestProject("SimpleMvc")]
+        public async Task RazorGenerateDesignTime_ReturnsRazorGenerateWithTargetPath()
+        {
+            var result = await DotnetMSBuild("RazorGenerateDesignTime;_IntrospectRazorGenerateWithTargetPath");
+
+            Assert.BuildPassed(result);
+
+            var filePaths = new string[]
+            {
+                Path.Combine("Views", "Home", "About.cshtml"),
+                Path.Combine("Views", "Home", "Contact.cshtml"),
+                Path.Combine("Views", "Home", "Index.cshtml"),
+                Path.Combine("Views", "Shared", "Error.cshtml"),
+                Path.Combine("Views", "Shared", "_Layout.cshtml"),
+                Path.Combine("Views", "Shared", "_ValidationScriptsPartial.cshtml"),
+                Path.Combine("Views", "_ViewImports.cshtml"),
+                Path.Combine("Views", "_ViewStart.cshtml"),
+            };
+            
+            foreach (var filePath in filePaths)
+            {
+                Assert.BuildOutputContainsLine(
+                    result, 
+                    $@"RazorGenerateWithTargetPath: {filePath} {filePath} {Path.Combine(RazorIntermediateOutputPath, Path.ChangeExtension(filePath, ".g.cshtml.cs"))}");
+            }
         }
     }
 }

@@ -434,10 +434,19 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             internal HTTP_REQUEST_AUTH_INFO* pInfo;
         }
 
+        [Flags]
+        internal enum HTTP_REQUEST_FLAGS
+        {
+            None = 0,
+            MoreEntityBodyExists = 1,
+            IPRouted = 2,
+            Http2 = 4,
+        }
+
         [StructLayout(LayoutKind.Sequential)]
         internal struct HTTP_REQUEST
         {
-            internal uint Flags;
+            internal HTTP_REQUEST_FLAGS Flags;
             internal ulong ConnectionId;
             internal ulong RequestId;
             internal ulong UrlContext;

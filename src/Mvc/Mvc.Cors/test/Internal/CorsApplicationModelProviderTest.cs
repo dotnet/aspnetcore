@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -36,6 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
@@ -55,10 +59,12 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
-        public void CreateControllerModel_CustomCorsFilter_ReplacesHttpConstraints()
+        public void CreateControllerModel_CustomCorsFilter_EnablesCorsPreflight()
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
@@ -73,6 +79,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
@@ -92,6 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
@@ -111,10 +121,12 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
-        public void BuildActionModel_CustomCorsAuthorizationFilterOnAction_ReplacesHttpConstraints()
+        public void BuildActionModel_CustomCorsAuthorizationFilterOnAction_EnablesCorsPreflight()
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
@@ -129,10 +141,12 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
-        public void CreateControllerModel_EnableCorsGloballyReplacesHttpMethodConstraints()
+        public void CreateControllerModel_EnableCorsGloballyEnablesCorsPreflight()
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
@@ -150,10 +164,12 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
-        public void CreateControllerModel_DisableCorsGloballyReplacesHttpMethodConstraints()
+        public void CreateControllerModel_DisableCorsGloballyEnablesCorsPreflight()
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
@@ -169,10 +185,12 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
-        public void CreateControllerModel_CustomCorsFilterGloballyReplacesHttpMethodConstraints()
+        public void CreateControllerModel_CustomCorsFilterGloballyEnablesCorsPreflight()
         {
             // Arrange
             var corsProvider = new CorsApplicationModelProvider();
@@ -188,6 +206,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.True(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         [Fact]
@@ -206,6 +226,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsNotType<CorsHttpMethodActionConstraint>(constraint);
+            var httpMethodMetadata = Assert.Single(selector.EndpointMetadata.OfType<HttpMethodMetadata>());
+            Assert.False(httpMethodMetadata.AcceptCorsPreflight);
         }
 
         private static ApplicationModelProviderContext GetProviderContext(Type controllerType)
@@ -213,7 +235,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             var context = new ApplicationModelProviderContext(new[] { controllerType.GetTypeInfo() });
             var provider = new DefaultApplicationModelProvider(
                 Options.Create(new MvcOptions()),
-                TestModelMetadataProvider.CreateDefaultProvider());
+                new EmptyModelMetadataProvider());
             provider.OnProvidersExecuting(context);
 
             return context;

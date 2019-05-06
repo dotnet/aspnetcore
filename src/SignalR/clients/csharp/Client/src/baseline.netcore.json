@@ -1,0 +1,265 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.SignalR.Client, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Client.HttpConnectionFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.SignalR.Client.IConnectionFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ConnectAsync",
+          "Parameters": [
+            {
+              "Name": "transferFormat",
+              "Type": "Microsoft.AspNetCore.Connections.TransferFormat"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Connections.ConnectionContext>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Client.IConnectionFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "DisposeAsync",
+          "Parameters": [
+            {
+              "Name": "connection",
+              "Type": "Microsoft.AspNetCore.Connections.ConnectionContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.SignalR.Client.IConnectionFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions>"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.SignalR.Client.HubConnectionBuilderHttpExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "WithUrl",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "url",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithUrl",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "url",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureHttpConnection",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithUrl",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "url",
+              "Type": "System.String"
+            },
+            {
+              "Name": "transports",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpTransportType"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithUrl",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "url",
+              "Type": "System.String"
+            },
+            {
+              "Name": "transports",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpTransportType"
+            },
+            {
+              "Name": "configureHttpConnection",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithUrl",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "url",
+              "Type": "System.Uri"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithUrl",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "url",
+              "Type": "System.Uri"
+            },
+            {
+              "Name": "configureHttpConnection",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithUrl",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "url",
+              "Type": "System.Uri"
+            },
+            {
+              "Name": "transports",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpTransportType"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WithUrl",
+          "Parameters": [
+            {
+              "Name": "hubConnectionBuilder",
+              "Type": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder"
+            },
+            {
+              "Name": "url",
+              "Type": "System.Uri"
+            },
+            {
+              "Name": "transports",
+              "Type": "Microsoft.AspNetCore.Http.Connections.HttpTransportType"
+            },
+            {
+              "Name": "configureHttpConnection",
+              "Type": "System.Action<Microsoft.AspNetCore.Http.Connections.Client.HttpConnectionOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.SignalR.Client.IHubConnectionBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

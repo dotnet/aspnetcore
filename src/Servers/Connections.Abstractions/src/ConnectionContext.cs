@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Connections
         {
             // We expect this to be overridden, but this helps maintain back compat
             // with implementations of ConnectionContext that predate the addition of
-            // ConnectioContext.Abort()
+            // ConnectionContext.Abort()
             Features.Get<IConnectionLifetimeFeature>()?.Abort();
         }
 

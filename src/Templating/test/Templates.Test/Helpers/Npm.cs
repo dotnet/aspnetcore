@@ -60,5 +60,14 @@ namespace Templates.Test.Helpers
                 ProcessEx.RunViaShell(output, workingDirectory, "npm install");
             }
         }
+
+        public static void Test(ITestOutputHelper outputHelper, string workingDirectory)
+        {
+            ProcessEx.RunViaShell(outputHelper, workingDirectory, "npm run lint");
+            if (!File.Exists(Path.Join(workingDirectory, "angular.json")))
+            {
+                ProcessEx.RunViaShell(outputHelper, workingDirectory, "npm run test");
+            }
+        }
     }
 }

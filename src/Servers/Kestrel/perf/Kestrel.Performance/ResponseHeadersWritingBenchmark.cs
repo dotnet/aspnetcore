@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 
@@ -25,6 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private TestHttp1Connection _http1Connection;
 
         private MemoryPool<byte> _memoryPool;
+
+        private DuplexPipe.DuplexPipePair _pair;
 
         [Params(
             BenchmarkTypes.TechEmpowerPlaintext,
@@ -115,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _memoryPool = KestrelMemoryPool.Create();
             var options = new PipeOptions(_memoryPool, readerScheduler: PipeScheduler.Inline, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
-            var pair = DuplexPipe.CreateConnectionPair(options, options);
+            _pair = DuplexPipe.CreateConnectionPair(options, options);
 
             var serviceContext = new ServiceContext
             {
@@ -125,17 +127,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 HttpParser = new HttpParser<Http1ParsingHandler>()
             };
 
-            var http1Connection = new TestHttp1Connection(new Http1ConnectionContext
+            var http1Connection = new TestHttp1Connection(new HttpConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
                 MemoryPool = _memoryPool,
-                TimeoutControl = new MockTimeoutControl(),
-                Application = pair.Application,
-                Transport = pair.Transport
+                TimeoutControl = new TimeoutControl(timeoutHandler: null),
+                Transport = _pair.Transport
             });
 
             http1Connection.Reset();
+            serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
 
             _http1Connection = http1Connection;
         }
@@ -143,6 +145,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationCleanup]
         public void Cleanup()
         {
+            _pair.Application.Input.Complete();
+            _pair.Application.Output.Complete();
+            _pair.Transport.Input.Complete();
+            _pair.Transport.Output.Complete();
             _memoryPool.Dispose();
         }
 

@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <RootNamespace>Microsoft.AspNetCore.Mvc.Api.Analyzers</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Mvc.Analyzers\test\Infrastructure\MvcDiagnosticAnalyzerRunner.cs" Link="Infrastructure\MvcDiagnosticAnalyzerRunner.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" />
+
+    <Reference Include="Microsoft.AspNetCore.Analyzer.Testing" />
+    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+  </ItemGroup>
+
+</Project>

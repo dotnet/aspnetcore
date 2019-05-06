@@ -54,12 +54,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            return ruleX != null &&
+            return
                 string.Equals(ruleX.TagName, ruleY.TagName, _stringComparison) &&
                 string.Equals(ruleX.ParentTag, ruleY.ParentTag, _stringComparison) &&
                 ruleX.TagStructure == ruleY.TagStructure &&
-                Enumerable.SequenceEqual(ruleX.Attributes, ruleY.Attributes, _requiredAttributeComparer) &&
-                Enumerable.SequenceEqual(ruleX.Diagnostics, ruleY.Diagnostics);
+                Enumerable.SequenceEqual(ruleX.Attributes, ruleY.Attributes, _requiredAttributeComparer);
         }
 
         public virtual int GetHashCode(TagMatchingRuleDescriptor rule)
@@ -69,18 +68,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(rule));
             }
 
-            var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(rule.TagName, _stringComparer);
-            hashCodeCombiner.Add(rule.ParentTag, _stringComparer);
-            hashCodeCombiner.Add(rule.TagStructure);
+            var hash = HashCodeCombiner.Start();
+            hash.Add(rule.TagName, _stringComparer);
 
-            var attributes = rule.Attributes.OrderBy(attribute => attribute.Name, _stringComparer);
-            foreach (var attribute in attributes)
-            {
-                hashCodeCombiner.Add(_requiredAttributeComparer.GetHashCode(attribute));
-            }
-
-            return hashCodeCombiner.CombinedHash;
+            return hash.CombinedHash;
         }
     }
 }

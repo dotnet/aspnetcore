@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="$(SignalRTestUtilsProject)" />
+
+    <ProjectReference Include="..\..\server\StackExchangeRedis\test\Microsoft.AspNetCore.SignalR.StackExchangeRedis.Tests.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,7 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
-    <Reference Include="Microsoft.AspNetCore.SignalR.Redis" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
     <Reference Include="Moq" />

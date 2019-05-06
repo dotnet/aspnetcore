@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing
     public class VirtualPathContext
     {
         /// <summary>
-        /// Creates a new <see cref="VirtualPathContext"/>.
+        /// Creates a new instance of <see cref="VirtualPathContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="Http.HttpContext"/> associated with the current request.</param>
         /// <param name="ambientValues">The set of route values associated with the current request.</param>
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Creates a new <see cref="VirtualPathContext"/>.
+        /// Creates a new instance of <see cref="VirtualPathContext"/>.
         /// </summary>
         /// <param name="httpContext">The <see cref="Http.HttpContext"/> associated with the current request.</param>
         /// <param name="ambientValues">The set of route values associated with the current request.</param>

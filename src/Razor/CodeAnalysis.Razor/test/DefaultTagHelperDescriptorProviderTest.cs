@@ -4,6 +4,7 @@
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor
@@ -21,6 +22,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var descriptorProvider = new DefaultTagHelperDescriptorProvider();
 
             var context = TagHelperDescriptorProviderContext.Create();
+            context.SetCompilation(compilation);
             context.ExcludeHidden = true;
 
             // Act 
@@ -32,6 +34,21 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.Empty(nullDescriptors);
             var editorBrowsableDescriptor = context.Results.Where(descriptor => descriptor.GetTypeName() == editorBrowsableTypeName);
             Assert.Empty(editorBrowsableDescriptor);
+        }
+
+        [Fact]
+        public void Execute_NoOpsIfCompilationIsNotSet()
+        {
+            // Arrange
+            var descriptorProvider = new DefaultTagHelperDescriptorProvider();
+
+            var context = TagHelperDescriptorProviderContext.Create();
+
+            // Act 
+            descriptorProvider.Execute(context);
+
+            // Assert
+            Assert.Empty(context.Results);
         }
     }
 }

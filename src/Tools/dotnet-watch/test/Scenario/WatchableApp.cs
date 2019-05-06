@@ -42,17 +42,20 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public string SourceDirectory { get; }
 
         public Task HasRestarted()
-            => Process.GetOutputLineAsync(StartedMessage, DefaultMessageTimeOut);
+            => HasRestarted(DefaultMessageTimeOut);
+
+        public Task HasRestarted(TimeSpan timeout)
+            => Process.GetOutputLineAsync(StartedMessage, timeout);
 
         public async Task HasExited()
         {
             await Process.GetOutputLineAsync(ExitingMessage, DefaultMessageTimeOut);
-            await Process.GetOutputLineAsync(WatchExitedMessage, DefaultMessageTimeOut);
+            await Process.GetOutputLineStartsWithAsync(WatchExitedMessage, DefaultMessageTimeOut);
         }
 
-        public async Task IsWaitingForFileChange()
+        public Task IsWaitingForFileChange()
         {
-            await Process.GetOutputLineStartsWithAsync(WaitingForFileChangeMessage, DefaultMessageTimeOut);
+            return Process.GetOutputLineStartsWithAsync(WaitingForFileChangeMessage, DefaultMessageTimeOut);
         }
 
         public bool UsePollingWatcher { get; set; }

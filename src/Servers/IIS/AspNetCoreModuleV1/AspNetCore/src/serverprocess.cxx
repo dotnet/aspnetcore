@@ -35,6 +35,7 @@ SERVER_PROCESS::Initialize(
     m_fBasicAuthEnabled = fBasicAuthEnabled;
     m_fAnonymousAuthEnabled = fAnonymousAuthEnabled;
     m_pProcessManager->ReferenceProcessManager();
+    m_fDebuggerAttached = FALSE;
 
     if (FAILED (hr = m_ProcessPath.Copy(*pszProcessExePath)) ||
         FAILED (hr = m_struLogFile.Copy(*pstruStdoutLogFile))||
@@ -131,7 +132,7 @@ SERVER_PROCESS::SetupListenPort(
     pEnvironmentVarTable->FindKey(ASPNETCORE_PORT_ENV_STR, &pEntry);
     if (pEntry != NULL)
     {
-        if (pEntry->QueryValue() != NULL || pEntry->QueryValue()[0] != L'\0')
+        if (pEntry->QueryValue() != NULL && pEntry->QueryValue()[0] != L'\0')
         {
             m_dwPort = (DWORD)_wtoi(pEntry->QueryValue());
             if(m_dwPort >MAX_PORT || m_dwPort < MIN_PORT)
@@ -149,6 +150,8 @@ SERVER_PROCESS::SetupListenPort(
             // user set the env variable but did not give value, let's set it up
             // 
             pEnvironmentVarTable->DeleteKey(ASPNETCORE_PORT_ENV_STR);
+            pEntry->Dereference();
+            pEntry = NULL;
         }
     }
 
@@ -881,6 +884,7 @@ SERVER_PROCESS::PostStartCheck(
     m_fReady = TRUE;
 
 Finished:
+    m_fDebuggerAttached = fDebuggerAttached;
     return hr;
 }
 
@@ -1066,8 +1070,8 @@ Finished:
         {
             if (!fDonePrepareCommandLine)
                 strEventMsg.SafeSnwprintf(
-                m_struAppFullPath.QueryStr(),
                 ASPNETCORE_EVENT_PROCESS_START_INTERNAL_ERROR_MSG,
+                m_struAppFullPath.QueryStr(),
                 hr);
             else
                 strEventMsg.SafeSnwprintf(
@@ -1329,10 +1333,10 @@ SERVER_PROCESS::CheckIfServerIsUp(
 )
 {
     HRESULT                 hr = S_OK;
-    DWORD                   dwResult = 0;
+    DWORD                   dwResult = ERROR_INSUFFICIENT_BUFFER;
     MIB_TCPTABLE_OWNER_PID *pTCPInfo = NULL;
     MIB_TCPROW_OWNER_PID   *pOwner = NULL;
-    DWORD                   dwSize = 0;
+    DWORD                   dwSize = 1000;
     int                     iResult = 0;
     SOCKADDR_IN             sockAddr;
     SOCKET                  socketCheck = INVALID_SOCKET;
@@ -1348,36 +1352,36 @@ SERVER_PROCESS::CheckIfServerIsUp(
 
     if (!g_fNsiApiNotSupported)
     {
-        dwResult = GetExtendedTcpTable(NULL,
-                                       &dwSize,
-                                       FALSE,
-                                       AF_INET,
-                                       TCP_TABLE_OWNER_PID_LISTENER,
-                                       0);
-
-        if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
+        while (dwResult == ERROR_INSUFFICIENT_BUFFER)
         {
-            hr = HRESULT_FROM_WIN32(dwResult);
-            goto Finished;
-        }
+            // Increase the buffer size with additional space, MIB_TCPROW 20 bytes
+            // New entries may be added by other processes before calling GetExtendedTcpTable
+            dwSize += 200;
 
-        pTCPInfo = (MIB_TCPTABLE_OWNER_PID*)HeapAlloc(GetProcessHeap(), 0, dwSize);
-        if (pTCPInfo == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
+            if (pTCPInfo != NULL)
+            {
+                HeapFree(GetProcessHeap(), 0, pTCPInfo);
+            }
 
-        dwResult = GetExtendedTcpTable(pTCPInfo,
-                                       &dwSize,
-                                       FALSE,
-                                       AF_INET,
-                                       TCP_TABLE_OWNER_PID_LISTENER,
-                                       0);
-        if (dwResult != NO_ERROR)
-        {
-            hr = HRESULT_FROM_WIN32(dwResult);
-            goto Finished;
+            pTCPInfo = (MIB_TCPTABLE_OWNER_PID*)HeapAlloc(GetProcessHeap(), 0, dwSize);
+            if (pTCPInfo == NULL)
+            {
+                hr = E_OUTOFMEMORY;
+                goto Finished;
+            }
+
+            dwResult = GetExtendedTcpTable(pTCPInfo,
+                &dwSize,
+                FALSE,
+                AF_INET,
+                TCP_TABLE_OWNER_PID_LISTENER,
+                0);
+
+            if (dwResult != NO_ERROR && dwResult != ERROR_INSUFFICIENT_BUFFER)
+            {
+                hr = HRESULT_FROM_WIN32(dwResult);
+                goto Finished;
+            }
         }
 
         // iterate pTcpInfo struct to find PID/PORT entry
@@ -1422,6 +1426,12 @@ SERVER_PROCESS::CheckIfServerIsUp(
         if (iResult == SOCKET_ERROR)
         {
             hr = HRESULT_FROM_WIN32(WSAGetLastError());
+            if (hr == HRESULT_FROM_WIN32(WSAECONNREFUSED))
+            {
+                // WSAECONNREFUSED means no application listen on the given port.
+                // This is not a failure. Reset the hresult to S_OK and return fReady to false
+                hr = S_OK;
+            }
             goto Finished;
         }
 
@@ -1484,7 +1494,7 @@ SERVER_PROCESS::SendSignal(
         goto Finished;
     }
 
-    if (WaitForSingleObject(m_hShutdownHandle, m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0)
+    if (WaitForSingleObject(m_hShutdownHandle, m_fDebuggerAttached ? INFINITE : m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0)
     {
         hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
         goto Finished;
@@ -2006,7 +2016,9 @@ SERVER_PROCESS::~SERVER_PROCESS()
     InterlockedDecrement(&g_dwActiveServerProcesses);
 }
 
-VOID 
+static
+VOID
+CALLBACK
 ProcessHandleCallback(
     _In_ PVOID  pContext,
     _In_ BOOL
@@ -2064,12 +2076,36 @@ SERVER_PROCESS::HandleProcessExit()
     HRESULT     hr = S_OK;
     BOOL        fReady = FALSE;
     DWORD       dwProcessId = 0;
+    LPCWSTR     apsz[1];
+    STACK_STRU(strEventMsg, 256);
+
     if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L)
     {
         CheckIfServerIsUp(m_dwPort, &dwProcessId, &fReady);
 
         if (!fReady)
         {
+            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+                ASPNETCORE_EVENT_PROCESS_SHUTDOWN_MSG,
+                m_struAppFullPath.QueryStr(),
+                m_pszRootApplicationPath.QueryStr(),
+                m_dwProcessId,
+                m_dwPort)))
+            {
+                apsz[0] = strEventMsg.QueryStr();
+                if (FORWARDING_HANDLER::QueryEventLog() != NULL)
+                {
+                    ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
+                        EVENTLOG_INFORMATION_TYPE,
+                        0,
+                        ASPNETCORE_EVENT_PROCESS_SHUTDOWN,
+                        NULL,
+                        1,
+                        0,
+                        apsz,
+                        NULL);
+                }
+            }
             m_pProcessManager->ShutdownProcess(this);
         }
 

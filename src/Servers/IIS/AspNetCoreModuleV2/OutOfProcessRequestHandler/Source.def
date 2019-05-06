@@ -1,0 +1,5 @@
+LIBRARY aspnetcorev2_outofprocess
+
+EXPORTS
+    CreateApplication
+

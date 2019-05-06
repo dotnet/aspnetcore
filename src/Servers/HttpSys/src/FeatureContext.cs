@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -168,11 +169,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (IsNotInitialized(Fields.Protocol))
                 {
                     var protocol = Request.ProtocolVersion;
-                    if (protocol.Major == 1 && protocol.Minor == 1)
+                    if (protocol == Constants.V2)
+                    {
+                        _httpProtocolVersion = "HTTP/2";
+                    }
+                    else if (protocol == Constants.V1_1)
                     {
                         _httpProtocolVersion = "HTTP/1.1";
                     }
-                    else if (protocol.Major == 1 && protocol.Minor == 0)
+                    else if (protocol == Constants.V1_0)
                     {
                         _httpProtocolVersion = "HTTP/1.0";
                     }

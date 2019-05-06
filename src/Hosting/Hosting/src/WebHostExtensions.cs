@@ -45,8 +45,14 @@ namespace Microsoft.AspNetCore.Hosting
             {
                 AttachCtrlcSigtermShutdown(cts, done, shutdownMessage: string.Empty);
 
-                await host.WaitForTokenShutdownAsync(cts.Token);
-                done.Set();
+                try
+                {
+                    await host.WaitForTokenShutdownAsync(cts.Token);
+                }
+                finally
+                {
+                    done.Set();
+                }
             }
         }
 
@@ -80,8 +86,14 @@ namespace Microsoft.AspNetCore.Hosting
                 var shutdownMessage = host.Services.GetRequiredService<WebHostOptions>().SuppressStatusMessages ? string.Empty : "Application is shutting down...";
                 AttachCtrlcSigtermShutdown(cts, done, shutdownMessage: shutdownMessage);
 
-                await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
-                done.Set();
+                try
+                {
+                    await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
+                }
+                finally
+                {
+                    done.Set();
+                }
             }
         }
 
@@ -92,7 +104,6 @@ namespace Microsoft.AspNetCore.Hosting
                 await host.StartAsync(token);
 
                 var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
-                var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
                 var options = host.Services.GetRequiredService<WebHostOptions>();
 
                 if (!options.SuppressStatusMessages)

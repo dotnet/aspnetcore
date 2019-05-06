@@ -1,0 +1,6 @@
+Markup block - Gen<None> - 22 - (0:0,0)
+    Tag block - Gen<TagHelper> - 22 - (0:0,0) - person - PersonTagHelper
+        SelfClosing - <person name="John" />
+        name - DoubleQuotes
+            Markup span - Gen<Markup> - [John] - SpanEditHandler;Accepts:Any - (14:0,14) - Tokens:1
+                HtmlTokenType.Text;[John];

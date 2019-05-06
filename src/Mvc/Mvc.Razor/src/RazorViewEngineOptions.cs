@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.FileProviders;
@@ -13,9 +15,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     /// <summary>
     /// Provides programmatic configuration for the <see cref="RazorViewEngine"/>.
     /// </summary>
-    public class RazorViewEngineOptions
+    public class RazorViewEngineOptions : IEnumerable<ICompatibilitySwitch>
     {
+        private readonly ICompatibilitySwitch[] _switches;
+        private readonly CompatibilitySwitch<bool> _allowRecompilingViewsOnFileChange;
         private Action<RoslynCompilationContext> _compilationCallback = c => { };
+
+        public RazorViewEngineOptions()
+        {
+            _allowRecompilingViewsOnFileChange = new CompatibilitySwitch<bool>(nameof(AllowRecompilingViewsOnFileChange));
+            _switches = new[]
+            {
+                _allowRecompilingViewsOnFileChange,
+            };
+        }
 
         /// <summary>
         /// Gets a <see cref="IList{IViewLocationExpander}"/> used by the <see cref="RazorViewEngine"/>.
@@ -157,6 +170,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// Gets the <see cref="MetadataReference" /> instances that should be included in Razor compilation, along with
         /// those discovered by <see cref="MetadataReferenceFeatureProvider" />s.
         /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. See https://aka.ms/AA1x4gg for details.")]
         public IList<MetadataReference> AdditionalCompilationReferences { get; } = new List<MetadataReference>();
 
         /// <summary>
@@ -166,6 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <remarks>
         /// Customizations made here would not reflect in tooling (Intellisense).
         /// </remarks>
+        [Obsolete("This property is obsolete and will be removed in a future version. See https://aka.ms/AA1x4gg for details.")]
         public Action<RoslynCompilationContext> CompilationCallback
         {
             get => _compilationCallback;
@@ -179,5 +194,52 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 _compilationCallback = value;
             }
         }
+
+        /// <summary>
+        /// Gets or sets a value that determines if Razor files (Razor Views and Razor Pages) are recompiled and updated 
+        /// if files change on disk.
+        /// <para>
+        /// When <see langword="true"/>, MVC will use <see cref="IFileProvider.Watch(string)"/> to watch for changes to 
+        /// Razor files in configured <see cref="IFileProvider"/> instances.
+        /// </para>
+        /// </summary>
+        /// <value>
+        /// The default value is <see langword="true"/> if the version is <see cref = "CompatibilityVersion.Version_2_1" />
+        /// or earlier. If the version is later and <see cref= "IHostingEnvironment.EnvironmentName" /> is <c>Development</c>,
+        /// the default value is <see langword="true"/>. Otherwise, the default value is <see langword="false" />.
+        /// </value>
+        /// <remarks>
+        /// <para>
+        /// This property is associated with a compatibility switch and can provide a different behavior depending on
+        /// the configured compatibility version for the application. See <see cref="CompatibilityVersion"/> for
+        /// guidance and examples of setting the application's compatibility version.
+        /// </para>
+        /// <para>
+        /// Configuring the desired value of the compatibility switch by calling this property's setter will take
+        /// precedence over the value implied by the application's <see cref="CompatibilityVersion"/>.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_1"/> or
+        /// lower then this setting will have the value <see langword="true"/> unless explicitly configured.
+        /// </para>
+        /// <para>
+        /// If the application's compatibility version is set to <see cref="CompatibilityVersion.Version_2_2"/> or
+        /// higher then this setting will have the value <see langword="false"/> unless
+        /// <see cref="IHostingEnvironment.EnvironmentName"/>  is <c>Development</c> or the value is explicitly configured.
+        /// </para>
+        /// </remarks>
+        public bool AllowRecompilingViewsOnFileChange
+        {
+            // Note: When compatibility switches are removed in 3.0, this property should be retained as a regular boolean property.
+            get => _allowRecompilingViewsOnFileChange.Value;
+            set => _allowRecompilingViewsOnFileChange.Value = value;
+        }
+
+        IEnumerator<ICompatibilitySwitch> IEnumerable<ICompatibilitySwitch>.GetEnumerator()
+        {
+            return ((IEnumerable<ICompatibilitySwitch>)_switches).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => _switches.GetEnumerator();
     }
 }

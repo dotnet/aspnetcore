@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <AssemblyName>NewAssemblyName</AssemblyName>
-    <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
 
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
   </PropertyGroup>

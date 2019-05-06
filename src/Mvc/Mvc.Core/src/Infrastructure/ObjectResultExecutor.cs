@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -84,21 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 throw new ArgumentNullException(nameof(result));
             }
 
-            // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
-            // then the one set on ObjectResult takes precedence over the Response object
-            if (result.ContentTypes == null || result.ContentTypes.Count == 0)
-            {
-                var responseContentType = context.HttpContext.Response.ContentType;
-                if (!string.IsNullOrEmpty(responseContentType))
-                {
-                    if (result.ContentTypes == null)
-                    {
-                        result.ContentTypes = new MediaTypeCollection();
-                    }
-
-                    result.ContentTypes.Add(responseContentType);
-                }
-            }
+            InferContentTypes(context, result);
 
             var objectType = result.DeclaredType;
             if (objectType == null || objectType == typeof(object))
@@ -113,8 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 result.Value);
 
             var selectedFormatter = FormatterSelector.SelectFormatter(
-                formatterContext, 
-                (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(), 
+                formatterContext,
+                (IList<IOutputFormatter>)result.Formatters ?? Array.Empty<IOutputFormatter>(),
                 result.ContentTypes);
             if (selectedFormatter == null)
             {
@@ -129,6 +116,28 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             result.OnFormatting(context);
             return selectedFormatter.WriteAsync(formatterContext);
+        }
+
+        private static void InferContentTypes(ActionContext context, ObjectResult result)
+        {
+            Debug.Assert(result.ContentTypes != null);
+            if (result.ContentTypes.Count != 0)
+            {
+                return;
+            }
+
+            // If the user sets the content type both on the ObjectResult (example: by Produces) and Response object,
+            // then the one set on ObjectResult takes precedence over the Response object
+            var responseContentType = context.HttpContext.Response.ContentType;
+            if (!string.IsNullOrEmpty(responseContentType))
+            {
+                result.ContentTypes.Add(responseContentType);
+            }
+            else if (result.Value is ProblemDetails)
+            {
+                result.ContentTypes.Add("application/problem+json");
+                result.ContentTypes.Add("application/problem+xml");
+            }
         }
     }
 }
