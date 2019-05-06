@@ -47,7 +47,7 @@ namespace PackageBaselineGenerator
         {
             var source = _source.HasValue()
                 ? _source.Value().TrimEnd('/')
-                : "https://www.nuget.org/api/v2";
+                : "https://api.nuget.org/v3/index.json";
             if (_output.HasValue() && _update.HasValue())
             {
                 await Error.WriteLineAsync("'--output' and '--update' options must not be used together.");
