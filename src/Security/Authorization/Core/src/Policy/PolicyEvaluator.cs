@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -12,15 +11,15 @@ namespace Microsoft.AspNetCore.Authorization.Policy
 {
     public class PolicyEvaluator : IPolicyEvaluator
     {
-        private readonly IAuthorizationService _authorization;
+        private readonly ICommonPolicyEvaluator _commonPolicyEvaluator;
 
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="authorization">The authorization service.</param>
-        public PolicyEvaluator(IAuthorizationService authorization)
+        /// <param name="commonPolicyEvaluator">The <see cref="ICommonPolicyEvaluator"/>.</param>
+        public PolicyEvaluator(ICommonPolicyEvaluator commonPolicyEvaluator)
         {
-            _authorization = authorization;
+            _commonPolicyEvaluator = commonPolicyEvaluator;
         }
 
         /// <summary>
@@ -74,23 +73,9 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         /// <returns>Returns <see cref="PolicyAuthorizationResult.Success"/> if authorization succeeds.
         /// Otherwise returns <see cref="PolicyAuthorizationResult.Forbid"/> if <see cref="AuthenticateResult.Succeeded"/>, otherwise
         /// returns  <see cref="PolicyAuthorizationResult.Challenge"/></returns>
-        public virtual async Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object resource)
+        public virtual Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object resource)
         {
-            if (policy == null)
-            {
-                throw new ArgumentNullException(nameof(policy));
-            }
-
-            var result = await _authorization.AuthorizeAsync(context.User, resource, policy);
-            if (result.Succeeded)
-            {
-                return PolicyAuthorizationResult.Success();
-            }
-
-            // If authentication was successful, return forbidden, otherwise challenge
-            return (authenticationResult.Succeeded) 
-                ? PolicyAuthorizationResult.Forbid() 
-                : PolicyAuthorizationResult.Challenge();
+            return _commonPolicyEvaluator.AuthorizeAsync(policy, authenticationResult.Succeeded, context.User, resource);
         }
     }
 }
