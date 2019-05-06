@@ -1,15 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(RepositoryRoot)src\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
+  <Import Project="$(RepoRoot)src\Logging\Logging.Testing\src\build\Microsoft.Extensions.Logging.Testing.props" />
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.2;net461</TargetFrameworks>
+    <TargetFrameworks>netcoreapp3.0;net472</TargetFrameworks>
     <RootNamespace>Microsoft.Extensions.Diagnostics.HealthChecks</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.Extensions.Diagnostics.HealthChecks" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\..\Shared\test\SingleThreadedSynchronizationContext.cs" Link="Shared\SingleThreadedSynchronizationContext.cs"/>
   </ItemGroup>
 
 </Project>

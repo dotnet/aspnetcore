@@ -7,6 +7,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>localization</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
   <ItemGroup>
@@ -14,6 +15,10 @@
     <Reference Include="Microsoft.Extensions.Options" />
     <Reference Include="Microsoft.Extensions.Localization.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Extensions.Localization.Tests" />
   </ItemGroup>
 
 </Project>

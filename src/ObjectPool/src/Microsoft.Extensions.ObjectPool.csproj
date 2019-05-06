@@ -6,6 +6,7 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>pooling</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
 </Project>

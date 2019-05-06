@@ -7,7 +7,7 @@ namespace Microsoft.Extensions.Localization
     /// Represents an <see cref="IStringLocalizer"/> that provides strings for <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The <see cref="System.Type"/> to provide strings for.</typeparam>
-    public interface IStringLocalizer<T> : IStringLocalizer
+    public interface IStringLocalizer<out T> : IStringLocalizer
     {
 
     }

@@ -13,10 +13,22 @@ namespace Microsoft.Extensions.ObjectPool
         private bool _foundError;
 
         [Fact]
-        public void RunThreadingTest()
+        public void DefaultObjectPool_RunThreadingTest()
+        {
+            _pool = new DefaultObjectPool<Item>(new DefaultPooledObjectPolicy<Item>(), 10);
+            RunThreadingTest();
+        }
+
+        [Fact]
+        public void DisposableObjectPool_RunThreadingTest()
+        {
+            _pool = new DisposableObjectPool<Item>(new DefaultPooledObjectPolicy<Item>(), 10);
+            RunThreadingTest();
+        }
+
+        private void RunThreadingTest()
         {
             _cts = new CancellationTokenSource();
-            _pool = new DefaultObjectPool<Item>(new DefaultPooledObjectPolicy<Item>(), 10);
 
             var threads = new Thread[8];
             for (var i = 0; i < threads.Length; i++)
@@ -66,7 +78,7 @@ namespace Microsoft.Extensions.ObjectPool
                 _pool.Return(obj2);
             }
         }
-        
+
         private class Item
         {
             public int i = 0;

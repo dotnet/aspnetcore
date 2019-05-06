@@ -11,6 +11,7 @@ Microsoft.Extensions.Diagnostics.HealthChecks.IHealthCheck
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>diagnostics;healthchecks</PackageTags>
+    <IsShipping>true</IsShipping>
   </PropertyGroup>
 
 </Project>

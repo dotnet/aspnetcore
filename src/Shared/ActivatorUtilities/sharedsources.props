@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <IsShipping>false</IsShipping>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\ParameterDefaultValue\ParameterDefaultValue.cs">
       <Pack>true</Pack>

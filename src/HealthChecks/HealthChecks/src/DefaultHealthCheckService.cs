@@ -40,74 +40,116 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
             CancellationToken cancellationToken = default)
         {
             var registrations = _options.Value.Registrations;
+            if (predicate != null)
+            {
+                registrations = registrations.Where(predicate).ToArray();
+            }
 
+            var totalTime = ValueStopwatch.StartNew();
+            Log.HealthCheckProcessingBegin(_logger);
+
+            var tasks = new Task<HealthReportEntry>[registrations.Count];
+            var index = 0;
             using (var scope = _scopeFactory.CreateScope())
             {
-                var context = new HealthCheckContext();
-                var entries = new Dictionary<string, HealthReportEntry>(StringComparer.OrdinalIgnoreCase);
-
-                var totalTime = ValueStopwatch.StartNew();
-                Log.HealthCheckProcessingBegin(_logger);
-
                 foreach (var registration in registrations)
                 {
-                    if (predicate != null && !predicate(registration))
-                    {
-                        continue;
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var healthCheck = registration.Factory(scope.ServiceProvider);
-
-                    // If the health check does things like make Database queries using EF or backend HTTP calls,
-                    // it may be valuable to know that logs it generates are part of a health check. So we start a scope.
-                    using (_logger.BeginScope(new HealthCheckLogScope(registration.Name)))
-                    {
-                        var stopwatch = ValueStopwatch.StartNew();
-                        context.Registration = registration;
-
-                        Log.HealthCheckBegin(_logger, registration);
-
-                        HealthReportEntry entry;
-                        try
-                        {
-                            var result = await healthCheck.CheckHealthAsync(context, cancellationToken);
-                            var duration = stopwatch.GetElapsedTime();
-
-                            entry = new HealthReportEntry(
-                                status: result.Status,
-                                description: result.Description,
-                                duration: duration,
-                                exception: result.Exception,
-                                data: result.Data);
-
-                            Log.HealthCheckEnd(_logger, registration, entry, duration);
-                            Log.HealthCheckData(_logger, registration, entry);
-                        }
-
-                        // Allow cancellation to propagate.
-                        catch (Exception ex) when (ex as OperationCanceledException == null)
-                        {
-                            var duration = stopwatch.GetElapsedTime();
-                            entry = new HealthReportEntry(
-                                status: HealthStatus.Unhealthy,
-                                description: ex.Message,
-                                duration: duration,
-                                exception: ex,
-                                data: null);
-
-                            Log.HealthCheckError(_logger, registration, ex, duration);
-                        }
-
-                        entries[registration.Name] = entry;
-                    }
+                    tasks[index++] = Task.Run(() => RunCheckAsync(scope, registration, cancellationToken), cancellationToken);
                 }
 
-                var totalElapsedTime = totalTime.GetElapsedTime();
-                var report = new HealthReport(entries, totalElapsedTime);
-                Log.HealthCheckProcessingEnd(_logger, report.Status, totalElapsedTime);
-                return report;
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+            }
+
+            index = 0;
+            var entries = new Dictionary<string, HealthReportEntry>(StringComparer.OrdinalIgnoreCase);
+            foreach (var registration in registrations)
+            {
+                entries[registration.Name] = tasks[index++].Result;
+            }
+
+            var totalElapsedTime = totalTime.GetElapsedTime();
+            var report = new HealthReport(entries, totalElapsedTime);
+            Log.HealthCheckProcessingEnd(_logger, report.Status, totalElapsedTime);
+            return report;
+        }
+
+        private async Task<HealthReportEntry> RunCheckAsync(IServiceScope scope, HealthCheckRegistration registration, CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            var healthCheck = registration.Factory(scope.ServiceProvider);
+
+            // If the health check does things like make Database queries using EF or backend HTTP calls,
+            // it may be valuable to know that logs it generates are part of a health check. So we start a scope.
+            using (_logger.BeginScope(new HealthCheckLogScope(registration.Name)))
+            {
+                var stopwatch = ValueStopwatch.StartNew();
+                var context = new HealthCheckContext { Registration = registration };
+
+                Log.HealthCheckBegin(_logger, registration);
+
+                HealthReportEntry entry;
+                CancellationTokenSource timeoutCancellationTokenSource = null;
+                try
+                {
+                    HealthCheckResult result;
+
+                    var checkCancellationToken = cancellationToken;
+                    if (registration.Timeout > TimeSpan.Zero)
+                    {
+                        timeoutCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                        timeoutCancellationTokenSource.CancelAfter(registration.Timeout);
+                        checkCancellationToken = timeoutCancellationTokenSource.Token;
+                    }
+
+                    result = await healthCheck.CheckHealthAsync(context, checkCancellationToken).ConfigureAwait(false);
+
+                    var duration = stopwatch.GetElapsedTime();
+
+                    entry = new HealthReportEntry(
+                        status: result.Status,
+                        description: result.Description,
+                        duration: duration,
+                        exception: result.Exception,
+                        data: result.Data,
+                        tags: registration.Tags);
+
+                    Log.HealthCheckEnd(_logger, registration, entry, duration);
+                    Log.HealthCheckData(_logger, registration, entry);
+                }
+                catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+                {
+                    var duration = stopwatch.GetElapsedTime();
+                    entry = new HealthReportEntry(
+                        status: HealthStatus.Unhealthy,
+                        description: "A timeout occured while running check.",
+                        duration: duration,
+                        exception: ex,
+                        data: null);
+
+                    Log.HealthCheckError(_logger, registration, ex, duration);
+                }
+
+                // Allow cancellation to propagate if it's not a timeout.
+                catch (Exception ex) when (ex as OperationCanceledException == null)
+                {
+                    var duration = stopwatch.GetElapsedTime();
+                    entry = new HealthReportEntry(
+                        status: HealthStatus.Unhealthy,
+                        description: ex.Message,
+                        duration: duration,
+                        exception: ex,
+                        data: null);
+
+                    Log.HealthCheckError(_logger, registration, ex, duration);
+                }
+
+                finally
+                {
+                    timeoutCancellationTokenSource?.Dispose();
+                }
+
+                return entry;
             }
         }
 
