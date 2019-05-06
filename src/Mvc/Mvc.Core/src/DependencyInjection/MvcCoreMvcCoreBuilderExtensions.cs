@@ -117,6 +117,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddAuthenticationCore();
             services.AddAuthorization();
+            services.AddAuthorizationPolicyEvaluator();
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, AuthorizationApplicationModelProvider>());

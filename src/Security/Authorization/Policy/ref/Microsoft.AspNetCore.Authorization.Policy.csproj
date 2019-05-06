@@ -6,5 +6,8 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Authorization.Policy.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Authorization"  />
+    <Reference Include="Microsoft.AspNetCore.Authentication.Abstractions"  />
+    <Reference Include="Microsoft.AspNetCore.Http.Abstractions"  />
+    <Reference Include="Microsoft.AspNetCore.Routing"  />
   </ItemGroup>
 </Project>

@@ -117,13 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Exception_AuthorizationPolicyEmpty" xml:space="preserve">
-    <value>AuthorizationPolicy must have at least one requirement.</value>
-  </data>
-  <data name="Exception_AuthorizationPolicyNotFound" xml:space="preserve">
-    <value>The AuthorizationPolicy named: '{0}' was not found.</value>
-  </data>
-  <data name="Exception_RoleRequirementEmpty" xml:space="preserve">
-    <value>At least one role must be specified.</value>
+  <data name="Exception_UnableToFindServices" xml:space="preserve">
+    <value>Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.</value>
   </data>
 </root>

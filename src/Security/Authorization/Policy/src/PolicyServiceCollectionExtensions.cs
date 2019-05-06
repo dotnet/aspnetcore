@@ -17,7 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        [Obsolete("AddAuthorizationPolicyEvaluator is obsolete and will be removed in a future release. Use AddAuthorization instead.")]
         public static IServiceCollection AddAuthorizationPolicyEvaluator(this IServiceCollection services)
         {
             if (services == null)
@@ -26,6 +25,8 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddAuthorization();
+            services.TryAddSingleton<AuthorizationPolicyMarkerService>();
+            services.TryAdd(ServiceDescriptor.Transient<IPolicyEvaluator, PolicyEvaluator>());
             return services;
         }
     }

@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
             // Assert
             Assert.Equal(
                 "Unable to find the required services. Please add all the required services by calling " +
-                "'IServiceCollection.AddAuthorization' inside the call to 'ConfigureServices(...)' " +
+                "'IServiceCollection.AddAuthorizationPolicyEvaluator' inside the call to 'ConfigureServices(...)' " +
                 "in the application startup code.",
                 ex.Message);
         }
@@ -73,9 +73,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         {
             var services = new ServiceCollection();
 
-#pragma warning disable CS0618 // Type or member is obsolete
             services.AddAuthorizationPolicyEvaluator();
-#pragma warning restore CS0618 // Type or member is obsolete
             services.AddLogging();
             services.AddSingleton(authenticationService);
 
