@@ -42,7 +42,7 @@
     <ProjectToExclude Include="
                       $(RepositoryRoot)src\Components\Blazor\BlazorExtension\src\Microsoft.VisualStudio.BlazorExtension.csproj;
                       $(RepositoryRoot)src\Servers\HttpSys\samples\TestClient\TestClient.csproj;
-                      $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\TestServer.csproj;
+                      $(RepositoryRoot)src\Middleware\WebSockets\samples\TestServer\WebSockets.TestServer.csproj;
                       "
                       Condition=" '$(MSBuildRuntimeType)' == 'Core' " />
 

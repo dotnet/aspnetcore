@@ -25,7 +25,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LargeResponseApp", "Kestrel
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlaintextApp", "Kestrel\samples\PlaintextApp\PlaintextApp.csproj", "{0710F560-A741-4139-BC1F-BFF1895F1274}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleApp", "Kestrel\samples\SampleApp\SampleApp.csproj", "{F9D090D2-0568-403D-ADBA-9E079397B584}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.SampleApp", "Kestrel\samples\SampleApp\Kestrel.SampleApp.csproj", "{F9D090D2-0568-403D-ADBA-9E079397B584}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SystemdTestApp", "Kestrel\samples\SystemdTestApp\SystemdTestApp.csproj", "{01D031FC-61A5-45BD-BE11-57FA00BE1BCD}"
 EndProject

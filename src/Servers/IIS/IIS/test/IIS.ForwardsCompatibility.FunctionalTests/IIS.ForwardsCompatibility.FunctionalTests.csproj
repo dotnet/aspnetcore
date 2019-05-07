@@ -14,7 +14,7 @@
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
     <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
 
-    <ProjectReference Include="..\testassets\InProcessForwardsCompatWebSite\InProcessWebSite.csproj">
+    <ProjectReference Include="..\testassets\InProcessForwardsCompatWebSite\InProcessForwardsCompatWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\testassets\OutOfProcessWebSite\OutOfProcessWebSite.csproj">

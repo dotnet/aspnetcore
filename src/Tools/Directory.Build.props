@@ -1,6 +1,5 @@
 <Project>
   <PropertyGroup>
-    <OutputInRepoRoot>true</OutputInRepoRoot>
     <ToolSharedSourceRoot>$(MSBuildThisFileDirectory)Shared\</ToolSharedSourceRoot>
     <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
   </PropertyGroup>

@@ -36,7 +36,7 @@
     <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
     <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
-    <ProjectReference Include="..\testassets\TestServer\TestServer.csproj" />
+    <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

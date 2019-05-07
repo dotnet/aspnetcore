@@ -57,7 +57,7 @@
 
   <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
     <PropertyGroup>
-      <TestTemplateCreationFolder>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)$([MSBuild]::EnsureTrailingSlash('$(OutputPath)$(TestTemplateCreationFolder)'))'))</TestTemplateCreationFolder>
+      <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <TestTemplateTestsProps>$(TestTemplateCreationFolder)$(TestTemplateTestsProps)</TestTemplateTestsProps>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
     </PropertyGroup>

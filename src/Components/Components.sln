@@ -71,7 +71,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ComponentsApp.Server", "tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestContentPackage", "test\testassets\TestContentPackage\TestContentPackage.csproj", "{423CCF23-C0B4-4D21-896C-16DC98689DB5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestServer", "test\testassets\TestServer\TestServer.csproj", "{D6AEB328-EBC0-40B1-8936-301597883DFA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Components.TestServer", "test\testassets\TestServer\Components.TestServer.csproj", "{D6AEB328-EBC0-40B1-8936-301597883DFA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Antiforgery", "..\Antiforgery\src\Microsoft.AspNetCore.Antiforgery.csproj", "{6BA2DCAA-CB68-4AE2-BBBE-746A728D30E0}"
 EndProject

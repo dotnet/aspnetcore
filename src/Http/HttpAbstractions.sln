@@ -51,7 +51,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Owin.T
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{391FBA36-BEEB-411A-A588-3F83901C0C1A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleApp", "samples\SampleApp\SampleApp.csproj", "{2378049E-ABE9-4843-AAC7-A6C9E704463D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HttpAbstractions.SampleApp", "samples\SampleApp\HttpAbstractions.SampleApp.csproj", "{2378049E-ABE9-4843-AAC7-A6C9E704463D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebUtilities", "WebUtilities", "{80A090C8-ED02-4DE3-875A-30DCCDBD84BA}"
 EndProject
