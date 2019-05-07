@@ -1,4 +1,6 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <!-- This does not represent the TFM for the code. It's only here because /t:Pack requires it. -->
@@ -42,4 +44,10 @@
       <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
     </Compile>
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- This project does not produce a binary. Disable the compiler. -->
+  <Target Name="Compile" />
+  <Target Name="CopyFilesToOutputDirectory" />
 </Project>
