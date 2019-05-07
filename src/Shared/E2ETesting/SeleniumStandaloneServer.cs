@@ -197,16 +197,32 @@ Captured output lines:
         {
             // This sentinel process will start and will kill any roge selenium server that want' torn down
             // via normal means.
-            var psi = new ProcessStartInfo
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                FileName = "powershell",
-                Arguments = $"-NoProfile -NonInteractive -Command \"Start-Sleep {timeout}; " +
-                $"if(Test-Path {sentinelFile}){{ " +
-                $"Write-Output 'Stopping process {process.Id}'; Stop-Process {process.Id}; }}" +
-                $"else{{ Write-Output 'Sentinel file {sentinelFile} not found.'}}",
-            };
-
-            return Process.Start(psi);
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "powershell",
+                    Arguments = $"-NoProfile -NonInteractive -Command \"Start-Sleep {timeout}; " +
+                    $"if(Test-Path {sentinelFile}){{ " +
+                    $"Write-Output 'Stopping process {process.Id}'; Stop-Process {process.Id}; }}" +
+                    $"else{{ Write-Output 'Sentinel file {sentinelFile} not found.'}}",
+                };
+                
+                return Process.Start(psi);
+            }
+            else
+            {
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "bash",
+                    Arguments = $"timeout {timeout}; " +
+                    $"if [ -f \"{sentinelFile}\" ]; " +
+                    $"then echo 'Stopping process {process.Id}'; kill {process.Id}; " +
+                    $"else echo 'Sentinel file {sentinelFile} not found.'; fi",
+                };
+                
+                return Process.Start(psi);
+            }
         }
 
         private static void ProcessCleanup(Process process, string pidFilePath)
