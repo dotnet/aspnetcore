@@ -171,7 +171,7 @@ namespace Microsoft.JSInterop
             {
                 return methodInfo.Invoke(targetInstance, suppliedArgs);
             }
-            catch (TargetInvocationException tie)
+            catch (TargetInvocationException tie) // Avoid using exception filters for AOT runtime support
             {
                 if (tie.InnerException != null)
                 {
@@ -243,8 +243,8 @@ namespace Microsoft.JSInterop
             var invokableMethods = GetRequiredLoadedAssembly(assemblyName)
                 .GetExportedTypes()
                 .SelectMany(type => type.GetMethods(
-                    BindingFlags.Public | 
-                    BindingFlags.DeclaredOnly | 
+                    BindingFlags.Public |
+                    BindingFlags.DeclaredOnly |
                     BindingFlags.Instance |
                     BindingFlags.Static))
                 .Where(method => method.IsDefined(typeof(JSInvokableAttribute), inherit: false));
