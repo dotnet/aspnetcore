@@ -212,10 +212,11 @@ Captured output lines:
             }
             else
             {
+                var sleepCommand = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "sleep" : "timeout";
                 var psi = new ProcessStartInfo
                 {
                     FileName = "bash",
-                    Arguments = $"timeout {timeout}; " +
+                    Arguments = $"{sleepCommand} {timeout}; " +
                     $"if [ -f \"{sentinelFile}\" ]; " +
                     $"then echo 'Stopping process {process.Id}'; kill {process.Id}; " +
                     $"else echo 'Sentinel file {sentinelFile} not found.'; fi",
