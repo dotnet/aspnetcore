@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.SignalR
         private readonly object[] _streamConverterArgs;
         private ConcurrentDictionary<string, IStreamConverter> _lookup = new ConcurrentDictionary<string, IStreamConverter>();
 
-        public StreamTracker(int streamBufferCapacity = 10)
+        public StreamTracker(int streamBufferCapacity)
         {
             _streamConverterArgs = new object[] { streamBufferCapacity };
         }
