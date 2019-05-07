@@ -49,11 +49,12 @@ namespace TestServer
                     .AllowCredentials();
             });
 
-            app.UseRouting();
 
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", subdirApp =>
             {
+                subdirApp.UseClientSideBlazorFiles<BasicTestApp.Startup>();
+
                 // The following two lines are equivalent to:
                 //     endpoints.MapComponentsHub<Index>();
                 //
@@ -66,12 +67,11 @@ namespace TestServer
                 subdirApp.UseEndpoints(endpoints =>
                 {
                     endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath).AddComponent(typeof(Index), selector: "root");
+                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
                 });
-
-                subdirApp.MapWhen(
-                    ctx => ctx.Features.Get<IEndpointFeature>()?.Endpoint == null,
-                    blazorBuilder => blazorBuilder.UseBlazor<BasicTestApp.Startup>());
             });
+
+            app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
