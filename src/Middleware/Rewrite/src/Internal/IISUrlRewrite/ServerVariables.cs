@@ -19,54 +19,79 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         /// <returns>The matching <see cref="PatternSegment"/></returns>
         public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, UriMatchPart uriMatchPart)
         {
+            Func<PatternSegment> fallback = default;
+
             switch (serverVariable)
             {
                 // TODO Add all server variables here.
                 case "ALL_RAW":
-                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    fallback = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    break;
                 case "APP_POOL_ID":
-                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    fallback = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    break;
                 case "CONTENT_LENGTH":
-                    return new HeaderSegment(HeaderNames.ContentLength);
+                    fallback = () => new HeaderSegment(HeaderNames.ContentLength);
+                    break;
                 case "CONTENT_TYPE":
-                    return new HeaderSegment(HeaderNames.ContentType);
+                    fallback = () => new HeaderSegment(HeaderNames.ContentType);
+                    break;
                 case "HTTP_ACCEPT":
-                    return new HeaderSegment(HeaderNames.Accept);
+                    fallback = () => new HeaderSegment(HeaderNames.Accept);
+                    break;
                 case "HTTP_COOKIE":
-                    return new HeaderSegment(HeaderNames.Cookie);
+                    fallback = () => new HeaderSegment(HeaderNames.Cookie);
+                    break;
                 case "HTTP_HOST":
-                    return new HeaderSegment(HeaderNames.Host);
+                    fallback = () => new HeaderSegment(HeaderNames.Host);
+                    break;
                 case "HTTP_REFERER":
-                    return new HeaderSegment(HeaderNames.Referer);
+                    fallback = () => new HeaderSegment(HeaderNames.Referer);
+                    break;
                 case "HTTP_USER_AGENT":
-                    return new HeaderSegment(HeaderNames.UserAgent);
+                    fallback = () => new HeaderSegment(HeaderNames.UserAgent);
+                    break;
                 case "HTTP_CONNECTION":
-                    return new HeaderSegment(HeaderNames.Connection);
+                    fallback = () => new HeaderSegment(HeaderNames.Connection);
+                    break;
                 case "HTTP_URL":
-                    return new UrlSegment(uriMatchPart);
+                    fallback = () => new UrlSegment(uriMatchPart);
+                    break;
                 case "HTTPS":
-                    return new IsHttpsUrlSegment();
+                    fallback = () => new IsHttpsUrlSegment();
+                    break;
                 case "LOCAL_ADDR":
-                    return new LocalAddressSegment();
+                    fallback = () => new LocalAddressSegment();
+                    break;
                 case "HTTP_PROXY_CONNECTION":
-                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    fallback = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    break;
                 case "QUERY_STRING":
-                    return new QueryStringSegment();
+                    fallback = () => new QueryStringSegment();
+                    break;
                 case "REMOTE_ADDR":
-                    return new RemoteAddressSegment();
+                    fallback = () => new RemoteAddressSegment();
+                    break;
                 case "REMOTE_HOST":
-                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    fallback = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    break;
                 case "REMOTE_PORT":
-                    return new RemotePortSegment();
+                    fallback = () => new RemotePortSegment();
+                    break;
                 case "REQUEST_FILENAME":
-                    return new RequestFileNameSegment();
+                    fallback = () => new RequestFileNameSegment();
+                    break;
                 case "REQUEST_METHOD":
-                    return new RequestMethodSegment();
+                    fallback = () => new RequestMethodSegment();
+                    break;
                 case "REQUEST_URI":
-                    return new UrlSegment(uriMatchPart);
+                    fallback = () => new UrlSegment(uriMatchPart);
+                    break;
                 default:
                     throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(serverVariable, context.Index));
             }
+
+            return new IISServerVariableSegment(serverVariable, fallback);
         }
     }
 }

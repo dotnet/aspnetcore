@@ -1,11 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
 using Microsoft.Net.Http.Headers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
@@ -33,12 +36,58 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             // Arrange and Act
             var testParserContext = new ParserContext("test");
             var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart);
-            var lookup = serverVar.Evaluate(CreateTestHttpContext(), CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
+            var lookup = serverVar.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
             // Assert
             Assert.Equal(expected, lookup);
         }
 
-        private RewriteContext CreateTestHttpContext()
+        [Theory]
+        [InlineData("CONTENT_LENGTH", "20", UriMatchPart.Path)]
+        [InlineData("CONTENT_TYPE", "text/xml", UriMatchPart.Path)]
+        [InlineData("HTTP_ACCEPT", "other-accept", UriMatchPart.Path)]
+        [InlineData("HTTP_COOKIE", "other-cookie", UriMatchPart.Path)]
+        [InlineData("HTTP_HOST", "otherexample.com", UriMatchPart.Path)]
+        [InlineData("HTTP_REFERER", "other-referer", UriMatchPart.Path)]
+        [InlineData("HTTP_USER_AGENT", "other-useragent", UriMatchPart.Path)]
+        [InlineData("HTTP_CONNECTION", "other-connection", UriMatchPart.Path)]
+        [InlineData("HTTP_URL", "http://otherexample.com/other-foo?bar=2", UriMatchPart.Full)]
+        [InlineData("HTTP_URL", "http://otherexample.com/other-foo?bar=2", UriMatchPart.Path)]
+        [InlineData("QUERY_STRING", "bar=2", UriMatchPart.Path)]
+        [InlineData("REQUEST_FILENAME", "/other-foo", UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "/other-foo", UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "/other-foo", UriMatchPart.Full)]
+        [InlineData("REQUEST_METHOD", "POST", UriMatchPart.Full)]
+        public void CheckServerVariableFeatureHasPrecedence(string variable, string expected, UriMatchPart uriMatchPart)
+        {
+            // Arrange and Act
+            var testParserContext = new ParserContext("test");
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart);
+            var httpContext = CreateTestHttpContext();
+            httpContext.Features.Set(CreateTestServerVariablesFeature(new Dictionary<string, string>
+            {
+                ["CONTENT_LENGTH"] = "20",
+                ["CONTENT_TYPE"] = "text/xml",
+                ["HTTP_ACCEPT"] = "other-accept",
+                ["HTTP_COOKIE"] = "other-cookie",
+                ["HTTP_HOST"] = "otherexample.com",
+                ["HTTP_REFERER"] = "other-referer",
+                ["HTTP_USER_AGENT"] = "other-useragent",
+                ["HTTP_CONNECTION"] = "other-connection",
+                ["HTTP_URL"] = "http://otherexample.com/other-foo?bar=2",
+                ["QUERY_STRING"] = "bar=2",
+                ["REQUEST_FILENAME"] = "/other-foo",
+                ["REQUEST_URI"] = "/other-foo",
+                ["REQUEST_METHOD"] = "POST"
+            }));
+
+            var rewriteContext = CreateTestRewriteContext(httpContext);
+            var lookup = serverVar.Evaluate(rewriteContext, CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
+
+            // Assert
+            Assert.Equal(expected, lookup);
+        }
+
+        private HttpContext CreateTestHttpContext()
         {
             var context = new DefaultHttpContext();
             context.Request.Method = HttpMethods.Get;
@@ -53,7 +102,24 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             context.Request.Headers[HeaderNames.Referer] = "referer";
             context.Request.Headers[HeaderNames.UserAgent] = "useragent";
             context.Request.Headers[HeaderNames.Connection] = "connection";
-            return new RewriteContext { HttpContext = context };
+
+            return context;
+        }
+
+        private RewriteContext CreateTestRewriteContext(HttpContext context = null)
+        {
+            return new RewriteContext { HttpContext = context ?? CreateTestHttpContext() };
+        }
+
+        private IServerVariablesFeature CreateTestServerVariablesFeature(Dictionary<string, string> variables)
+        {
+            var mockServerVariablesFeature = new Mock<IServerVariablesFeature>();
+            foreach (var variable in variables)
+            {
+                mockServerVariablesFeature.SetupGet(x => x[variable.Key]).Returns(variable.Value);
+            }
+
+            return mockServerVariablesFeature.Object;
         }
 
         private MatchResults CreateTestRuleMatch()
