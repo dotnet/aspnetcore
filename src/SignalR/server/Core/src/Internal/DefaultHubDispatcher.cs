@@ -406,10 +406,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             try
             {
-                await foreach (var streamItem in enumerable)
+                var enumerator = enumerable.GetAsyncEnumerator(streamCts.Token);
+                while (await enumerator.MoveNextAsync())
                 {
                     // Send the stream item
-                    await connection.WriteAsync(new StreamItemMessage(invocationId, streamItem));
+                    await connection.WriteAsync(new StreamItemMessage(invocationId, enumerator.Current));
                 }
             }
             catch (ChannelClosedException ex)

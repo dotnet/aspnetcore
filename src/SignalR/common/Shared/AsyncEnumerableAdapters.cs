@@ -51,36 +51,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     {
                         ((CancellationTokenSource)ctsState).Cancel();
                     }, _cts);
-
-                    return new CancelableEnumerator<TResult>(_asyncEnumerable.GetAsyncEnumerator(), registration);
                 }
 
                 return enumerator;
-            }
-
-            private class CancelableEnumerator<T> : IAsyncEnumerator<T>
-            {
-                private IAsyncEnumerator<T> _asyncEnumerator;
-                private readonly CancellationTokenRegistration _cancellationTokenRegistration;
-
-                public T Current => (T)_asyncEnumerator.Current;
-
-                public CancelableEnumerator(IAsyncEnumerator<T> asyncEnumerator, CancellationTokenRegistration registration)
-                {
-                    _asyncEnumerator = asyncEnumerator;
-                    _cancellationTokenRegistration = registration;
-                }
-
-                public ValueTask<bool> MoveNextAsync()
-                {
-                    return _asyncEnumerator.MoveNextAsync();
-                }
-
-                public ValueTask DisposeAsync()
-                {
-                    _cancellationTokenRegistration.Dispose();
-                    return _asyncEnumerator.DisposeAsync();
-                }
             }
         }
 
