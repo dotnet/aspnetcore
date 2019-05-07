@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Hosting
             // Check if in process
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.IsAspNetCoreModuleLoaded())
             {
-                hostBuilder.CaptureStartupErrors(true);
-
                 var iisConfigData = NativeMethods.HttpGetApplicationProperties();
                 // Trim trailing slash to be consistent with other servers
                 var contentRoot = iisConfigData.pwzFullApplicationPath.TrimEnd(Path.DirectorySeparatorChar);
