@@ -105,4 +105,4 @@ If the `dotnet-maestro` bot has not correctly updated the dependencies, it may b
 2. Run `darc update-dependencies --channel '.NET Core 3 Dev'`
    * Use `'.NET Core 3 Release'` in a `release/3.0-*` branch
 3. `git diff` to confirm the tool's changes
-4. Proceed with usual commit and PR&hellip;
+4. Proceed with usual commit and PR
