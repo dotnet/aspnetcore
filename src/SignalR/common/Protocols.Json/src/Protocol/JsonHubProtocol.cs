@@ -777,6 +777,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             options.IgnoreNullValues = false;
             options.IgnoreReadOnlyProperties = false;
             options.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+            options.PropertyNameCaseInsensitive = true;
+            options.MaxDepth = 64;
+            options.DictionaryKeyPolicy = null;
+            options.DefaultBufferSize = 16 * 1024;
 
             return options;
         }
