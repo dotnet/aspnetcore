@@ -5,9 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\greet.proto" GrpcServices="Server" Generator="MSBuild:Compile"/>
-    <Content Include="@(Protobuf)" />
-    <None Remove="@(Protobuf)" />
+    <Protobuf Include="Protos\greet.proto" GrpcServices="Server" />
   </ItemGroup>
 
   <ItemGroup>
