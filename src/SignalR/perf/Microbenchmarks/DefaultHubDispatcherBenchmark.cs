@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 
             public async Task UploadStreamIAsynEnumerable(IAsyncEnumerable<string> stream)
             {
-                await foreach(var item in stream)
+                await foreach (var item in stream)
                 {
                 }
             }
