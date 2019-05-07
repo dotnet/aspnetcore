@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     public class CorsEndpointConventionBuilderExtensionsTests
     {
         [Fact]
-        public void WithCorsPolicy_Name_MetadataAdded()
+        public void RequireCors_Name_MetadataAdded()
         {
             // Arrange
             var testConventionBuilder = new TestEndpointConventionBuilder();
 
             // Act
-            testConventionBuilder.WithCorsPolicy("TestPolicyName");
+            testConventionBuilder.RequireCors("TestPolicyName");
 
             // Assert
             var addCorsPolicy = Assert.Single(testConventionBuilder.Conventions);
@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
-        public void WithCorsPolicy_Policy_MetadataAdded()
+        public void RequireCors_Policy_MetadataAdded()
         {
             // Arrange
             var testConventionBuilder = new TestEndpointConventionBuilder();
 
             // Act
-            testConventionBuilder.WithCorsPolicy(builder => builder.AllowAnyOrigin());
+            testConventionBuilder.RequireCors(builder => builder.AllowAnyOrigin());
 
             // Assert
             var addCorsPolicy = Assert.Single(testConventionBuilder.Conventions);
@@ -56,13 +56,13 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
-        public void WithCorsPolicy_ChainedCall_ReturnedBuilderIsDerivedType()
+        public void RequireCors_ChainedCall_ReturnedBuilderIsDerivedType()
         {
             // Arrange
             var testConventionBuilder = new TestEndpointConventionBuilder();
 
             // Act
-            var builder = testConventionBuilder.WithCorsPolicy("TestPolicyName");
+            var builder = testConventionBuilder.RequireCors("TestPolicyName");
 
             // Assert
             Assert.True(builder.TestProperty);
