@@ -7,20 +7,20 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     internal static class SymbolNames
     {
-        public static readonly string ConfigureServicesMethodPrefix = "Configure";
+        public const ConfigureServicesMethodPrefix = "Configure";
 
-        public static readonly string ConfigureServicesMethodSuffix = "Services";
+        public const ConfigureServicesMethodSuffix = "Services";
 
-        public static readonly string ConfigureMethodPrefix = "Configure";
+        public const string ConfigureMethodPrefix = "Configure";
 
         public static class IApplicationBuilder
         {
-            public static readonly string MetadataName = "Microsoft.AspNetCore.Builder.IApplicationBuilder";
+            public const string MetadataName = "Microsoft.AspNetCore.Builder.IApplicationBuilder";
         }
 
         public static class IServiceCollection
         {
-            public static readonly string MetadataName = "Microsoft.Extensions.DependencyInjection.IServiceCollection";
+            public const string MetadataName = "Microsoft.Extensions.DependencyInjection.IServiceCollection";
         }
     }
 }

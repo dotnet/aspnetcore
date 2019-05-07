@@ -131,6 +131,5 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Browser" ProjectPath="$(RepositoryRoot)src\Components\Browser\src\Microsoft.AspNetCore.Components.Browser.csproj" RefProjectPath="$(RepositoryRoot)src\Components\Browser\ref\Microsoft.AspNetCore.Components.Browser.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components" ProjectPath="$(RepositoryRoot)src\Components\Components\src\Microsoft.AspNetCore.Components.csproj" RefProjectPath="$(RepositoryRoot)src\Components\Components\ref\Microsoft.AspNetCore.Components.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Components.Server" ProjectPath="$(RepositoryRoot)src\Components\Server\src\Microsoft.AspNetCore.Components.Server.csproj" RefProjectPath="$(RepositoryRoot)src\Components\Server\ref\Microsoft.AspNetCore.Components.Server.csproj" />
-    <ProjectReferenceProvider Include="Microsoft.AspNetCore.Analyzers.FeatureDetection.Sources" ProjectPath="$(RepositoryRoot)src\Analyzers\shared\FeatureDetection\Microsoft.AspNetCore.Analyzers.FeatureDetection.Sources.csproj" RefProjectPath="$(RepositoryRoot)src\Analyzers\shared\ref\Microsoft.AspNetCore.Analyzers.FeatureDetection.Sources.csproj" />
   </ItemGroup>
 </Project>

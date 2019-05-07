@@ -1,16 +1,49 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <!-- This does not represent the TFM for the code. It's only here because /t:Pack requires it. -->
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <IsPackable>true</IsPackable>
+    <IsShipping>false</IsShipping>
+    <NoBuild>true</NoBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <ContentTargetFolders>contentFiles</ContentTargetFolders>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    <DefaultExcludeItems>$(DefaultExcludeItems);$(BaseOutputPath);$(BaseIntermediateOutputPath);</DefaultExcludeItems>
+    <NoWarn>$(NoWarn);NU5105;CS8021</NoWarn>
+    <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(MSBuildProjectDirectory)\**\*.cs" Exclude="$(DefaultExcludeItems)">
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+  </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="../../Analyzers/src/StartupFacts.cs" Link="%(FileName)%(Extension)" />
-    <Compile Include="../../Analyzers/src/StartupSymbols.cs" Link="%(FileName)%(Extension)" />
-    <Compile Include="../../Analyzers/src/SymbolNames.cs" Link="%(FileName)%(Extension)" />
+    <Compile Include="../../Analyzers/src/StartupFacts.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+    <Compile Include="../../Analyzers/src/StartupSymbols.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
+    <Compile Include="../../Analyzers/src/SymbolNames.cs">
+      <Link>%(FileName)%(Extension)</Link>
+      <Pack>true</Pack>
+      <PackagePath>$(ContentTargetFolders)\cs\netstandard1.0\shared\</PackagePath>
+    </Compile>
   </ItemGroup>
 </Project>

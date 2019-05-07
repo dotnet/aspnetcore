@@ -9,7 +9,6 @@
    </PropertyGroup>
 
   <ItemGroup>
-    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
     <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

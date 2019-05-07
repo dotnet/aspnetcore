@@ -2,8 +2,10 @@
   <PropertyGroup>
     <Description>CSharp Analyzers for ASP.NET Core.</Description>
     <PackageTags>aspnetcore</PackageTags>
+
      <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
     <IsShippingPackage>false</IsShippingPackage>
+    <IsPackable>false</IsPackable>
 
     <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
