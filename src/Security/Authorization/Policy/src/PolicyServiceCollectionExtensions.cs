@@ -14,6 +14,22 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class PolicyServiceCollectionExtensions
     {
         /// <summary>
+        /// Adds the authorization policy evaluator service to the specified <see cref="IServiceCollection" />. 
+        /// </summary>
+        /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
+        /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
+        public static IServiceCollection AddAuthorizationPolicyEvaluator(this IServiceCollection services)
+        {
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services));
+            }
+
+            services.TryAdd(ServiceDescriptor.Transient<IPolicyEvaluator, PolicyEvaluator>());
+            return services;
+        }
+        
+        /// <summary>
         /// Adds authorization policy services to the specified <see cref="IServiceCollection" />.
         /// </summary>
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
@@ -36,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddAuthorizationCore(configure);
             services.TryAddSingleton<AuthorizationPolicyMarkerService>();
-            services.TryAdd(ServiceDescriptor.Transient<IPolicyEvaluator, PolicyEvaluator>());
+            services.AddAuthorizationPolicyEvaluator();
             return services;
         }
     }
