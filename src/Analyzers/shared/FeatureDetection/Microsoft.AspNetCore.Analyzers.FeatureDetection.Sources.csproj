@@ -26,10 +26,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Include="../../Analyzers/src/StartupFacts.cs">
       <Link>%(FileName)%(Extension)</Link>
       <Pack>true</Pack>

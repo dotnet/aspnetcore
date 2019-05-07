@@ -107,10 +107,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Analyz
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Analyzers.Test", "Analyzers\test\Microsoft.AspNetCore.Analyzers.Test.csproj", "{63A928CC-792F-400A-97D3-F455C0A78B8F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{D636CB13-A173-4A5B-8FB7-C390D0EC5C15}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Analyzers.FeatureDetection.Sources", "shared\FeatureDetection\Microsoft.AspNetCore.Analyzers.FeatureDetection.Sources.csproj", "{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_dependencies", "_dependencies", "{15FC976B-4FFC-47E1-A047-194F21C3CA9F}"
 EndProject
 Global
@@ -735,18 +731,6 @@ Global
 		{63A928CC-792F-400A-97D3-F455C0A78B8F}.Release|x64.Build.0 = Release|Any CPU
 		{63A928CC-792F-400A-97D3-F455C0A78B8F}.Release|x86.ActiveCfg = Release|Any CPU
 		{63A928CC-792F-400A-97D3-F455C0A78B8F}.Release|x86.Build.0 = Release|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Debug|x64.Build.0 = Debug|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Debug|x86.Build.0 = Debug|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Release|x64.ActiveCfg = Release|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Release|x64.Build.0 = Release|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Release|x86.ActiveCfg = Release|Any CPU
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -803,7 +787,6 @@ Global
 		{BDF0389F-B502-4D71-8ADF-206A59F9D32A} = {15FC976B-4FFC-47E1-A047-194F21C3CA9F}
 		{95534D16-E720-4435-9867-5D3E2B288406} = {E20BC57F-1881-40B0-BEAF-338BBDA87956}
 		{63A928CC-792F-400A-97D3-F455C0A78B8F} = {E20BC57F-1881-40B0-BEAF-338BBDA87956}
-		{F6285225-71D7-4ECD-BF05-6D3EA8326BF3} = {D636CB13-A173-4A5B-8FB7-C390D0EC5C15}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {C44A91F6-58D3-4900-8D5C-60E9690D5D3B}
