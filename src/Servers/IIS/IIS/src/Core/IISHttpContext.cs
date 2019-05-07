@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             Method = GetVerb();
 
             RawTarget = GetRawUrl();
-            // TODO version is slo.
+            // TODO version is slow.
             HttpVersion = GetVersion();
             Scheme = SslStatus != SslStatus.Insecure ? Constants.HttpsScheme : Constants.HttpScheme;
             KnownMethod = VerbId;
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         {
             var rawUrlInBytes = GetRawUrlInBytes();
 
-            // Pre Windows 10 RS2 applicationInitialization request might not have pRawUrl set, fallback to cooked url
+            // Pre Windows 10 RS2 applicationInitialization request might not have pRawUrl set, fallback to cocked url
             if (rawUrlInBytes.Length == 0)
             {
                 return GetCookedUrl().GetAbsPath();
