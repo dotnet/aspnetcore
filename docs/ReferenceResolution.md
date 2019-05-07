@@ -1,5 +1,4 @@
-`<Reference>` resolution
-========================
+# `<Reference>` resolution
 
 Most project files in this repo should use `<Reference>` instead of `<ProjectReference>` or `<PackageReference>`.
 This was done to enable ASP.NET Core's unique requirements without requiring most ASP.NET Core contributors
@@ -21,9 +20,10 @@ The requirements that led to this system are:
 * Use `<Reference>`.
 * Do not use `<PackageReference>`.
 * If you need to use a new package, add it to `eng/Dependencies.props` and `eng/Versions.props`.
+* If the package comes from a partner team and needs to have versions automatically updated, also add an entry `eng/Version.Details.xml`.
 * Only use `<ProjectReference>` in test projects.
 * Name the .csproj file to match the assembly name.
-* Run `build.cmd /t:GenerateProjectList` when adding new projects
+* Run `eng/scripts/GenerateProjectList.ps1` (or `build.cmd /t:GenerateProjectList`) when adding new projects
 * Use [eng/tools/BaseLineGenerator/](/eng/tools/BaselineGenerator/README.md) if you need to update baselines.
 * If you need to make a breaking change to dependencies, you may need to add `<SuppressBaselineReference>`.
 
@@ -32,8 +32,9 @@ The requirements that led to this system are:
 * [eng/Baseline.xml](/eng/Baseline.xml) - this contains the 'baseline' of the latest servicing release for this branch. It should be modified and used to update the generated file, Baseline.Designer.props.
 * [eng/Dependencies.props](/eng/Dependencies.props) - contains a list of all package references that might be used in the repo.
 * [eng/PatchConfig.props](/eng/PatchConfig.props) - lists which assemblies or packages are patching in the current build.
-* [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project
-* [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation.
+* [eng/ProjectReferences.props](/eng/ProjectReferences.props) - lists which assemblies or packages might be available to be referenced as a local project.
+* [eng/Versions.props](/eng/Versions.props) - contains a list of versions which may be updated by automation. This is used by MSBuild to restore and build.
+* [eng/Version.Details.xml](/eng/Version.Details.xml) - used by automation to update dependencies variables in other files.
 
 ## Example: adding a new project
 
@@ -57,8 +58,7 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
         ```xml
         <ProductDependencies>
           <!-- ... -->
-          </Dependency>
-            <Dependency Name="System.Banana" Version="0.0.1-beta-1">
+          <Dependency Name="System.Banana" Version="0.0.1-beta-1">
             <Uri>https://github.com/dotnet/corefx</Uri>
             <Sha>000000</Sha>
           </Dependency>
@@ -68,6 +68,21 @@ Steps for adding a new package dependency to an existing project. Let's say I'm 
 
        If you don't know the commit hash of the source code used to produce "0.0.1-beta-1", you can use `000000` as a placeholder for `Sha`
        as its value is unimportant and will be updated the next time the bot runs.
+
+        If the new dependency comes from dotnet/CoreFx, dotnet/code-setup or aspnet/Extensions, add a
+        `CoherentParentDependency` attribute to the `<Dependency>` element as shown below. This example indicates the
+        dotnet/CoreFx dependency version should be determined based on the build that produced the chosen
+        Microsoft.NETCore.App. That is, the dotnet/CoreFx dependency and Microsoft.NETCore.App should be
+        coherent.
+
+        ```xml
+        <Dependency Name="System.Banana" Version="0.0.1-beta-1" CoherentParentDependency="Microsoft.NETCore.App">
+          <!-- ... -->
+        </Dependency>
+        ```
+
+        The attribute value should be `"Microsoft.Extensions.Logging"` for dotnet/core-setup dependencies and
+        `"Microsoft.CodeAnalysis.Razor"` for aspnet/Extensions dependencies.
 
 ## Example: make a breaking change to references
 
@@ -81,3 +96,13 @@ If Microsoft.AspNetCore.Banana in 2.1 had a reference to `Microsoft.AspNetCore.O
 +    <SuppressBaselineReference Include="Microsoft.AspNetCore.Orange" /> <!-- suppress as a known breaking change -->
   </ItemGroup>
 ```
+
+## Updating dependencies manually
+
+If the `dotnet-maestro` bot has not correctly updated the dependencies, it may be worthwhile running `darc` manually:
+
+1. Install `darc` as described in https://github.com/dotnet/arcade/blob/master/Documentation/Darc.md#setting-up-your-darc-client
+2. Run `darc update-dependencies --channel '.NET Core 3 Dev'`
+   * Use `'.NET Core 3 Release'` in a `release/3.0-*` branch
+3. `git diff` to confirm the tool's changes
+4. Proceed with usual commit and PR&hellip;
