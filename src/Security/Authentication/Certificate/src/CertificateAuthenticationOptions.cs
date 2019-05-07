@@ -3,8 +3,6 @@
 
 using System.Security.Cryptography.X509Certificates;
 
-using Microsoft.AspNetCore.Authentication;
-
 namespace Microsoft.AspNetCore.Authentication.Certificate
 {
     public class CertificateAuthenticationOptions : AuthenticationSchemeOptions
