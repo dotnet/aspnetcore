@@ -771,12 +771,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public readonly int ComponentId;
         public readonly System.ArraySegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> Edits;
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Explicit)]
     public readonly partial struct RenderTreeEdit
     {
+        [System.Runtime.InteropServices.FieldOffsetAttribute(8)]
+        public readonly int MoveToSiblingIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(8)]
         public readonly int ReferenceFrameIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(16)]
         public readonly string RemovedAttributeName;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(4)]
         public readonly int SiblingIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(0)]
         public readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType Type;
     }
     public enum RenderTreeEditType
@@ -789,6 +795,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         StepIn = 6,
         StepOut = 7,
         UpdateMarkup = 8,
+        PermutationListEntry = 9,
+        PermutationListEnd = 10,
     }
     public enum RenderTreeFrameType
     {

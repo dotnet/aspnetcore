@@ -100,6 +100,10 @@ class OutOfProcessRenderTreeEditReader implements RenderTreeEditReader {
     return readInt32LE(this.batchDataUint8, edit as any + 8); // 3rd int
   }
 
+  moveToSiblingIndex(edit: RenderTreeEdit) {
+    return readInt32LE(this.batchDataUint8, edit as any + 8); // 3rd int
+  }
+
   removedAttributeName(edit: RenderTreeEdit) {
     const stringIndex = readInt32LE(this.batchDataUint8, edit as any + 12); // 4th int
     return this.stringReader.readString(stringIndex);
