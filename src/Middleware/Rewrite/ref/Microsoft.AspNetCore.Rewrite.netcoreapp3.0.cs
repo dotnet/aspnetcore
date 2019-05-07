@@ -491,6 +491,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
         public HeaderSegment(string header) { }
         public override string Evaluate(Microsoft.AspNetCore.Rewrite.RewriteContext context, Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection ruleBackReferences, Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection conditionBackReferences) { throw null; }
     }
+    public partial class IISServerVariableSegment : Microsoft.AspNetCore.Rewrite.Internal.PatternSegment
+    {
+        public IISServerVariableSegment(string variableName, System.Func<Microsoft.AspNetCore.Rewrite.Internal.PatternSegment> fallbackThunk) { }
+        public override string Evaluate(Microsoft.AspNetCore.Rewrite.RewriteContext context, Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection ruleBackReferences, Microsoft.AspNetCore.Rewrite.Internal.BackReferenceCollection conditionBackReferences) { throw null; }
+    }
     public partial class IsHttpsModSegment : Microsoft.AspNetCore.Rewrite.Internal.PatternSegment
     {
         public IsHttpsModSegment() { }
