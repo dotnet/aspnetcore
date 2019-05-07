@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.Analyzers
 {
     internal static class SymbolNames
     {
-        public const ConfigureServicesMethodPrefix = "Configure";
+        public const string ConfigureServicesMethodPrefix = "Configure";
 
-        public const ConfigureServicesMethodSuffix = "Services";
+        public const string ConfigureServicesMethodSuffix = "Services";
 
         public const string ConfigureMethodPrefix = "Configure";
 
