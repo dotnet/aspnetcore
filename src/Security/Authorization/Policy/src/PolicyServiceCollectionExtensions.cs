@@ -25,6 +25,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
+            services.TryAddSingleton<AuthorizationPolicyMarkerService>();
             services.TryAdd(ServiceDescriptor.Transient<IPolicyEvaluator, PolicyEvaluator>());
             return services;
         }
@@ -51,7 +52,6 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddAuthorizationCore(configure);
-            services.TryAddSingleton<AuthorizationPolicyMarkerService>();
             services.AddAuthorizationPolicyEvaluator();
             return services;
         }
