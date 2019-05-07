@@ -9,11 +9,6 @@ namespace TestSite
 {
     public class ThrowingStartup
     {
-        public void ConfigureServices(IServiceCollection serviceCollection)
-        {
-            throw new InvalidOperationException("From ConfigureServices");
-        }
-
         public void Configure(IApplicationBuilder app)
         {
             throw new InvalidOperationException("From Configure");
