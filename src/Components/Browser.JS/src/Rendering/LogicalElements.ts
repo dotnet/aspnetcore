@@ -208,6 +208,16 @@ export function permuteLogicalChildren(parent: LogicalElement, permutationList: 
   });
 }
 
+export function getClosestDomElement(logicalElement: LogicalElement) {
+  if (logicalElement instanceof Element) {
+    return logicalElement;
+  } else if (logicalElement instanceof Comment) {
+    return logicalElement.parentNode! as Element;
+  } else {
+    throw new Error('Not a valid logical element');
+  }
+}
+
 export interface PermutationListEntry {
   fromSiblingIndex: number,
   toSiblingIndex: number,
@@ -224,16 +234,6 @@ function getLogicalNextSibling(element: LogicalElement): LogicalElement | null {
   const siblings = getLogicalChildrenArray(getLogicalParent(element)!);
   const siblingIndex = Array.prototype.indexOf.call(siblings, element);
   return siblings[siblingIndex + 1] || null;
-}
-
-function getClosestDomElement(logicalElement: LogicalElement) {
-  if (logicalElement instanceof Element) {
-    return logicalElement;
-  } else if (logicalElement instanceof Comment) {
-    return logicalElement.parentNode! as Element;
-  } else {
-    throw new Error('Not a valid logical element');
-  }
 }
 
 function appendDomNode(child: Node, parent: LogicalElement) {

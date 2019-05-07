@@ -13263,7 +13263,13 @@ var BrowserRenderer = /** @class */ (function () {
                 clearBetween(rootElementToClear, rootElementToClearEnd);
             }
         }
+        var ownerDocument = LogicalElements_1.getClosestDomElement(element).ownerDocument;
+        var activeElementBefore = ownerDocument && ownerDocument.activeElement;
         this.applyEdits(batch, element, 0, edits, referenceFrames);
+        // Try to restore focus in case it was lost due to an element move
+        if ((activeElementBefore instanceof HTMLElement) && ownerDocument && ownerDocument.activeElement !== activeElementBefore) {
+            activeElementBefore.focus();
+        }
     };
     BrowserRenderer.prototype.disposeComponent = function (componentId) {
         delete this.childComponentLocations[componentId];
@@ -14231,11 +14237,6 @@ function permuteLogicalChildren(parent, permutationList) {
     });
 }
 exports.permuteLogicalChildren = permuteLogicalChildren;
-function getLogicalNextSibling(element) {
-    var siblings = getLogicalChildrenArray(getLogicalParent(element));
-    var siblingIndex = Array.prototype.indexOf.call(siblings, element);
-    return siblings[siblingIndex + 1] || null;
-}
 function getClosestDomElement(logicalElement) {
     if (logicalElement instanceof Element) {
         return logicalElement;
@@ -14246,6 +14247,12 @@ function getClosestDomElement(logicalElement) {
     else {
         throw new Error('Not a valid logical element');
     }
+}
+exports.getClosestDomElement = getClosestDomElement;
+function getLogicalNextSibling(element) {
+    var siblings = getLogicalChildrenArray(getLogicalParent(element));
+    var siblingIndex = Array.prototype.indexOf.call(siblings, element);
+    return siblings[siblingIndex + 1] || null;
 }
 function appendDomNode(child, parent) {
     // This function only puts 'child' into the DOM in the right place relative to 'parent'
