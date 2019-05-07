@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
 using Microsoft.JSInterop;
 using OpenQA.Selenium;
+using OpenQA.Selenium.Interactions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -201,6 +204,73 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                         // A5 was inserted
                         new Node("keyA5", "A5 inserted") { IsNew = true }),
                 });
+        }
+
+        [Fact]
+        public async Task CanRetainFocusWhileMovingTextBox()
+        {
+            var appElem = MountTestComponent<ReorderingFocusComponent>();
+            Func<IWebElement> textboxFinder = () => appElem.FindElement(By.CssSelector(".incomplete-items .item-1 input[type=text]"));
+            var textToType = "Hello this is a long string that should be typed";
+            var expectedTextTyped = "";
+
+            textboxFinder().Clear();
+
+            // On each keystroke, the boxes will be shuffled. The text will only
+            // be inserted correctly if focus is retained. 
+            textboxFinder().Click();
+            while (textToType.Length > 0)
+            {
+                var nextBlockLength = Math.Min(5, textToType.Length);
+                var nextBlock = textToType.Substring(0, nextBlockLength);
+                textToType = textToType.Substring(nextBlockLength);
+                expectedTextTyped += nextBlock;
+
+                // Send keys to whatever has focus
+                new Actions(Browser).SendKeys(nextBlock).Perform();
+                Browser.Equal(expectedTextTyped, () => textboxFinder().GetAttribute("value"));
+
+                // We delay between typings to ensure the events aren't all collapsed into one.
+                await Task.Delay(100);
+            }
+
+            // Verify that after all this, we can still move the edited item
+            // This was broken originally because of unexpected event-handling behavior
+            // in Chrome (it raised events recursively)
+            appElem.FindElement(
+                By.CssSelector(".incomplete-items .item-1 input[type=checkbox]")).Click();
+            Browser.Equal(expectedTextTyped, () => appElem
+                .FindElement(By.CssSelector(".complete-items .item-1 input[type=text]"))
+                .GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanUpdateCheckboxStateWhileMovingIt()
+        {
+            var appElem = MountTestComponent<ReorderingFocusComponent>();
+            Func<IWebElement> checkboxFinder = () => appElem.FindElement(By.CssSelector(".item-2 input[type=checkbox]"));
+            Func<IEnumerable<bool>> incompleteItemStates = () => appElem
+                .FindElements(By.CssSelector(".incomplete-items input[type=checkbox]"))
+                .Select(elem => elem.Selected);
+            Func<IEnumerable<bool>> completeItemStates = () => appElem
+                .FindElements(By.CssSelector(".complete-items input[type=checkbox]"))
+                .Select(elem => elem.Selected);
+
+            // Verify initial state
+            Browser.Equal(new[] { false, false, false, false, false }, incompleteItemStates);
+            Browser.Equal(Array.Empty<bool>(), completeItemStates);
+
+            // Check a box; see it moves and becomes the sole checked item
+            checkboxFinder().Click();
+            Browser.True(() => checkboxFinder().Selected);
+            Browser.Equal(new[] { false, false, false, false }, incompleteItemStates);
+            Browser.Equal(new[] { true }, completeItemStates);
+
+            // Also uncheck it; see it moves and becomes unchecked
+            checkboxFinder().Click();
+            Browser.False(() => checkboxFinder().Selected);
+            Browser.Equal(new[] { false, false, false, false, false }, incompleteItemStates);
+            Browser.Equal(Array.Empty<bool>(), completeItemStates);
         }
 
         private void PerformTest(Node[] before, Node[] after)
