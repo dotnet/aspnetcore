@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
@@ -42,6 +42,7 @@
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Facebook" />
     <Reference Include="Microsoft.AspNetCore.Authentication.Google" />
+    <Reference Include="Microsoft.AspNetCore.HeaderPropagation" />
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <Reference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" />
     <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
