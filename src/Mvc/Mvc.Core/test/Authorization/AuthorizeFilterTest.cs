@@ -608,7 +608,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             serviceCollection.AddLogging();
             serviceCollection.AddSingleton(auth.Object);
             serviceCollection.AddAuthorization();
-            serviceCollection.AddAuthorizationPolicyEvaluator();
             registerServices?.Invoke(serviceCollection);
 
             var serviceProvider = serviceCollection.BuildServiceProvider();
