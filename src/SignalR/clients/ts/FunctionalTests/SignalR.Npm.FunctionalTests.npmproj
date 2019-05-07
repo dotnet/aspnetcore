@@ -37,10 +37,9 @@
       <_TestSauceArgs Condition="'$(BrowserTestHostName)' != ''">$(_TestSauceArgs) --use-hostname "$(BrowserTestHostName)"</_TestSauceArgs>
     </PropertyGroup>
     <Message Text="test:sauce Args = $(_TestSauceArgs)" Importance="high" />
-    <Exec Command="npm run test:sauce -- $(_TestSauceArgs)"
+    <Yarn Command="run test:sauce -- $(_TestSauceArgs)"
           Condition="'$(DailyTests)' == 'true'"
-          WorkingDirectory="$(RepositoryRoot)src/SignalR/clients/ts/FunctionalTests"
-          IgnoreStandardErrorWarningFormat="true" />
+          WorkingDirectory="$(RepositoryRoot)src/SignalR/clients/ts/FunctionalTests" />
   </Target>
 
 </Project>

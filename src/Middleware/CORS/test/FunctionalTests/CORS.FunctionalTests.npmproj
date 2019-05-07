@@ -2,7 +2,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
   <!--
-    This project file is present so the CI will run `npm install` on the package.json file.
+    This project file is present so the CI will run `yarn install` on the package.json file.
     The C# invokes node to start the tests.
   -->
 
