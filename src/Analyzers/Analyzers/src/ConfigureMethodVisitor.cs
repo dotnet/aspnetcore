@@ -12,16 +12,16 @@ namespace Microsoft.AspNetCore.Analyzers
         {
             var visitor = new ConfigureMethodVisitor(symbols);
             visitor.Visit(assembly);
-            return visitor._types;
+            return visitor._methods;
         }
 
         private readonly StartupSymbols _symbols;
-        private readonly List<IMethodSymbol> _types;
+        private readonly List<IMethodSymbol> _methods;
 
         private ConfigureMethodVisitor(StartupSymbols symbols)
         {
             _symbols = symbols;
-            _types = new List<IMethodSymbol>();
+            _methods = new List<IMethodSymbol>();
         }
 
         public override void VisitAssembly(IAssemblySymbol symbol)
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Analyzers
         {
             if (StartupFacts.IsConfigure(_symbols, symbol))
             {
-                _types.Add(symbol);
+                _methods.Add(symbol);
             }
         }
     }
