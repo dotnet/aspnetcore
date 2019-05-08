@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.E2ETesting
 
     public static class WaitAssert
     {
-        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(3);
+        public static TimeSpan DefaultTimeout = TimeSpan.FromSeconds(10);
 
         public static void Equal<T>(this IWebDriver driver, T expected, Func<T> actual)
             => WaitAssertCore(driver, () => Assert.Equal(expected, actual()));

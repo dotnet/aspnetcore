@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
 
             // Wait until we've torn down any earlier component
             testSelector.SelectByValue("none");
-            WaitUntilExists(By.Id("no-test-selected"));
+            WaitUntilExists(By.Id("no-test-selected"), timeoutSeconds: 30);
 
             // Wait until we've done the initial render for the new component
             testSelector.SelectByValue(componentTypeName);
-            return WaitUntilExists(By.TagName("app"));
+            return WaitUntilExists(By.TagName("app"), timeoutSeconds: 30);
         }
 
         protected SelectElement WaitUntilTestSelectorReady()
