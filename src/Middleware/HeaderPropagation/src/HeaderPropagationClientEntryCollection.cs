@@ -29,28 +29,28 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         }
 
         /// <summary>
-        /// Adds an <see cref="HeaderPropagationEntry"/> that will use the provided <paramref name="defaultOutboundHeaderName"/>
-        /// and <paramref name="overiddenOutboundHeaderName"/>.
+        /// Adds an <see cref="HeaderPropagationEntry"/> that will use the provided <paramref name="capturedHeaderName"/>
+        /// and <paramref name="outboundHeaderName"/>.
         /// </summary>
-        /// <param name="defaultOutboundHeaderName">
+        /// <param name="capturedHeaderName">
         /// The name of the header to be captured by <see cref="HeaderPropagationMiddleware"/>.
         /// </param>
-        /// <param name="overiddenOutboundHeaderName">
+        /// <param name="outboundHeaderName">
         /// The name of the header to be added by <see cref="HeaderPropagationMessageHandler"/>.
         /// </param>
-        public void Add(string defaultOutboundHeaderName, string overiddenOutboundHeaderName)
+        public void Add(string capturedHeaderName, string outboundHeaderName)
         {
-            if (defaultOutboundHeaderName == null)
+            if (capturedHeaderName == null)
             {
-                throw new ArgumentNullException(nameof(defaultOutboundHeaderName));
+                throw new ArgumentNullException(nameof(capturedHeaderName));
             }
 
-            if (overiddenOutboundHeaderName == null)
+            if (outboundHeaderName == null)
             {
-                throw new ArgumentNullException(nameof(overiddenOutboundHeaderName));
+                throw new ArgumentNullException(nameof(outboundHeaderName));
             }
 
-            Add(new HeaderPropagationClientEntry(defaultOutboundHeaderName, overiddenOutboundHeaderName));
+            Add(new HeaderPropagationClientEntry(capturedHeaderName, outboundHeaderName));
         }
     }
 }
