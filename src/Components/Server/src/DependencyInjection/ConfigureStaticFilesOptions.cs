@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.Server
 
                 public long Length => _data.Length;
 
-                public string PhysicalPath => "/_framework/blazor.boot.json";
+                public string PhysicalPath => null;
 
                 public string Name => "blazor.boot.json";
 
