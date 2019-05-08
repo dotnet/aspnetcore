@@ -30,9 +30,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
         {
             var componentTypeName = typeof(TComponent).FullName;
             var testSelector = WaitUntilTestSelectorReady();
+
+            // Wait until we've torn down any earlier component
             testSelector.SelectByValue("none");
+            WaitUntilExists(By.Id("no-test-selected"));
+
+            // Wait until we've done the initial render for the new component
             testSelector.SelectByValue(componentTypeName);
-            return Browser.FindElement(By.TagName("app"));
+            return WaitUntilExists(By.TagName("app"));
         }
 
         protected SelectElement WaitUntilTestSelectorReady()

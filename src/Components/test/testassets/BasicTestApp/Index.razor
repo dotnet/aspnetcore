@@ -61,9 +61,16 @@
   <hr />
 </div>
 
-<app>
-    @((RenderFragment)RenderSelectedComponent)
-</app>
+@if (SelectedComponentType != null)
+{
+    <app>
+        @((RenderFragment)RenderSelectedComponent)
+    </app>
+}
+else
+{
+    <div id="no-test-selected">Select a test case from the dropdown</div>
+}
 
 @functions {
     string SelectedComponentTypeName { get; set; } = "none";
@@ -73,10 +80,7 @@
 
     void RenderSelectedComponent(RenderTreeBuilder builder)
     {
-        if (SelectedComponentType != null)
-        {
-            builder.OpenComponent(0, SelectedComponentType);
-            builder.CloseComponent();
-        }
+        builder.OpenComponent(0, SelectedComponentType);
+        builder.CloseComponent();
     }
 }
