@@ -67,7 +67,16 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             try
             {
+                if (_requestProcessed)
+                {
+                    // This request was already processed but something is re-executing it like an exception handler.
+                    // Don't re-run because we could corrupt the connection state, e.g. if this was a stage2 NTLM request
+                    // that we've already completed the handshake for.
+                    return false;
+                }
+
                 _requestProcessed = true;
+
                 if (IsHttp2)
                 {
                     // HTTP/2 is not supported. Do not throw because this may be running on a server that supports

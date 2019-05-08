@@ -184,6 +184,45 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             await KerberosAuth(server, testConnection);
         }
 
+        [Fact]
+        public async Task ApplicationExceptionReExecute_AfterComplete_DoesntReRun()
+        {
+            var builder = new HostBuilder()
+                .ConfigureServices(services => services
+                    .AddAuthentication(NegotiateDefaults.AuthenticationScheme)
+                    .AddNegotiate(options =>
+                    {
+                        options.StateFactory = new TestNegotiateStateFactory();
+                    }))
+                .ConfigureWebHost(webHostBuilder =>
+                {
+                    webHostBuilder.UseTestServer();
+                    webHostBuilder.Configure(app =>
+                    {
+                        app.UseExceptionHandler("/error");
+                        app.UseAuthentication();
+                        app.Run(context =>
+                        {
+                            Assert.True(context.User.Identity.IsAuthenticated);
+                            if (context.Request.Path.Equals("/error"))
+                            {
+                                return context.Response.WriteAsync("Error Handler");
+                            }
+
+                            throw new TimeZoneNotFoundException();
+                        });
+                    });
+                });
+
+            var server = (await builder.StartAsync()).GetTestServer();
+
+            var testConnection = new TestConnection();
+            await NtlmStage1Auth(server, testConnection);
+            var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientNtlmBlob2");
+            Assert.Equal(StatusCodes.Status500InternalServerError, result.Response.StatusCode);
+            Assert.False(result.Response.Headers.ContainsKey(HeaderNames.WWWAuthenticate));
+        }
+
         private static async Task KerberosAuth(TestServer server, TestConnection testConnection)
         {
             var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob1");
