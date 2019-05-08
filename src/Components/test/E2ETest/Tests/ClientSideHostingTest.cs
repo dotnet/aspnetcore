@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         private void WaitUntilLoaded()
         {
             new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(By.TagName("app")).Text != "Loading...");
+                driver => driver.FindElement(By.Id("no-test-selected")));
         }
     }
 }
