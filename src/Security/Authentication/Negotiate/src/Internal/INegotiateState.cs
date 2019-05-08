@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         bool IsCompleted { get; }
 
-        string Protocal { get; }
+        string Protocol { get; }
 
         IIdentity GetIdentity();
     }

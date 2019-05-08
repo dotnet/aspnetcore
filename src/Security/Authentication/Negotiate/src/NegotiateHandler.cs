@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 if (!_negotiateState.IsCompleted)
                 {
-                    if (_negotiateState.Protocal == "NTLM")
+                    if (_negotiateState.Protocol == "NTLM")
                     {
                         persistence ??= EstablishConnectionPersistence(connectionItems);
                         // Save the state long enough to complete the multi-stage handshake.
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 // Deal with connection credential persistence.
 
-                if (_negotiateState.Protocal == "NTLM" && !Options.PersistNtlmCredentials)
+                if (_negotiateState.Protocol == "NTLM" && !Options.PersistNtlmCredentials)
                 {
                     // NTLM was already put in the persitence cache on the prior request so we could complete the handshake.
                     // Take it out if we don't want it to persist.
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     persistence.State = null;
                     Response.RegisterForDispose(_negotiateState);
                 }
-                else if (_negotiateState.Protocal == "Kerberos" && Options.PersistKerberosCredentials)
+                else if (_negotiateState.Protocol == "Kerberos" && Options.PersistKerberosCredentials)
                 {
                     persistence ??= EstablishConnectionPersistence(connectionItems);
                     Debug.Assert(persistence.State == null, "Complete Kerberos results should only be produced from a new context.");

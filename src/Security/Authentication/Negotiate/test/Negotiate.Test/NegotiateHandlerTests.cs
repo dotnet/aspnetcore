@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             public bool IsCompleted { get; private set; }
             public bool IsDisposed { get; private set; }
 
-            public string Protocal
+            public string Protocol
             {
                 get
                 {

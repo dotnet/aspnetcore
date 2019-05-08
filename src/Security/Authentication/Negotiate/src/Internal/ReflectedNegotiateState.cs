@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         private static readonly ConstructorInfo _constructor;
         private static readonly MethodInfo _getOutgoingBlob;
         private static readonly MethodInfo _isCompleted;
-        private static readonly MethodInfo _protocal;
+        private static readonly MethodInfo _protocol;
         private static readonly MethodInfo _getIdentity;
         private static readonly MethodInfo _closeContext;
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 info.Name.Equals("GetOutgoingBlob") && info.GetParameters().Count() == 2).Single();
             _isCompleted = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("get_IsCompleted")).Single();
-            _protocal = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
+            _protocol = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("get_ProtocolName")).Single();
             _closeContext = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("CloseContext")).Single();
@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             get => (bool)_isCompleted.Invoke(_instance, Array.Empty<object>());
         }
 
-        public string Protocal
+        public string Protocol
         {
-            get => (string)_protocal.Invoke(_instance, Array.Empty<object>());
+            get => (string)_protocol.Invoke(_instance, Array.Empty<object>());
         }
 
         public IIdentity GetIdentity()
