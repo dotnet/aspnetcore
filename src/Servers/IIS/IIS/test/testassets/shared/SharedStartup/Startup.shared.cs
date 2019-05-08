@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -104,8 +105,8 @@ namespace TestSite
         public Task CreateFile(HttpContext context)
         {
             var hostingEnv = context.RequestServices.GetService<IWebHostEnvironment>();
-            var otherNullFields = context.RequestServices.GetService<IHttpConnectionFeature>();
-            if (otherNullFields.LocalIpAddress == null || otherNullFields.RemoteIpAddress == null)
+
+            if (context.Connection.LocalIpAddress == null || context.Connection.RemoteIpAddress == null)
             {
                 throw new Exception("Failed to set local and remote ip addresses");
             }
