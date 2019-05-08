@@ -4,12 +4,25 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
+    /// <summary>
+    /// An <see cref="IAuthenticationStateProvider"/> intended for use in server-side
+    /// Blazor. The circuit factory will supply a <see cref="ClaimsPrincipal"/> from
+    /// the current <see cref="HttpContext.User"/>, which will stay fixed for the
+    /// lifetime of the circuit since <see cref="HttpContext.User"/> cannot change.
+    ///
+    /// This can therefore only be used with redirect-style authentication flows,
+    /// since it requires a new HTTP request in order to become a different user.
+    /// </summary>
     internal class FixedAuthenticationStateProvider : IAuthenticationStateProvider
     {
         private Task<IAuthenticationState> _authenticationStateTask;
+
+        // Since the authentication state is fixed, we never raise this event
+        public event AuthenticationStateChangedHandler AuthenticationStateChanged;
 
         public void Initialize(ClaimsPrincipal user)
         {
