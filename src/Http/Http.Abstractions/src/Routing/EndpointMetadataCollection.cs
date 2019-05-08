@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http
         public static readonly EndpointMetadataCollection Empty = new EndpointMetadataCollection(Array.Empty<object>());
 
         private readonly object[] _items;
-        private readonly ConcurrentDictionary<Type, object[]> _cache;
+        private readonly ConcurrentDictionary<Type, object> _cache;
 
         /// <summary>
         /// Creates a new <see cref="EndpointMetadataCollection"/>.
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             _items = items.ToArray();
-            _cache = new ConcurrentDictionary<Type, object[]>();
+            _cache = new ConcurrentDictionary<Type, object>();
         }
 
         /// <summary>
@@ -74,10 +74,11 @@ namespace Microsoft.AspNetCore.Http
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T GetMetadata<T>() where T : class
         {
-            if (_cache.TryGetValue(typeof(T), out var result))
+            if (_cache.TryGetValue(typeof(T), out var obj))
             {
-                var length = result.Length;
-                return length > 0 ? (T)result[length - 1] : default;
+                var result = (OrderedEndpointMetadataCollection<T>)obj;
+                var count = result.Count;
+                return count > 0 ? result[count - 1] : default;
             }
 
             return GetMetadataSlow<T>();
@@ -85,9 +86,9 @@ namespace Microsoft.AspNetCore.Http
 
         private T GetMetadataSlow<T>() where T : class
         {
-            var array = GetOrderedMetadataSlow<T>();
-            var length = array.Length;
-            return length > 0 ? array[length - 1] : default;
+            var result = GetOrderedMetadataSlow<T>();
+            var count = result.Count;
+            return count > 0 ? result[count - 1] : default;
         }
 
         /// <summary>
@@ -97,30 +98,34 @@ namespace Microsoft.AspNetCore.Http
         /// <typeparam name="T">The type of metadata.</typeparam>
         /// <returns>A sequence of metadata items of <typeparamref name="T"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<T> GetOrderedMetadata<T>() where T : class
+        public OrderedEndpointMetadataCollection<T> GetOrderedMetadata<T>() where T : class
         {
             if (_cache.TryGetValue(typeof(T), out var result))
             {
-                return (T[])result;
+                return (OrderedEndpointMetadataCollection<T>)result;
             }
 
             return GetOrderedMetadataSlow<T>();
         }
 
-        private T[] GetOrderedMetadataSlow<T>() where T : class
+        private OrderedEndpointMetadataCollection<T> GetOrderedMetadataSlow<T>() where T : class
         {
-            var items = new List<T>();
-            for (var i = 0; i < _items.Length; i++)
+            // Perf: avoid allocations totally for the common case where there are no matching metadata.
+            List<T> matches = null;
+
+            var items = _items;
+            for (var i = 0; i < items.Length; i++)
             {
-                if (_items[i] is T item)
+                if (items[i] is T item)
                 {
-                    items.Add(item);
+                    matches ??= new List<T>();
+                    matches.Add(item);
                 }
             }
 
-            var array = items.ToArray();
-            _cache.TryAdd(typeof(T), array);
-            return array;
+            var results = matches == null ? OrderedEndpointMetadataCollection<T>.Empty : new OrderedEndpointMetadataCollection<T>(matches.ToArray());
+            _cache.TryAdd(typeof(T), results);
+            return results;
         }
 
         /// <summary>
