@@ -2,9 +2,10 @@ REM Disable "!Foo!" expansions because they break the filter syntax
 setlocal disableextensions
 
 set target=%1
-set sdkVersion=%2
-set runtimeVersion=%3
-set helixQueue=%4
+set targetFrameworkIdentifier=%2
+set sdkVersion=%3
+set runtimeVersion=%4
+set helixQueue=%5
 
 set DOTNET_HOME=%HELIX_CORRELATION_PAYLOAD%\sdk
 set DOTNET_ROOT=%DOTNET_HOME%\x64
@@ -18,6 +19,11 @@ powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePo
 powershell.exe -NoProfile -ExecutionPolicy unrestricted -Command "[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12; &([scriptblock]::Create((Invoke-WebRequest -useb 'https://dot.net/v1/dotnet-install.ps1'))) -Architecture x64 -Runtime dotnet -Version %runtimeVersion% -InstallDir %DOTNET_ROOT%"
 
 set HELIX=%helixQueue%
+
+if (%targetFrameworkIdentifier%==.NETFramework) (
+    xunit.console.exe %target% -xml testResults.xml
+    exit %ERRORLEVEL%
+)
 
 %DOTNET_ROOT%\dotnet vstest %target% -lt >discovered.txt
 find /c "Exception thrown" discovered.txt
