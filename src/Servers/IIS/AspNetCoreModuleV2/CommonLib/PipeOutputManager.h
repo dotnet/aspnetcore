@@ -33,6 +33,7 @@ private:
     HANDLE                          m_hErrReadPipe;
     HANDLE                          m_hErrWritePipe;
     HANDLE                          m_hErrThread;
+    HANDLE                          m_originalStdOut;
     CHAR                            m_pipeContents[MAX_PIPE_READ_SIZE] = { 0 };
     DWORD                           m_numBytesReadTotal;
 };

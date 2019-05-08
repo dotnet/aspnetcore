@@ -57,6 +57,8 @@ void PipeOutputManager::Start()
     m_hErrReadPipe = hStdErrReadPipe;
     m_hErrWritePipe = hStdErrWritePipe;
 
+    m_originalStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+
     stdoutWrapper = std::make_unique<StdWrapper>(stdout, STD_OUTPUT_HANDLE, hStdErrWritePipe, m_enableNativeRedirection);
     stderrWrapper = std::make_unique<StdWrapper>(stderr, STD_ERROR_HANDLE, hStdErrWritePipe, m_enableNativeRedirection);
 
@@ -191,6 +193,8 @@ PipeOutputManager::ReadStdErrHandleInternal()
 {
     // If ReadFile ever returns false, exit the thread
     DWORD dwNumBytesRead = 0;
+    DWORD nBytesWritten = 0;
+
     while (true)
     {
         // Fill a maximum of MAX_PIPE_READ_SIZE into a buffer.
@@ -200,6 +204,7 @@ PipeOutputManager::ReadStdErrHandleInternal()
             &dwNumBytesRead,
             nullptr))
         {
+            WriteFile(m_originalStdOut, &m_pipeContents[m_numBytesReadTotal], dwNumBytesRead, &nBytesWritten, nullptr);
             m_numBytesReadTotal += dwNumBytesRead;
             if (m_numBytesReadTotal >= MAX_PIPE_READ_SIZE)
             {
@@ -224,5 +229,6 @@ PipeOutputManager::ReadStdErrHandleInternal()
         {
             return;
         }
+        WriteFile(m_originalStdOut, tempBuffer.data(), dwNumBytesRead, &nBytesWritten, nullptr);
     }
 }
