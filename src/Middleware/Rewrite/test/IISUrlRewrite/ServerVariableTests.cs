@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
         {
             // Arrange and Act
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart);
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, false);
             var lookup = serverVar.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
             // Assert
             Assert.Equal(expected, lookup);
@@ -56,11 +56,57 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
         [InlineData("REQUEST_URI", "/other-foo", UriMatchPart.Path)]
         [InlineData("REQUEST_URI", "/other-foo", UriMatchPart.Full)]
         [InlineData("REQUEST_METHOD", "POST", UriMatchPart.Full)]
-        public void CheckServerVariableFeatureHasPrecedence(string variable, string expected, UriMatchPart uriMatchPart)
+        public void CheckServerVariableFeatureHasPrecedenceWhenEnabled(string variable, string expected, UriMatchPart uriMatchPart)
         {
             // Arrange and Act
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart);
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, true);
+            var httpContext = CreateTestHttpContext();
+            httpContext.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
+            {
+                ["CONTENT_LENGTH"] = "20",
+                ["CONTENT_TYPE"] = "text/xml",
+                ["HTTP_ACCEPT"] = "other-accept",
+                ["HTTP_COOKIE"] = "other-cookie",
+                ["HTTP_HOST"] = "otherexample.com",
+                ["HTTP_REFERER"] = "other-referer",
+                ["HTTP_USER_AGENT"] = "other-useragent",
+                ["HTTP_CONNECTION"] = "other-connection",
+                ["HTTP_URL"] = "http://otherexample.com/other-foo?bar=2",
+                ["QUERY_STRING"] = "bar=2",
+                ["REQUEST_FILENAME"] = "/other-foo",
+                ["REQUEST_URI"] = "/other-foo",
+                ["REQUEST_METHOD"] = "POST"
+            }));
+
+            var rewriteContext = CreateTestRewriteContext(httpContext);
+            var lookup = serverVar.Evaluate(rewriteContext, CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
+
+            // Assert
+            Assert.Equal(expected, lookup);
+        }
+
+        [Theory]
+        [InlineData("CONTENT_LENGTH", "10", UriMatchPart.Path)]
+        [InlineData("CONTENT_TYPE", "json", UriMatchPart.Path)]
+        [InlineData("HTTP_ACCEPT", "accept", UriMatchPart.Path)]
+        [InlineData("HTTP_COOKIE", "cookie", UriMatchPart.Path)]
+        [InlineData("HTTP_HOST", "example.com", UriMatchPart.Path)]
+        [InlineData("HTTP_REFERER", "referer", UriMatchPart.Path)]
+        [InlineData("HTTP_USER_AGENT", "useragent", UriMatchPart.Path)]
+        [InlineData("HTTP_CONNECTION", "connection", UriMatchPart.Path)]
+        [InlineData("HTTP_URL", "/foo", UriMatchPart.Path)]
+        [InlineData("HTTP_URL", "http://example.com/foo?bar=1", UriMatchPart.Full)]
+        [InlineData("QUERY_STRING", "bar=1", UriMatchPart.Path)]
+        [InlineData("REQUEST_FILENAME", "/foo", UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "/foo", UriMatchPart.Path)]
+        [InlineData("REQUEST_URI", "http://example.com/foo?bar=1", UriMatchPart.Full)]
+        [InlineData("REQUEST_METHOD", "GET", UriMatchPart.Full)]
+        public void CheckServerVariableFeatureIsntUsedWhenDisabled(string variable, string expected, UriMatchPart uriMatchPart)
+        {
+            // Arrange and Act
+            var testParserContext = new ParserContext("test");
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, false);
             var httpContext = CreateTestHttpContext();
             httpContext.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
             {
@@ -128,7 +174,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
             var context = new DefaultHttpContext();
             var rewriteContext = new RewriteContext { HttpContext = context };
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable("QUERY_STRING", testParserContext, UriMatchPart.Path);
+            var serverVar = ServerVariables.FindServerVariable("QUERY_STRING", testParserContext, UriMatchPart.Path, false);
             var lookup = serverVar.Evaluate(rewriteContext, CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
 
             Assert.Equal(string.Empty, lookup);

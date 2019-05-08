@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <param name="options">The <see cref="RewriteOptions"/></param>
         /// <param name="fileProvider">The <see cref="IFileProvider"/> </param>
         /// <param name="filePath">The path to the file containing UrlRewrite rules.</param>
-        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath)
+        /// <param name="useNativeIISServerVariables">If the application uses the in-process hosting model, server variables can be sourced natively from IIS. It is disabled by default.</param>
+        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath, bool useNativeIISServerVariables = false)
         {
             if (options == null)
             {
@@ -35,7 +36,7 @@ namespace Microsoft.AspNetCore.Rewrite
 
             using (var stream = file.CreateReadStream())
             {
-                return AddIISUrlRewrite(options, new StreamReader(stream));
+                return AddIISUrlRewrite(options, new StreamReader(stream), useNativeIISServerVariables);
             }
         }
 
@@ -44,7 +45,8 @@ namespace Microsoft.AspNetCore.Rewrite
         /// </summary>
         /// <param name="options">The <see cref="RewriteOptions"/></param>
         /// <param name="reader">The text reader stream.</param>
-        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader)
+        /// <param name="useNativeIISServerVariables">If the application uses the in-process hosting model, server variables can be sourced natively from IIS. It is disabled by default.</param>
+        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader, bool useNativeIISServerVariables = false)
         {
             if (options == null)
             {
@@ -56,7 +58,7 @@ namespace Microsoft.AspNetCore.Rewrite
                 throw new ArgumentException(nameof(reader));
             }
 
-            var rules = new UrlRewriteFileParser().Parse(reader);
+            var rules = new UrlRewriteFileParser().Parse(reader, useNativeIISServerVariables);
 
             foreach (var rule in rules)
             {

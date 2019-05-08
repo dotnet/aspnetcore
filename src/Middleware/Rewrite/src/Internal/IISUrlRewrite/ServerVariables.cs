@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,9 +15,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         /// <param name="serverVariable">The server variable</param>
         /// <param name="context">The parser context which is utilized when an exception is thrown</param>
         /// <param name="uriMatchPart">Indicates whether the full URI or the path should be evaluated for URL segments</param>
+        /// <param name="useNativeIISServerVariables">Determines whether server variables are sourced natively from IIS</param>
         /// <exception cref="FormatException">Thrown when the server variable is unknown</exception>
         /// <returns>The matching <see cref="PatternSegment"/></returns>
-        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, UriMatchPart uriMatchPart)
+        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, UriMatchPart uriMatchPart, bool useNativeIISServerVariables)
         {
             Func<PatternSegment> fallback = default;
 
@@ -89,6 +90,11 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                     break;
                 default:
                     throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(serverVariable, context.Index));
+            }
+
+            if (!useNativeIISServerVariables)
+            {
+                return fallback();
             }
 
             return new IISServerVariableSegment(serverVariable, fallback);
