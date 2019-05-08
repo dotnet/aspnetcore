@@ -41,8 +41,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var encoder = scope.ServiceProvider.GetRequiredService<HtmlEncoder>();
             var jsRuntime = (RemoteJSRuntime)scope.ServiceProvider.GetRequiredService<IJSRuntime>();
             var componentContext = (RemoteComponentContext)scope.ServiceProvider.GetRequiredService<IComponentContext>();
+            var authenticationStateProvider = (FixedAuthenticationStateProvider)scope.ServiceProvider.GetRequiredService<IAuthenticationStateProvider>();
             jsRuntime.Initialize(client);
             componentContext.Initialize(client);
+            authenticationStateProvider.Initialize(httpContext.User);
 
             var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
             if (client.Connected)
