@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Analyzers.FeatureDetection
     // - Microsoft.VisualStudio.LanguageServices
     // - Microsoft.VisualStudio.Shell.15.0
     // - Microsoft.VisualStudio.Threading
-    [Export(typeof(ProjectFeatureDetector))]
-    internal class ProjectFeatureDetector
+    [Export(typeof(ProjectCompilationFeatureDetector))]
+    internal class ProjectCompilationFeatureDetector
     {
         private readonly Lazy<VisualStudioWorkspace> _workspace;
 
         [ImportingConstructor]
-        public ProjectFeatureDetector(Lazy<VisualStudioWorkspace> workspace)
+        public ProjectCompilationFeatureDetector(Lazy<VisualStudioWorkspace> workspace)
         {
             _workspace = workspace;
         }
