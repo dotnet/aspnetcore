@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     public partial class ChallengeContext : Microsoft.AspNetCore.Authentication.PropertiesContext<Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions>
     {
         public ChallengeContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Negotiate.NegotiateOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
-        public System.Exception AuthenticateFailure { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool Handled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void HandleResponse() { }
     }
@@ -49,6 +48,8 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     {
         public NegotiateOptions() { }
         public new Microsoft.AspNetCore.Authentication.Negotiate.NegotiateEvents Events { get { throw null; } set { } }
+        public bool PersistKerberosCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool PersistNtlmCredentials { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
