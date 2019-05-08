@@ -1,2 +1,2 @@
-<!-- Intentionally breaks the inheritance chain so submodules to not unintentionally inherit build settings from this repo. -->
+<!-- Intentionally breaks the inheritance chain so submodules do not inherit build settings from this repo. -->
 <Project />
