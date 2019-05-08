@@ -7,7 +7,25 @@ for example: `Windows.10.Amd64.ClientRS4.VS2017.Open`, `OSX.1012.Amd64.Open`, `U
 
 For more info about helix see: [SDK](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md), [JobSender](https://github.com/dotnet/arcade/blob/master/src/Microsoft.DotNet.Helix/Sdk/Readme.md)
 
-## How do I look at the results of a helix run?
+## Running helix tests locally
+
+To run Helix tests for one particular test project:
+
+```
+cd src/MyCode/test
+dotnet build /t:HelixTest
+```
+
+To run tests for the entire repo, run:
+
+```
+.\build.cmd /t:Helix
+```
+
+This will restore, and then publish all of the test projects including some bootstrapping scripts that will install the correct dotnet runtime/sdk before running the test assemblies on the helix machine, and upload the job to helix, it won't wait for the jobs to complete, but you can go to https://mc.dot.net/#/user/$(your user name)/builds.
+
+
+## How do I look at the results of a helix run on Azure Pipelines?
 There's a link embedded in the build.cmd log of the helix target on Azure Pipelines, near the bottom right that will look something like this:
 ```
 2019-02-07T21:55:48.1516089Z   Results will be available from https://mc.dot.net/#/user/aspnetcore/pr~2Faspnet~2Faspnetcore/ci/20190207.34
@@ -39,11 +57,6 @@ If that doesn't help, you can try the Get Repro environment link from mission co
 
 ## Differences from running tests locally
 Most tests that don't just work on helix automatically are ones that depend on the source code being accessible. The helix payloads only contain whatever is in the publish directories, so any thing else that test depends on will need to be included to the payload (TBD how to do this).
-
-## Running helix tests locally
-`.\build.cmd /t:Helix /p:IsHelixJob=true`
-
-This will restore, and then publish all of the test projects including some bootstrapping scripts that will install the correct dotnet runtime/sdk before running the test assemblies on the helix machine, and upload the job to helix, it won't wait for the jobs to complete, but you can go to https://mc.dot.net/#/user/aspnetcore/builds and look for a source that matches private-yourusername
 
 ## How to skip tests on helix
 There are two main ways to opt out of helix

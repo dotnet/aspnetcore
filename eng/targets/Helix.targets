@@ -9,6 +9,18 @@
     <Content Include="@(HelixContent)" />
   </ItemGroup>
 
+<!--
+
+This target is meant to be used when invoking helix tests on one project at a time.
+
+Usage: dotnet build /t:Helix src/MyTestProject.csproj
+
+-->
+  <Target Name="Helix">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\helix\helix.proj"
+             Properties="Projects=$(MSBuildProjectFullPath)" />
+  </Target>
+
   <!-- Build the actual helix work items to send to helix queues -->
   <Target Name="CreateHelixPayload" Returns="@(HelixWorkItem)">
     <ItemGroup>
