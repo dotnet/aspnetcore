@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Http
         public static readonly EndpointMetadataCollection Empty = new EndpointMetadataCollection(Array.Empty<object>());
 
         private readonly object[] _items;
-        private readonly ConcurrentDictionary<Type, object> _cache;
+        private readonly ConcurrentDictionary<Type, object[]> _cache;
 
         /// <summary>
         /// Creates a new <see cref="EndpointMetadataCollection"/>.
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http
             }
 
             _items = items.ToArray();
-            _cache = new ConcurrentDictionary<Type, object>();
+            _cache = new ConcurrentDictionary<Type, object[]>();
         }
 
         /// <summary>
@@ -76,9 +76,9 @@ namespace Microsoft.AspNetCore.Http
         {
             if (_cache.TryGetValue(typeof(T), out var obj))
             {
-                var result = (OrderedEndpointMetadataCollection<T>)obj;
-                var count = result.Count;
-                return count > 0 ? result[count - 1] : default;
+                var result = (T[])obj;
+                var length = result.Length;
+                return length > 0 ? result[length - 1] : default;
             }
 
             return GetMetadataSlow<T>();
@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Http
         private T GetMetadataSlow<T>() where T : class
         {
             var result = GetOrderedMetadataSlow<T>();
-            var count = result.Count;
-            return count > 0 ? result[count - 1] : default;
+            var length = result.Length;
+            return length > 0 ? result[length - 1] : default;
         }
 
         /// <summary>
@@ -98,17 +98,17 @@ namespace Microsoft.AspNetCore.Http
         /// <typeparam name="T">The type of metadata.</typeparam>
         /// <returns>A sequence of metadata items of <typeparamref name="T"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public OrderedEndpointMetadataCollection<T> GetOrderedMetadata<T>() where T : class
+        public IReadOnlyList<T> GetOrderedMetadata<T>() where T : class
         {
             if (_cache.TryGetValue(typeof(T), out var result))
             {
-                return (OrderedEndpointMetadataCollection<T>)result;
+                return (T[])result;
             }
 
             return GetOrderedMetadataSlow<T>();
         }
 
-        private OrderedEndpointMetadataCollection<T> GetOrderedMetadataSlow<T>() where T : class
+        private T[] GetOrderedMetadataSlow<T>() where T : class
         {
             // Perf: avoid allocations totally for the common case where there are no matching metadata.
             List<T> matches = null;
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Http
                 }
             }
 
-            var results = matches == null ? OrderedEndpointMetadataCollection<T>.Empty : new OrderedEndpointMetadataCollection<T>(matches.ToArray());
+            var results = matches == null ? Array.Empty<T>() : matches.ToArray();
             _cache.TryAdd(typeof(T), results);
             return results;
         }
