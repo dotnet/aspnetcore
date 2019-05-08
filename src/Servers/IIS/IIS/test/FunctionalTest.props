@@ -16,7 +16,9 @@
     <HelixProjectPlatform Condition="'$(IsIISTest)' == 'true'" Remove="@(HelixProjectPlatform)" />
 
     <HelixProjectTargetQueue Condition="'$(IsIISTest)' == 'true'" Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" />
-
+    <HelixProjectTargetQueue Condition="'$(IsIISTest)' == 'true'" Include="Windows.81.Amd64.Open" />
+    <HelixProjectTargetQueue Condition="'$(IsIISTest)' == 'true'" Include="Windows.7.Amd64.Open" />
+    
     <HelixContent Include="..\..\..\tools\update_schema.ps1" />
     <HelixContent Include="..\..\..\tools\InstallIISFeatures.ps1" />
     <HelixContent Include="..\..\..\tools\UpdateIISExpressCertificate.ps1" />
