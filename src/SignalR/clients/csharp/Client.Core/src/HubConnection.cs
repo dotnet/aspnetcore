@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -231,7 +230,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             CheckDisposed();
+            using (_logger.BeginScope(_logScope))
+            {
+                await StartAsyncInner(cancellationToken).ForceAsync();
+            }
+        }
 
+        private async Task StartAsyncInner(CancellationToken cancellationToken = default)
+        {
             await _state.WaitConnectionLockAsync();
             try
             {
@@ -247,10 +253,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started while {nameof(StopAsync)} is running.");
                 }
 
-                using (_logger.BeginScope(_logScope))
-                {
-                    await StartAsyncCore(cancellationToken).ForceAsync();
-                }
+                await StartAsyncCore(cancellationToken).ForceAsync();
 
                 _state.ChangeState(HubConnectionState.Connecting, HubConnectionState.Connected);
             }
