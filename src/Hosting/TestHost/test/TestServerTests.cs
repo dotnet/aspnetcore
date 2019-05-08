@@ -662,6 +662,59 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal("otherhost:5678", responseBody);
         }
 
+        [Fact]
+        public async Task AsyncLocalValueOnClientIsNotPreserved()
+        {
+            var asyncLocal = new AsyncLocal<object>();
+            var value = new object();
+            asyncLocal.Value = value;
+
+            object capturedValue = null;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run((context) =>
+                    {
+                        capturedValue = asyncLocal.Value;
+                        return context.Response.WriteAsync("Done");
+                    });
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var resp = await client.GetAsync("/");
+
+            Assert.NotSame(value, capturedValue);
+        }
+
+        [Fact]
+        public async Task AsyncLocalValueOnClientIsPreservedIfPreserveExecutionContextIsTrue()
+        {
+            var asyncLocal = new AsyncLocal<object>();
+            var value = new object();
+            asyncLocal.Value = value;
+
+            object capturedValue = null;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run((context) =>
+                    {
+                        capturedValue = asyncLocal.Value;
+                        return context.Response.WriteAsync("Done");
+                    });
+                });
+            var server = new TestServer(builder)
+            {
+                PreserveExecutionContext = true
+            };
+            var client = server.CreateClient();
+
+            var resp = await client.GetAsync("/");
+
+            Assert.Same(value, capturedValue);
+        }
+
         public class TestDiagnosticListener
         {
             public class OnBeginRequestEventData

@@ -85,6 +85,11 @@ namespace Microsoft.AspNetCore.TestHost
         /// </remarks>
         public bool AllowSynchronousIO { get; set; } = false;
 
+        /// <summary>
+        /// Gets or sets a value that controls if <see cref="ExecutionContext"/> and <see cref="AsyncLocal{T}"/> values are preserved from the client to the server.
+        /// </summary>
+        public bool PreserveExecutionContext { get; set; } = false;
+
         private IHttpApplication<Context> Application
         {
             get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
@@ -93,7 +98,7 @@ namespace Microsoft.AspNetCore.TestHost
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO };
+            return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
         }
 
         public HttpClient CreateClient()
@@ -104,7 +109,7 @@ namespace Microsoft.AspNetCore.TestHost
         public WebSocketClient CreateWebSocketClient()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new WebSocketClient(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO };
+            return new WebSocketClient(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
         }
 
         /// <summary>
@@ -147,7 +152,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
             builder.Configure(configureContext);
             // TODO: Wrap the request body if any?
-            return await builder.SendAsync(cancellationToken).ConfigureAwait(false);
+            return await builder.SendAsync(cancellationToken, PreserveExecutionContext).ConfigureAwait(false);
         }
 
         public void Dispose()

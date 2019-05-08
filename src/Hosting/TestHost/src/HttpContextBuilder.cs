@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.TestHost
     {
         private readonly IHttpApplication<Context> _application;
         private readonly HttpContext _httpContext;
-        
+
         private TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
         private ResponseStream _responseStream;
         private ResponseFeature _responseFeature = new ResponseFeature();
@@ -57,15 +57,17 @@ namespace Microsoft.AspNetCore.TestHost
         /// Start processing the request.
         /// </summary>
         /// <returns></returns>
-        internal Task<HttpContext> SendAsync(CancellationToken cancellationToken)
+        internal Task<HttpContext> SendAsync(CancellationToken cancellationToken, bool preserveExecutionContext)
         {
             var registration = cancellationToken.Register(AbortRequest);
 
-            _testContext = _application.CreateContext(_httpContext.Features);
-
-            // Async offload, don't let the test code block the caller.
-            _ = Task.Factory.StartNew(async () =>
+            // Everything inside this function happens in the SERVER's ExecutionContext (unless PreserveExecutionContext is true)
+            async Task RunRequestAsync()
             {
+                // This will configure IHttpContextAccessor so it needs to happen INSIDE this function,
+                // since we are now inside the Server's ExecutionContext. If it happens out
+                _testContext = _application.CreateContext(_httpContext.Features);
+
                 try
                 {
                     await _application.ProcessRequestAsync(_testContext);
@@ -81,7 +83,17 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     registration.Dispose();
                 }
-            });
+            }
+
+            // Async offload, don't let the test code block the caller.
+            if (preserveExecutionContext)
+            {
+                _ = Task.Factory.StartNew(RunRequestAsync);
+            }
+            else
+            {
+                ThreadPool.UnsafeQueueUserWorkItem(_ => { _ = RunRequestAsync(); }, null);
+            }
 
             return _responseTcs.Task;
         }

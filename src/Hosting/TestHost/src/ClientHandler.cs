@@ -45,6 +45,8 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal bool AllowSynchronousIO { get; set; }
 
+        internal bool PreserveExecutionContext { get; set; }
+
         /// <summary>
         /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
         /// associated HttpResponseMessage.
@@ -117,7 +119,7 @@ namespace Microsoft.AspNetCore.TestHost
                 responseBody = context.Response.Body;
             });
 
-            var httpContext = await contextBuilder.SendAsync(cancellationToken);
+            var httpContext = await contextBuilder.SendAsync(cancellationToken, PreserveExecutionContext);
 
             var response = new HttpResponseMessage();
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
