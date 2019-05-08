@@ -1,3 +1,4 @@
+@echo off
 REM Disable "!Foo!" expansions because they break the filter syntax
 setlocal disableextensions
 
@@ -22,7 +23,7 @@ set HELIX=%helixQueue%
 
 if (%targetFrameworkIdentifier%==.NETFramework) (
     xunit.console.exe %target% -xml testResults.xml
-    exit %ERRORLEVEL%
+    exit /b %ERRORLEVEL%
 )
 
 %DOTNET_ROOT%\dotnet vstest %target% -lt >discovered.txt
@@ -31,7 +32,7 @@ REM "ERRORLEVEL is not %ERRORLEVEL%" https://blogs.msdn.microsoft.com/oldnewthin
 if not errorlevel 1 (
     echo Exception thrown during test discovery. 1>&2
     type discovered.txt 1>&2
-    exit 1
+    exit /b 1
 )
 
 set exit_code=0
@@ -57,5 +58,5 @@ if errorlevel 1 (
     REM DO NOT EXIT and DO NOT SET EXIT_CODE to 1
 )
 
-exit %exit_code%
+exit /b %exit_code%
 
