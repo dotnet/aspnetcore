@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
                     await syncPoint.WaitForSyncPoint();
 
-                    // We should not yet bet able to start now because StopAsync hasn't completed
+                    // We should not yet be able to start now because StopAsync hasn't completed
                     Assert.False(stopTask.IsCompleted);
                     var startTask = connection.StartAsync().OrTimeout();
                     Assert.False(stopTask.IsCompleted);

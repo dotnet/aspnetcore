@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         /// <summary>
         /// Gets the connection's current Id. This value will be cleared when the connection is stopped and will have a new value every time the connection is (re)established.
-        /// This value will be null if the negotiation step is skipped via HubConnectionOptions or if the WebSockets transport is explicitly specified because the
+        /// This value will be null if the negotiation step is skipped via HttpConnectionOptions or if the WebSockets transport is explicitly specified because the
         /// client skips negotiation in that case as well.
         /// </summary>
         public string ConnectionId => _state.CurrentConnectionStateUnsynchronized?.Connection.ConnectionId;
@@ -168,7 +168,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         public HubConnectionState State => _state.OverallState;
 
-        // REVIEW: All other services are required. Do we want to add another constructor or use the service locator pattern?
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnection"/> class.
         /// </summary>
@@ -244,7 +243,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 if (!_state.TryChangeState(HubConnectionState.Disconnected, HubConnectionState.Connecting))
                 {
-                    throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started if it is not in the disconnected state.");
+                    throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started if it is not in the {nameof(HubConnectionState.Disconnected)} state.");
                 }
 
                 // The StopCts is canceled at the start of StopAsync should be reset every time the connection finishes stopping.
@@ -254,7 +253,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started while {nameof(StopAsync)} is running.");
                 }
 
-                await StartAsyncCore(cancellationToken).ForceAsync();
+                await StartAsyncCore(cancellationToken);
 
                 _state.ChangeState(HubConnectionState.Connecting, HubConnectionState.Connected);
             }
@@ -410,7 +409,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 await SendCoreAsyncCore(methodName, args, cancellationToken).ForceAsync();
             }
         }
-
 
         private async Task StartAsyncCore(CancellationToken cancellationToken)
         {

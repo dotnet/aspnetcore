@@ -88,14 +88,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         await failReconnectTcs.Task;
                     }
 
+                    var testConnection = await testConnectionFactory.GetNextOrCurrentTestConnection();
+
                     // Change the connection id before reconnecting.
                     if (startCallCount == 3)
                     {
-                        (await testConnectionFactory.GetNextOrCurrentTestConnection()).ConnectionId = reconnectedConnectionId;
+                        testConnection.ConnectionId = reconnectedConnectionId;
                     }
                     else
                     {
-                        (await testConnectionFactory.GetNextOrCurrentTestConnection()).ConnectionId = originalConnectionId;
+                        testConnection.ConnectionId = originalConnectionId;
                     }
                 }
 
@@ -881,11 +883,21 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return _testConnectionTcs.Task;
             }
 
-            public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
+            public async Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
             {
                 var testConnection = _testConnectionFactory();
+
                 _testConnectionTcs.SetResult(testConnection);
-                return testConnection.StartAsync(transferFormat);
+
+                try
+                {
+                    return await testConnection.StartAsync(transferFormat);
+                }
+                catch
+                {
+                    _testConnectionTcs = new TaskCompletionSource<TestConnection>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    throw;
+                }
             }
 
             public async Task DisposeAsync(ConnectionContext connection)

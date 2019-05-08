@@ -33,11 +33,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <returns>The same instance of the <see cref="IHubConnectionBuilder"/> for chaining.</returns>
         public static IHubConnectionBuilder WithAutomaticReconnect(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            // REVIEW: Should we throw if this would override another IRetryPolicy?
-            // REVIEW: If we have a separate retry policy for retrying on start failures vs retrying only after
-            // a connection was fully established, would we create an IStartRetryPolicyHolder with a single IRetryPolicy
-            // property so they could independently retrieved from the IoC container?
-
             hubConnectionBuilder.Services.AddSingleton<IRetryPolicy>(new DefaultRetryPolicy());
             return hubConnectionBuilder;
         }
