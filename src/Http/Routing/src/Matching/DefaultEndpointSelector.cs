@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
@@ -13,7 +14,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         public override Task SelectAsync(
             HttpContext httpContext,
-            EndpointSelectorContext context,
             CandidateSet candidateSet)
         {
             if (httpContext == null)
@@ -26,14 +26,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new ArgumentNullException(nameof(candidateSet));
             }
 
-            Select(httpContext, context, candidateSet.Candidates);
+            Select(httpContext, candidateSet.Candidates);
             return Task.CompletedTask;
         }
 
-        internal static void Select(
-            HttpContext httpContext,
-            EndpointSelectorContext context,
-            CandidateState[] candidateState)
+        internal static void Select(HttpContext httpContext, CandidateState[] candidateState)
         {
             // Fast path: We can specialize for trivial numbers of candidates since there can
             // be no ambiguities
@@ -50,8 +47,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         ref var state = ref candidateState[0];
                         if (CandidateSet.IsValidCandidate(ref state))
                         {
-                            context.Endpoint = state.Endpoint;
-                            context.RouteValues = state.Values;
+                            httpContext.SetEndpoint(state.Endpoint);
+                            httpContext.Request.RouteValues = state.Values;
                         }
 
                         break;
@@ -61,7 +58,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     {
                         // Slow path: There's more than one candidate (to say nothing of validity) so we
                         // have to process for ambiguities.
-                        ProcessFinalCandidates(httpContext, context, candidateState);
+                        ProcessFinalCandidates(httpContext, candidateState);
                         break;
                     }
             }
@@ -69,7 +66,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private static void ProcessFinalCandidates(
             HttpContext httpContext,
-            EndpointSelectorContext context,
             CandidateState[] candidateState)
         {
             Endpoint endpoint = null;
@@ -100,7 +96,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
                 else if (foundScore == state.Score)
                 {
-                    // This is the second match we've found of the same score, so there 
+                    // This is the second match we've found of the same score, so there
                     // must be an ambiguity.
                     //
                     // Don't worry about the 'null == state.Score' case, it returns false.
@@ -114,8 +110,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (endpoint != null)
             {
-                context.Endpoint = endpoint;
-                context.RouteValues = values;
+                httpContext.SetEndpoint(endpoint);
+                httpContext.Request.RouteValues = values;
             }
         }
 

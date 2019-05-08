@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -76,14 +77,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/1";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.NotNull(context.Endpoint);
+            Assert.NotNull(httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -97,14 +98,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/One";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -123,17 +124,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(dataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(endpoint, context.Endpoint);
+            Assert.Same(endpoint, httpContext.GetEndpoint());
 
             Assert.Collection(
-                context.RouteValues.OrderBy(kvp => kvp.Key),
+                httpContext.Request.RouteValues.OrderBy(kvp => kvp.Key),
                 (kvp) =>
                 {
                     Assert.Equal("action", kvp.Key);
@@ -162,14 +163,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(dataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/Login/Index";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -188,17 +189,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(dataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/Home/Index/123";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(endpoint, context.Endpoint);
+            Assert.Same(endpoint, httpContext.GetEndpoint());
 
             Assert.Collection(
-                context.RouteValues.OrderBy(kvp => kvp.Key),
+                httpContext.Request.RouteValues.OrderBy(kvp => kvp.Key),
                 (kvp) =>
                 {
                     Assert.Equal("action", kvp.Key);
@@ -237,18 +238,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(dataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = path;
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(endpoint, context.Endpoint);
+            Assert.Same(endpoint, httpContext.GetEndpoint());
 
-            Assert.Equal("TestAction", context.RouteValues["action"]);
-            Assert.Equal("TestController", context.RouteValues["controller"]);
-            Assert.Equal("17", context.RouteValues["id"]);
+            Assert.Equal("TestAction", httpContext.Request.RouteValues["action"]);
+            Assert.Equal("TestController", httpContext.Request.RouteValues["controller"]);
+            Assert.Equal("17", httpContext.Request.RouteValues["id"]);
         }
 
         [Fact]
@@ -272,22 +273,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(dataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/Home/Index/123";
 
             // Act 1
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert 1
-            Assert.Same(endpoint1, context.Endpoint);
+            Assert.Same(endpoint1, httpContext.GetEndpoint());
 
             httpContext.Request.Path = "/Login/Index/123";
 
             // Act 2
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert 2
-            Assert.Same(endpoint2, context.Endpoint);
+            Assert.Same(endpoint2, httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -306,17 +307,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(dataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/ConventionalTransformerRoute/conventional-transformer/Index";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(endpoint, context.Endpoint);
+            Assert.Same(endpoint, httpContext.GetEndpoint());
 
             Assert.Collection(
-                context.RouteValues.OrderBy(kvp => kvp.Key),
+                httpContext.Request.RouteValues.OrderBy(kvp => kvp.Key),
                 (kvp) =>
                 {
                     Assert.Equal("action", kvp.Key);
@@ -345,17 +346,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(dataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/TestController";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(endpoint, context.Endpoint);
+            Assert.Same(endpoint, httpContext.GetEndpoint());
 
             Assert.Collection(
-                context.RouteValues.OrderBy(kvp => kvp.Key),
+                httpContext.Request.RouteValues.OrderBy(kvp => kvp.Key),
                 (kvp) =>
                 {
                     Assert.Equal("action", kvp.Key);
@@ -383,14 +384,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/Teams";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Equal(lowerOrderEndpoint, context.Endpoint);
+            Assert.Equal(lowerOrderEndpoint, httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -402,8 +403,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
-                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
+                .Callback<HttpContext, CandidateSet>((c, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
@@ -417,7 +418,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     Assert.Equal(1, cs[1].Score);
                     Assert.Null(cs[1].Values);
 
-                    f.Endpoint = endpoint2;
+                    c.SetEndpoint(endpoint2);
                 })
                 .Returns(Task.CompletedTask);
 
@@ -429,14 +430,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector: endpointSelector.Object);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/Teams";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Equal(endpoint2, context.Endpoint);
+            Assert.Equal(endpoint2, httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -448,8 +449,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
-                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
+                .Callback<HttpContext, CandidateSet>((c, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
@@ -463,7 +464,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     Assert.Equal(1, cs[1].Score);
                     Assert.Empty(cs[1].Values);
 
-                    f.Endpoint = endpoint2;
+                    c.SetEndpoint(endpoint2);
                 })
                 .Returns(Task.CompletedTask);
 
@@ -475,14 +476,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector: endpointSelector.Object);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/Teams";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Equal(endpoint2, context.Endpoint);
+            Assert.Equal(endpoint2, httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -495,8 +496,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var endpointSelector = new Mock<EndpointSelector>();
             endpointSelector
-                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Callback<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                .Setup(s => s.SelectAsync(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
+                .Callback<HttpContext, CandidateSet>((c, cs) =>
                 {
                     Assert.Equal(2, cs.Count);
 
@@ -510,7 +511,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     Assert.Equal(1, cs[1].Score);
                     Assert.Empty(cs[1].Values);
 
-                    f.Endpoint = endpoint2;
+                    c.SetEndpoint(endpoint2);
                 })
                 .Returns(Task.CompletedTask);
 
@@ -522,14 +523,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(endpointDataSource, endpointSelector: endpointSelector.Object);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/Teams";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Equal(endpoint2, context.Endpoint);
+            Assert.Equal(endpoint2, httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -544,14 +545,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var sink = new TestSink();
             var matcher = CreateDfaMatcher(endpointDataSource, loggerFactory: new TestLoggerFactory(sink, enabled: true));
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
 
             Assert.Collection(
                 sink.Writes,
@@ -574,14 +575,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var sink = new TestSink();
             var matcher = CreateDfaMatcher(endpointDataSource, loggerFactory: new TestLoggerFactory(sink, enabled: true));
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/One";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
 
             Assert.Collection(
                 sink.Writes,
@@ -614,14 +615,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var sink = new TestSink();
             var matcher = CreateDfaMatcher(endpointDataSource, loggerFactory: new TestLoggerFactory(sink, enabled: true));
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/One";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
 
             Assert.Collection(
                 sink.Writes,
@@ -656,14 +657,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var sink = new TestSink();
             var matcher = CreateDfaMatcher(endpointDataSource, loggerFactory: new TestLoggerFactory(sink, enabled: true));
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/One";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(endpointDataSource.Endpoints[0], context.Endpoint);
+            Assert.Same(endpointDataSource.Endpoints[0], httpContext.GetEndpoint());
 
             Assert.Collection(
                 sink.Writes,
@@ -716,8 +717,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 .Setup(p => p.AppliesToEndpoints(It.IsAny<IReadOnlyList<Endpoint>>())).Returns(true);
             policy
                 .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, CandidateSet>((c, cs) =>
                 {
                     cs.SetValidity(1, false);
                     return Task.CompletedTask;
@@ -725,14 +726,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var matcher = CreateDfaMatcher(dataSource, policies: new[] { policy.Object, });
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/test/17";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(dataSource.Endpoints[2], context.Endpoint);
+            Assert.Same(dataSource.Endpoints[2], httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -752,22 +753,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 .Setup(p => p.AppliesToEndpoints(It.IsAny<IReadOnlyList<Endpoint>>())).Returns(false);
             policy
                 .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, CandidateSet>((c, cs) =>
                 {
                     throw null; // Won't be called.
                 });
 
             var matcher = CreateDfaMatcher(dataSource, policies: new[] { policy.Object, });
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/test/17";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(dataSource.Endpoints[1], context.Endpoint);
+            Assert.Same(dataSource.Endpoints[1], httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -787,10 +788,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 .Setup(p => p.AppliesToEndpoints(It.IsAny<IReadOnlyList<Endpoint>>())).Returns(true);
             policy1
                 .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
-                .Returns<HttpContext, EndpointSelectorContext, CandidateSet>((c, f, cs) =>
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
+                .Returns<HttpContext, CandidateSet>((c, cs) =>
                 {
-                    f.Endpoint = cs[0].Endpoint;
+                    c.SetEndpoint(cs[0].Endpoint);
                     return Task.CompletedTask;
                 });
 
@@ -804,26 +805,24 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 .Setup(p => p.AppliesToEndpoints(It.IsAny<IReadOnlyList<Endpoint>>())).Returns(true);
             policy2
                 .As<IEndpointSelectorPolicy>()
-                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<EndpointSelectorContext>(), It.IsAny<CandidateSet>()))
+                .Setup(p => p.ApplyAsync(It.IsAny<HttpContext>(), It.IsAny<CandidateSet>()))
                 .Throws(new InvalidOperationException());
 
             var matcher = CreateDfaMatcher(dataSource, policies: new[] { policy1.Object, policy2.Object, });
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             httpContext.Request.Path = "/test/17";
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.Same(dataSource.Endpoints[0], context.Endpoint);
+            Assert.Same(dataSource.Endpoints[0], httpContext.GetEndpoint());
         }
 
-        private (HttpContext httpContext, EndpointSelectorContext context) CreateContext()
+        private HttpContext CreateContext()
         {
-            var httpContext = new DefaultHttpContext();
-
-            return (httpContext, new EndpointSelectorContext(httpContext));
+            return new DefaultHttpContext();
         }
     }
 }
