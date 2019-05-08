@@ -2,17 +2,13 @@
 # yarn lockfile v1
 
 
-"@aspnet/signalr-protocol-msgpack@file:../signalr-protocol-msgpack":
-  version "3.0.0-preview4-t000"
-  dependencies:
-    msgpack5 "^4.0.2"
+"@aspnet/signalr-protocol-msgpack@link:../signalr-protocol-msgpack":
+  version "0.0.0"
+  uid ""
 
-"@aspnet/signalr@file:../signalr":
-  version "3.0.0-preview4-t000"
-  dependencies:
-    eventsource "^1.0.7"
-    request "^2.88.0"
-    ws "^6.0.0"
+"@aspnet/signalr@link:../signalr":
+  version "0.0.0"
+  uid ""
 
 "@types/bluebird@*":
   version "3.5.23"
