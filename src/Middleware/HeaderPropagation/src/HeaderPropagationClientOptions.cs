@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// <remarks>
         /// Entries in <see cref="Headers"/> are processes in order while capturing headers inside
         /// <see cref="HeaderPropagationMiddleware"/>. This can cause an earlier entry to take precedence
-        /// over a later entry if they have the same <see cref="HeaderPropagationEntry.OutboundHeaderName"/>.
+        /// over a later entry if they have the same <see cref="HeaderPropagationEntry.CapturedHeaderName"/>.
         /// </remarks>
         public HeaderPropagationClientEntryCollection Headers { get; set; } = new HeaderPropagationClientEntryCollection();
     }

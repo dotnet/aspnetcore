@@ -68,26 +68,26 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 var entry = entries[i];
                 var hasContent = request.Content != null;
 
-                if (!request.Headers.TryGetValues(entry.OveriddenOutboundHeaderName, out var _) &&
-                    !(hasContent && request.Content.Headers.TryGetValues(entry.OveriddenOutboundHeaderName, out var _)))
+                if (!request.Headers.TryGetValues(entry.OutboundHeaderName, out var _) &&
+                    !(hasContent && request.Content.Headers.TryGetValues(entry.OutboundHeaderName, out var _)))
                 {
-                    if (captured.TryGetValue(entry.DefaultOutboundHeaderName, out var stringValues) &&
+                    if (captured.TryGetValue(entry.CapturedHeaderName, out var stringValues) &&
                         !StringValues.IsNullOrEmpty(stringValues))
                     {
                         if (stringValues.Count == 1)
                         {
                             var value = (string)stringValues;
-                            if (!request.Headers.TryAddWithoutValidation(entry.OveriddenOutboundHeaderName, value) && hasContent)
+                            if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value) && hasContent)
                             {
-                                request.Content.Headers.TryAddWithoutValidation(entry.OveriddenOutboundHeaderName, value);
+                                request.Content.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value);
                             }
                         }
                         else
                         {
                             var values = (string[])stringValues;
-                            if (!request.Headers.TryAddWithoutValidation(entry.OveriddenOutboundHeaderName, values) && hasContent)
+                            if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values) && hasContent)
                             {
-                                request.Content.Headers.TryAddWithoutValidation(entry.OveriddenOutboundHeaderName, values);
+                                request.Content.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values);
                             }
                         }
                     }

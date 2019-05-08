@@ -11,42 +11,42 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public class HeaderPropagationClientEntry
     {
         /// <summary>
-        /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="defaultOutboundHeaderName"/>
-        /// and <paramref name="overriddenOutboundHeaderName"/>
+        /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="capturedHeaderName"/>
+        /// and <paramref name="outboundHeaderName"/>
         /// </summary>
-        /// <param name="defaultOutboundHeaderName">
+        /// <param name="capturedHeaderName">
         /// The default name of the header to be added to clients as configured in the <see cref="HeaderPropagationMiddleware"/>.
         /// </param>
-        /// <param name="overriddenOutboundHeaderName">
+        /// <param name="outboundHeaderName">
         /// The name of the header to be added by <see cref="HeaderPropagationMessageHandler"/>.
         /// </param>
         public HeaderPropagationClientEntry(
-            string defaultOutboundHeaderName,
-            string overriddenOutboundHeaderName)
+            string capturedHeaderName,
+            string outboundHeaderName)
         {
-            if (defaultOutboundHeaderName == null)
+            if (capturedHeaderName == null)
             {
-                throw new ArgumentNullException(nameof(defaultOutboundHeaderName));
+                throw new ArgumentNullException(nameof(capturedHeaderName));
             }
 
-            if (overriddenOutboundHeaderName == null)
+            if (outboundHeaderName == null)
             {
-                throw new ArgumentNullException(nameof(overriddenOutboundHeaderName));
+                throw new ArgumentNullException(nameof(outboundHeaderName));
             }
 
-            DefaultOutboundHeaderName = defaultOutboundHeaderName;
-            OveriddenOutboundHeaderName = overriddenOutboundHeaderName;
+            CapturedHeaderName = capturedHeaderName;
+            OutboundHeaderName = outboundHeaderName;
         }
 
         /// <summary>
         /// Gets the name of the header that will be captured by the <see cref="HeaderPropagationMiddleware"/>.
         /// </summary>
-        public string DefaultOutboundHeaderName { get; }
+        public string CapturedHeaderName { get; }
 
         /// <summary>
         /// Gets the name of the header to be used by the <see cref="HeaderPropagationMessageHandler"/> for the
         /// outbound http requests.
         /// </summary>
-        public string OveriddenOutboundHeaderName { get; }
+        public string OutboundHeaderName { get; }
     }
 }

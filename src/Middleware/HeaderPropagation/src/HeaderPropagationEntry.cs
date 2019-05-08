@@ -13,12 +13,12 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     {
         /// <summary>
         /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="inboundHeaderName"/>,
-        /// <paramref name="outboundHeaderName"/>, and 
+        /// <paramref name="capturedHeaderName"/>, and 
         /// </summary>
         /// <param name="inboundHeaderName">
         /// The name of the header to be captured by <see cref="HeaderPropagationMiddleware"/>.
         /// </param>
-        ///  <param name="outboundHeaderName">
+        ///  <param name="capturedHeaderName">
         /// The name of the header to be added by <see cref="HeaderPropagationMessageHandler"/>.
         /// </param>
         /// <param name="valueFilter">
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// </param>
         public HeaderPropagationEntry(
             string inboundHeaderName,
-            string outboundHeaderName,
+            string capturedHeaderName,
             Func<HeaderPropagationContext, StringValues> valueFilter)
         {
             if (inboundHeaderName == null)
@@ -34,13 +34,13 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 throw new ArgumentNullException(nameof(inboundHeaderName));
             }
 
-            if (outboundHeaderName == null)
+            if (capturedHeaderName == null)
             {
-                throw new ArgumentNullException(nameof(outboundHeaderName));
+                throw new ArgumentNullException(nameof(capturedHeaderName));
             }
 
             InboundHeaderName = inboundHeaderName;
-            OutboundHeaderName = outboundHeaderName;
+            CapturedHeaderName = capturedHeaderName;
             ValueFilter = valueFilter; // May be null
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// Gets the name of the header to be used by the <see cref="HeaderPropagationMessageHandler"/> for the
         /// outbound http requests.
         /// </summary>
-        public string OutboundHeaderName { get; }
+        public string CapturedHeaderName { get; }
 
         /// <summary>
         /// Gets or sets a filter delegate that can be used to transform the header value.

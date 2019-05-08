@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 for (int i = 0; i < middlewareOptions.Value.Headers.Count; i++)
                 {
                     var header = middlewareOptions.Value.Headers[i];
-                    options.Headers.Add(header.OutboundHeaderName, header.OutboundHeaderName);
+                    options.Headers.Add(header.CapturedHeaderName, header.CapturedHeaderName);
                 }
                 return new HeaderPropagationMessageHandler(Options.Options.Create(options), services.GetRequiredService<HeaderPropagationValues>());
             });
