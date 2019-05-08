@@ -153,7 +153,6 @@
     <OutputPath Condition=" '$(PlatformName)' == 'AnyCPU' ">$(BaseOutputPath)$(Configuration)\</OutputPath>
     <OutputPath Condition=" '$(PlatformName)' != 'AnyCPU' ">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
 
-
     <BaseIntermediateOutputPath Condition=" '$(BaseIntermediateOutputPath)' == '' ">$([System.IO.Path]::GetFullPath('$(ArtifactsObjDir)$(OutDirName)\'))</BaseIntermediateOutputPath>
     <IntermediateOutputPath Condition=" '$(PlatformName)' == 'AnyCPU' ">$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
     <IntermediateOutputPath Condition=" '$(PlatformName)' != 'AnyCPU' ">$(BaseIntermediateOutputPath)$(PlatformName)\$(Configuration)\</IntermediateOutputPath>

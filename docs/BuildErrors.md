@@ -20,5 +20,5 @@ Similar to BUILD001, but this error is not suppressable. This error only appears
 
 > error BUILD003: Multiple project files named 'Banana.csproj' exist. Project files should have a unique name to avoid conflicts in build output.
 
-This repo uses a common output directory (artifacts/bin/$ProjectName and artifacts/obj/ProjectName). To avoid confllicts in build output, each
+This repo uses a common output directory (artifacts/bin/$(ProjectName) and artifacts/obj/$(ProjectName)). To avoid confllicts in build output, each
 project file should have a unique name.
