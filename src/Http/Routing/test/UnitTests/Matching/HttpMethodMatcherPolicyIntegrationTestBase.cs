@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,13 +26,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { "GET", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET");
+            var httpContext = CreateContext("/hello", "GET");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -41,13 +42,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { "GET", }, acceptCorsPreflight: true);
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET");
+            var httpContext = CreateContext("/hello", "GET");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -57,13 +58,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { "GET", }, acceptCorsPreflight: true);
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET", corsPreflight: true);
+            var httpContext = CreateContext("/hello", "GET", corsPreflight: true);
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
 
@@ -74,14 +75,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { "GET", }, acceptCorsPreflight: false);
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET", corsPreflight: true);
+            var httpContext = CreateContext("/hello", "GET", corsPreflight: true);
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.NotSame(endpoint, context.Endpoint);
-            Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, context.Endpoint.DisplayName);
+            Assert.NotSame(endpoint, httpContext.GetEndpoint());
+            Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, httpContext.GetEndpoint().DisplayName);
         }
 
         [Fact]
@@ -91,13 +92,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { "GeT", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET");
+            var httpContext = CreateContext("/hello", "GET");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -107,13 +108,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { "GeT", }, acceptCorsPreflight: true);
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET", corsPreflight: true);
+            var httpContext = CreateContext("/hello", "GET", corsPreflight: true);
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -123,13 +124,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello");
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET");
+            var httpContext = CreateContext("/hello", "GET");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -139,13 +140,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", acceptCorsPreflight: true);
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET", corsPreflight: true);
+            var httpContext = CreateContext("/hello", "GET", corsPreflight: true);
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact] // This matches because the endpoint accepts OPTIONS
@@ -155,13 +156,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", acceptCorsPreflight: false);
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET", corsPreflight: true);
+            var httpContext = CreateContext("/hello", "GET", corsPreflight: true);
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -171,13 +172,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", httpMethods: new string[] { });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "GET");
+            var httpContext = CreateContext("/hello", "GET");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact] // When all of the candidates handles specific verbs, use a 405 endpoint
@@ -188,19 +189,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint2 = CreateEndpoint("/hello", httpMethods: new string[] { "DELETE" });
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
-            var (httpContext, context) = CreateContext("/hello", "POST");
+            var httpContext = CreateContext("/hello", "POST");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.NotSame(endpoint1, context.Endpoint);
-            Assert.NotSame(endpoint2, context.Endpoint);
+            Assert.NotSame(endpoint1, httpContext.GetEndpoint());
+            Assert.NotSame(endpoint2, httpContext.GetEndpoint());
 
-            Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, context.Endpoint.DisplayName);
+            Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, httpContext.GetEndpoint().DisplayName);
 
             // Invoke the endpoint
-            await context.Endpoint.RequestDelegate(httpContext);
+            await httpContext.GetEndpoint().RequestDelegate(httpContext);
             Assert.Equal(405, httpContext.Response.StatusCode);
             Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
         }
@@ -213,13 +214,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint2 = CreateEndpoint("/hello", httpMethods: new string[] { "DELETE" });
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
-            var (httpContext, context) = CreateContext("/hello", "POST", corsPreflight: true);
+            var httpContext = CreateContext("/hello", "POST", corsPreflight: true);
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertNotMatch(context, httpContext);
+            MatcherAssert.AssertNotMatch(httpContext);
         }
 
         [Fact] // When one of the candidates handles all verbs, dont use a 405 endpoint
@@ -230,13 +231,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint2 = CreateEndpoint("/hello", httpMethods: new string[] { "DELETE" });
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
-            var (httpContext, context) = CreateContext("/hello", "POST");
+            var httpContext = CreateContext("/hello", "POST");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertNotMatch(context, httpContext);
+            MatcherAssert.AssertNotMatch(httpContext);
         }
 
         [Fact]
@@ -247,13 +248,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint2 = CreateEndpoint("/bar");
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
-            var (httpContext, context) = CreateContext("/hello", "GET");
+            var httpContext = CreateContext("/hello", "GET");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint1);
+            MatcherAssert.AssertMatch(httpContext, endpoint1);
         }
 
         [Fact]
@@ -264,13 +265,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint2 = CreateEndpoint("/bar", httpMethods: new string[] { });
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
-            var (httpContext, context) = CreateContext("/hello", "GET");
+            var httpContext = CreateContext("/hello", "GET");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint1);
+            MatcherAssert.AssertMatch(httpContext, endpoint1);
         }
 
         [Fact] // The non-http-method-specific endpoint is part of the same candidate set
@@ -281,13 +282,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint2 = CreateEndpoint("/{x}", httpMethods: new string[] { });
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
-            var (httpContext, context) = CreateContext("/hello", "POST");
+            var httpContext = CreateContext("/hello", "POST");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint2, ignoreValues: true);
+            MatcherAssert.AssertMatch(httpContext, endpoint2, ignoreValues: true);
         }
 
         [Fact] // See https://github.com/aspnet/AspNetCore/issues/6415
@@ -298,24 +299,24 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint2 = CreateEndpoint("/hello", httpMethods: new string[] { "DELETE" });
 
             var matcher = CreateMatcher(endpoint1, endpoint2);
-            var (httpContext, context) = CreateContext("/hello", "POST");
+            var httpContext = CreateContext("/hello", "POST");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            Assert.NotSame(endpoint1, context.Endpoint);
-            Assert.NotSame(endpoint2, context.Endpoint);
+            Assert.NotSame(endpoint1, httpContext.GetEndpoint());
+            Assert.NotSame(endpoint2, httpContext.GetEndpoint());
 
-            Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, context.Endpoint.DisplayName);
+            Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, httpContext.GetEndpoint().DisplayName);
 
             // Invoke the endpoint
-            await context.Endpoint.RequestDelegate(httpContext);
+            await httpContext.GetEndpoint().RequestDelegate(httpContext);
             Assert.Equal(405, httpContext.Response.StatusCode);
             Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
 
             // Invoke the endpoint again to verify headers not duplicated
-            await context.Endpoint.RequestDelegate(httpContext);
+            await httpContext.GetEndpoint().RequestDelegate(httpContext);
             Assert.Equal(405, httpContext.Response.StatusCode);
             Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
         }
@@ -337,7 +338,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return builder.Build();
         }
 
-        internal static (HttpContext httpContext, EndpointSelectorContext context) CreateContext(
+        internal static HttpContext CreateContext(
             string path,
             string httpMethod,
             bool corsPreflight = false)
@@ -352,7 +353,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 httpContext.Request.Headers[AccessControlRequestMethod] = httpMethod;
             }
 
-            return (httpContext, new EndpointSelectorContext(httpContext));
+            return httpContext;
         }
 
         internal RouteEndpoint CreateEndpoint(

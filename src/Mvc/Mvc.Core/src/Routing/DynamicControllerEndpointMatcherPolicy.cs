@@ -60,13 +60,13 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return false;
         }
 
-        public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates)
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
             }
-            
+
             if (candidates == null)
             {
                 throw new ArgumentNullException(nameof(candidates));
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     // If there's no match this is a configuration error. We can't really check
                     // during startup that the action you configured exists.
                     throw new InvalidOperationException(
-                        "Cannot find the fallback endpoint specified by route values: " + 
+                        "Cannot find the fallback endpoint specified by route values: " +
                         "{ " + string.Join(", ", metadata.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}")) + " }.");
                 }
 

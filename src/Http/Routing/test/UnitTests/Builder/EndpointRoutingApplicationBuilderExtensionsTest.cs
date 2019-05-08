@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Builder
             // Assert
             var feature = httpContext.Features.Get<IEndpointFeature>();
             Assert.NotNull(feature);
-            Assert.Same(endpoint, feature.Endpoint);
+            Assert.Same(endpoint, httpContext.GetEndpoint());
         }
 
         [Fact]
