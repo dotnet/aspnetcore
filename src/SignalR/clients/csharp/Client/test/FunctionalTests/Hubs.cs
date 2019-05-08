@@ -205,7 +205,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public static ChannelReader<string> StreamEcho(ChannelReader<string> source)
         {
             var output = Channel.CreateUnbounded<string>();
-            _ = Task.Run(async () => {
+            _ = Task.Run(async () =>
+            {
                 try
                 {
                     while (await source.WaitToReadAsync())

@@ -196,6 +196,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return sb.ToString();
         }
 
+        public async Task StreamDontRead(ChannelReader<string> source)
+        {
+            while (await source.WaitToReadAsync())
+            {
+            }
+        }
+
+
         public async Task<int> StreamingSum(ChannelReader<int> source)
         {
             var total = 0;
