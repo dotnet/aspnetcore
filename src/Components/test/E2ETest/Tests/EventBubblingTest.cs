@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             Navigate(ServerPathBase, noReload: !_serverFixture.UsingAspNetHost);
             MountTestComponent<EventBubblingComponent>();
+            WaitUntilExists(By.Id("event-bubbling"));
         }
 
         [Fact]

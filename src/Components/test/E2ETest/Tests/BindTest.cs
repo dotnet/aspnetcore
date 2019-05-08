@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -28,6 +27,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // On WebAssembly, page reloads are expensive so skip if possible
             Navigate(ServerPathBase, noReload: !_serverFixture.UsingAspNetHost);
             MountTestComponent<BindCasesComponent>();
+            WaitUntilExists(By.Id("bind-cases"));
         }
 
         [Fact]
