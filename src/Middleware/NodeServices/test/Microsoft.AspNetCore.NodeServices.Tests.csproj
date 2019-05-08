@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <BaseOutputPath />
     <OutputPath />
+    <TestDependsOnNode>true</TestDependsOnNode>
   </PropertyGroup>
 
   <ItemGroup>
