@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -326,13 +327,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext();
 
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
@@ -348,13 +348,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext();
 
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
@@ -370,13 +369,12 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext();
 
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
@@ -392,7 +390,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext()
             {
                 Request =
@@ -404,7 +401,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
@@ -420,7 +417,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext()
             {
                 Request =
@@ -432,7 +428,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
@@ -448,7 +444,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext()
             {
                 Request =
@@ -460,7 +455,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
@@ -476,7 +471,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext()
             {
                 Request =
@@ -488,7 +482,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
@@ -504,7 +498,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             };
 
             var candidates = CreateCandidateSet(endpoints);
-            var context = new EndpointSelectorContext();
             var httpContext = new DefaultHttpContext()
             {
                 Request =
@@ -516,7 +509,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.True(candidates.IsValidCandidate(0));
@@ -539,16 +532,15 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     ContentType = "application/json",
                 },
             };
-            var context = new EndpointSelectorContext(httpContext);
 
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.False(candidates.IsValidCandidate(0));
-            Assert.NotNull(context.Endpoint);
+            Assert.NotNull(httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -569,16 +561,15 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     ContentType = "application/json",
                 },
             };
-            var context = new EndpointSelectorContext(httpContext);
 
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.False(candidates.IsValidCandidate(0));
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -599,17 +590,16 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                     ContentType = "application/json",
                 },
             };
-            var context = new EndpointSelectorContext(httpContext);
 
             var policy = CreatePolicy();
 
             // Act
-            await policy.ApplyAsync(httpContext, context, candidates);
+            await policy.ApplyAsync(httpContext, candidates);
 
             // Assert
             Assert.False(candidates.IsValidCandidate(0));
             Assert.True(candidates.IsValidCandidate(1));
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
         }
 
         private static RouteEndpoint CreateEndpoint(string template, ConsumesMetadata consumesMetadata, params object[] more)

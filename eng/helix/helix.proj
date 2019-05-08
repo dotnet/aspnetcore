@@ -13,15 +13,16 @@
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <IsExternal>true</IsExternal>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">4</MaxRetryCount>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(CI)' == 'true' ">
     <HelixType>ci</HelixType>
     <Creator>aspnetcore</Creator>
     <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
-    <WaitForWorkItemCompletion>false</WaitForWorkItemCompletion>
+    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
-    <FailOnMissionControlTestFailure>false</FailOnMissionControlTestFailure>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(CI)' != 'true' ">

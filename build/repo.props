@@ -166,6 +166,7 @@
                           $(RepositoryRoot)src\MusicStore\**\*.*proj;
                           $(RepositoryRoot)src\SignalR\**\*.csproj;
                           $(RepositoryRoot)src\Components\**\*.csproj;
+                          $(RepositoryRoot)src\Analyzers\**\*.csproj;
                           $(RepositoryRoot)src\ProjectTemplates\*\*.csproj;
                           $(RepositoryRoot)src\ProjectTemplates\testassets\*\*.csproj;
                           "

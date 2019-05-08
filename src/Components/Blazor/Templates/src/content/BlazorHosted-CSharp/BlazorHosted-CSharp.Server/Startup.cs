@@ -33,14 +33,15 @@ namespace BlazorHosted_CSharp.Server
                 app.UseBlazorDebugging();
             }
 
+            app.UseBlazorClientSideFiles<Client.Startup>();
+
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapDefaultControllerRoute();
+                endpoints.MapFallbackToClientSideBlazor<Client.Startup>("index.html");
             });
-
-            app.UseBlazor<Client.Startup>();
         }
     }
 }

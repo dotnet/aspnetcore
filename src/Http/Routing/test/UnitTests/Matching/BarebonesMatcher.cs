@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Matchers = matchers;
         }
 
-        public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+        public override Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -32,8 +33,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 if (Matchers[i].TryMatch(path))
                 {
-                    context.Endpoint = Matchers[i].Endpoint;
-                    context.RouteValues = new RouteValueDictionary();
+                    httpContext.SetEndpoint(Matchers[i].Endpoint);
+                    httpContext.Request.RouteValues = new RouteValueDictionary();
                 }
             }
 
@@ -116,12 +117,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return Array.Empty<Candidate>();
             }
 
-            public override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+            public override Task MatchAsync(HttpContext httpContext)
             {
                 if (TryMatch(httpContext.Request.Path.Value))
                 {
-                    context.Endpoint = Endpoint;
-                    context.RouteValues = new RouteValueDictionary();
+                    httpContext.SetEndpoint(Endpoint);
+                    httpContext.Request.RouteValues = new RouteValueDictionary();
                 }
 
                 return Task.CompletedTask;

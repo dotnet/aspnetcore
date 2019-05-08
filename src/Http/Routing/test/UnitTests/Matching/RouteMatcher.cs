@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _inner = inner;
         }
 
-        public async override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+        public async override Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (routeContext.Handler != null)
             {
-                context.RouteValues = routeContext.RouteData.Values;
+                httpContext.Request.RouteValues = routeContext.RouteData.Values;
                 await routeContext.Handler(httpContext);
             }
         }

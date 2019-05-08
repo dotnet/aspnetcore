@@ -35,33 +35,43 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
         public Task Invoke(HttpContext context)
         {
-            foreach ((var headerName, var entry) in _options.Headers)
-            {
-                var values = GetValues(headerName, entry, context);
+            // We need to intialize the headers because the message handler will use this to detect misconfiguration.
+            var headers = _values.Headers ??= new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
 
-                if (!StringValues.IsNullOrEmpty(values))
+            // Perf: avoid foreach since we don't define a struct enumerator.
+            var entries = _options.Headers;
+            for (var i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
+
+                // We intentionally process entries in order, and allow earlier entries to
+                // take precedence over later entries when they have the same output name.
+                if (!headers.ContainsKey(entry.OutboundHeaderName))
                 {
-                    _values.Headers.TryAdd(headerName, values);
+                    var value = GetValue(context, entry);
+                    if (!StringValues.IsNullOrEmpty(value))
+                    {
+                        headers.Add(entry.OutboundHeaderName, value);
+                    }
                 }
             }
 
             return _next.Invoke(context);
         }
 
-        private static StringValues GetValues(string headerName, HeaderPropagationEntry entry, HttpContext context)
+        private static StringValues GetValue(HttpContext context, HeaderPropagationEntry entry)
         {
-            if (entry?.ValueFactory != null)
+            context.Request.Headers.TryGetValue(entry.InboundHeaderName, out var value);
+            if (entry.ValueFilter != null)
             {
-                return entry.ValueFactory(headerName, context);
+                var filtered = entry.ValueFilter(new HeaderPropagationContext(context, entry.InboundHeaderName, value));
+                if (!StringValues.IsNullOrEmpty(filtered))
+                {
+                    value = filtered;
+                }
             }
 
-            if (context.Request.Headers.TryGetValue(headerName, out var values)
-                && !StringValues.IsNullOrEmpty(values))
-            {
-                return values;
-            }
-
-            return entry != null ? entry.DefaultValue : StringValues.Empty;
+            return value;
         }
     }
 }

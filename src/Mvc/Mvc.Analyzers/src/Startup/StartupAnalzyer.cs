@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Analyzers
                 OnConfigureMethodFound(method);
             }
         }
-
+#pragma warning disable RS1012 // Start action has no registered actions.
         private bool IsStartupFile(OperationBlockStartAnalysisContext context)
         {
             foreach (var location in context.OwningSymbol.Locations)
@@ -144,5 +144,6 @@ namespace Microsoft.AspNetCore.Analyzers
 
             return false;
         }
+#pragma warning restore RS1012 // Start action has no registered actions.
     }
 }

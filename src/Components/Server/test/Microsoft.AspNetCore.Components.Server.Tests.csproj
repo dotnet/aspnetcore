@@ -15,10 +15,10 @@
 
   <ItemGroup>
     <Compile Include="..\..\Components\test\Rendering\HtmlRendererTestBase.cs" />
-    <Compile Include="$(SignalRTestBase)HubMessageHelpers.cs" LinkBase="BlazorPack"/>
-    <Compile Include="$(SignalRTestBase)MessagePackHubProtocolTestBase.cs" LinkBase="BlazorPack"/>
-    <Compile Include="$(SignalRTestBase)TestBinder.cs" LinkBase="BlazorPack"/>
-    <Compile Include="$(SignalRTestBase)TestHubMessageEqualityComparer.cs" LinkBase="BlazorPack"/>
+    <Compile Include="$(SignalRTestBase)HubMessageHelpers.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(SignalRTestBase)MessagePackHubProtocolTestBase.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(SignalRTestBase)TestBinder.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(SignalRTestBase)TestHubMessageEqualityComparer.cs" LinkBase="BlazorPack" />
   </ItemGroup>
 
 </Project>

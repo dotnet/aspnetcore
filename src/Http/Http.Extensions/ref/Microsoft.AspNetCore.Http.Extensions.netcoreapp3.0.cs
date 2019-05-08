@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Http
     public static partial class ResponseExtensions
     {
         public static void Clear(this Microsoft.AspNetCore.Http.HttpResponse response) { }
+        public static void Redirect(this Microsoft.AspNetCore.Http.HttpResponse response, string location, bool permanent, bool preserveMethod) { }
     }
     public static partial class SendFileResponseExtensions
     {

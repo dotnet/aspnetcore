@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
@@ -53,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             return endpoints.Any(e => e.Metadata.GetMetadata<IConsumesMetadata>()?.ContentTypes.Count > 0);
         }
 
-        public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates)
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
             if (httpContext == null)
             {
@@ -106,7 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 }
 
                 var contentType = httpContext.Request.ContentType;
-                var mediaType = string.IsNullOrEmpty(contentType) ? (MediaType?)null : new MediaType(contentType); 
+                var mediaType = string.IsNullOrEmpty(contentType) ? (MediaType?)null : new MediaType(contentType);
 
                 var matched = false;
                 for (var j = 0; j < metadata.ContentTypes.Count; j++)
@@ -145,7 +146,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             if (needs415Endpoint == true)
             {
                 // We saw some endpoints coming in, and we eliminated them all.
-                context.Endpoint = CreateRejectionEndpoint();
+                httpContext.SetEndpoint(CreateRejectionEndpoint());
             }
 
             return Task.CompletedTask;
@@ -220,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                             var mediaType = new MediaType(contentType);
 
                             // Example: 'application/json' is subset of 'application/*'
-                            // 
+                            //
                             // This means that when the request has content-type 'application/json' an endpoint
                             // what consumes 'application/*' should match.
                             if (edgeKey.IsSubsetOf(mediaType))

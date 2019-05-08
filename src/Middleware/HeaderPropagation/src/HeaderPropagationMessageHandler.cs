@@ -5,6 +5,7 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -49,32 +50,44 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// <returns>The task object representing the asynchronous operation.</returns>
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            foreach ((var headerName, var entry) in _options.Headers)
+            var captured = _values.Headers;
+            if (captured == null)
             {
-                var outputName = string.IsNullOrEmpty(entry?.OutboundHeaderName) ? headerName : entry.OutboundHeaderName;
+                var message =
+                    $"The {nameof(HeaderPropagationValues)}.{nameof(HeaderPropagationValues.Headers)} property has not been " +
+                    $"initialized. Register the header propagation middleware by adding 'app.{nameof(HeaderPropagationApplicationBuilderExtensions.UseHeaderPropagation)}() " +
+                    $"in the 'Configure(...)' method.";
+                throw new InvalidOperationException(message);
+            }
 
+            // Perf: We iterate _options.Headers instead of iterating _values.Headers because iterating an IDictionary
+            // will allocate. Also avoiding foreach since we don't define a struct-enumerator.
+            var entries = _options.Headers;
+            for (var i = 0; i < entries.Count; i++)
+            {
+                var entry = entries[i];
                 var hasContent = request.Content != null;
 
-                if (!request.Headers.TryGetValues(outputName, out var _) &&
-                    !(hasContent && request.Content.Headers.TryGetValues(outputName, out var _)))
+                if (!request.Headers.TryGetValues(entry.OutboundHeaderName, out var _) &&
+                    !(hasContent && request.Content.Headers.TryGetValues(entry.OutboundHeaderName, out var _)))
                 {
-                    if (_values.Headers.TryGetValue(headerName, out var stringValues) &&
+                    if (captured.TryGetValue(entry.OutboundHeaderName, out var stringValues) &&
                         !StringValues.IsNullOrEmpty(stringValues))
                     {
                         if (stringValues.Count == 1)
                         {
                             var value = (string)stringValues;
-                            if (!request.Headers.TryAddWithoutValidation(outputName, value) && hasContent)
+                            if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value) && hasContent)
                             {
-                                request.Content.Headers.TryAddWithoutValidation(outputName, value);
+                                request.Content.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value);
                             }
                         }
                         else
                         {
                             var values = (string[])stringValues;
-                            if (!request.Headers.TryAddWithoutValidation(outputName, values) && hasContent)
+                            if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values) && hasContent)
                             {
-                                request.Content.Headers.TryAddWithoutValidation(outputName, values);
+                                request.Content.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values);
                             }
                         }
                     }

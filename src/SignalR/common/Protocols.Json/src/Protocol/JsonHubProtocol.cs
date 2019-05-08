@@ -20,25 +20,24 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
     /// </summary>
     public sealed class JsonHubProtocol : IHubProtocol
     {
-        // Use C#7.3's ReadOnlySpan<byte> optimization for static data https://vcsjones.com/2019/02/01/csharp-readonly-span-bytes-static/
         private const string ResultPropertyName = "result";
-        private static ReadOnlySpan<byte> ResultPropertyNameBytes => new byte[] { (byte)'r', (byte)'e', (byte)'s', (byte)'u', (byte)'l', (byte)'t' };
+        private static JsonEncodedText ResultPropertyNameBytes = JsonEncodedText.Encode(ResultPropertyName);
         private const string ItemPropertyName = "item";
-        private static ReadOnlySpan<byte> ItemPropertyNameBytes => new byte[] { (byte)'i', (byte)'t', (byte)'e', (byte)'m' };
+        private static JsonEncodedText ItemPropertyNameBytes = JsonEncodedText.Encode(ItemPropertyName);
         private const string InvocationIdPropertyName = "invocationId";
-        private static ReadOnlySpan<byte> InvocationIdPropertyNameBytes => new byte[] { (byte)'i', (byte)'n', (byte)'v', (byte)'o', (byte)'c', (byte)'a', (byte)'t', (byte)'i', (byte)'o', (byte)'n', (byte)'I', (byte)'d' };
+        private static JsonEncodedText InvocationIdPropertyNameBytes = JsonEncodedText.Encode(InvocationIdPropertyName);
         private const string StreamIdsPropertyName = "streamIds";
-        private static ReadOnlySpan<byte> StreamIdsPropertyNameBytes => new byte[] { (byte)'s', (byte)'t', (byte)'r', (byte)'e', (byte)'a', (byte)'m', (byte)'I', (byte)'d', (byte)'s' };
+        private static JsonEncodedText StreamIdsPropertyNameBytes = JsonEncodedText.Encode(StreamIdsPropertyName);
         private const string TypePropertyName = "type";
-        private static ReadOnlySpan<byte> TypePropertyNameBytes => new byte[] { (byte)'t', (byte)'y', (byte)'p', (byte)'e' };
+        private static JsonEncodedText TypePropertyNameBytes = JsonEncodedText.Encode(TypePropertyName);
         private const string ErrorPropertyName = "error";
-        private static ReadOnlySpan<byte> ErrorPropertyNameBytes => new byte[] { (byte)'e', (byte)'r', (byte)'r', (byte)'o', (byte)'r' };
+        private static JsonEncodedText ErrorPropertyNameBytes = JsonEncodedText.Encode(ErrorPropertyName);
         private const string TargetPropertyName = "target";
-        private static ReadOnlySpan<byte> TargetPropertyNameBytes => new byte[] { (byte)'t', (byte)'a', (byte)'r', (byte)'g', (byte)'e', (byte)'t' };
+        private static JsonEncodedText TargetPropertyNameBytes = JsonEncodedText.Encode(TargetPropertyName);
         private const string ArgumentsPropertyName = "arguments";
-        private static ReadOnlySpan<byte> ArgumentsPropertyNameBytes => new byte[] { (byte)'a', (byte)'r', (byte)'g', (byte)'u', (byte)'m', (byte)'e', (byte)'n', (byte)'t', (byte)'s' };
+        private static JsonEncodedText ArgumentsPropertyNameBytes = JsonEncodedText.Encode(ArgumentsPropertyName);
         private const string HeadersPropertyName = "headers";
-        private static ReadOnlySpan<byte> HeadersPropertyNameBytes => new byte[] { (byte)'h', (byte)'e', (byte)'a', (byte)'d', (byte)'e', (byte)'r', (byte)'s' };
+        private static JsonEncodedText HeadersPropertyNameBytes = JsonEncodedText.Encode(HeadersPropertyName);
 
         private static readonly string ProtocolName = "json";
         private static readonly int ProtocolVersion = 1;
@@ -144,7 +143,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                     switch (reader.TokenType)
                     {
                         case JsonTokenType.PropertyName:
-                            if (reader.TextEquals(TypePropertyNameBytes))
+                            if (reader.TextEquals(TypePropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 type = reader.ReadAsInt32(TypePropertyName);
 
@@ -153,11 +152,11 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     throw new InvalidDataException($"Expected '{TypePropertyName}' to be of type {JsonTokenType.Number}.");
                                 }
                             }
-                            else if (reader.TextEquals(InvocationIdPropertyNameBytes))
+                            else if (reader.TextEquals(InvocationIdPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 invocationId = reader.ReadAsString(InvocationIdPropertyName);
                             }
-                            else if (reader.TextEquals(StreamIdsPropertyNameBytes))
+                            else if (reader.TextEquals(StreamIdsPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
 
@@ -177,15 +176,15 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                                 streamIds = newStreamIds.ToArray();
                             }
-                            else if (reader.TextEquals(TargetPropertyNameBytes))
+                            else if (reader.TextEquals(TargetPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 target = reader.ReadAsString(TargetPropertyName);
                             }
-                            else if (reader.TextEquals(ErrorPropertyNameBytes))
+                            else if (reader.TextEquals(ErrorPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 error = reader.ReadAsString(ErrorPropertyName);
                             }
-                            else if (reader.TextEquals(ResultPropertyNameBytes))
+                            else if (reader.TextEquals(ResultPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 hasResult = true;
 
@@ -204,7 +203,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     result = BindType(token.RootElement, returnType);
                                 }
                             }
-                            else if (reader.TextEquals(ItemPropertyNameBytes))
+                            else if (reader.TextEquals(ItemPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
 
@@ -233,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     return new StreamBindingFailureMessage(id, ExceptionDispatchInfo.Capture(ex));
                                 }
                             }
-                            else if (reader.TextEquals(ArgumentsPropertyNameBytes))
+                            else if (reader.TextEquals(ArgumentsPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
 
@@ -272,7 +271,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                     }
                                 }
                             }
-                            else if (reader.TextEquals(HeadersPropertyNameBytes))
+                            else if (reader.TextEquals(HeadersPropertyNameBytes.EncodedUtf8Bytes))
                             {
                                 reader.CheckRead();
                                 headers = ReadHeaders(ref reader);
@@ -516,7 +515,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             else if (message.HasResult)
             {
                 using var token = GetParsedObject(message.Result, message.Result?.GetType());
-                token.RootElement.WriteAsProperty(ResultPropertyNameBytes, writer);
+                token.RootElement.WriteAsProperty(ResultPropertyNameBytes.EncodedUtf8Bytes, writer);
             }
         }
 
@@ -530,7 +529,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             WriteInvocationId(message, writer);
 
             using var token = GetParsedObject(message.Item, message.Item?.GetType());
-            token.RootElement.WriteAsProperty(ItemPropertyNameBytes, writer);
+            token.RootElement.WriteAsProperty(ItemPropertyNameBytes.EncodedUtf8Bytes, writer);
         }
 
         private void WriteInvocationMessage(InvocationMessage message, Utf8JsonWriter writer)

@@ -23,8 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
     /// </summary>
     public class AuthorizeFilter : IAsyncAuthorizationFilter, IFilterFactory
     {
-        private AuthorizationPolicy _effectivePolicy;
-
         /// <summary>
         /// Initializes a new <see cref="AuthorizeFilter"/> instance.
         /// </summary>
@@ -128,16 +126,8 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
         internal async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
         {
-            if (_effectivePolicy != null)
-            {
-                return _effectivePolicy;
-            }
-
-            var effectivePolicy = await ComputePolicyAsync();
-            var canCache = PolicyProvider == null;
-
             // Combine all authorize filters into single effective policy that's only run on the closest filter
-            var builder = new AuthorizationPolicyBuilder(effectivePolicy);
+            var builder = new AuthorizationPolicyBuilder(await ComputePolicyAsync());
             for (var i = 0; i < context.Filters.Count; i++)
             {
                 if (ReferenceEquals(this, context.Filters[i]))
@@ -149,7 +139,6 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 {
                     // Combine using the explicit policy, or the dynamic policy provider
                     builder.Combine(await authorizeFilter.ComputePolicyAsync());
-                    canCache = canCache && authorizeFilter.PolicyProvider == null;
                 }
             }
 
@@ -169,20 +158,9 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 {
                     builder.Combine(endpointPolicy);
                 }
-
-                // We cannot cache the policy since it varies by endpoint metadata.
-                canCache = false;
             }
 
-            effectivePolicy = builder?.Build() ?? effectivePolicy;
-
-            // We can cache the effective policy when there is no custom policy provider
-            if (canCache)
-            {
-                _effectivePolicy = effectivePolicy;
-            }
-
-            return effectivePolicy;
+            return builder.Build();
         }
 
         /// <inheritdoc />
