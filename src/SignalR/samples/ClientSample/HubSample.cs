@@ -102,16 +102,6 @@ namespace ClientSample
 
                     await connection.InvokeAsync<object>("Send", line);
                 }
-                catch (IOException)
-                {
-                    // Process being shutdown
-                    break;
-                }
-                catch (OperationCanceledException)
-                {
-                    // The connection closed
-                    break;
-                }
                 catch (ObjectDisposedException)
                 {
                     // We're shutting down the client
@@ -120,8 +110,8 @@ namespace ClientSample
                 catch (Exception ex)
                 {
                     // Send could have failed because the connection closed
-                    System.Console.WriteLine(ex);
-                    break;
+                    // Continue to loop because we should be reconnecting.
+                    Console.WriteLine(ex);
                 }
             }
 

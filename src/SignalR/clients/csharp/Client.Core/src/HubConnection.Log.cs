@@ -591,7 +591,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _reconnected(logger, reconnectAttempts, elapsedTime, null);
             }
 
-            public static void ReconnectAttempsExhausted(ILogger logger, long reconnectAttempts, TimeSpan elapsedTime)
+            public static void ReconnectAttemptsExhausted(ILogger logger, long reconnectAttempts, TimeSpan elapsedTime)
             {
                 _reconnectAttemptsExhausted(logger, reconnectAttempts, elapsedTime, null);
             }

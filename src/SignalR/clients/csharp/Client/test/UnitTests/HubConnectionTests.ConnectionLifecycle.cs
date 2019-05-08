@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task StartAsyncThrowsIfPreviousStartIfAlreadyStarting()
+            public async Task StartAsyncThrowsIfPreviousStartIsAlreadyStarting()
             {
                 // Set up StartAsync to wait on the syncPoint when starting
                 var testConnection = new TestConnection(onStart: SyncPoint.Create(out var syncPoint));
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
                     await syncPoint.WaitForSyncPoint();
 
-                    // We should not yet able to start now because StopAsync hasn't completed
+                    // We should not yet bet able to start now because StopAsync hasn't completed
                     Assert.False(stopTask.IsCompleted);
                     var startTask = connection.StartAsync().OrTimeout();
                     Assert.False(stopTask.IsCompleted);

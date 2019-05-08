@@ -7,11 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Internal;
-using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
@@ -81,27 +78,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var originalConnectionId = "originalConnectionId";
                 var reconnectedConnectionId = "reconnectedConnectionId";
 
-                Task OnTestConnectionStart()
+                async Task OnTestConnectionStart()
                 {
                     startCallCount++;
 
                     // Only fail the first reconnect attempt.
                     if (startCallCount == 2)
                     {
-                        return failReconnectTcs.Task;
+                        await failReconnectTcs.Task;
                     }
 
                     // Change the connection id before reconnecting.
                     if (startCallCount == 3)
                     {
-                        testConnectionFactory.CurrentTestConnection.ConnectionId = reconnectedConnectionId;
+                        (await testConnectionFactory.GetNextOrCurrentTestConnection()).ConnectionId = reconnectedConnectionId;
                     }
                     else
                     {
-                        testConnectionFactory.CurrentTestConnection.ConnectionId = originalConnectionId;
+                        (await testConnectionFactory.GetNextOrCurrentTestConnection()).ConnectionId = originalConnectionId;
                     }
-
-                    return Task.CompletedTask;
                 }
 
                 testConnectionFactory = new ReconnectingConnectionFactory(() => new TestConnection(OnTestConnectionStart));
@@ -148,7 +143,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Same(originalConnectionId, hubConnection.ConnectionId);
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
 
                 Assert.Same(firstException, await reconnectingErrorTcs.Task.OrTimeout());
                 Assert.Single(retryContexts);
@@ -245,7 +240,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await hubConnection.StartAsync().OrTimeout();
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
 
                 Assert.Same(firstException, await reconnectingErrorTcs.Task.OrTimeout());
                 Assert.Single(retryContexts);
@@ -324,7 +319,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await hubConnection.StartAsync().OrTimeout();
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
 
                 Assert.Same(firstException, await reconnectingErrorTcs.Task.OrTimeout());
                 Assert.Single(retryContexts);
@@ -342,7 +337,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 reconnectedConnectionIdTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
 
                 var secondException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(secondException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(secondException);
 
                 Assert.Same(secondException, await reconnectingErrorTcs.Task.OrTimeout());
                 Assert.Equal(2, retryContexts.Count);
@@ -410,7 +405,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await hubConnection.StartAsync().OrTimeout();
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
 
                 await closedErrorTcs.Task.OrTimeout();
 
@@ -420,7 +415,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task ReconnectDoesntStartIfConnectionIsLostDuringInitialHandshake()
+        public async Task ReconnectDoesNotStartIfConnectionIsLostDuringInitialHandshake()
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
@@ -465,12 +460,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var startTask = hubConnection.StartAsync().OrTimeout();
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
 
                 Assert.Same(firstException, await Assert.ThrowsAsync<Exception>(() => startTask).OrTimeout());
                 Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
                 Assert.Equal(0, reconnectingCount);
                 Assert.Equal(0, reconnectedCount);
+                Assert.Equal(0, closedCount);
             }
         }
 
@@ -538,12 +534,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var startTask = hubConnection.StartAsync();
 
                 // Complete handshake
-                await testConnectionFactory.CurrentTestConnection.ReadHandshakeAndSendResponseAsync().OrTimeout();
+                var currentTestConnection = await testConnectionFactory.GetNextOrCurrentTestConnection();
+                await currentTestConnection.ReadHandshakeAndSendResponseAsync().OrTimeout();
 
                 await startTask.OrTimeout();
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                currentTestConnection.CompleteFromTransport(firstException);
 
                 Assert.Same(firstException, await reconnectingErrorTcs.Task.OrTimeout());
                 Assert.Single(retryContexts);
@@ -552,7 +549,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Equal(TimeSpan.Zero, retryContexts[0].ElapsedTime);
 
                 var secondException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(secondException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(secondException);
 
                 await secondRetryDelayTcs.Task.OrTimeout();
 
@@ -562,7 +559,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.True(TimeSpan.Zero <= retryContexts[0].ElapsedTime);
 
                 // Complete handshake
-                await testConnectionFactory.CurrentTestConnection.ReadHandshakeAndSendResponseAsync().OrTimeout();
+                currentTestConnection = await testConnectionFactory.GetNextOrCurrentTestConnection();
+                await currentTestConnection.ReadHandshakeAndSendResponseAsync().OrTimeout();
                 await reconnectedConnectionIdTcs.Task.OrTimeout();
 
                 Assert.Equal(1, reconnectingCount);
@@ -579,7 +577,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task ReconnectContinuesIfInvalidHandshakeHandshakeResponse()
+        public async Task ReconnectContinuesIfInvalidHandshakeResponse()
         {
             bool ExpectedErrors(WriteContext writeContext)
             {
@@ -643,12 +641,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var startTask = hubConnection.StartAsync();
 
                 // Complete handshake
-                await testConnectionFactory.CurrentTestConnection.ReadHandshakeAndSendResponseAsync().OrTimeout();
+                var currentTestConnection = await testConnectionFactory.GetNextOrCurrentTestConnection();
+                await currentTestConnection.ReadHandshakeAndSendResponseAsync().OrTimeout();
 
                 await startTask.OrTimeout();
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                currentTestConnection.CompleteFromTransport(firstException);
 
                 Assert.Same(firstException, await reconnectingErrorTcs.Task.OrTimeout());
                 Assert.Single(retryContexts);
@@ -657,13 +656,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Equal(TimeSpan.Zero, retryContexts[0].ElapsedTime);
 
                 // Respond to handshake with error.
-                await testConnectionFactory.CurrentTestConnection.ReadSentTextMessageAsync().OrTimeout();
+                currentTestConnection = await testConnectionFactory.GetNextOrCurrentTestConnection();
+                await currentTestConnection.ReadSentTextMessageAsync().OrTimeout();
 
                 var output = MemoryBufferWriter.Get();
                 try
                 {
                     HandshakeProtocol.WriteResponseMessage(new HandshakeResponseMessage("Error!"), output);
-                    await testConnectionFactory.CurrentTestConnection.Application.Output.WriteAsync(output.ToArray()).OrTimeout();
+                    await currentTestConnection.Application.Output.WriteAsync(output.ToArray()).OrTimeout();
                 }
                 finally
                 {
@@ -678,7 +678,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.True(TimeSpan.Zero <= retryContexts[0].ElapsedTime);
 
                 // Complete handshake
-                await testConnectionFactory.CurrentTestConnection.ReadHandshakeAndSendResponseAsync().OrTimeout();
+
+                currentTestConnection = await testConnectionFactory.GetNextOrCurrentTestConnection();
+                await currentTestConnection.ReadHandshakeAndSendResponseAsync().OrTimeout();
                 await reconnectedConnectionIdTcs.Task.OrTimeout();
 
                 Assert.Equal(1, reconnectingCount);
@@ -719,7 +721,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     }
                     finally
                     {
-                        connectionStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);;;;
+                        connectionStartTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
                     }
                 }
 
@@ -765,7 +767,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await hubConnection.StartAsync().OrTimeout();
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
 
                 Assert.Same(firstException, await reconnectingErrorTcs.Task.OrTimeout());
                 Assert.Single(retryContexts);
@@ -842,7 +844,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await hubConnection.StartAsync().OrTimeout();
 
                 var firstException = new Exception();
-                testConnectionFactory.CurrentTestConnection.CompleteFromTransport(firstException);
+                (await testConnectionFactory.GetNextOrCurrentTestConnection()).CompleteFromTransport(firstException);
 
                 Assert.Same(firstException, await reconnectingErrorTcs.Task.OrTimeout());
                 Assert.Single(retryContexts);
@@ -850,7 +852,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Equal(0, retryContexts[0].PreviousRetryCount);
                 Assert.Equal(TimeSpan.Zero, retryContexts[0].ElapsedTime);
 
-                await hubConnection.StopAsync();
+                await hubConnection.StopAsync().OrTimeout();
 
                 Assert.IsType<OperationCanceledException>(await closedErrorTcs.Task.OrTimeout());
                 Assert.Single(retryContexts);
@@ -862,7 +864,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private class ReconnectingConnectionFactory : IConnectionFactory
         {
             public readonly Func<TestConnection> _testConnectionFactory;
-            public TestConnection CurrentTestConnection { get; private set; }
+            public TaskCompletionSource<TestConnection> _testConnectionTcs = new TaskCompletionSource<TestConnection>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             public ReconnectingConnectionFactory()
                 : this (() => new TestConnection())
@@ -874,18 +876,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 _testConnectionFactory = testConnectionFactory;
             }
 
-            public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
+            public Task<TestConnection> GetNextOrCurrentTestConnection()
             {
-                CurrentTestConnection = _testConnectionFactory();
-                return CurrentTestConnection.StartAsync(transferFormat);
+                return _testConnectionTcs.Task;
             }
 
-            public Task DisposeAsync(ConnectionContext connection)
+            public Task<ConnectionContext> ConnectAsync(TransferFormat transferFormat, CancellationToken cancellationToken = default)
             {
-                var disposingTestConnection = CurrentTestConnection;
-                CurrentTestConnection = null;
+                var testConnection = _testConnectionFactory();
+                _testConnectionTcs.SetResult(testConnection);
+                return testConnection.StartAsync(transferFormat);
+            }
 
-                return disposingTestConnection.DisposeAsync();
+            public async Task DisposeAsync(ConnectionContext connection)
+            {
+                var disposingTestConnection = await _testConnectionTcs.Task;
+
+                _testConnectionTcs = new TaskCompletionSource<TestConnection>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                await disposingTestConnection.DisposeAsync();
             }
         }
     }

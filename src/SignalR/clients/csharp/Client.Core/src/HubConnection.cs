@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -1381,7 +1382,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     "Someone other than Reconnect set the connection state!");
 
                 var elapsedTime = DateTime.UtcNow - reconnectStartTime;
-                Log.ReconnectAttempsExhausted(_logger, previousReconnectAttempts, elapsedTime);
+                Log.ReconnectAttemptsExhausted(_logger, previousReconnectAttempts, elapsedTime);
 
                 _state.ChangeState(HubConnectionState.Reconnecting, HubConnectionState.Disconnected);
 
