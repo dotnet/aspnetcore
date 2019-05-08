@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     public class HeaderPropagationMessageHandler : DelegatingHandler
     {
         private readonly HeaderPropagationValues _values;
-        private readonly HeaderPropagationOptions _options;
+        private readonly HeaderPropagationClientOptions _options;
 
         /// <summary>
         /// Creates a new instance of the <see cref="HeaderPropagationMessageHandler"/>.
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// <param name="options">The options that define which headers are propagated.</param>
         /// <param name="values">The values of the headers to be propagated populated by the
         /// <see cref="HeaderPropagationMiddleware"/>.</param>
-        public HeaderPropagationMessageHandler(IOptions<HeaderPropagationOptions> options, HeaderPropagationValues values)
+        public HeaderPropagationMessageHandler(IOptions<HeaderPropagationClientOptions> options, HeaderPropagationValues values)
         {
             if (options == null)
             {
@@ -68,26 +68,26 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 var entry = entries[i];
                 var hasContent = request.Content != null;
 
-                if (!request.Headers.TryGetValues(entry.OutboundHeaderName, out var _) &&
-                    !(hasContent && request.Content.Headers.TryGetValues(entry.OutboundHeaderName, out var _)))
+                if (!request.Headers.TryGetValues(entry.OveriddenOutboundHeaderName, out var _) &&
+                    !(hasContent && request.Content.Headers.TryGetValues(entry.OveriddenOutboundHeaderName, out var _)))
                 {
-                    if (captured.TryGetValue(entry.OutboundHeaderName, out var stringValues) &&
+                    if (captured.TryGetValue(entry.DefaultOutboundHeaderName, out var stringValues) &&
                         !StringValues.IsNullOrEmpty(stringValues))
                     {
                         if (stringValues.Count == 1)
                         {
                             var value = (string)stringValues;
-                            if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value) && hasContent)
+                            if (!request.Headers.TryAddWithoutValidation(entry.OveriddenOutboundHeaderName, value) && hasContent)
                             {
-                                request.Content.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, value);
+                                request.Content.Headers.TryAddWithoutValidation(entry.OveriddenOutboundHeaderName, value);
                             }
                         }
                         else
                         {
                             var values = (string[])stringValues;
-                            if (!request.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values) && hasContent)
+                            if (!request.Headers.TryAddWithoutValidation(entry.OveriddenOutboundHeaderName, values) && hasContent)
                             {
-                                request.Content.Headers.TryAddWithoutValidation(entry.OutboundHeaderName, values);
+                                request.Content.Headers.TryAddWithoutValidation(entry.OveriddenOutboundHeaderName, values);
                             }
                         }
                     }

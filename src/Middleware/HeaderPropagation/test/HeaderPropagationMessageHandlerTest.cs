@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             State = new HeaderPropagationValues();
             State.Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
 
-            Configuration = new HeaderPropagationOptions();
+            Configuration = new HeaderPropagationClientOptions();
 
             var headerPropagationMessageHandler =
                 new HeaderPropagationMessageHandler(Options.Create(Configuration), State)
@@ -38,14 +38,14 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
 
         private SimpleHandler Handler { get; }
         public HeaderPropagationValues State { get; set; }
-        public HeaderPropagationOptions Configuration { get; set; }
+        public HeaderPropagationClientOptions Configuration { get; set; }
         public HttpClient Client { get; set; }
 
         [Fact]
         public async Task HeaderInState_AddCorrectValue()
         {
             // Arrange
-            Configuration.Headers.Add("in", "out");
+            Configuration.Headers.Add("out");
             State.Headers.Add("out", "test");
 
             // Act
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_WithMultipleValues_AddAllValues()
         {
             // Arrange
-            Configuration.Headers.Add("in", "out");
+            Configuration.Headers.Add("out");
             State.Headers.Add("out", new[] { "one", "two" });
 
             // Act
@@ -74,8 +74,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_RequestWithContent_ContentHeaderPresent_DoesNotAddIt()
         {
-            Configuration.Headers.Add("in", "Content-Type");
-            State.Headers.Add("in", "test");
+            Configuration.Headers.Add("Content-Type");
+            State.Headers.Add("Content-Type", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage() { Content = new StringContent("test") });
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_RequestWithContent_ContentHeaderNotPresent_AddValue()
         {
-            Configuration.Headers.Add("in", "Content-Language");
+            Configuration.Headers.Add("Content-Language");
             State.Headers.Add("Content-Language", "test");
 
             // Act
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_WithMultipleValues_RequestWithContent_ContentHeaderNotPresent_AddAllValues()
         {
-            Configuration.Headers.Add("in", "Content-Language");
+            Configuration.Headers.Add("Content-Language");
             State.Headers.Add("Content-Language", new[] { "one", "two" });
 
             // Act
