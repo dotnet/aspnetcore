@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Http
         public object this[int index] { get { throw null; } }
         public Microsoft.AspNetCore.Http.EndpointMetadataCollection.Enumerator GetEnumerator() { throw null; }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public T GetMetadata<T>() where T : class { throw null; }
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public Microsoft.AspNetCore.Http.OrderedEndpointMetadataCollection<T> GetOrderedMetadata<T>() where T : class { throw null; }
+        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]public System.Collections.Generic.IReadOnlyList<T> GetOrderedMetadata<T>() where T : class { throw null; }
         System.Collections.Generic.IEnumerator<object> System.Collections.Generic.IEnumerable<System.Object>.GetEnumerator() { throw null; }
         System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
         [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
@@ -321,30 +321,6 @@ namespace Microsoft.AspNetCore.Http
     {
         Microsoft.AspNetCore.Http.IMiddleware Create(System.Type middlewareType);
         void Release(Microsoft.AspNetCore.Http.IMiddleware middleware);
-    }
-    public sealed partial class OrderedEndpointMetadataCollection<T> : System.Collections.Generic.IEnumerable<T>, System.Collections.Generic.IReadOnlyCollection<T>, System.Collections.Generic.IReadOnlyList<T>, System.Collections.IEnumerable where T : class
-    {
-        internal OrderedEndpointMetadataCollection() { }
-        public int Count { get { throw null; } }
-        public T this[int index] { get { throw null; } }
-        public Microsoft.AspNetCore.Http.OrderedEndpointMetadataCollection<T>.Enumerator GetEnumerator() { throw null; }
-        System.Collections.Generic.IEnumerator<T> System.Collections.Generic.IEnumerable<T>.GetEnumerator() { throw null; }
-        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() { throw null; }
-        [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-        public partial struct Enumerator : System.Collections.Generic.IEnumerator<T>, System.Collections.IEnumerator, System.IDisposable
-        {
-            private T[] _items;
-            [System.Diagnostics.DebuggerBrowsableAttribute(System.Diagnostics.DebuggerBrowsableState.Never)]
-            [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-            private T _Current_k__BackingField;
-            private object _dummy;
-            private int _dummyPrimitive;
-            public T Current { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-            object System.Collections.IEnumerator.Current { get { throw null; } }
-            public void Dispose() { }
-            public bool MoveNext() { throw null; }
-            public void Reset() { }
-        }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct PathString : System.IEquatable<Microsoft.AspNetCore.Http.PathString>

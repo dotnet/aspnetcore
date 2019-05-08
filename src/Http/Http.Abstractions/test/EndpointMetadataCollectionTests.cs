@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Routing
             // Act
             var ordered = metadata.GetOrderedMetadata<string>();
 
-            Assert.Same(OrderedEndpointMetadataCollection<string>.Empty, ordered);
+            Assert.Same(Array.Empty<string>(), ordered);
         }
 
         [Fact]
