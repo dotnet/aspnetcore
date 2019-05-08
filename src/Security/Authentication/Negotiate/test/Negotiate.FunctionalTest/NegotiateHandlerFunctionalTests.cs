@@ -88,9 +88,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         [ConditionalTheory]
         [MemberData(nameof(HttpOrders))]
-        public async Task RequestAfterAuth_ReUses1(Version first, Version second)
+        public async Task RequestAfterAuth_ReUses1WithPersistence(Version first, Version second)
         {
-            using var host = await CreateHostAsync();
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = true);
             // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade HTTP/2. WinHttpHandler does.
             using var client = CreateWinHttpClient(host);
             client.DefaultRequestVersion = first;
@@ -105,10 +105,31 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Assert.Equal(Http11Version, result.Version);
         }
 
-        [ConditionalFact]
-        public async Task RequestAfterAuth_Http2Then2_Success()
+        [ConditionalTheory]
+        [MemberData(nameof(HttpOrders))]
+        public async Task RequestAfterAuth_ReauthenticatesWhenNotPersisted(Version first, Version second)
         {
-            using var host = await CreateHostAsync();
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = false);
+            // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade HTTP/2. WinHttpHandler does.
+            using var client = CreateWinHttpClient(host);
+            client.DefaultRequestVersion = first;
+
+            var result = await client.GetAsync("/Authenticate");
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http11Version, result.Version); // Http/2 downgrades
+
+            // Re-uses the 1.1 connection.
+            result = await client.SendAsync(new HttpRequestMessage(HttpMethod.Get, "/Authenticate") { Version = second });
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+            Assert.Equal(Http11Version, result.Version);
+        }
+
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task RequestAfterAuth_Http2Then2_Success(bool persistNtlm)
+        {
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = persistNtlm);
             // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade HTTP/2. WinHttpHandler does.
             using var client = CreateWinHttpClient(host);
             client.DefaultRequestVersion = Http2Version;
@@ -124,10 +145,12 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Assert.Equal(Http11Version, result.Version);
         }
 
-        [ConditionalFact]
-        public async Task RequestAfterAuth_Http2Then2Anonymous_Success()
+        [ConditionalTheory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task RequestAfterAuth_Http2Then2Anonymous_Success(bool persistNtlm)
         {
-            using var host = await CreateHostAsync();
+            using var host = await CreateHostAsync(options => options.PersistNtlmCredentials = persistNtlm);
             // https://github.com/dotnet/corefx/issues/35195 SocketHttpHandler won't downgrade HTTP/2. WinHttpHandler does.
             using var client = CreateWinHttpClient(host);
             client.DefaultRequestVersion = Http2Version;

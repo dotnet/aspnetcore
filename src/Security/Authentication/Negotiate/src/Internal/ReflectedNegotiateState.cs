@@ -12,29 +12,38 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 {
     internal class ReflectedNegotiateState : INegotiateState
     {
-        private readonly object _instance;
-        private readonly MethodInfo _getOutgoingBlob;
-        private readonly MethodInfo _isCompleted;
-        private readonly MethodInfo _getIdentity;
-        private readonly MethodInfo _closeContext;
+        private static readonly ConstructorInfo _constructor;
+        private static readonly MethodInfo _getOutgoingBlob;
+        private static readonly MethodInfo _isCompleted;
+        private static readonly MethodInfo _protocal;
+        private static readonly MethodInfo _getIdentity;
+        private static readonly MethodInfo _closeContext;
 
-        public ReflectedNegotiateState()
+        private readonly object _instance;
+
+        static ReflectedNegotiateState()
         {
             var ntAuthType = typeof(AuthenticationException).Assembly.GetType("System.Net.NTAuthentication");
-            var constructor = ntAuthType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
-            // internal NTAuthentication(bool isServer, string package, NetworkCredential credential, string spn, ContextFlagsPal requestedContextFlags, ChannelBinding channelBinding)
-            var credential = CredentialCache.DefaultCredentials;
-            _instance = constructor.Invoke(new object[] { true, "Negotiate", credential, null, 0, null });
+            _constructor = ntAuthType.GetConstructors(BindingFlags.NonPublic | BindingFlags.Instance).First();
             _getOutgoingBlob = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("GetOutgoingBlob") && info.GetParameters().Count() == 2).Single();
             _isCompleted = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("get_IsCompleted")).Single();
+            _protocal = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
+                info.Name.Equals("get_ProtocolName")).Single();
             _closeContext = ntAuthType.GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Where(info =>
                 info.Name.Equals("CloseContext")).Single();
 
             var negoStreamPalType = typeof(AuthenticationException).Assembly.GetType("System.Net.Security.NegotiateStreamPal");
             _getIdentity = negoStreamPalType.GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Where(info =>
                 info.Name.Equals("GetIdentity")).Single();
+        }
+
+        public ReflectedNegotiateState()
+        {
+            // internal NTAuthentication(bool isServer, string package, NetworkCredential credential, string spn, ContextFlagsPal requestedContextFlags, ChannelBinding channelBinding)
+            var credential = CredentialCache.DefaultCredentials;
+            _instance = _constructor.Invoke(new object[] { true, "Negotiate", credential, null, 0, null });
         }
 
         // Copied rather than reflected to remove the IsCompleted -> CloseContext check.
@@ -67,6 +76,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         public bool IsCompleted
         {
             get => (bool)_isCompleted.Invoke(_instance, Array.Empty<object>());
+        }
+
+        public string Protocal
+        {
+            get => (string)_protocal.Invoke(_instance, Array.Empty<object>());
         }
 
         public IIdentity GetIdentity()

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
@@ -22,9 +23,12 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     /// </summary>
     public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthenticationRequestHandler
     {
-        private const string NegotiateStateKey = nameof(INegotiateState);
+        private const string AuthPersistenceKey = nameof(AuthPersistence);
         private const string NegotiateVerb = "Negotiate";
         private const string AuthHeaderPrefix = NegotiateVerb + " ";
+
+        private bool _requestProcessed;
+        private INegotiateState _negotiateState;
 
         /// <summary>
         /// Creates a new <see cref="NegotiateHandler"/>
@@ -63,6 +67,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             try
             {
+                _requestProcessed = true;
                 if (IsHttp2)
                 {
                     // HTTP/2 is not supported. Do not throw because this may be running on a server that supports
@@ -71,13 +76,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 }
 
                 var connectionItems = GetConnectionItems();
-                var authState = (INegotiateState)connectionItems[NegotiateStateKey];
+                var persistence = (AuthPersistence)connectionItems[AuthPersistenceKey];
+                _negotiateState = persistence?.State;
 
                 var authorizationHeader = Request.Headers[HeaderNames.Authorization];
 
                 if (StringValues.IsNullOrEmpty(authorizationHeader))
                 {
-                    if (authState?.IsCompleted == false)
+                    if (_negotiateState?.IsCompleted == false)
                     {
                         throw new InvalidOperationException("An anonymous request was received in between authentication handshake requests.");
                     }
@@ -94,28 +100,37 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 }
                 else
                 {
+                    if (_negotiateState?.IsCompleted == false)
+                    {
+                        throw new InvalidOperationException("Non-negotiate request was received in between authentication handshake requests.");
+                    }
                     Logger.LogDebug($"Non-Negotiate Authorization header");
                     return false;
                 }
 
                 // WinHttpHandler re-authenticates an existing connection if it gets another challenge on subsequent requests.
-                if (authState?.IsCompleted == true)
+                if (_negotiateState?.IsCompleted == true)
                 {
                     Logger.LogDebug("Negotiate data received for an already authenticated connection, Re-authenticating");
-                    authState.Dispose();
-                    authState = null;
+                    _negotiateState.Dispose();
+                    _negotiateState = null;
+                    persistence.State = null;
                 }
 
-                if (authState == null)
-                {
-                    connectionItems[NegotiateStateKey] = authState = Options.StateFactory.CreateInstance();
-                    RegisterForConnectionDispose(authState);
-                }
+                _negotiateState ??= Options.StateFactory.CreateInstance();
 
-                var outgoing = authState.GetOutgoingBlob(token);
+                var outgoing = _negotiateState.GetOutgoingBlob(token);
 
-                if (!authState.IsCompleted)
+                if (!_negotiateState.IsCompleted)
                 {
+                    if (_negotiateState.Protocal == "NTLM")
+                    {
+                        persistence ??= EstablishConnectionPersistence(connectionItems);
+                        // Save the state long enough to complete the multi-stage handshake.
+                        // We'll remove it once complete if !PersistNtlmCredentials.
+                        persistence.State = _negotiateState;
+                    }
+
                     Logger.LogInformation("Incomplete Negotiate, 401 Negotiate challenge");
                     Response.StatusCode = StatusCodes.Status401Unauthorized;
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
@@ -131,6 +146,24 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     Logger.LogDebug($"Completed Negotiate with additional data.");
                     // There can be a final blob of data we need to send to the client, but let the request execute as normal.
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
+                }
+
+                // Deal with connection credential persistence.
+
+                if (_negotiateState.Protocal == "NTLM" && !Options.PersistNtlmCredentials)
+                {
+                    // NTLM was already put in the persitence cache on the prior request so we could complete the handshake.
+                    // Take it out if we don't want it to persist.
+                    Debug.Assert(object.ReferenceEquals(persistence?.State, _negotiateState),
+                        "NTLM is a two stage process, it must have already been in the cache for the handshake to succeed.");
+                    persistence.State = null;
+                    Response.RegisterForDispose(_negotiateState);
+                }
+                else if (_negotiateState.Protocal == "Kerberos" && Options.PersistKerberosCredentials)
+                {
+                    persistence ??= EstablishConnectionPersistence(connectionItems);
+                    Debug.Assert(persistence.State == null, "Complete Kerberos results should only be produced from a new context.");
+                    persistence.State = _negotiateState;
                 }
 
                 // Note we run the Authenticated event in HandleAuthenticateAsync so it is per-request rather than per connection.
@@ -168,6 +201,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         /// <returns></returns>
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
+            if (!_requestProcessed)
+            {
+                throw new InvalidOperationException("AuthenticateAsync must not be called before the UseAuthentication middleware.");
+            }
+
             if (IsHttp2)
             {
                 // Not supported. We don't throw because Negotiate may be set as the default auth
@@ -176,15 +214,20 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 return AuthenticateResult.NoResult();
             }
 
-            var authState = (INegotiateState)GetConnectionItems()[NegotiateStateKey];
-            if (authState?.IsCompleted != true)
+            if (_negotiateState == null)
             {
                 return AuthenticateResult.NoResult();
             }
 
+            if (!_negotiateState.IsCompleted)
+            {
+                // This case should have been rejected by HandleRequestAsync
+                throw new InvalidOperationException("Attempting to use an incomplete authentication context.");
+            }
+
             // Make a new copy of the user for each request, they are mutable objects and
             // things like ClaimsTransformation run per request.
-            var identity = authState.GetIdentity();
+            var identity = _negotiateState.GetIdentity();
             ClaimsPrincipal user;
             if (identity is WindowsIdentity winIdentity)
             {
@@ -232,6 +275,15 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Response.Headers.Append(HeaderNames.WWWAuthenticate, NegotiateVerb);
         }
 
+        private AuthPersistence EstablishConnectionPersistence(IDictionary<object, object> items)
+        {
+            Debug.Assert(!items.ContainsKey(AuthPersistenceKey), "This should only be registered once per connection");
+            var persistence = new AuthPersistence();
+            RegisterForConnectionDispose(persistence);
+            items[AuthPersistenceKey] = persistence;
+            return persistence;
+        }
+
         private IDictionary<object, object> GetConnectionItems()
         {
             var connectionItems = Context.Features.Get<IConnectionItemsFeature>()?.Items;
@@ -243,7 +295,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             return connectionItems;
         }
 
-        private void RegisterForConnectionDispose(INegotiateState authState)
+        private void RegisterForConnectionDispose(IDisposable authState)
         {
             var connectionCompleteFeature = Context.Features.Get<IConnectionCompleteFeature>();
             if (connectionCompleteFeature == null)
@@ -257,6 +309,17 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             ((IDisposable)state).Dispose();
             return Task.CompletedTask;
+        }
+
+        // This allows us to have one disposal registration per connection and limits churn on the Items collection.
+        private class AuthPersistence : IDisposable
+        {
+            internal INegotiateState State { get; set; }
+
+            public void Dispose()
+            {
+                State?.Dispose();
+            }
         }
     }
 }

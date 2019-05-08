@@ -19,6 +19,20 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             set { base.Events = value; }
         }
 
+        /// <summary>
+        /// Indicates if Kerberos credentials should be persisted and re-used for subsquent anonymous requests.
+        /// This option must not be used if connections may be shared by requests from different users.
+        /// The default is false.
+        /// </summary>
+        public bool PersistKerberosCredentials { get; set; } = false;
+
+        /// <summary>
+        /// Indicates if NTLM credentials should be persisted and re-used for subsquent anonymous requests.
+        /// This option must not be used if connections may be shared by requests from different users.
+        /// The default is true.
+        /// </summary>
+        public bool PersistNtlmCredentials { get; set; } = true;
+
         // For testing
         internal INegotiateStateFactory StateFactory { get; set; } = new ReflectedNegotiateStateFactory();
     }
