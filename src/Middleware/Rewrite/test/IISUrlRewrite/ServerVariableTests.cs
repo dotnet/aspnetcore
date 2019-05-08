@@ -8,10 +8,9 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.Internal;
 using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
 using Microsoft.Net.Http.Headers;
-using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
+namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
 {
     public class ServerVariableTests
     {
@@ -63,7 +62,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
             var testParserContext = new ParserContext("test");
             var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart);
             var httpContext = CreateTestHttpContext();
-            httpContext.Features.Set(CreateTestServerVariablesFeature(new Dictionary<string, string>
+            httpContext.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
             {
                 ["CONTENT_LENGTH"] = "20",
                 ["CONTENT_TYPE"] = "text/xml",
@@ -109,17 +108,6 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         private RewriteContext CreateTestRewriteContext(HttpContext context = null)
         {
             return new RewriteContext { HttpContext = context ?? CreateTestHttpContext() };
-        }
-
-        private IServerVariablesFeature CreateTestServerVariablesFeature(Dictionary<string, string> variables)
-        {
-            var mockServerVariablesFeature = new Mock<IServerVariablesFeature>();
-            foreach (var variable in variables)
-            {
-                mockServerVariablesFeature.SetupGet(x => x[variable.Key]).Returns(variable.Value);
-            }
-
-            return mockServerVariablesFeature.Object;
         }
 
         private MatchResults CreateTestRuleMatch()

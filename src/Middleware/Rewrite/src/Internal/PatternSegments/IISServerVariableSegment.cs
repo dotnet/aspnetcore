@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Server.IIS;
 
 namespace Microsoft.AspNetCore.Rewrite.Internal.PatternSegments
 {
-    public class IISServerVariableSegment : PatternSegment
+    internal class IISServerVariableSegment : PatternSegment
     {
         private readonly string _variableName;
         private readonly Func<PatternSegment> _fallbackThunk;
