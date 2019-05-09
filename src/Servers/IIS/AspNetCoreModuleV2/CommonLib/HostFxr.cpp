@@ -46,6 +46,9 @@ void HostFxr::Load(HMODULE moduleHandle)
         m_hostfxr_main_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_main_fn>(moduleHandle, "hostfxr_main");
         m_hostfxr_get_native_search_directories_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(moduleHandle, "hostfxr_get_native_search_directories");
         m_corehost_set_error_writer_fn = ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(moduleHandle, "hostfxr_set_error_writer", /* optional */ true);
+        m_hostfxr_initialize_for_app_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_initialize_for_app_fn>(moduleHandle, "hostfxr_initialize_for_app", true);
+        m_hostfxr_set_runtime_property_value_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_set_runtime_property_value_fn>(moduleHandle, "hostfxr_initialize_for_app", true);
+        m_hostfxr_run_app_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_run_app_fn>(moduleHandle, "hostfxr_initialize_for_app", true);
     }
     catch (...)
     {
@@ -87,7 +90,14 @@ void HostFxr::SetMain(hostfxr_main_fn hostfxr_main_fn)
 
 int HostFxr::Main(DWORD argc, const PCWSTR* argv) const noexcept(false)
 {
-    return m_hostfxr_main_fn(argc, argv);
+    if (m_hostfxr_run_app_fn != nullptr)
+    {
+        return m_hostfxr_run_app_fn(m_host_context_handle);
+    }
+    else
+    {
+        return m_hostfxr_main_fn(argc, argv);
+    }
 }
 
 int HostFxr::GetNativeSearchDirectories(INT argc, const PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size) const noexcept
@@ -98,4 +108,23 @@ int HostFxr::GetNativeSearchDirectories(INT argc, const PCWSTR* argv, PWSTR buff
 HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput* writer) const noexcept
 {
     return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
+}
+
+int HostFxr::InitializeForApp(DWORD argc, PCWSTR* argv, PCWSTR app_path, hostfxr_initialize_parameters* parameters) const noexcept
+{
+    if (m_hostfxr_initialize_for_app_fn != nullptr)
+    {
+        return m_hostfxr_initialize_for_app_fn(argc, argv, app_path, parameters, &m_host_context_handle);
+    }
+
+    return 0;
+}
+
+int HostFxr::SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept
+{
+    if (m_host_context_handle != nullptr)
+    {
+        return m_hostfxr_set_runtime_property_value_fn(m_host_context_handle, name, value);
+    }
+    return 0;
 }
