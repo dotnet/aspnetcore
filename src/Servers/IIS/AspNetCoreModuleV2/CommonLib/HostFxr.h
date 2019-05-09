@@ -14,6 +14,10 @@ struct hostfxr_initialize_parameters
     PCWSTR dotnet_root;
 };
 
+#define DOTNETCORE_STARTUP_HOOK  L"STARTUP_HOOKS"
+#define DOTNETCORE_USE_ENTRYPOINT_FILTER L"USE_ENTRYPOINT_FILTER"
+#define ASPNETCORE_STARTUP_ASSEMBLY L"Microsoft.AspNetCore.Server.IIS"
+
 typedef INT(*hostfxr_get_native_search_directories_fn) (INT argc, CONST PCWSTR* argv, PWSTR buffer, DWORD buffer_size, DWORD* required_buffer_size);
 typedef INT(*hostfxr_main_fn) (DWORD argc, CONST PCWSTR argv[]);
 typedef void(*corehost_error_writer_fn) (const WCHAR* message);
@@ -80,7 +84,7 @@ public:
 
     HostFxrErrorRedirector RedirectOutput(RedirectionOutput* writer) const noexcept;
     int SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept;
-    int InitializeForApp(DWORD argc, PCWSTR* argv, PCWSTR app_path, hostfxr_initialize_parameters* parameters) const noexcept; // todo const this
+    int InitializeForApp(int argc, PCWSTR* argv, std::wstring m_dotnetExeKnownLocation) const noexcept; // todo const this
     int GetRuntimeProperties();
 
 private:

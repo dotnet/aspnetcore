@@ -248,11 +248,16 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         params.host_path = L"";
 
         // TODO This is horrible for now...
-        auto value = context->m_hostFxr.InitializeForApp(context->m_argc - 1, &(context->m_argv.get()[1]), nullptr, &params);
-
+        auto value = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
+        if (value != 0)
+        {
+            // TODO log errors
+            return;
+        }
         // TODO make these configurable via handler settings
         value = context->m_hostFxr.SetRuntimePropertyValue(L"STARTUP_HOOKS", ASPNETCORE_STARTUP_ASSEMBLY);
         value = context->m_hostFxr.SetRuntimePropertyValue(L"USE_ENTRYPOINT_FILTER", L"1");
+
         LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_DefaultStackSize", m_pConfig->QueryStackSize().c_str()));
 
         bool clrThreadExited;
