@@ -296,37 +296,6 @@ namespace Microsoft.AspNetCore.Builder
                 e => Assert.Equal("Test endpoint 4", e.DisplayName));
         }
 
-        [Fact]
-        public async Task UseEndpointExecutor_RunsEndpoint()
-        {
-            // Arrange
-            var services = CreateServices();
-
-            var endpointRan = false;
-            var app = new ApplicationBuilder(services);
-
-            app.Use(next => context =>
-            {
-                context.SetEndpoint(new Endpoint(c =>
-                {
-                    endpointRan = true;
-                    return Task.CompletedTask;
-                }, new EndpointMetadataCollection(), "Test"));
-                return next(context);
-            });
-
-            app.UseEndpointExecutor(); // No services required, no UseRouting required
-
-            var appFunc = app.Build();
-            var httpContext = new DefaultHttpContext();
-
-            // Act
-            await appFunc(httpContext);
-
-            // Assert
-            Assert.True(endpointRan);
-        }
-
         private IServiceProvider CreateServices()
         {
             return CreateServices(matcherFactory: null);

@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class EndpointRoutingApplicationBuilderExtensions
     {
-        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseEndpointExecutor(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) { throw null; }
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseEndpoints(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder, System.Action<Microsoft.AspNetCore.Routing.IEndpointRouteBuilder> configure) { throw null; }
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseRouting(this Microsoft.AspNetCore.Builder.IApplicationBuilder builder) { throw null; }
     }
