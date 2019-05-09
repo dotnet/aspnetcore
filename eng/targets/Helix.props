@@ -17,6 +17,8 @@
     <HelixTestName>$(MSBuildProjectName)/$(TargetFramework)</HelixTestName>
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">true</LoggingTestingDisableFileLogging>
+    <NodeVersion>10.15.3</NodeVersion>
+    <NodePlatformArch>linux-x64</NodePlatformArch>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
