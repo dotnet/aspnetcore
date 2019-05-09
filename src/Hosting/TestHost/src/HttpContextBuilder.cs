@@ -62,11 +62,12 @@ namespace Microsoft.AspNetCore.TestHost
         {
             var registration = cancellationToken.Register(AbortRequest);
 
-            // Everything inside this function happens in the SERVER's ExecutionContext (unless PreserveExecutionContext is true)
+            // Everything inside this function happens in the SERVER's execution context (unless PreserveExecutionContext is true)
             async Task RunRequestAsync()
             {
                 // This will configure IHttpContextAccessor so it needs to happen INSIDE this function,
-                // since we are now inside the Server's ExecutionContext. If it happens out
+                // since we are now inside the Server's execution context. If it happens outside this context,
+                // it will be lost when we abandon the execution context.
                 _testContext = _application.CreateContext(_httpContext.Features);
 
                 try
