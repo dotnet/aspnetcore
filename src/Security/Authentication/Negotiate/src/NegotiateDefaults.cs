@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     public static class NegotiateDefaults
     {
         /// <summary>
-        /// Default value for AuthenticationScheme property in the NegotiateAuthenticationOptions
+        /// Default value for AuthenticationScheme used to identify the Negotiate auth handler.
         /// </summary>
         public const string AuthenticationScheme = "Negotiate";
     }

@@ -96,12 +96,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         throw new InvalidOperationException("An anonymous request was received in between authentication handshake requests.");
                     }
-                    Logger.LogDebug($"No Authorization header");
+                    Logger.LogDebug($"No Authorization header.");
                     return false;
                 }
 
                 var authorization = authorizationHeader.ToString();
-                Logger.LogTrace($"Authorization: " + authorization);
                 string token = null;
                 if (authorization.StartsWith(AuthHeaderPrefix, StringComparison.OrdinalIgnoreCase))
                 {
@@ -113,14 +112,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         throw new InvalidOperationException("Non-negotiate request was received in between authentication handshake requests.");
                     }
-                    Logger.LogDebug($"Non-Negotiate Authorization header");
+                    Logger.LogDebug($"Non-Negotiate Authorization header.");
                     return false;
                 }
 
                 // WinHttpHandler re-authenticates an existing connection if it gets another challenge on subsequent requests.
                 if (_negotiateState?.IsCompleted == true)
                 {
-                    Logger.LogDebug("Negotiate data received for an already authenticated connection, Re-authenticating");
+                    Logger.LogDebug("Negotiate data received for an already authenticated connection, Re-authenticating.");
                     _negotiateState.Dispose();
                     _negotiateState = null;
                     persistence.State = null;
@@ -132,27 +131,25 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 if (!_negotiateState.IsCompleted)
                 {
-                    if (_negotiateState.Protocol == "NTLM")
-                    {
-                        persistence ??= EstablishConnectionPersistence(connectionItems);
-                        // Save the state long enough to complete the multi-stage handshake.
-                        // We'll remove it once complete if !PersistNtlmCredentials.
-                        persistence.State = _negotiateState;
-                    }
+                    Debug.Assert(_negotiateState.Protocol == "NTLM", "Only NTLM should require multiple stages.");
 
-                    Logger.LogInformation("Incomplete Negotiate, 401 Negotiate challenge");
+                    Logger.LogDebug($"Enabling credential persistence for an incomplete NTLM handshake.");
+                    persistence ??= EstablishConnectionPersistence(connectionItems);
+                    // Save the state long enough to complete the multi-stage handshake.
+                    // We'll remove it once complete if !PersistNtlmCredentials.
+                    persistence.State = _negotiateState;
+
+                    Logger.LogInformation("Incomplete Negotiate, sending a second 401 Negotiate challenge.");
                     Response.StatusCode = StatusCodes.Status401Unauthorized;
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
                     return true;
                 }
 
-                if (string.IsNullOrEmpty(outgoing))
+                Logger.LogDebug($"Completed Negotiate.");
+
+                // Isn't there always additional data for the server scenario?
+                if (!string.IsNullOrEmpty(outgoing))
                 {
-                    Logger.LogDebug($"Completed Negotiate.");
-                }
-                else
-                {
-                    Logger.LogDebug($"Completed Negotiate with additional data.");
                     // There can be a final blob of data we need to send to the client, but let the request execute as normal.
                     Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
                 }
@@ -165,11 +162,13 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     // Take it out if we don't want it to persist.
                     Debug.Assert(object.ReferenceEquals(persistence?.State, _negotiateState),
                         "NTLM is a two stage process, it must have already been in the cache for the handshake to succeed.");
+                    Logger.LogDebug($"Disabling credential persistence for a complete NTLM handshake.");
                     persistence.State = null;
                     Response.RegisterForDispose(_negotiateState);
                 }
                 else if (_negotiateState.Protocol == "Kerberos" && Options.PersistKerberosCredentials)
                 {
+                    Logger.LogDebug($"Enabling credential persistence for a complete Kerberos handshake.");
                     persistence ??= EstablishConnectionPersistence(connectionItems);
                     Debug.Assert(persistence.State == null, "Complete Kerberos results should only be produced from a new context.");
                     persistence.State = _negotiateState;
@@ -212,7 +211,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         {
             if (!_requestProcessed)
             {
-                throw new InvalidOperationException("AuthenticateAsync must not be called before the UseAuthentication middleware.");
+                throw new InvalidOperationException("AuthenticateAsync must not be called before the UseAuthentication middleware runs.");
             }
 
             if (IsHttp2)

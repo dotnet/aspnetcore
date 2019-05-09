@@ -37,18 +37,15 @@ namespace NegotiateAuthSample
             app.Use(async (context, next) =>
             {
                 // todo: move to authz https://github.com/aspnet/AspNetCore/issues/9583
-                var result = await context.AuthenticateAsync();
-                if (!result.Succeeded || !result.Principal.Identity.IsAuthenticated)
+                if (!context.User.Identity.IsAuthenticated)
                 {
                     await context.ChallengeAsync();
                     return;
                 }
-                context.User = result.Principal;
 
                 await next();
             });
 
-            // TODO: Move to endpoints?
             app.Run(HandleRequest);
         }
 
