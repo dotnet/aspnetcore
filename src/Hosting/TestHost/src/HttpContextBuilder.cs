@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -92,7 +93,13 @@ namespace Microsoft.AspNetCore.TestHost
             }
             else
             {
-                ThreadPool.UnsafeQueueUserWorkItem(_ => { _ = RunRequestAsync(); }, null);
+                // Capture the current culture and restore it inside the server execution context.
+                var currentCulture = CultureInfo.CurrentCulture;
+                ThreadPool.UnsafeQueueUserWorkItem(_ =>
+                {
+                    CultureInfo.CurrentCulture = currentCulture;
+                    _ = RunRequestAsync();
+                }, null);
             }
 
             return _responseTcs.Task;

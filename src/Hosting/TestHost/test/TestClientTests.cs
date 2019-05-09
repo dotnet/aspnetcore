@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -423,6 +424,93 @@ namespace Microsoft.AspNetCore.TestHost
 
             // Assert
             var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await tcs.Task);
+        }
+
+        [Fact]
+        public async Task AsyncLocalValueOnClientIsNotPreserved()
+        {
+            var asyncLocal = new AsyncLocal<object>();
+            var value = new object();
+            asyncLocal.Value = value;
+
+            object capturedValue = null;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run((context) =>
+                    {
+                        capturedValue = asyncLocal.Value;
+                        return context.Response.WriteAsync("Done");
+                    });
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var resp = await client.GetAsync("/");
+
+            Assert.NotSame(value, capturedValue);
+        }
+
+        [Fact]
+        public async Task AsyncLocalValueOnClientIsPreservedIfPreserveExecutionContextIsTrue()
+        {
+            var asyncLocal = new AsyncLocal<object>();
+            var value = new object();
+            asyncLocal.Value = value;
+
+            object capturedValue = null;
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run((context) =>
+                    {
+                        capturedValue = asyncLocal.Value;
+                        return context.Response.WriteAsync("Done");
+                    });
+                });
+            var server = new TestServer(builder)
+            {
+                PreserveExecutionContext = true
+            };
+            var client = server.CreateClient();
+
+            var resp = await client.GetAsync("/");
+
+            Assert.Same(value, capturedValue);
+        }
+
+        [Fact]
+        public async Task CurrentCultureIsPreservedAcrossClientServerBoundary()
+        {
+            // Set the current culture
+            CultureInfo.CurrentCulture = new CultureInfo("fr-CA");
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.Run(async (context) =>
+                    {
+                        if (context.Request.Path.StartsWithSegments("/number"))
+                        {
+                            await context.Response.WriteAsync((4.32).ToString());
+                        }
+                        else
+                        {
+                            await context.Response.WriteAsync(CultureInfo.CurrentCulture.Name);
+                        }
+                    });
+                });
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var resp = await client.GetAsync("/number");
+            resp.EnsureSuccessStatusCode();
+            var content = await resp.Content.ReadAsStringAsync();
+            Assert.Equal("4,32", content);
+
+            resp = await client.GetAsync("/name");
+            resp.EnsureSuccessStatusCode();
+            content = await resp.Content.ReadAsStringAsync();
+            Assert.Equal("fr-CA", content);
         }
     }
 }
