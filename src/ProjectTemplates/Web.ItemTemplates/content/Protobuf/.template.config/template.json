@@ -5,11 +5,11 @@
     "Web",
     "gRPC"
   ],
-  "name": "Protocol Buffer",
+  "name": "Protocol Buffer File",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A protocol buffer file for describing messages and services for gRPC.",
   "tags": {
-    "language": "gRPC",
+    "language": "",
     "type": "item"
   },
   "groupIdentity": "Microsoft.Web.Grpc.Protobuf",
