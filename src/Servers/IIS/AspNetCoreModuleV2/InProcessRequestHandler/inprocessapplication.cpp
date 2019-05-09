@@ -55,7 +55,7 @@ IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 VOID
 IN_PROCESS_APPLICATION::StopClr()
 {
-    // This has the state lock around it. 
+    // This has the state lock around it.
     LOG_INFO(L"Stopping CLR");
 
     if (!m_blockManagedCallbacks)
@@ -241,24 +241,18 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        if (m_pConfig->QueryCallStartupHook())
-        {
-            // Used to display developer exception page when there is an exception in main.
-            auto currentStartupHookEnv = Environment::GetEnvironmentVariableValue(DOTNETCORE_STARTUP_HOOK);
+        hostfxr_initialize_parameters params;
+        params.size = sizeof(hostfxr_initialize_parameters);
+        auto folderPath = m_dotnetExeKnownLocation.substr(0, m_dotnetExeKnownLocation.size() - 10);
+        params.dotnet_root = folderPath.c_str();
+        params.host_path = L"";
 
-            if (currentStartupHookEnv.has_value())
-            {
-                currentStartupHookEnv = currentStartupHookEnv.value() + L";" + ASPNETCORE_STARTUP_ASSEMBLY;
-                LOG_LAST_ERROR_IF(!SetEnvironmentVariable(DOTNETCORE_STARTUP_HOOK, currentStartupHookEnv.value().c_str()));
-            }
-            else
-            {
-                LOG_LAST_ERROR_IF(!SetEnvironmentVariable(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
-            }
-        }
+        // TODO This is horrible for now...
+        auto value = context->m_hostFxr.InitializeForApp(context->m_argc - 1, &(context->m_argv.get()[1]), nullptr, &params);
 
-        // Used to make .NET Runtime always log to event log when there is an unhandled exception.
-        LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1"));
+        // TODO make these configurable via handler settings
+        value = context->m_hostFxr.SetRuntimePropertyValue(L"STARTUP_HOOKS", ASPNETCORE_STARTUP_ASSEMBLY);
+        value = context->m_hostFxr.SetRuntimePropertyValue(L"USE_ENTRYPOINT_FILTER", L"1");
         LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_DefaultStackSize", m_pConfig->QueryStackSize().c_str()));
 
         bool clrThreadExited;
