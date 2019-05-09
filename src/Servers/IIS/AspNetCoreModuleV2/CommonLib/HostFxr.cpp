@@ -109,31 +109,33 @@ HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput* writer) const 
     return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
 }
 
-int HostFxr::InitializeForApp(int argc, PCWSTR* argv, std::wstring dotnetExePath) const noexcept
+int HostFxr::InitializeForApp(int argc, PCWSTR* argv, std::wstring dotnetExePath, bool callStartupHook) const noexcept
 {
     if (m_hostfxr_initialize_for_app_fn == nullptr)
     {
-        // TODO use old apis to set env vars?
-        // I don't think we need to bother?
-        // Niche scenario that won't happen often
         return 0;
     }
 
-    int value;
+    int returnCode;
     hostfxr_initialize_parameters params;
     params.size = sizeof(hostfxr_initialize_parameters);
 
     std::filesystem::path dotnetPath(dotnetExePath);
+
     auto dotnetWstring = dotnetPath.parent_path();
     params.dotnet_root = dotnetWstring.c_str();
     params.host_path = L"";
 
-    value = m_hostfxr_initialize_for_app_fn(argc - 1, &argv[1], nullptr, &params, &m_host_context_handle);
+    RETURN_IF_NOT_ZERO(returnCode = m_hostfxr_initialize_for_app_fn(argc - 1, &argv[1], nullptr, &params, &m_host_context_handle));
 
-    value = SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY);
-    value = SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1");
+    if (callStartupHook)
+    {
+        RETURN_IF_NOT_ZERO(returnCode = SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+    }
 
-    return value;
+    RETURN_IF_NOT_ZERO(returnCode = SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
+
+    return returnCode;
 }
 
 int HostFxr::SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept

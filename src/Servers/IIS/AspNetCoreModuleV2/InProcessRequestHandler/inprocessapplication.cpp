@@ -248,10 +248,10 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         params.host_path = L"";
 
         // TODO This is horrible for now...
-        auto value = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
-        if (value != 0)
+        auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation, m_pConfig->QueryCallStartupHook());
+        if (startupReturnCode != 0)
         {
-            // TODO log errors
+            throw InvalidOperationException(format(L"Error occured when initializing inprocess application, Return code: 0x%x", startupReturnCode));
             return;
         }
         // TODO make these configurable via handler settings
