@@ -227,7 +227,7 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class AuthorizationServiceCollectionExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthorization(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthorization(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationOptions> configure) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthorizationCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthorizationCore(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Authorization.AuthorizationOptions> configure) { throw null; }
     }
 }
