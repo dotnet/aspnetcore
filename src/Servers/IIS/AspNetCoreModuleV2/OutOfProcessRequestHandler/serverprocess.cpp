@@ -523,7 +523,7 @@ SERVER_PROCESS::PostStartCheck(
     }
 
     dwTickCount = GetTickCount();
-    // TODO this loop has issues... lots of issues.
+
     do
     {
         DWORD processStatus = 0;
@@ -1033,7 +1033,7 @@ SERVER_PROCESS::SetupStdHandles(
 
     if (!m_fStdoutLogEnabled)
     {
-             CreatePipe(&m_hStdoutHandle, &m_hStdErrWritePipe, &saAttr, 0 /*nSize*/);
+        CreatePipe(&m_hStdoutHandle, &m_hStdErrWritePipe, &saAttr, 0 /*nSize*/);
 
         // Read the stderr handle on a separate thread until we get 30Kb.
         m_hReadThread = CreateThread(
