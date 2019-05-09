@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 for (var i = 0; i < count; i++)
                 {
                     await channel.Writer.WriteAsync(i);
-                    await Task.Delay(100);
+                    await Task.Delay(10);
                 }
 
                 channel.Writer.TryComplete();
