@@ -1194,8 +1194,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
         // Internal for testing
         internal Task RunTimerActions()
         {
-            // Don't bother acquiring the connection lock. This is only called from unit tests.
+            // Don't bother acquiring the connection lock. This is only called from tests.
             return _state.CurrentConnectionStateUnsynchronized.RunTimerActions();
+        }
+
+        // Internal for testing
+        internal void OnServerTimeout()
+        {
+            // Don't bother acquiring the connection lock. This is only called from tests.
+            _state.CurrentConnectionStateUnsynchronized.OnServerTimeout();
         }
 
         private async Task HandleConnectionClose(ConnectionState connectionState)
@@ -1747,9 +1754,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 if (!_hasInherentKeepAlive && DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationServerTimeout))
                 {
-                    CloseException = new TimeoutException(
-                        $"Server timeout ({_hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.");
-                    Connection.Transport.Input.CancelPendingRead();
+                    OnServerTimeout();
                 }
 
                 if (DateTime.UtcNow.Ticks > Volatile.Read(ref _nextActivationSendPing) && !Stopping)
@@ -1777,6 +1782,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
                         _hubConnection._state.ReleaseConnectionLock();
                     }
                 }
+            }
+
+            // Internal for testing
+            internal void OnServerTimeout()
+            {
+                CloseException = new TimeoutException(
+                    $"Server timeout ({_hubConnection.ServerTimeout.TotalMilliseconds:0.00}ms) elapsed without receiving a message from the server.");
+                Connection.Transport.Input.CancelPendingRead();
             }
 
             Type IInvocationBinder.GetReturnType(string invocationId)
