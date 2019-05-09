@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
                     var message =
                         $"The request reached the end of the pipeline without executing the endpoint: '{endpoint.DisplayName}'. " +
                         $"Please register the EndpointMiddleware using '{nameof(IApplicationBuilder)}.UseEndpoints(...)' if using " +
-                        $"routing, or '{nameof(IApplicationBuilder)}.UseEndpointExecutor()' if not using routing.";
+                        $"routing.";
                     throw new InvalidOperationException(message);
                 }
 
