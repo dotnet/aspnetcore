@@ -478,39 +478,5 @@ namespace Microsoft.AspNetCore.TestHost
 
             Assert.Same(value, capturedValue);
         }
-
-        [Fact]
-        public async Task CurrentCultureIsPreservedAcrossClientServerBoundary()
-        {
-            // Set the current culture
-            CultureInfo.CurrentCulture = new CultureInfo("fr-CA");
-            var builder = new WebHostBuilder()
-                .Configure(app =>
-                {
-                    app.Run(async (context) =>
-                    {
-                        if (context.Request.Path.StartsWithSegments("/number"))
-                        {
-                            await context.Response.WriteAsync((4.32).ToString());
-                        }
-                        else
-                        {
-                            await context.Response.WriteAsync(CultureInfo.CurrentCulture.Name);
-                        }
-                    });
-                });
-            var server = new TestServer(builder);
-            var client = server.CreateClient();
-
-            var resp = await client.GetAsync("/number");
-            resp.EnsureSuccessStatusCode();
-            var content = await resp.Content.ReadAsStringAsync();
-            Assert.Equal("4,32", content);
-
-            resp = await client.GetAsync("/name");
-            resp.EnsureSuccessStatusCode();
-            content = await resp.Content.ReadAsStringAsync();
-            Assert.Equal("fr-CA", content);
-        }
     }
 }

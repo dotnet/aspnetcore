@@ -94,11 +94,8 @@ namespace Microsoft.AspNetCore.TestHost
             }
             else
             {
-                // Capture the current culture and restore it inside the server execution context.
-                var currentCulture = CultureInfo.CurrentCulture;
                 ThreadPool.UnsafeQueueUserWorkItem(_ =>
                 {
-                    CultureInfo.CurrentCulture = currentCulture;
                     _ = RunRequestAsync();
                 }, null);
             }
