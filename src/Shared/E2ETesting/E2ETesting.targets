@@ -3,7 +3,7 @@
   <Sdk Name="Yarn.MSBuild" />
 
   <!-- Ensuring that everything is ready before build -->
-  <PropertyGroup Condition="'$(BuildNodeJs)' == 'true'">
+  <PropertyGroup Condition="'$(BuildNodeJs)' == 'true' or '$(CI)' != 'true'">
     <_ShouldRunNpmRestoreCommands
       Condition="'$(CI)' != 'true' or !Exists('$(MSBuildThisProjectFileDirectory)node_modules')">true</_ShouldRunNpmRestoreCommands>
   </PropertyGroup>
