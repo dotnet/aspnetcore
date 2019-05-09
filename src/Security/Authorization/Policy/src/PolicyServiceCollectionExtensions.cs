@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The <see cref="IServiceCollection" /> to add services to.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
         public static IServiceCollection AddAuthorization(this IServiceCollection services)
-            => services.AddAuthorization(_ => { });
+            => services.AddAuthorization(configure: null);
 
         /// <summary>
         /// Adds authorization policy services to the specified <see cref="IServiceCollection" />. 
