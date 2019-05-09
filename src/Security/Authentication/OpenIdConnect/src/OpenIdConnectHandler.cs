@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 authorizationResponse = messageReceivedContext.ProtocolMessage;
                 properties = messageReceivedContext.Properties;
 
-                if (properties == null)
+                if (properties == null || properties.Items.Count == 0)
                 {
                     // Fail if state is missing, it's required for the correlation id.
                     if (string.IsNullOrEmpty(authorizationResponse.State))
