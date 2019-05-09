@@ -11,6 +11,7 @@ using Xunit.Abstractions;
 
 namespace Templates.Test.SpaTemplateTest
 {
+    [Collection("SpaTemplateTests")]
     public class ReactTemplateTest : SpaTemplateTestBase
     {
         public ReactTemplateTest(ProjectFactoryFixture projectFactory, BrowserFixture browserFixture, ITestOutputHelper output)

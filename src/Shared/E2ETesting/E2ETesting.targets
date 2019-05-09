@@ -5,13 +5,13 @@
   <!-- Ensuring that everything is ready before build -->
 
   <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
-    <Message Text="Running yarn install on $(MSBuildProjectFile)" Importance="High" />
+    <Message Text="Running yarn install on $(MSBuildProjectFile)" Condition="!Exists('$(MSBuildThisProjectFileDirectory)node_modules') and '$(CI)' == 'true'" Importance="High" />
 
     <Message Condition="'$(EnforcePrerequisites)' == ''"
       Importance="High"
       Text="Prerequisites were not enforced at build time. Running Yarn or the E2E tests might fail as a result. Check /src/Shared/E2ETesting/Readme.md for instructions." />
 
-    <Yarn Command="install --mutex network" />
+    <Yarn Command="install --mutex network" Condition="!Exists('$(MSBuildThisProjectFileDirectory)node_modules') and '$(CI)' == 'true'" />
   </Target>
 
   <Target Name="_IsCustomRestoreTargetSupported" Returns="@(CustomRestoreTargets)" Condition="'$(BuildNodeJs)' == 'true'">
