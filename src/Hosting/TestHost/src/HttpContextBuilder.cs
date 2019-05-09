@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.TestHost
     internal class HttpContextBuilder : IHttpBodyControlFeature
     {
         private readonly IHttpApplication<Context> _application;
+        private readonly bool _preserveExecutionContext;
         private readonly HttpContext _httpContext;
 
         private TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -24,10 +25,11 @@ namespace Microsoft.AspNetCore.TestHost
         private bool _pipelineFinished;
         private Context _testContext;
 
-        internal HttpContextBuilder(IHttpApplication<Context> application, bool allowSynchronousIO)
+        internal HttpContextBuilder(IHttpApplication<Context> application, bool allowSynchronousIO, bool preserveExecutionContext)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
             AllowSynchronousIO = allowSynchronousIO;
+            _preserveExecutionContext = preserveExecutionContext;
             _httpContext = new DefaultHttpContext();
 
             var request = _httpContext.Request;
@@ -58,7 +60,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// Start processing the request.
         /// </summary>
         /// <returns></returns>
-        internal Task<HttpContext> SendAsync(CancellationToken cancellationToken, bool preserveExecutionContext)
+        internal Task<HttpContext> SendAsync(CancellationToken cancellationToken)
         {
             var registration = cancellationToken.Register(AbortRequest);
 
@@ -66,7 +68,7 @@ namespace Microsoft.AspNetCore.TestHost
             async Task RunRequestAsync()
             {
                 // This will configure IHttpContextAccessor so it needs to happen INSIDE this function,
-                // since we are now inside the Server's execution context. If it happens outside this context,
+                // since we are now inside the Server's execution context. If it happens outside this cont
                 // it will be lost when we abandon the execution context.
                 _testContext = _application.CreateContext(_httpContext.Features);
 
@@ -88,7 +90,7 @@ namespace Microsoft.AspNetCore.TestHost
             }
 
             // Async offload, don't let the test code block the caller.
-            if (preserveExecutionContext)
+            if (_preserveExecutionContext)
             {
                 _ = Task.Factory.StartNew(RunRequestAsync);
             }

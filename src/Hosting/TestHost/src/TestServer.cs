@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(configureContext));
             }
 
-            var builder = new HttpContextBuilder(Application, AllowSynchronousIO);
+            var builder = new HttpContextBuilder(Application, AllowSynchronousIO, PreserveExecutionContext);
             builder.Configure(context =>
             {
                 var request = context.Request;
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.TestHost
             });
             builder.Configure(configureContext);
             // TODO: Wrap the request body if any?
-            return await builder.SendAsync(cancellationToken, PreserveExecutionContext).ConfigureAwait(false);
+            return await builder.SendAsync(cancellationToken).ConfigureAwait(false);
         }
 
         public void Dispose()

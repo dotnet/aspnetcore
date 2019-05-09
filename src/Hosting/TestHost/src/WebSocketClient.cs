@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             WebSocketFeature webSocketFeature = null;
-            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO);
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
             contextBuilder.Configure(context =>
             {
                 var request = context.Request;
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.TestHost
                 ConfigureRequest?.Invoke(context.Request);
             });
 
-            var httpContext = await contextBuilder.SendAsync(cancellationToken, PreserveExecutionContext);
+            var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
             if (httpContext.Response.StatusCode != StatusCodes.Status101SwitchingProtocols)
             {

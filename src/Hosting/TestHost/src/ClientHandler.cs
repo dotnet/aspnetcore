@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO);
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
 
             Stream responseBody = null;
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.TestHost
                 responseBody = context.Response.Body;
             });
 
-            var httpContext = await contextBuilder.SendAsync(cancellationToken, PreserveExecutionContext);
+            var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
             var response = new HttpResponseMessage();
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
