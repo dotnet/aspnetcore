@@ -44,7 +44,17 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 ExecuteHostingStartups();
             });
 
-            // We need to populate the IHostingEnvironment before
+            // IHostingStartup needs to be executed before any direct methods on the builder
+            // so register these callbacks first
+            _builder.ConfigureAppConfiguration((context, configurationBuilder) =>
+            {
+                if (_hostingStartupWebHostBuilder != null)
+                {
+                    var webhostContext = GetWebHostBuilderContext(context);
+                    _hostingStartupWebHostBuilder.ConfigureAppConfiguration(webhostContext, configurationBuilder);
+                }
+            });
+
             _builder.ConfigureServices((context, services) =>
             {
                 var webhostContext = GetWebHostBuilderContext(context);
@@ -76,33 +86,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
                 services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
-            });
 
-            // IHostingStartup needs to be executed before any direct methods on the builder
-            // so register these callbacks first
-            _builder.ConfigureAppConfiguration((context, configurationBuilder) =>
-            {
-                if (_hostingStartupWebHostBuilder != null)
-                {
-                    var webhostContext = GetWebHostBuilderContext(context);
-                    _hostingStartupWebHostBuilder.ConfigureAppConfiguration(webhostContext, configurationBuilder);
-                }
-            });
-
-            _builder.ConfigureServices((context, services) =>
-            {
-                if (_hostingStartupWebHostBuilder != null)
-                {
-                    var webhostContext = GetWebHostBuilderContext(context);
-                    _hostingStartupWebHostBuilder.ConfigureServices(webhostContext, services);
-                }
-            });
-
-            // This runs UseStartup
-            _builder.ConfigureServices((context, services) =>
-            {
-                var webhostContext = GetWebHostBuilderContext(context);
-                var webHostOptions = (WebHostOptions)context.Properties[typeof(WebHostOptions)];
+                // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
+                _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);
 
                 // Support UseStartup(assemblyName)
                 if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
