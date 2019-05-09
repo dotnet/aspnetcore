@@ -252,7 +252,6 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         if (startupReturnCode != 0)
         {
             throw InvalidOperationException(format(L"Error occured when initializing inprocess application, Return code: 0x%x", startupReturnCode));
-            return;
         }
         // TODO make these configurable via handler settings
         value = context->m_hostFxr.SetRuntimePropertyValue(L"STARTUP_HOOKS", ASPNETCORE_STARTUP_ASSEMBLY);
