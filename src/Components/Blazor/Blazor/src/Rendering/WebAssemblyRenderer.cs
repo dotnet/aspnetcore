@@ -158,21 +158,20 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
             }
         }
 
-        private void ProcessNextDeferredEvent()
+        private async void ProcessNextDeferredEvent()
         {
             var info = deferredIncomingEvents.Dequeue();
-            var task = DispatchEventAsync(info.EventHandlerId, info.EventArgs);
-            task.ContinueWith(_ =>
+            var taskCompletionSource = info.TaskCompletionSource;
+
+            try
             {
-                if (task.Exception != null)
-                {
-                    info.TaskCompletionSource.SetException(task.Exception);
-                }
-                else
-                {
-                    info.TaskCompletionSource.SetResult(null);
-                }
-            });
+                await DispatchEventAsync(info.EventHandlerId, info.EventArgs);
+                taskCompletionSource.SetResult(null);
+            }
+            catch (Exception ex)
+            {
+                taskCompletionSource.SetException(ex);
+            }
         }
 
         readonly struct IncomingEventInfo
