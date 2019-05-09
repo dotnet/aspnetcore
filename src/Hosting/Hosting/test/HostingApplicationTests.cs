@@ -404,6 +404,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             features = new FeatureCollection();
             features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+            features.Set<IHttpResponseFeature>(new HttpResponseFeature());
             httpContextFactory.Setup(s => s.Create(It.IsAny<IFeatureCollection>())).Returns(new DefaultHttpContext(features));
             httpContextFactory.Setup(s => s.Dispose(It.IsAny<HttpContext>()));
 

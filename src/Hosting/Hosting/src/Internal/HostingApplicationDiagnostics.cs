@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
 
                     // Non-inline
-                    LogRequestStarting(httpContext);
+                    LogRequestStarting(ref context);
                 }
             }
             context.StartTimestamp = startTimestamp;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 currentTimestamp = Stopwatch.GetTimestamp();
                 // Non-inline
-                LogRequestFinished(httpContext, startTimestamp, currentTimestamp);
+                LogRequestFinished(context, startTimestamp, currentTimestamp);
             }
 
             if (_diagnosticListener.IsEnabled())
@@ -157,30 +157,34 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void LogRequestStarting(HttpContext httpContext)
+        private void LogRequestStarting(ref HostingApplication.Context context)
         {
             // IsEnabled is checked in the caller, so if we are here just log
+            var state = new HostingRequestStartingLog(context.HttpContext);
+            context.StartLog = state;
             _logger.Log(
                 logLevel: LogLevel.Information,
                 eventId: LoggerEventIds.RequestStarting,
-                state: new HostingRequestStartingLog(httpContext),
+                state: state,
                 exception: null,
                 formatter: HostingRequestStartingLog.Callback);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void LogRequestFinished(HttpContext httpContext, long startTimestamp, long currentTimestamp)
+        private void LogRequestFinished(HostingApplication.Context context, long startTimestamp, long currentTimestamp)
         {
             // IsEnabled isn't checked in the caller, startTimestamp > 0 is used as a fast proxy check
-            // but that may be because diagnostics are enabled, which also uses startTimestamp, so check here
-            if (_logger.IsEnabled(LogLevel.Information))
+            // but that may be because diagnostics are enabled, which also uses startTimestamp,
+            // so check if we logged the start event
+            if (context.StartLog != null)
             {
                 var elapsed = new TimeSpan((long)(TimestampToTicks * (currentTimestamp - startTimestamp)));
+                var response = context.HttpContext.Response;
 
                 _logger.Log(
                     logLevel: LogLevel.Information,
                     eventId: LoggerEventIds.RequestFinished,
-                    state: new HostingRequestFinishedLog(httpContext, elapsed),
+                    state: new HostingRequestFinishedLog(context.StartLog, response.StatusCode, response.ContentLength, response.ContentType, elapsed),
                     exception: null,
                     formatter: HostingRequestFinishedLog.Callback);
             }

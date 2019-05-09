@@ -122,12 +122,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public partial struct Context
         {
             private object _dummy;
-            private int _dummyPrimitive;
-            public System.Diagnostics.Activity Activity { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-            public bool EventLogEnabled { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+            public System.Diagnostics.Activity Activity { get { throw null; } set { } }
+            public bool EventLogEnabled { get { throw null; } set { } }
             public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-            public System.IDisposable Scope { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-            public long StartTimestamp { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+            public System.IDisposable Scope { get { throw null; } set { } }
+            public long StartTimestamp { get { throw null; } set { } }
         }
     }
     public partial class HostingEnvironment : Microsoft.AspNetCore.Hosting.IHostingEnvironment, Microsoft.AspNetCore.Hosting.IWebHostEnvironment, Microsoft.Extensions.Hosting.IHostEnvironment, Microsoft.Extensions.Hosting.IHostingEnvironment

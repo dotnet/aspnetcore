@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
     {
         private readonly RequestDelegate _application;
         private readonly IHttpContextFactory _httpContextFactory;
-        private HostingApplicationDiagnostics _diagnostics;
+        private readonly HostingApplicationDiagnostics _diagnostics;
 
         public HostingApplication(
             RequestDelegate application,
@@ -31,12 +31,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         // Set up the request
         public Context CreateContext(IFeatureCollection contextFeatures)
         {
-            var context = new Context();
             var httpContext = _httpContextFactory.Create(contextFeatures);
 
+            var context = new Context() { HttpContext = httpContext };
             _diagnostics.BeginRequest(httpContext, ref context);
 
-            context.HttpContext = httpContext;
             return context;
         }
 
@@ -57,12 +56,153 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public struct Context
         {
+            private LogContext _loggingContext;
+
             public HttpContext HttpContext { get; set; }
-            public IDisposable Scope { get; set; }
-            public long StartTimestamp { get; set; }
-            public bool EventLogEnabled { get; set; }
-            public Activity Activity { get; set; }
-            internal bool HasDiagnosticListener { get; set; }
+            public IDisposable Scope
+            {
+                // Get set value or return null
+                get => _loggingContext?.Scope;
+                set
+                {
+                    if (value == null)
+                    {
+                        // If null, only set to null if the _loggingContext exists as the get will default to null.
+                        if (_loggingContext != null)
+                        {
+                            _loggingContext.Scope = null;
+                        }
+                    }
+                    else
+                    {
+                        // Not null, so create the LoggingContext if it doesn't exist and set the value.
+                        LoggingContext.Scope = value;
+                    }
+                }
+            }
+
+            public long StartTimestamp
+            {
+                // Get set value or return zero
+                get => _loggingContext?.StartTimestamp ?? 0;
+                set
+                {
+                    if (value == 0)
+                    {
+                        // If zero, only set to zero if the _loggingContext exists as the get will default to zero.
+                        if (_loggingContext != null)
+                        {
+                            _loggingContext.StartTimestamp = 0;
+                        }
+                    }
+                    else
+                    {
+                        // Not zero, so create the LoggingContext if it doesn't exist and set the value.
+                        LoggingContext.StartTimestamp = value;
+                    }
+                }
+            }
+
+            public bool EventLogEnabled
+            {
+                // Get set value or return false
+                get => _loggingContext?.EventLogEnabled ?? false;
+                set
+                {
+                    if (!value)
+                    {
+                        // If false, only set to false if the _loggingContext exists as the get will default to false.
+                        if (_loggingContext != null)
+                        {
+                            _loggingContext.EventLogEnabled = false;
+                        }
+                    }
+                    else
+                    {
+                        // Not false, so create the LoggingContext if it doesn't exist and set to true.
+                        LoggingContext.EventLogEnabled = true;
+                    }
+                }
+            }
+
+            public Activity Activity
+            {
+                // Get set value or return null
+                get => _loggingContext?.Activity;
+                set
+                {
+                    if (value == null)
+                    {
+                        // If null, only set to null if the _loggingContext exists as the get will default to null.
+                        if (_loggingContext != null)
+                        {
+                            _loggingContext.Activity = null;
+                        }
+                    }
+                    else
+                    {
+                        // Not null, so create the LoggingContext if it doesn't exist and set the value.
+                        LoggingContext.Activity = value;
+                    }
+                }
+            }
+
+            internal bool HasDiagnosticListener
+            {
+                // Get set value or return false
+                get => _loggingContext?.HasDiagnosticListener ?? false;
+                set
+                {
+                    if (!value)
+                    {
+                        // If false, only set to false if the _loggingContext exists as the get will default to false.
+                        if (_loggingContext != null)
+                        {
+                            _loggingContext.HasDiagnosticListener = false;
+                        }
+                    }
+                    else
+                    {
+                        // Not false, so create the LoggingContext if it doesn't exist and set to true.
+                        LoggingContext.HasDiagnosticListener = true;
+                    }
+                }
+            }
+
+            internal HostingRequestStartingLog StartLog
+            {
+                // Get set value or return null
+                get => _loggingContext?.StartLog;
+                set
+                {
+                    if (value == null)
+                    {
+                        // If null, only set to null if the _loggingContext exists as the get will default to null.
+                        if (_loggingContext != null)
+                        {
+                            _loggingContext.StartLog = null;
+                        }
+                    }
+                    else
+                    {
+                        // Not null, so create the LoggingContext if it doesn't exist and set the value.
+                        LoggingContext.StartLog = value;
+                    }
+                }
+            }
+
+            // Get or create the _loggingContext
+            private LogContext LoggingContext => _loggingContext ??= new LogContext();
+
+            private class LogContext
+            {
+                public IDisposable Scope { get; set; }
+                public long StartTimestamp { get; set; }
+                public bool EventLogEnabled { get; set; }
+                public Activity Activity { get; set; }
+                internal bool HasDiagnosticListener { get; set; }
+                internal HostingRequestStartingLog StartLog { get; set; }
+            }
         }
     }
 }
