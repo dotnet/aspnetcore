@@ -23,10 +23,13 @@ namespace Microsoft.AspNetCore.Components.Routing
         RenderHandle _renderHandle;
         string _baseUri;
         string _locationAbsolute;
+        bool _navigationInterceptionEnabled;
 
         [Inject] private IUriHelper UriHelper { get; set; }
 
         [Inject] private IJSRuntime JSRuntime { get; set; }
+
+        [Inject] private IComponentContext ComponentContext { get; set; }
 
         /// <summary>
         /// Gets or sets the assembly that should be searched, along with its referenced
@@ -127,7 +130,13 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         Task IHandleAfterRender.OnAfterRenderAsync()
         {
-            return JSRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception);
+            if (!_navigationInterceptionEnabled && ComponentContext.IsConnected)
+            {
+                _navigationInterceptionEnabled = true;
+                return JSRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception);
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -207,6 +207,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<StaticComponentRenderer>();
             services.TryAddScoped<IUriHelper, HttpUriHelper>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
+            services.TryAddScoped<IComponentContext, UnsupportedComponentContext>();
 
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 
