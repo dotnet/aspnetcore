@@ -165,17 +165,6 @@ namespace Microsoft.AspNetCore.HostFiltering
                 return IsEmptyHostAllowed(context);
             }
 
-            // Host header should not require trimming
-            // rfc7230  3.2.4.  Field Parsing https://tools.ietf.org/html/rfc7230#page-25
-            // Optional whitespace occurring before the first non-whitespace octet of the field value or after the last
-            // non-whitespace octet of the field value ought to be excluded by
-            // parsers when extracting the field value from a header field
-            if (char.IsWhiteSpace(host[0]) || char.IsWhiteSpace(host[host.Length - 1]))
-            {
-                _logger.InvalidTrailingOrLeadingWhitespaceInHost(host);
-                return false;
-            }
-
             if (_allowAnyNonEmptyHost == true)
             {
                 _logger.AllHostsAllowed();

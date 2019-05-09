@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.ResponseCompression.Tests
     {
         [Theory]
         [InlineData(null, "Accept-Encoding")]
-        [InlineData("", ",Accept-Encoding")]
+        [InlineData("", "Accept-Encoding")]
         [InlineData("AnotherHeader", "AnotherHeader,Accept-Encoding")]
         [InlineData("Accept-Encoding", "Accept-Encoding")]
         [InlineData("accepT-encodinG", "accepT-encodinG")]

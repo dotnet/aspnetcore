@@ -29,9 +29,6 @@ namespace Microsoft.AspNetCore.HostFiltering
         private static readonly Action<ILogger, string, Exception> _noAllowedHostMatched =
             LoggerMessage.Define<string>(LogLevel.Information, new EventId(6, nameof(NoAllowedHostMatched)), "The host '{Host}' does not match an allowed host.");
 
-        private static readonly Action<ILogger, string, Exception> _invalidTrailingOrLeadingWhitespaceInHost =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(7, nameof(InvalidTrailingOrLeadingWhitespaceInHost)), "The host '{Host}' contains invalid leading or trailing whitespace.");
-
         public static void WildcardDetected(this ILogger logger) => _wildcardDetected(logger, null);
         public static void AllowedHosts(this ILogger logger, string allowedHosts) => _allowedHosts(logger, allowedHosts, null);
         public static void AllHostsAllowed(this ILogger logger) => _allHostsAllowed(logger, null);
@@ -39,6 +36,5 @@ namespace Microsoft.AspNetCore.HostFiltering
         public static void RequestAllowedMissingHost(this ILogger logger, string protocol) => _requestAllowedMissingHost(logger, protocol, null);
         public static void AllowedHostMatched(this ILogger logger, string host) => _allowedHostMatched(logger, host, null);
         public static void NoAllowedHostMatched(this ILogger logger, string host) => _noAllowedHostMatched(logger, host, null);
-        public static void InvalidTrailingOrLeadingWhitespaceInHost(this ILogger logger, string host) => _invalidTrailingOrLeadingWhitespaceInHost(logger, host, null);
     }
 }
