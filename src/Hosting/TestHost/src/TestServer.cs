@@ -83,12 +83,12 @@ namespace Microsoft.AspNetCore.TestHost
         /// <remarks>
         /// Defaults to false.
         /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = false;
+        public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
         /// Gets or sets a value that controls if <see cref="ExecutionContext"/> and <see cref="AsyncLocal{T}"/> values are preserved from the client to the server.
         /// </summary>
-        public bool PreserveExecutionContext { get; set; } = false;
+        public bool PreserveExecutionContext { get; set; }
 
         private IHttpApplication<Context> Application
         {
