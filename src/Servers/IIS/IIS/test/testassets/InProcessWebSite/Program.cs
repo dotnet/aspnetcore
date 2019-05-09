@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace TestSite
@@ -121,6 +122,41 @@ namespace TestSite
                         break;
                     }
 #endif
+                case "ThrowInStartup":
+                    {
+                        var host = new WebHostBuilder()
+                                       .ConfigureLogging((_, factory) =>
+                                       {
+                                           factory.AddConsole();
+                                           factory.AddFilter("Console", level => level >= LogLevel.Information);
+                                       })
+                                       .UseIIS()
+                                       .UseStartup<ThrowingStartup>()
+                                       .Build();
+
+                        host.Run();
+                    }
+
+                    return 0;
+                case "ThrowInStartupGenericHost":
+                    {
+#if !FORWARDCOMPAT
+                        var host = new HostBuilder().ConfigureWebHost((c) =>
+                        {
+                            c.ConfigureLogging((_, factory) =>
+                            {
+                                factory.AddConsole();
+                                factory.AddFilter("Console", level => level >= LogLevel.Information);
+                            })
+                            .UseIIS()
+                            .UseStartup<ThrowingStartup>();
+                        });
+                                   
+
+                        host.Build().Run();
+#endif
+                    }
+                    return 0;
                 default:
                     return StartServer();
 

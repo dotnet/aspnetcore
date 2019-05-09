@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// A <see cref="Task"/> which will complete once all asynchronous processing related to the event
         /// has completed.
         /// </returns>
-        public Task DispatchEventAsync(int eventHandlerId, UIEventArgs eventArgs)
+        public virtual Task DispatchEventAsync(int eventHandlerId, UIEventArgs eventArgs)
         {
             EnsureSynchronizationContext();
 
@@ -523,12 +523,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
             {
                 await updateDisplayTask;
             }
-            catch when (updateDisplayTask.IsCanceled)
+            catch // avoiding exception filters for AOT runtimes
             {
-                return;
-            }
-            catch when (updateDisplayTask.IsFaulted)
-            {
+                if (updateDisplayTask.IsCanceled)
+                {
+                    return;
+                }
+
                 HandleException(updateDisplayTask.Exception);
                 return;
             }

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _isDefaultEndpointSelector = selector is DefaultEndpointSelector;
         }
 
-        public sealed override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+        public sealed override Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -73,10 +73,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 ref readonly var candidate = ref candidates[0];
 
-                // Just strict path matching
+                // Just strict path matching (no route values)
                 if (candidate.Flags == Candidate.CandidateFlags.None)
                 {
-                    context.Endpoint = candidate.Endpoint;
+                    httpContext.SetEndpoint(candidate.Endpoint);
 
                     // We're done
                     return Task.CompletedTask;
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // Fast path that avoids allocating the candidate set.
                 //
                 // We can use this when there are no policies and we're using the default selector.
-                DefaultEndpointSelector.Select(httpContext, context, candidateState);
+                DefaultEndpointSelector.Select(httpContext, candidateState);
                 return Task.CompletedTask;
             }
             else if (policyCount == 0)
@@ -189,10 +189,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // Fast path that avoids a state machine.
                 //
                 // We can use this when there are no policies and a non-default selector.
-                return _selector.SelectAsync(httpContext, context, new CandidateSet(candidateState));
+                return _selector.SelectAsync(httpContext, new CandidateSet(candidateState));
             }
 
-            return SelectEndpointWithPoliciesAsync(httpContext, context, policies, new CandidateSet(candidateState));
+            return SelectEndpointWithPoliciesAsync(httpContext, policies, new CandidateSet(candidateState));
         }
 
         internal (Candidate[] candidates, IEndpointSelectorPolicy[] policies) FindCandidateSet(
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var i = 0; i < captures.Length; i++)
             {
                 (var parameterName, var segmentIndex, var slotIndex) = captures[i];
-                
+
                 if ((uint)segmentIndex < (uint)segments.Length)
                 {
                     var segment = segments[segmentIndex];
@@ -304,22 +304,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private async Task SelectEndpointWithPoliciesAsync(
             HttpContext httpContext,
-            EndpointSelectorContext context,
             IEndpointSelectorPolicy[] policies,
             CandidateSet candidateSet)
         {
             for (var i = 0; i < policies.Length; i++)
             {
                 var policy = policies[i];
-                await policy.ApplyAsync(httpContext, context, candidateSet);
-                if (context.Endpoint != null)
+                await policy.ApplyAsync(httpContext, candidateSet);
+                if (httpContext.GetEndpoint() != null)
                 {
                     // This is a short circuit, the selector chose an endpoint.
                     return;
                 }
             }
 
-            await _selector.SelectAsync(httpContext, context, candidateSet);
+            await _selector.SelectAsync(httpContext, candidateSet);
         }
 
         internal static class EventIds

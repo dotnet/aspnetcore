@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -14,8 +15,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private BarebonesMatcher _baseline;
         private Matcher _dfa;
 
-        private EndpointSelectorContext _feature;
-
         [GlobalSetup]
         public void Setup()
         {
@@ -25,31 +24,27 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
             _dfa = SetupMatcher(CreateDfaMatcherBuilder());
-
-            _feature = new EndpointSelectorContext();
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = EndpointCount)]
         public async Task Baseline()
         {
-            var feature = _feature;
             for (var i = 0; i < EndpointCount; i++)
             {
                 var httpContext = Requests[i];
-                await _baseline.Matchers[i].MatchAsync(httpContext, feature);
-                Validate(httpContext, Endpoints[i], feature.Endpoint);
+                await _baseline.Matchers[i].MatchAsync(httpContext);
+                Validate(httpContext, Endpoints[i], httpContext.GetEndpoint());
             }
         }
 
         [Benchmark( OperationsPerInvoke = EndpointCount)]
         public async Task Dfa()
         {
-            var feature = _feature;
             for (var i = 0; i < EndpointCount; i++)
             {
                 var httpContext = Requests[i];
-                await _dfa.MatchAsync(httpContext, feature);
-                Validate(httpContext, Endpoints[i], feature.Endpoint);
+                await _dfa.MatchAsync(httpContext);
+                Validate(httpContext, Endpoints[i], httpContext.GetEndpoint());
             }
         }
     }

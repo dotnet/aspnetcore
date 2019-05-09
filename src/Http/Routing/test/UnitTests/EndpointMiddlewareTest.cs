@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -46,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = new ServiceProvider();
             httpContext.SetEndpoint(null);
-            
+
             RequestDelegate next = (c) =>
             {
                 return Task.CompletedTask;
@@ -75,7 +74,7 @@ namespace Microsoft.AspNetCore.Routing
             };
 
             httpContext.SetEndpoint(new Endpoint(endpointFunc, EndpointMetadataCollection.Empty, "Test"));
-            
+
             RequestDelegate next = (c) =>
             {
                 return Task.CompletedTask;

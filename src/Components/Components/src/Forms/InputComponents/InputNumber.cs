@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         static bool TryParseFloat(string value, out T result)
         {
             var success = float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success)
+            if (success && !float.IsInfinity(parsedValue))
             {
                 result = (T)(object)parsedValue;
                 return true;
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         static bool TryParseDouble(string value, out T result)
         {
             var success = double.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var parsedValue);
-            if (success)
+            if (success && !double.IsInfinity(parsedValue))
             {
                 result = (T)(object)parsedValue;
                 return true;

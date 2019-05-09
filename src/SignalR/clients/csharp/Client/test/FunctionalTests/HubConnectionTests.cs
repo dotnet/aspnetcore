@@ -1674,7 +1674,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public static Dictionary<string, IHubProtocol> HubProtocols =>
             new Dictionary<string, IHubProtocol>
             {
-                { "json", new NewtonsoftJsonHubProtocol() },
+                { "json", new JsonHubProtocol() },
+                { "newtonsoft-json", new NewtonsoftJsonHubProtocol() },
                 { "messagepack", new MessagePackHubProtocol() },
             };
 

@@ -22,8 +22,8 @@
           Outputs="@(WebPackOutputs)">
     <RemoveDir Directories="dist" />
 
-    <Yarn Command="run build:debug" StandardOutputImportance="High" StandardErrorImportance="High" />
-    <Yarn Command="run build:production" StandardOutputImportance="High" StandardErrorImportance="High" />
+    <Yarn Command="run build:debug" />
+    <Yarn Command="run build:production" />
   </Target>
 
 </Project>

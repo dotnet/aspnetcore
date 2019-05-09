@@ -12,8 +12,4 @@ Microsoft.AspNetCore.Html.IHtmlContent</Description>
     <PackageTags>aspnetcore</PackageTags>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="System.Text.Encodings.Web" />
-  </ItemGroup>
-
 </Project>

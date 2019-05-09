@@ -43,40 +43,36 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public async Task Baseline()
         {
             var httpContext = Requests[0];
-            var feature = new EndpointSelectorContext(httpContext);
 
-            await _baseline.MatchAsync(httpContext, feature);
-            Validate(httpContext, Endpoints[0], feature.Endpoint);
+            await _baseline.MatchAsync(httpContext);
+            Validate(httpContext, Endpoints[0], httpContext.GetEndpoint());
         }
 
         [Benchmark]
         public async Task Dfa()
         {
             var httpContext = Requests[0];
-            var feature = new EndpointSelectorContext(httpContext);
 
-            await _dfa.MatchAsync(httpContext, feature);
-            Validate(httpContext, Endpoints[0], feature.Endpoint);
+            await _dfa.MatchAsync(httpContext);
+            Validate(httpContext, Endpoints[0], httpContext.GetEndpoint());
         }
 
         [Benchmark]
         public async Task LegacyTreeRouter()
         {
             var httpContext = Requests[0];
-            var feature = new EndpointSelectorContext(httpContext);
 
-            await _tree.MatchAsync(httpContext, feature);
-            Validate(httpContext, Endpoints[0], feature.Endpoint);
+            await _tree.MatchAsync(httpContext);
+            Validate(httpContext, Endpoints[0], httpContext.GetEndpoint());
         }
 
         [Benchmark]
         public async Task LegacyRouter()
         {
             var httpContext = Requests[0];
-            var feature = new EndpointSelectorContext(httpContext);
 
-            await _route.MatchAsync(httpContext, feature);
-            Validate(httpContext, Endpoints[0], feature.Endpoint);
+            await _route.MatchAsync(httpContext);
+            Validate(httpContext, Endpoints[0], httpContext.GetEndpoint());
         }
     }
 }

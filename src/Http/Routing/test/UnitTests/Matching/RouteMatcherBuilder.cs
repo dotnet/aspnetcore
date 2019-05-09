@@ -96,13 +96,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             public async Task RouteAsync(RouteContext routeContext)
             {
-                var context = new EndpointSelectorContext(routeContext.HttpContext);
-
                 // This is needed due to a quirk of our tests - they reuse the endpoint feature.
-                context.Endpoint = null;
+                routeContext.HttpContext.SetEndpoint(null);
 
-                await _selector.SelectAsync(routeContext.HttpContext, context, new CandidateSet(_candidates, _values, _scores));
-                if (context.Endpoint != null)
+                await _selector.SelectAsync(routeContext.HttpContext, new CandidateSet(_candidates, _values, _scores));
+                if (routeContext.HttpContext.GetEndpoint() != null)
                 {
                     routeContext.Handler = (_) => Task.CompletedTask;
                 }

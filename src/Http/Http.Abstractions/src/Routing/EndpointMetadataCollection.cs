@@ -74,10 +74,11 @@ namespace Microsoft.AspNetCore.Http
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T GetMetadata<T>() where T : class
         {
-            if (_cache.TryGetValue(typeof(T), out var result))
+            if (_cache.TryGetValue(typeof(T), out var obj))
             {
+                var result = (T[])obj;
                 var length = result.Length;
-                return length > 0 ? (T)result[length - 1] : default;
+                return length > 0 ? result[length - 1] : default;
             }
 
             return GetMetadataSlow<T>();
@@ -85,9 +86,9 @@ namespace Microsoft.AspNetCore.Http
 
         private T GetMetadataSlow<T>() where T : class
         {
-            var array = GetOrderedMetadataSlow<T>();
-            var length = array.Length;
-            return length > 0 ? array[length - 1] : default;
+            var result = GetOrderedMetadataSlow<T>();
+            var length = result.Length;
+            return length > 0 ? result[length - 1] : default;
         }
 
         /// <summary>
@@ -97,7 +98,7 @@ namespace Microsoft.AspNetCore.Http
         /// <typeparam name="T">The type of metadata.</typeparam>
         /// <returns>A sequence of metadata items of <typeparamref name="T"/>.</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IEnumerable<T> GetOrderedMetadata<T>() where T : class
+        public IReadOnlyList<T> GetOrderedMetadata<T>() where T : class
         {
             if (_cache.TryGetValue(typeof(T), out var result))
             {
@@ -109,18 +110,22 @@ namespace Microsoft.AspNetCore.Http
 
         private T[] GetOrderedMetadataSlow<T>() where T : class
         {
-            var items = new List<T>();
-            for (var i = 0; i < _items.Length; i++)
+            // Perf: avoid allocations totally for the common case where there are no matching metadata.
+            List<T> matches = null;
+
+            var items = _items;
+            for (var i = 0; i < items.Length; i++)
             {
-                if (_items[i] is T item)
+                if (items[i] is T item)
                 {
-                    items.Add(item);
+                    matches ??= new List<T>();
+                    matches.Add(item);
                 }
             }
 
-            var array = items.ToArray();
-            _cache.TryAdd(typeof(T), array);
-            return array;
+            var results = matches == null ? Array.Empty<T>() : matches.ToArray();
+            _cache.TryAdd(typeof(T), results);
+            return results;
         }
 
         /// <summary>

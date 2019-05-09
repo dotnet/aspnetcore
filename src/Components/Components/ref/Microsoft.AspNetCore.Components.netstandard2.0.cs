@@ -710,7 +710,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         protected internal virtual void AddToRenderQueue(int componentId, Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
         public static Microsoft.AspNetCore.Components.Rendering.IDispatcher CreateDefaultDispatcher() { throw null; }
-        public System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
+        public virtual System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
         public void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
         protected abstract void HandleException(System.Exception exception);
@@ -771,12 +771,18 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public readonly int ComponentId;
         public readonly System.ArraySegment<Microsoft.AspNetCore.Components.RenderTree.RenderTreeEdit> Edits;
     }
-    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Explicit)]
     public readonly partial struct RenderTreeEdit
     {
+        [System.Runtime.InteropServices.FieldOffsetAttribute(8)]
+        public readonly int MoveToSiblingIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(8)]
         public readonly int ReferenceFrameIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(16)]
         public readonly string RemovedAttributeName;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(4)]
         public readonly int SiblingIndex;
+        [System.Runtime.InteropServices.FieldOffsetAttribute(0)]
         public readonly Microsoft.AspNetCore.Components.RenderTree.RenderTreeEditType Type;
     }
     public enum RenderTreeEditType
@@ -789,6 +795,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         StepIn = 6,
         StepOut = 7,
         UpdateMarkup = 8,
+        PermutationListEntry = 9,
+        PermutationListEnd = 10,
     }
     public enum RenderTreeFrameType
     {

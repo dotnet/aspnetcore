@@ -8,6 +8,5 @@
     <Reference Include="Microsoft.AspNetCore.Http.Features"  />
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources"  />
     <Reference Include="Microsoft.Net.Http.Headers"  />
-    <Reference Include="System.Text.Encodings.Web"  />
   </ItemGroup>
 </Project>

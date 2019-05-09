@@ -208,12 +208,16 @@ namespace Microsoft.AspNetCore.Components
                 {
                     await task;
                 }
-                catch when (task.IsCanceled)
+                catch // avoiding exception filters for AOT runtime support
                 {
                     // Ignore exceptions from task cancelletions.
                     // Awaiting a canceled task may produce either an OperationCanceledException (if produced as a consequence of
                     // CancellationToken.ThrowIfCancellationRequested()) or a TaskCanceledException (produced as a consequence of awaiting Task.FromCanceled).
                     // It's much easier to check the state of the Task (i.e. Task.IsCanceled) rather than catch two distinct exceptions.
+                     if (!task.IsCanceled)
+                     {
+                        throw;
+                     }
                 }
 
                 // Don't call StateHasChanged here. CallOnParametersSetAsync should handle that for us.
@@ -247,10 +251,15 @@ namespace Microsoft.AspNetCore.Components
             {
                 await task;
             }
-            catch when (task.IsCanceled)
+            catch // avoiding exception filters for AOT runtime support
             {
                 // Ignore exceptions from task cancelletions, but don't bother issuing a state change.
-                return;
+                if (task.IsCanceled)
+                {
+                    return;
+                }
+
+                throw;
             }
 
             StateHasChanged();

@@ -1047,6 +1047,107 @@ namespace Microsoft.AspNetCore.Components.Test
                 frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
+        [Fact]
+        public void CanAddKeyToElement()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            var keyValue = new object();
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "attribute before", "before value");
+            builder.SetKey(keyValue);
+            builder.AddAttribute(2, "attribute after", "after value");
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame =>
+                {
+                    AssertFrame.Element(frame, "elem", 3, 0);
+                    Assert.Same(keyValue, frame.ElementKey);
+                },
+                frame => AssertFrame.Attribute(frame, "attribute before", "before value", 1),
+                frame => AssertFrame.Attribute(frame, "attribute after", "after value", 2));
+        }
+
+        [Fact]
+        public void CanAddKeyToComponent()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            var keyValue = new object();
+
+            // Act
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddAttribute(1, "param before", 123);
+            builder.SetKey(keyValue);
+            builder.AddAttribute(2, "param after", 456);
+            builder.CloseComponent();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame =>
+                {
+                    AssertFrame.Component<TestComponent>(frame, 3, 0);
+                    Assert.Same(keyValue, frame.ComponentKey);
+                },
+                frame => AssertFrame.Attribute(frame, "param before", 123, 1),
+                frame => AssertFrame.Attribute(frame, "param after", 456, 2));
+        }
+
+        [Fact]
+        public void CannotAddKeyOutsideComponentOrElement_TreeRoot()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act/Assert
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                builder.SetKey(new object());
+            });
+            Assert.Equal("Cannot set a key outside the scope of a component or element.", ex.Message);
+        }
+
+        [Fact]
+        public void CannotAddKeyOutsideComponentOrElement_RegionRoot()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act/Assert
+            builder.OpenElement(0, "some element");
+            builder.OpenRegion(1);
+            var ex = Assert.Throws<InvalidOperationException>(() =>
+            {
+                builder.SetKey(new object());
+            });
+            Assert.Equal($"Cannot set a key on a frame of type {RenderTreeFrameType.Region}.", ex.Message);
+        }
+
+        [Fact]
+        public void CannotAddNullKey()
+        {
+            // Although we could translate 'null' into either some default "null key"
+            // instance, or just no-op the call, it almost certainly indicates a programming
+            // error so it's better to fail.
+
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+
+            // Act/Assert
+            var ex = Assert.Throws<ArgumentNullException>(() =>
+            {
+                builder.OpenElement(0, "elem");
+                builder.SetKey(null);
+            });
+            Assert.Equal("value", ex.ParamName);
+        }
+
         private class TestComponent : IComponent
         {
             public void Configure(RenderHandle renderHandle) { }

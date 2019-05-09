@@ -4,6 +4,8 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -25,6 +27,7 @@ namespace Templates.Test
         public ITestOutputHelper Output { get; }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2327", FlakyOn.All)]
         public async Task RazorPagesTemplate_NoAuthImplAsync()
         {
             Project = await ProjectFactory.GetOrCreateProject("razorpagesnoauth", Output);
@@ -95,6 +98,7 @@ namespace Templates.Test
         }
 
         [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2335", FlakyOn.All)]
         [InlineData(false)]
         [InlineData(true)]
         public async Task RazorPagesTemplate_IndividualAuthImplAsync(bool useLocalDB)

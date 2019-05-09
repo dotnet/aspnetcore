@@ -27,22 +27,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected)
+        public static void AssertMatch(HttpContext httpContext, Endpoint expected)
         {
-            AssertMatch(context, httpContext, expected, new RouteValueDictionary());
+            AssertMatch(httpContext, expected, new RouteValueDictionary());
         }
 
-        public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected, bool ignoreValues)
+        public static void AssertMatch(HttpContext httpContext, Endpoint expected, bool ignoreValues)
         {
-            AssertMatch(context, httpContext, expected, new RouteValueDictionary(), ignoreValues);
+            AssertMatch(httpContext, expected, new RouteValueDictionary(), ignoreValues);
         }
 
-        public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected, object values)
+        public static void AssertMatch(HttpContext httpContext, Endpoint expected, object values)
         {
-            AssertMatch(context, httpContext, expected, new RouteValueDictionary(values));
+            AssertMatch(httpContext, expected, new RouteValueDictionary(values));
         }
 
-        public static void AssertMatch(EndpointSelectorContext context, HttpContext httpContext, Endpoint expected, string[] keys, string[] values)
+        public static void AssertMatch(HttpContext httpContext, Endpoint expected, string[] keys, string[] values)
         {
             keys = keys ?? Array.Empty<string>();
             values = values ?? Array.Empty<string>();
@@ -53,17 +53,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             var zipped = keys.Zip(values, (k, v) => new KeyValuePair<string, object>(k, v));
-            AssertMatch(context, httpContext, expected, new RouteValueDictionary(zipped));
+            AssertMatch(httpContext, expected, new RouteValueDictionary(zipped));
         }
 
         public static void AssertMatch(
-            EndpointSelectorContext context,
             HttpContext httpContext,
             Endpoint expected,
             RouteValueDictionary values,
             bool ignoreValues = false)
         {
-            if (context.Endpoint == null)
+            if (httpContext.GetEndpoint() == null)
             {
                 throw new XunitException($"Was expected to match '{expected.DisplayName}' but did not match.");
             }
@@ -75,11 +74,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 throw new XunitException("RouteValues is null.");
             }
 
-            if (!object.ReferenceEquals(expected, context.Endpoint))
+            if (!object.ReferenceEquals(expected, httpContext.GetEndpoint()))
             {
                 throw new XunitException(
                     $"Was expected to match '{expected.DisplayName}' but matched " +
-                    $"'{context.Endpoint.DisplayName}' with values: {FormatRouteValues(actualValues)}.");
+                    $"'{httpContext.GetEndpoint().DisplayName}' with values: {FormatRouteValues(actualValues)}.");
             }
 
             if (!ignoreValues)
@@ -96,13 +95,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
         }
 
-        public static void AssertNotMatch(EndpointSelectorContext context, HttpContext httpContext)
+        public static void AssertNotMatch(HttpContext httpContext)
         {
-            if (context.Endpoint != null)
+            if (httpContext.GetEndpoint() != null)
             {
                 throw new XunitException(
-                    $"Was expected not to match '{context.Endpoint.DisplayName}' " +
-                    $"but matched with values: {FormatRouteValues(httpContext.Features.Get<IRouteValuesFeature>().RouteValues)}.");
+                    $"Was expected not to match '{httpContext.GetEndpoint().DisplayName}' " +
+                    $"but matched with values: {FormatRouteValues(httpContext.Request.RouteValues)}.");
             }
         }
 

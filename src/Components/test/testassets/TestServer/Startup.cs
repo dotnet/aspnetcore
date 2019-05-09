@@ -49,29 +49,22 @@ namespace TestServer
                     .AllowCredentials();
             });
 
-            app.UseRouting();
 
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", subdirApp =>
             {
-                // The following two lines are equivalent to:
-                //     endpoints.MapComponentsHub<Index>();
-                //
-                // However it's expressed using routing as a way of checking that
-                // we're not relying on any extra magic inside MapComponentsHub, since it's
-                // important that people can set up these bits of middleware manually (e.g., to
-                // swap in UseAzureSignalR instead of UseSignalR).
+                subdirApp.UseClientSideBlazorFiles<BasicTestApp.Startup>();
+
                 subdirApp.UseRouting();
 
                 subdirApp.UseEndpoints(endpoints =>
                 {
-                    endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath).AddComponent(typeof(Index), selector: "root");
+                    endpoints.MapBlazorHub(typeof(Index), selector: "root");
+                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
                 });
-
-                subdirApp.MapWhen(
-                    ctx => ctx.Features.Get<IEndpointFeature>()?.Endpoint == null,
-                    blazorBuilder => blazorBuilder.UseBlazor<BasicTestApp.Startup>());
             });
+
+            app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {

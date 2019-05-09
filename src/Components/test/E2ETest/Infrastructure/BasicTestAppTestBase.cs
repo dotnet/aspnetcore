@@ -38,9 +38,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
         protected SelectElement WaitUntilTestSelectorReady()
         {
             var elemToFind = By.CssSelector("#test-selector > select");
-            new WebDriverWait(Browser, TimeSpan.FromSeconds(30)).Until(
-                driver => driver.FindElement(elemToFind) != null);
+            WaitUntilExists(elemToFind, timeoutSeconds: 30);
             return new SelectElement(Browser.FindElement(elemToFind));
+        }
+
+        protected IWebElement WaitUntilExists(By findBy, int timeoutSeconds = 10)
+        {
+            IWebElement result = null;
+            new WebDriverWait(Browser, TimeSpan.FromSeconds(timeoutSeconds))
+                .Until(driver => (result = driver.FindElement(findBy)) != null);
+            return result;
         }
     }
 }

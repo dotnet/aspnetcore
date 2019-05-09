@@ -1,4 +1,4 @@
-﻿<h3>Bubbling standard event</h3>
+<h3 id="event-bubbling">Bubbling standard event</h3>
 
 <div onclick="@(() => LogEvent("parent onclick"))">
     <button id="button-with-onclick" onclick="@(() => LogEvent("target onclick"))">Button with onclick handler</button>

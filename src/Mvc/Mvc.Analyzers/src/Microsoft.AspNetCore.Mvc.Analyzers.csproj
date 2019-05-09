@@ -5,7 +5,7 @@
      <!-- This package is for internal use only. It contains analyzers that are bundled in the .NET Core WebSDK. -->
     <IsShippingPackage>false</IsShippingPackage>
 
-    <TargetFramework>netstandard1.3</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
