@@ -3,9 +3,10 @@
   <Sdk Name="Yarn.MSBuild" />
 
   <!-- Ensuring that everything is ready before build -->
+
   <PropertyGroup Condition="'$(BuildNodeJs)' == 'true' or '$(CI)' != 'true'">
-    <_ShouldRunNpmRestoreCommands
-      Condition="'$(CI)' != 'true' or !Exists('$(MSBuildThisProjectFileDirectory)node_modules')">true</_ShouldRunNpmRestoreCommands>
+    <_AlreadyRestored Condition="!Exists('$(MSBuildThisProjectFileDirectory)node_modules')">true</_AlreadyRestored>
+    <_ShouldRunNpmRestoreCommands Condition="'$(CI)' != 'true' or $(_AlreadyRestored) == ''">true</_ShouldRunNpmRestoreCommands>
   </PropertyGroup>
 
   <Target Name="EnsureNodeJSRestored" Condition="'$(SeleniumE2ETestsSupported)' == 'true'" BeforeTargets="Build">
@@ -19,6 +20,9 @@
   </Target>
 
   <Target Name="_IsCustomRestoreTargetSupported" Returns="@(CustomRestoreTargets)">
+    <Message Importance="high" Text="BuildNodeJs=$(BuildNodeJs)">
+    <Message Importance="high" Text="Exists('(MSBuildThisProjectFileDirectory)node_modules')=Exists('$(MSBuildThisProjectFileDirectory)node_modules')">
+    <Message Importance="high" Text="CI=$(CI)">
     <ItemGroup>
       <CustomRestoreTargets Include="$(MSBuildProjectFullPath)">
         <Targets>EnsureNodeJSRestored</Targets>
