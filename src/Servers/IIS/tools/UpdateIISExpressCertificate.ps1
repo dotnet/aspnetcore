@@ -1,4 +1,4 @@
-$cert = New-SelfSignedCertificate -DnsName "localhost", "localhost" -CertStoreLocation "cert:\LocalMachine\My" -NotAfter (Get-Date).AddYears(5)
+$cert = New-SelfSignedCertificate -DnsName "localhost", "localhost" -CertStoreLocation "cert:\LocalMachine\My"
 $thumb = $cert.GetCertHashString()
 
 $Store = New-Object  -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList 'root', 'LocalMachine'
