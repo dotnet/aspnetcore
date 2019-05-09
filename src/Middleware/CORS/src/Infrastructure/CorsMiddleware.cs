@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Cors.Internal;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Cors.Infrastructure
