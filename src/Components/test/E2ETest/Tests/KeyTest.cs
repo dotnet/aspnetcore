@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var appElem = MountTestComponent<ReorderingFocusComponent>();
             Func<IWebElement> textboxFinder = () => appElem.FindElement(By.CssSelector(".incomplete-items .item-1 input[type=text]"));
-            var textToType = "Hello this is a long string that should be typed";
+            var textToType = "Hello there!";
             var expectedTextTyped = "";
 
             textboxFinder().Clear();
@@ -221,17 +221,16 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             textboxFinder().Click();
             while (textToType.Length > 0)
             {
-                var nextBlockLength = Math.Min(5, textToType.Length);
-                var nextBlock = textToType.Substring(0, nextBlockLength);
-                textToType = textToType.Substring(nextBlockLength);
-                expectedTextTyped += nextBlock;
+                var nextChar = textToType.Substring(0, 1);
+                textToType = textToType.Substring(1);
+                expectedTextTyped += nextChar;
 
                 // Send keys to whatever has focus
-                new Actions(Browser).SendKeys(nextBlock).Perform();
+                new Actions(Browser).SendKeys(nextChar).Perform();
                 Browser.Equal(expectedTextTyped, () => textboxFinder().GetAttribute("value"));
 
                 // We delay between typings to ensure the events aren't all collapsed into one.
-                await Task.Delay(100);
+                await Task.Delay(50);
             }
 
             // Verify that after all this, we can still move the edited item
