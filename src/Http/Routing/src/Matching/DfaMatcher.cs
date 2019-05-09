@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging;
 
@@ -230,7 +229,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var i = 0; i < captures.Length; i++)
             {
                 (var parameterName, var segmentIndex, var slotIndex) = captures[i];
-                
+
                 if ((uint)segmentIndex < (uint)segments.Length)
                 {
                     var segment = segments[segmentIndex];

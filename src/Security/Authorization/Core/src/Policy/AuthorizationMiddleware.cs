@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Authorization

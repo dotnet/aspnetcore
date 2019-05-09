@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Routing.Matching

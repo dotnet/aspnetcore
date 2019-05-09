@@ -6,7 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
 
