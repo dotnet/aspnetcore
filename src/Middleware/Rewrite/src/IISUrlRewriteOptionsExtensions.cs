@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <param name="options">The <see cref="RewriteOptions"/></param>
         /// <param name="fileProvider">The <see cref="IFileProvider"/> </param>
         /// <param name="filePath">The path to the file containing UrlRewrite rules.</param>
-        /// <param name="useNativeIISServerVariables">If the application uses the in-process hosting model, server variables can be sourced natively from IIS. It is disabled by default.</param>
-        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath, bool useNativeIISServerVariables = false)
+        /// <param name="useNativeIISServerVariables">Server variables are sourced natively from IIS if the application uses the in-process hosting model; use <c>false</c> to disable that behavior</param>
+        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath, bool useNativeIISServerVariables = true)
         {
             if (options == null)
             {
@@ -45,8 +45,8 @@ namespace Microsoft.AspNetCore.Rewrite
         /// </summary>
         /// <param name="options">The <see cref="RewriteOptions"/></param>
         /// <param name="reader">The text reader stream.</param>
-        /// <param name="useNativeIISServerVariables">If the application uses the in-process hosting model, server variables can be sourced natively from IIS. It is disabled by default.</param>
-        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader, bool useNativeIISServerVariables = false)
+        /// <param name="useNativeIISServerVariables">Server variables are sourced natively from IIS if the application uses the in-process hosting model; use <c>false</c> to disable that behavior</param>
+        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader, bool useNativeIISServerVariables = true)
         {
             if (options == null)
             {
