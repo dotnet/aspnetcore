@@ -210,6 +210,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("modified valid", () => expiryDateInput.GetAttribute("class"));
 
             // Can become invalid
+            expiryDateInput.Clear();
             expiryDateInput.SendKeys("111111111");
             Browser.Equal("modified invalid", () => expiryDateInput.GetAttribute("class"));
             Browser.Equal(new[] { "The OptionalExpiryDate field must be a date." }, messagesAccessor);
