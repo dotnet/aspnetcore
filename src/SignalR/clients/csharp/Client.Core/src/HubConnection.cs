@@ -1241,6 +1241,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private void CompleteClose(Exception closeException)
         {
+            _state.AssertInConnectionLock();
             _state.StopCts = new CancellationTokenSource();
             RunCloseEvent(closeException);
         }

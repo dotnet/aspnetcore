@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var stopTask = connection.StopAsync().OrTimeout();
 
                     // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
-                    await syncPoint.WaitForSyncPoint();
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
 
                     // We should not yet be able to start now because StopAsync hasn't completed
                     Assert.False(stopTask.IsCompleted);
@@ -445,6 +445,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Stop and invoke the method. These two aren't synchronizable via a Sync Point any more because the transport is disposed
                     // outside the lock :(
                     var disposeTask = connection.StopAsync().OrTimeout();
+
+                    // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
+
                     var targetTask = method(connection).OrTimeout();
 
                     // Release the sync point
