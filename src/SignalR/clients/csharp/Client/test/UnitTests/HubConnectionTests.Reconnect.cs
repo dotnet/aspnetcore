@@ -785,7 +785,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 Assert.Single(retryContexts);
                 Assert.Equal(1, reconnectingCount);
                 Assert.Equal(0, reconnectedCount);
-                Assert.Equal(TaskStatus.RanToCompletion, stopTask.Status);
+                await stopTask.OrTimeout();
             }
         }
 
