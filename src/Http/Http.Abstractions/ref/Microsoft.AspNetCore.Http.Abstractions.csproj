@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Http.Abstractions.netcoreapp3.0.cs" />
+    <Reference Include="Microsoft.AspNetCore.Authorization"  />
     <Reference Include="Microsoft.AspNetCore.Http.Features"  />
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources"  />
     <Reference Include="Microsoft.Net.Http.Headers"  />
