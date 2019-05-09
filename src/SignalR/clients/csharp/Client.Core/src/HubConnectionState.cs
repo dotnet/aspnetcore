@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// </summary>
         Disconnected,
         /// <summary>
-        /// The hub connection is connecting.
-        /// </summary>
-        Connecting,
-        /// <summary>
         /// The hub connection is connected.
         /// </summary>
         Connected,
+        /// <summary>
+        /// The hub connection is connecting.
+        /// </summary>
+        Connecting,
         /// <summary>
         /// The hub connection is reconnecting.
         /// </summary>
