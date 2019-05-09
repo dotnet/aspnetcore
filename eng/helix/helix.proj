@@ -13,7 +13,7 @@
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
     <IsExternal>true</IsExternal>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
-    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">4</MaxRetryCount>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(CI)' == 'true' ">
