@@ -155,7 +155,6 @@ namespace Microsoft.AspNetCore.Mvc
                     { "^", "attachment; filename=^; filename*=UTF-8''^" },
                     { "`", "attachment; filename=`; filename*=UTF-8''`" },
                     { "|", "attachment; filename=|; filename*=UTF-8''|" },
-                    { "a\tb", "attachment; filename=a_b; filename*=UTF-8''a%09b" },
 
                     // Values that need to be quoted
                     { ": :", "attachment; filename=\": :\"; filename*=UTF-8''%3A%20%3A" },
@@ -182,6 +181,7 @@ namespace Microsoft.AspNetCore.Mvc
                     { "\\", "attachment; filename=\"\\\\\"; filename*=UTF-8''%5C" },
 
                     // Values that need to be specially encoded (Base64, see rfc2047)
+                    { "a\tb", "attachment; filename=a_b; filename*=UTF-8''a%09b" },
                     { "a\nb", "attachment; filename=a_b; filename*=UTF-8''a%0Ab" },
 
                     // Values with non unicode characters
