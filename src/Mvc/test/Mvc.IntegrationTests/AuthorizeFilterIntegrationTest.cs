@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var authorizeData = action.Attributes.OfType<AuthorizeAttribute>();
             var authorizeFilter = new AuthorizeFilter(policyProvider.Object, authorizeData);
 
-            var actionContext = new ActionContext(GetHttpContext(), new RouteData(), new ControllerActionDescriptor());
+            var actionContext = new ActionContext(GetHttpContext(combineAuthorize: true), new RouteData(), new ControllerActionDescriptor());
 
             var authorizationFilterContext = new AuthorizationFilterContext(actionContext, action.Filters);
 
