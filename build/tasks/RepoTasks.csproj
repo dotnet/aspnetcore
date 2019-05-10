@@ -29,4 +29,8 @@
   </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>
+
+  <ItemGroup>
+    <PackageReference Update="Newtonsoft.Json" PrivateAssets="" />
+  </ItemGroup>
 </Project>
