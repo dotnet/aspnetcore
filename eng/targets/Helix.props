@@ -39,7 +39,7 @@
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
     <HelixContent Include="$(RepositoryRoot)eng\helix\content\installnode.sh" />
-    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(NodePlatformArch) &quot;%24pwd/node&quot;" />
-    <HelixPreCommand Include="export PATH=&quot;%24pwd/node:%24PATH&quot;" />
+    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(NodePlatformArch) ./node" />
+    <HelixPreCommand Include="export PATH=&quot;./node:%24PATH&quot;" />
   </ItemGroup>
 </Project>
