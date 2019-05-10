@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.SignalR
             Input.CancelPendingRead();
 
             // We fire and forget since this can trigger user code to run
-            _ = Task.Run(AbortConnection);
+            _ = Task.Factory.StartNew(AbortConnection, this, cancellationToken: default, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
         }
 
         internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
@@ -573,24 +573,26 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task AbortConnection()
+        private static async Task AbortConnection(object state)
         {
-            await _writeLock.WaitAsync();
+            var connection = (HubConnectionContext)state;
+
+            await connection._writeLock.WaitAsync();
 
             try
             {
-                _connectionAbortedTokenSource.Cancel();
+                connection._connectionAbortedTokenSource.Cancel();
             }
             catch (Exception ex)
             {
-                Log.AbortFailed(_logger, ex);
+                Log.AbortFailed(connection._logger, ex);
             }
             finally
             {
-                _writeLock.Release();
+                connection._writeLock.Release();
 
                 // Communicate the fact that we're finished triggering abort callbacks
-                _abortCompletedTcs.TrySetResult(null);
+                connection._abortCompletedTcs.TrySetResult(null);
             }
         }
 
