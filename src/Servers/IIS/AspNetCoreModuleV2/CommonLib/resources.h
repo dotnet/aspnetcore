@@ -30,7 +30,7 @@
 #define ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG       L"Mixed hosting model is not supported. Application '%s' configured with different hostingModel value '%d' other than the one of running application(s)."
 #define ASPNETCORE_CONFIGURATION_LOAD_ERROR_MSG              L"Could not load configuration. Exception message:\r\n%s"
 #define ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG           L"Failed to start application '%s', ErrorCode '0x%x'."
-#define ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG    L"Application '%s' with physical root '%s' has exited from Program.Main with exit code = '%d'. Last 30KB characters of captured stdout and stderr logs:\r\n%s"
+#define ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_STDOUT_MSG    L"Application '%s' with physical root '%s' has exited from Program.Main with exit code = '%d'. First 30KB characters of captured stdout and stderr logs:\r\n%s"
 #define ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG           L"Application '%s' with physical root '%s' has exited from Program.Main with exit code = '%d'. Please check the stderr logs for more information."
 #define ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG              L"Application '%s' was recycled after detecting app_offline.htm."
 #define ASPNETCORE_EVENT_MONITOR_APPOFFLINE_ERROR_MSG        L"Failed to monitor app_offline.htm for application '%s', ErrorCode '0x%x'. "
