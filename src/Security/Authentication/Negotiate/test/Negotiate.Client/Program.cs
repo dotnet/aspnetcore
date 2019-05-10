@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 
-namespace NegotiateAuthSample
+namespace Negotiate.Client
 {
     public class Program
     {

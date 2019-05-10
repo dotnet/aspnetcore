@@ -146,6 +146,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest", "Authentication\Negotiate\test\Negotiate.FunctionalTest\Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest.csproj", "{8991AEC8-49F3-4DF1-ADA9-00C13737E005}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negotiate.Client", "Authentication\Negotiate\test\Negotiate.Client\Negotiate.Client.csproj", "{57DCE828-241E-437C-BEFC-AF4B6EB06D62}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negotiate.Server", "Authentication\Negotiate\test\Negotiate.Server\Negotiate.Server.csproj", "{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc", "..\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj", "{27B5D7B5-75A6-4BE6-BD09-597044D06970}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core", "..\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj", "{553F8C79-13AF-4993-99C1-D70F2143AD8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -376,6 +384,22 @@ Global
 		{8991AEC8-49F3-4DF1-ADA9-00C13737E005}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8991AEC8-49F3-4DF1-ADA9-00C13737E005}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8991AEC8-49F3-4DF1-ADA9-00C13737E005}.Release|Any CPU.Build.0 = Release|Any CPU
+		{57DCE828-241E-437C-BEFC-AF4B6EB06D62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{57DCE828-241E-437C-BEFC-AF4B6EB06D62}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{57DCE828-241E-437C-BEFC-AF4B6EB06D62}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{57DCE828-241E-437C-BEFC-AF4B6EB06D62}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27B5D7B5-75A6-4BE6-BD09-597044D06970}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27B5D7B5-75A6-4BE6-BD09-597044D06970}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27B5D7B5-75A6-4BE6-BD09-597044D06970}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27B5D7B5-75A6-4BE6-BD09-597044D06970}.Release|Any CPU.Build.0 = Release|Any CPU
+		{553F8C79-13AF-4993-99C1-D70F2143AD8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{553F8C79-13AF-4993-99C1-D70F2143AD8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{553F8C79-13AF-4993-99C1-D70F2143AD8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{553F8C79-13AF-4993-99C1-D70F2143AD8E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -448,6 +472,10 @@ Global
 		{B7EA3B80-3A38-402A-BC3F-986907CA657C} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
 		{903E6CD4-7503-4BBB-86A1-96E0C73F0A90} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
 		{8991AEC8-49F3-4DF1-ADA9-00C13737E005} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
+		{57DCE828-241E-437C-BEFC-AF4B6EB06D62} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
+		{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
+		{27B5D7B5-75A6-4BE6-BD09-597044D06970} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
+		{553F8C79-13AF-4993-99C1-D70F2143AD8E} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}
