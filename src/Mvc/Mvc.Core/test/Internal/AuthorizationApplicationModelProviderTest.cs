@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             Assert.Null(authorizeFilters.First().Policy);
             Assert.NotNull(authorizeFilters.First().PolicyProvider);
-            Assert.NotNull(actionFilter.AuthorizeData);
+            Assert.NotNull(authorizeFilters.First().AuthorizeData);
         }
 
         [Fact]
