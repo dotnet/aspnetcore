@@ -51,9 +51,36 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     {
                         ((CancellationTokenSource)ctsState).Cancel();
                     }, _cts);
+
+                    return new CancelableEnumerator<TResult>(_asyncEnumerable.GetAsyncEnumerator(), registration);
                 }
 
                 return enumerator;
+            }
+
+            private class CancelableEnumerator<T> : IAsyncEnumerator<T>
+            {
+                private IAsyncEnumerator<T> _asyncEnumerator;
+                private readonly CancellationTokenRegistration _cancellationTokenRegistration;
+
+                public T Current => (T)_asyncEnumerator.Current;
+
+                public CancelableEnumerator(IAsyncEnumerator<T> asyncEnumerator, CancellationTokenRegistration registration)
+                {
+                    _asyncEnumerator = asyncEnumerator;
+                    _cancellationTokenRegistration = registration;
+                }
+
+                public ValueTask<bool> MoveNextAsync()
+                {
+                    return _asyncEnumerator.MoveNextAsync();
+                }
+
+                public ValueTask DisposeAsync()
+                {
+                    _cancellationTokenRegistration.Dispose();
+                    return _asyncEnumerator.DisposeAsync();
+                }
             }
         }
 
@@ -71,6 +98,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             public IAsyncEnumerator<object> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {
+                // Assume that this will be iterated through with await foreach which always passes a default token.
+                // Instead use the token from the ctor.
+                Debug.Assert(cancellationToken == default);
+
                 var enumeratorOfT = _asyncEnumerable.GetAsyncEnumerator(_cancellationToken);
                 return enumeratorOfT as IAsyncEnumerator<object> ?? new BoxedAsyncEnumerator(enumeratorOfT);
             }
