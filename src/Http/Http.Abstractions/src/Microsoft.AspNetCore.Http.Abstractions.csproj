@@ -20,7 +20,6 @@ Microsoft.AspNetCore.Http.HttpResponse</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
     <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" />
     <Reference Include="Microsoft.Net.Http.Headers" />
