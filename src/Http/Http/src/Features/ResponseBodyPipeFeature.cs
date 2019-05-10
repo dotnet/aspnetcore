@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Http.Features
 
         private Task Complete()
         {
-            if(_internalPipeWriter != null && ReferenceEquals(_context.Request.Body, _streamInstanceWhenWrapped))
+            if(_internalPipeWriter != null && ReferenceEquals(_context.Response.Body, _streamInstanceWhenWrapped))
             {
                 _internalPipeWriter.Complete();
             }
