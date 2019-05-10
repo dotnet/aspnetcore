@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _accessTokenProvider = accessTokenProvider;
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             if (url == null)
             {
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 
             try
             {
-                await _webSocket.ConnectAsync(resolvedUrl, CancellationToken.None);
+                await _webSocket.ConnectAsync(resolvedUrl, cancellationToken);
             }
             catch
             {
