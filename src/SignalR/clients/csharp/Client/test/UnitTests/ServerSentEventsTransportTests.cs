@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
                     await sseTransport.StartAsync(
-                        new Uri("http://fakeuri.org"), TransferFormat.Text, CancellationToken.None).OrTimeout();
+                        new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
 
                     await eventStreamTcs.Task.OrTimeout();
                     await sseTransport.StopAsync().OrTimeout();
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 try
                 {
                     await sseTransport.StartAsync(
-                        new Uri("http://fakeuri.org"), TransferFormat.Text, CancellationToken.None).OrTimeout();
+                        new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
 
                     transportActiveTask = sseTransport.Running;
                     Assert.False(transportActiveTask.IsCompleted);
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text, CancellationToken.None).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
 
                 var exception = await Assert.ThrowsAsync<FormatException>(() => sseTransport.Input.ReadAllAsync());
 
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text, CancellationToken.None).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
                 await eventStreamTcs.Task;
 
                 await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text, CancellationToken.None).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
                 await eventStreamTcs.Task.OrTimeout();
 
                 sseTransport.Output.Complete();
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text, CancellationToken.None).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
 
                 var message = await sseTransport.Input.ReadSingleAsync().OrTimeout();
                 Assert.Equal("3:abc", Encoding.ASCII.GetString(message));
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
                 await sseTransport.StartAsync(
-                    new Uri("http://fakeuri.org"), TransferFormat.Text, CancellationToken.None).OrTimeout();
+                    new Uri("http://fakeuri.org"), TransferFormat.Text).OrTimeout();
                 await eventStreamTcs.Task;
 
                 await sseTransport.Output.WriteAsync(new byte[] { 0x42 });
@@ -355,7 +355,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
 
-                var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary, CancellationToken.None).OrTimeout());
+                var ex = await Assert.ThrowsAsync<ArgumentException>(() => sseTransport.StartAsync(new Uri("http://fakeuri.org"), TransferFormat.Binary).OrTimeout());
 
                 Assert.Equal("transferFormat", ex.ParamName);
                 Assert.Equal($"The 'Binary' transfer format is not supported by this transport.", ex.GetLocalizationSafeMessage());
@@ -382,7 +382,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 var sseTransport = new ServerSentEventsTransport(httpClient, LoggerFactory);
                 var exception = await Assert.ThrowsAsync<ArgumentException>(() =>
-                    sseTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat, CancellationToken.None));
+                    sseTransport.StartAsync(new Uri("http://fakeuri.org"), transferFormat));
 
                 Assert.Contains($"The '{transferFormat}' transfer format is not supported by this transport.", exception.Message);
                 Assert.Equal("transferFormat", exception.ParamName);
