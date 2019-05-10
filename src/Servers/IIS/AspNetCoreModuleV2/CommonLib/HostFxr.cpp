@@ -117,21 +117,26 @@ int HostFxr::InitializeForApp(int argc, const PCWSTR* argv, const std::wstring d
 
     hostfxr_initialize_parameters params;
     params.size = sizeof(hostfxr_initialize_parameters);
+    params.host_path = L"";
+
     if (!dotnetExe.empty())
     {
         std::filesystem::path dotnetExePath(dotnetExe);
 
         auto dotnetFolderPath = dotnetExePath.parent_path();
         params.dotnet_root = dotnetFolderPath.c_str();
-        params.host_path = L"";
         RETURN_IF_NOT_ZERO(m_hostfxr_initialize_for_app_fn(argc - 1, &argv[1], nullptr, &params, &m_host_context_handle));
 
     }
     else
     {
         params.dotnet_root = L"";
-        params.host_path = L"";
-        RETURN_IF_NOT_ZERO(m_hostfxr_initialize_for_app_fn(argc, argv, nullptr, &params, &m_host_context_handle));
+
+        // Initialize_for_app doesn't work with an exe name
+        std::filesystem::path applicationPath(argv[0]);
+        applicationPath.replace_extension(".dll");
+
+        RETURN_IF_NOT_ZERO(m_hostfxr_initialize_for_app_fn(argc - 1, &argv[1], applicationPath.c_str(), &params, &m_host_context_handle));
     }
 
     if (callStartupHook)
