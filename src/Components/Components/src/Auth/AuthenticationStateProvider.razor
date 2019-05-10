@@ -1,0 +1,43 @@
+@namespace Microsoft.AspNetCore.Components
+@implements IDisposable
+
+<CascadingValue T="IAuthenticationState" Value="@_currentAuthenticationState" ChildContent="@ChildContent" />
+
+@functions {
+    private IAuthenticationState _currentAuthenticationState;
+
+    [Inject] private IAuthenticationStateProvider AuthStateProviderService { get; set; }
+
+    /// <summary>
+    /// The content to which the authentication state should be provided.
+    /// </summary>
+    [Parameter] public RenderFragment ChildContent { get; private set; }
+
+    protected override async Task OnInitAsync()
+    {
+        AuthStateProviderService.AuthenticationStateChanged += OnAuthenticationStateChanged;
+
+        // Initial synchronous render has an unauthorized authentication state
+        // We create a new one because we can't stop ClaimsPrincipal from being mutable
+        _currentAuthenticationState = new PendingAuthenticationState();
+
+        // Then asynchronously we query for the actual authentication state and rerender
+        // If this happens to return synchronously, the 'empty' render will be skipped
+        _currentAuthenticationState = await AuthStateProviderService
+            .GetAuthenticationStateAsync(forceRefresh: false);
+    }
+
+    private void OnAuthenticationStateChanged(IAuthenticationState newAuthenticationState)
+    {
+        Invoke(() =>
+        {
+            _currentAuthenticationState = newAuthenticationState;
+            StateHasChanged();
+        });
+    }
+
+    void IDisposable.Dispose()
+    {
+        AuthStateProviderService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+    }
+}
