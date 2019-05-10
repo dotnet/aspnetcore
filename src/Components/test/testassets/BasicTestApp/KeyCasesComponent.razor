@@ -1,4 +1,4 @@
-@using Microsoft.JSInterop
+@using System.Text.Json.Serialization
 <div class="key-cases">
     <div class="model">
         <p>Model</p>
@@ -61,7 +61,7 @@
     void Update()
     {
         renderContext.UpdateCount++;
-        parsedRootNode = Json.Deserialize<KeyCasesTreeNode.Node>(modelJson);
+        parsedRootNode = JsonSerializer.Parse<KeyCasesTreeNode.Node>(modelJson, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     }
 
     public class RenderContext

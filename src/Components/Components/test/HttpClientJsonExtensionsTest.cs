@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.JSInterop;
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Components.Test
 {
     public class HttpClientJsonExtensionsTest
     {
+        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+
         const string TestUri = "http://example.com/some/uri";
 
         [Fact]
@@ -49,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = await Assert.ThrowsAsync<HttpRequestException>(
-                () => httpClient.GetJsonAsync<Person>(TestUri));
+                () => httpClient.GetJsonAsync<Person>(TestUri).AsTask());
             Assert.Contains("404 (Not Found)", ex.Message);
         }
 
@@ -69,7 +74,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 Assert.Equal(httpMethod, req.Method);
                 Assert.Equal(TestUri, req.RequestUri.AbsoluteUri);
-                Assert.Equal(Json.Serialize(requestContent), await ((StringContent)req.Content).ReadAsStringAsync());
+                Assert.Equal(JsonSerializer.ToString(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
                 return CreateJsonResponse(HttpStatusCode.OK, new Person
                 {
                     Name = "Abc",
@@ -101,7 +106,7 @@ namespace Microsoft.AspNetCore.Components.Test
             {
                 Assert.Equal(httpMethod, req.Method);
                 Assert.Equal(TestUri, req.RequestUri.AbsoluteUri);
-                Assert.Equal(Json.Serialize(requestContent), await ((StringContent)req.Content).ReadAsStringAsync());
+                Assert.Equal(JsonSerializer.ToString(requestContent, _jsonSerializerOptions), await ((StringContent)req.Content).ReadAsStringAsync());
                 return new HttpResponseMessage(HttpStatusCode.BadGateway);
             }));
 
@@ -115,7 +120,7 @@ namespace Microsoft.AspNetCore.Components.Test
         {
             return new HttpResponseMessage(statusCode)
             {
-                Content = new StringContent(Json.Serialize(content))
+                Content = new StringContent(JsonSerializer.ToString(content, _jsonSerializerOptions))
             };
         }
 

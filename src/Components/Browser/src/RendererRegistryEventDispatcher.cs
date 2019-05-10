@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.JSInterop;
@@ -13,6 +15,11 @@ namespace Microsoft.AspNetCore.Components.Browser
     /// </summary>
     public static class RendererRegistryEventDispatcher
     {
+        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+
         /// <summary>
         /// For framework use only.
         /// </summary>
@@ -30,32 +37,59 @@ namespace Microsoft.AspNetCore.Components.Browser
             switch (eventArgsType)
             {
                 case "change":
-                    return Json.Deserialize<UIChangeEventArgs>(eventArgsJson);
+                    return DeserializeUIEventChangeArgs(eventArgsJson);
                 case "clipboard":
-                    return Json.Deserialize<UIClipboardEventArgs>(eventArgsJson);
+                    return Deserialize<UIClipboardEventArgs>(eventArgsJson);
                 case "drag":
-                    return Json.Deserialize<UIDragEventArgs>(eventArgsJson);
+                    return Deserialize<UIDragEventArgs>(eventArgsJson);
                 case "error":
-                    return Json.Deserialize<UIErrorEventArgs>(eventArgsJson);
+                    return Deserialize<UIErrorEventArgs>(eventArgsJson);
                 case "focus":
-                    return Json.Deserialize<UIFocusEventArgs>(eventArgsJson);
+                    return Deserialize<UIFocusEventArgs>(eventArgsJson);
                 case "keyboard":
-                    return Json.Deserialize<UIKeyboardEventArgs>(eventArgsJson);
+                    return Deserialize<UIKeyboardEventArgs>(eventArgsJson);
                 case "mouse":
-                    return Json.Deserialize<UIMouseEventArgs>(eventArgsJson);
+                    return Deserialize<UIMouseEventArgs>(eventArgsJson);
                 case "pointer":
-                    return Json.Deserialize<UIPointerEventArgs>(eventArgsJson);
+                    return Deserialize<UIPointerEventArgs>(eventArgsJson);
                 case "progress":
-                    return Json.Deserialize<UIProgressEventArgs>(eventArgsJson);
+                    return Deserialize<UIProgressEventArgs>(eventArgsJson);
                 case "touch":
-                    return Json.Deserialize<UITouchEventArgs>(eventArgsJson);
+                    return Deserialize<UITouchEventArgs>(eventArgsJson);
                 case "unknown":
-                    return Json.Deserialize<UIEventArgs>(eventArgsJson);
+                    return Deserialize<UIEventArgs>(eventArgsJson);
                 case "wheel":
-                    return Json.Deserialize<UIWheelEventArgs>(eventArgsJson);
+                    return Deserialize<UIWheelEventArgs>(eventArgsJson);
                 default:
                      throw new ArgumentException($"Unsupported value '{eventArgsType}'.", nameof(eventArgsType));
             }
+        }
+
+        private static T Deserialize<T>(string eventArgsJson)
+        {
+            return JsonSerializer.Parse<T>(eventArgsJson, SerializerOptions);
+        }
+
+        private static UIChangeEventArgs DeserializeUIEventChangeArgs(string eventArgsJson)
+        {
+            var changeArgs = Deserialize<UIChangeEventArgs>(eventArgsJson);
+            var jsonElement = (JsonElement)changeArgs.Value;
+            switch (jsonElement.Type)
+            {
+                case JsonValueType.Null:
+                    changeArgs.Value = null;
+                    break;
+                case JsonValueType.String:
+                    changeArgs.Value = jsonElement.GetString();
+                    break;
+                case JsonValueType.True:
+                case JsonValueType.False:
+                    changeArgs.Value = jsonElement.GetBoolean();
+                    break;
+                default:
+                    throw new ArgumentException($"Unsupported {nameof(UIChangeEventArgs)} value {jsonElement.ToString()}");
+            }
+            return changeArgs;
         }
 
         /// <summary>

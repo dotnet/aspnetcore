@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.JSInterop;
-using Mono.Cecil;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Serialization;
+using Mono.Cecil;
 
 namespace Microsoft.AspNetCore.Blazor.Build
 {
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 assemblyReferences,
                 embeddedContent,
                 linkerEnabled);
-            return Json.Serialize(data);
+            return JsonSerializer.ToString(data, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
         }
 
         private static string GetAssemblyEntryPoint(string assemblyPath)

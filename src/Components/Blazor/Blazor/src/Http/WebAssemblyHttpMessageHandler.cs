@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Services;
-using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Http
 {
@@ -18,6 +18,11 @@ namespace Microsoft.AspNetCore.Blazor.Http
     /// </summary>
     public class WebAssemblyHttpMessageHandler : HttpMessageHandler
     {
+        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+        {
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        };
+
         /// <summary>
         /// Gets or sets the default value of the 'credentials' option on outbound HTTP requests.
         /// Defaults to <see cref="FetchCredentialsOption.SameOrigin"/>.
@@ -59,7 +64,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
             options.RequestInit = new RequestInit
             {
                 Credentials = GetDefaultCredentialsString(),
-                Headers = GetHeadersAsStringArray(request),
+                Headers = GetHeaders(request),
                 Method = request.Method.Method
             };
 
@@ -68,7 +73,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
                 "Blazor._internal.http.sendAsync",
                 id,
                 request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
-                Json.Serialize(options));
+                JsonSerializer.ToString(options, _jsonSerializerOptions));
 
             return await tcs.Task;
         }
@@ -99,7 +104,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
             }
             else
             {
-                var responseDescriptor = Json.Deserialize<ResponseDescriptor>(responseDescriptorJson);
+                var responseDescriptor = JsonSerializer.Parse<ResponseDescriptor>(responseDescriptorJson, _jsonSerializerOptions);
                 var responseContent = responseBodyData == null ? null : new ByteArrayContent(responseBodyData);
                 var responseMessage = responseDescriptor.ToResponseMessage(responseContent);
                 tcs.SetResult(responseMessage);
@@ -114,10 +119,25 @@ namespace Microsoft.AspNetCore.Blazor.Http
         private static byte[] AllocateArray(string length) => new byte[int.Parse(length)];
 #pragma warning restore IDE0051 // Remove unused private members
 
-        private string[][] GetHeadersAsStringArray(HttpRequestMessage request)
-            => (from header in request.Headers.Concat(request.Content?.Headers ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>())
-                from headerValue in header.Value // There can be more than one value for each name
-                select new[] { header.Key, headerValue }).ToArray();
+        private static IReadOnlyList<Header> GetHeaders(HttpRequestMessage request)
+        {
+            var requestHeaders = request.Headers.AsEnumerable();
+            if (request.Content?.Headers != null)
+            {
+                requestHeaders = requestHeaders.Concat(request.Content.Headers);
+            }
+
+            var headers = new List<Header>();
+            foreach (var item in requestHeaders)
+            {
+                foreach (var headerValue in item.Value)
+                {
+                    headers.Add(new Header { Name = item.Key, Value = headerValue });
+                }
+            }
+
+            return headers;
+        }
 
         private static string GetDefaultCredentialsString()
         {
@@ -147,7 +167,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
         private class RequestInit
         {
             public string Credentials { get; set; }
-            public string[][] Headers { get; set; }
+            public IReadOnlyList<Header> Headers { get; set; }
             public string Method { get; set; }
         }
 
@@ -156,7 +176,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
 #pragma warning disable 0649
             public int StatusCode { get; set; }
             public string StatusText { get; set; }
-            public string[][] Headers { get; set; }
+            public IReadOnlyList<Header> Headers { get; set; }
 #pragma warning restore 0649
 
             public HttpResponseMessage ToResponseMessage(HttpContent content)
@@ -168,14 +188,21 @@ namespace Microsoft.AspNetCore.Blazor.Http
                 var contentHeaders = result.Content?.Headers;
                 foreach (var pair in Headers)
                 {
-                    if (!headers.TryAddWithoutValidation(pair[0], pair[1]))
+                    if (!headers.TryAddWithoutValidation(pair.Name, pair.Value))
                     {
-                        contentHeaders?.TryAddWithoutValidation(pair[0], pair[1]);
+                        contentHeaders?.TryAddWithoutValidation(pair.Name, pair.Value);
                     }
                 }
 
                 return result;
             }
+        }
+
+        private class Header
+        {
+            public string Name { get; set; }
+
+            public string Value { get; set; }
         }
     }
 }

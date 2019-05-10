@@ -1,4 +1,5 @@
 @page "/json"
+@using System.Text.Json.Serialization
 @inject IJSRuntime JSRuntime
 
 <h2>JSON performance</h2>
@@ -32,8 +33,8 @@
 
     protected override void OnInit()
     {
-        smallOrgChartJson = Microsoft.JSInterop.Json.Serialize(smallOrgChart);
-        largeOrgChartJson = Microsoft.JSInterop.Json.Serialize(largeOrgChart);
+        smallOrgChartJson = JsonSerializer.ToString(smallOrgChart);
+        largeOrgChartJson = JsonSerializer.ToString(largeOrgChart);
     }
 
     protected override void OnAfterRender()
@@ -50,10 +51,10 @@
     }
 
     void SerializeSmall()
-        => serializedValue = Microsoft.JSInterop.Json.Serialize(smallOrgChart);
+        => serializedValue = JsonSerializer.ToString(smallOrgChart);
 
     void SerializeLarge()
-        => serializedValue = Microsoft.JSInterop.Json.Serialize(largeOrgChart);
+        => serializedValue = JsonSerializer.ToString(largeOrgChart);
 
     void DeserializeSmall()
         => numPeopleDeserialized = Deserialize(smallOrgChartJson);
@@ -80,7 +81,7 @@
 
     static int Deserialize(string json)
     {
-        var ceo = Microsoft.JSInterop.Json.Deserialize<Person>(json);
+        var ceo = JsonSerializer.Parse<Person>(json);
         return CountPeople(ceo);
     }
 

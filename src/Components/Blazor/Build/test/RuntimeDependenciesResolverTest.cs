@@ -7,19 +7,11 @@ using System.IO;
 using System.Linq;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Blazor.Build.Test
 {
     public class RuntimeDependenciesResolverTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public RuntimeDependenciesResolverTest(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
         [ConditionalFact]
         [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10426")]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
@@ -106,6 +98,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "System.Runtime.Serialization.dll",
                 "System.ServiceModel.Internals.dll",
                 "System.Threading.dll",
+                "System.Threading.Tasks.Extensions.dll",
                 "System.Transactions.dll",
                 "System.Web.Services.dll",
                 "System.Xml.dll",
@@ -128,13 +121,21 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
             var expected = new HashSet<string>(expectedContents);
             var actual = new HashSet<string>(contents);
-            _output.WriteLine("Expected contents to have:");
-            _output.WriteLine(string.Join(",", expected.Except(actual)));
 
-            _output.WriteLine("Unexpected contents:");
-            _output.WriteLine(string.Join(",", actual.Except(expected)));
+            var contentNotFound = expected.Except(actual);
+            var additionalContentFound = actual.Except(expected);
 
             // Assert
+            if (contentNotFound.Any())
+            {
+                Assert.False(true, $"Expected content not found: {string.Join(", ", contentNotFound)}");
+            }
+
+            if (additionalContentFound.Any())
+            {
+                Assert.False(true, $"Unexpected content found: {string.Join(", ", additionalContentFound)}");
+            }
+
             Assert.Equal(expectedContents, contents);
         }
     }

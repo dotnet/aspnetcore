@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Assert.Equal("E2EPerformance", Browser.Title);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
         public void BenchmarksRunWithoutError()
         {
             // In CI, we only verify that the benchmarks run without throwing any
