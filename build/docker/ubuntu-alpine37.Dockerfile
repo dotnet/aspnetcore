@@ -7,15 +7,6 @@ WORKDIR /code/build
 RUN mkdir -p "/home/$USER" && chown "${USER_ID}:${GROUP_ID}" "/home/$USER"
 ENV HOME "/home/$USER"
 
-RUN apk add --no-cache \
-        bash \
-        wget \
-        git \
-        jq \
-        curl \
-        icu-libs \
-        openssl
-
 USER $USER_ID:$GROUP_ID
 
 # Disable the invariant mode (set in base image)
