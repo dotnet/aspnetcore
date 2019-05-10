@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.SignalR
     public class HubConnectionContext
     {
         private static readonly Action<object> _cancelReader = state => ((PipeReader)state).CancelPendingRead();
+        private static readonly WaitCallback _abortedCallback = AbortConnection;
 
         private readonly ConnectionContext _connectionContext;
         private readonly ILogger _logger;
@@ -392,7 +393,7 @@ namespace Microsoft.AspNetCore.SignalR
             Input.CancelPendingRead();
 
             // We fire and forget since this can trigger user code to run
-            _ = Task.Factory.StartNew(AbortConnection, this, cancellationToken: default, TaskCreationOptions.DenyChildAttach, TaskScheduler.Default);
+            ThreadPool.QueueUserWorkItem(_abortedCallback, this);
         }
 
         internal async Task<bool> HandshakeAsync(TimeSpan timeout, IReadOnlyList<string> supportedProtocols, IHubProtocolResolver protocolResolver,
@@ -573,26 +574,31 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private static async Task AbortConnection(object state)
+        private static void AbortConnection(object state)
         {
             var connection = (HubConnectionContext)state;
 
-            await connection._writeLock.WaitAsync();
+            _ = InnerAbortConnection(connection);
 
-            try
+            async Task InnerAbortConnection(HubConnectionContext connection)
             {
-                connection._connectionAbortedTokenSource.Cancel();
-            }
-            catch (Exception ex)
-            {
-                Log.AbortFailed(connection._logger, ex);
-            }
-            finally
-            {
-                connection._writeLock.Release();
+                await connection._writeLock.WaitAsync();
 
-                // Communicate the fact that we're finished triggering abort callbacks
-                connection._abortCompletedTcs.TrySetResult(null);
+                try
+                {
+                    connection._connectionAbortedTokenSource.Cancel();
+                }
+                catch (Exception ex)
+                {
+                    Log.AbortFailed(connection._logger, ex);
+                }
+                finally
+                {
+                    connection._writeLock.Release();
+
+                    // Communicate the fact that we're finished triggering abort callbacks
+                    connection._abortCompletedTcs.TrySetResult(null);
+                }
             }
         }
 
