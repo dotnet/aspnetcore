@@ -89,6 +89,55 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public async Task ServerTrailersSetOnResponseAfterContentRead()
+        {
+            var tcs = new TaskCompletionSource<object>();
+
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
+            {
+                context.Response.AppendTrailer("TestTrailer", "Value!");
+
+                await context.Response.WriteAsync("Hello World");
+                await context.Response.Body.FlushAsync();
+
+                await tcs.Task;
+
+                await context.Response.WriteAsync("Bye World");
+                await context.Response.Body.FlushAsync();
+            }));
+
+            var invoker = new HttpMessageInvoker(handler);
+            var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+            var response = await invoker.SendAsync(message, CancellationToken.None);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            var responseBody = await response.Content.ReadAsStreamAsync();
+
+            int read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(11, read);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            var readTask = responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.False(readTask.IsCompleted);
+            tcs.TrySetResult(null);
+
+            read = await readTask;
+            Assert.Equal(9, read);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(0, read);
+
+            var trailer = Assert.Single(response.TrailingHeaders);
+            Assert.Equal("TestTrailer", trailer.Key);
+            Assert.Equal("Value!", trailer.Value.Single());
+        }
+
+        [Fact]
         public async Task ResubmitRequestWorks()
         {
             int requestCount = 1;

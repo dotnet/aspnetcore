@@ -119,9 +119,22 @@ namespace Microsoft.AspNetCore.TestHost
                 responseBody = context.Response.Body;
             });
 
+            var response = new HttpResponseMessage();
+
+            // Copy trailers to the response message when the response stream is complete
+            contextBuilder.RegisterResponseReadCompleteCallback(context =>
+            {
+                var responseTrailersFeature = context.Features.Get<IHttpResponseTrailersFeature>();
+
+                foreach (var trailer in responseTrailersFeature.Trailers)
+                {
+                    bool success = response.TrailingHeaders.TryAddWithoutValidation(trailer.Key, (IEnumerable<string>)trailer.Value);
+                    Contract.Assert(success, "Bad trailer");
+                }
+            });
+
             var httpContext = await contextBuilder.SendAsync(cancellationToken);
 
-            var response = new HttpResponseMessage();
             response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
             response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
             response.RequestMessage = request;
