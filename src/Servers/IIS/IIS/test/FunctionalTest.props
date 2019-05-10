@@ -16,15 +16,17 @@
     <HelixProjectPlatform Condition="'$(IsIISTest)' == 'true'" Remove="@(HelixProjectPlatform)" />
 
     <HelixProjectTargetQueue Condition="'$(IsIISTest)' == 'true'" Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" />
+    <HelixProjectTargetQueue Condition="'$(IsIISTest)' == 'true'" Include="Windows.81.Amd64.Open" />
+    <!-- Disabled until https://github.com/dotnet/core-eng/issues/5506 is resolved -->
+    <!-- <HelixProjectTargetQueue Condition="'$(IsIISTest)' == 'true'" Include="Windows.7.Amd64.Open" /> -->
 
     <HelixContent Include="..\..\..\tools\update_schema.ps1" />
-    <HelixContent Include="..\..\..\tools\InstallIISFeatures.ps1" />
     <HelixContent Include="..\..\..\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixContent Include="..\..\..\tools\TestCert.pfx" />
     <HelixContent Include="..\..\..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
 
-    <HelixPreCommand Condition="'$(IsIISTest)' == 'true'" Include="call RunPowershell.cmd InstallIISFeatures.ps1" />
-    <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1" />
-    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
+    <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
 
   <Target Name="BuildAssets" AfterTargets="Build">
