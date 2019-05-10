@@ -17,13 +17,15 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly IHttpApplication<Context> _application;
         private readonly bool _preserveExecutionContext;
         private readonly HttpContext _httpContext;
-
-        private TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
-        private ResponseStream _responseStream;
-        private ResponseFeature _responseFeature = new ResponseFeature();
-        private RequestLifetimeFeature _requestLifetimeFeature = new RequestLifetimeFeature();
+        
+        private readonly TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly ResponseStream _responseStream;
+        private readonly ResponseFeature _responseFeature = new ResponseFeature();
+        private readonly RequestLifetimeFeature _requestLifetimeFeature = new RequestLifetimeFeature();
+        private readonly ResponseTrailersFeature _responseTrailersFeature = new ResponseTrailersFeature();
         private bool _pipelineFinished;
         private Context _testContext;
+        private Action<HttpContext> _responseReadCompleteCallback;
 
         internal HttpContextBuilder(IHttpApplication<Context> application, bool allowSynchronousIO, bool preserveExecutionContext)
         {
@@ -39,8 +41,9 @@ namespace Microsoft.AspNetCore.TestHost
             _httpContext.Features.Set<IHttpBodyControlFeature>(this);
             _httpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(_requestLifetimeFeature);
-            
-            _responseStream = new ResponseStream(ReturnResponseMessageAsync, AbortRequest, () => AllowSynchronousIO);
+            _httpContext.Features.Set<IHttpResponseTrailersFeature>(_responseTrailersFeature);
+
+            _responseStream = new ResponseStream(ReturnResponseMessageAsync, AbortRequest, () => AllowSynchronousIO, () => _responseReadCompleteCallback?.Invoke(_httpContext));
             _responseFeature.Body = _responseStream;
         }
 
@@ -54,6 +57,11 @@ namespace Microsoft.AspNetCore.TestHost
             }
 
             configureContext(_httpContext);
+        }
+
+        internal void RegisterResponseReadCompleteCallback(Action<HttpContext> responseReadCompleteCallback)
+        {
+            _responseReadCompleteCallback = responseReadCompleteCallback;
         }
 
         /// <summary>

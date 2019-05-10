@@ -89,6 +89,71 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public async Task ServerTrailersSetOnResponseAfterContentRead()
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
+            {
+                context.Response.AppendTrailer("StartTrailer", "Value!");
+
+                await context.Response.WriteAsync("Hello World");
+                await context.Response.Body.FlushAsync();
+
+                // Pause writing response to ensure trailers are written at the end
+                await tcs.Task;
+
+                await context.Response.WriteAsync("Bye World");
+                await context.Response.Body.FlushAsync();
+
+                context.Response.AppendTrailer("EndTrailer", "Value!");
+            }));
+
+            var invoker = new HttpMessageInvoker(handler);
+            var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+            var response = await invoker.SendAsync(message, CancellationToken.None);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            var responseBody = await response.Content.ReadAsStreamAsync();
+
+            int read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(11, read);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            var readTask = responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.False(readTask.IsCompleted);
+            tcs.TrySetResult(null);
+
+            read = await readTask;
+            Assert.Equal(9, read);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            // Read nothing because we're at the end of the response
+            read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(0, read);
+
+            // Ensure additional reads after end don't effect trailers
+            read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(0, read);
+
+            Assert.Collection(response.TrailingHeaders,
+                kvp =>
+                {
+                    Assert.Equal("StartTrailer", kvp.Key);
+                    Assert.Equal("Value!", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("EndTrailer", kvp.Key);
+                    Assert.Equal("Value!", kvp.Value.Single());
+                });
+        }
+
+        [Fact]
         public async Task ResubmitRequestWorks()
         {
             int requestCount = 1;
