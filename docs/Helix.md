@@ -13,7 +13,7 @@ To run Helix tests for one particular test project:
 
 ```
 cd src/MyCode/test
-dotnet build /t:HelixTest
+dotnet build /t:Helix
 ```
 
 To run tests for the entire repo, run:

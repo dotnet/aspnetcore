@@ -14,14 +14,15 @@ if ($lastexitcode -ne 0) {
 }
 
 $tempFile = [System.IO.Path]::GetTempFileName();
-$content = "";
-
+;
 for ($i=44300; $i -le 44399; $i++) {
-    $content += "http delete sslcert ipport=0.0.0.0:$i`n";
-    $content += "http add sslcert ipport=0.0.0.0:$i certhash=$thumb appid=`{214124cd-d05b-4309-9af9-9caa44b2b74a`}`n";
+    Add-Content -Path $tempFile "http delete sslcert ipport=0.0.0.0:$i"
+    Add-Content -Path $tempFile "http add sslcert ipport=0.0.0.0:$i certhash=$thumb appid=`{214124cd-d05b-4309-9af9-9caa44b2b74a`}"
 }
 
-[IO.File]::WriteAllLines($tempFile, $content)
-
-netsh -f $tempFile
-Remove-Item $tempFile;
+& netsh -f $tempFile
+if ($lastexitcode -ne 0) {
+    Write-Warning 'netsh script had some failures that are being ignored.'
+    $lastexitcode = 0
+}
+Remove-Item $tempFile
