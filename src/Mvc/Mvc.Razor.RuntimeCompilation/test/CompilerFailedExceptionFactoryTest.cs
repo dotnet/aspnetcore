@@ -34,7 +34,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
             // Assert
             var failure = Assert.Single(compilationResult.CompilationFailures);
             Assert.Equal(viewPath, failure.SourceFilePath);
-            Assert.Collection(failure.Messages,
+            var orderedMessages = failure.Messages.OrderByDescending(messages => messages.Message);
+            Assert.Collection(orderedMessages,
                 message => Assert.StartsWith(
                     @"Unterminated string literal.",
                     message.Message),

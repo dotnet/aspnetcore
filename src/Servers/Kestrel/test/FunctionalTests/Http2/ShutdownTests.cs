@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         [ConditionalFact]
         [SkipOnHelix(Queues = "Fedora.28.Amd64.Open")] // https://github.com/aspnet/AspNetCore/issues/9985
-        [Flaky("https://github.com/aspnet/AspNetCore/issues/9985", FlakyOn.Helix.All)]
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/9985", FlakyOn.All)]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
             var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

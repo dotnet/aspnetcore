@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class ComponentEndpointConventionBuilderExtensions
     {
-        public static TBuilder AddComponent<TBuilder>(this TBuilder builder, System.Type componentType, string selector) where TBuilder : Microsoft.AspNetCore.SignalR.IHubEndpointConventionBuilder { throw null; }
+        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder AddComponent(this Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder builder, System.Type componentType, string selector) { throw null; }
     }
     public static partial class ComponentEndpointRouteBuilderExtensions
     {

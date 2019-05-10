@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.TestHost
         public System.Uri BaseAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Hosting.IWebHost Host { get { throw null; } }
+        public bool PreserveExecutionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Net.Http.HttpClient CreateClient() { throw null; }
         public System.Net.Http.HttpMessageHandler CreateHandler() { throw null; }
         public Microsoft.AspNetCore.TestHost.RequestBuilder CreateRequest(string path) { throw null; }

@@ -45,6 +45,8 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal bool AllowSynchronousIO { get; set; }
 
+        internal bool PreserveExecutionContext { get; set; }
+
         /// <summary>
         /// This adapts HttpRequestMessages to ASP.NET Core requests, dispatches them through the pipeline, and returns the
         /// associated HttpResponseMessage.
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO);
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
 
             Stream responseBody = null;
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
