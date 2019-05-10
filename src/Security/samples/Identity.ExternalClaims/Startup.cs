@@ -46,7 +46,7 @@ namespace Identity.ExternalClaims
                 o.SaveTokens = true;
                 o.Events.OnCreatingTicket = ctx =>
                 {
-                    List<AuthenticationToken> tokens = ctx.Properties.GetTokens() as List<AuthenticationToken>;
+                    List<AuthenticationToken> tokens = ctx.Properties.GetTokens().ToList();
                     tokens.Add(new AuthenticationToken() { Name = "TicketCreated", Value = DateTime.UtcNow.ToString() });
                     ctx.Properties.StoreTokens(tokens);
                     return Task.CompletedTask;
