@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
-        public void OnProvidersExecuting_CollatesAttributesFromInheritedTypes()
+        public void OnProvidersExecuting_DoesNotCollatesAttributesFromInheritedTypes()
         {
             // Arrange
             var options = Options.Create(new AuthorizationOptions());
@@ -108,8 +108,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 f => Assert.IsType<HandleOptionsRequestsPageFilter>(f),
                 f => authorizeFilter = Assert.IsType<AuthorizeFilter>(f));
 
-            // Basic + Basic2 + Derived authorize
-            Assert.Equal(3, authorizeFilter.Policy.Requirements.Count);
+            // Verify that there is no combined policy
+            Assert.Null(authorizeFilter.Policy);
+            Assert.Equal(policyProvider, authorizeFilter.PolicyProvider);
         }
 
         private class TestPageWithDerivedModel : Page
