@@ -81,13 +81,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private void InitializeLocalEndpoint()
         {
             var localEndPoint = GetLocalEndPoint();
-            if (localEndPoint == null)
-            {
-                // ApplicationInitialization request might not set the local endpoint
-                LocalIpAddress = IPAddress.None;
-                LocalPort = 0;
-            }
-            else
+            if (localEndPoint != null)
             {
                 LocalIpAddress = localEndPoint.GetIPAddress();
                 LocalPort = localEndPoint.GetPort();
@@ -97,13 +91,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private void InitializeRemoteEndpoint()
         {
             var remoteEndPoint = GetRemoteEndPoint();
-            if (remoteEndPoint == null)
-            {
-                // ApplicationInitialization request might not set the remote endpoint
-                RemoteIpAddress = IPAddress.None;
-                RemotePort = 0;
-            }
-            else
+            if (remoteEndPoint != null)
             {
                 RemoteIpAddress = remoteEndPoint.GetIPAddress();
                 RemotePort = remoteEndPoint.GetPort();
