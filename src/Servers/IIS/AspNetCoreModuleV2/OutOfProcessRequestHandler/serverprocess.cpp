@@ -1848,6 +1848,7 @@ SERVER_PROCESS::CleanUp()
 
 SERVER_PROCESS::~SERVER_PROCESS()
 {
+    DWORD    dwThreadStatus = 0;
 
     CleanUp();
 
@@ -1868,6 +1869,38 @@ SERVER_PROCESS::~SERVER_PROCESS()
             CloseHandle(m_hStdoutHandle);
         }
         m_hStdoutHandle = NULL;
+    }
+
+    // Forces ReadFile to cancel, causing the read loop to complete.
+    // Don't check return value as IO may or may not be completed already.
+    if (m_hReadThread != nullptr)
+    {
+        LOG_INFO(L"Canceling standard stream pipe reader");
+        CancelSynchronousIo(m_hReadThread);
+    }
+
+    // GetExitCodeThread returns 0 on failure; thread status code is invalid.
+    if (m_hReadThread != nullptr &&
+        !LOG_LAST_ERROR_IF(!GetExitCodeThread(m_hReadThread, &dwThreadStatus)) &&
+        dwThreadStatus == STILL_ACTIVE)
+    {
+        // Wait for graceful shutdown, i.e., the exit of the background thread or timeout
+        if (WaitForSingleObject(m_hReadThread, PIPE_OUTPUT_THREAD_TIMEOUT) != WAIT_OBJECT_0)
+        {
+            // If the thread is still running, we need kill it first before exit to avoid AV
+            if (!LOG_LAST_ERROR_IF(GetExitCodeThread(m_hReadThread, &dwThreadStatus) == 0) &&
+                dwThreadStatus == STILL_ACTIVE)
+            {
+                LOG_WARN(L"Thread reading stdout/err hit timeout, forcibly closing thread.");
+                TerminateThread(m_hReadThread, STATUS_CONTROL_C_EXIT);
+            }
+        }
+    }
+
+    if (m_hReadThread != nullptr)
+    {
+        CloseHandle(m_hReadThread);
+        m_hReadThread = nullptr;
     }
 
     if (m_fStdoutLogEnabled)

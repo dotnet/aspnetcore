@@ -10,6 +10,7 @@
 #define MAX_PORT                                    48000
 #define MAX_RETRY                                   10
 #define MAX_ACTIVE_CHILD_PROCESSES                  16
+#define PIPE_OUTPUT_THREAD_TIMEOUT                  2000
 #define LOCALHOST                                   "127.0.0.1"
 #define ASPNETCORE_PORT_STR                         L"ASPNETCORE_PORT"
 #define ASPNETCORE_PORT_ENV_STR                     L"ASPNETCORE_PORT="
