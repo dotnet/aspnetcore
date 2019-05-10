@@ -17,7 +17,6 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly IHttpApplication<Context> _application;
         private readonly bool _preserveExecutionContext;
         private readonly HttpContext _httpContext;
-        private readonly HttpContext _httpContext;
         
         private readonly TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly ResponseStream _responseStream;
