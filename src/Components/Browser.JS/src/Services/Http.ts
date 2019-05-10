@@ -16,7 +16,7 @@ async function sendAsync(id: number, body: System_Array<any>, jsonFetchArgs: Sys
   let responseData: ArrayBuffer;
 
   const fetchOptions: FetchOptions = JSON.parse(platform.toJavaScriptString(jsonFetchArgs));
-  const requestInit: RequestInit = Object.assign(fetchOptions.requestInit, fetchOptions.requestInitOverrides);
+  const requestInit: RequestInit = Object.assign(convertToRequestInit(fetchOptions.requestInit), fetchOptions.requestInitOverrides);
 
   if (body) {
     requestInit.body = platform.toUint8Array(body);
@@ -33,6 +33,14 @@ async function sendAsync(id: number, body: System_Array<any>, jsonFetchArgs: Sys
   dispatchSuccessResponse(id, response, responseData);
 }
 
+function convertToRequestInit(blazorRequestInit: BlazorRequestInit) {
+  return {
+    credentials: blazorRequestInit.credentials,
+    method: blazorRequestInit.method,
+    headers: blazorRequestInit.headers.map(item => [item.name, item.value])
+  };
+}
+
 function dispatchSuccessResponse(id: number, response: Response, responseData: ArrayBuffer) {
   const responseDescriptor: ResponseDescriptor = {
     statusCode: response.status,
@@ -40,7 +48,7 @@ function dispatchSuccessResponse(id: number, response: Response, responseData: A
     headers: [],
   };
   response.headers.forEach((value, name) => {
-    responseDescriptor.headers.push([name, value]);
+    responseDescriptor.headers.push({ name: name, value: value });
   });
 
   if (!allocateArrayMethod) {
@@ -99,8 +107,14 @@ function dispatchResponse(id: number, responseDescriptor: System_String | null, 
 // Keep these in sync with the .NET equivalent in WebAssemblyHttpMessageHandler.cs
 interface FetchOptions {
   requestUri: string;
-  requestInit: RequestInit;
+  requestInit: BlazorRequestInit;
   requestInitOverrides: RequestInit;
+}
+
+interface BlazorRequestInit {
+  credentials: string;
+  headers: Header[];
+  method: string;
 }
 
 interface ResponseDescriptor {
@@ -109,5 +123,10 @@ interface ResponseDescriptor {
   // also gets JSON encoded. It would work but is twice the amount of string processing.
   statusCode: number;
   statusText: string;
-  headers: string[][];
+  headers: Header[];
+}
+
+interface Header {
+  name: string;
+  value: string;
 }

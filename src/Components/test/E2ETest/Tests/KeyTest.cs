@@ -4,12 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.JSInterop;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
@@ -276,8 +276,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var rootBefore = new Node(null, "root", before);
             var rootAfter = new Node(null, "root", after);
-            var jsonBefore = Json.Serialize(rootBefore);
-            var jsonAfter = Json.Serialize(rootAfter);
+            var jsonBefore = JsonSerializer.ToString(rootBefore, TestJsonSerializerOptionsProvider.Options);
+            var jsonAfter = JsonSerializer.ToString(rootAfter, TestJsonSerializerOptionsProvider.Options);
 
             var appElem = MountTestComponent<KeyCasesComponent>();
             var textbox = appElem.FindElement(By.TagName("textarea"));
@@ -328,7 +328,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         private void SetTextAreaValueFast(IWebElement textAreaElementWithId, string value)
         {
             var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript($"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {Json.Serialize(value)}");
+            javascript.ExecuteScript(
+                $"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {JsonSerializer.ToString(value, TestJsonSerializerOptionsProvider.Options)}");
             textAreaElementWithId.SendKeys(" "); // So it fires the change event
         }
 

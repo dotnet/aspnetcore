@@ -1,5 +1,5 @@
 @using System.Collections.Generic
-@using Microsoft.JSInterop
+@using System.Text.Json.Serialization
 
 <div>
     <h2>Mouse position</h2>
@@ -65,7 +65,7 @@
 
     void DumpEvent(UIMouseEventArgs e)
     {
-        Console.WriteLine(Json.Serialize(e));
+        Console.WriteLine(JsonSerializer.ToString(e));
     }
 
     void Clear()

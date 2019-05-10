@@ -147,10 +147,10 @@
     lodash "^4.17.11"
     to-fast-properties "^2.0.0"
 
-"@dotnet/jsinterop@^0.1.1":
-  version "0.1.1"
-  resolved "https://registry.yarnpkg.com/@dotnet/jsinterop/-/jsinterop-0.1.1.tgz#f54ba865f241596ea3744f28634454a160476399"
-  integrity sha512-/Y5f3rtzZ85y8ukBds6IHRgnu7zwlAxe/JhaqN8mvj/JPDA4AtfdNqjJBZuZJxLrP0k6+q4owx/DS7LyZWccFQ==
+"@dotnet/jsinterop@3.0.0-preview6.19280.1":
+  version "3.0.0-preview6.19280.1"
+  resolved "https://dotnet.myget.org/F/aspnetcore-dev/npm/@dotnet/jsinterop/-/@dotnet/jsinterop-3.0.0-preview6.19280.1.tgz#4c991132f33157de93bc3b6db93cffc9e964b241"
+  integrity sha1-TJkRMvMxV96TvDttuTz/yelkskE=
 
 "@types/emscripten@0.0.31":
   version "0.0.31"
