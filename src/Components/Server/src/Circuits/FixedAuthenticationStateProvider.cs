@@ -22,7 +22,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private Task<IAuthenticationState> _authenticationStateTask;
 
         // Since the authentication state is fixed, we never raise this event
+        #pragma warning disable 0067 // "Never used"
         public event AuthenticationStateChangedHandler AuthenticationStateChanged;
+        #pragma warning restore 0067
 
         public void Initialize(ClaimsPrincipal user)
         {
