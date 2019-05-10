@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (transferFormat != TransferFormat.Text)
             {

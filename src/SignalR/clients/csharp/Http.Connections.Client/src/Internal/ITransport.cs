@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     public interface ITransport : IDuplexPipe
     {
-        Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken);
+        Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default);
         Task StopAsync();
     }
 }

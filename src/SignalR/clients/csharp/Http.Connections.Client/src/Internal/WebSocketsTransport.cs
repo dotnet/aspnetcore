@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _accessTokenProvider = accessTokenProvider;
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (url == null)
             {

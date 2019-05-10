@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
             {
