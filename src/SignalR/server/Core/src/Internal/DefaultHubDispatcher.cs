@@ -403,13 +403,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource streamCts, HubMethodInvocationMessage hubMethodInvocationMessage)
         {
             string error = null;
-
             try
             {
-                await foreach (var streamItem in enumerable)
+                await foreach(var item in enumerable.WithCancellation(streamCts.Token))
                 {
                     // Send the stream item
-                    await connection.WriteAsync(new StreamItemMessage(invocationId, streamItem));
+                    await connection.WriteAsync(new StreamItemMessage(invocationId, item));
                 }
             }
             catch (ChannelClosedException ex)
