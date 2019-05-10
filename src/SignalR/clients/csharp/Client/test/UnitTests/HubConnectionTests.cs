@@ -339,7 +339,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 // after cancellation, don't send from the pipe
                 foreach (var number in new[] { 42, 43, 322, 3145, -1234 })
                 {
-
                     await channel.Writer.WriteAsync(number);
                 }
 

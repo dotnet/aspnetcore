@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
-            public async Task StartAsyncWaitsForPreviousStartIfAlreadyStarting()
+            public async Task StartAsyncThrowsIfPreviousStartIsAlreadyStarting()
             {
                 // Set up StartAsync to wait on the syncPoint when starting
                 var testConnection = new TestConnection(onStart: SyncPoint.Create(out var syncPoint));
@@ -86,9 +86,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Release the sync point
                     syncPoint.Continue();
 
-                    // Both starts should finish fine
+                    // The first start should finish fine, but the second throws an InvalidOperationException.
                     await firstStart;
-                    await secondStart;
+                    await Assert.ThrowsAsync<InvalidOperationException>(() => secondStart);
                 });
             }
 
@@ -147,16 +147,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var stopTask = connection.StopAsync().OrTimeout();
 
                     // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
-                    await syncPoint.WaitForSyncPoint();
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
 
-                    // We should be able to start now, and StopAsync hasn't completed, nor will it complete while Starting
+                    // We should not yet be able to start now because StopAsync hasn't completed
                     Assert.False(stopTask.IsCompleted);
-                    await connection.StartAsync().OrTimeout();
+                    var startTask = connection.StartAsync().OrTimeout();
                     Assert.False(stopTask.IsCompleted);
 
                     // When we release the sync point, the StopAsync task will finish
                     syncPoint.Continue();
                     await stopTask;
+
+                    // Which will then allow StartAsync to finish.
+                    await startTask;
                 });
             }
 
@@ -240,7 +243,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     Assert.False(startTask.IsCompleted);
                     await syncPoint.WaitForSyncPoint();
 
-                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+                    Assert.Equal(HubConnectionState.Connecting, connection.State);
 
                     // Release the SyncPoint
                     syncPoint.Continue();
@@ -442,6 +445,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     // Stop and invoke the method. These two aren't synchronizable via a Sync Point any more because the transport is disposed
                     // outside the lock :(
                     var disposeTask = connection.StopAsync().OrTimeout();
+
+                    // Wait to hit DisposeAsync on TestConnection (which should be after StopAsync has cleared the connection state)
+                    await syncPoint.WaitForSyncPoint().OrTimeout();
+
                     var targetTask = method(connection).OrTimeout();
 
                     // Release the sync point
