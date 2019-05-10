@@ -52,7 +52,6 @@ namespace HeaderPropagationSample
             services
                 .AddHttpClient("another")
                 .AddHeaderPropagation(options => options.Headers.Add("X-BetaFeatures", "X-Experiments"));
-
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHttpClientFactory clientFactory)
