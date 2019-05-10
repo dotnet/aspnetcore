@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.TestHost
     internal class ResponseStream : Stream
     {
         private bool _complete;
+        private bool _readerComplete;
         private bool _aborted;
         private Exception _abortException;
         private bool _firstWrite;
@@ -109,6 +110,12 @@ namespace Microsoft.AspNetCore.TestHost
         {
             VerifyBuffer(buffer, offset, count, allowEmpty: false);
             CheckAborted();
+
+            if (_readerComplete)
+            {
+                return 0;
+            }
+
             var registration = cancellationToken.Register(Cancel);
             try
             {
@@ -118,6 +125,7 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     _pipe.Reader.Complete();
                     _readComplete();
+                    _readerComplete = true;
                     return 0;
                 }
 

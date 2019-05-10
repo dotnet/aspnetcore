@@ -95,15 +95,18 @@ namespace Microsoft.AspNetCore.TestHost
 
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
-                context.Response.AppendTrailer("TestTrailer", "Value!");
+                context.Response.AppendTrailer("StartTrailer", "Value!");
 
                 await context.Response.WriteAsync("Hello World");
                 await context.Response.Body.FlushAsync();
 
+                // Pause writing response to ensure trailers are written at the end
                 await tcs.Task;
 
                 await context.Response.WriteAsync("Bye World");
                 await context.Response.Body.FlushAsync();
+
+                context.Response.AppendTrailer("EndTrailer", "Value!");
             }));
 
             var invoker = new HttpMessageInvoker(handler);
@@ -129,12 +132,25 @@ namespace Microsoft.AspNetCore.TestHost
 
             Assert.Empty(response.TrailingHeaders);
 
+            // Read nothing because we're at the end of the response
             read = await responseBody.ReadAsync(new byte[100], 0, 100);
             Assert.Equal(0, read);
 
-            var trailer = Assert.Single(response.TrailingHeaders);
-            Assert.Equal("TestTrailer", trailer.Key);
-            Assert.Equal("Value!", trailer.Value.Single());
+            // Ensure additional reads after end don't effect trailers
+            read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(0, read);
+
+            Assert.Collection(response.TrailingHeaders,
+                kvp =>
+                {
+                    Assert.Equal("StartTrailer", kvp.Key);
+                    Assert.Equal("Value!", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("EndTrailer", kvp.Key);
+                    Assert.Equal("Value!", kvp.Value.Single());
+                });
         }
 
         [Fact]
