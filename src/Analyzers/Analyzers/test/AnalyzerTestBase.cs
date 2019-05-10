@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Analyzers
 
         private static string GetProjectDirectory()
         {
-            // On helix we use the published test files 
+            // On helix we use the published test files
             if (SkipOnHelixAttribute.OnHelix())
             {
                 return AppContext.BaseDirectory;
