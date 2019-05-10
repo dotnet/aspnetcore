@@ -1,5 +1,6 @@
 using System;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Format = transferFormat;
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             if ((Format & transferFormat) == 0)
             {
