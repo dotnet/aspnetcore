@@ -21,8 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         private Dictionary<string, object> _arguments;
 
-        private ActionExecutingContext _actionExecutingContext;
-        private ActionExecutedContext _actionExecutedContext;
+        private ActionExecutingContextSealed _actionExecutingContext;
+        private ActionExecutedContextSealed _actionExecutedContext;
 
         internal ControllerActionInvoker(
             ILogger logger,
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutingContext == null)
                             {
-                                _actionExecutingContext = new ActionExecutingContext(_controllerContext, _filters, _arguments, _instance);
+                                _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments, _instance);
                             }
 
                             state = current.FilterAsync;
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutingContext == null)
                             {
-                                _actionExecutingContext = new ActionExecutingContext(_controllerContext, _filters, _arguments, _instance);
+                                _actionExecutingContext = new ActionExecutingContextSealed(_controllerContext, _filters, _arguments, _instance);
                             }
 
                             state = current.Filter;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             // If we get here then the filter didn't call 'next' indicating a short circuit.
                             _logger.ActionFilterShortCircuited(filter);
 
-                            _actionExecutedContext = new ActionExecutedContext(
+                            _actionExecutedContext = new ActionExecutedContextSealed(
                                 _controllerContext,
                                 _filters,
                                 _instance)
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             // Short-circuited by setting a result.
                             _logger.ActionFilterShortCircuited(filter);
 
-                            _actionExecutedContext = new ActionExecutedContext(
+                            _actionExecutedContext = new ActionExecutedContextSealed(
                                 _actionExecutingContext,
                                 _filters,
                                 _instance)
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_actionExecutedContext == null)
                             {
-                                _actionExecutedContext = new ActionExecutedContext(_controllerContext, _filters, _instance)
+                                _actionExecutedContext = new ActionExecutedContextSealed(_controllerContext, _filters, _instance)
                                 {
                                     Result = _result,
                                 };
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception exception)
             {
-                _actionExecutedContext = new ActionExecutedContext(_controllerContext, _filters, _instance)
+                _actionExecutedContext = new ActionExecutedContextSealed(_controllerContext, _filters, _instance)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
                 catch (Exception exception)
                 {
-                    invoker._actionExecutedContext = new ActionExecutedContext(invoker._controllerContext, invoker._filters, invoker._instance)
+                    invoker._actionExecutedContext = new ActionExecutedContextSealed(invoker._controllerContext, invoker._filters, invoker._instance)
                     {
                         ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                     };
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             Debug.Assert(_actionExecutedContext != null);
-            return Task.FromResult(_actionExecutedContext);
+            return Task.FromResult<ActionExecutedContext>(_actionExecutedContext);
 
             static async Task<ActionExecutedContext> Awaited(ControllerActionInvoker invoker, Task task)
             {
@@ -485,7 +485,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void Rethrow(ActionExecutedContext context)
+        private static void Rethrow(ActionExecutedContextSealed context)
         {
             if (context == null)
             {
@@ -566,6 +566,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             ActionSyncEnd,
             ActionInside,
             ActionEnd,
+        }
+
+        private sealed class ActionExecutingContextSealed : ActionExecutingContext
+        {
+            public ActionExecutingContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, IDictionary<string, object> actionArguments, object controller) : base(actionContext, filters, actionArguments, controller) { }
+        }
+
+        private sealed class ActionExecutedContextSealed : ActionExecutedContext
+        {
+            public ActionExecutedContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, object controller) : base(actionContext, filters, controller) { }
         }
     }
 }
