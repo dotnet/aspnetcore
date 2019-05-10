@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
@@ -14,8 +15,9 @@ namespace Microsoft.AspNetCore.TestHost
     internal class HttpContextBuilder : IHttpBodyControlFeature
     {
         private readonly IHttpApplication<Context> _application;
+        private readonly bool _preserveExecutionContext;
         private readonly HttpContext _httpContext;
-        
+
         private TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
         private ResponseStream _responseStream;
         private ResponseFeature _responseFeature = new ResponseFeature();
@@ -23,10 +25,11 @@ namespace Microsoft.AspNetCore.TestHost
         private bool _pipelineFinished;
         private Context _testContext;
 
-        internal HttpContextBuilder(IHttpApplication<Context> application, bool allowSynchronousIO)
+        internal HttpContextBuilder(IHttpApplication<Context> application, bool allowSynchronousIO, bool preserveExecutionContext)
         {
             _application = application ?? throw new ArgumentNullException(nameof(application));
             AllowSynchronousIO = allowSynchronousIO;
+            _preserveExecutionContext = preserveExecutionContext;
             _httpContext = new DefaultHttpContext();
 
             var request = _httpContext.Request;
@@ -61,11 +64,14 @@ namespace Microsoft.AspNetCore.TestHost
         {
             var registration = cancellationToken.Register(AbortRequest);
 
-            _testContext = _application.CreateContext(_httpContext.Features);
-
-            // Async offload, don't let the test code block the caller.
-            _ = Task.Factory.StartNew(async () =>
+            // Everything inside this function happens in the SERVER's execution context (unless PreserveExecutionContext is true)
+            async Task RunRequestAsync()
             {
+                // This will configure IHttpContextAccessor so it needs to happen INSIDE this function,
+                // since we are now inside the Server's execution context. If it happens outside this cont
+                // it will be lost when we abandon the execution context.
+                _testContext = _application.CreateContext(_httpContext.Features);
+
                 try
                 {
                     await _application.ProcessRequestAsync(_testContext);
@@ -81,7 +87,20 @@ namespace Microsoft.AspNetCore.TestHost
                 {
                     registration.Dispose();
                 }
-            });
+            }
+
+            // Async offload, don't let the test code block the caller.
+            if (_preserveExecutionContext)
+            {
+                _ = Task.Factory.StartNew(RunRequestAsync);
+            }
+            else
+            {
+                ThreadPool.UnsafeQueueUserWorkItem(_ =>
+                {
+                    _ = RunRequestAsync();
+                }, null);
+            }
 
             return _responseTcs.Task;
         }
