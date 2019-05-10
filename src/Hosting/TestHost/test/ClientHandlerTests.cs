@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public async Task ServerTrailersSetOnResponseAfterContentRead()
         {
-            var tcs = new TaskCompletionSource<object>();
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
             var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
             {
