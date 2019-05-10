@@ -105,9 +105,9 @@ namespace Microsoft.AspNetCore.Http
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Gets or sets the request body pipe <see cref="PipeReader"/>.
+        /// Gets the request body pipe <see cref="PipeReader"/>.
         /// </summary>
-        public virtual PipeReader BodyReader { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public virtual PipeReader BodyReader { get => throw new NotImplementedException();  }
 
         /// <summary>
         /// Checks the Content-Type header for form types.

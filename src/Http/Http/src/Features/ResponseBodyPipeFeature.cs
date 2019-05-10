@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
     public class ResponseBodyPipeFeature : IResponseBodyPipeFeature
     {
-        private StreamPipeWriter _internalPipeWriter;
+        private PipeWriter _internalPipeWriter;
+        private Stream _streamInstanceWhenWrapped;
+
         private PipeWriter _userSetPipeWriter;
         private HttpContext _context;
 
@@ -31,10 +34,13 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
 
                 if (_internalPipeWriter == null ||
-                    !object.ReferenceEquals(_internalPipeWriter.InnerStream, _context.Response.Body))
+                    !ReferenceEquals(_streamInstanceWhenWrapped, _context.Response.Body))
                 {
-                    _internalPipeWriter = new StreamPipeWriter(_context.Response.Body);
-                    _context.Response.RegisterForDispose(_internalPipeWriter);
+                    _streamInstanceWhenWrapped = _context.Response.Body;
+                    _internalPipeWriter = PipeWriter.Create(_context.Response.Body);
+
+                    // REVIEW: No longer possible? Do we still need it?
+                    //_context.Response.RegisterForDispose(_internalPipeWriter);
                 }
 
                 return _internalPipeWriter;

@@ -11,6 +11,7 @@ namespace System.IO.Pipelines
     /// <summary>
     /// Represents a read-only Stream backed by a PipeReader
     /// </summary>
+    // REVIEW: Could this be replaced or simplified with https://apisof.net/catalog/System.IO.Pipelines.PipeReader.AsStream() ?
     public class ReadOnlyPipeStream : Stream
     {
         private bool _allowSynchronousIO = true;

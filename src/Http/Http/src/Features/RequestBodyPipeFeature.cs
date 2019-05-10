@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Http.Features
 {
     public class RequestBodyPipeFeature : IRequestBodyPipeFeature
     {
-        private StreamPipeReader _internalPipeReader;
+        private PipeReader _internalPipeReader;
+        private Stream _streamInstanceWhenWrapped;
         private PipeReader _userSetPipeReader;
         private HttpContext _context;
 
@@ -31,10 +33,13 @@ namespace Microsoft.AspNetCore.Http.Features
                 }
 
                 if (_internalPipeReader == null ||
-                    !object.ReferenceEquals(_internalPipeReader.InnerStream, _context.Request.Body))
+                    !ReferenceEquals(_streamInstanceWhenWrapped, _context.Request.Body))
                 {
-                    _internalPipeReader = new StreamPipeReader(_context.Request.Body);
-                    _context.Response.RegisterForDispose(_internalPipeReader);
+                    _streamInstanceWhenWrapped = _context.Request.Body;
+                    _internalPipeReader = PipeReader.Create(_context.Request.Body);
+
+                    // REVIEW: No longer possible? Do we still need it?
+                    // _context.Response.RegisterForDispose(_internalPipeReader);
                 }
 
                 return _internalPipeReader;
