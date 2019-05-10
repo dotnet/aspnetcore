@@ -593,12 +593,12 @@ namespace Microsoft.AspNetCore.SignalR
 
             static async Task InnerAbortConnection(HubConnectionContext connection)
             {
+                // We lock to make sure all writes are done before triggering the completion of the pipe
                 await connection._writeLock.WaitAsync();
                 try
                 {
                     // Communicate the fact that we're finished triggering abort callbacks
                     // HubOnDisconnectedAsync is waiting on this to complete the Pipe
-                    // We lock to make sure all writes are done before continuing
                     connection._abortCompletedTcs.TrySetResult(null);
                 }
                 finally
