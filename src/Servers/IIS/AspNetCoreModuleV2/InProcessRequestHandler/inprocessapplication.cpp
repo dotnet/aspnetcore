@@ -301,6 +301,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Clr thread wait ended: clrThreadExited: %d", clrThreadExited);
         }
 
+        context->m_hostFxr.Close();
+
         // At this point CLR thread either finished or timed out, abandon it.
         m_clrThread.detach();
 

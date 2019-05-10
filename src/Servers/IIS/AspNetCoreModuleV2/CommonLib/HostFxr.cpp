@@ -42,12 +42,12 @@ void HostFxr::Load(HMODULE moduleHandle)
     m_hHostFxrDll = moduleHandle;
     try
     {
-        m_hostfxr_main_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_main_fn>(moduleHandle, "hostfxr_main");
         m_hostfxr_get_native_search_directories_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(moduleHandle, "hostfxr_get_native_search_directories");
         m_corehost_set_error_writer_fn = ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(moduleHandle, "hostfxr_set_error_writer", /* optional */ true);
         m_hostfxr_initialize_for_app_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_initialize_for_app_fn>(moduleHandle, "hostfxr_initialize_for_app", true);
         m_hostfxr_set_runtime_property_value_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_set_runtime_property_value_fn>(moduleHandle, "hostfxr_set_runtime_property_value", true);
         m_hostfxr_run_app_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_run_app_fn>(moduleHandle, "hostfxr_run_app", true);
+        m_hostfxr_close_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_close_fn>(moduleHandle, "hostfxr_close", true);
     }
     catch (...)
     {
@@ -108,7 +108,7 @@ HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput* writer) const 
     return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
 }
 
-int HostFxr::InitializeForApp(int argc, const PCWSTR* argv, const std::wstring dotnetExePath, bool callStartupHook) const noexcept
+int HostFxr::InitializeForApp(int argc, const PCWSTR* argv, const std::wstring dotnetExe, bool callStartupHook) const noexcept
 {
     if (m_hostfxr_initialize_for_app_fn == nullptr)
     {
@@ -117,14 +117,22 @@ int HostFxr::InitializeForApp(int argc, const PCWSTR* argv, const std::wstring d
 
     hostfxr_initialize_parameters params;
     params.size = sizeof(hostfxr_initialize_parameters);
-    std::filesystem::path dotnetPath(dotnetExePath);
+    if (!dotnetExe.empty())
+    {
+        std::filesystem::path dotnetExePath(dotnetExe);
 
+        auto dotnetFolderPath = dotnetExePath.parent_path();
+        params.dotnet_root = dotnetFolderPath.c_str();
+        params.host_path = L"";
+        RETURN_IF_NOT_ZERO(m_hostfxr_initialize_for_app_fn(argc - 1, &argv[1], nullptr, &params, &m_host_context_handle));
 
-    auto dotnetWstring = dotnetPath.parent_path();
-    params.dotnet_root = dotnetWstring.c_str();
-    params.host_path = L"";
-
-    RETURN_IF_NOT_ZERO(m_hostfxr_initialize_for_app_fn(argc - 1, &argv[1], nullptr, &params, &m_host_context_handle));
+    }
+    else
+    {
+        params.dotnet_root = L"";
+        params.host_path = L"";
+        RETURN_IF_NOT_ZERO(m_hostfxr_initialize_for_app_fn(argc, argv, nullptr, &params, &m_host_context_handle));
+    }
 
     if (callStartupHook)
     {
@@ -143,4 +151,12 @@ int HostFxr::SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept
         return m_hostfxr_set_runtime_property_value_fn(m_host_context_handle, name, value);
     }
     return 0;
+}
+
+void HostFxr::Close() const noexcept
+{
+    if (m_host_context_handle != nullptr && m_hostfxr_close_fn != nullptr)
+    {
+        m_hostfxr_close_fn(m_host_context_handle);
+    }
 }

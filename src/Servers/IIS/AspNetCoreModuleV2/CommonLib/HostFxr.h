@@ -25,7 +25,7 @@ typedef corehost_error_writer_fn(*corehost_set_error_writer_fn) (corehost_error_
 typedef int(*hostfxr_initialize_for_app_fn)(int argc, const PCWSTR* argv, PCWSTR app_path, hostfxr_initialize_parameters* parameters, void* const* host_context_handle);
 typedef int(*hostfxr_set_runtime_property_value_fn)(void* host_context_handle, PCWSTR name, PCWSTR value);
 typedef int(*hostfxr_run_app_fn)(void* host_context_handle);
-typedef int(*hostfxr_close)(void* hostfxr_context_handle);
+typedef int(*hostfxr_close_fn)(void* hostfxr_context_handle);
 
 struct ErrorContext
 {
@@ -83,7 +83,8 @@ public:
 
     HostFxrErrorRedirector RedirectOutput(RedirectionOutput* writer) const noexcept;
     int SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept;
-    int InitializeForApp(int argc, const PCWSTR* argv, const std::wstring m_dotnetExeKnownLocation, bool callStartupHook) const noexcept; // todo const this
+    int InitializeForApp(int argc, const PCWSTR* argv, const std::wstring m_dotnetExeKnownLocation, bool callStartupHook) const noexcept;
+    void Close() const noexcept;
 
 private:
     HandleWrapper<ModuleHandleTraits> m_hHostFxrDll;
@@ -93,6 +94,6 @@ private:
     hostfxr_set_runtime_property_value_fn m_hostfxr_set_runtime_property_value_fn;
     hostfxr_run_app_fn m_hostfxr_run_app_fn;
     corehost_set_error_writer_fn m_corehost_set_error_writer_fn;
-    hostfxr_close m_hostfxr_close_fn;
+    hostfxr_close_fn m_hostfxr_close_fn;
     void* m_host_context_handle;
 };
