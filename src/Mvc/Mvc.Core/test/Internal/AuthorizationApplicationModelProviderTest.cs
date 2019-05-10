@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void OnProvidersExecuting_DefaultPolicyProvider_NoAuthorizationData_NoFilterCreated()
+        public void OnProvidersExecuting_DefaultPolicyProvider_HasNoPolicy_HasPolicyProviderAndAuthorizeData()
         {
             // Arrange
             var requirements = new IAuthorizationRequirement[]
@@ -100,9 +100,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             var authorizationFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(action.Filters));
-            Assert.NotNull(authorizationFilter.Policy);
-            Assert.Null(authorizationFilter.AuthorizeData);
-            Assert.Null(authorizationFilter.PolicyProvider);
+            Assert.Null(actionFilter.Policy);
+            Assert.NotNull(actionFilter.AuthorizeData);
+            Assert.NotNull(actionFilter.PolicyProvider);
         }
 
         [Fact]
