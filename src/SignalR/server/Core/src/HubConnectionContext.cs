@@ -578,26 +578,32 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var connection = (HubConnectionContext)state;
 
-            _ = InnerAbortConnection(connection);
+            try
+            {
+                connection._connectionAbortedTokenSource.Cancel();
+            }
+            catch (Exception ex)
+            {
+                Log.AbortFailed(connection._logger, ex);
+            }
+            finally
+            {
+                _ = InnerAbortConnection(connection);
+            }
 
-            async Task InnerAbortConnection(HubConnectionContext connection)
+            static async Task InnerAbortConnection(HubConnectionContext connection)
             {
                 await connection._writeLock.WaitAsync();
-
                 try
                 {
-                    connection._connectionAbortedTokenSource.Cancel();
-                }
-                catch (Exception ex)
-                {
-                    Log.AbortFailed(connection._logger, ex);
+                    // Communicate the fact that we're finished triggering abort callbacks
+                    // HubOnDisconnectedAsync is waiting on this to complete the Pipe
+                    // We lock to make sure all writes are done before continuing
+                    connection._abortCompletedTcs.TrySetResult(null);
                 }
                 finally
                 {
                     connection._writeLock.Release();
-
-                    // Communicate the fact that we're finished triggering abort callbacks
-                    connection._abortCompletedTcs.TrySetResult(null);
                 }
             }
         }
