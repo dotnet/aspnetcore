@@ -13,16 +13,12 @@ if ($lastexitcode -ne 0) {
     throw 'Failed to import test certificate into machine root store. This is required for IIS Express tests.'
 }
 
-$tempFile = [System.IO.Path]::GetTempFileName();
-;
+$tempFile = [System.IO.Path]::GetTempFileName()
+
 for ($i=44300; $i -le 44399; $i++) {
     Add-Content -Path $tempFile "http delete sslcert ipport=0.0.0.0:$i"
     Add-Content -Path $tempFile "http add sslcert ipport=0.0.0.0:$i certhash=$thumb appid=`{214124cd-d05b-4309-9af9-9caa44b2b74a`}"
 }
 
 & netsh -f $tempFile
-if ($lastexitcode -ne 0) {
-    Write-Warning 'netsh script had some failures that are being ignored.'
-    $lastexitcode = 0
-}
-Remove-Item $tempFile
+Remove-Item $tempFile -ErrorAction Ignore
