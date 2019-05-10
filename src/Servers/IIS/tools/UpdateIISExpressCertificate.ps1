@@ -1,10 +1,17 @@
-$cert = New-SelfSignedCertificate -DnsName "localhost", "localhost" -CertStoreLocation "cert:\LocalMachine\My"
-$thumb = $cert.GetCertHashString()
+$ErrorActionPreference = 'Stop'
 
-$Store = New-Object  -TypeName System.Security.Cryptography.X509Certificates.X509Store -ArgumentList 'root', 'LocalMachine'
-$Store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadWrite)
-$Store.Add($cert)
-$Store.Close()
+if (-not $PSScriptRoot) {
+    # Older versions of Powershell do not define this variable
+    $PSScriptRoot = Split-Path $MyInvocation.MyCommand.Path -Parent
+}
+
+# The certificate thumbprint of TestCert.pfx
+$thumb = 'CBA8EF428446072286B8201C2877F5EF0EA3B804'
+
+& certutil -f -v -p testpassword -importpfx "$PSScriptRoot\TestCert.pfx"
+if ($lastexitcode -ne 0) {
+    throw 'Failed to import test certificate into machine root store. This is required for IIS Express tests.'
+}
 
 $tempFile = [System.IO.Path]::GetTempFileName();
 $content = "";
