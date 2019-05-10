@@ -152,13 +152,16 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
 
                     if (deferredIncomingEvents.Count > 0)
                     {
-                        ProcessNextDeferredEvent();
+                        // Fire-and-forget because the task we return from this method should only reflect the
+                        // completion of its own event dispatch, not that of any others that happen to be queued.
+                        // Also, ProcessNextDeferredEventAsync deals with its own async errors.
+                        _ = ProcessNextDeferredEventAsync();
                     }
                 }
             }
         }
 
-        private async void ProcessNextDeferredEvent()
+        private async Task ProcessNextDeferredEventAsync()
         {
             var info = deferredIncomingEvents.Dequeue();
             var taskCompletionSource = info.TaskCompletionSource;
