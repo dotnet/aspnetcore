@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -33,9 +32,9 @@ namespace Microsoft.AspNetCore.Components
         {
             AuthStateProviderService.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
-            // Initial synchronous render has an empty authentication state
+            // Initial synchronous render has an unauthorized authentication state
             // We create a new one because we can't stop ClaimsPrincipal from being mutable
-            _currentAuthenticationState = new EmptyAuthenticationState();
+            _currentAuthenticationState = new PendingAuthenticationState();
 
             // Then asynchronously we query for the actual authentication state and rerender
             // If this happens to return synchronously, the 'empty' render will be skipped
@@ -59,24 +58,6 @@ namespace Microsoft.AspNetCore.Components
                 _currentAuthenticationState = newAuthenticationState;
                 StateHasChanged();
             });
-        }
-
-        class EmptyAuthenticationState : IAuthenticationState
-        {
-            private ClaimsPrincipal _user;
-
-            public ClaimsPrincipal User
-            {
-                get
-                {
-                    if (_user == null)
-                    {
-                        _user = new ClaimsPrincipal(new ClaimsIdentity());
-                    }
-
-                    return _user;
-                }
-            }
         }
     }
 }
