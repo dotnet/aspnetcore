@@ -11,6 +11,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
     /// <inheritdoc />
     public class DefaultCorsPolicyProvider : ICorsPolicyProvider
     {
+        private static readonly Task<CorsPolicy> NullResult = Task.FromResult<CorsPolicy>(null);
         private readonly CorsOptions _options;
 
         /// <summary>
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return result.policyTask;
             }
 
-            return Task.FromResult<CorsPolicy>(null);
+            return NullResult;
         }
     }
 }

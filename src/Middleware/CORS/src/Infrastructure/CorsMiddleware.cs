@@ -125,11 +125,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return _next(context);
             }
 
-            return InvokeCore(context, corsPolicyProvider);
-        }
-
-        private Task InvokeCore(HttpContext context, ICorsPolicyProvider corsPolicyProvider)
-        {
             // CORS policy resolution rules:
             //
             // 1. If there is an endpoint with IDisableCorsAttribute then CORS is not run
@@ -191,12 +186,12 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
 
             return EvaluateAndApplyPolicy(context, corsPolicy);
-        }
 
-        private async Task InvokeCoreAwaited(HttpContext context, Task<CorsPolicy> policyTask)
-        {
-            var corsPolicy = await policyTask;
-            await EvaluateAndApplyPolicy(context, corsPolicy);
+            async Task InvokeCoreAwaited(HttpContext context, Task<CorsPolicy> policyTask)
+            {
+                var corsPolicy = await policyTask;
+                await EvaluateAndApplyPolicy(context, corsPolicy);
+            }
         }
 
         private Task EvaluateAndApplyPolicy(HttpContext context, CorsPolicy corsPolicy)
