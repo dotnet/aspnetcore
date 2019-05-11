@@ -101,9 +101,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             var authorizationFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(action.Filters));
-            Assert.Null(actionFilter.Policy);
-            Assert.NotNull(actionFilter.AuthorizeData);
-            Assert.NotNull(actionFilter.PolicyProvider);
+            Assert.Null(authorizationFilter.Policy);
+            Assert.NotNull(authorizationFilter.AuthorizeData);
+            Assert.NotNull(authorizationFilter.PolicyProvider);
         }
 
         [Fact]
