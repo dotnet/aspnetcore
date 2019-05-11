@@ -290,21 +290,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
-        DefaultHttpContext IDefaultHttpContextContainer.HttpContext
+        bool IDefaultHttpContextContainer.TryGetContext(out DefaultHttpContext context)
         {
-            get
+            context = _httpContext;
+            if (context is object)
             {
-                if (_httpContext is null)
-                {
-                    _httpContext = new DefaultHttpContext(this);
-                }
-                else
-                {
-                    _httpContext.Initialize(this);
-                }
-
-                return _httpContext;
+                _httpContext = null;
+                return true;
             }
+
+            return false;
+        }
+
+        void IDefaultHttpContextContainer.ReleaseContext(DefaultHttpContext context)
+        {
+            _httpContext = context;
         }
 
         public void InitializeBodyControl(MessageBody messageBody)
@@ -407,8 +407,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestHeadersParsed = 0;
 
             _responseBytesWritten = 0;
-
-            _httpContext?.Uninitialize();
 
             OnReset();
         }

@@ -117,6 +117,11 @@ namespace Microsoft.AspNetCore.Hosting
 }
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
+    public partial interface IContextContainer<TContext>
+    {
+        void ReleaseContext(TContext context);
+        bool TryGetContext(out TContext context);
+    }
     public partial interface IStartupConfigureContainerFilter<TContainerBuilder>
     {
         System.Action<TContainerBuilder> ConfigureContainer(System.Action<TContainerBuilder> container);

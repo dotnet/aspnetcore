@@ -124,9 +124,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             private object _dummy;
             public System.Diagnostics.Activity Activity { get { throw null; } set { } }
             public bool EventLogEnabled { get { throw null; } set { } }
-            public Microsoft.AspNetCore.Http.HttpContext HttpContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+            public Microsoft.AspNetCore.Http.HttpContext HttpContext { get { throw null; } set { } }
             public System.IDisposable Scope { get { throw null; } set { } }
             public long StartTimestamp { get { throw null; } set { } }
+            public static Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context Create() { throw null; }
         }
     }
     public partial class HostingEnvironment : Microsoft.AspNetCore.Hosting.IHostingEnvironment, Microsoft.AspNetCore.Hosting.IWebHostEnvironment, Microsoft.Extensions.Hosting.IHostEnvironment, Microsoft.Extensions.Hosting.IHostingEnvironment

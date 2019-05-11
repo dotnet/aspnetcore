@@ -45,9 +45,11 @@ namespace Microsoft.AspNetCore.Http
 
         private static DefaultHttpContext CreateHttpContext(IFeatureCollection featureCollection)
         {
-            if (featureCollection is IDefaultHttpContextContainer container)
+            if (featureCollection is IDefaultHttpContextContainer container &&
+                container.TryGetContext(out var httpContext))
             {
-                return container.HttpContext;
+                httpContext.Initialize(featureCollection);
+                return httpContext;
             }
 
             return new DefaultHttpContext(featureCollection);
@@ -58,6 +60,13 @@ namespace Microsoft.AspNetCore.Http
             if (_httpContextAccessor != null)
             {
                 _httpContextAccessor.HttpContext = null;
+            }
+
+            if (httpContext is DefaultHttpContext defaultContext &&
+                defaultContext.Features is IDefaultHttpContextContainer container)
+            {
+                defaultContext.Uninitialize();
+                container.ReleaseContext(defaultContext);
             }
         }
     }

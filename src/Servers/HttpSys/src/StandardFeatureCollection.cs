@@ -10,10 +10,10 @@ using Microsoft.AspNetCore.Http.Features.Authentication;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal sealed class StandardFeatureCollection : IFeatureCollection
+    internal sealed class StandardFeatureCollection<TContext> : IFeatureCollection
     {
-        private static readonly Func<FeatureContext, object> _identityFunc = ReturnIdentity;
-        private static readonly Dictionary<Type, Func<FeatureContext, object>> _featureFuncLookup = new Dictionary<Type, Func<FeatureContext, object>>()
+        private static readonly Func<FeatureContext<TContext>, object> _identityFunc = ReturnIdentity;
+        private static readonly Dictionary<Type, Func<FeatureContext<TContext>, object>> _featureFuncLookup = new Dictionary<Type, Func<FeatureContext<TContext>, object>>()
         {
             { typeof(IHttpRequestFeature), _identityFunc },
             { typeof(IHttpConnectionFeature), _identityFunc },
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpBodyControlFeature), _identityFunc },
         };
 
-        private readonly FeatureContext _featureContext;
+        private readonly FeatureContext<TContext> _featureContext;
 
         static StandardFeatureCollection()
         {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public StandardFeatureCollection(FeatureContext featureContext)
+        public StandardFeatureCollection(FeatureContext<TContext> featureContext)
         {
             _featureContext = featureContext;
         }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get
             {
-                Func<FeatureContext, object> lookupFunc;
+                Func<FeatureContext<TContext>, object> lookupFunc;
                 _featureFuncLookup.TryGetValue(key, out lookupFunc);
                 return lookupFunc?.Invoke(_featureContext);
             }
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private static object ReturnIdentity(FeatureContext featureContext)
+        private static object ReturnIdentity(FeatureContext<TContext> featureContext)
         {
             return featureContext;
         }

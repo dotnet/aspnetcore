@@ -3,16 +3,23 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
-    internal class IISHttpContextOfT<TContext> : IISHttpContext
+    internal class IISHttpContextOfT<TContext> : IISHttpContext, IDefaultHttpContextContainer, IContextContainer<TContext>
     {
+        private const int _maxPooledContexts = 512;
+        private readonly static ConcurrentQueueSegment<DefaultHttpContext> _httpContexts = new ConcurrentQueueSegment<DefaultHttpContext>(_maxPooledContexts);
+        private readonly static ConcurrentQueueSegment<TContext> _hostContexts = new ConcurrentQueueSegment<TContext>(_maxPooledContexts);
+
         private readonly IHttpApplication<TContext> _application;
 
         public IISHttpContextOfT(MemoryPool<byte> memoryPool, IHttpApplication<TContext> application, IntPtr pInProcessHandler, IISServerOptions options, IISHttpServer server, ILogger logger)
@@ -105,5 +112,17 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             return success;
         }
+
+        bool IDefaultHttpContextContainer.TryGetContext(out DefaultHttpContext context)
+            => _httpContexts.TryDequeue(out context);
+
+        void IDefaultHttpContextContainer.ReleaseContext(DefaultHttpContext context)
+            => _httpContexts.TryEnqueue(context);
+
+        bool IContextContainer<TContext>.TryGetContext(out TContext context)
+            => _hostContexts.TryDequeue(out context);
+
+        void IContextContainer<TContext>.ReleaseContext(TContext context)
+            => _hostContexts.TryEnqueue(context);
     }
 }

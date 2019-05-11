@@ -129,7 +129,8 @@ namespace Microsoft.AspNetCore.Http
     }
     public partial interface IDefaultHttpContextContainer
     {
-        Microsoft.AspNetCore.Http.DefaultHttpContext HttpContext { get; }
+        void ReleaseContext(Microsoft.AspNetCore.Http.DefaultHttpContext context);
+        bool TryGetContext(out Microsoft.AspNetCore.Http.DefaultHttpContext context);
     }
     public partial class MiddlewareFactory : Microsoft.AspNetCore.Http.IMiddlewareFactory
     {

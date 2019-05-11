@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
+using HostContext = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void BeginRequest(HttpContext httpContext, ref HostingApplication.Context context)
+        public void BeginRequest(HttpContext httpContext, HostContext context)
         {
             long startTimestamp = 0;
 
@@ -77,14 +78,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     }
 
                     // Non-inline
-                    LogRequestStarting(ref context);
+                    LogRequestStarting(context);
                 }
             }
             context.StartTimestamp = startTimestamp;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void RequestEnd(HttpContext httpContext, Exception exception, HostingApplication.Context context)
+        public void RequestEnd(HttpContext httpContext, Exception exception, HostContext context)
         {
             // Local cache items resolved multiple items, in order of use so they are primed in cpu pipeline when used
             var startTimestamp = context.StartTimestamp;
@@ -147,7 +148,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ContextDisposed(HostingApplication.Context context)
+        public void ContextDisposed(HostContext context)
         {
             if (context.EventLogEnabled)
             {
@@ -157,7 +158,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void LogRequestStarting(ref HostingApplication.Context context)
+        private void LogRequestStarting(HostContext context)
         {
             // IsEnabled is checked in the caller, so if we are here just log
             var state = new HostingRequestStartingLog(context.HttpContext);
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private void LogRequestFinished(HostingApplication.Context context, long startTimestamp, long currentTimestamp)
+        private void LogRequestFinished(HostContext context, long startTimestamp, long currentTimestamp)
         {
             // IsEnabled isn't checked in the caller, startTimestamp > 0 is used as a fast proxy check
             // but that may be because diagnostics are enabled, which also uses startTimestamp,

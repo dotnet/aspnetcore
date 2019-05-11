@@ -6,11 +6,10 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
+using HostContext = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -18,7 +17,7 @@ namespace Microsoft.AspNetCore.TestHost
     {
         private IWebHost _hostInstance;
         private bool _disposed = false;
-        private IHttpApplication<Context> _application;
+        private IHttpApplication<HostContext> _application;
 
         /// <summary>
         /// For use with IHostBuilder or IWebHostBuilder.
@@ -87,7 +86,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// </summary>
         public bool PreserveExecutionContext { get; set; }
 
-        private IHttpApplication<Context> Application
+        private IHttpApplication<HostContext> Application
         {
             get => _application ?? throw new InvalidOperationException("The server has not been started or no web application was configured.");
         }
@@ -163,7 +162,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         Task IServer.StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
-            _application = new ApplicationWrapper<Context>((IHttpApplication<Context>)application, () =>
+            _application = new ApplicationWrapper<HostContext>((IHttpApplication<HostContext>)application, () =>
             {
                 if (_disposed)
                 {

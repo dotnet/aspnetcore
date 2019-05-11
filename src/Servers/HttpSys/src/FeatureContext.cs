@@ -20,7 +20,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal class FeatureContext :
+    using Microsoft.AspNetCore.HttpSys.Internal;
+
+    internal class FeatureContext<TContext> :
         IHttpRequestFeature,
         IHttpConnectionFeature,
         IHttpResponseFeature,
@@ -37,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpBodyControlFeature
     {
         private RequestContext _requestContext;
-        private IFeatureCollection _features;
+        private readonly FeatureCollection<TContext> _features;
         private bool _enableResponseCaching;
 
         private Stream _requestBody;
@@ -71,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal FeatureContext(RequestContext requestContext)
         {
             _requestContext = requestContext;
-            _features = new FeatureCollection(new StandardFeatureCollection(this));
+            _features = new FeatureCollection<TContext>(new StandardFeatureCollection<TContext>(this));
             _enableResponseCaching = _requestContext.Server.Options.EnableResponseCaching;
 
             // Pre-initialize any fields that are not lazy at the lower level.

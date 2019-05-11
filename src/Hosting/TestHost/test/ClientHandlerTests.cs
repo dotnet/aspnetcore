@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
-using Context = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
+using HostContext = Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context;
 
 namespace Microsoft.AspNetCore.TestHost
 {
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.TestHost
                 HttpCompletionOption.ResponseHeadersRead));
         }
 
-        private class DummyApplication : IHttpApplication<Context>
+        private class DummyApplication : IHttpApplication<HostContext>
         {
             RequestDelegate _application;
 
@@ -430,26 +430,25 @@ namespace Microsoft.AspNetCore.TestHost
                 _application = application;
             }
 
-            public Context CreateContext(IFeatureCollection contextFeatures)
+            public HostContext CreateContext(IFeatureCollection contextFeatures)
             {
-                return new Context()
-                {
-                    HttpContext = new DefaultHttpContext(contextFeatures)
-                };
+                var context = HostContext.Create();
+                context.HttpContext = new DefaultHttpContext(contextFeatures);
+                return context;
             }
 
-            public void DisposeContext(Context context, Exception exception)
+            public void DisposeContext(HostContext context, Exception exception)
             {
 
             }
 
-            public Task ProcessRequestAsync(Context context)
+            public Task ProcessRequestAsync(HostContext context)
             {
                 return _application(context.HttpContext);
             }
         }
 
-        private class InspectingApplication : IHttpApplication<Context>
+        private class InspectingApplication : IHttpApplication<HostContext>
         {
             Action<IFeatureCollection> _inspector;
 
@@ -458,21 +457,20 @@ namespace Microsoft.AspNetCore.TestHost
                 _inspector = inspector;
             }
 
-            public Context CreateContext(IFeatureCollection contextFeatures)
+            public HostContext CreateContext(IFeatureCollection contextFeatures)
             {
                 _inspector(contextFeatures);
-                return new Context()
-                {
-                    HttpContext = new DefaultHttpContext(contextFeatures)
-                };
+                var context = HostContext.Create();
+                context.HttpContext = new DefaultHttpContext(contextFeatures);
+                return context;
             }
 
-            public void DisposeContext(Context context, Exception exception)
+            public void DisposeContext(HostContext context, Exception exception)
             {
 
             }
 
-            public Task ProcessRequestAsync(Context context)
+            public Task ProcessRequestAsync(HostContext context)
             {
                 return Task.FromResult(0);
             }
