@@ -138,11 +138,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
         {
-            if (_connectionAborted)
-            {
-                return default;
-            }
-
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
@@ -178,11 +173,6 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns></returns>
         public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default)
         {
-            if (_connectionAborted)
-            {
-                return default;
-            }
-
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
