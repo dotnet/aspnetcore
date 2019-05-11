@@ -5,8 +5,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.E2ETesting;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using OpenQA.Selenium;
 using Templates.Test.Helpers;
 using Xunit;
@@ -26,7 +24,6 @@ namespace Templates.Test
         public Project Project { get; private set; }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
         public async Task RazorComponentsTemplateWorks()
         {
             Project = await ProjectFactory.GetOrCreateProject("blazorserverside", Output);
@@ -71,6 +68,8 @@ namespace Templates.Test
                     TestBasicNavigation();
                 }
             }
+
+            Assert.False(true);
         }
 
         private void TestBasicNavigation()
