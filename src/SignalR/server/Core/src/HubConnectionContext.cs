@@ -146,6 +146,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             if (_connectionAborted)
             {
+                _writeLock.Release();
                 return default;
             }
 
@@ -181,6 +182,7 @@ namespace Microsoft.AspNetCore.SignalR
 
             if (_connectionAborted)
             {
+                _writeLock.Release();
                 return default;
             }
 
