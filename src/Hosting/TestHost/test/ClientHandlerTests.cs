@@ -179,10 +179,14 @@ namespace Microsoft.AspNetCore.TestHost
 
             var responseTask = invoker.SendAsync(message, CancellationToken.None);
 
+            // Ensure StartAsync has been called in response
             await hasStartedTcs.Task;
 
+            // Delay so async thread would have had time to attempt to return response
+            await Task.Delay(100);
             Assert.False(responseTask.IsCompleted, "HttpResponse.StartAsync does not return response");
 
+            // Asserted that response return was checked, allow response to finish
             hasAssertedResponseTcs.TrySetResult(null);
 
             await responseTask;

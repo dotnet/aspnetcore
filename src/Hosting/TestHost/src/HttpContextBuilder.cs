@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.TestHost
 
             _httpContext.Features.Set<IHttpBodyControlFeature>(this);
             _httpContext.Features.Set<IHttpResponseFeature>(_responseFeature);
+            _httpContext.Features.Set<IHttpResponseStartFeature>(_responseFeature);
             _httpContext.Features.Set<IHttpRequestLifetimeFeature>(_requestLifetimeFeature);
             _httpContext.Features.Set<IHttpResponseTrailersFeature>(_responseTrailersFeature);
 
