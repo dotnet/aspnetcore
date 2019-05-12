@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task StatusCode_DefaultsTo200()
         {
             // Arrange & Act
-            var responseInformation = new ResponseFeature();
+            var responseInformation = CreateResponseFeature();
 
             // Assert
             Assert.Equal(200, responseInformation.StatusCode);
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task StartAsync_StartsResponse()
         {
             // Arrange & Act
-            var responseInformation = new ResponseFeature();
+            var responseInformation = CreateResponseFeature();
 
             // Assert
             Assert.Equal(200, responseInformation.StatusCode);
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.TestHost
         public void OnStarting_ThrowsWhenHasStarted()
         {
             // Arrange
-            var responseInformation = new ResponseFeature();
+            var responseInformation = CreateResponseFeature();
             responseInformation.HasStarted = true;
 
             // Act & Assert
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public void StatusCode_ThrowsWhenHasStarted()
         {
-            var responseInformation = new ResponseFeature();
+            var responseInformation = CreateResponseFeature();
             responseInformation.HasStarted = true;
 
             Assert.Throws<InvalidOperationException>(() => responseInformation.StatusCode = 400);
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.TestHost
         [Fact]
         public void StatusCode_MustBeGreaterThan99()
         {
-            var responseInformation = new ResponseFeature();
+            var responseInformation = CreateResponseFeature();
 
             Assert.Throws<ArgumentOutOfRangeException>(() => responseInformation.StatusCode = 99);
             Assert.Throws<ArgumentOutOfRangeException>(() => responseInformation.StatusCode = 0);
@@ -79,6 +79,11 @@ namespace Microsoft.AspNetCore.TestHost
             responseInformation.StatusCode = 100;
             responseInformation.StatusCode = 200;
             responseInformation.StatusCode = 1000;
+        }
+
+        private ResponseFeature CreateResponseFeature()
+        {
+            return new ResponseFeature(ex => { });
         }
     }
 }

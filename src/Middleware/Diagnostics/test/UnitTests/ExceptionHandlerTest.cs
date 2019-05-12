@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -149,7 +150,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                     app.Run(async (context) =>
                     {
                         // Write some content into the response before throwing exception
-                        await context.Response.WriteAsync(new string('a', 100));
+                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(new string('a', 100)));
 
                         throw new InvalidOperationException("Invalid input provided.");
                     });

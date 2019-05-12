@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.TestHost
         
         private readonly TaskCompletionSource<HttpContext> _responseTcs = new TaskCompletionSource<HttpContext>(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly ResponseStream _responseStream;
-        private readonly ResponseFeature _responseFeature = new ResponseFeature();
+        private readonly ResponseFeature _responseFeature;
         private readonly RequestLifetimeFeature _requestLifetimeFeature = new RequestLifetimeFeature();
         private readonly ResponseTrailersFeature _responseTrailersFeature = new ResponseTrailersFeature();
         private bool _pipelineFinished;
@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.TestHost
             AllowSynchronousIO = allowSynchronousIO;
             _preserveExecutionContext = preserveExecutionContext;
             _httpContext = new DefaultHttpContext();
+            _responseFeature = new ResponseFeature(Abort);
 
             var request = _httpContext.Request;
             request.Protocol = "HTTP/1.1";

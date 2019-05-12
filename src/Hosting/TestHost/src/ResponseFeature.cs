@@ -12,13 +12,15 @@ namespace Microsoft.AspNetCore.TestHost
 {
     internal class ResponseFeature : IHttpResponseFeature, IHttpResponseStartFeature
     {
+        private readonly HeaderDictionary _headers = new HeaderDictionary();
+        private readonly Action<Exception> _abort;
+
         private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
         private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
-        private HeaderDictionary _headers = new HeaderDictionary();
         private int _statusCode;
         private string _reasonPhrase;
 
-        public ResponseFeature()
+        public ResponseFeature(Action<Exception> abort)
         {
             Headers = _headers;
             Body = new MemoryStream();
@@ -26,6 +28,7 @@ namespace Microsoft.AspNetCore.TestHost
             // 200 is the default status code all the way down to the host, so we set it
             // here to be consistent with the rest of the hosts when writing tests.
             StatusCode = 200;
+            _abort = abort;
         }
 
         public int StatusCode
@@ -101,9 +104,15 @@ namespace Microsoft.AspNetCore.TestHost
         {
             if (!HasStarted)
             {
-                await _responseStartingAsync();
-                HasStarted = true;
-                _headers.IsReadOnly = true;
+                try
+                {
+                    await _responseStartingAsync();
+                }
+                finally
+                {
+                    HasStarted = true;
+                    _headers.IsReadOnly = true;
+                }
             }
         }
 
@@ -112,9 +121,17 @@ namespace Microsoft.AspNetCore.TestHost
             return _responseCompletedAsync();
         }
 
-        public Task StartAsync(CancellationToken token = default)
+        public async Task StartAsync(CancellationToken token = default)
         {
-            return FireOnSendingHeadersAsync();
+            try
+            {
+                await FireOnSendingHeadersAsync();
+            }
+            catch (Exception ex)
+            {
+                _abort(ex);
+                throw;
+            }
         }
     }
 }
