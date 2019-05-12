@@ -26,6 +26,22 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public async Task StartAsync_StartsResponse()
+        {
+            // Arrange & Act
+            var responseInformation = new ResponseFeature();
+
+            // Assert
+            Assert.Equal(200, responseInformation.StatusCode);
+            Assert.False(responseInformation.HasStarted);
+
+            await responseInformation.StartAsync();
+
+            Assert.True(responseInformation.HasStarted);
+            Assert.True(responseInformation.Headers.IsReadOnly);
+        }
+
+        [Fact]
         public void OnStarting_ThrowsWhenHasStarted()
         {
             // Arrange

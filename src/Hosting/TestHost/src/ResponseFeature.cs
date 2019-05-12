@@ -3,13 +3,14 @@
 
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.TestHost
 {
-    internal class ResponseFeature : IHttpResponseFeature
+    internal class ResponseFeature : IHttpResponseFeature, IHttpResponseStartFeature
     {
         private Func<Task> _responseStartingAsync = () => Task.FromResult(true);
         private Func<Task> _responseCompletedAsync = () => Task.FromResult(true);
@@ -106,6 +107,11 @@ namespace Microsoft.AspNetCore.TestHost
         public Task FireOnResponseCompletedAsync()
         {
             return _responseCompletedAsync();
+        }
+
+        public Task StartAsync(CancellationToken token = default)
+        {
+            return FireOnSendingHeadersAsync();
         }
     }
 }

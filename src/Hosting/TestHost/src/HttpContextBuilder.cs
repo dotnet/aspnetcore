@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.TestHost
         private readonly RequestLifetimeFeature _requestLifetimeFeature = new RequestLifetimeFeature();
         private readonly ResponseTrailersFeature _responseTrailersFeature = new ResponseTrailersFeature();
         private bool _pipelineFinished;
+        private bool _returningResponse;
         private Context _testContext;
         private Action<HttpContext> _responseReadCompleteCallback;
 
@@ -132,12 +133,13 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal async Task ReturnResponseMessageAsync()
         {
-            // Check if the response has already started because the TrySetResult below could happen a bit late
+            // Check if the response is already returning because the TrySetResult below could happen a bit late
             // (as it happens on a different thread) by which point the CompleteResponseAsync could run and calls this
             // method again.
-            if (!_responseFeature.HasStarted)
+            if (!_returningResponse)
             {
-                // Sets HasStarted
+                _returningResponse = true;
+
                 try
                 {
                     await _responseFeature.FireOnSendingHeadersAsync();
