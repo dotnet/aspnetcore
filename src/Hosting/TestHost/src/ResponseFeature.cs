@@ -99,9 +99,12 @@ namespace Microsoft.AspNetCore.TestHost
 
         public async Task FireOnSendingHeadersAsync()
         {
-            await _responseStartingAsync();
-            HasStarted = true;
-            _headers.IsReadOnly = true;
+            if (!HasStarted)
+            {
+                await _responseStartingAsync();
+                HasStarted = true;
+                _headers.IsReadOnly = true;
+            }
         }
 
         public Task FireOnResponseCompletedAsync()
