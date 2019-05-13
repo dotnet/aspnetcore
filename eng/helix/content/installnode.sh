@@ -2,7 +2,7 @@
 
 node_version=$1
 platformarch=$2
-output_dir=$3
+output_dir=$HELIX_CORRELATION_PAYLOAD/node
 url="http://nodejs.org/dist/v$node_version/node-v$node_version-$platformarch.tar.gz"
 tmp="$(mktemp -d -t install-node.XXXXXX)"
 trap "rm -rf $tmp" EXIT
