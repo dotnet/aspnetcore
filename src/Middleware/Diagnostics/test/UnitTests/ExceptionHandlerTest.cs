@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -115,6 +116,8 @@ namespace Microsoft.AspNetCore.Diagnostics
                     // add response buffering
                     app.Use(async (httpContext, next) =>
                     {
+                        httpContext.Features.Set<IHttpResponseStartFeature>(null);
+
                         var response = httpContext.Response;
                         var originalResponseBody = response.Body;
                         var bufferingStream = new MemoryStream();
@@ -150,7 +153,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                     app.Run(async (context) =>
                     {
                         // Write some content into the response before throwing exception
-                        await context.Response.Body.WriteAsync(Encoding.UTF8.GetBytes(new string('a', 100)));
+                        await context.Response.WriteAsync(new string('a', 100));
 
                         throw new InvalidOperationException("Invalid input provided.");
                     });
