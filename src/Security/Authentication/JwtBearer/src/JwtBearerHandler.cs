@@ -271,6 +271,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             Response.StatusCode = 403;
             return Events.Forbidden(forbiddenContext);
         }
+        
         private static string CreateErrorDescription(Exception authFailure)
         {
             IEnumerable<Exception> exceptions;
