@@ -265,6 +265,15 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
         }
 
+        protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
+        {
+            var authenticationFailedContext = new AuthenticationFailedContext(Context, Scheme, Options)
+            {
+
+            };
+            Response.StatusCode = 403;
+            return Events.AuthorizationFailed(authenticationFailedContext);
+        }
         private static string CreateErrorDescription(Exception authFailure)
         {
             IEnumerable<Exception> exceptions;
