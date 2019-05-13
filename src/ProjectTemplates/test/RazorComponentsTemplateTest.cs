@@ -68,8 +68,6 @@ namespace Templates.Test
                     TestBasicNavigation();
                 }
             }
-
-            Assert.False(true);
         }
 
         private void TestBasicNavigation()
