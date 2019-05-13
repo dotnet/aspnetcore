@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         throw new InvalidOperationException("An anonymous request was received in between authentication handshake requests.");
                     }
-                    Logger.LogDebug($"No Authorization header.");
+                    Logger.LogDebug("No Authorization header.");
                     return false;
                 }
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         throw new InvalidOperationException("Non-negotiate request was received in between authentication handshake requests.");
                     }
-                    Logger.LogDebug($"Non-Negotiate Authorization header.");
+                    Logger.LogDebug("Non-Negotiate Authorization header.");
                     return false;
                 }
 
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 if (!_negotiateState.IsCompleted)
                 {
-                    Logger.LogDebug($"Enabling credential persistence for an incomplete auth handshake.");
+                    Logger.LogDebug("Enabling credential persistence for an incomplete auth handshake.");
                     persistence ??= EstablishConnectionPersistence(connectionItems);
                     // Save the state long enough to complete the multi-stage handshake.
                     // We'll remove it once complete if !PersistNtlm/KerberosCredentials.
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     return true;
                 }
 
-                Logger.LogDebug($"Completed Negotiate.");
+                Logger.LogDebug("Completed Negotiate.");
 
                 // Isn't there always additional data for the server scenario?
                 if (!string.IsNullOrEmpty(outgoing))
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     // Take it out if we don't want it to persist.
                     Debug.Assert(object.ReferenceEquals(persistence?.State, _negotiateState),
                         "NTLM is a two stage process, it must have already been in the cache for the handshake to succeed.");
-                    Logger.LogDebug($"Disabling credential persistence for a complete NTLM handshake.");
+                    Logger.LogDebug("Disabling credential persistence for a complete NTLM handshake.");
                     persistence.State = null;
                     Response.RegisterForDispose(_negotiateState);
                 }
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     // Kerberos can require one or two stage handshakes
                     if (Options.PersistKerberosCredentials)
                     {
-                        Logger.LogDebug($"Enabling credential persistence for a complete Kerberos handshake.");
+                        Logger.LogDebug("Enabling credential persistence for a complete Kerberos handshake.");
                         persistence ??= EstablishConnectionPersistence(connectionItems);
                         persistence.State = _negotiateState;
                     }
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     {
                         if (persistence?.State != null)
                         {
-                            Logger.LogDebug($"Disabling credential persistence for a complete Kerberos handshake.");
+                            Logger.LogDebug("Disabling credential persistence for a complete Kerberos handshake.");
                             persistence.State = null;
                         }
                         Response.RegisterForDispose(_negotiateState);
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 return;
             }
 
-            Logger.LogDebug($"Challenged 401 Negotiate");
+            Logger.LogDebug("Challenged 401 Negotiate");
             Response.StatusCode = StatusCodes.Status401Unauthorized;
             Response.Headers.Append(HeaderNames.WWWAuthenticate, NegotiateVerb);
         }
