@@ -12,5 +12,6 @@ echo "Installing node from $(basename $url) $url"
 mkdir $output_dir
 echo "Unpacking to $output_dir"
 tar --strip-components 1 -xzf "node-v$node_version-$platformarch.tar.gz" --no-same-owner --directory "$output_dir"
+ls -la $output_dir
 
 export PATH="$PATH:$output_dir"
