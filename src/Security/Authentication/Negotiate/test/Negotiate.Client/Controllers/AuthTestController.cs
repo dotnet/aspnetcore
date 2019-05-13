@@ -340,6 +340,7 @@ namespace Negotiate.Client.Controllers
             // WinHttpHandler always uses default credentials on localhost
             return new HttpClient(new WinHttpHandler()
             {
+                ServerCredentials = CredentialCache.DefaultCredentials,
                 ServerCertificateValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator,
             })
             {

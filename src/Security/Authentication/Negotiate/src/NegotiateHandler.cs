@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 if (!_negotiateState.IsCompleted)
                 {
-                    Debug.Assert(_negotiateState.Protocol == "NTLM", "Only NTLM should require multiple stages.");
+                    Debug.Assert(_negotiateState.Protocol == "NTLM", "Only NTLM should require multiple stages. " + _negotiateState.Protocol);
 
                     Logger.LogDebug($"Enabling credential persistence for an incomplete NTLM handshake.");
                     persistence ??= EstablishConnectionPersistence(connectionItems);
