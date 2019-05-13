@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite;
 using Microsoft.Extensions.FileProviders;
 
@@ -19,8 +20,8 @@ namespace Microsoft.AspNetCore.Rewrite
         /// <param name="options">The <see cref="RewriteOptions"/></param>
         /// <param name="fileProvider">The <see cref="IFileProvider"/> </param>
         /// <param name="filePath">The path to the file containing UrlRewrite rules.</param>
-        /// <param name="useNativeIISServerVariables">Server variables are sourced natively from IIS if the application uses the in-process hosting model; use <c>false</c> to disable that behavior</param>
-        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath, bool useNativeIISServerVariables = true)
+        /// <param name="alwaysUseManagedServerVariables">Server variables are by default sourced from the server if it supports the <see cref="IServerVariablesFeature"/> feature. Use <c>true</c> to disable that behavior</param>
+        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, IFileProvider fileProvider, string filePath, bool alwaysUseManagedServerVariables = false)
         {
             if (options == null)
             {
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Rewrite
 
             using (var stream = file.CreateReadStream())
             {
-                return AddIISUrlRewrite(options, new StreamReader(stream), useNativeIISServerVariables);
+                return AddIISUrlRewrite(options, new StreamReader(stream), alwaysUseManagedServerVariables);
             }
         }
 
@@ -45,8 +46,8 @@ namespace Microsoft.AspNetCore.Rewrite
         /// </summary>
         /// <param name="options">The <see cref="RewriteOptions"/></param>
         /// <param name="reader">The text reader stream.</param>
-        /// <param name="useNativeIISServerVariables">Server variables are sourced natively from IIS if the application uses the in-process hosting model; use <c>false</c> to disable that behavior</param>
-        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader, bool useNativeIISServerVariables = true)
+        /// <param name="alwaysUseManagedServerVariables">Server variables are by default sourced from the server if it supports the <see cref="IServerVariablesFeature"/> feature. Use <c>true</c> to disable that behavior</param>
+        public static RewriteOptions AddIISUrlRewrite(this RewriteOptions options, TextReader reader, bool alwaysUseManagedServerVariables = false)
         {
             if (options == null)
             {
@@ -58,7 +59,7 @@ namespace Microsoft.AspNetCore.Rewrite
                 throw new ArgumentException(nameof(reader));
             }
 
-            var rules = new UrlRewriteFileParser().Parse(reader, useNativeIISServerVariables);
+            var rules = new UrlRewriteFileParser().Parse(reader, alwaysUseManagedServerVariables);
 
             foreach (var rule in rules)
             {

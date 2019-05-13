@@ -14,16 +14,16 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         private const char OpenBrace = '{';
         private const char CloseBrace = '}';
         private readonly IISRewriteMapCollection _rewriteMaps;
-        private readonly bool _useNativeIISServerVariables;
+        private readonly bool _alwaysUseManagedServerVariables;
 
         public InputParser()
         {
         }
 
-        public InputParser(IISRewriteMapCollection rewriteMaps, bool useNativeIISServerVariables)
+        public InputParser(IISRewriteMapCollection rewriteMaps, bool alwaysUseManagedServerVariables)
         {
             _rewriteMaps = rewriteMaps;
-            _useNativeIISServerVariables = useNativeIISServerVariables;
+            _alwaysUseManagedServerVariables = alwaysUseManagedServerVariables;
         }
 
         /// <summary>
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 {
                     // This is just a server variable, so we do a lookup and verify the server variable exists.
                     parameter = context.Capture();
-                    results.Add(ServerVariables.FindServerVariable(parameter, context, uriMatchPart, _useNativeIISServerVariables));
+                    results.Add(ServerVariables.FindServerVariable(parameter, context, uriMatchPart, _alwaysUseManagedServerVariables));
                     return;
                 }
                 else if (context.Current == Colon)
