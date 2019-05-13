@@ -121,8 +121,19 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         }
 
         [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task KerberosTwoStageAuth_Success(bool persistKerberos)
+        {
+            var server = await CreateServerAsync(options => options.PersistKerberosCredentials = persistKerberos);
+            var testConnection = new TestConnection();
+            await KerberosStage1And2Auth(server, testConnection);
+        }
+
+        [Theory]
         [InlineData("NTLM")]
         [InlineData("Kerberos")]
+        [InlineData("Kerberos2")]
         public async Task AnonymousAfterCompletedPersist_Cached(string protocol)
         {
             var server = await CreateServerAsync(options => options.PersistNtlmCredentials = options.PersistKerberosCredentials = true);
@@ -130,6 +141,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             if (protocol == "NTLM")
             {
                 await NtlmStage1And2Auth(server, testConnection);
+            }
+            else if (protocol == "Kerberos2")
+            {
+                await KerberosStage1And2Auth(server, testConnection);
             }
             else
             {
@@ -144,6 +159,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         [Theory]
         [InlineData("NTLM")]
         [InlineData("Kerberos")]
+        [InlineData("Kerberos2")]
         public async Task AnonymousAfterCompletedNoPersist_Denied(string protocol)
         {
             var server = await CreateServerAsync(options => options.PersistNtlmCredentials = options.PersistKerberosCredentials = false);
@@ -151,6 +167,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             if (protocol == "NTLM")
             {
                 await NtlmStage1And2Auth(server, testConnection);
+            }
+            else if (protocol == "Kerberos2")
+            {
+                await KerberosStage1And2Auth(server, testConnection);
             }
             else
             {
@@ -182,6 +202,17 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             var testConnection = new TestConnection();
             await KerberosAuth(server, testConnection);
             await KerberosAuth(server, testConnection);
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task AuthHeaderAfterKerberos2StageCompleted_ReAuthenticates(bool persist)
+        {
+            var server = await CreateServerAsync(options => options.PersistNtlmCredentials = persist);
+            var testConnection = new TestConnection();
+            await KerberosStage1And2Auth(server, testConnection);
+            await KerberosStage1And2Auth(server, testConnection);
         }
 
         [Fact]
@@ -223,11 +254,32 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             Assert.False(result.Response.Headers.ContainsKey(HeaderNames.WWWAuthenticate));
         }
 
+        // Single Stage
         private static async Task KerberosAuth(TestServer server, TestConnection testConnection)
         {
-            var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob1");
+            var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob");
             Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
+            Assert.Equal("Negotiate ServerKerberosBlob", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+        }
+
+        private static async Task KerberosStage1And2Auth(TestServer server, TestConnection testConnection)
+        {
+            await KerberosStage1Auth(server, testConnection);
+            await KerberosStage2Auth(server, testConnection);
+        }
+
+        private static async Task KerberosStage1Auth(TestServer server, TestConnection testConnection)
+        {
+            var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob1");
+            Assert.Equal(StatusCodes.Status401Unauthorized, result.Response.StatusCode);
             Assert.Equal("Negotiate ServerKerberosBlob1", result.Response.Headers[HeaderNames.WWWAuthenticate]);
+        }
+
+        private static async Task KerberosStage2Auth(TestServer server, TestConnection testConnection)
+        {
+            var result = await SendAsync(server, "/Authenticate", testConnection, "Negotiate ClientKerberosBlob2");
+            Assert.Equal(StatusCodes.Status200OK, result.Response.StatusCode);
+            Assert.Equal("Negotiate ServerKerberosBlob2", result.Response.Headers[HeaderNames.WWWAuthenticate]);
         }
 
         private static async Task NtlmStage1And2Auth(TestServer server, TestConnection testConnection)
@@ -428,12 +480,23 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                         Assert.Equal("NTLM", _protocol);
                         IsCompleted = true;
                         return "ServerNtlmBlob2";
-                    case "ClientKerberosBlob1":
+                    // Kerberos can require one or two stages
+                    case "ClientKerberosBlob":
                         Assert.False(Stage1Complete, nameof(Stage1Complete));
                         _protocol = "Kerberos";
                         Stage1Complete = true;
                         IsCompleted = true;
+                        return "ServerKerberosBlob";
+                    case "ClientKerberosBlob1":
+                        Assert.False(Stage1Complete, nameof(Stage1Complete));
+                        _protocol = "Kerberos";
+                        Stage1Complete = true;
                         return "ServerKerberosBlob1";
+                    case "ClientKerberosBlob2":
+                        Assert.True(Stage1Complete, nameof(Stage1Complete));
+                        Assert.Equal("Kerberos", _protocol);
+                        IsCompleted = true;
+                        return "ServerKerberosBlob2";
                     default:
                         throw new InvalidOperationException(incomingBlob);
                 }

@@ -131,12 +131,10 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 if (!_negotiateState.IsCompleted)
                 {
-                    Debug.Assert(_negotiateState.Protocol == "NTLM", "Only NTLM should require multiple stages. " + _negotiateState.Protocol);
-
-                    Logger.LogDebug($"Enabling credential persistence for an incomplete NTLM handshake.");
+                    Logger.LogDebug($"Enabling credential persistence for an incomplete auth handshake.");
                     persistence ??= EstablishConnectionPersistence(connectionItems);
                     // Save the state long enough to complete the multi-stage handshake.
-                    // We'll remove it once complete if !PersistNtlmCredentials.
+                    // We'll remove it once complete if !PersistNtlm/KerberosCredentials.
                     persistence.State = _negotiateState;
 
                     Logger.LogInformation("Incomplete Negotiate, sending a second 401 Negotiate challenge.");
@@ -166,12 +164,24 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                     persistence.State = null;
                     Response.RegisterForDispose(_negotiateState);
                 }
-                else if (_negotiateState.Protocol == "Kerberos" && Options.PersistKerberosCredentials)
+                else if (_negotiateState.Protocol == "Kerberos")
                 {
-                    Logger.LogDebug($"Enabling credential persistence for a complete Kerberos handshake.");
-                    persistence ??= EstablishConnectionPersistence(connectionItems);
-                    Debug.Assert(persistence.State == null, "Complete Kerberos results should only be produced from a new context.");
-                    persistence.State = _negotiateState;
+                    // Kerberos can require one or two stage handshakes
+                    if (Options.PersistKerberosCredentials)
+                    {
+                        Logger.LogDebug($"Enabling credential persistence for a complete Kerberos handshake.");
+                        persistence ??= EstablishConnectionPersistence(connectionItems);
+                        persistence.State = _negotiateState;
+                    }
+                    else
+                    {
+                        if (persistence?.State != null)
+                        {
+                            Logger.LogDebug($"Disabling credential persistence for a complete Kerberos handshake.");
+                            persistence.State = null;
+                        }
+                        Response.RegisterForDispose(_negotiateState);
+                    }
                 }
 
                 // Note we run the Authenticated event in HandleAuthenticateAsync so it is per-request rather than per connection.

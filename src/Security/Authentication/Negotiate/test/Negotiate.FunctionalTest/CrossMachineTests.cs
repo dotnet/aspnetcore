@@ -26,8 +26,11 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         private const string Http2Version = "HTTP/2";
 
         private const string ClientAddress = "https://localhost:5005";
-        private const string ServerPersistAddress = "https://localhost:5001";
-        private const string ServerNonPersistAddress = "https://localhost:5003";
+        private const string ServerName =
+            "chrross-dc";
+            // "chrross-udesk";
+        private static readonly string ServerPersistAddress = $"http://{ServerName}.CRKerberos.com:5000";
+        private static readonly string ServerNonPersistAddress = $"http://{ServerName}.CRKerberos.com:5002";
 
         public static IEnumerable<object[]> Http11And2 =>
             new List<object[]>

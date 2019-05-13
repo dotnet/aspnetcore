@@ -30,12 +30,12 @@ namespace Negotiate.Server
                         if (string.Equals("true", context.Configuration["Persist"]))
                         {
                             options.ListenAnyIP(5000);
-                            options.ListenAnyIP(5001, listenOptions => listenOptions.UseHttps());
+                            // options.ListenAnyIP(5001, listenOptions => listenOptions.UseHttps());
                         }
                         else
                         {
                             options.ListenAnyIP(5002);
-                            options.ListenAnyIP(5003, listenOptions => listenOptions.UseHttps());
+                            // options.ListenAnyIP(5003, listenOptions => listenOptions.UseHttps());
                         }
                     });
                 });
