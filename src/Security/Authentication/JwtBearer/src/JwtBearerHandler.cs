@@ -267,12 +267,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
         {
-            var authenticationFailedContext = new AuthenticationFailedContext(Context, Scheme, Options)
-            {
-                Exception = new Exception("Forbidden")
-            };
+            var forbiddenContext = new ForbiddenContext(Context, Scheme, Options);
             Response.StatusCode = 403;
-            return Events.AuthorizationFailed(authenticationFailedContext);
+            return Events.Forbidden(forbiddenContext);
         }
         private static string CreateErrorDescription(Exception authFailure)
         {

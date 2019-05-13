@@ -4,7 +4,7 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
   </PropertyGroup>
-  <ItemGroup Condition=" == netcoreapp3.0">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Authentication.JwtBearer.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Authentication"  />
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect"  />
