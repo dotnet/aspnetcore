@@ -1786,8 +1786,6 @@ SERVER_PROCESS::SERVER_PROCESS() :
 VOID
 SERVER_PROCESS::CleanUp()
 {
-    DWORD    dwThreadStatus = 0;
-
     if (m_hProcessWaitHandle != NULL)
     {
         UnregisterWait(m_hProcessWaitHandle);
@@ -1851,7 +1849,34 @@ SERVER_PROCESS::CleanUp()
         m_pForwarderConnection = NULL;
     }
 
-     // Forces ReadFile to cancel, causing the read loop to complete.
+}
+
+SERVER_PROCESS::~SERVER_PROCESS()
+{
+    DWORD    dwThreadStatus = 0;
+
+    CleanUp();
+
+    // no need to free m_pEnvironmentVarTable, as it references to
+    // the same hash table hold by configuration.
+    // the hashtable memory will be freed once onfiguration got recycled
+
+    if (m_pProcessManager != NULL)
+    {
+        m_pProcessManager->DereferenceProcessManager();
+        m_pProcessManager = NULL;
+    }
+
+    if (m_hStdoutHandle != NULL)
+    {
+        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
+        {
+            CloseHandle(m_hStdoutHandle);
+        }
+        m_hStdoutHandle = NULL;
+    }
+
+    // Forces ReadFile to cancel, causing the read loop to complete.
     // Don't check return value as IO may or may not be completed already.
     if (m_hReadThread != nullptr)
     {
@@ -1901,30 +1926,6 @@ SERVER_PROCESS::CleanUp()
             // as nothing can be done
             DeleteFile(m_struFullLogFile.QueryStr());
         }
-    }
-}
-
-SERVER_PROCESS::~SERVER_PROCESS()
-{
-    CleanUp();
-
-    // no need to free m_pEnvironmentVarTable, as it references to
-    // the same hash table hold by configuration.
-    // the hashtable memory will be freed once onfiguration got recycled
-
-    if (m_pProcessManager != NULL)
-    {
-        m_pProcessManager->DereferenceProcessManager();
-        m_pProcessManager = NULL;
-    }
-
-    if (m_hStdoutHandle != NULL)
-    {
-        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(m_hStdoutHandle);
-        }
-        m_hStdoutHandle = NULL;
     }
 }
 
