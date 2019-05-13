@@ -7,6 +7,10 @@ a.navbar-brand {
   word-break: break-all;
 }
 
+a {
+  color: #0366d6;
+}
+
 /* Sticky footer styles
 -------------------------------------------------- */
 html {
