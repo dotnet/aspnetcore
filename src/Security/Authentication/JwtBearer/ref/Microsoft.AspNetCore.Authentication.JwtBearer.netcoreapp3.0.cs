@@ -8,6 +8,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         public AuthenticationFailedContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions)) { }
         public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
+    public partial class ForbiddenContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions>
+    {
+        public ForbiddenContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions)) { }
+        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+    }
     public partial class JwtBearerChallengeContext : Microsoft.AspNetCore.Authentication.PropertiesContext<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions>
     {
         public JwtBearerChallengeContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions options, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions), default(Microsoft.AspNetCore.Authentication.AuthenticationProperties)) { }
@@ -26,13 +31,13 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     {
         public JwtBearerEvents() { }
         public System.Func<Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext, System.Threading.Tasks.Task> OnAuthenticationFailed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext, System.Threading.Tasks.Task> OnAuthorizationFailed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Func<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerChallengeContext, System.Threading.Tasks.Task> OnChallenge { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.JwtBearer.ForbiddenContext, System.Threading.Tasks.Task> OnForbidden { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Func<Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext, System.Threading.Tasks.Task> OnMessageReceived { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Func<Microsoft.AspNetCore.Authentication.JwtBearer.TokenValidatedContext, System.Threading.Tasks.Task> OnTokenValidated { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task AuthenticationFailed(Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext context) { throw null; }
-        public virtual System.Threading.Tasks.Task AuthorizationFailed(Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext context) { throw null; }
         public virtual System.Threading.Tasks.Task Challenge(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerChallengeContext context) { throw null; }
+        public virtual System.Threading.Tasks.Task Forbidden(Microsoft.AspNetCore.Authentication.JwtBearer.ForbiddenContext context) { throw null; }
         public virtual System.Threading.Tasks.Task MessageReceived(Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext context) { throw null; }
         public virtual System.Threading.Tasks.Task TokenValidated(Microsoft.AspNetCore.Authentication.JwtBearer.TokenValidatedContext context) { throw null; }
     }
