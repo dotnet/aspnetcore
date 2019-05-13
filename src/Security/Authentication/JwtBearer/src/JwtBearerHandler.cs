@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         {
             var authenticationFailedContext = new AuthenticationFailedContext(Context, Scheme, Options)
             {
-
+                Exception = new Exception("Forbidden")
             };
             Response.StatusCode = 403;
             return Events.AuthorizationFailed(authenticationFailedContext);
