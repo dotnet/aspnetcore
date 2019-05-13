@@ -54,7 +54,7 @@
   <String Id="FailureCloseButton">&amp;Fermer</String>
   <String Id="FilesInUseHeader">Fichiers en cours d'utilisation</String>
   <String Id="FilesInUseLabel">Les applications suivantes utilisent des fichiers nécessitant une mise à jour :</String>
-  <String Id="FilesInUseCloseRadioButton">&amp;Fermer les applications essayez de les ouvrir de nouveau.</String>
+  <String Id="FilesInUseCloseRadioButton">&amp;Fermer les applications et tenter de les redémarrer.</String>
   <String Id="FilesInUseDontCloseRadioButton">&amp;Ne pas fermer les applications. Un redémarrage sera nécessaire.</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
   <String Id="FilesInUseCancelButton">&amp;Annuler</String>
