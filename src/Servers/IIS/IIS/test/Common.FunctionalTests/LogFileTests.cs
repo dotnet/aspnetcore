@@ -234,6 +234,20 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, "Wow!"), Logger);
         }
 
+        [ConditionalFact]
+        public async Task CaptureLogsForOutOfProcessWhenProcessFailsToStart30KbMax()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWrite30Kb");
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            var response = await deploymentResult.HttpClient.GetAsync("Test");
+
+            StopServer();
+
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.OutOfProcessFailedToStart(deploymentResult, new string('a', 30000)), Logger);
+        }
+
         private static string ReadLogs(string logPath)
         {
             using (var stream = File.Open(logPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))

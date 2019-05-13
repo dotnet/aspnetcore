@@ -1139,35 +1139,40 @@ SERVER_PROCESS::ReadStdErrHandle(
 void
 SERVER_PROCESS::ReadStdErrHandleInternal()
 {
+    const size_t bufferSize = 4096;
+    size_t charactersLeft = 30000;
     std::string tempBuffer;
-    tempBuffer.resize(4096);
-    size_t m_charactersLeft = 30000;
 
-    // If ReadFile ever returns false, exit the thread
+    tempBuffer.resize(bufferSize);
+
     DWORD dwNumBytesRead = 0;
-    while (true)
+    while (charactersLeft > 0)
     {
         if (ReadFile(m_hStdoutHandle,
             tempBuffer.data(),
-            4096,
+            bufferSize,
             &dwNumBytesRead,
             nullptr))
         {
             auto text = to_wide_string(tempBuffer.substr(0, dwNumBytesRead), GetConsoleOutputCP());
-            auto const writeSize = min(m_charactersLeft, text.size());
+            auto const writeSize = min(charactersLeft, text.size());
             m_output.write(text.c_str(), writeSize);
-            m_charactersLeft -= writeSize;
+            charactersLeft -= writeSize;
         }
         else
         {
-            auto hr = GetLastError();
-            if (hr)
-            {
-                return;
-            }
-
             return;
         }
+    }
+
+    // Continue reading from console out until the program ends or the handle is invalid.
+    // Otherwise, the program may hang as nothing is reading stdout.
+    while (ReadFile(m_hStdoutHandle,
+        tempBuffer.data(),
+        bufferSize,
+        &dwNumBytesRead,
+        nullptr))
+    {
     }
 }
 
@@ -1781,6 +1786,8 @@ SERVER_PROCESS::SERVER_PROCESS() :
 VOID
 SERVER_PROCESS::CleanUp()
 {
+    DWORD    dwThreadStatus = 0;
+
     if (m_hProcessWaitHandle != NULL)
     {
         UnregisterWait(m_hProcessWaitHandle);
@@ -1844,38 +1851,11 @@ SERVER_PROCESS::CleanUp()
         m_pForwarderConnection = NULL;
     }
 
-}
-
-SERVER_PROCESS::~SERVER_PROCESS()
-{
-    DWORD    dwThreadStatus = 0;
-
-    CleanUp();
-
-    // no need to free m_pEnvironmentVarTable, as it references to
-    // the same hash table hold by configuration.
-    // the hashtable memory will be freed once onfiguration got recycled
-
-    if (m_pProcessManager != NULL)
-    {
-        m_pProcessManager->DereferenceProcessManager();
-        m_pProcessManager = NULL;
-    }
-
-    if (m_hStdoutHandle != NULL)
-    {
-        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(m_hStdoutHandle);
-        }
-        m_hStdoutHandle = NULL;
-    }
-
-    // Forces ReadFile to cancel, causing the read loop to complete.
+     // Forces ReadFile to cancel, causing the read loop to complete.
     // Don't check return value as IO may or may not be completed already.
     if (m_hReadThread != nullptr)
     {
-        LOG_INFO(L"Canceling standard stream pipe reader");
+        LOG_INFO(L"Canceling standard stream pipe reader.");
         CancelSynchronousIo(m_hReadThread);
     }
 
@@ -1921,6 +1901,30 @@ SERVER_PROCESS::~SERVER_PROCESS()
             // as nothing can be done
             DeleteFile(m_struFullLogFile.QueryStr());
         }
+    }
+}
+
+SERVER_PROCESS::~SERVER_PROCESS()
+{
+    CleanUp();
+
+    // no need to free m_pEnvironmentVarTable, as it references to
+    // the same hash table hold by configuration.
+    // the hashtable memory will be freed once onfiguration got recycled
+
+    if (m_pProcessManager != NULL)
+    {
+        m_pProcessManager->DereferenceProcessManager();
+        m_pProcessManager = NULL;
+    }
+
+    if (m_hStdoutHandle != NULL)
+    {
+        if (m_hStdoutHandle != INVALID_HANDLE_VALUE)
+        {
+            CloseHandle(m_hStdoutHandle);
+        }
+        m_hStdoutHandle = NULL;
     }
 }
 

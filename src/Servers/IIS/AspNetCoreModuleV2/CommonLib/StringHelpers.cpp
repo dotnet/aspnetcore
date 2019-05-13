@@ -47,6 +47,28 @@ std::wstring to_wide_string(const std::string &source, const unsigned int codePa
     return destination;
 }
 
+std::wstring to_wide_string(const std::string& source, const int length, const unsigned int codePage)
+{
+    // MultiByteToWideChar returns 0 on failure, which is also the same return value
+    // for empty strings. Preemptive return.
+    if (length == 0)
+    {
+        return L"";
+    }
+
+    std::wstring destination;
+
+    int nChars = MultiByteToWideChar(codePage, 0, source.data(), length, NULL, 0);
+    THROW_LAST_ERROR_IF(nChars == 0);
+
+    destination.resize(nChars);
+
+    nChars = MultiByteToWideChar(codePage, 0, source.data(), length, destination.data(), nChars);
+    THROW_LAST_ERROR_IF(nChars == 0);
+
+    return destination;
+}
+
 std::string to_multi_byte_string(const std::wstring& text, const unsigned int codePage)
 {
     auto const encodedByteCount = WideCharToMultiByte(codePage, 0, text.data(), -1, nullptr, 0, nullptr, nullptr);

@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             if (DeployerSelector.HasNewHandler)
             {
-                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. First 30KB characters of captured stdout and stderr logs:\r\n{output}";
+                return $"Application '/LM/W3SVC/1/ROOT' with physical root '{EscapedContentRoot(deploymentResult)}' has exited from Program.Main with exit code = '{code}'. Last 30KB characters of captured stdout and stderr logs:\r\n{output}";
             }
             else
             {
