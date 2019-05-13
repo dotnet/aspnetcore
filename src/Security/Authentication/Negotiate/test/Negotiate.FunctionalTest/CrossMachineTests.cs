@@ -25,7 +25,9 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
         private const string Http11Version = "HTTP/1.1";
         private const string Http2Version = "HTTP/2";
 
-        private const string ClientAddress = "https://localhost:5005";
+        private const string ClientAddress =
+            // "http://chrross-udesk:5004";
+            "https://localhost:5005";
         private const string ServerName =
             "chrross-dc";
             // "chrross-udesk";
@@ -39,21 +41,21 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 new object[] { Http2Version },
             };
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Manual testing only")]
         [MemberData(nameof(Http11And2))]
         public Task Anonymous_NoChallenge_NoOps(string protocol)
         {
             return RunTest(protocol, "/Anonymous/Unrestricted");
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Manual testing only")]
         [MemberData(nameof(Http11And2))]
         public Task Anonymous_Challenge_401Negotiate(string protocol)
         {
             return RunTest(protocol, "/Anonymous/Authorized");
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Manual testing only")]
         [MemberData(nameof(Http11And2))]
         public Task DefautCredentials_Success(string protocol)
         {
@@ -68,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 new object[] { Http2Version, Http11Version },
             };
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Manual testing only")]
         [MemberData(nameof(HttpOrders))]
         // AuthorizedRequestAfterAuth_ReUses1WithPersistence would give the same results
         public Task UrestrictedRequestAfterAuth_ReUses1WithPersistence(string protocol1, string protocol2)
@@ -76,28 +78,28 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
             return RunTest(ServerPersistAddress, protocol1, protocol2, "/AfterAuth/Unrestricted/Persist");
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Manual testing only")]
         [MemberData(nameof(HttpOrders))]
         public Task UrestrictedRequestAfterAuth_AnonymousWhenNotPersisted(string protocol1, string protocol2)
         {
             return RunTest(ServerNonPersistAddress, protocol1, protocol2, "/AfterAuth/Unrestricted/NonPersist");
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Manual testing only")]
         [MemberData(nameof(HttpOrders))]
         public Task AuthorizedRequestAfterAuth_ReauthenticatesWhenNotPersisted(string protocol1, string protocol2)
         {
             return RunTest(ServerNonPersistAddress, protocol1, protocol2, "/AfterAuth/Authorized/NonPersist");
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Manual testing only")]
         [MemberData(nameof(Http11And2))]
         public Task Unauthorized_401Negotiate(string protocol)
         {
             return RunTest(protocol, "/Unauthorized");
         }
 
-        [ConditionalTheory]
+        [ConditionalTheory(Skip = "Manual testing only")]
         [MemberData(nameof(Http11And2))]
         public Task UnauthorizedAfterAuthenticated_Success(string protocol)
         {
