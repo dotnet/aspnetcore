@@ -1,6 +1,6 @@
 @namespace Microsoft.AspNetCore.Components
 
-@if (CurrentAuthenticationState is PendingAuthenticationState)
+@if (CurrentAuthenticationState.IsPending)
 {
     @Authorizing
 }

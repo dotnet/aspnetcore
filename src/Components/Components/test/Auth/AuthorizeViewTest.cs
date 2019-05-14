@@ -259,6 +259,8 @@ namespace Microsoft.AspNetCore.Components
         {
             public ClaimsPrincipal User { get; set; }
 
+            public bool IsPending => false;
+
             public static TestAuthState AuthenticatedAs(string username) => new TestAuthState
             {
                 User = new ClaimsPrincipal(new TestIdentity { Name = username })

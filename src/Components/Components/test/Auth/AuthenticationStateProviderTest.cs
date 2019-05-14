@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Components.Auth
                 Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
                 AssertFrame.Text(
                     batch.ReferenceFrames[edit.ReferenceFrameIndex],
-                    "Authenticated: True; Name: Bert; Renders: 1");
+                    "Authenticated: True; Name: Bert; Pending: False; Renders: 1");
             });
         }
 
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.Auth
                 Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
                 AssertFrame.Text(
                     batch1.ReferenceFrames[edit.ReferenceFrameIndex],
-                    "Authenticated: False; Name: ; Renders: 1");
+                    "Authenticated: False; Name: ; Pending: True; Renders: 1");
             });
 
             // Act 2: Auth state fetch task completes in background
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components.Auth
                 Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
                 AssertFrame.Text(
                     batch2.ReferenceFrames[edit.ReferenceFrameIndex],
-                    "Authenticated: True; Name: Bert; Renders: 2");
+                    "Authenticated: True; Name: Bert; Pending: False; Renders: 2");
             });
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components.Auth
                 Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
                 AssertFrame.Text(
                     batch.ReferenceFrames[edit.ReferenceFrameIndex],
-                    "Authenticated: True; Name: Bert; Renders: 2");
+                    "Authenticated: True; Name: Bert; Pending: False; Renders: 2");
             });
         }
 
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Components.Auth
             {
                 numRenders++;
                 var identity = AuthState.User.Identity;
-                builder.AddContent(0, $"Authenticated: {identity.IsAuthenticated}; Name: {identity.Name}; Renders: {numRenders}");
+                builder.AddContent(0, $"Authenticated: {identity.IsAuthenticated}; Name: {identity.Name}; Pending: {AuthState.IsPending}; Renders: {numRenders}");
             }
         }
 
@@ -204,6 +204,8 @@ namespace Microsoft.AspNetCore.Components.Auth
             }
 
             public ClaimsPrincipal User { get; }
+
+            public bool IsPending => false;
         }
 
         class TestIdentity : IIdentity

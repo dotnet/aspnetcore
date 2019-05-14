@@ -335,6 +335,7 @@ namespace Microsoft.AspNetCore.Components
     }
     public partial interface IAuthenticationState
     {
+        bool IsPending { get; }
         System.Security.Claims.ClaimsPrincipal User { get; }
     }
     public partial interface IAuthenticationStateProvider

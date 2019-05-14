@@ -21,5 +21,7 @@ namespace Microsoft.AspNetCore.Components
                 return _user;
             }
         }
+
+        public bool IsPending => true;
     }
 }
