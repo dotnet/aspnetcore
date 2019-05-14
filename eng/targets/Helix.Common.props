@@ -31,8 +31,8 @@
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true'">
     <HelixAvailablePlatform Include="Windows" />
 
-    <HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows"/>
-    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows"/>
+    <HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
     <!-- Disabled until https://github.com/dotnet/core-eng/issues/5506 is resolved -->
     <!-- <HelixAvailableTargetQueue Condition="'$(IsWindowsOnlyTest)' == 'true'" Include="Windows.7.Amd64.Open" /> -->
 
