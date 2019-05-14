@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
         {
             // Arrange and Act
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, false);
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, true);
             var lookup = serverVar.Evaluate(CreateTestRewriteContext(), CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
             // Assert
             Assert.Equal(expected, lookup);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
         {
             // Arrange and Act
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, true);
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, false);
             var httpContext = CreateTestHttpContext();
             httpContext.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
             {
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
         {
             // Arrange and Act
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, false);
+            var serverVar = ServerVariables.FindServerVariable(variable, testParserContext, uriMatchPart, true);
             var httpContext = CreateTestHttpContext();
             httpContext.Features.Set<IServerVariablesFeature>(new TestServerVariablesFeature(new Dictionary<string, string>
             {
@@ -174,7 +174,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.IISUrlRewrite
             var context = new DefaultHttpContext();
             var rewriteContext = new RewriteContext { HttpContext = context };
             var testParserContext = new ParserContext("test");
-            var serverVar = ServerVariables.FindServerVariable("QUERY_STRING", testParserContext, UriMatchPart.Path, false);
+            var serverVar = ServerVariables.FindServerVariable("QUERY_STRING", testParserContext, UriMatchPart.Path, true);
             var lookup = serverVar.Evaluate(rewriteContext, CreateTestRuleMatch().BackReferences, CreateTestCondMatch().BackReferences);
 
             Assert.Equal(string.Empty, lookup);
