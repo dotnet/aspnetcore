@@ -4,7 +4,7 @@
 {
     @Authorizing
 }
-else if (CurrentAuthenticationState.User?.Identity?.IsAuthenticated == true)
+else if (IsAuthorized())
 {
     @((Authorized ?? ChildContent)?.Invoke(CurrentAuthenticationState))
 }
@@ -50,5 +50,14 @@ else
         }
 
         return result;
+    }
+
+    private bool IsAuthorized()
+    {
+        // TODO: Support various authorization condition parameters, equivalent to those offered
+        // by the [Authorize] attribute, e.g., "Roles" and "Policy". This is on hold until we're
+        // able to reference the policy evaluator APIs from this package.
+
+        return CurrentAuthenticationState.User?.Identity?.IsAuthenticated == true;
     }
 }
