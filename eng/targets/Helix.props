@@ -18,7 +18,6 @@
     <HelixUseArchive>false</HelixUseArchive>
     <LoggingTestingDisableFileLogging Condition="'$(IsHelixJob)' == 'true'">true</LoggingTestingDisableFileLogging>
     <NodeVersion>10.15.3</NodeVersion>
-    <NodePlatformArch>linux-x64</NodePlatformArch>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
@@ -39,7 +38,14 @@
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
     <HelixContent Include="$(RepositoryRoot)eng\helix\content\installnode.sh" />
-    <HelixPreCommand Include="./installnode.sh $(NodeVersion) $(NodePlatformArch)" />
+    <HelixPreCommand Include="./installnode.sh $(NodeVersion) linux-x64" />
     <HelixPreCommand Include="export PATH=%24PATH&quot;:&quot;%24HELIX_CORRELATION_PAYLOAD/node/bin" />
   </ItemGroup>
+  
+  <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
+    <HelixContent Include="$(RepositoryRoot)eng\helix\content\InstallNode.ps1" />
+    <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallNode.ps1 $(NodeVersion) windows-x64 || exit /b 1" />
+    <HelixPreCommand Include="export PATH=%24PATH&quot;:&quot;%24HELIX_CORRELATION_PAYLOAD/node/bin" />
+  </ItemGroup>
+
 </Project>
