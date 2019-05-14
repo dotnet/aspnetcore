@@ -140,10 +140,89 @@ namespace Microsoft.AspNetCore.Components
             Assert.Equal("When using AuthorizeView, do not specify both 'Authorized' and 'ChildContent'.", ex.Message);
         }
 
+        [Fact]
+        public void RendersNothingUntilAuthorizationCompleted()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = WrapInAuthorizeView(
+                notAuthorizedContent: builder => builder.AddContent(0, "You are not authorized"));
+            rootComponent.AuthenticationState = new PendingAuthenticationState();
+
+            // Act/Assert 1: Auth pending
+            renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+            var batch1 = renderer.Batches.Single();
+            var authorizeViewComponentId = batch1.GetComponentFrames<AuthorizeView>().Single().ComponentId;
+            var diff1 = batch1.DiffsByComponentId[authorizeViewComponentId].Single();
+            Assert.Empty(diff1.Edits);
+
+            // Act/Assert 2: Auth process completes asynchronously
+            rootComponent.AuthenticationState = new TestAuthState();
+            rootComponent.TriggerRender();
+            Assert.Equal(2, renderer.Batches.Count);
+            var batch2 = renderer.Batches[1];
+            var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
+            Assert.Collection(diff2.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    batch2.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "You are not authorized");
+            });
+        }
+
+        [Fact]
+        public void RendersAuthorizingContentUntilAuthorizationCompleted()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = WrapInAuthorizeView(
+                authorizingContent: builder => builder.AddContent(0, "Auth pending..."),
+                authorizedContent: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
+            rootComponent.AuthenticationState = new PendingAuthenticationState();
+
+            // Act/Assert 1: Auth pending
+            renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+            var batch1 = renderer.Batches.Single();
+            var authorizeViewComponentId = batch1.GetComponentFrames<AuthorizeView>().Single().ComponentId;
+            var diff1 = batch1.DiffsByComponentId[authorizeViewComponentId].Single();
+            Assert.Collection(diff1.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    batch1.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "Auth pending...");
+            });
+
+            // Act/Assert 2: Auth process completes asynchronously
+            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Monsieur");
+            rootComponent.TriggerRender();
+            Assert.Equal(2, renderer.Batches.Count);
+            var batch2 = renderer.Batches[1];
+            var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
+            Assert.Collection(diff2.Edits,
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.RemoveFrame, edit.Type);
+                Assert.Equal(0, edit.SiblingIndex);
+            },
+            edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                Assert.Equal(0, edit.SiblingIndex);
+                AssertFrame.Text(
+                    batch2.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "Hello, Monsieur!");
+            });
+        }
+
         private static TestAuthStateProviderComponent WrapInAuthorizeView(
             RenderFragment<IAuthenticationState> childContent = null,
             RenderFragment<IAuthenticationState> authorizedContent = null,
-            RenderFragment notAuthorizedContent = null)
+            RenderFragment notAuthorizedContent = null,
+            RenderFragment authorizingContent = null)
         {
             return new TestAuthStateProviderComponent(builder =>
             {
@@ -151,6 +230,7 @@ namespace Microsoft.AspNetCore.Components
                 builder.AddAttribute(1, nameof(AuthorizeView.ChildContent), childContent);
                 builder.AddAttribute(2, nameof(AuthorizeView.Authorized), authorizedContent);
                 builder.AddAttribute(3, nameof(AuthorizeView.NotAuthorized), notAuthorizedContent);
+                builder.AddAttribute(4, nameof(AuthorizeView.Authorizing), authorizingContent);
                 builder.CloseComponent();
             });
         }

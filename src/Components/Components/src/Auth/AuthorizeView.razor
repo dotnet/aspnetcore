@@ -1,6 +1,10 @@
 @namespace Microsoft.AspNetCore.Components
 
-@if (CurrentAuthenticationState.User?.Identity?.IsAuthenticated == true)
+@if (CurrentAuthenticationState is PendingAuthenticationState)
+{
+    @Authorizing
+}
+else if (CurrentAuthenticationState.User?.Identity?.IsAuthenticated == true)
 {
     @((Authorized ?? ChildContent)?.Invoke(CurrentAuthenticationState))
 }
@@ -27,6 +31,11 @@ else
     /// If you specify a value for this parameter, do not also specify a value for <see cref="ChildContent"/>.
     /// </summary>
     [Parameter] public RenderFragment<IAuthenticationState> Authorized { get; private set; }
+
+    /// <summary>
+    /// The content that will be displayed while asynchronous authorization is in progress.
+    /// </summary>
+    [Parameter] public RenderFragment Authorizing { get; private set; }
 
     public override Task SetParametersAsync(ParameterCollection parameters)
     {
