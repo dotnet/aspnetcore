@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         /// Invoked if exceptions are thrown during request processing. The exceptions will be re-thrown after this event unless suppressed.
         /// </summary>
         public Func<AuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
+
         /// <summary>
         /// Invoked if Authorization fails and results in a Forbidden response  
         /// </summary>
