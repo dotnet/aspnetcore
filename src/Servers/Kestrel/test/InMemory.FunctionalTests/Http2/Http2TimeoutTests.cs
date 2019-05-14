@@ -840,7 +840,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 37,
-                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS),
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
                 withStreamId: 3);
             await ExpectAsync(Http2FrameType.DATA,
                 withLength: 1,

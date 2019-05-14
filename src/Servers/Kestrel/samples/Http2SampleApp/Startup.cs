@@ -17,16 +17,7 @@ namespace Http2SampleApp
             app.UseTimingMiddleware();
             app.Run(context =>
             {
-                if (context.Request.Path == "/")
-                {
-                    return context.Response.WriteAsync("Hello World! " + context.Request.Protocol);
-                }
-                else if (context.Request.Path == "/empty")
-                {
-                    return Task.CompletedTask;
-                }
-
-                return Task.CompletedTask;
+                return context.Response.WriteAsync("Hello World! " + context.Request.Protocol);
             });
         }
     }

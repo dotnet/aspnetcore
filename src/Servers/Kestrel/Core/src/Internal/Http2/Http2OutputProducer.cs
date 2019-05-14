@@ -143,15 +143,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return;
                 }
 
-                // If the responseHeaders will be written to the final frame then set
-                // END_STREAM on the HEADERS frame. This avoids the need to write an
-                // empty DATA frame with END_STREAM
+                // If the responseHeaders will be written as the final HEADERS frame then
+                // set END_STREAM on the HEADERS frame. This avoids the need to write an
+                // empty DATA frame with END_STREAM.
                 //
-                // The headers will be the final frame if there is no content and there
-                // is no trailing HEADERS frame.
+                // The headers will be the final frame if:
+                // 1. There is no content
+                // 2. There is no trailing HEADERS frame.
                 Http2HeadersFrameFlags http2HeadersFrame;
 
-                if (appCompleted && responseHeaders.ContentLength == 0 && (_stream.Trailers == null || _stream.Trailers.Count == 0))
+                if (appCompleted && !_startedWritingDataFrames && (_stream.Trailers == null || _stream.Trailers.Count == 0))
                 {
                     _streamEnded = true;
                     http2HeadersFrame = Http2HeadersFrameFlags.END_STREAM;
@@ -326,6 +327,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                     else if (readResult.IsCompleted && _streamEnded)
                     {
+                        Debug.Assert(readResult.Buffer.Length == 0);
+
                         // Headers have already been written and there is no other content to write
                         flushResult = await _frameWriter.FlushAsync(outputAborter: null, cancellationToken: default);
                     }
