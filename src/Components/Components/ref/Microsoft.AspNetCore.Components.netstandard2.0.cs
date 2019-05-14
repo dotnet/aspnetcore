@@ -3,6 +3,33 @@
 
 namespace Microsoft.AspNetCore.Components
 {
+    public delegate void AuthenticationStateChangedHandler(Microsoft.AspNetCore.Components.IAuthenticationState newAuthenticationState);
+    public partial class AuthenticationStateProvider : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
+    {
+        public AuthenticationStateProvider() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        protected override System.Threading.Tasks.Task OnInitAsync() { throw null; }
+        void System.IDisposable.Dispose() { }
+    }
+    public partial class AuthorizeView : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        public AuthorizeView() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.IAuthenticationState> Authorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.IAuthenticationState> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [Microsoft.AspNetCore.Components.CascadingParameterAttribute]
+        public Microsoft.AspNetCore.Components.IAuthenticationState CurrentAuthenticationState { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        public override System.Threading.Tasks.Task SetParametersAsync(Microsoft.AspNetCore.Components.ParameterCollection parameters) { throw null; }
+    }
     [Microsoft.AspNetCore.Components.BindElementAttribute("select", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindElementAttribute("textarea", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange")]
@@ -305,6 +332,15 @@ namespace Microsoft.AspNetCore.Components
         public static System.Threading.Tasks.Task SendJsonAsync(this System.Net.Http.HttpClient httpClient, System.Net.Http.HttpMethod method, string requestUri, object content) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.Task<T> SendJsonAsync<T>(this System.Net.Http.HttpClient httpClient, System.Net.Http.HttpMethod method, string requestUri, object content) { throw null; }
+    }
+    public partial interface IAuthenticationState
+    {
+        System.Security.Claims.ClaimsPrincipal User { get; }
+    }
+    public partial interface IAuthenticationStateProvider
+    {
+        event Microsoft.AspNetCore.Components.AuthenticationStateChangedHandler AuthenticationStateChanged;
+        System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh);
     }
     public partial interface IComponent
     {
