@@ -4,6 +4,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <AssemblyName>InProcessWebSite</AssemblyName>
     <TestAssetOutputName>InProcessForwardsCompatWebSite</TestAssetOutputName>
     <DefineConstants>FORWARDCOMPAT</DefineConstants>
   </PropertyGroup>
