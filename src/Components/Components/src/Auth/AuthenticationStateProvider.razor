@@ -6,7 +6,7 @@
 @functions {
     private IAuthenticationState _currentAuthenticationState;
 
-    [Inject] private IAuthenticationStateProvider AuthStateProviderService { get; set; }
+    [Inject] private IAuthenticationStateProvider AuthStateProvider { get; set; }
 
     /// <summary>
     /// The content to which the authentication state should be provided.
@@ -15,7 +15,7 @@
 
     protected override async Task OnInitAsync()
     {
-        AuthStateProviderService.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
         // Initial synchronous render has an unauthorized authentication state
         // We create a new one because we can't stop ClaimsPrincipal from being mutable
@@ -23,7 +23,7 @@
 
         // Then asynchronously we query for the actual authentication state and rerender
         // If this happens to return synchronously, the 'empty' render will be skipped
-        _currentAuthenticationState = await AuthStateProviderService
+        _currentAuthenticationState = await AuthStateProvider
             .GetAuthenticationStateAsync(forceRefresh: false);
     }
 
@@ -38,6 +38,6 @@
 
     void IDisposable.Dispose()
     {
-        AuthStateProviderService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
     }
 }
