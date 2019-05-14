@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
 using Xunit;
@@ -125,6 +126,41 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public void RespondsToChangeInAuthorizationState()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = WrapInAuthorizeView(
+                childContent: context => builder =>
+                    builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
+            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Nellie");
+
+            // Render in initial state. From other tests, we know this renders
+            // a single batch with the correct output.
+            renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+            var authorizeViewComponentId = renderer.Batches.Single()
+                .GetComponentFrames<AuthorizeView>().Single().ComponentId;
+
+            // Act
+            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Ronaldo");
+            rootComponent.TriggerRender();
+
+            // Assert: It's only one new diff. We skip the intermediate "await" render state
+            // because the task was completed synchronously.
+            Assert.Equal(2, renderer.Batches.Count);
+            var batch = renderer.Batches.Last();
+            var diff = batch.DiffsByComponentId[authorizeViewComponentId].Single();
+            Assert.Collection(diff.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.UpdateText, edit.Type);
+                AssertFrame.Text(
+                    batch.ReferenceFrames[edit.ReferenceFrameIndex],
+                    "You are authenticated as Ronaldo");
+            });
+        }
+
+        [Fact]
         public void ThrowsIfBothChildContentAndAuthorizedContentProvided()
         {
             // Arrange
@@ -147,7 +183,8 @@ namespace Microsoft.AspNetCore.Components
             var renderer = new TestRenderer();
             var rootComponent = WrapInAuthorizeView(
                 notAuthorizedContent: builder => builder.AddContent(0, "You are not authorized"));
-            rootComponent.AuthenticationState = new PendingAuthenticationState();
+            var authTcs = new TaskCompletionSource<IAuthenticationState>();
+            rootComponent.AuthenticationState = authTcs.Task;
 
             // Act/Assert 1: Auth pending
             renderer.AssignRootComponentId(rootComponent);
@@ -158,8 +195,7 @@ namespace Microsoft.AspNetCore.Components
             Assert.Empty(diff1.Edits);
 
             // Act/Assert 2: Auth process completes asynchronously
-            rootComponent.AuthenticationState = new TestAuthState();
-            rootComponent.TriggerRender();
+            authTcs.SetResult(new TestAuthState());
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
@@ -180,7 +216,8 @@ namespace Microsoft.AspNetCore.Components
             var rootComponent = WrapInAuthorizeView(
                 authorizingContent: builder => builder.AddContent(0, "Auth pending..."),
                 authorizedContent: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
-            rootComponent.AuthenticationState = new PendingAuthenticationState();
+            var authTcs = new TaskCompletionSource<IAuthenticationState>();
+            rootComponent.AuthenticationState = authTcs.Task;
 
             // Act/Assert 1: Auth pending
             renderer.AssignRootComponentId(rootComponent);
@@ -197,8 +234,7 @@ namespace Microsoft.AspNetCore.Components
             });
 
             // Act/Assert 2: Auth process completes asynchronously
-            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Monsieur");
-            rootComponent.TriggerRender();
+            authTcs.SetResult(TestAuthState.AuthenticatedAs("Monsieur").Result);
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
@@ -239,7 +275,8 @@ namespace Microsoft.AspNetCore.Components
         {
             private readonly RenderFragment _childContent;
 
-            public IAuthenticationState AuthenticationState { get; set; } = new TestAuthState();
+            public Task<IAuthenticationState> AuthenticationState { get; set; }
+                = Task.FromResult<IAuthenticationState>(new TestAuthState());
 
             public TestAuthStateProviderComponent(RenderFragment childContent)
             {
@@ -248,8 +285,8 @@ namespace Microsoft.AspNetCore.Components
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.OpenComponent<CascadingValue<IAuthenticationState>>(0);
-                builder.AddAttribute(1, nameof(CascadingValue<IAuthenticationState>.Value), AuthenticationState);
+                builder.OpenComponent<CascadingValue<Task<IAuthenticationState>>>(0);
+                builder.AddAttribute(1, nameof(CascadingValue<Task<IAuthenticationState>>.Value), AuthenticationState);
                 builder.AddAttribute(2, RenderTreeBuilder.ChildContent, _childContent);
                 builder.CloseComponent();
             }
@@ -261,10 +298,11 @@ namespace Microsoft.AspNetCore.Components
 
             public bool IsPending => false;
 
-            public static TestAuthState AuthenticatedAs(string username) => new TestAuthState
-            {
-                User = new ClaimsPrincipal(new TestIdentity { Name = username })
-            };
+            public static Task<IAuthenticationState> AuthenticatedAs(string username)
+                => Task.FromResult<IAuthenticationState>(new TestAuthState
+                {
+                    User = new ClaimsPrincipal(new TestIdentity { Name = username })
+                });
 
             class TestIdentity : IIdentity
             {

@@ -1,12 +1,12 @@
 @namespace Microsoft.AspNetCore.Components
 
-@if (CurrentAuthenticationState.IsPending)
+@if (currentAuthState == null)
 {
     @Authorizing
 }
 else if (IsAuthorized())
 {
-    @((Authorized ?? ChildContent)?.Invoke(CurrentAuthenticationState))
+    @((Authorized ?? ChildContent)?.Invoke(currentAuthState))
 }
 else
 {
@@ -14,7 +14,9 @@ else
 }
 
 @functions {
-    [CascadingParameter] public IAuthenticationState CurrentAuthenticationState { get; private set; }
+    private IAuthenticationState currentAuthState;
+
+    [CascadingParameter] public Task<IAuthenticationState> AuthStateTask { get; private set; }
 
     /// <summary>
     /// The content that will be displayed if the user is authorized.
@@ -37,10 +39,8 @@ else
     /// </summary>
     [Parameter] public RenderFragment Authorizing { get; private set; }
 
-    public override Task SetParametersAsync(ParameterCollection parameters)
+    protected override async Task OnParametersSetAsync()
     {
-        var result = base.SetParametersAsync(parameters);
-
         // We allow 'ChildContent' for convenience in basic cases, and 'Authorized' for symmetry
         // with 'NotAuthorized' in other cases. Besides naming, they are equivalent. To avoid
         // confusion, explicitly prevent the case where both are supplied.
@@ -49,7 +49,12 @@ else
             throw new InvalidOperationException($"When using {nameof(AuthorizeView)}, do not specify both '{nameof(Authorized)}' and '{nameof(ChildContent)}'.");
         }
 
-        return result;
+        // First render in pending state
+        // If the task has already completed, this render will be skipped
+        currentAuthState = null;
+
+        // Then render in completed state
+        currentAuthState = await AuthStateTask;
     }
 
     private bool IsAuthorized()
@@ -58,6 +63,6 @@ else
         // by the [Authorize] attribute, e.g., "Roles" and "Policy". This is on hold until we're
         // able to reference the policy evaluator APIs from this package.
 
-        return CurrentAuthenticationState.User?.Identity?.IsAuthenticated == true;
+        return currentAuthState.User?.Identity?.IsAuthenticated == true;
     }
 }

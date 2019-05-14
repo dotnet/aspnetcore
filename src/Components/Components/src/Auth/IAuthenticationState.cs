@@ -14,10 +14,5 @@ namespace Microsoft.AspNetCore.Components
         /// Gets a <see cref="ClaimsPrincipal"/> that describes the current user.
         /// </summary>
         ClaimsPrincipal User { get; }
-
-        /// <summary>
-        /// Gets a flag that indicates whether the authentication state is still being determined.
-        /// </summary>
-        bool IsPending { get; }
     }
 }

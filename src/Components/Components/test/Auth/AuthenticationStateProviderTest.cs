@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.Test.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Auth
+namespace Microsoft.AspNetCore.Components
 {
     public class AuthenticationStateProviderTest
     {
@@ -86,7 +86,9 @@ namespace Microsoft.AspNetCore.Components.Auth
 
             // Assert 1: Empty state
             var batch1 = renderer.Batches.Single();
-            var receiveAuthStateId = batch1.GetComponentFrames<ReceiveAuthStateComponent>().Single().ComponentId;
+            var receiveAuthStateFrame = batch1.GetComponentFrames<ReceiveAuthStateComponent>().Single();
+            var receiveAuthStateId = receiveAuthStateFrame.ComponentId;
+            var receiveAuthStateComponent = (ReceiveAuthStateComponent)receiveAuthStateFrame.Component;
             var receiveAuthStateDiff1 = batch1.DiffsByComponentId[receiveAuthStateId].Single();
             Assert.Collection(receiveAuthStateDiff1.Edits, edit =>
             {
@@ -96,10 +98,13 @@ namespace Microsoft.AspNetCore.Components.Auth
                     "Authenticated: False; Name: ; Pending: True; Renders: 1");
             });
 
-            // Act 2: Auth state fetch task completes in background
+            // Act/Assert 2: Auth state fetch task completes in background
+            // No new renders yet, because the cascading parameter itself hasn't changed
             authStateTaskCompletionSource.SetResult(new TestAuthState("Bert"));
+            Assert.Single(renderer.Batches);
 
-            // Assert 2: Re-renders content
+            // Act/Assert 3: Refresh display
+            receiveAuthStateComponent.TriggerRender();
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches.Last();
             var receiveAuthStateDiff2 = batch2.DiffsByComponentId[receiveAuthStateId].Single();
@@ -132,7 +137,8 @@ namespace Microsoft.AspNetCore.Components.Auth
                 .GetComponentFrames<ReceiveAuthStateComponent>().Single().ComponentId;
 
             // Act 2: AuthenticationStateProvider issues notification
-            authStateProvider.TriggerAuthenticationStateChanged(new TestAuthState("Bert"));
+            authStateProvider.TriggerAuthenticationStateChanged(
+                Task.FromResult<IAuthenticationState>(new TestAuthState("Bert")));
 
             // Assert 2: Re-renders content
             Assert.Equal(2, renderer.Batches.Count);
@@ -151,13 +157,21 @@ namespace Microsoft.AspNetCore.Components.Auth
         {
             int numRenders;
 
-            [CascadingParameter] IAuthenticationState AuthState { get; set; }
+            [CascadingParameter] Task<IAuthenticationState> AuthStateTask { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 numRenders++;
-                var identity = AuthState.User.Identity;
-                builder.AddContent(0, $"Authenticated: {identity.IsAuthenticated}; Name: {identity.Name}; Pending: {AuthState.IsPending}; Renders: {numRenders}");
+
+                if (AuthStateTask.IsCompleted)
+                {
+                    var identity = AuthStateTask.Result.User.Identity;
+                    builder.AddContent(0, $"Authenticated: {identity.IsAuthenticated}; Name: {identity.Name}; Pending: False; Renders: {numRenders}");
+                }
+                else
+                {
+                    builder.AddContent(0, $"Authenticated: False; Name: ; Pending: True; Renders: {numRenders}");
+                }
             }
         }
 
@@ -188,7 +202,7 @@ namespace Microsoft.AspNetCore.Components.Auth
                 return CurrentAuthStateTask;
             }
 
-            internal void TriggerAuthenticationStateChanged(TestAuthState authState)
+            internal void TriggerAuthenticationStateChanged(Task<IAuthenticationState> authState)
             {
                 AuthenticationStateChanged?.Invoke(authState);
             }

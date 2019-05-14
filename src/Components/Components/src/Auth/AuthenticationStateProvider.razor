@@ -1,10 +1,10 @@
 @namespace Microsoft.AspNetCore.Components
 @implements IDisposable
 
-<CascadingValue T="IAuthenticationState" Value="@_currentAuthenticationState" ChildContent="@ChildContent" />
+<CascadingValue T="Task<IAuthenticationState>" Value="@_currentAuthStateTask" ChildContent="@ChildContent" />
 
 @functions {
-    private IAuthenticationState _currentAuthenticationState;
+    private Task<IAuthenticationState> _currentAuthStateTask;
 
     [Inject] private IAuthenticationStateProvider AuthStateProvider { get; set; }
 
@@ -13,25 +13,19 @@
     /// </summary>
     [Parameter] public RenderFragment ChildContent { get; private set; }
 
-    protected override async Task OnInitAsync()
+    protected override void OnInit()
     {
         AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
-        // Initial synchronous render has an unauthorized authentication state
-        // We create a new one because we can't stop ClaimsPrincipal from being mutable
-        _currentAuthenticationState = new PendingAuthenticationState();
-
-        // Then asynchronously we query for the actual authentication state and rerender
-        // If this happens to return synchronously, the 'empty' render will be skipped
-        _currentAuthenticationState = await AuthStateProvider
+        _currentAuthStateTask = AuthStateProvider
             .GetAuthenticationStateAsync(forceRefresh: false);
     }
 
-    private void OnAuthenticationStateChanged(IAuthenticationState newAuthenticationState)
+    private void OnAuthenticationStateChanged(Task<IAuthenticationState> newAuthStateTask)
     {
         Invoke(() =>
         {
-            _currentAuthenticationState = newAuthenticationState;
+            _currentAuthStateTask = newAuthStateTask;
             StateHasChanged();
         });
     }
