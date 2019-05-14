@@ -211,7 +211,7 @@ namespace Negotiate.Client.Controllers
 
             var authHeader = result.Headers.WwwAuthenticate.ToString();
 
-            if (!authHeader.StartsWith("Negotiate"))
+            if (!string.Equals("Negotiate", authHeader))
             {
                 return StatusCode(StatusCode603WrongAuthHeader, authHeader);
             }
@@ -248,7 +248,7 @@ namespace Negotiate.Client.Controllers
 
             var authHeader = result.Headers.WwwAuthenticate.ToString();
 
-            if (!authHeader.StartsWith("Negotiate"))
+            if (!string.Equals("Negotiate", authHeader))
             {
                 return StatusCode(StatusCode603WrongAuthHeader, authHeader);
             }

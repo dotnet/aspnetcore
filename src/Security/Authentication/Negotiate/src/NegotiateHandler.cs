@@ -142,11 +142,18 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
                 Logger.NegotiateComplete();
 
-                // Isn't there always additional data for the server scenario?
+                // There can be a final blob of data we need to send to the client, but let the request execute as normal.
                 if (!string.IsNullOrEmpty(outgoing))
                 {
-                    // There can be a final blob of data we need to send to the client, but let the request execute as normal.
-                    Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
+                    Response.OnStarting(() =>
+                    {
+                        // Only include it if the response ultimately succeeds. This avoids adding it twice if Challenge is called again.
+                        if (Response.StatusCode < StatusCodes.Status400BadRequest)
+                        {
+                            Response.Headers.Append(HeaderNames.WWWAuthenticate, AuthHeaderPrefix + outgoing);
+                        }
+                        return Task.CompletedTask;
+                    });
                 }
 
                 // Deal with connection credential persistence.
