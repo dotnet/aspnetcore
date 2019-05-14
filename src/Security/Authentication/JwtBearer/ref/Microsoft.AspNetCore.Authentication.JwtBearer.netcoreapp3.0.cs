@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
     public partial class ForbiddenContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions>
     {
         public ForbiddenContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions)) { }
-        public System.Exception Exception { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class JwtBearerChallengeContext : Microsoft.AspNetCore.Authentication.PropertiesContext<Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerOptions>
     {
