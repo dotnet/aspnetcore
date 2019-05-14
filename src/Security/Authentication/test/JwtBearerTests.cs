@@ -715,9 +715,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 };
             });
             var newBearerToken = "Bearer " + tokenText;
-            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            var response = await SendAsync(server, "http://example.com/unauthorized", newBearerToken);
             Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
-
         }
         [Fact]
         public async Task EventOnForbidden_ResponseNotModified()
@@ -756,7 +755,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 };
             });
             var newBearerToken = "Bearer " + tokenText;
-            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            var response = await SendAsync(server, "http://example.com/unauthorized", newBearerToken);
             Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
         }
         [Fact]
@@ -797,10 +796,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 };
             });
             var newBearerToken = "Bearer " + tokenText;
-            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            var response = await SendAsync(server, "http://example.com/unauthorized", newBearerToken);
             Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
             Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
-            Assert.Equal("HelloWorld", "GoodbyeWorld");
         }
         class InvalidTokenValidator : ISecurityTokenValidator
         {
@@ -1001,11 +999,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             // Simulate Authorization failure 
                             var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                             await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
-                        }
-                        else if (context.Request.Path == new PathString("/forbidden"))
-                        {
-                            // Simulate Forbidden request
-                            await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
                         }
                         else if (context.Request.Path == new PathString("/signIn"))
                         {
