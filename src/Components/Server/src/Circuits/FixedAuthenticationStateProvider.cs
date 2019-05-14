@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             public ClaimsPrincipal User { get; }
+
+            public bool IsPending => false;
         }
     }
 }
