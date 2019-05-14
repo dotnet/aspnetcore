@@ -59,11 +59,10 @@ try {
         | ? { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } `
         | % {
             $fileName = [io.path]::GetFileNameWithoutExtension($_)
-            if ($projectFileNames.Contains($fileName)) {
+            if (-not ($projectFileNames.Add($fileName))) {
                 LogError -code 'BUILD003' -filepath $_ `
                     "Multiple project files named '$fileName' exist. Project files should have a unique name to avoid conflicts in build output."
             }
-            $projectFileNames.Add($fileName) | Out-Null
         }
 
     #
