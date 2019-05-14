@@ -31,10 +31,10 @@
   <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true'">
     <HelixAvailablePlatform Include="Windows" />
 
-    <HelixProjectTargetQueue  Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" />
-    <HelixProjectTargetQueue  Include="Windows.81.Amd64.Open" />
+    <HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows"/>
+    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows"/>
     <!-- Disabled until https://github.com/dotnet/core-eng/issues/5506 is resolved -->
-    <!-- <HelixProjectTargetQueue Condition="'$(IsWindowsOnlyTest)' == 'true'" Include="Windows.7.Amd64.Open" /> -->
+    <!-- <HelixAvailableTargetQueue Condition="'$(IsWindowsOnlyTest)' == 'true'" Include="Windows.7.Amd64.Open" /> -->
 
     <HelixContent Include="..\..\..\tools\update_schema.ps1" />
     <HelixContent Include="..\..\..\tools\UpdateIISExpressCertificate.ps1" />
