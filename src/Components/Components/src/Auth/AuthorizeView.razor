@@ -1,0 +1,15 @@
+@namespace Microsoft.AspNetCore.Components
+
+@if (CurrentAuthenticationState.User?.Identity?.IsAuthenticated == true)
+{
+    @ChildContent(CurrentAuthenticationState)
+}
+
+@functions {
+    [CascadingParameter] public IAuthenticationState CurrentAuthenticationState { get; private set; }
+
+    /// <summary>
+    /// The content that will be displayed if the user is authorized.
+    /// </summary>
+    [Parameter] public RenderFragment<IAuthenticationState> ChildContent { get; private set; }
+}
