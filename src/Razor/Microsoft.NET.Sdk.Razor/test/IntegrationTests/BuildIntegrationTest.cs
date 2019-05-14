@@ -629,7 +629,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build",
-                "/p:LangVersion=8.0 /p:NullableContextOptions=enable");
+                "/p:LangVersion=8.0 /p:Nullable=enable");
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
             Assert.BuildPassed(result, allowWarnings: true);
@@ -644,7 +644,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         {
             var result = await DotnetMSBuild(
                 "Build",
-                "/p:LangVersion=8.0 /p:NullableContextOptions=enable",
+                "/p:LangVersion=8.0 /p:Nullable=enable",
                 suppressBuildServer: true);
             var indexFilePath = Path.Combine(RazorIntermediateOutputPath, "Views", "Home", "Index.cshtml.g.cs");
 
