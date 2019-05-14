@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Negotiate;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -17,14 +15,10 @@ namespace NegotiateAuthSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            /* https://github.com/aspnet/AspNetCore/issues/9583
             services.AddAuthorization(options =>
             {
-                options.FallbackPolicy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
+                options.FallbackPolicy = options.DefaultPolicy;
             });
-            */
             services.AddAuthentication(NegotiateDefaults.AuthenticationScheme)
                 .AddNegotiate();
         }
@@ -33,19 +27,7 @@ namespace NegotiateAuthSample
         {
             app.UseDeveloperExceptionPage();
             app.UseAuthentication();
-            // app.UseAuthorization();
-            app.Use(async (context, next) =>
-            {
-                // todo: move to authz https://github.com/aspnet/AspNetCore/issues/9583
-                if (!context.User.Identity.IsAuthenticated)
-                {
-                    await context.ChallengeAsync();
-                    return;
-                }
-
-                await next();
-            });
-
+            app.UseAuthorization();
             app.Run(HandleRequest);
         }
 
