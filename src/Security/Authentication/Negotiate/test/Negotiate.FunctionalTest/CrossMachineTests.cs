@@ -15,11 +15,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
     // The OS's being tested are on other machines, don't duplicate the tests across runs.
     [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
-    // Test structure:
-    // - A remote test server with various endpoints with different authentication restrictions.
-    // - A remote test client with endpoints that execute specific scenarios. The input for these endpoints is theory data.
-    //   The output is either 200Ok, or a failure code and some desciption of the test failure.
-    // - This class that drives the tests. It invokes the client app with the theory data and confirms the results.
+    // See CrossMachineReadMe.md
     public class CrossMachineTests
     {
         private const string Http11Version = "HTTP/1.1";
