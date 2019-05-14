@@ -18,6 +18,6 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Gets a flag that indicates whether the authentication state is still being determined.
         /// </summary>
-        public bool IsPending { get; }
+        bool IsPending { get; }
     }
 }
