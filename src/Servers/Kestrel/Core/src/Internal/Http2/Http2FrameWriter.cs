@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             |                           Padding (*)                       ...
             +---------------------------------------------------------------+
         */
-        public void WriteResponseHeaders(int streamId, int statusCode, IHeaderDictionary headers)
+        public void WriteResponseHeaders(int streamId, int statusCode, Http2HeadersFrameFlags headerFrameFlags, IHeaderDictionary headers)
         {
             lock (_writeLock)
             {
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 try
                 {
-                    _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
+                    _outgoingFrame.PrepareHeaders(headerFrameFlags, streamId);
                     var buffer = _headerEncodingBuffer.AsSpan();
                     var done = _hpackEncoder.BeginEncode(statusCode, EnumerateHeaders(headers), buffer, out var payloadLength);
                     FinishWritingHeaders(streamId, payloadLength, done);

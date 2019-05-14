@@ -103,11 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await setTimeoutTcs.Task.DefaultTimeout();
@@ -861,11 +857,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             var updateFrame = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,
