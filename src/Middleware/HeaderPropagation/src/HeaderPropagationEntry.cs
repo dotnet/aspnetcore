@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     {
         /// <summary>
         /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="inboundHeaderName"/>,
-        /// <paramref name="capturedHeaderName"/>, and 
+        /// <paramref name="capturedHeaderName"/> and <paramref name="valueFilter"/>.
         /// </summary>
         /// <param name="inboundHeaderName">
         /// The name of the header to be captured by <see cref="HeaderPropagationMiddleware"/>.
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         public string InboundHeaderName { get; }
 
         /// <summary>
-        /// Gets the name of the header to be used by the <see cref="HeaderPropagationMessageHandler"/> for the
+        /// Gets the name of the header to be used by default by the <see cref="HeaderPropagationMessageHandler"/> for the
         /// outbound http requests.
         /// </summary>
         public string CapturedHeaderName { get; }

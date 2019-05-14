@@ -74,7 +74,7 @@ namespace HeaderPropagationSample
                         await context.Response.WriteAsync($"'/' Got Header '{header.Key}': {string.Join(", ", header.Value)}\r\n");
                     }
 
-                    var clientNames = new[] { "test", "anotehr" };
+                    var clientNames = new[] { "test", "another" };
                     foreach (var clientName in clientNames)
                     {
                         await context.Response.WriteAsync("Sending request to /forwarded\r\n");

@@ -3,21 +3,22 @@
 
 using System;
 using System.Collections.ObjectModel;
-using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HeaderPropagation
 {
     /// <summary>
-    /// A collection of <see cref="HeaderPropagationEntry"/> items.
+    /// A collection of <see cref="HeaderPropagationMessageHandlerEntry"/> items.
     /// </summary>
-    public sealed class HeaderPropagationClientEntryCollection : Collection<HeaderPropagationClientEntry>
+    public sealed class HeaderPropagationMessageHandlerEntryCollection : Collection<HeaderPropagationMessageHandlerEntry>
     {
         /// <summary>
-        /// Adds an <see cref="HeaderPropagationEntry"/> that will use <paramref name="headerName"/> as
-        /// the value of <see cref="HeaderPropagationEntry.InboundHeaderName"/> and
-        /// <see cref="HeaderPropagationEntry.CapturedHeaderName"/>.
+        /// Adds an <see cref="HeaderPropagationMessageHandlerEntry"/> that will use <paramref name="headerName"/> as
+        /// the value of <see cref="HeaderPropagationMessageHandlerEntry.CapturedHeaderName"/> and
+        /// <see cref="HeaderPropagationMessageHandlerEntry.OutboundHeaderName"/>.
         /// </summary>
-        /// <param name="headerName">The header name to be propagated.</param>
+        /// <param name="headerName">
+        /// The name of the header to be added by the <see cref="HeaderPropagationMessageHandler"/>.
+        /// </param>
         public void Add(string headerName)
         {
             if (headerName == null)
@@ -25,18 +26,18 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 throw new ArgumentNullException(nameof(headerName));
             }
 
-            Add(new HeaderPropagationClientEntry(headerName, headerName));
+            Add(new HeaderPropagationMessageHandlerEntry(headerName, headerName));
         }
 
         /// <summary>
-        /// Adds an <see cref="HeaderPropagationEntry"/> that will use the provided <paramref name="capturedHeaderName"/>
+        /// Adds an <see cref="HeaderPropagationMessageHandlerEntry"/> that will use the provided <paramref name="capturedHeaderName"/>
         /// and <paramref name="outboundHeaderName"/>.
         /// </summary>
         /// <param name="capturedHeaderName">
-        /// The name of the header to be captured by <see cref="HeaderPropagationMiddleware"/>.
+        /// The name of the header captured by the <see cref="HeaderPropagationMiddleware"/>.
         /// </param>
         /// <param name="outboundHeaderName">
-        /// The name of the header to be added by <see cref="HeaderPropagationMessageHandler"/>.
+        /// The name of the header to be added by the <see cref="HeaderPropagationMessageHandler"/>.
         /// </param>
         public void Add(string capturedHeaderName, string outboundHeaderName)
         {
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
                 throw new ArgumentNullException(nameof(outboundHeaderName));
             }
 
-            Add(new HeaderPropagationClientEntry(capturedHeaderName, outboundHeaderName));
+            Add(new HeaderPropagationMessageHandlerEntry(capturedHeaderName, outboundHeaderName));
         }
     }
 }

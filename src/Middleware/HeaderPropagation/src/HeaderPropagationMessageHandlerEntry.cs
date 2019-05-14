@@ -6,21 +6,21 @@ using System;
 namespace Microsoft.AspNetCore.HeaderPropagation
 {
     /// <summary>
-    /// Define the configuration of a header for the <see cref="HeaderPropagationMessageHandler"/>.
+    /// Define the configuration of an header for the <see cref="HeaderPropagationMessageHandler"/>.
     /// </summary>
-    public class HeaderPropagationClientEntry
+    public class HeaderPropagationMessageHandlerEntry
     {
         /// <summary>
-        /// Creates a new <see cref="HeaderPropagationEntry"/> with the provided <paramref name="capturedHeaderName"/>
-        /// and <paramref name="outboundHeaderName"/>
+        /// Creates a new <see cref="HeaderPropagationMessageHandlerEntry"/> with the provided <paramref name="capturedHeaderName"/>
+        /// and <paramref name="outboundHeaderName"/>.
         /// </summary>
         /// <param name="capturedHeaderName">
-        /// The default name of the header to be added to clients as configured in the <see cref="HeaderPropagationMiddleware"/>.
+        /// The name of the header to be used to lookup the headers captured by the <see cref="HeaderPropagationMiddleware"/>.
         /// </param>
         /// <param name="outboundHeaderName">
-        /// The name of the header to be added by <see cref="HeaderPropagationMessageHandler"/>.
+        /// The name of the header to be added to the outgoing http requests by the <see cref="HeaderPropagationMessageHandler"/>.
         /// </param>
-        public HeaderPropagationClientEntry(
+        public HeaderPropagationMessageHandlerEntry(
             string capturedHeaderName,
             string outboundHeaderName)
         {
@@ -39,13 +39,12 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         }
 
         /// <summary>
-        /// Gets the name of the header that will be captured by the <see cref="HeaderPropagationMiddleware"/>.
+        /// Gets the name of the header to be used to lookup the headers captured by the <see cref="HeaderPropagationMiddleware"/>.
         /// </summary>
         public string CapturedHeaderName { get; }
 
         /// <summary>
-        /// Gets the name of the header to be used by the <see cref="HeaderPropagationMessageHandler"/> for the
-        /// outbound http requests.
+        /// Gets the name of the header to be added to the outgoing http requests by the <see cref="HeaderPropagationMessageHandler"/>.
         /// </summary>
         public string OutboundHeaderName { get; }
     }
