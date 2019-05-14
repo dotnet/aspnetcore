@@ -15,6 +15,7 @@
     <HarvestDirectorySuppressSpecificWarnings>5150;5151</HarvestDirectorySuppressSpecificWarnings>
     <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
     <HarvestSource>$(IntermediateOutputPath)fx\</HarvestSource>
+    <IsProductInstaller>true</IsProductInstaller>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
