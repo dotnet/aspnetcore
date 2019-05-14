@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
                 // WinHttpHandler re-authenticates an existing connection if it gets another challenge on subsequent requests.
                 if (_negotiateState?.IsCompleted == true)
                 {
-                    Logger.LogDebug("Negotiate data received for an already authenticated connection, Re-authenticating.");
+                    Logger.Reauthenticating();
                     _negotiateState.Dispose();
                     _negotiateState = null;
                     persistence.State = null;
@@ -309,22 +309,14 @@ namespace Microsoft.AspNetCore.Authentication.Negotiate
 
         private IDictionary<object, object> GetConnectionItems()
         {
-            var connectionItems = Context.Features.Get<IConnectionItemsFeature>()?.Items;
-            if (connectionItems == null)
-            {
-                throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionItemsFeature)} like Kestrel.");
-            }
-
-            return connectionItems;
+            return Context.Features.Get<IConnectionItemsFeature>()?.Items
+                ?? throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionItemsFeature)} like Kestrel.");
         }
 
         private void RegisterForConnectionDispose(IDisposable authState)
         {
-            var connectionCompleteFeature = Context.Features.Get<IConnectionCompleteFeature>();
-            if (connectionCompleteFeature == null)
-            {
-                throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionCompleteFeature)} like Kestrel.");
-            }
+            var connectionCompleteFeature = Context.Features.Get<IConnectionCompleteFeature>()
+                ??throw new NotSupportedException($"Negotiate authentication requires a server that supports {nameof(IConnectionCompleteFeature)} like Kestrel.");
             connectionCompleteFeature.OnCompleted(DisposeState, authState);
         }
 

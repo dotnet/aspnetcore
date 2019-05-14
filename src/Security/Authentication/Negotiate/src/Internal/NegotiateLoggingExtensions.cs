@@ -13,6 +13,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, string, Exception> _disablingCredentialPersistence;
         private static Action<ILogger, Exception> _exceptionProcessingAuth;
         private static Action<ILogger, Exception> _challengeNegotiate;
+        private static Action<ILogger, Exception> _reauthenticating;
 
         static NegotiateLoggingExtensions()
         {
@@ -40,6 +41,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: new EventId(6, "ChallengeNegotiate"),
                 logLevel: LogLevel.Debug,
                 formatString: "Challenged 401 Negotiate");
+            _reauthenticating = LoggerMessage.Define(
+                eventId: new EventId(7, "Reauthenticating"),
+                logLevel: LogLevel.Debug,
+                formatString: "Negotiate data received for an already authenticated connection, Re-authenticating.");
         }
 
         public static void IncompleteNegotiateChallenge(this ILogger logger)
@@ -59,5 +64,8 @@ namespace Microsoft.Extensions.Logging
 
         public static void ChallengeNegotiate(this ILogger logger)
             => _challengeNegotiate(logger, null);
+
+        public static void Reauthenticating(this ILogger logger)
+            => _reauthenticating(logger, null);
     }
 }
