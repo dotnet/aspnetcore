@@ -6,6 +6,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <TestGroupName>IISExpress.FunctionalTests</TestGroupName>
+    <IsIISTest>true</IsIISTest>
     <SkipTests Condition=" '$(SkipIISExpressTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
 
