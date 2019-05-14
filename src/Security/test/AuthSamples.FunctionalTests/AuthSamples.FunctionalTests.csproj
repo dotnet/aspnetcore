@@ -9,7 +9,7 @@
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="..\..\samples\Cookies\Cookies.csproj" />
     <ProjectReference Include="..\..\samples\ClaimsTransformation\ClaimsTransformation.csproj" />
     <ProjectReference Include="..\..\samples\CustomPolicyProvider\CustomPolicyProvider.csproj" />
@@ -26,7 +26,7 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="AngleSharp" />
   </ItemGroup>
-  
+
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
       <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\ClaimsTransformation\bin\$(Configuration)\netcoreapp3.0\ClaimsTransformation.deps.json" />
@@ -76,7 +76,7 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>      
+        Encoding="Unicode"/>
   </Target>
-  
+
 </Project>

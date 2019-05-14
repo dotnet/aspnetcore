@@ -33,7 +33,7 @@
 
     <AncmInProcessRHPath>aspnetcorev2_inprocess.dll</AncmInProcessRHPath>
     <!-- TODO: use LocalDotNetRoot instead to find dotnet.exe (see reporoot/Directory.Build.props). Requires a fix to https://github.com/aspnet/AspNetCore/issues/7196 -->
-    <DotNetPath>$(RepositoryRoot).dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
+    <DotNetPath>$(RepoRoot).dotnet\$(NativePlatform)\dotnet.exe</DotNetPath>
   </PropertyGroup>
 
   <Target Name="CopyLaunchSettings" AfterTargets="CoreBuild">

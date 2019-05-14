@@ -5,13 +5,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepositoryRoot)src\Installers\Debian\**\*.*proj" />
-    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepositoryRoot)src\Installers\Rpm\**\*.*proj" />
+    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'deb' " Include="$(RepoRoot)src\Installers\Debian\**\*.*proj" />
+    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'linux-x64' AND '$(LinuxInstallerType)' == 'rpm' " Include="$(RepoRoot)src\Installers\Rpm\**\*.*proj" />
 
-    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
-    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepositoryRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
+    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepoRoot)src\SiteExtensions\Runtime\Microsoft.AspNetCore.Runtime.SiteExtension.pkgproj" />
+    <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepoRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
 
-    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'win-x86' " Include="$(RepositoryRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj" />
+    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'win-x86' " Include="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj" />
   </ItemGroup>
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />

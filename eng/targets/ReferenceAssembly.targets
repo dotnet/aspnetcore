@@ -60,8 +60,8 @@
       <_GenAPICmd>$(_GenAPICmd) "$(TargetPath)"</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) --lib-path "@(_ReferencePathDirectories)"</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) --out "$(_RefSourceFileOutputPath)"</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) --header-file "$(RepositoryRoot)/eng/LicenseHeader.txt"</_GenAPICmd>
-      <_GenAPICmd>$(_GenAPICmd) --exclude-api-list "$(RepositoryRoot)/eng/GenAPI.exclusions.txt"</_GenAPICmd>
+      <_GenAPICmd>$(_GenAPICmd) --header-file "$(RepoRoot)/eng/LicenseHeader.txt"</_GenAPICmd>
+      <_GenAPICmd>$(_GenAPICmd) --exclude-api-list "$(RepoRoot)/eng/GenAPI.exclusions.txt"</_GenAPICmd>
     </PropertyGroup>
 
     <MakeDir Directories="$(_RefSourceOutputPath)" />

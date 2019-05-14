@@ -48,8 +48,8 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
 
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />
