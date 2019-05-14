@@ -125,11 +125,6 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 return _next(context);
             }
 
-            return InvokeCore(context, corsPolicyProvider);
-        }
-
-        private async Task InvokeCore(HttpContext context, ICorsPolicyProvider corsPolicyProvider)
-        {
             // CORS policy resolution rules:
             //
             // 1. If there is an endpoint with IDisableCorsAttribute then CORS is not run
@@ -157,11 +152,10 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 {
                     // If this is a preflight request, and we disallow CORS, complete the request
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
-                    return;
+                    return Task.CompletedTask;
                 }
 
-                await _next(context);
-                return;
+                return _next(context);
             }
 
             var corsPolicy = _policy;
@@ -182,14 +176,30 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             if (corsPolicy == null)
             {
                 // Resolve policy by name if the local policy is not being used
-                corsPolicy = await corsPolicyProvider.GetPolicyAsync(context, policyName);
+                var policyTask = corsPolicyProvider.GetPolicyAsync(context, policyName);
+                if (!policyTask.IsCompletedSuccessfully)
+                {
+                    return InvokeCoreAwaited(context, policyTask);
+                }
+
+                corsPolicy = policyTask.GetAwaiter().GetResult();
             }
 
+            return EvaluateAndApplyPolicy(context, corsPolicy);
+
+            async Task InvokeCoreAwaited(HttpContext context, Task<CorsPolicy> policyTask)
+            {
+                var corsPolicy = await policyTask;
+                await EvaluateAndApplyPolicy(context, corsPolicy);
+            }
+        }
+
+        private Task EvaluateAndApplyPolicy(HttpContext context, CorsPolicy corsPolicy)
+        {
             if (corsPolicy == null)
             {
-                Logger?.NoCorsPolicyFound();
-                await _next(context);
-                return;
+                Logger.NoCorsPolicyFound();
+                return _next(context);
             }
 
             var corsResult = CorsService.EvaluatePolicy(context, corsPolicy);
@@ -200,12 +210,12 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 // Since there is a policy which was identified,
                 // always respond to preflight requests.
                 context.Response.StatusCode = StatusCodes.Status204NoContent;
-                return;
+                return Task.CompletedTask;
             }
             else
             {
                 context.Response.OnStarting(OnResponseStartingDelegate, Tuple.Create(this, context, corsResult));
-                await _next(context);
+                return _next(context);
             }
         }
 
@@ -218,7 +228,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
             }
             catch (Exception exception)
             {
-                middleware.Logger?.FailedToSetCorsHeaders(exception);
+                middleware.Logger.FailedToSetCorsHeaders(exception);
             }
             return Task.CompletedTask;
         }

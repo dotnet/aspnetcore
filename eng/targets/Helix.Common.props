@@ -12,6 +12,8 @@
     <HelixAvailablePlatform Include="Linux" />
 
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" EnableByDefault="false" />
     <HelixAvailableTargetQueue Include="OSX.1012.Amd64.Open" Platform="OSX" />
     <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />

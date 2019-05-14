@@ -56,7 +56,10 @@ namespace Microsoft.AspNetCore.Rewrite
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToHttpsPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, int statusCode, params string[] domains) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWww(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, params string[] domains) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWwwPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRedirectToWwwPermanent(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, params string[] domains) { throw null; }
         public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, string regex, string replacement, bool skipRemainingRules) { throw null; }
     }
     public enum RuleResult
@@ -129,8 +132,10 @@ namespace Microsoft.AspNetCore.Rewrite.Internal
     }
     public partial class RedirectToWwwRule : Microsoft.AspNetCore.Rewrite.IRule
     {
+        public readonly string[] _domains;
         public readonly int _statusCode;
         public RedirectToWwwRule(int statusCode) { }
+        public RedirectToWwwRule(int statusCode, params string[] domains) { }
         public virtual void ApplyRule(Microsoft.AspNetCore.Rewrite.RewriteContext context) { }
     }
     public partial class RewriteRule : Microsoft.AspNetCore.Rewrite.IRule

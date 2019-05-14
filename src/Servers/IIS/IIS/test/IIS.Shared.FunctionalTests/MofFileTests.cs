@@ -16,6 +16,7 @@ namespace IIS.FunctionalTests
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [RequiresIIS(IISCapability.TracingModule)]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2222", FlakyOn.Helix.All)]
+        [SkipOnHelix]
         public void CheckMofFile()
         {
             var path = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "aspnetcoremodulev2", "aspnetcore", "ancm.mof");

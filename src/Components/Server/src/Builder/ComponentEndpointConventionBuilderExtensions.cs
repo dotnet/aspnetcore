@@ -9,19 +9,18 @@ using Microsoft.AspNetCore.SignalR;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extensions for <see cref="HubEndpointConventionBuilder"/>.
+    /// Extensions for <see cref="ComponentEndpointConventionBuilder"/>.
     /// </summary>
     public static class ComponentEndpointConventionBuilderExtensions
     {
         /// <summary>
-        /// Adds <paramref name="componentType"/> to the list of components registered with this <see cref="ComponentHub"/> instance.
-        /// The selector will default to the component name in lowercase.
+        /// Adds <paramref name="componentType"/> to the list of components registered with this hub instance.
         /// </summary>
-        /// <param name="builder">The <see cref="IHubEndpointConventionBuilder"/>.</param>
+        /// <param name="builder">The <see cref="ComponentEndpointConventionBuilder"/>.</param>
         /// <param name="componentType">The component type.</param>
         /// <param name="selector">The component selector in the DOM for the <paramref name="componentType"/>.</param>
         /// <returns>The <paramref name="builder"/>.</returns>
-        public static TBuilder AddComponent<TBuilder>(this TBuilder builder, Type componentType, string selector) where TBuilder : IHubEndpointConventionBuilder
+        public static ComponentEndpointConventionBuilder AddComponent(this ComponentEndpointConventionBuilder builder, Type componentType, string selector)
         {
             if (builder == null)
             {

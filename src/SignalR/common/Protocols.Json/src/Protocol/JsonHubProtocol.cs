@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
                                 var returnType = binder.GetStreamItemType(invocationId);
                                 item = BindType(itemsToken.RootElement, returnType);
                             }
-                            catch (JsonReaderException ex)
+                            catch (JsonException ex)
                             {
                                 message = new StreamBindingFailureMessage(invocationId, ExceptionDispatchInfo.Capture(ex));
                                 break;
@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
                 return ApplyHeaders(message, headers);
             }
-            catch (JsonReaderException jrex)
+            catch (JsonException jrex)
             {
                 throw new InvalidDataException("Error reading JSON.", jrex);
             }
