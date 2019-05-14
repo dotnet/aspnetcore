@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 return Task.FromResult(policyName == "true" ? _true : _false);
             }
 
-            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+            public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
                 => Task.FromResult<AuthorizationPolicy>(null);
         }
 
