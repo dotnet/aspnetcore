@@ -678,7 +678,130 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             Assert.Empty(response.Response.Headers.WwwAuthenticate);
             Assert.Equal(string.Empty, response.ResponseText);
         }
+        [Fact]
+        public async Task EventOnForbiddenSkip_ResponseNotModified()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+
+        }
+        [Fact]
+        public async Task EventOnForbidden_ResponseNotModified()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        return Task.FromResult(0);
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+        }
+        [Fact]
+        public async Task EventOnForbidden_ResponseModified()
+        {
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(new string('a', 128)));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var claims = new[]
+            {
+                new Claim(ClaimTypes.NameIdentifier, "Bob")
+            };
+
+            var token = new JwtSecurityToken(
+                issuer: "issuer.contoso.com",
+                audience: "audience.contoso.com",
+                claims: claims,
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: creds);
+
+            var tokenText = new JwtSecurityTokenHandler().WriteToken(token);
+
+            var server = CreateServer(o =>
+            {
+                o.TokenValidationParameters = new TokenValidationParameters()
+                {
+                    ValidIssuer = "issuer.contoso.com",
+                    ValidAudience = "audience.contoso.com",
+                    IssuerSigningKey = key,
+                };
+                o.Events = new JwtBearerEvents()
+                {
+                    OnForbidden = context => 
+                    {
+                        context.Response.StatusCode = 403;
+                        return context.Response.WriteAsync("You Shall Not Pass");
+                    }
+                };
+            });
+            var newBearerToken = "Bearer " + tokenText;
+            var response = await SendAsync(server, "http://example.com/forbidden", newBearerToken);
+            Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
+            Assert.Equal("You Shall Not Pass", await response.Response.Content.ReadAsStringAsync());
+            Assert.Equal("HelloWorld", "GoodbyeWorld");
+        }
         class InvalidTokenValidator : ISecurityTokenValidator
         {
             public InvalidTokenValidator()
@@ -878,6 +1001,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                             // Simulate Authorization failure 
                             var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                             await context.ChallengeAsync(JwtBearerDefaults.AuthenticationScheme);
+                        }
+                        else if (context.Request.Path == new PathString("/forbidden"))
+                        {
+                            // Simulate Forbidden request
+                            await context.ForbidAsync(JwtBearerDefaults.AuthenticationScheme);
                         }
                         else if (context.Request.Path == new PathString("/signIn"))
                         {
