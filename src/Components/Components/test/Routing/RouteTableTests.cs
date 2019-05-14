@@ -12,6 +12,39 @@ namespace Microsoft.AspNetCore.Components.Test.Routing
     public class RouteTableTests
     {
         [Fact]
+        public void CanDiscoverRoute()
+        {
+            // Arrange & Act
+            var routes = RouteTable.Create(new[] { typeof(MyComponent), });
+
+            // Assert
+            Assert.Equal("Test1", Assert.Single(routes.Routes).Template.TemplateText);
+        }
+
+        [Route("Test1")]
+        private class MyComponent : ComponentBase
+        {
+        }
+
+        [Fact]
+        public void CanDiscoverRoutes_WithInheritance()
+        {
+            // Arrange & Act
+            var routes = RouteTable.Create(new[] { typeof(MyComponent), typeof(MyInheritedComponent), });
+
+            // Assert
+            Assert.Collection(
+                routes.Routes.OrderBy(r => r.Template.TemplateText),
+                r => Assert.Equal("Test1", r.Template.TemplateText),
+                r => Assert.Equal("Test2", r.Template.TemplateText));
+        }
+
+        [Route("Test2")]
+        private class MyInheritedComponent : MyComponent
+        {
+        }
+
+        [Fact]
         public void CanMatchRootTemplate()
         {
             // Arrange
