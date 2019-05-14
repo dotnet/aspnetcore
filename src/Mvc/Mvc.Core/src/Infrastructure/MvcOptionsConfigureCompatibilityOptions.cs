@@ -32,6 +32,17 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     values[nameof(MvcOptions.SuppressBindingUndefinedValueToEnumType)] = true;
                 }
 
+                if (Version >= CompatibilityVersion.Version_2_2)
+                {
+                    values[nameof(MvcOptions.EnableEndpointRouting)] = true;
+
+                    // Matches JsonSerializerSettingsProvider.DefaultMaxDepth
+                    values[nameof(MvcOptions.MaxValidationDepth)] = 32;
+
+                    values[nameof(MvcOptions.AllowShortCircuitingValidationWhenNoValidatorsArePresent)] = true;
+
+                }
+
                 return values;
             }
         }

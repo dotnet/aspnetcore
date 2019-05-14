@@ -1,0 +1,27 @@
+Statement block - Gen<None> - 50 - (0:0,0)
+    Code span - Gen<Stmt> - [try { bar(); }LF// FooLF// BarLFfinally { baz(); }] - SpanEditHandler;Accepts:None - (0:0,0) - Tokens:25
+        CSharpTokenType.Keyword;[try];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[bar];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.Comment;[// Foo];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.Comment;[// Bar];
+        CSharpTokenType.NewLine;[LF];
+        CSharpTokenType.Keyword;[finally];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.LeftBrace;[{];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.Identifier;[baz];
+        CSharpTokenType.LeftParenthesis;[(];
+        CSharpTokenType.RightParenthesis;[)];
+        CSharpTokenType.Semicolon;[;];
+        CSharpTokenType.WhiteSpace;[ ];
+        CSharpTokenType.RightBrace;[}];

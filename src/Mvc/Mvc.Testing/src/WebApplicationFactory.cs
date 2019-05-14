@@ -1,4 +1,4 @@
-// Copyright (c) .NET  Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <see cref="WebApplicationFactoryContentRootAttribute"/> on the assembly containing the functional tests with
         /// a key equal to the <typeparamref name="TEntryPoint"/> assembly <see cref="Assembly.FullName"/>.
         /// In case an attribute with the right key can't be found, <see cref="WebApplicationFactory{TEntryPoint}"/>
-        /// will fall back to searching for a solution file (*.sln) and then appending <typeparamref name="TEntryPoint"/> asembly name
+        /// will fall back to searching for a solution file (*.sln) and then appending <typeparamref name="TEntryPoint"/> assembly name
         /// to the solution directory. The application root directory will be used to discover views and content files.
         /// </para>
         /// <para>
@@ -128,6 +128,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         private void SetContentRoot(IWebHostBuilder builder)
         {
+            if (SetContentRootFromSetting(builder))
+            {
+                return;
+            }
+
             var metadataAttributes = GetContentRootMetadataAttributes(
                 typeof(TEntryPoint).Assembly.FullName,
                 typeof(TEntryPoint).Assembly.GetName().Name);
@@ -159,6 +164,24 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             {
                 builder.UseSolutionRelativeContentRoot(typeof(TEntryPoint).Assembly.GetName().Name);
             }
+        }
+
+        private static bool SetContentRootFromSetting(IWebHostBuilder builder)
+        {
+            // Attempt to look for TEST_CONTENTROOT_APPNAME in settings. This should result in looking for
+            // ASPNETCORE_TEST_CONTENTROOT_APPNAME environment variable.
+            var assemblyName = typeof(TEntryPoint).Assembly.GetName().Name;
+            var settingSuffix = assemblyName.ToUpperInvariant().Replace(".", "_");
+            var settingName = $"TEST_CONTENTROOT_{settingSuffix}";
+
+            var settingValue = builder.GetSetting(settingName);
+            if (settingValue == null)
+            {
+                return false;
+            }
+
+            builder.UseContentRoot(settingValue);
+            return true;
         }
 
         private WebApplicationFactoryContentRootAttribute[] GetContentRootMetadataAttributes(
@@ -228,6 +251,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
 
         private void EnsureDepsFile()
         {
+            if (typeof(TEntryPoint).Assembly.EntryPoint == null)
+            {
+                throw new InvalidOperationException(Resources.FormatInvalidAssemblyEntryPoint(typeof(TEntryPoint).Name));
+            }
+
             var depsFileName = $"{typeof(TEntryPoint).Assembly.GetName().Name}.deps.json";
             var depsFile = new FileInfo(Path.Combine(AppContext.BaseDirectory, depsFileName));
             if (!depsFile.Exists)

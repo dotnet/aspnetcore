@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Security.Claims;
+using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -182,8 +183,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
         {
             Task disposeTask;
 
-            Cancellation?.Dispose();
-
             await StateLock.WaitAsync();
             try
             {
@@ -206,6 +205,18 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
             finally
             {
                 StateLock.Release();
+
+                Cancellation?.Dispose();
+
+                Cancellation = null;
+
+                if (User != null && User.Identity is WindowsIdentity)
+                {
+                    foreach (var identity in User.Identities)
+                    {
+                        (identity as IDisposable)?.Dispose();
+                    }
+                }
             }
 
             await disposeTask;
@@ -218,78 +229,65 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
                 // Closing gracefully means we're only going to close the finished sides of the pipe
                 // If the application finishes, that means it's done with the transport pipe
                 // If the transport finishes, that means it's done with the application pipe
-                if (closeGracefully)
+                if (!closeGracefully)
                 {
-                    // Wait for either to finish
-                    var result = await Task.WhenAny(applicationTask, transportTask);
+                    Application?.Output.CancelPendingFlush();
 
-                    // If the application is complete, complete the transport pipe (it's the pipe to the transport)
-                    if (result == applicationTask)
+                    if (TransportType == HttpTransportType.WebSockets)
                     {
-                        Transport?.Output.Complete(applicationTask.Exception?.InnerException);
-                        Transport?.Input.Complete();
-
-                        try
-                        {
-                            Log.WaitingForTransport(_logger, TransportType);
-
-                            // Transports are written by us and are well behaved, wait for them to drain
-                            await transportTask;
-                        }
-                        finally
-                        {
-                            Log.TransportComplete(_logger, TransportType);
-
-                            // Now complete the application
-                            Application?.Output.Complete();
-                            Application?.Input.Complete();
-                        }
+                        // The websocket transport will close the application output automatically when reading is cancelled
+                        Cancellation?.Cancel();
                     }
                     else
                     {
-                        // If the transport is complete, complete the application pipes
-                        Application?.Output.Complete(transportTask.Exception?.InnerException);
+                        // The other transports don't close their own output, so we can do it here safely
+                        Application?.Output.Complete();
+                    }
+                }
+
+                // Wait for either to finish
+                var result = await Task.WhenAny(applicationTask, transportTask);
+
+                // If the application is complete, complete the transport pipe (it's the pipe to the transport)
+                if (result == applicationTask)
+                {
+                    Transport?.Output.Complete(applicationTask.Exception?.InnerException);
+                    Transport?.Input.Complete();
+
+                    try
+                    {
+                        Log.WaitingForTransport(_logger, TransportType);
+
+                        // Transports are written by us and are well behaved, wait for them to drain
+                        await transportTask;
+                    }
+                    finally
+                    {
+                        Log.TransportComplete(_logger, TransportType);
+
+                        // Now complete the application
+                        Application?.Output.Complete();
                         Application?.Input.Complete();
-
-                        try
-                        {
-                            // A poorly written application *could* in theory get stuck forever and it'll show up as a memory leak
-                            Log.WaitingForApplication(_logger);
-
-                            await applicationTask;
-                        }
-                        finally
-                        {
-                            Log.ApplicationComplete(_logger);
-
-                            Transport?.Output.Complete();
-                            Transport?.Input.Complete();
-                        }
                     }
                 }
                 else
                 {
-                    Log.ShuttingDownTransportAndApplication(_logger, TransportType);
-
-                    // Cancel any pending flushes from back pressure
-                    Application?.Output.CancelPendingFlush();
-
-                    // Shutdown both sides and wait for nothing
-                    Transport?.Output.Complete(applicationTask.Exception?.InnerException);
+                    // If the transport is complete, complete the application pipes
                     Application?.Output.Complete(transportTask.Exception?.InnerException);
+                    Application?.Input.Complete();
 
                     try
                     {
-                        Log.WaitingForTransportAndApplication(_logger, TransportType);
                         // A poorly written application *could* in theory get stuck forever and it'll show up as a memory leak
-                        await Task.WhenAll(applicationTask, transportTask);
+                        Log.WaitingForApplication(_logger);
+
+                        await applicationTask;
                     }
                     finally
                     {
-                        Log.TransportAndApplicationComplete(_logger, TransportType);
+                        Log.ApplicationComplete(_logger);
 
-                        // Close the reading side after both sides run
-                        Application?.Input.Complete();
+                        Transport?.Output.Complete();
                         Transport?.Input.Complete();
                     }
                 }

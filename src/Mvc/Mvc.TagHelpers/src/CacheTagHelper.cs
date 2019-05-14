@@ -43,7 +43,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// <param name="factory">The factory containing the private <see cref="IMemoryCache"/> instance
         /// used by the <see cref="CacheTagHelper"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
-        public CacheTagHelper(CacheTagHelperMemoryCacheFactory factory, HtmlEncoder htmlEncoder) : base(htmlEncoder)
+        public CacheTagHelper(
+#pragma warning disable PUB0001 // Pubternal type in public API
+            CacheTagHelperMemoryCacheFactory factory,
+#pragma warning restore PUB0001
+            HtmlEncoder htmlEncoder)
+            : base(htmlEncoder)
         {
             MemoryCache = factory.Cache;
         }
@@ -103,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var options = GetMemoryCacheEntryOptions();
             options.AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
             options.SetSize(PlaceholderSize);
-            var tcs = new TaskCompletionSource<IHtmlContent>();
+            var tcs = new TaskCompletionSource<IHtmlContent>(creationOptions: TaskCreationOptions.RunContinuationsAsynchronously);
 
             // The returned value is ignored, we only do this so that
             // the compiler doesn't complain about the returned task
@@ -136,7 +141,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 // can't be put inside a using block.
                 entry.Dispose();
 
-                // Set the result on the TCS once we've commited the entry to the cache since commiting to the cache
+                // Set the result on the TCS once we've committed the entry to the cache since commiting to the cache
                 // may throw.
                 tcs.SetResult(content);
                 return content;

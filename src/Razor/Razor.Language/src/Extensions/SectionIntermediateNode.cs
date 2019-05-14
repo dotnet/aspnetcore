@@ -44,5 +44,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             extension.WriteSection(context, this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(SectionName);
+
+            formatter.WriteProperty(nameof(SectionName), SectionName);
+        }
     }
 }

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Gets or sets a flag to determine whether error messsages from JSON deserialization by the 
+        /// Gets or sets a flag to determine whether error messages from JSON deserialization by the 
         /// <see cref="JsonInputFormatter"/> will be added to the <see cref="ModelStateDictionary"/>. The default
         /// value is <c>false</c>, meaning that a generic error message will be used instead.
         /// </summary>

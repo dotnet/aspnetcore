@@ -79,11 +79,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         public Task Invoke(HttpContext context)
         {
             // Check if the URL matches any expected paths
-            PathString subpath;
-            IDirectoryContents contents;
             if (Helpers.IsGetOrHeadMethod(context.Request.Method)
-                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out subpath)
-                && TryGetDirectoryInfo(subpath, out contents))
+                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath)
+                && TryGetDirectoryInfo(subpath, out var contents))
             {
                 // If the path matches a directory but does not end in a slash, redirect to add the slash.
                 // This prevents relative links from breaking.

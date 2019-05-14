@@ -4,7 +4,7 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <IsTestProject>true</IsTestProject>
-    <NpmTestArgs>run ci-test -- --configuration $(Configuration)</NpmTestArgs>
+    <NpmTestArgs>run test:local -- --no-color --configuration $(Configuration)</NpmTestArgs>
   </PropertyGroup>
 
   <ItemGroup>

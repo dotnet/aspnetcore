@@ -1,0 +1,6 @@
+content/sdk/*/AppHostTemplate/apphost.exe;AspNetCoreRuntime.*.nupkg; Exclude the apphost because this is expected to be code-signed by customers after the SDK modifies it.
+content/*.js;Microsoft.DotNet.Web.Spa.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
+content/*.js;Microsoft.DotNet.Web.ProjectTemplates.*.nupkg; Exclude JavaScript files from codesigning in project templates
+Templates/*.js;Microsoft.VisualStudio.Web.CodeGenerators.Mvc.*.nupkg; Exclude JavaScript files from codesigning in code generators
+*.js;signalr-*-javadoc.jar; Exclude JavaScript files in the generated javadocs
+*.binlog; Exclude msbuild log files

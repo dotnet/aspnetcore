@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.SignalR.Protocol;
-using Microsoft.AspNetCore.SignalR.Redis.Internal;
+using Microsoft.AspNetCore.SignalR.StackExchangeRedis.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {

@@ -40,8 +40,11 @@ __o = foo("");
 
 #line default
 #line hidden
-                        
+#line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
+            
 
+#line default
+#line hidden
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
    
     Func<dynamic, object> bar = 
@@ -67,8 +70,11 @@ __o = bar("myclass");
 
 #line default
 #line hidden
-                               
+#line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
+                   
 
+#line default
+#line hidden
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"
 __o = Repeat(10, item => new Template(async(__razor_template_writer) => {
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Templates.cshtml"

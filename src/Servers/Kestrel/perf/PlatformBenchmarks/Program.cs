@@ -3,12 +3,9 @@
 
 using System;
 using System.Net;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace PlatformBenchmarks
 {
@@ -16,6 +13,11 @@ namespace PlatformBenchmarks
     {
         public static void Main(string[] args)
         {
+            Console.WriteLine(BenchmarkApplication.ApplicationName);
+            Console.WriteLine(BenchmarkApplication.Paths.Plaintext);
+            Console.WriteLine(BenchmarkApplication.Paths.Json);
+            DateHeader.SyncDateTimer();
+
             BuildWebHost(args).Run();
         }
 

@@ -26,7 +26,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             visitor.VisitToken(this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(Content);
+
+            formatter.WriteProperty(nameof(Content), Content);
+        }
     }
 }
-
-

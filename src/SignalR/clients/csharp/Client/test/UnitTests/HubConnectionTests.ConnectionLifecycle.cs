@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,8 +58,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
                     await connection.StartAsync();
                     Assert.True(testConnection.Started.IsCompleted);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
             }
 
@@ -104,12 +110,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 await AsyncUsing(CreateHubConnection(ConnectionFactory, DisposeAsync), async connection =>
                 {
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(1, createCount);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
+
                     await connection.StopAsync().OrTimeout();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
                     await connection.StartAsync().OrTimeout();
                     Assert.Equal(2, createCount);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
                 });
             }
 
@@ -217,6 +229,58 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             [Fact]
+            public async Task StatusIsNotConnectedUntilStartAsyncIsFinished()
+            {
+                // Set up StartAsync to wait on the syncPoint when starting
+                var testConnection = new TestConnection(onStart: SyncPoint.Create(out var syncPoint));
+                await AsyncUsing(CreateHubConnection(testConnection), async connection =>
+                {
+                    // Start, and wait for the sync point to be hit
+                    var startTask = connection.StartAsync().OrTimeout();
+                    Assert.False(startTask.IsCompleted);
+                    await syncPoint.WaitForSyncPoint();
+
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    // Release the SyncPoint
+                    syncPoint.Continue();
+
+                    // Wait for start to finish
+                    await startTask;
+
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
+                });
+            }
+
+            [Fact]
+            public async Task StatusIsDisconnectedInCloseEvent()
+            {
+                var testConnection = new TestConnection();
+                await AsyncUsing(CreateHubConnection(testConnection), async connection =>
+                {
+                    var closed = new TaskCompletionSource<object>();
+                    connection.Closed += exception =>
+                    {
+                        closed.TrySetResult(null);
+                        Assert.Equal(HubConnectionState.Disconnected, connection.State);
+                        return Task.CompletedTask;
+                    };
+
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await connection.StartAsync().OrTimeout();
+                    Assert.True(testConnection.Started.IsCompleted);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
+
+                    await connection.StopAsync().OrTimeout();
+                    await testConnection.Disposed.OrTimeout();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
+                    await closed.Task.OrTimeout();
+                });
+            }
+
+            [Fact]
             public async Task StopAsyncStopsConnection()
             {
                 var testConnection = new TestConnection();
@@ -247,13 +311,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var testConnection = new TestConnection();
                 await AsyncUsing(CreateHubConnection(testConnection), async connection =>
                 {
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
+
                     await connection.StartAsync().OrTimeout();
                     Assert.True(testConnection.Started.IsCompleted);
+                    Assert.Equal(HubConnectionState.Connected, connection.State);
 
                     await connection.StopAsync().OrTimeout();
                     await testConnection.Disposed.OrTimeout();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
 
                     await connection.StopAsync().OrTimeout();
+                    Assert.Equal(HubConnectionState.Disconnected, connection.State);
                 });
             }
 
@@ -396,6 +465,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     hubConnection.HandshakeTimeout = TimeSpan.FromMilliseconds(1);
 
                     await Assert.ThrowsAsync<OperationCanceledException>(() => hubConnection.StartAsync().OrTimeout());
+                    Assert.Equal(HubConnectionState.Disconnected, hubConnection.State);
                 }
                 finally
                 {
@@ -441,8 +511,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 try
                 {
                     var startTask = hubConnection.StartAsync(cts.Token);
-                    var exception = await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask.OrTimeout());
-                    Assert.Equal("The operation was canceled.", exception.Message);
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => startTask.OrTimeout());
+
+                    // We aren't worried about the exact message and it's localized so asserting it is non-trivial.
                 }
                 finally
                 {

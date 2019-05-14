@@ -1,0 +1,9 @@
+Markup block - Gen<None> - 17 - (0:0,0)
+    Tag block - Gen<TagHelper> - 17 - (0:0,0) - p - PTagHelper
+        StartTagAndEndTag - <p> ... </p>
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (3:0,3) - Tokens:1
+            HtmlTokenType.NewLine;[LF];
+        Tag block - Gen<TagHelper> - 6 - (5:1,0) - br - BRTagHelper
+            SelfClosing - <br />
+        Markup span - Gen<Markup> - [LF] - SpanEditHandler;Accepts:Any - (11:1,6) - Tokens:1
+            HtmlTokenType.NewLine;[LF];

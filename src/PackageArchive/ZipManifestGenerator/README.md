@@ -1,5 +1,5 @@
 ZipManifestGenerator
----------
+--------------------
 
 This console app is used to generate the list of files in a zip archive.
 
@@ -19,13 +19,15 @@ To generate a new manifest for the incremental CI server package caches, you wou
 
 ```ps1
 $ProdConBuild='20180919-01'
-$Version='2.1.5'
+$Version='2.2.1'
 
-$patchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/${ProdconBuild}/final/assets/aspnetcore/Runtime/${Version}/nuGetPackagesArchive-ci-server-${Version}.patch.zip"
+$patchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-2/${ProdconBuild}/final/assets/aspnetcore/Runtime/${Version}/nuGetPackagesArchive-ci-server-${Version}.patch.zip"
 
 dotnet run $patchUrl "../Archive.CiServer.Patch/ArchiveBaseline.${Version}.txt"
 
-$compatPatchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/${ProdconBuild}/final/assets/aspnetcore/Runtime/${Version}/nuGetPackagesArchive-ci-server-compat-${Version}.patch.zip"
+$compatPatchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-2/${ProdconBuild}/final/assets/aspnetcore/Runtime/${Version}/nuGetPackagesArchive-ci-server-compat-${Version}.patch.zip"
 
 dotnet run $compatPatchUrl "../Archive.CiServer.Patch.Compat/ArchiveBaseline.${Version}.txt"
 ```
+
+For convenience, this folder contains [./UpdateBaselines.ps1](./UpdateBaselines.ps1) to run these steps.

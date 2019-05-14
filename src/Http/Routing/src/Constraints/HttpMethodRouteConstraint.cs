@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
     public class HttpMethodRouteConstraint : IRouteConstraint
     {
         /// <summary>
-        /// Creates a new <see cref="HttpMethodRouteConstraint"/> that accepts the HTTP methods specified
+        /// Creates a new instance of <see cref="HttpMethodRouteConstraint"/> that accepts the HTTP methods specified
         /// by <paramref name="allowedMethods"/>.
         /// </summary>
         /// <param name="allowedMethods">The allowed HTTP methods.</param>
@@ -41,16 +41,6 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             RouteValueDictionary values,
             RouteDirection routeDirection)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (route == null)
-            {
-                throw new ArgumentNullException(nameof(route));
-            }
-
             if (routeKey == null)
             {
                 throw new ArgumentNullException(nameof(routeKey));
@@ -64,6 +54,12 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             switch (routeDirection)
             {
                 case RouteDirection.IncomingRequest:
+                    // Only required for constraining incoming requests
+                    if (httpContext == null)
+                    {
+                        throw new ArgumentNullException(nameof(httpContext));
+                    }
+
                     return AllowedMethods.Contains(httpContext.Request.Method, StringComparer.OrdinalIgnoreCase);
 
                 case RouteDirection.UrlGeneration:
@@ -80,8 +76,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                     // signal that he is generating a URI that will be used for an HTTP POST, so he wants the URI
                     // generation to be performed by the (b) route instead of the (a) route, consistent with what would
                     // happen on incoming requests.
-                    object obj;
-                    if (!values.TryGetValue(routeKey, out obj))
+                    if (!values.TryGetValue(routeKey, out var obj))
                     {
                         return true;
                     }

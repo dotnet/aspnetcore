@@ -1,0 +1,14 @@
+Markup block - Gen<None> - 48 - (0:0,0)
+    Tag block - Gen<TagHelper> - 48 - (0:0,0) - div - divTagHelper
+        StartTagAndEndTag - <div style="" class="btn"> ... </div>
+        style - DoubleQuotes
+            Markup block - Gen<None> - 0 - (0:0,0)
+        class - DoubleQuotes
+            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (21:0,21) - Tokens:1
+                HtmlTokenType.Text;[btn];
+        Markup span - Gen<Markup> - [words and spaces] - SpanEditHandler;Accepts:Any - (26:0,26) - Tokens:5
+            HtmlTokenType.Text;[words];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[and];
+            HtmlTokenType.WhiteSpace;[ ];
+            HtmlTokenType.Text;[spaces];

@@ -15,10 +15,12 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
 
         private readonly WatchableApp _app;
+        private readonly ITestOutputHelper _output;
 
         public NoDepsAppTests(ITestOutputHelper logger)
         {
             _app = new WatchableApp("NoDepsApp", logger);
+            _output = logger;
         }
 
         [Fact]
@@ -33,11 +35,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.WriteAllText(fileToChange, programCs);
 
             await _app.HasRestarted();
+            Assert.DoesNotContain(_app.Process.Output, l => l.StartsWith("Exited with error code"));
+
             var pid2 = await _app.GetProcessId();
             Assert.NotEqual(pid, pid2);
-
-            // first app should have shut down
-            Assert.Throws<ArgumentException>(() => Process.GetProcessById(pid));
         }
 
         [Fact]
@@ -49,10 +50,19 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             await _app.IsWaitingForFileChange();
 
             var fileToChange = Path.Combine(_app.SourceDirectory, "Program.cs");
-            var programCs = File.ReadAllText(fileToChange);
-            File.WriteAllText(fileToChange, programCs);
 
-            await _app.HasRestarted();
+            try
+            {
+                File.SetLastWriteTime(fileToChange, DateTime.Now);
+                await _app.HasRestarted();
+            }
+            catch
+            {
+                // retry
+                File.SetLastWriteTime(fileToChange, DateTime.Now);
+                await _app.HasRestarted();
+            }
+
             var pid2 = await _app.GetProcessId();
             Assert.NotEqual(pid, pid2);
             await _app.HasExited(); // process should exit after run

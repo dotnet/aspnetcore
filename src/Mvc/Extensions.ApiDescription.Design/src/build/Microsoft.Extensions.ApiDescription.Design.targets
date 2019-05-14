@@ -1,0 +1,335 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <!-- Internal settings. Not intended for customization. -->
+  <PropertyGroup>
+    <GenerateServiceProjectReferenceDocumentsDependsOn>
+      _GetTargetFrameworkForServiceProjectReferences;
+      _GetTargetPathForServiceProjectReferences;
+      _GetMetadataForServiceProjectReferences;
+      _BuildServiceProjectReferences;
+      _GenerateServiceProjectReferenceDocuments;
+      _CreateFileItemsForServiceProjectReferences
+    </GenerateServiceProjectReferenceDocumentsDependsOn>
+    <GenerateServiceUriReferenceDocumentsDependsOn>
+      _GetMetadataForServiceUriReferences;
+      _GenerateServiceUriReferenceDocuments
+    </GenerateServiceUriReferenceDocumentsDependsOn>
+    <GenerateServiceFileReferenceCodesDependsOn>
+      GenerateServiceProjectReferenceDocuments;
+      GenerateServiceUriReferenceDocuments;
+      _GetMetadataForServiceFileReferences;
+      _GenerateServiceFileReferenceCodes;
+      _CreateCompileItemsForServiceFileReferences
+    </GenerateServiceFileReferenceCodesDependsOn>
+  </PropertyGroup>
+
+  <!-- ServiceProjectReference support -->
+
+  <!--
+    Metadata setup phase 1: Ensure items have TargetFramework metadata. Calls GetTargetFrameworks in the target
+    project. Inputs and outputs cause MSBuild to run target unconditionally and to batch it (run once per project).
+  -->
+  <Target Name="_GetTargetFrameworkForServiceProjectReferences"
+      Inputs="%(ServiceProjectReference.FullPath)"
+      Outputs="&lt;not-a-file !&gt;">
+    <PropertyGroup>
+      <_FullPath>%(ServiceProjectReference.FullPath)</_FullPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(_FullPath)"
+        RebaseOutputs="true"
+        RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier"
+        Targets="GetTargetFrameworks"
+        UseResultsCache="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_Temporary" />
+    </MSBuild>
+
+    <!--
+      Please excuse the mess necessary to extract information from _Temporary and use it in ServiceProjectReference.
+    -->
+    <PropertyGroup>
+      <_TargetFrameworks>%(_Temporary.TargetFrameworks)</_TargetFrameworks>
+      <_TargetFramework>$(_TargetFrameworks.Split(';')[0])</_TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+      <ServiceProjectReference Update="@(ServiceProjectReference)" Condition="'%(FullPath)' == '$(_FullPath)'">
+        <TargetFramework Condition="'%(TargetFramework)' == ''">$(_TargetFramework)</TargetFramework>
+      </ServiceProjectReference>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_FullPath />
+      <_TargetFramework />
+      <_TargetFrameworks />
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    Metadata setup phase 2: Ensure items have TargetPath metadata. Calls GetTargetPath in the target project.
+    Inputs and outputs cause MSBuild to run target unconditionally and batch it (run once per TargetFramework x
+    project combination).
+  -->
+  <Target Name="_GetTargetPathForServiceProjectReferences"
+      Inputs="%(ServiceProjectReference.TargetFramework)%(FullPath)')"
+      Outputs="&lt;not-a-file !&gt;">
+    <PropertyGroup>
+      <_FullPath>%(ServiceProjectReference.FullPath)</_FullPath>
+      <_TargetFramework>%(ServiceProjectReference.TargetFramework)</_TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(_FullPath)"
+        Properties="TargetFramework=$(_TargetFramework)"
+        RebaseOutputs="true"
+        RemoveProperties="TargetFrameworks;RuntimeIdentifier"
+        Targets="GetTargetPath"
+        UseResultsCache="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_Temporary" />
+    </MSBuild>
+
+    <PropertyGroup>
+      <_TargetPath>%(_Temporary.FullPath)</_TargetPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <ServiceProjectReference Update="@(ServiceProjectReference)"
+          Condition="'%(FullPath)' == '$(_FullPath)' AND '%(TargetFramework)' == '$(_TargetFramework)'">
+        <TargetPath>$(_TargetPath)</TargetPath>
+      </ServiceProjectReference>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_FullPath />
+      <_TargetPath />
+      <_TargetFramework />
+    </PropertyGroup>
+  </Target>
+
+  <!-- Metadata setup phase 3: Ensure items have DocumentPath metadata. -->
+  <Target Name="_GetMetadataForServiceProjectReferences" Condition="'@(ServiceProjectReference)' != ''">
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <GetProjectReferenceMetadata Inputs="@(ServiceProjectReference)"
+        DocumentDirectory="$(ServiceProjectReferenceDirectory)">
+      <Output TaskParameter="Outputs" ItemName="_Temporary" />
+    </GetProjectReferenceMetadata>
+
+    <ItemGroup>
+      <ServiceProjectReference Remove="@(ServiceProjectReference)" />
+      <ServiceProjectReference Include="@(_Temporary)" />
+    </ItemGroup>
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_BuildServiceProjectReferences"
+      Condition="'$(BuildProjectReferences)' == 'true'"
+      Inputs="@(ServiceProjectReference)"
+      Outputs="%(TargetPath)">
+    <MSBuild Projects="@(ServiceProjectReference -> Distinct())"
+        BuildInParallel="$(BuildInParallel)"
+        RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier"
+        Targets="%(Targets)" />
+  </Target>
+
+  <Target Name="_GetCurrentServiceProjectReference">
+    <GetCurrentItems Input="$(GeneratorMetadata)">
+      <Output TaskParameter="Outputs" ItemName="CurrentServiceProjectReference" />
+    </GetCurrentItems>
+  </Target>
+
+  <Target Name="_GenerateServiceProjectReferenceDocument"
+      DependsOnTargets="_GetCurrentServiceProjectReference;$(GeneratorTarget)" />
+
+  <Target Name="_GenerateServiceProjectReferenceDocuments"
+      Inputs="@(ServiceProjectReference)"
+      Outputs="%(DocumentPath)">
+    <MSBuild BuildInParallel="$(BuildInParallel)"
+        Projects="$(MSBuildProjectFullPath)"
+        Properties="GeneratorTargetPath=%(ServiceProjectReference.DocumentPath);GeneratorTarget=Generate%(DocumentGenerator)Document;GeneratorMetadata=%(SerializedMetadata)"
+        RemoveProperties="TargetFrameworks"
+        Targets="_GenerateServiceProjectReferenceDocument" />
+  </Target>
+
+  <Target Name="_CreateFileItemsForServiceProjectReferences" Condition="'@(ServiceProjectReference)' != ''">
+    <!-- GetProjectReferenceMetadata task guarantees %(DocumentPath) values are unique. -->
+    <ItemGroup>
+      <ServiceFileReference Remove="@(ServiceProjectReference -> '%(DocumentPath)')" />
+      <!-- Condition here is temporary. Useful while GenerateDefaultDocument fails. -->
+      <ServiceFileReference Include="@(ServiceProjectReference -> '%(DocumentPath)')"
+          Condition="Exists('%(ServiceProjectReference.DocumentPath)')">
+        <SourceProject>%(ServiceProjectReference.FullPath)</SourceProject>
+      </ServiceFileReference>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateServiceProjectReferenceDocuments"
+      DependsOnTargets="$(GenerateServiceProjectReferenceDocumentsDependsOn)" />
+
+  <!-- GenerateDefaultDocument -->
+
+  <Target Name="GenerateDefaultDocument">
+    <ItemGroup>
+      <!-- @(CurrentServiceProjectReference) item group will never contain more than one item. -->
+      <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
+        <Command>dotnet $(MSBuildThisFileDirectory)/../tools/dotnet-getdocument.dll --project %(FullPath)</Command>
+        <Configuration Condition="'%(Configuration)' == ''">$(Configuration)</Configuration>
+        <GenerateDefaultDocumentOptions
+            Condition="'%(GenerateDefaultDocumentOptions)' == ''">$(GenerateDefaultDocumentDefaultOptions)</GenerateDefaultDocumentOptions>
+      </CurrentServiceProjectReference>
+      <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
+        <Command>%(Command) --framework %(TargetFramework) --output %(DocumentPath)</Command>
+      </CurrentServiceProjectReference>
+      <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
+        <Command Condition="'%(Method)' != ''">%(Command) --method %(Method)</Command>
+      </CurrentServiceProjectReference>
+      <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
+        <Command Condition="'%(Service)' != ''">%(Command) --service %(Service)</Command>
+      </CurrentServiceProjectReference>
+      <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
+        <Command
+            Condition="'%(ProjectExtensionsPath)' != ''">%(Command) --projectExtensionsPath %(ProjectExtensionsPath)</Command>
+      </CurrentServiceProjectReference>
+      <CurrentServiceProjectReference Update="@(CurrentServiceProjectReference)">
+        <Command>%(Command) --configuration %(Configuration) %(GenerateDefaultDocumentOptions)</Command>
+      </CurrentServiceProjectReference>
+    </ItemGroup>
+
+    <Message Importance="high" Text="%0AGenerateDefaultDocument:" />
+    <Message Importance="high" Text="  %(CurrentServiceProjectReference.Command)" />
+    <Exec Command="%(CurrentServiceProjectReference.Command)"
+        IgnoreExitCode="$([System.IO.File]::Exists('%(DocumentPath)'))" />
+  </Target>
+
+  <!-- ServiceUriReference support -->
+
+  <Target Name="_GetMetadataForServiceUriReferences" Condition="'@(ServiceUriReference)' != ''">
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <GetUriReferenceMetadata Inputs="@(ServiceUriReference)" DocumentDirectory="$(ServiceUriReferenceDirectory)">
+      <Output TaskParameter="Outputs" ItemName="_Temporary" />
+    </GetUriReferenceMetadata>
+
+    <ItemGroup>
+      <ServiceUriReference Remove="@(ServiceUriReference)" />
+      <ServiceUriReference Include="@(_Temporary)" />
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateServiceUriReferenceDocuments" Condition="'@(ServiceUriReference)' != ''">
+    <Microsoft.Extensions.ApiDescription.Tasks.DownloadFile Uri="%(ServiceUriReference.Identity)"
+        DestinationPath="%(DocumentPath)"
+        Overwrite="$(ServiceUriReferenceCheckIfNewer)" />
+
+    <!-- GetUriReferenceMetadata task guarantees %(DocumentPath) values are unique. -->
+    <ItemGroup>
+      <ServiceFileReference Remove="@(ServiceUriReference -> '%(DocumentPath)')" />
+      <ServiceFileReference Include="@(ServiceUriReference -> '%(DocumentPath)')">
+        <SourceUri>%(ServiceUriReference.Identity)</SourceUri>
+      </ServiceFileReference>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateServiceUriReferenceDocuments"
+      DependsOnTargets="$(GenerateServiceUriReferenceDocumentsDependsOn)" />
+
+  <!-- ServiceFileReference support -->
+
+  <Target Name="_GetMetadataForServiceFileReferences" Condition="'@(ServiceFileReference)' != ''">
+    <ItemGroup>
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+
+    <GetFileReferenceMetadata Inputs="@(ServiceFileReference)"
+        Extension="$(DefaultLanguageSourceExtension)"
+        Namespace="$(RootNamespace)"
+        OutputDirectory="$(ServiceFileReferenceDirectory)">
+      <Output TaskParameter="Outputs" ItemName="_Temporary" />
+    </GetFileReferenceMetadata>
+
+    <ItemGroup>
+      <ServiceFileReference Remove="@(ServiceFileReference)" />
+      <ServiceFileReference Include="@(_Temporary)" />
+      <_Temporary Remove="@(_Temporary)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GetCurrentServiceFileReference">
+    <GetCurrentItems Input="$(GeneratorMetadata)">
+      <Output TaskParameter="Outputs" ItemName="CurrentServiceFileReference" />
+    </GetCurrentItems>
+  </Target>
+
+  <Target Name="_GenerateServiceFileReferenceCode"
+      DependsOnTargets="_GetCurrentServiceFileReference;$(GeneratorTarget)" />
+
+  <Target Name="_GenerateServiceFileReferenceCodes" Inputs="@(ServiceFileReference)" Outputs="%(OutputPath)">
+    <MSBuild BuildInParallel="$(BuildInParallel)"
+        Projects="$(MSBuildProjectFullPath)"
+        Properties="GeneratorTargetPath=%(ServiceFileReference.OutputPath);GeneratorTarget=Generate%(CodeGenerator);GeneratorMetadata=%(SerializedMetadata)"
+        RemoveProperties="TargetFrameworks"
+        Targets="_GenerateServiceFileReferenceCode" />
+  </Target>
+
+  <Target Name="_CreateCompileItemsForServiceFileReferences" Condition="'@(ServiceFileReference)' != ''">
+    <!--
+      While %(DocumentPath) metadata may include duplicates (due to overlaps between ServiceUriReference and
+      ServiceProjectReference items), GetFileReferenceMetadata task guarantees %(OutputPath) values are unique.
+    -->
+    <ItemGroup>
+      <_Files Remove="@(_Files)" />
+      <_Files Include="@(ServiceFileReference -> '%(OutputPath)')"
+          Condition="$([System.IO.File]::Exists('%(ServiceFileReference.OutputPath)'))">
+        <OutputPathExtension>$([System.IO.Path]::GetExtension('%(ServiceFileReference.OutputPath)'))</OutputPathExtension>
+      </_Files>
+      <_Directories Remove="@(_Directories)" />
+      <_Directories Include="@(ServiceFileReference -> '%(OutputPath)')"
+          Condition="Exists('%(ServiceFileReference.OutputPath)') AND ! $([System.IO.File]::Exists('%(ServiceFileReference.OutputPath)'))" />
+
+      <!-- If OutputPath is a file, add it directly to relevant items. -->
+      <TypeScriptCompile Remove="@(_Files)" Condition="'%(_Files.OutputPathExtension)' == '.ts'" />
+      <TypeScriptCompile Include="@(_Files)" Condition="'%(_Files.OutputPathExtension)' == '.ts'">
+        <SourceDocument>%(_Files.FullPath)</SourceDocument>
+      </TypeScriptCompile>
+
+      <Compile Remove="@(_Files)"
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.OutputPathExtension)' == '$(DefaultLanguageSourceExtension)'" />
+      <Compile Include="@(_Files)"
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts' AND '%(_Files.OutputPathExtension)' == '$(DefaultLanguageSourceExtension)'">
+        <SourceDocument>%(ServiceFileReference.FullPath)</SourceDocument>
+      </Compile>
+
+      <!-- Otherwise, add all descendent files with the expected extension. -->
+      <TypeScriptCompile Remove="@(_Directories -> '%(Identity)/**/*.ts')" />
+      <TypeScriptCompile Include="@(_Directories -> '%(Identity)/**/*.ts')">
+        <SourceDocument>%(_Directories.FullPath)</SourceDocument>
+      </TypeScriptCompile>
+
+      <Compile Remove="@(_Directories -> '%(Identity)/**/*.$(DefaultLanguageSourceExtension)')"
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts'" />
+      <Compile Include="@(_Directories -> '%(Identity)/**/*.$(DefaultLanguageSourceExtension)')"
+          Condition="'$(DefaultLanguageSourceExtension)' != '.ts'">
+        <SourceDocument>%(_Directories.FullPath)</SourceDocument>
+      </Compile>
+
+      <_Files Remove="@(_Files)" />
+      <_Directories Remove="@(_Directories)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateServiceFileReferenceCodes"
+      BeforeTargets="BeforeCompile"
+      DependsOnTargets="$(GenerateServiceFileReferenceCodesDependsOn)" />
+</Project>

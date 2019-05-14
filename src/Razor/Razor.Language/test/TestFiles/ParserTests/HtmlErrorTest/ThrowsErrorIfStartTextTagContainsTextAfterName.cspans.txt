@@ -1,0 +1,2 @@
+Transition span at (0:0,0 [14] ) (Accepts:Any) - Parent: Tag block at (0:0,0 [14] )
+Transition span at (14:0,14 [7] ) (Accepts:None) - Parent: Tag block at (14:0,14 [7] )

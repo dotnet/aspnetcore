@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         /// <param name="node">The node to compare this node with</param>
         /// <returns>
         /// true if the provided node has all the same content and metadata, though the specific quantity and type of
-        /// symbols may be different.
+        /// tokens may be different.
         /// </returns>
         public abstract bool EquivalentTo(SyntaxTreeNode node);
 

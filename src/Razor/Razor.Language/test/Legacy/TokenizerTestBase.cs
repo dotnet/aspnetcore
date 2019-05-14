@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal void TestTokenizer<TSymbol, TSymbolType>(string input, params TSymbol[] expectedSymbols)
             where TSymbolType : struct
-            where TSymbol : SymbolBase<TSymbolType>
+            where TSymbol : TokenBase<TSymbolType>
         {
             // Arrange
             var success = true;
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var tokenizer = (Tokenizer<TSymbol, TSymbolType>)CreateTokenizer(source);
                 var counter = 0;
                 TSymbol current = null;
-                while ((current = tokenizer.NextSymbol()) != null)
+                while ((current = tokenizer.NextToken()) != null)
                 {
                     if (counter >= expectedSymbols.Length)
                     {

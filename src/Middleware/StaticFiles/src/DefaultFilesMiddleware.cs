@@ -62,9 +62,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            PathString subpath;
             if (Helpers.IsGetOrHeadMethod(context.Request.Method)
-                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out subpath))
+                && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
             {
                 var dirContents = _fileProvider.GetDirectoryContents(subpath.Value);
                 if (dirContents.Exists)
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                     for (int matchIndex = 0; matchIndex < _options.DefaultFileNames.Count; matchIndex++)
                     {
                         string defaultFile = _options.DefaultFileNames[matchIndex];
-                        var file = _fileProvider.GetFileInfo(subpath + defaultFile);
+                        var file = _fileProvider.GetFileInfo(subpath.Value + defaultFile);
                         // TryMatchPath will make sure subpath always ends with a "/" by adding it if needed.
                         if (file.Exists)
                         {

@@ -1,0 +1,7 @@
+Markup block - Gen<None> - 40 - (0:0,0)
+    Tag block - Gen<TagHelper> - 40 - (0:0,0) - input - InputTagHelper2 - InputTagHelper3
+        SelfClosing - <input bound-required-int class='btn' />
+        bound-required-int - Minimized
+        class - SingleQuotes
+            Markup span - Gen<Markup> - [btn] - SpanEditHandler;Accepts:Any - (33:0,33) - Tokens:1
+                HtmlTokenType.Text;[btn];

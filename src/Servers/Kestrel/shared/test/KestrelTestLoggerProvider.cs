@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Testing
@@ -11,7 +10,7 @@ namespace Microsoft.AspNetCore.Testing
         private readonly ILogger _testLogger;
 
         public KestrelTestLoggerProvider(bool throwOnCriticalErrors = true)
-            : this(new TestApplicationErrorLogger() { ThrowOnCriticalErrors = throwOnCriticalErrors })
+            : this(new TestApplicationErrorLogger { ThrowOnCriticalErrors = throwOnCriticalErrors })
         {
         }
 
@@ -27,7 +26,6 @@ namespace Microsoft.AspNetCore.Testing
 
         public void Dispose()
         {
-            throw new NotImplementedException();
         }
     }
 }

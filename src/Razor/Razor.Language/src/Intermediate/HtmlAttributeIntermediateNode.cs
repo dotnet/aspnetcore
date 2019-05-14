@@ -24,5 +24,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             visitor.VisitHtmlAttribute(this);
         }
+
+        public override void FormatNode(IntermediateNodeFormatter formatter)
+        {
+            formatter.WriteContent(AttributeName);
+
+            formatter.WriteProperty(nameof(AttributeName), AttributeName);
+            formatter.WriteProperty(nameof(Prefix), Prefix);
+            formatter.WriteProperty(nameof(Suffix), Suffix);
+        }
     }
 }

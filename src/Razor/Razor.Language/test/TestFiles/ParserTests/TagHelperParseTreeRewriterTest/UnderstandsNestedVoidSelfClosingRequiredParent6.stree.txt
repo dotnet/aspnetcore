@@ -1,0 +1,7 @@
+Markup block - Gen<None> - 26 - (0:0,0)
+    Tag block - Gen<TagHelper> - 26 - (0:0,0) - p - PTagHelper
+        StartTagAndEndTag - <p> ... </p>
+        Tag block - Gen<TagHelper> - 9 - (3:0,3) - input - InputTagHelper
+            SelfClosing - <input />
+        Tag block - Gen<TagHelper> - 10 - (12:0,12) - strong - StrongTagHelper
+            SelfClosing - <strong />

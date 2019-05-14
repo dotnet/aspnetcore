@@ -6,7 +6,7 @@
     "SPA"
   ],
   "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular",
-  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular.CSharp.2.1",
+  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.Angular.CSharp.2.2",
   "name": "ASP.NET Core with Angular",
   "preferNameDirectory": true,
   "primaryOutputs": [
@@ -99,12 +99,12 @@
       "datatype": "choice",
       "choices": [
         {
-          "choice": "netcoreapp2.1",
-          "description": "Target netcoreapp2.1"
+          "choice": "netcoreapp2.2",
+          "description": "Target netcoreapp2.2"
         }
       ],
-      "replaces": "netcoreapp2.1",
-      "defaultValue": "netcoreapp2.1"
+      "replaces": "netcoreapp2.2",
+      "defaultValue": "netcoreapp2.2"
     },
     "HostIdentifier": {
       "type": "bind",

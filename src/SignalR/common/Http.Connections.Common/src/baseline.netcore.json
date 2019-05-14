@@ -1,0 +1,267 @@
+{
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Connections.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.AvailableTransport",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Transport",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Transport",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TransferFormats",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_TransferFormats",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IList<System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.HttpTransports",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "All",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Connections.HttpTransportType",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.HttpTransportType",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "WebSockets",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "ServerSentEvents",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        },
+        {
+          "Kind": "Field",
+          "Name": "LongPolling",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "4"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.NegotiateProtocol",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "WriteResponse",
+          "Parameters": [
+            {
+              "Name": "response",
+              "Type": "Microsoft.AspNetCore.Http.Connections.NegotiationResponse"
+            },
+            {
+              "Name": "output",
+              "Type": "System.Buffers.IBufferWriter<System.Byte>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ParseResponse",
+          "Parameters": [
+            {
+              "Name": "content",
+              "Type": "System.IO.Stream"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.Connections.NegotiationResponse",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Connections.NegotiationResponse",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Url",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Url",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AccessToken",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AccessToken",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ConnectionId",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ConnectionId",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_AvailableTransports",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Http.Connections.AvailableTransport>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AvailableTransports",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IList<Microsoft.AspNetCore.Http.Connections.AvailableTransport>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    }
+  ]
+}

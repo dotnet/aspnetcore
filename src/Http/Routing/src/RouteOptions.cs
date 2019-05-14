@@ -10,9 +10,16 @@ namespace Microsoft.AspNetCore.Routing
     public class RouteOptions
     {
         /// <summary>
-        /// Gets or sets a value indicating whether all generated URLs are lower-case.
+        /// Gets or sets a value indicating whether all generated paths URLs are lower-case. 
+        /// Use <see cref="LowercaseQueryStrings" /> to configure the behavior for query strings.
         /// </summary>
         public bool LowercaseUrls { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether a generated query strings are lower-case.
+        /// This property will not be used unless <see cref="LowercaseUrls" /> is also <c>true</c>.
+        /// </summary>
+        public bool LowercaseQueryStrings { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether a trailing slash should be appended to the generated URLs.

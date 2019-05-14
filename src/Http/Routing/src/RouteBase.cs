@@ -208,6 +208,14 @@ namespace Microsoft.AspNetCore.Routing
             {
                 if (parameter.DefaultValue != null)
                 {
+#if RVD_TryAdd
+                    if (!result.TryAdd(parameter.Name, parameter.DefaultValue))
+                    {
+                        throw new InvalidOperationException(
+                          Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(
+                              parameter.Name));
+                    }
+#else
                     if (result.ContainsKey(parameter.Name))
                     {
                         throw new InvalidOperationException(
@@ -218,6 +226,7 @@ namespace Microsoft.AspNetCore.Routing
                     {
                         result.Add(parameter.Name, parameter.DefaultValue);
                     }
+#endif
                 }
             }
 

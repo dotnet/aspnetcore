@@ -131,6 +131,11 @@ namespace Microsoft.AspNetCore.Http.Features
 
             cancellationToken.ThrowIfCancellationRequested();
 
+            if (_request.ContentLength == 0)
+            {
+                return FormCollection.Empty;
+            }
+
             if (_options.BufferBody)
             {
                 _request.EnableRewind(_options.MemoryBufferThreshold, _options.BufferBodyLengthLimit);
@@ -221,7 +226,7 @@ namespace Microsoft.AspNetCore.Http.Features
                             //
                             // value
 
-                            // Do not limit the key name length here because the mulipart headers length limit is already in effect.
+                            // Do not limit the key name length here because the multipart headers length limit is already in effect.
                             var key = formDataSection.Name;
                             var value = await formDataSection.GetValueAsync();
 

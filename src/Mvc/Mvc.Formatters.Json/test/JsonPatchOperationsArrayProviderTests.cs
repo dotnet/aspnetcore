@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         public void OnProvidersExecuting_FindsJsonPatchDocuments_ProvidesOperationsArray()
         {
             // Arrange
-            var metadataprovider = new TestModelMetadataProvider();
-            var provider = new JsonPatchOperationsArrayProvider(metadataprovider);
+            var metadataProvider = new TestModelMetadataProvider();
+            var provider = new JsonPatchOperationsArrayProvider(metadataProvider);
             var jsonPatchParameterDescription = new ApiParameterDescription
             {
                 Type = typeof(JsonPatchDocument)

@@ -22,58 +22,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void BlockedHeartbeatDoesntCauseOverlapsAndIsLoggedAsError()
+        public async Task BlockedHeartbeatDoesntCauseOverlapsAndIsLoggedAsError()
         {
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var debugger = new Mock<IDebugger>();
             var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
-            var traceMre = new ManualResetEventSlim();
-            var onHeartbeatTasks = new Task[2];
+            var handlerStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() => handlerMre.Wait());
+            heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() =>
+            {
+                handlerStartedTcs.SetResult(null);
+                handlerMre.Wait();
+            });
             debugger.Setup(d => d.IsAttached).Returns(false);
-            kestrelTrace.Setup(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow)).Callback(() => traceMre.Set());
+
+            Task blockedHeartbeatTask;
 
             using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object))
             {
-                onHeartbeatTasks[0] = Task.Run(() => heartbeat.OnHeartbeat());
-                onHeartbeatTasks[1] = Task.Run(() => heartbeat.OnHeartbeat());
-                Assert.True(traceMre.Wait(TimeSpan.FromSeconds(10)));
+                blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
+
+                await handlerStartedTcs.Task.DefaultTimeout();
+
+                heartbeat.OnHeartbeat();
             }
 
             handlerMre.Set();
-            Task.WaitAll(onHeartbeatTasks);
+
+            await blockedHeartbeatTask.DefaultTimeout();
 
             heartbeatHandler.Verify(h => h.OnHeartbeat(systemClock.UtcNow), Times.Once());
             kestrelTrace.Verify(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow), Times.Once());
         }
 
         [Fact]
-        public void BlockedHeartbeatIsNotLoggedAsErrorIfDebuggerAttached()
+        public async Task BlockedHeartbeatIsNotLoggedAsErrorIfDebuggerAttached()
         {
             var systemClock = new MockSystemClock();
             var heartbeatHandler = new Mock<IHeartbeatHandler>();
             var debugger = new Mock<IDebugger>();
             var kestrelTrace = new Mock<IKestrelTrace>();
             var handlerMre = new ManualResetEventSlim();
-            var traceMre = new ManualResetEventSlim();
-            var onHeartbeatTasks = new Task[2];
+            var handlerStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() => handlerMre.Wait());
-            debugger.Setup(d => d.IsAttached).Returns(true);
-            kestrelTrace.Setup(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow)).Callback(() => traceMre.Set());
-
-            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object, TimeSpan.FromSeconds(0.01)))
+            heartbeatHandler.Setup(h => h.OnHeartbeat(systemClock.UtcNow)).Callback(() =>
             {
-                onHeartbeatTasks[0] = Task.Run(() => heartbeat.OnHeartbeat());
-                onHeartbeatTasks[1] = Task.Run(() => heartbeat.OnHeartbeat());
-                Assert.False(traceMre.Wait(TimeSpan.FromSeconds(2)));
+                handlerStartedTcs.SetResult(null);
+                handlerMre.Wait();
+            });
+
+            debugger.Setup(d => d.IsAttached).Returns(true);
+
+            Task blockedHeartbeatTask;
+
+            using (var heartbeat = new Heartbeat(new[] { heartbeatHandler.Object }, systemClock, debugger.Object, kestrelTrace.Object))
+            {
+                blockedHeartbeatTask = Task.Run(() => heartbeat.OnHeartbeat());
+
+                await handlerStartedTcs.Task.DefaultTimeout();
+
+                heartbeat.OnHeartbeat();
             }
 
             handlerMre.Set();
-            Task.WaitAll(onHeartbeatTasks);
+
+            await blockedHeartbeatTask.DefaultTimeout();
 
             heartbeatHandler.Verify(h => h.OnHeartbeat(systemClock.UtcNow), Times.Once());
             kestrelTrace.Verify(t => t.HeartbeatSlow(Heartbeat.Interval, systemClock.UtcNow), Times.Never());

@@ -4,7 +4,6 @@
 using System;
 using System.Buffers;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
@@ -17,10 +16,11 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketConnection : TransportConnection
+    internal sealed class SocketConnection : TransportConnection, IDisposable
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
         private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+        private static readonly bool IsMacOS = RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
 
         private readonly Socket _socket;
         private readonly PipeScheduler _scheduler;
@@ -30,9 +30,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
         private readonly object _shutdownLock = new object();
-        private volatile bool _aborted;
-        private volatile ConnectionAbortedException _abortReason;
-        private long _totalBytesWritten;
+        private volatile bool _socketDisposed;
+        private volatile Exception _shutdownReason;
 
         internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
         {
@@ -68,7 +67,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         public override MemoryPool<byte> MemoryPool { get; }
         public override PipeScheduler InputWriterScheduler => _scheduler;
         public override PipeScheduler OutputReaderScheduler => _scheduler;
-        public override long TotalBytesWritten => Interlocked.Read(ref _totalBytesWritten);
 
         public async Task StartAsync()
         {
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 _receiver.Dispose();
                 _sender.Dispose();
-                ThreadPool.QueueUserWorkItem(state => ((SocketConnection)state).CancelConnectionClosedToken(), this);
+                ThreadPool.UnsafeQueueUserWorkItem(state => ((SocketConnection)state).CancelConnectionClosedToken(), this);
             }
             catch (Exception ex)
             {
@@ -94,11 +92,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            _abortReason = abortReason;
-            Output.CancelPendingRead();
-
             // Try to gracefully close the socket to match libuv behavior.
-            Shutdown();
+            Shutdown(abortReason);
+
+            // Cancel ProcessSends loop after calling shutdown to ensure the correct _shutdownReason gets set.
+            Output.CancelPendingRead();
+        }
+
+        // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
+        public void Dispose()
+        {
+            _connectionClosedTokenSource.Dispose();
+            _connectionClosingCts.Dispose();
         }
 
         private async Task DoReceive()
@@ -111,46 +116,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
-                // A connection reset can be reported as SocketError.ConnectionAborted on Windows
-                if (!_aborted)
+                // This could be ignored if _shutdownReason is already set.
+                error = new ConnectionResetException(ex.Message, ex);
+
+                // There's still a small chance that both DoReceive() and DoSend() can log the same connection reset.
+                // Both logs will have the same ConnectionId. I don't think it's worthwhile to lock just to avoid this.
+                if (!_socketDisposed)
                 {
-                    error = new ConnectionResetException(ex.Message, ex);
                     _trace.ConnectionReset(ConnectionId);
                 }
             }
-            catch (SocketException ex) when (IsConnectionAbortError(ex.SocketErrorCode))
+            catch (Exception ex)
+                when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
+                       ex is ObjectDisposedException)
             {
-                if (!_aborted)
-                {
-                    // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
-                    _trace.ConnectionError(ConnectionId, error);
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-                if (!_aborted)
-                {
-                    _trace.ConnectionError(ConnectionId, error);
-                }
-            }
-            catch (IOException ex)
-            {
+                // This exception should always be ignored because _shutdownReason should be set.
                 error = ex;
-                _trace.ConnectionError(ConnectionId, error);
+
+                if (!_socketDisposed)
+                {
+                    // This is unexpected if the socket hasn't been disposed yet.
+                    _trace.ConnectionError(ConnectionId, error);
+                }
             }
             catch (Exception ex)
             {
-                error = new IOException(ex.Message, ex);
+                // This is unexpected.
+                error = ex;
                 _trace.ConnectionError(ConnectionId, error);
             }
             finally
             {
-                if (_aborted)
-                {
-                    error = error ?? _abortReason ?? new ConnectionAbortedException();
-                }
-
-                Input.Complete(error);
+                // If Shutdown() has already bee called, assume that was the reason ProcessReceives() exited.
+                Input.Complete(_shutdownReason ?? error);
             }
         }
 
@@ -158,6 +156,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             while (true)
             {
+                // MacOS blocked on https://github.com/dotnet/corefx/issues/31766
+                if (!IsMacOS)
+                {
+                    // Wait for data before allocating a buffer.
+                    await _receiver.WaitForDataAsync();
+                }
+
                 // Ensure we have some reasonable amount of buffer space
                 var buffer = Input.GetMemory(MinAllocBufferSize);
 
@@ -174,17 +179,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 var flushTask = Input.FlushAsync();
 
-                if (!flushTask.IsCompleted)
+                var paused = !flushTask.IsCompleted;
+
+                if (paused)
                 {
                     _trace.ConnectionPause(ConnectionId);
+                }
 
-                    await flushTask;
+                var result = await flushTask;
 
+                if (paused)
+                {
                     _trace.ConnectionResume(ConnectionId);
                 }
 
-                var result = flushTask.GetAwaiter().GetResult();
-                if (result.IsCompleted)
+                if (result.IsCompleted || result.IsCanceled)
                 {
                     // Pipe consumer is shut down, do we stop writing
                     break;
@@ -194,7 +203,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private async Task DoSend()
         {
-            Exception error = null;
+            Exception shutdownReason = null;
+            Exception unexpectedError = null;
 
             try
             {
@@ -202,34 +212,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
-                // A connection reset can be reported as SocketError.ConnectionAborted on Windows
-                error = null;
+                shutdownReason = new ConnectionResetException(ex.Message, ex);;
                 _trace.ConnectionReset(ConnectionId);
             }
-            catch (SocketException ex) when (IsConnectionAbortError(ex.SocketErrorCode))
+            catch (Exception ex) 
+                when ((ex is SocketException socketEx && IsConnectionAbortError(socketEx.SocketErrorCode)) ||
+                       ex is ObjectDisposedException)
             {
-                error = null;
-            }
-            catch (ObjectDisposedException)
-            {
-                error = null;
-            }
-            catch (IOException ex)
-            {
-                error = ex;
-                _trace.ConnectionError(ConnectionId, error);
+                // This should always be ignored since Shutdown() must have already been called by Abort().
+                shutdownReason = ex;
             }
             catch (Exception ex)
             {
-                error = new IOException(ex.Message, ex);
-                _trace.ConnectionError(ConnectionId, error);
+                shutdownReason = ex;
+                unexpectedError = ex;
+                _trace.ConnectionError(ConnectionId, unexpectedError);
             }
             finally
             {
-                Shutdown();
+                Shutdown(shutdownReason);
 
                 // Complete the output after disposing the socket
-                Output.Complete(error);
+                Output.Complete(unexpectedError);
+
+                // Cancel any pending flushes so that the input loop is un-paused
+                Input.CancelPendingFlush();
             }
         }
 
@@ -239,12 +246,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             {
                 var result = await Output.ReadAsync();
 
-                var buffer = result.Buffer;
-
                 if (result.IsCanceled)
                 {
                     break;
                 }
+
+                var buffer = result.Buffer;
 
                 var end = buffer.End;
                 var isCompleted = result.IsCompleted;
@@ -252,10 +259,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
                 {
                     await _sender.SendAsync(buffer);
                 }
-
-                // This is not interlocked because there could be a concurrent writer.
-                // Instead it's to prevent read tearing on 32-bit systems.
-                Interlocked.Add(ref _totalBytesWritten, buffer.Length);
 
                 Output.AdvanceTo(end);
 
@@ -266,30 +269,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
         }
 
-        private void Shutdown()
+        private void Shutdown(Exception shutdownReason)
         {
             lock (_shutdownLock)
             {
-                if (!_aborted)
+                if (_socketDisposed)
                 {
-                    // Make sure to close the connection only after the _aborted flag is set.
-                    // Without this, the RequestsCanBeAbortedMidRead test will sometimes fail when
-                    // a BadHttpRequestException is thrown instead of a TaskCanceledException.
-                    _aborted = true;
-                    _trace.ConnectionWriteFin(ConnectionId);
-
-                    try
-                    {
-                        // Try to gracefully close the socket even for aborts to match libuv behavior.
-                        _socket.Shutdown(SocketShutdown.Both);
-                    }
-                    catch
-                    {
-                        // Ignore any errors from Socket.Shutdown since we're tearing down the connection anyway.
-                    }
-
-                    _socket.Dispose();
+                    return;
                 }
+
+                // Make sure to close the connection only after the _aborted flag is set.
+                // Without this, the RequestsCanBeAbortedMidRead test will sometimes fail when
+                // a BadHttpRequestException is thrown instead of a TaskCanceledException.
+                _socketDisposed = true;
+
+                // shutdownReason should only be null if the output was completed gracefully, so no one should ever
+                // ever observe the nondescript ConnectionAbortedException except for connection middleware attempting
+                // to half close the connection which is currently unsupported.
+                _shutdownReason = shutdownReason ?? new ConnectionAbortedException("The Socket transport's send loop completed gracefully.");
+
+                _trace.ConnectionWriteFin(ConnectionId, _shutdownReason.Message);
+
+                try
+                {
+                    // Try to gracefully close the socket even for aborts to match libuv behavior.
+                    _socket.Shutdown(SocketShutdown.Both);
+                }
+                catch
+                {
+                    // Ignore any errors from Socket.Shutdown() since we're tearing down the connection anyway.
+                }
+
+                _socket.Dispose();
             }
         }
 
@@ -307,16 +318,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         private static bool IsConnectionResetError(SocketError errorCode)
         {
+            // A connection reset can be reported as SocketError.ConnectionAborted on Windows.
+            // ProtocolType can be removed once https://github.com/dotnet/corefx/issues/31927 is fixed.
             return errorCode == SocketError.ConnectionReset ||
-                   errorCode == SocketError.ConnectionAborted ||
-                   errorCode == SocketError.Shutdown;
+                   errorCode == SocketError.Shutdown ||
+                   (errorCode == SocketError.ConnectionAborted && IsWindows) ||
+                   (errorCode == SocketError.ProtocolType && IsMacOS);
         }
 
         private static bool IsConnectionAbortError(SocketError errorCode)
         {
+            // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
             return errorCode == SocketError.OperationAborted ||
                    errorCode == SocketError.Interrupted ||
-                   errorCode == SocketError.InvalidArgument;
+                   (errorCode == SocketError.InvalidArgument && !IsWindows);
         }
     }
 }

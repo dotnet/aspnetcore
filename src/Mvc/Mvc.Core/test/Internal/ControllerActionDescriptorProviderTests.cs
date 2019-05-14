@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Routing;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
@@ -249,6 +251,90 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var actionConstraint = Assert.Single(action.RouteValues, kvp => kvp.Key.Equals("action"));
             Assert.Equal(nameof(ConventionallyRoutedController.ConventionalAction), actionConstraint.Value);
+        }
+
+        [Fact]
+        public void GetDescriptors_EndpointMetadata_ContainsAttributesFromActionAndController()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(AuthorizeController).GetTypeInfo());
+
+            // Assert
+            Assert.Equal(2, descriptors.Count());
+
+            var anonymousAction = Assert.Single(descriptors, a => a.RouteValues["action"] == "AllowAnonymousAction");
+
+            Assert.NotNull(anonymousAction.EndpointMetadata);
+
+            Assert.Collection(anonymousAction.EndpointMetadata,
+                metadata => Assert.IsType<AllowAnonymousAttribute>(metadata),
+                metadata => Assert.IsType<AuthorizeAttribute>(metadata));
+
+            var authorizeAction = Assert.Single(descriptors, a => a.RouteValues["action"] == "AuthorizeAction");
+
+            Assert.NotNull(authorizeAction.EndpointMetadata);
+
+            Assert.Collection(authorizeAction.EndpointMetadata,
+                metadata => Assert.Equal("ActionPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy),
+                metadata => Assert.Equal("ControllerPolicy", Assert.IsType<AuthorizeAttribute>(metadata).Policy));
+        }
+
+        [Fact]
+        public void GetDescriptors_ActionWithHttpMethods_AddedToEndpointMetadata()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(AttributeRoutedController).GetTypeInfo());
+
+            // Assert
+            var action = Assert.Single(descriptors);
+
+            Assert.NotNull(action.EndpointMetadata);
+
+            Assert.Collection(action.EndpointMetadata,
+                metadata => Assert.IsType<HttpGetAttribute>(metadata),
+                metadata =>
+                {
+                    var httpMethodMetadata = Assert.IsType<HttpMethodMetadata>(metadata);
+
+                    Assert.False(httpMethodMetadata.AcceptCorsPreflight);
+                    Assert.Equal("GET", Assert.Single(httpMethodMetadata.HttpMethods));
+                },
+                metadata => Assert.IsType<RouteAttribute>(metadata));
+        }
+
+        [Fact]
+        public void GetDescriptors_ActionWithMultipleHttpMethods_SingleHttpMethodMetadata()
+        {
+            // Arrange & Act
+            var descriptors = GetDescriptors(
+                typeof(NonDuplicatedAttributeRouteController).GetTypeInfo());
+
+            // Assert
+            var actions = descriptors
+                .OfType<ControllerActionDescriptor>()
+                .Where(d => d.ActionName == nameof(NonDuplicatedAttributeRouteController.DifferentHttpMethods));
+
+            Assert.Collection(actions,
+                InspectElement("GET"),
+                InspectElement("POST"),
+                InspectElement("PUT"),
+                InspectElement("PATCH"),
+                InspectElement("DELETE"));
+
+            Action<ControllerActionDescriptor> InspectElement(string httpMethod)
+            {
+                return (descriptor) =>
+                {
+                    var httpMethodAttribute = Assert.Single(descriptor.EndpointMetadata.OfType<HttpMethodAttribute>());
+                    Assert.Equal(httpMethod, httpMethodAttribute.HttpMethods.Single(), ignoreCase: true);
+
+                    var httpMethodMetadata = Assert.Single(descriptor.EndpointMetadata.OfType<IHttpMethodMetadata>());
+                    Assert.Equal(httpMethod, httpMethodMetadata.HttpMethods.Single(), ignoreCase: true);
+                    Assert.False(httpMethodMetadata.AcceptCorsPreflight);
+                };
+            }
         }
 
         [Fact]
@@ -709,7 +795,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var manager = GetApplicationManager(new[] { controllerTypeInfo });
             var options = Options.Create(new MvcOptions());
             options.Value.Conventions.Add(new TestRoutingConvention());
-            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
+            var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
             var provider = new ControllerActionDescriptorProvider(
                 manager,
                 new[] { modelProvider },
@@ -1118,7 +1204,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         [Theory]
         [InlineData("A", typeof(ApiExplorerEnabledConventionalRoutedController))]
         [InlineData("A", typeof(ApiExplorerEnabledActionConventionalRoutedController))]
-        public void ApiExplorer_ThrowsForContentionalRouting(string actionName, Type type)
+        public void ApiExplorer_ThrowsForConventionalRouting(string actionName, Type type)
         {
             // Arrange
             var assemblyName = type.GetTypeInfo().Assembly.GetName().Name;
@@ -1397,7 +1483,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var manager = GetApplicationManager(new[] { controllerTypeInfo });
 
-            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
+            var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
@@ -1413,7 +1499,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var options = Options.Create(new MvcOptions());
 
             var manager = GetApplicationManager(controllerTypeInfos);
-            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
+            var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
@@ -1432,7 +1518,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var manager = GetApplicationManager(new[] { controllerTypeInfo });
 
-            var modelProvider = new DefaultApplicationModelProvider(options, TestModelMetadataProvider.CreateDefaultProvider());
+            var modelProvider = new DefaultApplicationModelProvider(options, new EmptyModelMetadataProvider());
 
             var provider = new ControllerActionDescriptorProvider(
                 manager,
@@ -1808,6 +1894,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public void AttributeRoutedAction() { }
         }
 
+        [Authorize("ControllerPolicy")]
+        private class AuthorizeController
+        {
+            [AllowAnonymous]
+            public void AllowAnonymousAction() { }
+
+            [Authorize("ActionPolicy")]
+            public void AuthorizeAction() { }
+        }
+
         private class EmptyController
         {
         }
@@ -2024,7 +2120,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private class UserController : Controller
+        private class UserController : ControllerBase
         {
             public string GetUser(int id)
             {

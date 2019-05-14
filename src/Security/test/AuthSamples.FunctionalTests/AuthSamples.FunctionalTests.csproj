@@ -1,25 +1,21 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
-
-    <!-- Workaround for https://github.com/dotnet/sdk/issues/1729 -->
-  <Target Name="ResetPlatformTarget" BeforeTargets="CoreCompile" Condition="'$(TargetFramework)'=='netcoreapp2.1'">
-    <PropertyGroup>
-      <PlatformTarget>AnyCPU</PlatformTarget>
-    </PropertyGroup>
-  </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <ItemGroup>
     <ProjectReference Include="..\..\samples\Cookies\Cookies.csproj" />
     <ProjectReference Include="..\..\samples\ClaimsTransformation\ClaimsTransformation.csproj" />
+    <ProjectReference Include="..\..\samples\CustomPolicyProvider\CustomPolicyProvider.csproj" />
     <ProjectReference Include="..\..\samples\DynamicSchemes\DynamicSchemes.csproj" />
     <ProjectReference Include="..\..\samples\Identity.ExternalClaims\Identity.ExternalClaims.csproj" />
     <ProjectReference Include="..\..\samples\PathSchemeSelection\PathSchemeSelection.csproj" />
+    <ProjectReference Include="..\..\samples\StaticFilesAuth\StaticFilesAuth.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,5 +24,6 @@
     <Reference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
+    <Reference Include="AngleSharp" />
   </ItemGroup>
 </Project>

@@ -65,31 +65,5 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// The Access-Control-Max-Age response header.
         /// </summary>
         public static readonly string AccessControlMaxAge = HeaderNames.AccessControlMaxAge;
-
-
-        internal static readonly string[] SimpleRequestHeaders =
-        {
-            HeaderNames.Origin,
-            HeaderNames.Accept,
-            HeaderNames.AcceptLanguage,
-            HeaderNames.ContentLanguage,
-        };
-
-        internal static readonly string[] SimpleResponseHeaders =
-        {
-            HeaderNames.CacheControl,
-            HeaderNames.ContentLanguage,
-            HeaderNames.ContentType,
-            HeaderNames.Expires,
-            HeaderNames.LastModified,
-            HeaderNames.Pragma
-        };
-
-        internal static readonly string[] SimpleMethods =
-        {
-            HttpMethods.Get,
-            HttpMethods.Head,
-            HttpMethods.Post
-        };
     }
 }

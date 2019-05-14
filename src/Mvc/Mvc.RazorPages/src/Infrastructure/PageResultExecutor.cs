@@ -76,13 +76,29 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             var viewContext = result.Page.ViewContext;
+            var pageAdapter = new RazorPageAdapter(result.Page, pageContext.ActionDescriptor.DeclaredModelTypeInfo);
+
             viewContext.View = new RazorView(
                 _razorViewEngine,
                 _razorPageActivator,
                 viewStarts,
-                new RazorPageAdapter(result.Page),
+                pageAdapter,
                 _htmlEncoder,
-                _diagnosticSource);
+                _diagnosticSource)
+            {
+                OnAfterPageActivated = (page, currentViewContext) =>
+                {
+                    if (page != pageAdapter)
+                    {
+                        return;
+                    }
+
+                    // ViewContext is always activated with the "right" ViewData<T> type.
+                    // Copy that over to the PageContext since PageContext.ViewData is exposed
+                    // as the ViewData property on the Page that the user works with.
+                    pageContext.ViewData = currentViewContext.ViewData;
+                },
+            };
 
             return ExecuteAsync(viewContext, result.ContentType, result.StatusCode);
         }

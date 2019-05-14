@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly ApplicationPartManager _applicationPartManager;
         private readonly IRazorViewEngineFileProviderAccessor _fileProviderAccessor;
         private readonly CSharpCompiler _csharpCompiler;
+        private readonly IViewCompilationMemoryCacheProvider _compilationMemoryCacheProvider;
         private readonly RazorViewEngineOptions _viewEngineOptions;
         private readonly ILogger<RazorViewCompiler> _logger;
         private readonly Func<IViewCompiler> _createCompiler;
@@ -32,12 +33,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             IRazorViewEngineFileProviderAccessor fileProviderAccessor,
             CSharpCompiler csharpCompiler,
             IOptions<RazorViewEngineOptions> viewEngineOptionsAccessor,
+            IViewCompilationMemoryCacheProvider compilationMemoryCacheProvider,
             ILoggerFactory loggerFactory)
         {
             _applicationPartManager = applicationPartManager;
             _razorProjectEngine = razorProjectEngine;
             _fileProviderAccessor = fileProviderAccessor;
             _csharpCompiler = csharpCompiler;
+            _compilationMemoryCacheProvider = compilationMemoryCacheProvider;
             _viewEngineOptions = viewEngineOptionsAccessor.Value;
 
             _logger = loggerFactory.CreateLogger<RazorViewCompiler>();
@@ -72,9 +75,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 _fileProviderAccessor.FileProvider,
                 _razorProjectEngine,
                 _csharpCompiler,
+#pragma warning disable CS0618 // Type or member is obsolete
                 _viewEngineOptions.CompilationCallback,
+#pragma warning restore CS0618 // Type or member is obsolete
                 feature.ViewDescriptors,
-                _logger);
+                _compilationMemoryCacheProvider.CompilationMemoryCache,
+                _logger)
+            {
+                AllowRecompilingViewsOnFileChange = _viewEngineOptions.AllowRecompilingViewsOnFileChange,
+            };
         }
     }
 }

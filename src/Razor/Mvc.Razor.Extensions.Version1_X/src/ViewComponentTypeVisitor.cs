@@ -16,13 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
         private readonly INamedTypeSymbol _nonViewComponentAttribute;
         private readonly List<INamedTypeSymbol> _results;
 
-        public static ViewComponentTypeVisitor Create(Compilation compilation, List<INamedTypeSymbol> results)
-        {
-            var vcAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.ViewComponentAttribute);
-            var nonVCAttribute = compilation.GetTypeByMetadataName(ViewComponentTypes.NonViewComponentAttribute);
-            return new ViewComponentTypeVisitor(vcAttribute, nonVCAttribute, results);
-        }
-
         public ViewComponentTypeVisitor(
             INamedTypeSymbol viewComponentAttribute,
             INamedTypeSymbol nonViewComponentAttribute,
@@ -31,11 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             _viewComponentAttribute = viewComponentAttribute;
             _nonViewComponentAttribute = nonViewComponentAttribute;
             _results = results;
-
-            Enabled = _viewComponentAttribute != null;
         }
-
-        public bool Enabled { get; set; }
 
         public override void VisitNamedType(INamedTypeSymbol symbol)
         {
@@ -65,11 +54,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
 
         internal bool IsViewComponent(INamedTypeSymbol symbol)
         {
-            if (!Enabled)
-            {
-                return false;
-            }
-
             if (symbol.DeclaredAccessibility != Accessibility.Public ||
                 symbol.IsAbstract ||
                 symbol.IsGenericType ||

@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             return manager;
         }
 
-        private static SignInManager<PocoUser> SetupSignInManager(UserManager<PocoUser> manager, HttpContext context, StringBuilder logStore = null, IdentityOptions identityOptions = null)
+        private static SignInManager<PocoUser> SetupSignInManager(UserManager<PocoUser> manager, HttpContext context, StringBuilder logStore = null, IdentityOptions identityOptions = null, IAuthenticationSchemeProvider schemeProvider = null)
         {
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(context);
@@ -185,7 +185,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             var options = new Mock<IOptions<IdentityOptions>>();
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options.Object);
-            var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, new Mock<IAuthenticationSchemeProvider>().Object);
+            schemeProvider = schemeProvider ?? new Mock<IAuthenticationSchemeProvider>().Object;
+            var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, schemeProvider);
             sm.Logger = MockHelpers.MockILogger<SignInManager<PocoUser>>(logStore ?? new StringBuilder()).Object;
             return sm;
         }
@@ -923,6 +924,37 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(confirmed, !logStore.ToString().Contains($"User {user.Id} cannot sign in without a confirmed phone number."));
             manager.Verify();
             auth.Verify();
+        }
+
+        [Fact]
+        public async Task GetExternalLoginInfoAsyncReturnsCorrectProviderDisplayName()
+        {
+            // Arrange
+            var user = new PocoUser { Id = "foo", UserName = "Foo" };
+            var userManager = SetupUserManager(user);
+            var context = new DefaultHttpContext();
+            var identity = new ClaimsIdentity();
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, "bar"));
+            var principal = new ClaimsPrincipal(identity);
+            var properties = new AuthenticationProperties();
+            properties.Items["LoginProvider"] = "blah";
+            var authResult = AuthenticateResult.Success(new AuthenticationTicket(principal, properties, "blah"));
+            var auth = MockAuth(context);
+            auth.Setup(s => s.AuthenticateAsync(context, IdentityConstants.ExternalScheme)).ReturnsAsync(authResult);
+            var schemeProvider = new Mock<IAuthenticationSchemeProvider>();
+            var handler = new Mock<IAuthenticationHandler>();
+            schemeProvider.Setup(s => s.GetAllSchemesAsync())
+                .ReturnsAsync(new[]
+                {
+                    new AuthenticationScheme("blah", "Blah blah", handler.Object.GetType())
+                });
+            var signInManager = SetupSignInManager(userManager.Object, context, schemeProvider: schemeProvider.Object);
+
+            // Act
+            var externalLoginInfo = await signInManager.GetExternalLoginInfoAsync();
+
+            // Assert
+            Assert.Equal("Blah blah", externalLoginInfo.ProviderDisplayName);
         }
     }
 }
