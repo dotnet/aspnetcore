@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <!-- IIS tests are Windows-only -->
-    <IsWindowsOnlyTest>true<IsWindowsOnlyTest>
+    <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
   </PropertyGroup>
 
 </Project>
