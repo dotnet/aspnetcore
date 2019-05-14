@@ -177,6 +177,7 @@ and are generated based on the last package release.
     <LatestPackageReference Include="runtime.linux-arm.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
     <LatestPackageReference Include="runtime.linux-arm64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
     <LatestPackageReference Include="runtime.linux-musl-x64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
+    <LatestPackageReference Include="runtime.linux-musl-arm64.microsoft.netcore.app" Version="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 
 </Project>
