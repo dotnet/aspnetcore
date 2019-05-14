@@ -17,10 +17,9 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var renderer = new TestRenderer();
-            var rootComponent = WrapInAuthorizeView(context => builder =>
-            {
-                builder.AddContent(0, "This should not be rendered");
-            });
+            var rootComponent = WrapInAuthorizeView(
+                childContent:
+                    context => builder => builder.AddContent(0, "This should not be rendered"));
 
             // Act
             renderer.AssignRootComponentId(rootComponent);
@@ -32,14 +31,39 @@ namespace Microsoft.AspNetCore.Components
         }
 
         [Fact]
+        public void RendersNotAuthorizedContentIfNotAuthorized()
+        {
+            // Arrange
+            var renderer = new TestRenderer();
+            var rootComponent = WrapInAuthorizeView(
+                childContent:
+                    context => builder => builder.AddContent(0, "This should not be rendered"),
+                notAuthorizedContent:
+                    builder => builder.AddContent(0, "You are not authorized"));
+
+            // Act
+            renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+
+            // Assert
+            var diff = renderer.Batches.Single().GetComponentDiffs<AuthorizeView>().Single();
+            Assert.Collection(diff.Edits, edit =>
+            {
+                Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
+                AssertFrame.Text(
+                    renderer.Batches.Single().ReferenceFrames[edit.ReferenceFrameIndex],
+                    "You are not authorized");
+            });
+        }
+
+        [Fact]
         public void RendersChildContentIfAuthorized()
         {
             // Arrange
             var renderer = new TestRenderer();
-            var rootComponent = WrapInAuthorizeView(context => builder =>
-            {
-                builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}");
-            });
+            var rootComponent = WrapInAuthorizeView(
+                childContent: context => builder =>
+                    builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
             rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Nellie");
 
             // Act
@@ -57,13 +81,18 @@ namespace Microsoft.AspNetCore.Components
             });
         }
 
-        private static TestAuthStateProviderComponent WrapInAuthorizeView(RenderFragment<IAuthenticationState> content)
-            => new TestAuthStateProviderComponent(builder =>
+        private static TestAuthStateProviderComponent WrapInAuthorizeView(
+            RenderFragment<IAuthenticationState> childContent = null,
+            RenderFragment notAuthorizedContent = null)
+        {
+            return new TestAuthStateProviderComponent(builder =>
             {
                 builder.OpenComponent<AuthorizeView>(0);
-                builder.AddAttribute(1, RenderTreeBuilder.ChildContent, content);
+                builder.AddAttribute(1, nameof(AuthorizeView.ChildContent), childContent);
+                builder.AddAttribute(2, nameof(AuthorizeView.NotAuthorized), notAuthorizedContent);
                 builder.CloseComponent();
             });
+        }
 
         class TestAuthStateProviderComponent : AutoRenderComponent
         {

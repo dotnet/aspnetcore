@@ -4,6 +4,10 @@
 {
     @ChildContent(CurrentAuthenticationState)
 }
+else
+{
+    @NotAuthorized
+}
 
 @functions {
     [CascadingParameter] public IAuthenticationState CurrentAuthenticationState { get; private set; }
@@ -12,4 +16,9 @@
     /// The content that will be displayed if the user is authorized.
     /// </summary>
     [Parameter] public RenderFragment<IAuthenticationState> ChildContent { get; private set; }
+
+    /// <summary>
+    /// The content that will be displayed if the user is not authorized.
+    /// </summary>
+    [Parameter] public RenderFragment NotAuthorized { get; private set; }
 }
