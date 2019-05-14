@@ -2,7 +2,7 @@
 
 @if (CurrentAuthenticationState.User?.Identity?.IsAuthenticated == true)
 {
-    @ChildContent(CurrentAuthenticationState)
+    @((Authorized ?? ChildContent)?.Invoke(CurrentAuthenticationState))
 }
 else
 {
@@ -21,4 +21,25 @@ else
     /// The content that will be displayed if the user is not authorized.
     /// </summary>
     [Parameter] public RenderFragment NotAuthorized { get; private set; }
+
+    /// <summary>
+    /// The content that will be displayed if the user is authorized.
+    /// If you specify a value for this parameter, do not also specify a value for <see cref="ChildContent"/>.
+    /// </summary>
+    [Parameter] public RenderFragment<IAuthenticationState> Authorized { get; private set; }
+
+    public override Task SetParametersAsync(ParameterCollection parameters)
+    {
+        var result = base.SetParametersAsync(parameters);
+
+        // We allow 'ChildContent' for convenience in basic cases, and 'Authorized' for symmetry
+        // with 'NotAuthorized' in other cases. Besides naming, they are equivalent. To avoid
+        // confusion, explicitly prevent the case where both are supplied.
+        if (ChildContent != null && Authorized != null)
+        {
+            throw new InvalidOperationException($"When using {nameof(AuthorizeView)}, do not specify both '{nameof(Authorized)}' and '{nameof(ChildContent)}'.");
+        }
+
+        return result;
+    }
 }
