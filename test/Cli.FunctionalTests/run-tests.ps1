@@ -44,6 +44,7 @@ param(
     $HostRid,
     $ProdConManifestUrl,
     $ProdConChannel = 'release/2.2',
+    $CliManifestName = "cli.xml",
     $AdditionalRestoreSources
 )
 
@@ -115,7 +116,7 @@ try {
             Write-Error "Missing required parameter: AssetRootUrl"
         }
         $AssetRootUrl = $AssetRootUrl.TrimEnd('/')
-        $cliMetadataUrl = "$AssetRootUrl/orchestration-metadata/manifests/cli.xml${AccessTokenSuffix}"
+        $cliMetadataUrl = "$AssetRootUrl/orchestration-metadata/manifests/${CliManifestName}${AccessTokenSuffix}"
         Write-Host "CliMetadataUrl:  $cliMetadataUrl"
         [xml] $cli = Invoke-RestMethod $cliMetadataUrl
         $sdkVersion = $cli.Build.ProductVersion
@@ -163,7 +164,7 @@ try {
     [string[]] $filterArgs = @()
 
     if ($TestRuntimeIdentifier) {
-        $filterArgs += '--filter',"rid: $TestRuntimeIdentifier"
+        $filterArgs += '--filter',"Name~rid: $TestRuntimeIdentifier"
     }
 
     Invoke-Block { & $dotnet test `
