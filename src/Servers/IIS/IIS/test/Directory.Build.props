@@ -2,7 +2,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <!-- HttpSys tests are Windows-only -->
+    <!-- IIS tests are Windows-only -->
     <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
   </PropertyGroup>
 
