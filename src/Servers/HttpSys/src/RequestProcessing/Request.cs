@@ -37,6 +37,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             // TODO: Verbose log
             RequestContext = requestContext;
+            Headers = new RequestHeaders();
+
+            Initialize(nativeRequestContext);
+        }
+
+        internal void Initialize(NativeRequestContext nativeRequestContext)
+        {
+            Headers.Initialize(nativeRequestContext);
+
             _nativeRequestContext = nativeRequestContext;
             _contentBoundaryType = BoundaryType.None;
 
@@ -52,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var cookedUrl = nativeRequestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
+            var prefix = RequestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
 
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
@@ -80,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             ProtocolVersion = _nativeRequestContext.GetVersion();
 
-            Headers = new RequestHeaders(_nativeRequestContext);
 
             User = _nativeRequestContext.GetUser();
 
@@ -96,19 +104,56 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // TODO: Verbose log parameters
         }
 
-        internal ulong UConnectionId { get; }
+        internal void Reset()
+        {
+            Headers.Reset();
+
+            PathBase = null;
+            Path = null;
+            QueryString = null;
+            RawUrl = null;
+            Method = null;
+            KnownMethod = HttpApiTypes.HTTP_VERB.HttpVerbUnknown;
+            RequestId = 0;
+            UConnectionId = 0;
+            SslStatus = SslStatus.Insecure;
+            ProtocolVersion = null;
+            User = null;
+            Protocol = SslProtocols.None;
+            CipherAlgorithm = CipherAlgorithmType.None;
+            CipherStrength = 0;
+            HashAlgorithm = HashAlgorithmType.None;
+            HashStrength = 0;
+            KeyExchangeAlgorithm = ExchangeAlgorithmType.None;
+            KeyExchangeStrength = 0;
+
+
+            _nativeRequestContext = null;
+            _clientCert = null;
+
+            _contentBoundaryType = BoundaryType.None;
+
+            _contentLength = null;
+            _nativeStream = null;
+
+            _localEndPoint = null;
+            _remoteEndPoint = null;
+            _isDisposed = false;
+        }
+
+        internal ulong UConnectionId { get; private set; }
 
         // No ulongs in public APIs...
         public long ConnectionId => (long)UConnectionId;
 
-        internal ulong RequestId { get; }
+        internal ulong RequestId { get; private set; }
 
-        private SslStatus SslStatus { get; }
+        private SslStatus SslStatus { get; set; }
 
-        private RequestContext RequestContext { get; }
+        private RequestContext RequestContext { get; set; }
 
         // With the leading ?, if any
-        public string QueryString { get; }
+        public string QueryString { get; private set; }
 
         public long? ContentLength
         {
@@ -144,11 +189,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public RequestHeaders Headers { get; }
 
-        internal HttpApiTypes.HTTP_VERB KnownMethod { get; }
+        internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
 
         internal bool IsHeadMethod => KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbHEAD;
 
-        public string Method { get; }
+        public string Method { get; private set; }
 
         public Stream Body => EnsureRequestStream() ?? Stream.Null;
 
@@ -176,15 +221,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public string PathBase { get; }
+        public string PathBase { get; private set; }
 
-        public string Path { get; }
+        public string Path { get; private set; }
 
         public bool IsHttps => SslStatus != SslStatus.Insecure;
 
-        public string RawUrl { get; }
+        public string RawUrl { get; private set; }
 
-        public Version ProtocolVersion { get; }
+        public Version ProtocolVersion { get; private set; }
 
         public bool HasEntityBody
         {
@@ -236,7 +281,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // HTTP.Sys allows you to upgrade anything to opaque unless content-length > 0 or chunked are specified.
         internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
 
-        internal WindowsPrincipal User { get; }
+        internal WindowsPrincipal User { get; private set; }
 
         public SslProtocols Protocol { get; private set; }
 

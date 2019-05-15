@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -34,19 +33,33 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Headers = new HeaderCollection();
             // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
             // that we can start over (e.g. to write an error message).
-            _nativeResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
-            Headers.IsReadOnly = false;
-            Headers.Clear();
-            _reasonPhrase = null;
-            _boundaryType = BoundaryType.None;
             _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
             _nativeResponse.Response_V1.Version.MinorVersion = 1;
-            _responseState = ResponseState.Created;
-            _expectedBodyLength = 0;
-            _nativeStream = null;
-            _cacheTtl = null;
             _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
+        }
+
+        internal void Initialize()
+        {
+            _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
+            _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
+            _nativeResponse.Response_V1.Version.MajorVersion = 1;
+            _nativeResponse.Response_V1.Version.MinorVersion = 1;
+        }
+
+        internal void Reset()
+        {
+            _responseState = ResponseState.Created;
+            _reasonPhrase = null;
+            _nativeStream = null;
+            _authChallenges = AuthenticationSchemes.None;
+            _cacheTtl = null;
+            _expectedBodyLength = 0;
+            _boundaryType = BoundaryType.None;
+            _nativeResponse = default;
+
+            Headers.IsReadOnly = false;
+            Headers.Clear();
         }
 
         private enum ResponseState

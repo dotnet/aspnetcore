@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         internal static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(IOWaitCallback);
 
-        private TaskCompletionSource<RequestContext> _tcs;
+        private TaskCompletionSource<RequestInitalizationContext> _tcs;
         private HttpSysListener _server;
         private NativeRequestContext _nativeRequestContext;
         private const int DefaultBufferSize = 4096;
@@ -24,33 +25,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal AsyncAcceptContext(HttpSysListener server)
         {
             _server = server;
-            _tcs = new TaskCompletionSource<RequestContext>();
+            _tcs = new TaskCompletionSource<RequestInitalizationContext>(TaskCreationOptions.RunContinuationsAsynchronously);
             AllocateNativeRequest();
         }
 
-        internal Task<RequestContext> Task
-        {
-            get
-            {
-                return _tcs.Task;
-            }
-        }
+        internal Task<RequestInitalizationContext> Task => _tcs.Task;
 
-        private TaskCompletionSource<RequestContext> Tcs
-        {
-            get
-            {
-                return _tcs;
-            }
-        }
+        private TaskCompletionSource<RequestInitalizationContext> Tcs => _tcs;
 
-        internal HttpSysListener Server
-        {
-            get
-            {
-                return _server;
-            }
-        }
+        internal HttpSysListener Server => _server;
 
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Redirecting to callback")]
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "Disposed by callback")]
@@ -76,8 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         {
                             if (server.ValidateRequest(asyncResult._nativeRequestContext) && server.ValidateAuth(asyncResult._nativeRequestContext))
                             {
-                                RequestContext requestContext = new RequestContext(server, asyncResult._nativeRequestContext);
-                                asyncResult.Tcs.TrySetResult(requestContext);
+                                asyncResult.Tcs.TrySetResult(new RequestInitalizationContext() { Server = server, MemoryBlob = asyncResult._nativeRequestContext });
                                 complete = true;
                             }
                         }
@@ -195,8 +177,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             //Debug.Assert(size != 0, "unexpected size");
 
             // We can't reuse overlapped objects
-            uint newSize = size.HasValue ? size.Value : DefaultBufferSize;
-            var backingBuffer = new byte[newSize + AlignmentPadding];
+            int newSize = checked((int)((size.HasValue ? size.Value : DefaultBufferSize) + AlignmentPadding));
+            var backingBuffer = ArrayPool<byte>.Shared.Rent(newSize);
 
             var boundHandle = Server.RequestQueue.BoundHandle;
             var nativeOverlapped = new SafeNativeOverlapped(boundHandle,

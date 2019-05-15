@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Accept a request from the incoming request queue.
         /// </summary>
-        public Task<RequestContext> AcceptAsync()
+        public Task<RequestInitalizationContext> AcceptAsync()
         {
             AsyncAcceptContext asyncResult = null;
             try

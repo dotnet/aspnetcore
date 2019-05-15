@@ -50,9 +50,9 @@ var props = new[]
 var lengths = props.GroupBy(prop=>prop.Key.Length).OrderBy(prop=>prop.Key);
 
 
-Func<int,string> IsRead = Index => "((_flag" + (Index / 32) + " & 0x" + (1<<(Index % 32)).ToString("x") + "u) != 0)";
-Func<int,string> MarkRead = Index => "_flag" + (Index / 32) + " |= 0x" + (1<<(Index % 32)).ToString("x") + "u";
-Func<int,string> Clear = Index => "_flag" + (Index / 32) + " &= ~0x" + (1<<(Index % 32)).ToString("x") + "u";
+Func<int,string> IsRead = Index => "((_fields._flag" + (Index / 32) + " & 0x" + (1<<(Index % 32)).ToString("x") + "u) != 0)";
+Func<int,string> MarkRead = Index => "_fields._flag" + (Index / 32) + " |= 0x" + (1<<(Index % 32)).ToString("x") + "u";
+Func<int,string> Clear = Index => "_fields._flag" + (Index / 32) + " &= ~0x" + (1<<(Index % 32)).ToString("x") + "u";
 #>
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -72,13 +72,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     [GeneratedCode("TextTemplatingFileGenerator", "")]
     internal partial class RequestHeaders
     {
-	    // Tracks if individual fields have been read from native or set directly.
-		// Once read or set, their presence in the collection is marked by if their StringValues is null or not.
-        private UInt32 _flag0, _flag1;
+        private struct HeaderFields
+        {
+            // Tracks if individual fields have been read from native or set directly.
+            // Once read or set, their presence in the collection is marked by if their StringValues is null or not.
+            public UInt32 _flag0, _flag1;
 
 <# foreach(var prop in props) { #>
-        private StringValues _<#=prop.Name#>;
+            public StringValues _<#=prop.Name#>;
 <# } #>
+        }
+
+        private HeaderFields _fields;
 
 <# foreach(var prop in props) { #>
         internal StringValues <#=prop.Name#>
@@ -90,16 +95,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 					string nativeValue = GetKnownHeader(<#=prop.ID#>);
 					if (nativeValue != null)
 					{
-						_<#=prop.Name#> = nativeValue;
+						_fields._<#=prop.Name#> = nativeValue;
 					}
                     <#=MarkRead(prop.Index)#>;
 				}
-			    return _<#=prop.Name#>;
+			    return _fields._<#=prop.Name#>;
 		    }
             set 
             {
                 <#=MarkRead(prop.Index)#>;
-                _<#=prop.Name#> = value;
+                _fields._<#=prop.Name#> = value;
             }
         }
 
@@ -169,7 +174,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 <# foreach(var length in lengths) { #>
                 case <#=length.Key#>:
 <# foreach(var prop in length) { #>
-                    if (_<#=prop.Name#>.Count > 0 
+                    if (_fields._<#=prop.Name#>.Count > 0 
                         && string.Equals(key, "<#=prop.Key#>", StringComparison.Ordinal))
                     {
 					    bool wasSet = <#=IsRead(prop.Index)#>;

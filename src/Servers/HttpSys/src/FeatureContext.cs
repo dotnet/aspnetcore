@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
-using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -38,10 +37,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpMaxRequestBodySizeFeature,
         IHttpBodyControlFeature
     {
-        private RequestContext _requestContext;
+        private readonly RequestContext _requestContext;
         private readonly FeatureCollection<TContext> _features;
-        private bool _enableResponseCaching;
+        private readonly Func<Task> _onResponseStart;
 
+        private bool _enableResponseCaching;
         private Stream _requestBody;
         private IHeaderDictionary _requestHeaders;
         private string _scheme;
@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private Fields _initializedFields;
 
-        private List<Tuple<Func<object, Task>, object>> _onStartingActions = new List<Tuple<Func<object, Task>, object>>();
-        private List<Tuple<Func<object, Task>, object>> _onCompletedActions = new List<Tuple<Func<object, Task>, object>>();
+        private readonly List<(Func<object, Task> callback, object state)> _onStartingActions = new List<(Func<object, Task> callback, object state)>();
+        private readonly List<(Func<object, Task> callback, object state)> _onCompletedActions = new List<(Func<object, Task> callback, object state)>();
         private bool _responseStarted;
         private bool _completed;
 
@@ -74,10 +74,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             _requestContext = requestContext;
             _features = new FeatureCollection<TContext>(new StandardFeatureCollection<TContext>(this));
+            _onResponseStart = OnResponseStart;
+
+            Initialize();
+        }
+
+        internal void Initialize()
+        {
+            _initializedFields = Fields.None;
+
             _enableResponseCaching = _requestContext.Server.Options.EnableResponseCaching;
 
             // Pre-initialize any fields that are not lazy at the lower level.
-            _requestHeaders = Request.Headers;
             _httpMethod = Request.Method;
             _path = Request.Path;
             _pathBase = Request.PathBase;
@@ -86,8 +94,43 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _scheme = Request.Scheme;
             _user = _requestContext.User;
 
-            _responseStream = new ResponseStream(requestContext.Response.Body, OnResponseStart);
+            _responseStream = new ResponseStream(_requestContext.Response.Body, _onResponseStart);
+            _requestHeaders = Request.Headers;
             _responseHeaders = Response.Headers;
+        }
+
+        internal void Reset()
+        {
+            _features.Reset();
+
+            _enableResponseCaching = false;
+            _requestBody = null;
+            _httpMethod = null;
+            _httpProtocolVersion = null;
+            _path = null;
+            _pathBase = null;
+            _query = null;
+            _rawTarget = null;
+            _scheme = null;
+            _user = null;
+            _remoteIpAddress = null;
+            _localIpAddress = null;
+            _remotePort = 0;
+            _localPort = 0;
+            _connectionId = null;
+            _traceIdentitfier = null;
+            _clientCert = null;
+            _user = null;
+            _disconnectToken = default;
+
+            _responseStream = null;
+            _responseHeaders = null;
+            _requestHeaders = null;
+            _initializedFields = Fields.None;
+            _onStartingActions.Clear();
+            _onCompletedActions.Clear();
+            _completed = false;
+            _responseStarted = false;
         }
 
         internal IFeatureCollection Features => _features;
@@ -387,12 +430,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 throw new ArgumentNullException(nameof(callback));
             }
-            if (_onStartingActions == null)
+            if (_responseStarted)
             {
                 throw new InvalidOperationException("Cannot register new callbacks, the response has already started.");
             }
 
-            _onStartingActions.Add(new Tuple<Func<object, Task>, object>(callback, state));
+            _onStartingActions.Add((callback, state));
         }
 
         void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
@@ -401,12 +444,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 throw new ArgumentNullException(nameof(callback));
             }
-            if (_onCompletedActions == null)
+            if (_completed)
             {
                 throw new InvalidOperationException("Cannot register new callbacks, the response has already completed.");
             }
 
-            _onCompletedActions.Add(new Tuple<Func<object, Task>, object>(callback, state));
+            _onCompletedActions.Add((callback, state));
         }
 
         string IHttpResponseFeature.ReasonPhrase
@@ -518,20 +561,25 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             ConsiderEnablingResponseCache();
         }
 
-        private async Task NotifiyOnStartingAsync()
+        private Task NotifiyOnStartingAsync()
         {
             var actions = _onStartingActions;
-            _onStartingActions = null;
-            if (actions == null)
+
+            if (actions.Count == 0)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            actions.Reverse();
-            // Execute last to first. This mimics a stack unwind.
-            foreach (var actionPair in actions)
+            return Awaited(actions);
+
+            static async Task Awaited(List<(Func<object, Task> callback, object state)> actions)
             {
-                await actionPair.Item1(actionPair.Item2);
+                actions.Reverse();
+                // Execute last to first. This mimics a stack unwind.
+                foreach (var actionPair in actions)
+                {
+                    await actionPair.callback(actionPair.state);
+                }
             }
         }
 
@@ -602,20 +650,24 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return NotifyOnCompletedAsync();
         }
 
-        private async Task NotifyOnCompletedAsync()
+        private Task NotifyOnCompletedAsync()
         {
             var actions = _onCompletedActions;
-            _onCompletedActions = null;
-            if (actions == null)
+            if (actions.Count == 0)
             {
-                return;
+                return Task.CompletedTask;
             }
 
-            actions.Reverse();
-            // Execute last to first. This mimics a stack unwind.
-            foreach (var actionPair in actions)
+            return Awaited(actions);
+
+            static async Task Awaited(List<(Func<object, Task> callback, object state)> actions)
             {
-                await actionPair.Item1(actionPair.Item2);
+                actions.Reverse();
+                // Execute last to first. This mimics a stack unwind.
+                foreach (var actionPair in actions)
+                {
+                    await actionPair.callback(actionPair.state);
+                }
             }
         }
     }

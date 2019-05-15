@@ -156,6 +156,8 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             ThrowIfReadOnly();
             Store.Clear();
+            _contentLength = null;
+            _contentLengthText = default;
         }
 
         public bool Contains(KeyValuePair<string, StringValues> item)
