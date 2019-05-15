@@ -151,16 +151,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new InvalidOperationException(message);
             }
 
+            // We always render `await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);` to notify users of the requirement for a method
+            // to be asynchronous.
+
+            context.CodeWriter
+                .Write("await ")
+                .WriteStartInstanceMethodInvocation(
+                    RunnerVariableName,
+                    RunnerRunAsyncMethodName)
+                .Write(ExecutionContextVariableName)
+                .WriteEndMethodInvocation();
+
             if (!context.Options.DesignTime)
             {
-                context.CodeWriter
-                    .Write("await ")
-                    .WriteStartInstanceMethodInvocation(
-                        RunnerVariableName,
-                        RunnerRunAsyncMethodName)
-                    .Write(ExecutionContextVariableName)
-                    .WriteEndMethodInvocation();
-
                 var tagHelperOutputAccessor = $"{ExecutionContextVariableName}.{ExecutionContextOutputPropertyName}";
 
                 context.CodeWriter
@@ -472,26 +475,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public void WriteTagHelperRuntime(CodeRenderingContext context, DefaultTagHelperRuntimeIntermediateNode node)
         {
+            context.CodeWriter.WriteLine("#line hidden");
+            context.CodeWriter.WriteLine("#pragma warning disable 0649");
+            context.CodeWriter.WriteField(PrivateModifiers, ExecutionContextTypeName, ExecutionContextVariableName);
+            context.CodeWriter.WriteLine("#pragma warning restore 0649");
+
+            context.CodeWriter
+                .Write("private ")
+                .Write(TagHelperRunnerTypeName)
+                .Write(" ")
+                .Write(RunnerVariableName)
+                .Write(" = new ")
+                .Write(TagHelperRunnerTypeName)
+                .WriteLine("();");
+
             if (!context.Options.DesignTime)
             {
-                context.CodeWriter.WriteLine("#line hidden");
-
                 // Need to disable the warning "X is never used." for the value buffer since
                 // whether it's used depends on how a TagHelper is used.
                 context.CodeWriter.WriteLine("#pragma warning disable 0169");
                 context.CodeWriter.WriteField(PrivateModifiers, "string", StringValueBufferVariableName);
                 context.CodeWriter.WriteLine("#pragma warning restore 0169");
-
-                context.CodeWriter.WriteField(PrivateModifiers, ExecutionContextTypeName, ExecutionContextVariableName);
-
-                context.CodeWriter
-                    .Write("private ")
-                    .Write(TagHelperRunnerTypeName)
-                    .Write(" ")
-                    .Write(RunnerVariableName)
-                    .Write(" = new ")
-                    .Write(TagHelperRunnerTypeName)
-                    .WriteLine("();");
 
                 var backedScopeManageVariableName = "__backed" + ScopeManagerVariableName;
                 context.CodeWriter

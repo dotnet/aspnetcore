@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TransitionsInTagHelperAttributes_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -43,6 +48,7 @@ __TestNamespace_PTagHelper.Age = 1337;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
@@ -58,6 +64,7 @@ __TestNamespace_PTagHelper.Age = 42;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
@@ -66,6 +73,7 @@ __TestNamespace_PTagHelper.Age = 42 + @int;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
@@ -74,6 +82,7 @@ __TestNamespace_PTagHelper.Age = int;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
@@ -82,6 +91,7 @@ __TestNamespace_PTagHelper.Age = (@int);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 12 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TransitionsInTagHelperAttributes.cshtml"
@@ -97,6 +107,7 @@ __TestNamespace_PTagHelper.Age = 4 * @(@int + 2);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
     }

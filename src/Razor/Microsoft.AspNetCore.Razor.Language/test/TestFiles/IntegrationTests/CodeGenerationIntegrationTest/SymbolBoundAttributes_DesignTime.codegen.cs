@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SymbolBoundAttributes_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::TestNamespace.CatchAllTagHelper __TestNamespace_CatchAllTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -34,6 +39,7 @@ __TestNamespace_CatchAllTagHelper.ListItems = items;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #nullable restore
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SymbolBoundAttributes.cshtml"
@@ -42,6 +48,7 @@ __TestNamespace_CatchAllTagHelper.ArrayItems = items;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #nullable restore
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SymbolBoundAttributes.cshtml"
@@ -50,6 +57,7 @@ __TestNamespace_CatchAllTagHelper.Event1 = doSomething();
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #nullable restore
 #line 15 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SymbolBoundAttributes.cshtml"
@@ -58,11 +66,15 @@ __TestNamespace_CatchAllTagHelper.Event2 = doSomething();
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __TestNamespace_CatchAllTagHelper.StringProperty1 = "value";
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __TestNamespace_CatchAllTagHelper.StringProperty2 = "value";
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
     }

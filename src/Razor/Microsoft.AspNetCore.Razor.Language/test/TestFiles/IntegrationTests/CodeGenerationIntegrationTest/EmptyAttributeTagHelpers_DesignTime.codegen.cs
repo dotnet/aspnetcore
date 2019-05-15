@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyAttributeTagHelpers_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper;
         private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2;
         private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper;
@@ -39,6 +44,7 @@ __TestNamespace_InputTagHelper2.Checked = ;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __TestNamespace_InputTagHelper.Type = "";
@@ -50,6 +56,7 @@ __TestNamespace_InputTagHelper2.Checked = ;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EmptyAttributeTagHelpers.cshtml"
@@ -58,6 +65,7 @@ __TestNamespace_PTagHelper.Age = ;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
     }

@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EnumTagHelpers_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper;
         private global::TestNamespace.CatchAllTagHelper __TestNamespace_CatchAllTagHelper;
         #pragma warning disable 219
@@ -44,6 +49,7 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #nullable restore
@@ -53,6 +59,7 @@ __TestNamespace_InputTagHelper.Value = MyEnum.MyValue;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #nullable restore
@@ -62,6 +69,7 @@ __TestNamespace_InputTagHelper.Value = global::Microsoft.AspNetCore.Razor.Langua
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #nullable restore
@@ -78,6 +86,7 @@ __TestNamespace_CatchAllTagHelper.CatchAll = global::Microsoft.AspNetCore.Razor.
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
 #nullable restore
@@ -94,6 +103,7 @@ __TestNamespace_CatchAllTagHelper.CatchAll = enumValue;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
     }

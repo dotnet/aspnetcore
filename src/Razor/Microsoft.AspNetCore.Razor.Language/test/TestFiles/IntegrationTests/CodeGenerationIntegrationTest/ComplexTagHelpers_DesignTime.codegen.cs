@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ComplexTagHelpers_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper;
         private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper;
         private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2;
@@ -47,6 +52,7 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 11 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
              if (false)
@@ -60,7 +66,9 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
             __TestNamespace_InputTagHelper.Type = "text";
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                                                                                    
@@ -90,7 +98,9 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 17 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                                                           
@@ -110,6 +120,7 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
 #nullable disable
             __TestNamespace_InputTagHelper.Type = string.Empty;
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 18 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                                                   
@@ -143,6 +154,7 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
 #nullable disable
             __TestNamespace_InputTagHelper.Type = string.Empty;
             __TestNamespace_InputTagHelper2.Type = __TestNamespace_InputTagHelper.Type;
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 19 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                                                                                                  
@@ -159,6 +171,7 @@ __TestNamespace_PTagHelper.Age = @@(1+2);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 23 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
                var @object = false;
@@ -175,6 +188,7 @@ __TestNamespace_InputTagHelper2.Checked = (@object);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 22 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
@@ -183,6 +197,7 @@ __TestNamespace_InputTagHelper2.Checked = (@object);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #nullable restore
@@ -192,6 +207,7 @@ __TestNamespace_InputTagHelper2.Checked = (@object);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 26 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
@@ -200,6 +216,7 @@ __TestNamespace_PTagHelper.Age = -1970 + @DateTimeOffset.Now.Year;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #nullable restore
@@ -209,6 +226,7 @@ __TestNamespace_InputTagHelper2.Checked = DateTimeOffset.Now.Year > 2014;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
@@ -217,6 +235,7 @@ __TestNamespace_PTagHelper.Age = DateTimeOffset.Now.Year - 1970;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #nullable restore
@@ -226,6 +245,7 @@ __TestNamespace_InputTagHelper2.Checked =    @(  DateTimeOffset.Now.Year  ) > 20
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 32 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
@@ -234,6 +254,7 @@ __TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
    __o = someMethod(item => new Template(async(__razor_template_writer) => {
@@ -246,6 +267,7 @@ __TestNamespace_PTagHelper.Age = ("My age is this long.".Length);
 #line default
 #line hidden
 #nullable disable
+    await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
     __TestNamespace_PTagHelper = CreateTagHelper<global::TestNamespace.PTagHelper>();
 #nullable restore
 #line 35 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
@@ -254,6 +276,7 @@ __TestNamespace_PTagHelper.Age = 123;
 #line default
 #line hidden
 #nullable disable
+    await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 }
 ));
 
@@ -268,6 +291,7 @@ __TestNamespace_PTagHelper.Age = ;
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 37 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ComplexTagHelpers.cshtml"
           

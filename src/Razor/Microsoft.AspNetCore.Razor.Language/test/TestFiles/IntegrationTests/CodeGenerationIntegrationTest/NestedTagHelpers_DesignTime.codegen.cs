@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedTagHelpers_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::SpanTagHelper __SpanTagHelper;
         private global::DivTagHelper __DivTagHelper;
         private global::InputTagHelper __InputTagHelper;
@@ -29,9 +34,12 @@ global::System.Object __typeHelper = "*, TestAssembly";
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             __SpanTagHelper = CreateTagHelper<global::SpanTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __InputTagHelper = CreateTagHelper<global::InputTagHelper>();
             __InputTagHelper.FooProp = "Hello";
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
     }

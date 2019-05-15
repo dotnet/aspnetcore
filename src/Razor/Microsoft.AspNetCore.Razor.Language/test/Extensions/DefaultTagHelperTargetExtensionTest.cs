@@ -189,7 +189,7 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
         }
 
         [Fact]
-        public void WriteTagHelperExecute_DesignTime_WritesNothing()
+        public void WriteTagHelperExecute_DesignTime_RendersAsyncCode()
         {
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
@@ -206,7 +206,8 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-                @"",
+                @"await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
+",
                 csharp,
                 ignoreLineEndingDifferences: true);
         }
@@ -1077,7 +1078,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
         }
 
         [Fact]
-        public void WriteTagHelperRuntime_DesignTime_WritesNothing()
+        public void WriteTagHelperRuntime_DesignTime_RendersPreRequisites()
         {
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
@@ -1091,7 +1092,12 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             // Assert
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
-                @"",
+                @"#line hidden
+#pragma warning disable 0649
+private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+#pragma warning restore 0649
+private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
+",
                 csharp,
                 ignoreLineEndingDifferences: true);
         }
@@ -1112,11 +1118,13 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"#line hidden
+#pragma warning disable 0649
+private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+#pragma warning restore 0649
+private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
 #pragma warning disable 0169
 private string __tagHelperStringValueBuffer;
 #pragma warning restore 0169
-private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
-private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
 private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __backed__tagHelperScopeManager = null;
 private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager
 {

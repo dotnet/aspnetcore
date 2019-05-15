@@ -1,6 +1,6 @@
 Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 |"*, TestAssembly"|
-Generated Location: (619:13,37 [17] )
+Generated Location: (1027:18,37 [17] )
 |"*, TestAssembly"|
 
 Source Location: (35:1,2 [154] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
@@ -13,7 +13,7 @@ Source Location: (35:1,2 [154] TestFiles/IntegrationTests/CodeGenerationIntegrat
     void PrintName(Person person)
     {
         |
-Generated Location: (1132:30,2 [154] )
+Generated Location: (1540:35,2 [154] )
 |
     var people = new Person[]
     {
@@ -26,26 +26,26 @@ Generated Location: (1132:30,2 [154] )
 
 Source Location: (195:9,14 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 |person.Name|
-Generated Location: (1480:45,14 [11] )
+Generated Location: (1888:50,14 [11] )
 |person.Name|
 
 Source Location: (212:9,31 [9] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 |
     }
 |
-Generated Location: (1774:53,31 [9] )
+Generated Location: (2258:59,31 [9] )
 |
     }
 |
 
 Source Location: (228:13,2 [23] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 | PrintName(people[0]); |
-Generated Location: (1963:61,2 [23] )
+Generated Location: (2447:67,2 [23] )
 | PrintName(people[0]); |
 
 Source Location: (256:14,2 [36] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 | await AnnounceBirthday(people[0]); |
-Generated Location: (2168:68,2 [36] )
+Generated Location: (2652:74,2 [36] )
 | await AnnounceBirthday(people[0]); |
 
 Source Location: (309:16,12 [106] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
@@ -54,7 +54,7 @@ Source Location: (309:16,12 [106] TestFiles/IntegrationTests/CodeGenerationInteg
     {
         var formatted = $"Mr. {person.Name}";
         |
-Generated Location: (2445:77,12 [106] )
+Generated Location: (2929:83,12 [106] )
 |
     Task AnnounceBirthday(Person person)
     {
@@ -63,14 +63,14 @@ Generated Location: (2445:77,12 [106] )
 
 Source Location: (455:21,33 [9] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 |formatted|
-Generated Location: (2764:88,33 [9] )
+Generated Location: (3248:94,33 [9] )
 |formatted|
 
 Source Location: (487:22,14 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 |
 
         |
-Generated Location: (3035:96,14 [12] )
+Generated Location: (3591:103,14 [12] )
 |
 
         |
@@ -79,20 +79,20 @@ Source Location: (514:25,9 [66] TestFiles/IntegrationTests/CodeGenerationIntegra
 |for (var i = 0; i < person.Age / 10; i++)
         {
             |
-Generated Location: (3236:105,9 [66] )
+Generated Location: (3792:112,9 [66] )
 |for (var i = 0; i < person.Age / 10; i++)
         {
             |
 
 Source Location: (586:27,18 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 |i|
-Generated Location: (3500:114,18 [1] )
+Generated Location: (4056:121,18 [1] )
 |i|
 
 Source Location: (609:27,41 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml)
 |
         }|
-Generated Location: (3723:121,41 [11] )
+Generated Location: (4279:128,41 [11] )
 |
         }|
 
@@ -105,7 +105,7 @@ Source Location: (635:29,13 [106] TestFiles/IntegrationTests/CodeGenerationInteg
         }
 
         |
-Generated Location: (3927:129,13 [106] )
+Generated Location: (4483:136,13 [106] )
 |
 
         if (person.Age < 20)
@@ -127,7 +127,7 @@ Source Location: (764:36,31 [161] TestFiles/IntegrationTests/CodeGenerationInteg
         public int Age { get; set; }
     }
 |
-Generated Location: (4244:143,31 [161] )
+Generated Location: (4800:150,31 [161] )
 |
         return Task.CompletedTask;
     }

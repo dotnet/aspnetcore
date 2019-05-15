@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_PrefixedAttributeTagHelpers_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::TestNamespace.InputTagHelper1 __TestNamespace_InputTagHelper1;
         private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2;
         #pragma warning disable 219
@@ -61,6 +66,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty = intDictionary;
 #line hidden
 #nullable disable
             __TestNamespace_InputTagHelper2.StringDictionaryProperty = __TestNamespace_InputTagHelper1.StringDictionaryProperty;
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper1 = CreateTagHelper<global::TestNamespace.InputTagHelper1>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #nullable restore
@@ -87,6 +93,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty = intDictionary;
 #line hidden
 #nullable disable
             __TestNamespace_InputTagHelper2.IntDictionaryProperty["grabber"] = __TestNamespace_InputTagHelper1.IntProperty;
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper1 = CreateTagHelper<global::TestNamespace.InputTagHelper1>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #nullable restore
@@ -126,6 +133,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty["salt"] = 37;
 #nullable disable
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["cumin"] = string.Empty;
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["cumin"] = __TestNamespace_InputTagHelper1.StringDictionaryProperty["cumin"];
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper1 = CreateTagHelper<global::TestNamespace.InputTagHelper1>();
             __TestNamespace_InputTagHelper2 = CreateTagHelper<global::TestNamespace.InputTagHelper2>();
 #nullable restore
@@ -138,6 +146,7 @@ __TestNamespace_InputTagHelper1.IntDictionaryProperty["value"] = 37;
             __TestNamespace_InputTagHelper2.IntDictionaryProperty["value"] = __TestNamespace_InputTagHelper1.IntDictionaryProperty["value"];
             __TestNamespace_InputTagHelper1.StringDictionaryProperty["thyme"] = "string";
             __TestNamespace_InputTagHelper2.StringDictionaryProperty["thyme"] = __TestNamespace_InputTagHelper1.StringDictionaryProperty["thyme"];
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
     }

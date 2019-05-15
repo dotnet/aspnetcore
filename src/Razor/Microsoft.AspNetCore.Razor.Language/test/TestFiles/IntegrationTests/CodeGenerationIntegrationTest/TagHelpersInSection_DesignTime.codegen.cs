@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersInSection_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::TestNamespace.MyTagHelper __TestNamespace_MyTagHelper;
         private global::TestNamespace.NestedTagHelper __TestNamespace_NestedTagHelper;
         #pragma warning disable 219
@@ -64,6 +69,7 @@ global::System.Object nestedsection = null;
 #line hidden
 #nullable disable
                 __TestNamespace_NestedTagHelper = CreateTagHelper<global::TestNamespace.NestedTagHelper>();
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 __TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
 #nullable restore
 #line 9 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml"
@@ -80,7 +86,9 @@ global::System.Object nestedsection = null;
 #line default
 #line hidden
 #nullable disable
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 __TestNamespace_NestedTagHelper = CreateTagHelper<global::TestNamespace.NestedTagHelper>();
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             }
             );
         }

@@ -1,39 +1,39 @@
 Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml)
 |"*, TestAssembly"|
-Generated Location: (707:14,37 [17] )
+Generated Location: (1115:19,37 [17] )
 |"*, TestAssembly"|
 
 Source Location: (82:6,9 [9] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml)
 |MySection|
-Generated Location: (973:24,22 [9] )
+Generated Location: (1381:29,22 [9] )
 |MySection|
 
 Source Location: (388:14,13 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml)
 |nestedsection|
-Generated Location: (1239:34,22 [13] )
+Generated Location: (1647:39,22 [13] )
 |nestedsection|
 
 Source Location: (37:2,2 [31] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml)
 |
     var code = "some code";
 |
-Generated Location: (1742:51,2 [31] )
+Generated Location: (2150:56,2 [31] )
 |
     var code = "some code";
 |
 
 Source Location: (313:10,56 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml)
 |code|
-Generated Location: (2069:60,56 [4] )
+Generated Location: (2477:65,56 [4] )
 |code|
 
 Source Location: (157:8,51 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml)
 |DateTime.Now|
-Generated Location: (2501:69,51 [12] )
+Generated Location: (2989:75,51 [12] )
 |DateTime.Now|
 
 Source Location: (203:8,97 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersInSection.cshtml)
 |DateTime.Now|
-Generated Location: (2852:77,97 [12] )
+Generated Location: (3340:83,97 [12] )
 |DateTime.Now|
 

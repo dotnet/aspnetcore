@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersWithTemplate_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::DivTagHelper __DivTagHelper;
         private global::InputTagHelper __InputTagHelper;
         #pragma warning disable 219
@@ -46,7 +51,9 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line hidden
 #nullable disable
                 __InputTagHelper = CreateTagHelper<global::InputTagHelper>();
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
                 __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+                await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             }
             )
 #nullable restore
@@ -58,6 +65,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line hidden
 #nullable disable
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
 #nullable restore

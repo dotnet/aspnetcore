@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Markup_InCodeBlocksWithTagHelper_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::DivTagHelper __DivTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -49,6 +54,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line hidden
 #nullable disable
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 10 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
                                
@@ -92,6 +98,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line hidden
 #nullable disable
         __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+        await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 23 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Markup_InCodeBlocksWithTagHelper.cshtml"
               

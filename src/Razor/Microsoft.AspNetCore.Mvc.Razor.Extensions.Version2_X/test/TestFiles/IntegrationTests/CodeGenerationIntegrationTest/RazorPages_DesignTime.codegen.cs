@@ -18,6 +18,11 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::DivTagHelper __DivTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -46,15 +51,20 @@ global::System.Object __typeHelper = "*, AppCode";
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #line 29 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"
                                          __o = Model.Name;
 
 #line default
 #line hidden
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
 #line 7 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPages.cshtml"

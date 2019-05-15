@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersWithDataDashAttributes_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::InputTagHelper __InputTagHelper;
         private global::DivTagHelper __DivTagHelper;
         #pragma warning disable 219
@@ -29,6 +34,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
         {
             __InputTagHelper = CreateTagHelper<global::InputTagHelper>();
             __InputTagHelper.BoundProp = "hello";
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
 #nullable restore
 #line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml"
@@ -44,6 +50,7 @@ global::System.Object __typeHelper = "*, TestAssembly";
 #line default
 #line hidden
 #nullable disable
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 #nullable restore
 #line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithDataDashAttributes.cshtml"
                                                        __o = foo;

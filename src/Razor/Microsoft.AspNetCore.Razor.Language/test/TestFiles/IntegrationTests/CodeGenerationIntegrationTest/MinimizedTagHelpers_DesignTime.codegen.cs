@@ -5,6 +5,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
     #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MinimizedTagHelpers_DesignTime
     {
+        #line hidden
+        #pragma warning disable 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
+        #pragma warning restore 0649
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::TestNamespace.CatchAllTagHelper __TestNamespace_CatchAllTagHelper;
         private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper;
         private global::DivTagHelper __DivTagHelper;
@@ -29,21 +34,28 @@ global::System.Object __typeHelper = "*, TestAssembly";
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __TestNamespace_InputTagHelper.BoundRequiredString = "hello";
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __TestNamespace_CatchAllTagHelper.BoundRequiredString = "world";
             __TestNamespace_InputTagHelper.BoundRequiredString = "hello2";
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_InputTagHelper = CreateTagHelper<global::TestNamespace.InputTagHelper>();
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
             __TestNamespace_InputTagHelper.BoundRequiredString = "world";
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
             __DivTagHelper.BoundBoolProp = true;
             __DivTagHelper.BoolDictProp["key"] = true;
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __DivTagHelper = CreateTagHelper<global::DivTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
             __TestNamespace_CatchAllTagHelper = CreateTagHelper<global::TestNamespace.CatchAllTagHelper>();
+            await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
         }
         #pragma warning restore 1998
     }
