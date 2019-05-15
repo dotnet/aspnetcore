@@ -1547,6 +1547,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         protected ApplicationPart() { }
         public abstract string Name { get; }
     }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=true)]
+    public sealed partial class ApplicationPartAttribute : System.Attribute
+    {
+        public ApplicationPartAttribute(string assemblyName) { }
+        public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public abstract partial class ApplicationPartFactory
     {
         protected ApplicationPartFactory() { }
