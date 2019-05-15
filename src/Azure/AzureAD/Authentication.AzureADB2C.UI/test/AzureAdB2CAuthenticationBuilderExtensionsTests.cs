@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using System;
+using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -88,6 +89,14 @@ namespace Microsoft.AspNetCore.Authentication
             var remoteFailureHanlder = openIdOptions.Events.OnRemoteFailure;
             Assert.NotNull(remoteFailureHanlder);
             Assert.IsType<AzureADB2COpenIDConnectEventHandlers>(redirectHandler.Target);
+
+            var cookieAuthenticationOptionsMonitor = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(cookieAuthenticationOptionsMonitor);
+            var cookieAuthenticationOptions = cookieAuthenticationOptionsMonitor.Get(AzureADB2CDefaults.CookieScheme);
+            Assert.Equal("/AzureADB2C/Account/SignIn/AzureADB2C", cookieAuthenticationOptions.LoginPath);
+            Assert.Equal("/AzureADB2C/Account/SignOut/AzureADB2C", cookieAuthenticationOptions.LogoutPath);
+            Assert.Equal("/AzureADB2C/Account/AccessDenied", cookieAuthenticationOptions.AccessDeniedPath);
+            Assert.Equal(SameSiteMode.None, cookieAuthenticationOptions.Cookie.SameSite);
         }
 
         [Fact]
