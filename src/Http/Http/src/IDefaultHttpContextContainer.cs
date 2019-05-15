@@ -5,7 +5,6 @@ namespace Microsoft.AspNetCore.Http
 {
     public interface IDefaultHttpContextContainer
     {
-        bool TryGetContext(out DefaultHttpContext context);
-        void ReleaseContext(DefaultHttpContext context);
+        DefaultHttpContext HttpContext { get; set; }
     }
 }

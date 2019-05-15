@@ -64,7 +64,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private long _responseBytesWritten;
 
         private readonly HttpConnectionContext _context;
-        private DefaultHttpContext _httpContext;
         private RouteValueDictionary _routeValues;
         private Endpoint _endpoint;
 
@@ -290,22 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected HttpResponseHeaders HttpResponseHeaders { get; } = new HttpResponseHeaders();
 
-        bool IDefaultHttpContextContainer.TryGetContext(out DefaultHttpContext context)
-        {
-            context = _httpContext;
-            if (context is object)
-            {
-                _httpContext = null;
-                return true;
-            }
-
-            return false;
-        }
-
-        void IDefaultHttpContextContainer.ReleaseContext(DefaultHttpContext context)
-        {
-            _httpContext = context;
-        }
+        DefaultHttpContext IDefaultHttpContextContainer.HttpContext { get; set; }
 
         public void InitializeBodyControl(MessageBody messageBody)
         {

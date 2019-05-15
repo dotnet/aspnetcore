@@ -3,9 +3,8 @@
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
-    public interface IContextContainer<TContext>
+    public interface IHostContextContainer<THostContext>
     {
-        bool TryGetContext(out TContext context);
-        void ReleaseContext(TContext context);
+        ref THostContext HostContext { get; }
     }
 }

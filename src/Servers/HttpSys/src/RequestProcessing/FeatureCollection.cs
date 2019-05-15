@@ -8,24 +8,8 @@ using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
-    internal sealed class FeatureCollection<TContext> : FeatureCollection, IDefaultHttpContextContainer, IContextContainer<TContext>
+    internal sealed class FeatureCollection<TContext> : FeatureCollection
     {
-        private const int _maxPooledContexts = 512;
-        private readonly static ConcurrentQueueSegment<DefaultHttpContext> _httpContexts = new ConcurrentQueueSegment<DefaultHttpContext>(_maxPooledContexts);
-        private readonly static ConcurrentQueueSegment<TContext> _hostContexts = new ConcurrentQueueSegment<TContext>(_maxPooledContexts);
-
         public FeatureCollection(IFeatureCollection defaults) : base(defaults) { }
-
-        bool IDefaultHttpContextContainer.TryGetContext(out DefaultHttpContext context)
-            => _httpContexts.TryDequeue(out context);
-
-        void IDefaultHttpContextContainer.ReleaseContext(DefaultHttpContext context)
-            => _httpContexts.TryEnqueue(context);
-
-        bool IContextContainer<TContext>.TryGetContext(out TContext context)
-            =>_hostContexts.TryDequeue(out context);
-
-        void IContextContainer<TContext>.ReleaseContext(TContext context)
-            => _hostContexts.TryEnqueue(context);
     }
 }

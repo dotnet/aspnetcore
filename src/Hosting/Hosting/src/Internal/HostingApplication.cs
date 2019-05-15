@@ -34,10 +34,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             var httpContext = _httpContextFactory.Create(contextFeatures);
 
-            if (contextFeatures is IContextContainer<HostContext> container &&
-                container.TryGetContext(out var hostContext))
+            HostContext hostContext;
+            if (contextFeatures is IHostContextContainer<HostContext> container)
             {
-                hostContext.Initialize();
+                // Initalize the wrapper struct in-place; so its object reference gets set
+                container.HostContext.Initialize();
+                // Now we can copy it
+                hostContext = container.HostContext;
             }
             else
             {
@@ -60,17 +63,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public void DisposeContext(HostContext context, Exception exception)
         {
             var httpContext = context.HttpContext;
-            var container = httpContext.Features as IContextContainer<HostContext>;
 
             _diagnostics.RequestEnd(httpContext, exception, context);
             _httpContextFactory.Dispose(httpContext);
             _diagnostics.ContextDisposed(context);
 
-            if (container is object)
-            {
-                context.Reset();
-                container.ReleaseContext(context);
-            }
+            context.Reset();
         }
 
         // Struct to turn {TContext} uses into faster concrete generic implementations rather than shared generics.

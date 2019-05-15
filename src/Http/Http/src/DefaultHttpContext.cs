@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Net.Http;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Http.Features;
@@ -90,7 +91,7 @@ namespace Microsoft.AspNetCore.Http
         private IHttpRequestIdentifierFeature RequestIdentifierFeature =>
             _features.Fetch(ref _features.Cache.RequestIdentifier, _newHttpRequestIdentifierFeature);
 
-        public override IFeatureCollection Features => _features.Collection;
+        public override IFeatureCollection Features => _features.Collection ?? ContextDisposed();
 
         public override HttpRequest Request => _request;
 
@@ -157,6 +158,16 @@ namespace Microsoft.AspNetCore.Http
             }
         }
 
+        private static IFeatureCollection ContextDisposed()
+        {
+            ThrowContextDisposed();
+            return null;
+        }
+
+        private static void ThrowContextDisposed()
+        {
+            throw new ObjectDisposedException(nameof(HttpContent), $"Request has finished and {nameof(HttpContent)} disposed.");
+        }
 
         public override void Abort()
         {

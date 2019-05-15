@@ -883,23 +883,21 @@ namespace Microsoft.AspNetCore.Hosting
         public async Task WebHost_CreatesDefaultRequestIdentifierFeature_IfNotPresent()
         {
             // Arrange
-            HttpContext httpContext = null;
-            var requestDelegate = new RequestDelegate(innerHttpContext =>
-                {
-                    httpContext = innerHttpContext;
-                    return Task.FromResult(0);
-                });
-
-            using (var host = CreateHost(requestDelegate))
+            var requestDelegate = new RequestDelegate(httpContext =>
             {
-                // Act
-                await host.StartAsync();
-
                 // Assert
                 Assert.NotNull(httpContext);
                 var featuresTraceIdentifier = httpContext.Features.Get<IHttpRequestIdentifierFeature>().TraceIdentifier;
                 Assert.False(string.IsNullOrWhiteSpace(httpContext.TraceIdentifier));
                 Assert.Same(httpContext.TraceIdentifier, featuresTraceIdentifier);
+
+                return Task.CompletedTask;
+            });
+
+            using (var host = CreateHost(requestDelegate))
+            {
+                // Act
+                await host.StartAsync();
             }
         }
 
@@ -907,13 +905,15 @@ namespace Microsoft.AspNetCore.Hosting
         public async Task WebHost_DoesNot_CreateDefaultRequestIdentifierFeature_IfPresent()
         {
             // Arrange
-            HttpContext httpContext = null;
-            var requestDelegate = new RequestDelegate(innerHttpContext =>
-            {
-                httpContext = innerHttpContext;
-                return Task.FromResult(0);
-            });
             var requestIdentifierFeature = new StubHttpRequestIdentifierFeature();
+
+            var requestDelegate = new RequestDelegate(httpContext =>
+            {
+                // Assert
+                Assert.NotNull(httpContext);
+                Assert.Same(requestIdentifierFeature, httpContext.Features.Get<IHttpRequestIdentifierFeature>());
+                return Task.CompletedTask;
+            });
 
             using (var host = CreateHost(requestDelegate))
             {
@@ -924,12 +924,9 @@ namespace Microsoft.AspNetCore.Hosting
                     features.Set<IHttpRequestIdentifierFeature>(requestIdentifierFeature);
                     return features;
                 };
+
                 // Act
                 await host.StartAsync();
-
-                // Assert
-                Assert.NotNull(httpContext);
-                Assert.Same(requestIdentifierFeature, httpContext.Features.Get<IHttpRequestIdentifierFeature>());
             }
         }
 

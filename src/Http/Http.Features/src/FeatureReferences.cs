@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.AspNetCore.Http.Features
@@ -65,7 +66,7 @@ namespace Microsoft.AspNetCore.Http.Features
             Func<TState, TFeature> factory) where TFeature : class
         {
             var flush = false;
-            var revision = Collection.Revision;
+            var revision = Collection?.Revision ?? ContextDisposed();
             if (Revision != revision)
             {
                 // Clear cached value to force call to UpdateCached
@@ -108,5 +109,16 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public TFeature Fetch<TFeature>(ref TFeature cached, Func<IFeatureCollection, TFeature> factory)
             where TFeature : class => Fetch(ref cached, Collection, factory);
+
+        private static int ContextDisposed()
+        {
+            ThrowContextDisposed();
+            return 0;
+        }
+
+        private static void ThrowContextDisposed()
+        {
+            throw new ObjectDisposedException(nameof(HttpContent), $"Request has finished and {nameof(HttpContent)} disposed.");
+        }
     }
 }

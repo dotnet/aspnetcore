@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Hosting.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    internal sealed class Http2Stream<TContext> : Http2Stream, IContextContainer<TContext>
+    internal sealed class Http2Stream<TContext> : Http2Stream, IHostContextContainer<TContext>
     {
         private readonly IHttpApplication<TContext> _application;
         private TContext _context;
@@ -22,18 +22,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _ = ProcessRequestsAsync(_application);
         }
 
-        bool IContextContainer<TContext>.TryGetContext(out TContext context)
-        {
-            context = _context;
-            if (context is object)
-            {
-                _context = default;
-                return true;
-            }
-
-            return false;
-        }
-
-        void IContextContainer<TContext>.ReleaseContext(TContext context) => _context = context;
+        ref TContext IHostContextContainer<TContext>.HostContext => ref _context;
     }
 }

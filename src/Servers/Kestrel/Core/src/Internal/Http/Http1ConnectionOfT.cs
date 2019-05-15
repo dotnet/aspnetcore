@@ -5,24 +5,12 @@ using Microsoft.AspNetCore.Hosting.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
-    internal sealed class Http1Connection<TContext> : Http1Connection, IContextContainer<TContext>
+    internal sealed class Http1Connection<TContext> : Http1Connection, IHostContextContainer<TContext>
     {
         private TContext _context;
 
         public Http1Connection(HttpConnectionContext context) : base(context) { }
 
-        bool IContextContainer<TContext>.TryGetContext(out TContext context)
-        {
-            context = _context;
-            if (context is object)
-            {
-                _context = default;
-                return true;
-            }
-
-            return false;
-        }
-
-        void IContextContainer<TContext>.ReleaseContext(TContext context) => _context = context;
+        ref TContext IHostContextContainer<TContext>.HostContext => ref _context;
     }
 }
