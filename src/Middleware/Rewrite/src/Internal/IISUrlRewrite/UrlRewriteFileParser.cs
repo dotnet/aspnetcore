@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,8 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         /// Parse an IIS rewrite section into a list of <see cref="IISUrlRewriteRule"/>s.
         /// </summary>
         /// <param name="reader">The reader containing the rewrite XML</param>
-        public IList<IISUrlRewriteRule> Parse(TextReader reader)
+        /// <param name="alwaysUseManagedServerVariables">Determines whether server variables will be sourced from the managed server</param>
+        public IList<IISUrlRewriteRule> Parse(TextReader reader, bool alwaysUseManagedServerVariables)
         {
             var xmlDoc = XDocument.Load(reader, LoadOptions.SetLineInfo);
             var xmlRoot = xmlDoc.Descendants(RewriteTags.Rewrite).FirstOrDefault();
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
                 return null;
             }
 
-            _inputParser = new InputParser(RewriteMapParser.Parse(xmlRoot));
+            _inputParser = new InputParser(RewriteMapParser.Parse(xmlRoot), alwaysUseManagedServerVariables);
 
             var result = new List<IISUrlRewriteRule>();
             ParseRules(xmlRoot.Descendants(RewriteTags.GlobalRules).FirstOrDefault(), result, global: true);

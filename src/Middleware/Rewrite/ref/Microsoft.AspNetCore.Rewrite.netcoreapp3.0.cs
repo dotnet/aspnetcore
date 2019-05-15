@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Rewrite
     }
     public static partial class IISUrlRewriteOptionsExtensions
     {
-        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddIISUrlRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, Microsoft.Extensions.FileProviders.IFileProvider fileProvider, string filePath) { throw null; }
-        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddIISUrlRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, System.IO.TextReader reader) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddIISUrlRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, Microsoft.Extensions.FileProviders.IFileProvider fileProvider, string filePath, bool alwaysUseManagedServerVariables = false) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.RewriteOptions AddIISUrlRewrite(this Microsoft.AspNetCore.Rewrite.RewriteOptions options, System.IO.TextReader reader, bool alwaysUseManagedServerVariables = false) { throw null; }
     }
     public partial interface IRule
     {
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     public partial class InputParser
     {
         public InputParser() { }
-        public InputParser(Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMapCollection rewriteMaps) { }
+        public InputParser(Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISRewriteMapCollection rewriteMaps, bool alwaysUseManagedServerVariables) { }
         public Microsoft.AspNetCore.Rewrite.Internal.Pattern ParseInputString(string testString) { throw null; }
         public Microsoft.AspNetCore.Rewrite.Internal.Pattern ParseInputString(string testString, Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart uriMatchPart) { throw null; }
     }
@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     }
     public static partial class ServerVariables
     {
-        public static Microsoft.AspNetCore.Rewrite.Internal.PatternSegment FindServerVariable(string serverVariable, Microsoft.AspNetCore.Rewrite.Internal.ParserContext context, Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart uriMatchPart) { throw null; }
+        public static Microsoft.AspNetCore.Rewrite.Internal.PatternSegment FindServerVariable(string serverVariable, Microsoft.AspNetCore.Rewrite.Internal.ParserContext context, Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.UriMatchPart uriMatchPart, bool alwaysUseManagedServerVariables) { throw null; }
     }
     public partial class UriMatchCondition : Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.Condition
     {
@@ -462,7 +462,7 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
     public partial class UrlRewriteFileParser
     {
         public UrlRewriteFileParser() { }
-        public System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISUrlRewriteRule> Parse(System.IO.TextReader reader) { throw null; }
+        public System.Collections.Generic.IList<Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite.IISUrlRewriteRule> Parse(System.IO.TextReader reader, bool alwaysUseManagedServerVariables) { throw null; }
     }
     public partial class UrlRewriteRuleBuilder
     {

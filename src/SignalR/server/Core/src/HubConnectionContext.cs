@@ -396,7 +396,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var input = Input;
 
                 using (var cts = new CancellationTokenSource())
-                using (var registration = cts.Token.Register(_cancelReader, input))
+                using (var registration = cts.Token.UnsafeRegister(_cancelReader, input))
                 {
                     if (!Debugger.IsAttached)
                     {

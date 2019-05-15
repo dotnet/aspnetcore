@@ -43,7 +43,6 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             _permanentlyPinned = true;
         }
 
-
         internal SafeNativeOverlapped NativeOverlapped => _nativeOverlapped;
 
         internal HttpApiTypes.HTTP_REQUEST* NativeRequest
