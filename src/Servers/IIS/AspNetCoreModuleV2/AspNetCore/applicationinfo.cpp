@@ -15,6 +15,7 @@
 #include "WebConfigConfigurationSource.h"
 #include "ConfigurationLoadException.h"
 #include "resource.h"
+#include "HostfxrStartupFailure.h"
 
 extern HINSTANCE           g_hServerModule;
 
@@ -99,20 +100,22 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                     pHttpApplication.GetApplicationId(),
                     hr);
 
-                // TODO we have to propagate this super far to where we capture stdout errors... Not great :/
-                std::vector<byte> passInError;
-                if (options.QueryIsDevelopment())
+                if (options.QueryIsDevelopment() && error.size() > 0)
                 {
-                    passInError = error;
+                    m_pApplication = make_application<HostfxrStartupFailure>(
+                        pHttpApplication,
+                        error,
+                        options.QueryDisableStartupPage());
                 }
-
-                m_pApplication = make_application<ServerErrorApplication>(
-                    pHttpApplication,
-                    hr,
-                    g_hServerModule,
-                    options.QueryDisableStartupPage(),
-                    options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML,
-                    passInError);
+                else
+                {
+                    m_pApplication = make_application<ServerErrorApplication>(
+                        pHttpApplication,
+                        hr,
+                        g_hServerModule,
+                        options.QueryDisableStartupPage(),
+                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML);
+                }
             }
             return S_OK;
         }

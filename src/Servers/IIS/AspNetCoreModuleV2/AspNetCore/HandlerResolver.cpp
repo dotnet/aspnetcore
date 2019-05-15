@@ -77,7 +77,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
                     ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG,
-                    output.c_str());
+                    redirectionOutput->GetOutput().c_str());
                 return hr;
             }
         }

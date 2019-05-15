@@ -196,6 +196,8 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="HostfxrStartupFailure.h" />
+    <ClInclude Include="PollingAppOfflineApplication.h" />
     <ClInclude Include="application.h" />
     <ClInclude Include="BindingInformation.h" />
     <ClInclude Include="ConfigurationSection.h" />
@@ -220,11 +222,11 @@
     <ClInclude Include="LoggingHelpers.h" />
     <ClInclude Include="ModuleHelpers.h" />
     <ClInclude Include="NonCopyable.h" />
+    <ClInclude Include="ServerErrorApplication.h" />
     <ClInclude Include="StandardStreamRedirection.h" />
     <ClInclude Include="RegistryKey.h" />
     <ClInclude Include="requesthandler.h" />
     <ClInclude Include="resources.h" />
-    <ClInclude Include="ServerErrorApplication.h" />
     <ClInclude Include="ServerErrorHandler.h" />
     <ClInclude Include="SRWExclusiveLock.h" />
     <ClInclude Include="SRWSharedLock.h" />
@@ -249,6 +251,7 @@
     <ClCompile Include="HostFxrResolver.cpp" />
     <ClCompile Include="HostFxrResolutionResult.cpp" />
     <ClCompile Include="LoggingHelpers.cpp" />
+    <ClCompile Include="PollingAppOfflineApplication.cpp" />
     <ClCompile Include="StandardStreamRedirection.cpp" />
     <ClCompile Include="RedirectionOutput.cpp" />
     <ClCompile Include="RegistryKey.cpp" />

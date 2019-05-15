@@ -233,8 +233,6 @@
     <ClInclude Include="AppOfflineApplication.h" />
     <ClInclude Include="AppOfflineHandler.h" />
     <ClInclude Include="DisconnectHandler.h" />
-    <ClInclude Include="PollingAppOfflineApplication.h" />
-    <ClInclude Include="ServerErrorApplication.h" />
     <ClInclude Include="ShimOptions.h" />
     <ClInclude Include="globalmodule.h" />
     <ClInclude Include="resource.h" />
@@ -249,7 +247,6 @@
     <ClCompile Include="AppOfflineApplication.cpp" />
     <ClCompile Include="AppOfflineHandler.cpp" />
     <ClCompile Include="DisconnectHandler.cpp" />
-    <ClCompile Include="PollingAppOfflineApplication.cpp" />
     <ClCompile Include="ShimOptions.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="globalmodule.cpp" />
