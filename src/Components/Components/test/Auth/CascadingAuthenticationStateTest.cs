@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components
 {
-    public class AuthenticationStateProviderTest
+    public class CascadingAuthenticationStateTest
     {
         [Fact]
         public void RequiresRegisteredService()
@@ -22,14 +22,14 @@ namespace Microsoft.AspNetCore.Components
             var renderer = new TestRenderer();
             var component = new AutoRenderFragmentComponent(builder =>
             {
-                builder.OpenComponent<AuthenticationStateProvider>(0);
+                builder.OpenComponent<CascadingAuthenticationState>(0);
                 builder.CloseComponent();
             });
 
             // Act/Assert
             renderer.AssignRootComponentId(component);
             var ex = Assert.Throws<InvalidOperationException>(() => component.TriggerRender());
-            Assert.Contains($"There is no registered service of type '{typeof(IAuthenticationStateProvider).FullName}'.", ex.Message);
+            Assert.Contains($"There is no registered service of type '{typeof(AuthenticationStateProvider).FullName}'.", ex.Message);
         }
 
         [Fact]
@@ -41,11 +41,11 @@ namespace Microsoft.AspNetCore.Components
             {
                 CurrentAuthStateTask = Task.FromResult<IAuthenticationState>(new TestAuthState("Bert"))
             };
-            services.AddSingleton<IAuthenticationStateProvider>(authStateProvider);
+            services.AddSingleton<AuthenticationStateProvider>(authStateProvider);
 
             // Arrange: Renderer and component
             var renderer = new TestRenderer(services.BuildServiceProvider());
-            var component = new UseAuthenticationStateProviderComponent();
+            var component = new UseCascadingAuthenticationStateComponent();
 
             // Act
             renderer.AssignRootComponentId(component);
@@ -74,11 +74,11 @@ namespace Microsoft.AspNetCore.Components
             {
                 CurrentAuthStateTask = authStateTaskCompletionSource.Task
             };
-            services.AddSingleton<IAuthenticationStateProvider>(authStateProvider);
+            services.AddSingleton<AuthenticationStateProvider>(authStateProvider);
 
             // Arrange: Renderer and component
             var renderer = new TestRenderer(services.BuildServiceProvider());
-            var component = new UseAuthenticationStateProviderComponent();
+            var component = new UseCascadingAuthenticationStateComponent();
 
             // Act 1: Initial synchronous render
             renderer.AssignRootComponentId(component);
@@ -126,11 +126,11 @@ namespace Microsoft.AspNetCore.Components
             {
                 CurrentAuthStateTask = Task.FromResult<IAuthenticationState>(new TestAuthState(null))
             };
-            services.AddSingleton<IAuthenticationStateProvider>(authStateProvider);
+            services.AddSingleton<AuthenticationStateProvider>(authStateProvider);
 
             // Arrange: Renderer and component, initially rendered
             var renderer = new TestRenderer(services.BuildServiceProvider());
-            var component = new UseAuthenticationStateProviderComponent();
+            var component = new UseCascadingAuthenticationStateComponent();
             renderer.AssignRootComponentId(component);
             component.TriggerRender();
             var receiveAuthStateId = renderer.Batches.Single()
@@ -175,11 +175,11 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
-        class UseAuthenticationStateProviderComponent : AutoRenderComponent
+        class UseCascadingAuthenticationStateComponent : AutoRenderComponent
         {
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.OpenComponent<AuthenticationStateProvider>(0);
+                builder.OpenComponent<CascadingAuthenticationState>(0);
                 builder.AddAttribute(1, RenderTreeBuilder.ChildContent, new RenderFragment(childBuilder =>
                 {
                     childBuilder.OpenComponent<ReceiveAuthStateComponent>(0);
@@ -189,22 +189,18 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
-        class TestAuthStateProvider : IAuthenticationStateProvider
+        class TestAuthStateProvider : AuthenticationStateProvider
         {
             public Task<IAuthenticationState> CurrentAuthStateTask { get; set; }
 
-#pragma warning disable 0067 // "Never used"
-            public event AuthenticationStateChangedHandler AuthenticationStateChanged;
-#pragma warning restore 0067 // "Never used"
-
-            public Task<IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
+            public override Task<IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
             {
                 return CurrentAuthStateTask;
             }
 
             internal void TriggerAuthenticationStateChanged(Task<IAuthenticationState> authState)
             {
-                AuthenticationStateChanged?.Invoke(authState);
+                NotifyAuthenticationStateChanged(authState);
             }
         }
 

@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     /// <summary>
-    /// An <see cref="IAuthenticationStateProvider"/> intended for use in server-side
+    /// An <see cref="AuthenticationStateProvider"/> intended for use in server-side
     /// Blazor. The circuit factory will supply a <see cref="ClaimsPrincipal"/> from
     /// the current <see cref="HttpContext.User"/>, which will stay fixed for the
     /// lifetime of the circuit since <see cref="HttpContext.User"/> cannot change.
@@ -17,14 +17,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// This can therefore only be used with redirect-style authentication flows,
     /// since it requires a new HTTP request in order to become a different user.
     /// </summary>
-    internal class FixedAuthenticationStateProvider : IAuthenticationStateProvider
+    internal class FixedAuthenticationStateProvider : AuthenticationStateProvider
     {
         private Task<IAuthenticationState> _authenticationStateTask;
-
-        // Since the authentication state is fixed, we never raise this event
-        #pragma warning disable 0067 // "Never used"
-        public event AuthenticationStateChangedHandler AuthenticationStateChanged;
-        #pragma warning restore 0067
 
         public void Initialize(ClaimsPrincipal user)
         {
@@ -32,7 +27,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _authenticationStateTask = Task.FromResult((IAuthenticationState)authState);
         }
 
-        public Task<IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
+        public override Task<IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
         {
             // Since the authentication state is fixed, forceRefresh makes no difference
             return _authenticationStateTask

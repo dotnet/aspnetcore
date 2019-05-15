@@ -1,6 +1,6 @@
 @namespace Microsoft.AspNetCore.Components
 @implements IDisposable
-@inject IAuthenticationStateProvider AuthStateProvider
+@inject AuthenticationStateProvider AuthStateProvider
 
 <CascadingValue T="Task<IAuthenticationState>" Value="@_currentAuthStateTask" ChildContent="@ChildContent" />
 

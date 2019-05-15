@@ -4,14 +4,12 @@
 namespace Microsoft.AspNetCore.Components
 {
     public delegate void AuthenticationStateChangedHandler(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> task);
-    public partial class AuthenticationStateProvider : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
+    public abstract partial class AuthenticationStateProvider
     {
-        public AuthenticationStateProvider() { }
-        [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
-        protected override void OnInit() { }
-        void System.IDisposable.Dispose() { }
+        protected AuthenticationStateProvider() { }
+        public event Microsoft.AspNetCore.Components.AuthenticationStateChangedHandler AuthenticationStateChanged { add { } remove { } }
+        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh);
+        protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> task) { }
     }
     public partial class AuthorizeView : Microsoft.AspNetCore.Components.ComponentBase
     {
@@ -81,6 +79,15 @@ namespace Microsoft.AspNetCore.Components
         public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<float> setter, float existingValue) { throw null; }
         public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<string> setter, string existingValue) { throw null; }
         public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler<T>(System.Action<T> setter, T existingValue) { throw null; }
+    }
+    public partial class CascadingAuthenticationState : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
+    {
+        public CascadingAuthenticationState() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected override void OnInit() { }
+        void System.IDisposable.Dispose() { }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
@@ -334,11 +341,6 @@ namespace Microsoft.AspNetCore.Components
     public partial interface IAuthenticationState
     {
         System.Security.Claims.ClaimsPrincipal User { get; }
-    }
-    public partial interface IAuthenticationStateProvider
-    {
-        event Microsoft.AspNetCore.Components.AuthenticationStateChangedHandler AuthenticationStateChanged;
-        System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh);
     }
     public partial interface IComponent
     {
