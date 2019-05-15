@@ -182,7 +182,7 @@
     <IdentityServer4PackageVersion>3.0.0-preview3.4</IdentityServer4PackageVersion>
     <IdentityServer4StoragePackageVersion>3.0.0-preview3.4</IdentityServer4StoragePackageVersion>
     <IdentityServer4EntityFrameworkStoragePackageVersion>3.0.0-preview3.4</IdentityServer4EntityFrameworkStoragePackageVersion>
-    <MessagePackPackageVersion>1.7.3.4</MessagePackPackageVersion>
+    <MessagePackPackageVersion>1.7.3.7</MessagePackPackageVersion>
     <MoqPackageVersion>4.10.0</MoqPackageVersion>
     <MonoCecilPackageVersion>0.10.1</MonoCecilPackageVersion>
     <NewtonsoftJsonBsonPackageVersion>1.0.2</NewtonsoftJsonBsonPackageVersion>
@@ -193,7 +193,7 @@
     <SeleniumWebDriverPackageVersion>3.12.1</SeleniumWebDriverPackageVersion>
     <SerilogExtensionsLoggingPackageVersion>1.4.0</SerilogExtensionsLoggingPackageVersion>
     <SerilogSinksFilePackageVersion>4.0.0</SerilogSinksFilePackageVersion>
-    <StackExchangeRedisPackageVersion>2.0.513</StackExchangeRedisPackageVersion>
+    <StackExchangeRedisPackageVersion>2.0.593</StackExchangeRedisPackageVersion>
     <SystemReactiveLinqPackageVersion>3.1.1</SystemReactiveLinqPackageVersion>
     <XunitAbstractionsPackageVersion>2.0.3</XunitAbstractionsPackageVersion>
     <XunitAnalyzersPackageVersion>0.10.0</XunitAnalyzersPackageVersion>
