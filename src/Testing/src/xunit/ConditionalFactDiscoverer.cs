@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
         {
             var skipReason = testMethod.EvaluateSkipConditions();
             return skipReason != null
-                ? new SkippedTestCase(skipReason, _diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), testMethod)
+                ? new SkippedTestCase(skipReason, _diagnosticMessageSink, discoveryOptions.MethodDisplayOrDefault(), TestMethodDisplayOptions.None, testMethod)
                 : base.CreateTestCase(discoveryOptions, testMethod, factAttribute);
         }
     }

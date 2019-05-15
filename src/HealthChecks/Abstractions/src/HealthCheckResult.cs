@@ -70,7 +70,7 @@ namespace Microsoft.Extensions.Diagnostics.HealthChecks
         /// <returns>A <see cref="HealthCheckResult"/> representing a degraged component.</returns>
         public static HealthCheckResult Degraded(string description = null, Exception exception = null, IReadOnlyDictionary<string, object> data = null)
         {
-            return new HealthCheckResult(status: HealthStatus.Degraded, description, exception: null, data);
+            return new HealthCheckResult(status: HealthStatus.Degraded, description, exception: exception, data);
         }
 
         /// <summary>

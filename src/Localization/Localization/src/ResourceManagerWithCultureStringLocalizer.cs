@@ -1,5 +1,5 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. 
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
@@ -15,6 +15,7 @@ namespace Microsoft.Extensions.Localization
     /// An <see cref="IStringLocalizer"/> that uses the <see cref="ResourceManager"/> and
     /// <see cref="ResourceReader"/> to provide localized strings for a specific <see cref="CultureInfo"/>.
     /// </summary>
+    [Obsolete("This method is obsolete. Use `CurrentCulture` and `CurrentUICulture` instead.")]
     public class ResourceManagerWithCultureStringLocalizer : ResourceManagerStringLocalizer
     {
         private readonly string _resourceBaseName;
