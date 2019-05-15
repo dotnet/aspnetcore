@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
         {
             await Assert.ThrowsAsync<InvalidOperationException>(() =>
                 new FixedAuthenticationStateProvider()
-                    .GetAuthenticationStateAsync(false));
+                    .GetAuthenticationStateAsync());
         }
 
         [Fact]
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             provider.Initialize(user);
 
             // Act
-            var authenticationState = await provider.GetAuthenticationStateAsync(false);
+            var authenticationState = await provider.GetAuthenticationStateAsync();
 
             // Assert
             Assert.NotNull(authenticationState);

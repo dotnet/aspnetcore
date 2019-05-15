@@ -15,9 +15,8 @@ namespace Microsoft.AspNetCore.Components
         /// Gets an <see cref="AuthenticationState"/> instance that describes
         /// the current user.
         /// </summary>
-        /// <param name="forceRefresh">If true, instructs the provider to re-determine the user's authentication state, which can be an expensive operation. If false, the provider may reuse data cached for the current user.</param>
         /// <returns>An <see cref="AuthenticationState"/> instance that describes the current user.</returns>
-        public abstract Task<AuthenticationState> GetAuthenticationStateAsync(bool forceRefresh);
+        public abstract Task<AuthenticationState> GetAuthenticationStateAsync();
 
         /// <summary>
         /// An event that provides notification when the <see cref="AuthenticationState"/>

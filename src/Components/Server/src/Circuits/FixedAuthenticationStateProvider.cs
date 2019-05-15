@@ -26,11 +26,8 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             _authenticationStateTask = Task.FromResult(new AuthenticationState(user));
         }
 
-        public override Task<AuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
-        {
-            // Since the authentication state is fixed, forceRefresh makes no difference
-            return _authenticationStateTask
-                ?? throw new InvalidOperationException($"{nameof(GetAuthenticationStateAsync)} was called before {nameof(Initialize)}.");
-        }
+        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+            => _authenticationStateTask
+            ?? throw new InvalidOperationException($"{nameof(GetAuthenticationStateAsync)} was called before {nameof(Initialize)}.");
     }
 }

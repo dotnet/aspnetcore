@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Components
     {
         protected AuthenticationStateProvider() { }
         public event Microsoft.AspNetCore.Components.AuthenticationStateChangedHandler AuthenticationStateChanged { add { } remove { } }
-        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync(bool forceRefresh);
+        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync();
         protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task) { }
     }
     public partial class AuthorizeView : Microsoft.AspNetCore.Components.ComponentBase

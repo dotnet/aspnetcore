@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Components
         {
             public Task<AuthenticationState> CurrentAuthStateTask { get; set; }
 
-            public override Task<AuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
+            public override Task<AuthenticationState> GetAuthenticationStateAsync()
             {
                 return CurrentAuthStateTask;
             }

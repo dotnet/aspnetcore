@@ -17,7 +17,7 @@
         AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
         _currentAuthenticationStateTask = AuthenticationStateProvider
-            .GetAuthenticationStateAsync(forceRefresh: false);
+            .GetAuthenticationStateAsync();
     }
 
     private void OnAuthenticationStateChanged(Task<AuthenticationState> newAuthStateTask)
