@@ -203,8 +203,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                                 displayName = "Test Name",
                                 givenName = "Test Given Name",
                                 surname = "Test Family Name",
-                                mail = "",
-                                userPrincipalName = "Test email"
+                                mail = "Test email"
                             });
                         }
 

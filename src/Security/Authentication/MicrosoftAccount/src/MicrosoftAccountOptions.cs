@@ -27,15 +27,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             ClaimActions.MapJsonKey(ClaimTypes.Name, "displayName");
             ClaimActions.MapJsonKey(ClaimTypes.GivenName, "givenName");
             ClaimActions.MapJsonKey(ClaimTypes.Surname, "surname");
-            ClaimActions.MapCustomJson(ClaimTypes.Email, user =>
-            {
-                var mail = user.GetString("mail");
-                if (string.IsNullOrEmpty(mail))
-                {
-                    mail = user.GetString("userPrincipalName");
-                }
-                return mail;
-            });
+            ClaimActions.MapCustomJson(ClaimTypes.Email, user => user.GetString("mail") ?? user.GetString("userPrincipalName"));
         }
     }
 }
