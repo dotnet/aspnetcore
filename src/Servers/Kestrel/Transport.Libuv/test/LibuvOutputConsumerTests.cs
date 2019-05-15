@@ -553,15 +553,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                     Assert.False(task1Waits.IsFaulted);
 
                     // following tasks should wait.
-                    var task3Canceled = outputProducer.WriteDataAsync(fullBuffer, cancellationToken: abortedSource.Token);
+                    var task2Canceled = outputProducer.WriteDataAsync(fullBuffer, cancellationToken: abortedSource.Token);
 
                     // Give time for tasks to percolate
                     await _mockLibuv.OnPostTask;
 
-                    // Third task is not completed
-                    Assert.False(task3Canceled.IsCompleted);
-                    Assert.False(task3Canceled.IsCanceled);
-                    Assert.False(task3Canceled.IsFaulted);
+                    // Second task is not completed
+                    Assert.False(task2Canceled.IsCompleted);
+                    Assert.False(task2Canceled.IsCanceled);
+                    Assert.False(task2Canceled.IsFaulted);
 
                     abortedSource.Cancel();
 
@@ -571,29 +571,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                         await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                     }
 
-                    // First task is  completed
+                    // First task is completed
                     Assert.True(task1Waits.IsCompleted);
                     Assert.False(task1Waits.IsCanceled);
                     Assert.False(task1Waits.IsFaulted);
 
-                    // A final write guarantees that the error is observed by OutputProducer,
-                    // but doesn't return a canceled/faulted task.
-                    var task4Success = outputProducer.WriteDataAsync(fullBuffer);
-                    Assert.True(task4Success.IsCompleted);
-                    Assert.False(task4Success.IsCanceled);
-                    Assert.False(task4Success.IsFaulted);
+                    // Second task is now canceled
+                    await Assert.ThrowsAsync<OperationCanceledException>(() => task2Canceled);
+                    Assert.True(task2Canceled.IsCanceled);
 
-                    // Third task is now canceled
-                    await Assert.ThrowsAsync<OperationCanceledException>(() => task3Canceled);
-                    Assert.True(task3Canceled.IsCanceled);
+                    // A final write can still succeed.
+                    var task3Success = outputProducer.WriteDataAsync(fullBuffer);
 
                     await _mockLibuv.OnPostTask;
 
-                    // Complete the 4th write
+                    // Complete the 3rd write
                     while (completeQueue.TryDequeue(out var triggerNextCompleted))
                     {
                         await _libuvThread.PostAsync(cb => cb(0), triggerNextCompleted);
                     }
+
+                    Assert.True(task3Success.IsCompleted);
+                    Assert.False(task3Success.IsCanceled);
+                    Assert.False(task3Success.IsFaulted);;
                 }
             });
         }
