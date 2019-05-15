@@ -33,7 +33,7 @@
 
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
-    <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" />
+    <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
 
     <HelixContent Include="$(RepositoryRoot)src\Servers\IIS\tools\update_schema.ps1" />
     <HelixContent Include="$(RepositoryRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
