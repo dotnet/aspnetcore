@@ -146,9 +146,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest", "Authentication\Negotiate\test\Negotiate.FunctionalTest\Microsoft.AspNetCore.Authentication.Negotiate.FunctionalTest.csproj", "{8991AEC8-49F3-4DF1-ADA9-00C13737E005}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negotiate.Client", "Authentication\Negotiate\test\Negotiate.Client\Negotiate.Client.csproj", "{57DCE828-241E-437C-BEFC-AF4B6EB06D62}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negotiate.Client", "Authentication\Negotiate\test\testassets\Negotiate.Client\Negotiate.Client.csproj", "{57DCE828-241E-437C-BEFC-AF4B6EB06D62}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negotiate.Server", "Authentication\Negotiate\test\Negotiate.Server\Negotiate.Server.csproj", "{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Negotiate.Server", "Authentication\Negotiate\test\testassets\Negotiate.Server\Negotiate.Server.csproj", "{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc", "..\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj", "{27B5D7B5-75A6-4BE6-BD09-597044D06970}"
 EndProject
