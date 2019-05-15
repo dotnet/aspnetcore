@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -16,18 +16,15 @@ namespace SampleApp
     {
         public static void Main(string[] args)
         {
-            HelloWorld();
-
-            CustomUrl();
-
-            CustomRouter();
-
-            CustomApplicationBuilder();
-
-            StartupClass(args);
-
-            HostBuilderWithWebHost(args);
+            CreateHostBuilder(args).Build().Run();
         }
+
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
 
         private static void HelloWorld()
         {
