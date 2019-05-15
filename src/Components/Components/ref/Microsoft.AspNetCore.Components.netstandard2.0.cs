@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Components
 {
-    public delegate void AuthenticationStateChangedHandler(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> newAuthenticationStateTask);
+    public delegate void AuthenticationStateChangedHandler(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> task);
     public partial class AuthenticationStateProvider : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
     {
         public AuthenticationStateProvider() { }

@@ -28,6 +28,6 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// A handler for the <see cref="IAuthenticationStateProvider.AuthenticationStateChanged"/> event.
     /// </summary>
-    /// <param name="newAuthenticationStateTask">A <see cref="Task"/> that supplies the updated <see cref="IAuthenticationState"/>.</param>
-    public delegate void AuthenticationStateChangedHandler(Task<IAuthenticationState> newAuthenticationStateTask);
+    /// <param name="task">A <see cref="Task"/> that supplies the updated <see cref="IAuthenticationState"/>.</param>
+    public delegate void AuthenticationStateChangedHandler(Task<IAuthenticationState> task);
 }
