@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.IAuthenticationState> Authorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        [Microsoft.AspNetCore.Components.CascadingParameterAttribute]
-        public System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> AuthStateTask { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.IAuthenticationState> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]

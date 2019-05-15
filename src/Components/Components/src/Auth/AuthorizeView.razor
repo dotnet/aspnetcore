@@ -16,7 +16,7 @@ else
 @functions {
     private IAuthenticationState currentAuthState;
 
-    [CascadingParameter] public Task<IAuthenticationState> AuthStateTask { get; private set; }
+    [CascadingParameter] private Task<IAuthenticationState> AuthenticationState { get; set; }
 
     /// <summary>
     /// The content that will be displayed if the user is authorized.
@@ -54,7 +54,7 @@ else
         currentAuthState = null;
 
         // Then render in completed state
-        currentAuthState = await AuthStateTask;
+        currentAuthState = await AuthenticationState;
     }
 
     private bool IsAuthorized()
