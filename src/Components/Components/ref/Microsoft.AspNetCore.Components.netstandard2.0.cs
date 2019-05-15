@@ -3,23 +3,28 @@
 
 namespace Microsoft.AspNetCore.Components
 {
-    public delegate void AuthenticationStateChangedHandler(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> task);
+    public partial class AuthenticationState
+    {
+        public AuthenticationState(System.Security.Claims.ClaimsPrincipal user) { }
+        public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public delegate void AuthenticationStateChangedHandler(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task);
     public abstract partial class AuthenticationStateProvider
     {
         protected AuthenticationStateProvider() { }
         public event Microsoft.AspNetCore.Components.AuthenticationStateChangedHandler AuthenticationStateChanged { add { } remove { } }
-        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh);
-        protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.IAuthenticationState> task) { }
+        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync(bool forceRefresh);
+        protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task) { }
     }
     public partial class AuthorizeView : Microsoft.AspNetCore.Components.ComponentBase
     {
         public AuthorizeView() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.IAuthenticationState> Authorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> Authorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
-        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.IAuthenticationState> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
@@ -337,10 +342,6 @@ namespace Microsoft.AspNetCore.Components
         public static System.Threading.Tasks.Task SendJsonAsync(this System.Net.Http.HttpClient httpClient, System.Net.Http.HttpMethod method, string requestUri, object content) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public static System.Threading.Tasks.Task<T> SendJsonAsync<T>(this System.Net.Http.HttpClient httpClient, System.Net.Http.HttpMethod method, string requestUri, object content) { throw null; }
-    }
-    public partial interface IAuthenticationState
-    {
-        System.Security.Claims.ClaimsPrincipal User { get; }
     }
     public partial interface IComponent
     {
