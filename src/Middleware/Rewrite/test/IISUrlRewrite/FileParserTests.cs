@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
 
             // assert
             AssertUrlRewriteRuleEquality(expected, res);
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
 
             // assert
             AssertUrlRewriteRuleEquality(expected, res);
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 pattern: "article.aspx?id={R:1}&amp;title={R:2}"));
 
             // act
-            var res = new UrlRewriteFileParser().Parse(new StringReader(xml));
+            var res = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
 
             // assert
             AssertUrlRewriteRuleEquality(expected, res);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                         </rewrite>";
 
             // act
-            var rules = new UrlRewriteFileParser().Parse(new StringReader(xml));
+            var rules = new UrlRewriteFileParser().Parse(new StringReader(xml), false);
 
             // assert
             Assert.Equal(2, rules.Count);

@@ -174,7 +174,6 @@ namespace Microsoft.AspNetCore.Mvc
                     { "{", "attachment; filename=\"{\"; filename*=UTF-8''%7B" },
                     { "}", "attachment; filename=\"}\"; filename*=UTF-8''%7D" },
                     { " ", "attachment; filename=\" \"; filename*=UTF-8''%20" },
-                    { "a\tb", "attachment; filename=\"a\tb\"; filename*=UTF-8''a%09b" },
                     { "a b", "attachment; filename=\"a b\"; filename*=UTF-8''a%20b" },
 
                     // Values that need to be escaped
@@ -182,12 +181,13 @@ namespace Microsoft.AspNetCore.Mvc
                     { "\\", "attachment; filename=\"\\\\\"; filename*=UTF-8''%5C" },
 
                     // Values that need to be specially encoded (Base64, see rfc2047)
-                    { "a\nb", "attachment; filename=\"a\nb\"; filename*=UTF-8''a%0Ab" },
+                    { "a\tb", "attachment; filename=a_b; filename*=UTF-8''a%09b" },
+                    { "a\nb", "attachment; filename=a_b; filename*=UTF-8''a%0Ab" },
 
                     // Values with non unicode characters
                     { "résumé.txt", "attachment; filename=r_sum_.txt; filename*=UTF-8''r%C3%A9sum%C3%A9.txt" },
                     { "Δ", "attachment; filename=_; filename*=UTF-8''%CE%94" },
-                    { "Δ\t", "attachment; filename=\"_\t\"; filename*=UTF-8''%CE%94%09" },
+                    { "Δ\t", "attachment; filename=__; filename*=UTF-8''%CE%94%09" },
                     { "ABCXYZabcxyz012789!@#$%^&*()-=_+.:~Δ", @"attachment; filename=""ABCXYZabcxyz012789!@#$%^&*()-=_+.:~_""; filename*=UTF-8''ABCXYZabcxyz012789!%40#$%25^&%2A%28%29-%3D_+.%3A~%CE%94" },
                 };
             }
@@ -200,16 +200,10 @@ namespace Microsoft.AspNetCore.Mvc
                 var data = new TheoryData<string, string>();
                 for (var i = 0; i < 32; i++)
                 {
-                    if (i == 10)
-                    {
-                        // skip \n as it has a special encoding
-                        continue;
-                    }
-
-                    data.Add(char.ConvertFromUtf32(i), "attachment; filename=\"" + char.ConvertFromUtf32(i) + "\"; filename*=UTF-8''%" + i.ToString("X2"));
+                    data.Add(char.ConvertFromUtf32(i), $"attachment; filename=_; filename*=UTF-8''%{i:X2}");
                 }
 
-                data.Add(char.ConvertFromUtf32(127), "attachment; filename=\"" + char.ConvertFromUtf32(127) + "\"; filename*=UTF-8''%7F");
+                data.Add(char.ConvertFromUtf32(127), $"attachment; filename=\"{char.ConvertFromUtf32(127)}\"; filename*=UTF-8''%7F");
 
                 return data;
             }

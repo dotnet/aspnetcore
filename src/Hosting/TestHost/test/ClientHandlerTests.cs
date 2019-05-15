@@ -154,6 +154,48 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         [Fact]
+        public async Task ResponseStartAsync()
+        {
+            var hasStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hasAssertedResponseTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            bool? preHasStarted = null;
+            bool? postHasStarted = null;
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
+            {
+                preHasStarted = context.Response.HasStarted;
+
+                await context.Response.StartAsync();
+
+                postHasStarted = context.Response.HasStarted;
+
+                hasStartedTcs.TrySetResult(null);
+
+                await hasAssertedResponseTcs.Task;
+            }));
+
+            var invoker = new HttpMessageInvoker(handler);
+            var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+            var responseTask = invoker.SendAsync(message, CancellationToken.None);
+
+            // Ensure StartAsync has been called in response
+            await hasStartedTcs.Task;
+
+            // Delay so async thread would have had time to attempt to return response
+            await Task.Delay(100);
+            Assert.False(responseTask.IsCompleted, "HttpResponse.StartAsync does not return response");
+
+            // Asserted that response return was checked, allow response to finish
+            hasAssertedResponseTcs.TrySetResult(null);
+
+            await responseTask;
+
+            Assert.False(preHasStarted);
+            Assert.True(postHasStarted);
+        }
+
+        [Fact]
         public async Task ResubmitRequestWorks()
         {
             int requestCount = 1;

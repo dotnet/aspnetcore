@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,58 +15,89 @@ namespace Microsoft.AspNetCore.Rewrite.Internal.IISUrlRewrite
         /// <param name="serverVariable">The server variable</param>
         /// <param name="context">The parser context which is utilized when an exception is thrown</param>
         /// <param name="uriMatchPart">Indicates whether the full URI or the path should be evaluated for URL segments</param>
+        /// <param name="alwaysUseManagedServerVariables">Determines whether server variables are sourced from the managed server</param>
         /// <exception cref="FormatException">Thrown when the server variable is unknown</exception>
         /// <returns>The matching <see cref="PatternSegment"/></returns>
-        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, UriMatchPart uriMatchPart)
+        public static PatternSegment FindServerVariable(string serverVariable, ParserContext context, UriMatchPart uriMatchPart, bool alwaysUseManagedServerVariables)
         {
+            Func<PatternSegment> managedVariableThunk = default;
+
             switch (serverVariable)
             {
                 // TODO Add all server variables here.
                 case "ALL_RAW":
-                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    managedVariableThunk = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    break;
                 case "APP_POOL_ID":
-                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    managedVariableThunk = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    break;
                 case "CONTENT_LENGTH":
-                    return new HeaderSegment(HeaderNames.ContentLength);
+                    managedVariableThunk = () => new HeaderSegment(HeaderNames.ContentLength);
+                    break;
                 case "CONTENT_TYPE":
-                    return new HeaderSegment(HeaderNames.ContentType);
+                    managedVariableThunk = () => new HeaderSegment(HeaderNames.ContentType);
+                    break;
                 case "HTTP_ACCEPT":
-                    return new HeaderSegment(HeaderNames.Accept);
+                    managedVariableThunk = () => new HeaderSegment(HeaderNames.Accept);
+                    break;
                 case "HTTP_COOKIE":
-                    return new HeaderSegment(HeaderNames.Cookie);
+                    managedVariableThunk = () => new HeaderSegment(HeaderNames.Cookie);
+                    break;
                 case "HTTP_HOST":
-                    return new HeaderSegment(HeaderNames.Host);
+                    managedVariableThunk = () => new HeaderSegment(HeaderNames.Host);
+                    break;
                 case "HTTP_REFERER":
-                    return new HeaderSegment(HeaderNames.Referer);
+                    managedVariableThunk = () => new HeaderSegment(HeaderNames.Referer);
+                    break;
                 case "HTTP_USER_AGENT":
-                    return new HeaderSegment(HeaderNames.UserAgent);
+                    managedVariableThunk = () => new HeaderSegment(HeaderNames.UserAgent);
+                    break;
                 case "HTTP_CONNECTION":
-                    return new HeaderSegment(HeaderNames.Connection);
+                    managedVariableThunk = () => new HeaderSegment(HeaderNames.Connection);
+                    break;
                 case "HTTP_URL":
-                    return new UrlSegment(uriMatchPart);
+                    managedVariableThunk = () => new UrlSegment(uriMatchPart);
+                    break;
                 case "HTTPS":
-                    return new IsHttpsUrlSegment();
+                    managedVariableThunk = () => new IsHttpsUrlSegment();
+                    break;
                 case "LOCAL_ADDR":
-                    return new LocalAddressSegment();
+                    managedVariableThunk = () => new LocalAddressSegment();
+                    break;
                 case "HTTP_PROXY_CONNECTION":
-                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    managedVariableThunk = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    break;
                 case "QUERY_STRING":
-                    return new QueryStringSegment();
+                    managedVariableThunk = () => new QueryStringSegment();
+                    break;
                 case "REMOTE_ADDR":
-                    return new RemoteAddressSegment();
+                    managedVariableThunk = () => new RemoteAddressSegment();
+                    break;
                 case "REMOTE_HOST":
-                    throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    managedVariableThunk = () => throw new NotSupportedException(Resources.FormatError_UnsupportedServerVariable(serverVariable));
+                    break;
                 case "REMOTE_PORT":
-                    return new RemotePortSegment();
+                    managedVariableThunk = () => new RemotePortSegment();
+                    break;
                 case "REQUEST_FILENAME":
-                    return new RequestFileNameSegment();
+                    managedVariableThunk = () => new RequestFileNameSegment();
+                    break;
                 case "REQUEST_METHOD":
-                    return new RequestMethodSegment();
+                    managedVariableThunk = () => new RequestMethodSegment();
+                    break;
                 case "REQUEST_URI":
-                    return new UrlSegment(uriMatchPart);
+                    managedVariableThunk = () => new UrlSegment(uriMatchPart);
+                    break;
                 default:
                     throw new FormatException(Resources.FormatError_InputParserUnrecognizedParameter(serverVariable, context.Index));
             }
+
+            if (alwaysUseManagedServerVariables)
+            {
+                return managedVariableThunk();
+            }
+
+            return new IISServerVariableSegment(serverVariable, managedVariableThunk);
         }
     }
 }

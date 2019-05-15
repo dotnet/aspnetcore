@@ -1,9 +1,9 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
-  <ItemGroup>
+  <PropertyGroup>
     <!-- HttpSys tests are Windows-only -->
-    <HelixProjectPlatform Remove="Linux;OSX" />
-  </ItemGroup>
+    <IsWindowsOnlyTest>true</IsWindowsOnlyTest>
+  </PropertyGroup>
 
 </Project>

@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly ValueTask<FlushResult> _dataWriteProcessingTask;
         private bool _startedWritingDataFrames;
         private bool _completed;
+        private bool _streamEnded;
         private bool _disposed;
 
         public Http2OutputProducer(
@@ -131,7 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
-        public void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk)
+        public void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders, bool autoChunk, bool appCompleted)
         {
             lock (_dataWriterLock)
             {
@@ -142,7 +143,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return;
                 }
 
-                _frameWriter.WriteResponseHeaders(_streamId, statusCode, responseHeaders);
+                // If the responseHeaders will be written as the final HEADERS frame then
+                // set END_STREAM on the HEADERS frame. This avoids the need to write an
+                // empty DATA frame with END_STREAM.
+                //
+                // The headers will be the final frame if:
+                // 1. There is no content
+                // 2. There is no trailing HEADERS frame.
+                Http2HeadersFrameFlags http2HeadersFrame;
+
+                if (appCompleted && !_startedWritingDataFrames && (_stream.Trailers == null || _stream.Trailers.Count == 0))
+                {
+                    _streamEnded = true;
+                    http2HeadersFrame = Http2HeadersFrameFlags.END_STREAM;
+                }
+                else
+                {
+                    http2HeadersFrame = Http2HeadersFrameFlags.NONE;
+                }
+
+                _frameWriter.WriteResponseHeaders(_streamId, statusCode, http2HeadersFrame, responseHeaders);
             }
         }
 
@@ -258,7 +278,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_dataWriterLock)
             {
-                WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk);
+                WriteResponseHeaders(statusCode, reasonPhrase, responseHeaders, autoChunk, appCompleted: false);
 
                 return WriteDataToPipeAsync(data, cancellationToken);
             }
@@ -296,12 +316,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                     if (readResult.IsCompleted && _stream.Trailers?.Count > 0)
                     {
+                        // Output is ending and there are trailers to write
+                        // Write any remaining content then write trailers
                         if (readResult.Buffer.Length > 0)
                         {
                             flushResult = await _frameWriter.WriteDataAsync(_streamId, _flowControl, readResult.Buffer, endStream: false);
                         }
 
                         flushResult = await _frameWriter.WriteResponseTrailers(_streamId, _stream.Trailers);
+                    }
+                    else if (readResult.IsCompleted && _streamEnded)
+                    {
+                        Debug.Assert(readResult.Buffer.Length == 0);
+
+                        // Headers have already been written and there is no other content to write
+                        flushResult = await _frameWriter.FlushAsync(outputAborter: null, cancellationToken: default);
                     }
                     else
                     {
