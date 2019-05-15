@@ -8,7 +8,7 @@
     <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
-    <RunTemplateTests>true</RunTemplateTests>
+    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
     <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
