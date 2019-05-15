@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
         public void ThrowInvalidUrlRewriteFormatExceptionWithCorrectMessage(string input, string expected)
         {
             // Arrange, Act, Assert
-            var ex = Assert.Throws<InvalidUrlRewriteFormatException>(() => new UrlRewriteFileParser().Parse(new StringReader(input)));
+            var ex = Assert.Throws<InvalidUrlRewriteFormatException>(() => new UrlRewriteFileParser().Parse(new StringReader(input), false));
             Assert.Equal(expected, ex.Message);
         }
     }
