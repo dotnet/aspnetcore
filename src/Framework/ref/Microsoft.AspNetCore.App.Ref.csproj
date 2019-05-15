@@ -1,11 +1,4 @@
 <Project>
-
-  <PropertyGroup>
-    <OutputInRepoRoot>true</OutputInRepoRoot>
-    <!-- Temporary flag to disable restoring this project against the artifacts/ folder. -->
-    <_DisableRestoreFromLocalPackages>true</_DisableRestoreFromLocalPackages>
-  </PropertyGroup>
-
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>

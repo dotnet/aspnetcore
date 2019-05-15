@@ -84,7 +84,7 @@
     <ProjectReference Include="$(IIS-Setup)iisca\lib\iisca.vcxproj">
       <Project>{7324770c-0871-4d73-be3d-5e2f3e9e1b1e}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(IIS-Common)lib\CommonLib.vcxproj">
+    <ProjectReference Include="$(IIS-Common)lib\IISSetup.CommonLib.vcxproj">
       <Project>{b54a8f61-60de-4ad9-87ca-d102f230678e}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -95,7 +95,5 @@
     </PropertyGroup>
     <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\build\versions.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\build\versions.props'))" />
     <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\build\settings.props')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\build\settings.props'))" />
-    <Error Condition="!Exists('$(MSBuildProjectDirectory)\..\build\copy-outputs.targets')" Text="$([System.String]::Format('$(ErrorText)', '$(MSBuildProjectDirectory)\..\build\copy-outputs.targets'))" />
   </Target>
-  <Import Project="$(MSBuildProjectDirectory)\..\build\copy-outputs.targets" Condition="Exists('$(MSBuildProjectDirectory)\..\build\copy-outputs.targets')" />
 </Project>

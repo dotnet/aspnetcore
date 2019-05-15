@@ -20,7 +20,7 @@ $ClientsTsDir = Join-Path $ClientsDir "ts"
 # The list of apps to publish
 $Apps = @{
     "SignalRSamples"= (Join-Path $SamplesDir "SignalRSamples")
-    "FunctionalTests"= (Join-Path $ClientsTsDir "FunctionalTests")
+    "FunctionalTests"= (Join-Path $ClientsTsDir "FunctionalTests/SignalR.Client.FunctionalTests.csproj")
 }
 
 $BuildMetadataContent = @"

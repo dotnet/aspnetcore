@@ -83,7 +83,7 @@ function Shutdown-Dumps()
 
     New-ItemProperty $werHive -Name "DontShowUI" -Value 0 -PropertyType "DWORD" -Force;
 
-    $cdb = "c:\Program Files (x86)\Windows Kits\10\Debuggers\x64\cdb.exe"
+    $cdb = "${env:ProgramFiles(x86)}\Windows Kits\10\Debuggers\x64\cdb.exe"
     if (!(Test-Path $cdb))
     {
         $downloadedFile = [System.IO.Path]::GetTempFileName();

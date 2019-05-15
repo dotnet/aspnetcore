@@ -145,7 +145,7 @@
     <CreateDirectory Include="$(VisualStudioSetupOutputPath)" />
   </ItemGroup>
 
-  <PropertyGroup Condition=" '$(OutputInRepoRoot)' == 'true' ">
+  <PropertyGroup>
     <OutDirName Condition=" '$(OutDirName)' == '' ">$(MSBuildProjectName)</OutDirName>
 
     <BaseOutputPath Condition=" '$(BaseOutputPath)' == '' ">$([System.IO.Path]::GetFullPath('$(ArtifactsBinDir)$(OutDirName)\'))</BaseOutputPath>

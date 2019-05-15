@@ -46,7 +46,7 @@
     <ProjectReference Include="..\WebSites\RazorBuildWebSite\RazorBuildWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorPagesWebSite\RazorPagesWebSite.csproj" />
     <ProjectReference Include="..\WebSites\RazorWebSite\RazorWebSite.csproj" />
-    <ProjectReference Include="..\WebSites\RoutingWebSite\RoutingWebSite.csproj" />
+    <ProjectReference Include="..\WebSites\RoutingWebSite\Mvc.RoutingWebSite.csproj" />
     <ProjectReference Include="..\WebSites\SecurityWebSite\SecurityWebSite.csproj" />
     <ProjectReference Include="..\WebSites\SimpleWebSite\SimpleWebSite.csproj" />
     <ProjectReference Include="..\WebSites\TagHelpersWebSite\TagHelpersWebSite.csproj" />

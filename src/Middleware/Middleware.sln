@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A86E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoApp", "WebSockets\samples\EchoApp\EchoApp.csproj", "{0792C20B-1D18-4D7C-9C0F-A6F45A0F378E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServer", "WebSockets\samples\TestServer\TestServer.csproj", "{4E5F5FCC-172C-44D9-BEA0-39098A79CD0B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSockets.TestServer", "WebSockets\samples\TestServer\WebSockets.TestServer.csproj", "{4E5F5FCC-172C-44D9-BEA0-39098A79CD0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets", "WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj", "{BECAA6A1-1AA4-415E-ADF3-07C103333826}"
 EndProject
@@ -245,7 +245,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Crypto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Abstractions", "..\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj", "{7343B4E4-C5A2-49E2-B431-4D1E6A26E424}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "CORS\test\FunctionalTests\FunctionalTests.csproj", "{E025D98E-BD85-474A-98A9-E7F44F392F8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CORS.FunctionalTests", "CORS\test\FunctionalTests\CORS.FunctionalTests.csproj", "{E025D98E-BD85-474A-98A9-E7F44F392F8E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleDestination", "CORS\samples\SampleDestination\SampleDestination.csproj", "{52CDD110-77DD-4C4D-8C72-4570F6EF20DD}"
 EndProject

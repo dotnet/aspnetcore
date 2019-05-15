@@ -19,17 +19,25 @@ function LogError {
     param(
         [Parameter(Mandatory = $true, Position = 0)]
         [string]$message,
-        [string]$FilePath
+        [string]$FilePath,
+        [string]$Code
     )
     if ($env:TF_BUILD) {
         $prefix = "##vso[task.logissue type=error"
         if ($FilePath) {
             $prefix = "${prefix};sourcepath=$FilePath"
         }
+        if ($Code) {
+            $prefix = "${prefix};code=$Code"
+        }
         Write-Host "${prefix}]${message}"
     }
-    Write-Host -f Red "error: $message"
-    $script:errors += $message
+    $fullMessage = "error ${Code}: $message"
+    if ($FilePath) {
+        $fullMessage += " [$FilePath]"
+    }
+    Write-Host -f Red $fullMessage
+    $script:errors += $fullMessage
 }
 
 try {
@@ -37,6 +45,25 @@ try {
         # Install dotnet.exe
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
     }
+
+    #
+    # Duplicate .csproj files can cause issues with a shared build output folder
+    #
+
+    $projectFileNames = New-Object 'System.Collections.Generic.HashSet[string]'
+
+    # Ignore duplicates in submodules. These should be isolated from the rest of the build.
+    # Ignore duplicates in the .ref folder. This is expected.
+    Get-ChildItem -Recurse "$repoRoot/src/*.*proj" `
+        | ? { $_.FullName -notmatch 'submodules' } `
+        | ? { (Split-Path -Leaf (Split-Path -Parent $_)) -ne 'ref' } `
+        | % {
+            $fileName = [io.path]::GetFileNameWithoutExtension($_)
+            if (-not ($projectFileNames.Add($fileName))) {
+                LogError -code 'BUILD003' -filepath $_ `
+                    "Multiple project files named '$fileName' exist. Project files should have a unique name to avoid conflicts in build output."
+            }
+        }
 
     #
     # Versions.props and Version.Details.xml
@@ -171,7 +198,7 @@ finally {
     Write-Host ""
 
     foreach ($err in $errors) {
-        Write-Host -f Red "error : $err"
+        Write-Host -f Red $err
     }
 
     if ($errors) {
