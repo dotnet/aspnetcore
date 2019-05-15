@@ -5,6 +5,7 @@
 
 #include "StringHelpers.h"
 #include "ConfigurationLoadException.h"
+#include "Environment.h"
 
 #define CS_ASPNETCORE_HANDLER_VERSION                    L"handlerVersion"
 
@@ -41,4 +42,16 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     m_fStdoutLogEnabled = section->GetRequiredBool(CS_ASPNETCORE_STDOUT_LOG_ENABLED);
     m_struStdoutLogFile = section->GetRequiredString(CS_ASPNETCORE_STDOUT_LOG_FILE);
     m_fDisableStartupPage = section->GetRequiredBool(CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE);
+
+    // This will not include environment variables defined in the web.config.
+    // Reading environment variables can be added here, but it adds more code to the shim.
+    const auto detailedErrors = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_DETAILEDERRORS").value_or(L"");
+    const auto aspnetCoreEnvironment = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_ENVIRONMENT").value_or(L"");
+    const auto dotnetEnvironment = Environment::GetEnvironmentVariableValue(L"DOTNET_ENVIRONMENT").value_or(L"");
+
+    auto detailedErrorsEnabled = equals_ignore_case(L"1", detailedErrors) || equals_ignore_case(L"true", detailedErrors);
+    auto aspnetCoreEnvironmentEnabled = equals_ignore_case(L"Development", aspnetCoreEnvironment);
+    auto dotnetEnvironmentEnabled = equals_ignore_case(L"Development", dotnetEnvironment);
+
+    m_fIsDevelopment = detailedErrorsEnabled || aspnetCoreEnvironmentEnabled || dotnetEnvironmentEnabled;
 }

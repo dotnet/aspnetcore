@@ -16,11 +16,11 @@ class HandlerResolver
 {
 public:
     HandlerResolver(HMODULE hModule, const IHttpServer &pServer);
-    HRESULT GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options);
+    HRESULT GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, std::vector<byte>& error);
     void ResetHostingModel();
 
 private:
-    HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory);
+    HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, std::vector<byte>& error);
     HRESULT FindNativeAssemblyFromGlobalLocation(const ShimOptions& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
     HRESULT FindNativeAssemblyFromHostfxr(
         const HostFxrResolutionResult& hostfxrOptions,

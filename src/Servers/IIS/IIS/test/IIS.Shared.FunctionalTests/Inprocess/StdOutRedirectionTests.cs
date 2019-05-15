@@ -26,7 +26,6 @@ namespace IIS.FunctionalTests.Inprocess
         public async Task FrameworkNotFoundExceptionLogged_Pipe()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
-
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
@@ -38,6 +37,23 @@ namespace IIS.FunctionalTests.Inprocess
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult,
                 "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.", Logger);
+        }
+
+        [ConditionalFact]
+        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [RequiresNewShim]
+        public async Task FrameworkNotFoundExceptionLoggedToResponse()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
+
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.False(response.IsSuccessStatusCode);
+
+            Assert.Contains("The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.", await response.Content.ReadAsStringAsync());
         }
 
         [ConditionalFact]

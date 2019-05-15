@@ -30,13 +30,14 @@ public:
 
     REQUEST_NOTIFICATION_STATUS ExecuteRequestHandler() override
     {
-        WriteStaticResponse(m_pContext, m_HR, m_disableStartupPage);
+        WriteResponse(m_pContext, m_HR, m_disableStartupPage);
 
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
 
 private:
-    void WriteStaticResponse(IHttpContext& pContext, HRESULT hr, bool disableStartupErrorPage) 
+    // TODO split these up into different handlers. This split isn't efficient.
+    void WriteResponse(IHttpContext& pContext, HRESULT hr, bool disableStartupErrorPage) 
     {
         if (disableStartupErrorPage)
         {

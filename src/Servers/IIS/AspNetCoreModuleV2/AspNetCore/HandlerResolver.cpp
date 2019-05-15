@@ -28,7 +28,7 @@ HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
 }
 
 HRESULT
-HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory)
+HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, std::vector<byte>& error)
 {
     HRESULT hr = S_OK;
     PCWSTR pstrHandlerDllName = nullptr;
@@ -70,7 +70,9 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
             if (FAILED_LOG(hr))
             {
-                auto output = redirectionOutput->GetOutput();
+                auto output = to_multi_byte_string(redirectionOutput->GetOutput(), CP_UTF8);
+                error.resize(output.length());
+                memcpy(&error[0], output.c_str(), output.length());
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
@@ -111,7 +113,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 }
 
 HRESULT
-HandlerResolver::GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options)
+HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, std::vector<byte>& error)
 {
     SRWExclusiveLock lock(m_requestHandlerLoadLock);
     if (m_loadedApplicationHostingModel != HOSTING_UNKNOWN)
@@ -141,7 +143,7 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication &pApplication, std
 
     m_loadedApplicationHostingModel = options.QueryHostingModel();
     m_loadedApplicationId = pApplication.GetApplicationId();
-    RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory));
+    RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory, error));
 
     return S_OK;
 }

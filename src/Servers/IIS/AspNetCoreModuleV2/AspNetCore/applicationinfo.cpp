@@ -86,7 +86,9 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
             const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
             ShimOptions options(configurationSource);
 
-            const auto hr = TryCreateApplication(pHttpContext, options);
+            std::vector<byte> error;
+
+            const auto hr = TryCreateApplication(pHttpContext, options, error);
 
             if (FAILED_LOG(hr))
             {
@@ -97,12 +99,20 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                     pHttpApplication.GetApplicationId(),
                     hr);
 
+                // TODO we have to propagate this super far to where we capture stdout errors... Not great :/
+                std::vector<byte> passInError;
+                if (options.QueryIsDevelopment())
+                {
+                    passInError = error;
+                }
+
                 m_pApplication = make_application<ServerErrorApplication>(
                     pHttpApplication,
                     hr,
                     g_hServerModule,
                     options.QueryDisableStartupPage(),
-                    options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML);
+                    options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML,
+                    passInError);
             }
             return S_OK;
         }
@@ -131,7 +141,7 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 }
 
 HRESULT
-APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options)
+APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, std::vector<byte>& error)
 {
     const auto startupEvent = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_STARTUP_SUSPEND_EVENT");
     if (startupEvent.has_value())
@@ -157,7 +167,7 @@ APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOpt
         }
     }
 
-    RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), m_pApplicationFactory, options));
+    RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), m_pApplicationFactory, options, error));
     LOG_INFO(L"Creating handler application");
 
     IAPPLICATION * newApplication;
