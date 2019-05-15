@@ -36,9 +36,9 @@
     <!-- Disabled until https://github.com/dotnet/core-eng/issues/5506 is resolved -->
     <!-- <HelixAvailableTargetQueue Condition="'$(IsWindowsOnlyTest)' == 'true'" Include="Windows.7.Amd64.Open" /> -->
 
-    <HelixContent Include="$(RepositoryRoot)src\Servers\IIS\tools\update_schema.ps1" />
-    <HelixContent Include="$(RepositoryRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
-    <HelixContent Include="$(RepositoryRoot)src\Servers\IIS\tools\TestCert.pfx" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
     <HelixContent Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
 
     <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
