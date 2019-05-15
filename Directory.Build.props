@@ -59,11 +59,11 @@
 
   <!-- Source code settings -->
   <PropertyGroup>
-    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
     <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
-    <GoogleTestSubmoduleRoot>$(RepositoryRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
+    <GoogleTestSubmoduleRoot>$(RepoRoot)src\submodules\googletest\</GoogleTestSubmoduleRoot>
     <!-- Embed source files that are not tracked by the source control manager in the PDB. -->
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <!-- Additional assembly attributes are already configured to include the source revision ID. -->
@@ -159,15 +159,15 @@
 
   <!-- The location of the local installation of the .NET Core shared framework. -->
   <PropertyGroup>
-    <LocalDotNetRoot Condition="'$(TargetOSName)' == 'win'">$(RepositoryRoot).dotnet\$(TargetArchitecture)\</LocalDotNetRoot>
-    <LocalDotNetRoot Condition="'$(TargetOSName)' != 'win'">$(RepositoryRoot).dotnet\</LocalDotNetRoot>
+    <LocalDotNetRoot Condition="'$(TargetOSName)' == 'win'">$(RepoRoot).dotnet\$(TargetArchitecture)\</LocalDotNetRoot>
+    <LocalDotNetRoot Condition="'$(TargetOSName)' != 'win'">$(RepoRoot).dotnet\</LocalDotNetRoot>
     <!-- Override the SDK default and point to local .dotnet folder. -->
     <NetCoreTargetingPackRoot>$(LocalDotNetRoot)packs\</NetCoreTargetingPackRoot>
   </PropertyGroup>
 
   <!-- Defines project type conventions. -->
   <PropertyGroup>
-    <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepositoryRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
+    <RepoRelativeProjectDir>$([MSBuild]::MakeRelative($(RepoRoot), $(MSBuildProjectDirectory)))</RepoRelativeProjectDir>
 
     <IsBenchmarkProject Condition="$(MSBuildProjectName.EndsWith('.Performance')) OR $(RepoRelativeProjectDir.Contains('perf'))">true</IsBenchmarkProject>
     <IsTestProject Condition="$(MSBuildProjectName.EndsWith('Tests')) OR $(MSBuildProjectName.EndsWith('.Test'))">true</IsTestProject>

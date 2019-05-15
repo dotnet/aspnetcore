@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <SignalRTestBase>$(RepositoryRoot)src\SignalR\common\SignalR.Common\test\Internal\Protocol\</SignalRTestBase>
+    <SignalRTestBase>$(RepoRoot)src\SignalR\common\SignalR.Common\test\Internal\Protocol\</SignalRTestBase>
   </PropertyGroup>
 
   <ItemGroup>

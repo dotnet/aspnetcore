@@ -12,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="$(RepositoryRoot)src\Shared\Buffers.MemoryPool\*.cs" />
+    <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

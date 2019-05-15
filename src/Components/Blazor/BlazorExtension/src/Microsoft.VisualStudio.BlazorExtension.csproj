@@ -114,7 +114,7 @@
     <Content Include="..\..\..\THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true">
       <Link>Content\THIRD-PARTY-NOTICES.txt</Link>
     </Content>
-    <Content Include="$(RepositoryRoot)LICENSE.txt" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true">
+    <Content Include="$(RepoRoot)LICENSE.txt" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true">
       <Link>Content\LICENSE.txt</Link>
     </Content>
 

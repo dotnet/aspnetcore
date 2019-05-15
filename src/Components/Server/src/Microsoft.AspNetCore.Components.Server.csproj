@@ -22,15 +22,15 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <MessagePackRoot>$(RepositoryRoot)src\submodules\MessagePack-CSharp\src\MessagePack\</MessagePackRoot>
+    <MessagePackRoot>$(RepoRoot)src\submodules\MessagePack-CSharp\src\MessagePack\</MessagePackRoot>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="$(ComponentsSharedSourceRoot)src\CacheHeaderSettings.cs" Link="Shared\CacheHeaderSettings.cs" />
 
-    <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
-    <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
-    <Compile Include="$(RepositoryRoot)src\SignalR\common\Shared\MemoryBufferWriter.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageFormatter.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(RepoRoot)src\SignalR\common\Shared\BinaryMessageParser.cs" LinkBase="BlazorPack" />
+    <Compile Include="$(RepoRoot)src\SignalR\common\Shared\MemoryBufferWriter.cs" LinkBase="BlazorPack" />
 
     <!-- MessagePack -->
     <Compile Include="$(MessagePackRoot)BufferWriter.cs" LinkBase="BlazorPack\MessagePack" />
