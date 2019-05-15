@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Components
             // Arrange
             var renderer = new TestRenderer();
             var rootComponent = WrapInAuthorizeView();
-            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Nellie");
+            rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
 
             // Act
             renderer.AssignRootComponentId(rootComponent);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components
             var rootComponent = WrapInAuthorizeView(
                 childContent: context => builder =>
                     builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
-            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Nellie");
+            rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
 
             // Act
             renderer.AssignRootComponentId(rootComponent);
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components
             var rootComponent = WrapInAuthorizeView(
                 authorizedContent: context => builder =>
                     builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
-            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Nellie");
+            rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
 
             // Act
             renderer.AssignRootComponentId(rootComponent);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Components
             var rootComponent = WrapInAuthorizeView(
                 childContent: context => builder =>
                     builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
-            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Nellie");
+            rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
 
             // Render in initial state. From other tests, we know this renders
             // a single batch with the correct output.
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Components
                 .GetComponentFrames<AuthorizeView>().Single().ComponentId;
 
             // Act
-            rootComponent.AuthenticationState = TestAuthState.AuthenticatedAs("Ronaldo");
+            rootComponent.AuthenticationState = CreateAuthenticationState("Ronaldo");
             rootComponent.TriggerRender();
 
             // Assert: It's only one new diff. We skip the intermediate "await" render state
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Components
             var renderer = new TestRenderer();
             var rootComponent = WrapInAuthorizeView(
                 notAuthorizedContent: builder => builder.AddContent(0, "You are not authorized"));
-            var authTcs = new TaskCompletionSource<IAuthenticationState>();
+            var authTcs = new TaskCompletionSource<AuthenticationState>();
             rootComponent.AuthenticationState = authTcs.Task;
 
             // Act/Assert 1: Auth pending
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Components
             Assert.Empty(diff1.Edits);
 
             // Act/Assert 2: Auth process completes asynchronously
-            authTcs.SetResult(new TestAuthState());
+            authTcs.SetResult(new AuthenticationState(new ClaimsPrincipal()));
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Components
             var rootComponent = WrapInAuthorizeView(
                 authorizingContent: builder => builder.AddContent(0, "Auth pending..."),
                 authorizedContent: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
-            var authTcs = new TaskCompletionSource<IAuthenticationState>();
+            var authTcs = new TaskCompletionSource<AuthenticationState>();
             rootComponent.AuthenticationState = authTcs.Task;
 
             // Act/Assert 1: Auth pending
@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Components
             });
 
             // Act/Assert 2: Auth process completes asynchronously
-            authTcs.SetResult(TestAuthState.AuthenticatedAs("Monsieur").Result);
+            authTcs.SetResult(CreateAuthenticationState("Monsieur").Result);
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
@@ -255,8 +255,8 @@ namespace Microsoft.AspNetCore.Components
         }
 
         private static TestAuthStateProviderComponent WrapInAuthorizeView(
-            RenderFragment<IAuthenticationState> childContent = null,
-            RenderFragment<IAuthenticationState> authorizedContent = null,
+            RenderFragment<AuthenticationState> childContent = null,
+            RenderFragment<AuthenticationState> authorizedContent = null,
             RenderFragment notAuthorizedContent = null,
             RenderFragment authorizingContent = null)
         {
@@ -275,8 +275,8 @@ namespace Microsoft.AspNetCore.Components
         {
             private readonly RenderFragment _childContent;
 
-            public Task<IAuthenticationState> AuthenticationState { get; set; }
-                = Task.FromResult<IAuthenticationState>(new TestAuthState());
+            public Task<AuthenticationState> AuthenticationState { get; set; }
+                = Task.FromResult(new AuthenticationState(new ClaimsPrincipal()));
 
             public TestAuthStateProviderComponent(RenderFragment childContent)
             {
@@ -285,33 +285,24 @@ namespace Microsoft.AspNetCore.Components
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
-                builder.OpenComponent<CascadingValue<Task<IAuthenticationState>>>(0);
-                builder.AddAttribute(1, nameof(CascadingValue<Task<IAuthenticationState>>.Value), AuthenticationState);
+                builder.OpenComponent<CascadingValue<Task<AuthenticationState>>>(0);
+                builder.AddAttribute(1, nameof(CascadingValue<Task<AuthenticationState>>.Value), AuthenticationState);
                 builder.AddAttribute(2, RenderTreeBuilder.ChildContent, _childContent);
                 builder.CloseComponent();
             }
         }
 
-        class TestAuthState : IAuthenticationState
+        public static Task<AuthenticationState> CreateAuthenticationState(string username)
+            => Task.FromResult(new AuthenticationState(
+                new ClaimsPrincipal(new TestIdentity { Name = username })));
+
+        class TestIdentity : IIdentity
         {
-            public ClaimsPrincipal User { get; set; }
+            public string AuthenticationType => "Test";
 
-            public bool IsPending => false;
+            public bool IsAuthenticated => true;
 
-            public static Task<IAuthenticationState> AuthenticatedAs(string username)
-                => Task.FromResult<IAuthenticationState>(new TestAuthState
-                {
-                    User = new ClaimsPrincipal(new TestIdentity { Name = username })
-                });
-
-            class TestIdentity : IIdentity
-            {
-                public string AuthenticationType => "Test";
-
-                public bool IsAuthenticated => true;
-
-                public string Name { get; set; }
-            }
+            public string Name { get; set; }
         }
     }
 }

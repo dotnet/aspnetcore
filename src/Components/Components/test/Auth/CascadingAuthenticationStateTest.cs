@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components
             var services = new ServiceCollection();
             var authStateProvider = new TestAuthStateProvider()
             {
-                CurrentAuthStateTask = Task.FromResult<IAuthenticationState>(new TestAuthState("Bert"))
+                CurrentAuthStateTask = Task.FromResult(CreateAuthenticationState("Bert"))
             };
             services.AddSingleton<AuthenticationStateProvider>(authStateProvider);
 
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange: Service
             var services = new ServiceCollection();
-            var authStateTaskCompletionSource = new TaskCompletionSource<IAuthenticationState>();
+            var authStateTaskCompletionSource = new TaskCompletionSource<AuthenticationState>();
             var authStateProvider = new TestAuthStateProvider()
             {
                 CurrentAuthStateTask = authStateTaskCompletionSource.Task
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Components
 
             // Act/Assert 2: Auth state fetch task completes in background
             // No new renders yet, because the cascading parameter itself hasn't changed
-            authStateTaskCompletionSource.SetResult(new TestAuthState("Bert"));
+            authStateTaskCompletionSource.SetResult(CreateAuthenticationState("Bert"));
             Assert.Single(renderer.Batches);
 
             // Act/Assert 3: Refresh display
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Components
             var services = new ServiceCollection();
             var authStateProvider = new TestAuthStateProvider()
             {
-                CurrentAuthStateTask = Task.FromResult<IAuthenticationState>(new TestAuthState(null))
+                CurrentAuthStateTask = Task.FromResult(CreateAuthenticationState(null))
             };
             services.AddSingleton<AuthenticationStateProvider>(authStateProvider);
 
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Components
 
             // Act 2: AuthenticationStateProvider issues notification
             authStateProvider.TriggerAuthenticationStateChanged(
-                Task.FromResult<IAuthenticationState>(new TestAuthState("Bert")));
+                Task.FromResult(CreateAuthenticationState("Bert")));
 
             // Assert 2: Re-renders content
             Assert.Equal(2, renderer.Batches.Count);
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Components
         {
             int numRenders;
 
-            [CascadingParameter] Task<IAuthenticationState> AuthStateTask { get; set; }
+            [CascadingParameter] Task<AuthenticationState> AuthStateTask { get; set; }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
@@ -191,32 +191,23 @@ namespace Microsoft.AspNetCore.Components
 
         class TestAuthStateProvider : AuthenticationStateProvider
         {
-            public Task<IAuthenticationState> CurrentAuthStateTask { get; set; }
+            public Task<AuthenticationState> CurrentAuthStateTask { get; set; }
 
-            public override Task<IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
+            public override Task<AuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
             {
                 return CurrentAuthStateTask;
             }
 
-            internal void TriggerAuthenticationStateChanged(Task<IAuthenticationState> authState)
+            internal void TriggerAuthenticationStateChanged(Task<AuthenticationState> authState)
             {
                 NotifyAuthenticationStateChanged(authState);
             }
         }
 
-        class TestAuthState : IAuthenticationState
-        {
-            public TestAuthState(string usernameOrNull)
-            {
-                User = new ClaimsPrincipal(usernameOrNull == null
-                    ? (IIdentity)new ClaimsIdentity()
-                    : new TestIdentity { Name = usernameOrNull });
-            }
-
-            public ClaimsPrincipal User { get; }
-
-            public bool IsPending => false;
-        }
+        public static AuthenticationState CreateAuthenticationState(string username)
+            => new AuthenticationState(new ClaimsPrincipal(username == null
+                ? new ClaimsIdentity()
+                : (IIdentity)new TestIdentity { Name = username }));
 
         class TestIdentity : IIdentity
         {

@@ -1,11 +1,11 @@
 @namespace Microsoft.AspNetCore.Components
 @implements IDisposable
-@inject AuthenticationStateProvider AuthStateProvider
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
-<CascadingValue T="Task<IAuthenticationState>" Value="@_currentAuthStateTask" ChildContent="@ChildContent" />
+<CascadingValue T="Task<AuthenticationState>" Value="@_currentAuthenticationStateTask" ChildContent="@ChildContent" />
 
 @functions {
-    private Task<IAuthenticationState> _currentAuthStateTask;
+    private Task<AuthenticationState> _currentAuthenticationStateTask;
 
     /// <summary>
     /// The content to which the authentication state should be provided.
@@ -14,23 +14,23 @@
 
     protected override void OnInit()
     {
-        AuthStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        AuthenticationStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
 
-        _currentAuthStateTask = AuthStateProvider
+        _currentAuthenticationStateTask = AuthenticationStateProvider
             .GetAuthenticationStateAsync(forceRefresh: false);
     }
 
-    private void OnAuthenticationStateChanged(Task<IAuthenticationState> newAuthStateTask)
+    private void OnAuthenticationStateChanged(Task<AuthenticationState> newAuthStateTask)
     {
         Invoke(() =>
         {
-            _currentAuthStateTask = newAuthStateTask;
+            _currentAuthenticationStateTask = newAuthStateTask;
             StateHasChanged();
         });
     }
 
     void IDisposable.Dispose()
     {
-        AuthStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        AuthenticationStateProvider.AuthenticationStateChanged -= OnAuthenticationStateChanged;
     }
 }

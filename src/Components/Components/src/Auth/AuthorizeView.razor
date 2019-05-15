@@ -1,12 +1,12 @@
 @namespace Microsoft.AspNetCore.Components
 
-@if (currentAuthState == null)
+@if (currentAuthenticationState == null)
 {
     @Authorizing
 }
 else if (IsAuthorized())
 {
-    @((Authorized ?? ChildContent)?.Invoke(currentAuthState))
+    @((Authorized ?? ChildContent)?.Invoke(currentAuthenticationState))
 }
 else
 {
@@ -14,14 +14,14 @@ else
 }
 
 @functions {
-    private IAuthenticationState currentAuthState;
+    private AuthenticationState currentAuthenticationState;
 
-    [CascadingParameter] private Task<IAuthenticationState> AuthenticationState { get; set; }
+    [CascadingParameter] private Task<AuthenticationState> AuthenticationState { get; set; }
 
     /// <summary>
     /// The content that will be displayed if the user is authorized.
     /// </summary>
-    [Parameter] public RenderFragment<IAuthenticationState> ChildContent { get; private set; }
+    [Parameter] public RenderFragment<AuthenticationState> ChildContent { get; private set; }
 
     /// <summary>
     /// The content that will be displayed if the user is not authorized.
@@ -32,7 +32,7 @@ else
     /// The content that will be displayed if the user is authorized.
     /// If you specify a value for this parameter, do not also specify a value for <see cref="ChildContent"/>.
     /// </summary>
-    [Parameter] public RenderFragment<IAuthenticationState> Authorized { get; private set; }
+    [Parameter] public RenderFragment<AuthenticationState> Authorized { get; private set; }
 
     /// <summary>
     /// The content that will be displayed while asynchronous authorization is in progress.
@@ -51,10 +51,10 @@ else
 
         // First render in pending state
         // If the task has already completed, this render will be skipped
-        currentAuthState = null;
+        currentAuthenticationState = null;
 
         // Then render in completed state
-        currentAuthState = await AuthenticationState;
+        currentAuthenticationState = await AuthenticationState;
     }
 
     private bool IsAuthorized()
@@ -63,6 +63,6 @@ else
         // by the [Authorize] attribute, e.g., "Roles" and "Policy". This is on hold until we're
         // able to reference the policy evaluator APIs from this package.
 
-        return currentAuthState.User?.Identity?.IsAuthenticated == true;
+        return currentAuthenticationState.User?.Identity?.IsAuthenticated == true;
     }
 }

@@ -19,29 +19,18 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     /// </summary>
     internal class FixedAuthenticationStateProvider : AuthenticationStateProvider
     {
-        private Task<IAuthenticationState> _authenticationStateTask;
+        private Task<AuthenticationState> _authenticationStateTask;
 
         public void Initialize(ClaimsPrincipal user)
         {
-            var authState = new FixedAuthenticationState(user);
-            _authenticationStateTask = Task.FromResult((IAuthenticationState)authState);
+            _authenticationStateTask = Task.FromResult(new AuthenticationState(user));
         }
 
-        public override Task<IAuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
+        public override Task<AuthenticationState> GetAuthenticationStateAsync(bool forceRefresh)
         {
             // Since the authentication state is fixed, forceRefresh makes no difference
             return _authenticationStateTask
                 ?? throw new InvalidOperationException($"{nameof(GetAuthenticationStateAsync)} was called before {nameof(Initialize)}.");
-        }
-
-        private class FixedAuthenticationState : IAuthenticationState
-        {
-            public FixedAuthenticationState(ClaimsPrincipal user)
-            {
-                User = user ?? throw new ArgumentNullException(nameof(user));
-            }
-
-            public ClaimsPrincipal User { get; }
         }
     }
 }
