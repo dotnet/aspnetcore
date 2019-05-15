@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace TestSite
@@ -103,6 +105,12 @@ namespace TestSite
         public Task CreateFile(HttpContext context)
         {
             var hostingEnv = context.RequestServices.GetService<IWebHostEnvironment>();
+
+            if (context.Connection.LocalIpAddress == null || context.Connection.RemoteIpAddress == null)
+            {
+                throw new Exception("Failed to set local and remote ip addresses");
+            }
+
             File.WriteAllText(System.IO.Path.Combine(hostingEnv.ContentRootPath, "Started.txt"), "");
             return Task.CompletedTask;
         }
