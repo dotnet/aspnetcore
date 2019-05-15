@@ -51,35 +51,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public ValueTask<FlushResult> FlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
-            var flushValueTask = _writer.FlushAsync(cancellationToken);
-
-            if (minRate != null)
-            {
-                _timeoutControl.BytesWrittenToBuffer(minRate, count);
-            }
-
-            if (flushValueTask.IsCompletedSuccessfully)
-            {
-                return new ValueTask<FlushResult>(flushValueTask.Result);
-            }
-
             // https://github.com/dotnet/corefxlab/issues/1334
             // Pipelines don't support multiple awaiters on flush.
-            // While it's acceptable to call PipeWriter.FlushAsync again before the last FlushAsync completes,
-            // it is not acceptable to attach a new continuation (via await, AsTask(), etc..). In this case,
-            // we find previous flush Task which still accounts for any newly committed bytes and await that.
             lock (_flushLock)
             {
-                if (_lastFlushTask == null || _lastFlushTask.IsCompleted)
+                if (_lastFlushTask != null && !_lastFlushTask.IsCompleted)
                 {
-                    _lastFlushTask = flushValueTask.AsTask();
+                    _lastFlushTask = AwaitLastFlushAndTimeFlushAsync(_lastFlushTask, minRate, count, outputAborter, cancellationToken);
+                    return new ValueTask<FlushResult>(_lastFlushTask);
                 }
 
                 return TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
             }
         }
 
-        private async ValueTask<FlushResult> TimeFlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        private ValueTask<FlushResult> TimeFlushAsync(MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        {
+            var pipeFlushTask = _writer.FlushAsync(cancellationToken);
+
+            if (minRate != null)
+            {
+                _timeoutControl.BytesWrittenToBuffer(minRate, count);
+            }
+
+            if (pipeFlushTask.IsCompletedSuccessfully)
+            {
+                return new ValueTask<FlushResult>(pipeFlushTask.Result);
+            }
+
+            _lastFlushTask = TimeFlushAsyncAwaited(pipeFlushTask, minRate, count, outputAborter, cancellationToken);
+            return new ValueTask<FlushResult>(_lastFlushTask);
+        }
+
+        private async Task<FlushResult> TimeFlushAsyncAwaited(ValueTask<FlushResult> pipeFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
         {
             if (minRate != null)
             {
@@ -88,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             try
             {
-                return await _lastFlushTask;
+                return await pipeFlushTask;
             }
             catch (OperationCanceledException ex) when (outputAborter != null)
             {
@@ -110,6 +114,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
 
             return default;
+        }
+
+        private async Task<FlushResult> AwaitLastFlushAndTimeFlushAsync(Task lastFlushTask, MinDataRate minRate, long count, IHttpOutputAborter outputAborter, CancellationToken cancellationToken)
+        {
+            await lastFlushTask;
+            return await TimeFlushAsync(minRate, count, outputAborter, cancellationToken);
         }
     }
 }

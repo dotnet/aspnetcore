@@ -28,7 +28,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <HelixContent Include="$(RepositoryRoot)eng\helix\content\**\*" />
+    <HelixContent Include="$(RepoRoot)eng\helix\content\**\*" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">

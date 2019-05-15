@@ -16,8 +16,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <HelixContent Include="$(RepositoryRoot)src\Servers\IIS\tools\TestCert.pfx" />
-    <HelixContent Include="$(RepositoryRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
     <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
 

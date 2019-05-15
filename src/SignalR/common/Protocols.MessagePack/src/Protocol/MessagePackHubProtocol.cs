@@ -272,14 +272,13 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
             var headerCount = ReadMapLength(input, ref offset, "headers");
             if (headerCount > 0)
             {
-                // If headerCount is larger than int.MaxValue, things are going to go horribly wrong anyway :)
-                var headers = new Dictionary<string, string>((int)headerCount, StringComparer.Ordinal);
+                var headers = new Dictionary<string, string>(StringComparer.Ordinal);
 
                 for (var i = 0; i < headerCount; i++)
                 {
                     var key = ReadString(input, ref offset, $"headers[{i}].Key");
                     var value = ReadString(input, ref offset, $"headers[{i}].Value");
-                    headers[key] = value;
+                    headers.Add(key, value);
                 }
                 return headers;
             }

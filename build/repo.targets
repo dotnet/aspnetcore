@@ -80,8 +80,8 @@
 -->
 <Project>
   <ItemGroup>
-    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepositoryRoot)%(ProjectFileRelativePath)"  />', '%0A    ')
-    @(_ProjectReferenceProviderWithRefAssembly->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepositoryRoot)%(ProjectFileRelativePath)" RefProjectPath="%24(RepositoryRoot)%(ReferenceAssemblyProjectFileRelativePath)" />', '%0A    ')
+    @(_ProjectReferenceProvider->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)"  />', '%0A    ')
+    @(_ProjectReferenceProviderWithRefAssembly->'<ProjectReferenceProvider Include="%(Identity)" ProjectPath="%24(RepoRoot)%(ProjectFileRelativePath)" RefProjectPath="%24(RepoRoot)%(ReferenceAssemblyProjectFileRelativePath)" />', '%0A    ')
   </ItemGroup>
 </Project>
 ]]></ProjectListContent>
