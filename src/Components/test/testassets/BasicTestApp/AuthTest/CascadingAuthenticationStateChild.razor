@@ -8,26 +8,30 @@ else
 {
     <p>
         Authenticated:
-        <span id="identity-authenticated">@user.Identity.IsAuthenticated</span>
+        <strong id="identity-authenticated">@user.Identity.IsAuthenticated</strong>
     </p>
 
     <p>
         Name:
-        <span id="identity-name">@user.Identity.Name</span>
+        <strong id="identity-name">@user.Identity.Name</strong>
     </p>
 
     <p>
         Test claim:
         @if (user.HasClaim(TestClaimPredicate) == true)
         {
-            <span id="test-claim">@user.Claims.Single(c => TestClaimPredicate(c)).Value</span>
+            <strong id="test-claim">@user.Claims.Single(c => TestClaimPredicate(c)).Value</strong>
         }
         else
         {
-            <span id="test-claim">(none)</span>
+            <strong id="test-claim">(none)</strong>
         }
     </p>
 }
+
+<hr />
+
+<p>To change the underlying authentication state, <a target="_blank" href="/Authentication">go here</a>.</p>
 
 @functions
 {
