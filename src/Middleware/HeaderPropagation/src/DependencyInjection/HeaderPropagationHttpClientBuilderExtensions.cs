@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds a message handler for propagating headers collected by the <see cref="HeaderPropagationMiddleware"/> to a outgoing request.
         /// </summary>
         /// <remarks>
-        /// The headers will be named using the value specified in <see cref="HeaderPropagationEntry.CapturedHeaderName"/>.
+        /// When using this method, all the configured headers will be applied to the outgoing HTTP requests.
         /// </remarks>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/> to add the message handler to.</param>
         /// <returns>The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.</returns>
@@ -47,26 +47,26 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <remarks>This also allows to redefine the name to use for a header in the outgoing request.</remarks>
         /// <param name="builder">The <see cref="IHttpClientBuilder"/> to add the message handler to.</param>
-        /// <param name="configureOptions">A delegate used to configure the <see cref="HeaderPropagationMessageHandlerOptions"/>.</param>
+        /// <param name="configure">A delegate used to configure the <see cref="HeaderPropagationMessageHandlerOptions"/>.</param>
         /// <returns>The <see cref="IHttpClientBuilder"/> so that additional calls can be chained.</returns>
-        public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder, Action<HeaderPropagationMessageHandlerOptions> configureOptions)
+        public static IHttpClientBuilder AddHeaderPropagation(this IHttpClientBuilder builder, Action<HeaderPropagationMessageHandlerOptions> configure)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            if (configureOptions == null)
+            if (configure == null)
             {
-                throw new ArgumentNullException(nameof(configureOptions));
+                throw new ArgumentNullException(nameof(configure));
             }
 
             builder.Services.AddHeaderPropagation();
 
-            builder.AddHttpMessageHandler(services=>
+            builder.AddHttpMessageHandler(services =>
             {
                 var options = new HeaderPropagationMessageHandlerOptions();
-                configureOptions(options);
+                configure(options);
                 return new HeaderPropagationMessageHandler(options, services.GetRequiredService<HeaderPropagationValues>());
             });
 
