@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <PackageId>Microsoft.AspNetCore.ANCMSymbols</PackageId>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
@@ -18,10 +18,14 @@
     <ItemGroup>
       <None Include="%(ShimComponents.DllLocation)"
             Pack="true"
-            PackagePath="runtimes/win-%(ShimComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
+            PackagePath="runtimes/win-%(ShimComponents.Platform)/native/$(NativeAssetsTargetFramework)" />
       <None Include="%(ShimComponents.PdbLocation)"
             Pack="true"
-            PackagePath="runtimes/win-%(ShimComponents.Platform)/nativeassets/$(NativeAssetsTargetFramework)" />
+            PackagePath="runtimes/win-%(ShimComponents.Platform)/native/$(NativeAssetsTargetFramework)" />
     </ItemGroup>
   </Target>
+
+  <!-- This project does not produce a binary. Disable the compiler. -->
+  <Target Name="Compile" />
+  <Target Name="CopyFilesToOutputDirectory" />
 </Project>
