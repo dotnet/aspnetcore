@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.AzureAD.UI;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -74,6 +75,14 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.True(openIdOptions.UseTokenLifetime);
             Assert.Equal("/signin-oidc", openIdOptions.CallbackPath);
             Assert.Equal(AzureADDefaults.CookieScheme, openIdOptions.SignInScheme);
+
+            var cookieAuthenticationOptionsMonitor = provider.GetService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.NotNull(cookieAuthenticationOptionsMonitor);
+            var cookieAuthenticationOptions = cookieAuthenticationOptionsMonitor.Get(AzureADDefaults.CookieScheme);
+            Assert.Equal("/AzureAD/Account/SignIn/AzureAD", cookieAuthenticationOptions.LoginPath);
+            Assert.Equal("/AzureAD/Account/SignOut/AzureAD", cookieAuthenticationOptions.LogoutPath);
+            Assert.Equal("/AzureAD/Account/AccessDenied", cookieAuthenticationOptions.AccessDeniedPath);
+            Assert.Equal(SameSiteMode.None, cookieAuthenticationOptions.Cookie.SameSite);
         }
 
         [Fact]
