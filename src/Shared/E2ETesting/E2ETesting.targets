@@ -37,6 +37,7 @@
     </PropertyGroup>
 
     <!-- JAVA -->
+    <!-- TODO this shouldn't be a requirement -->
     <Message Importance="High" Text="Ensuring JAVA is available" />
     <Exec Command="java -version" />
     <Message Importance="High" Text="JAVA is available on the PATH" />
