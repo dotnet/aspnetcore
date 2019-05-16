@@ -416,6 +416,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
         }
 
+        [Fact]
+        public async Task OnAuthenticate_CanSetSettings()
+        {
+            var loggerProvider = new HandshakeErrorLoggerProvider();
+            LoggerFactory.AddProvider(loggerProvider);
+
+            var testCert = TestResources.GetTestCertificate();
+            var onAuthenticateCalled = false;
+
+            await using (var server = new TestServer(context => Task.CompletedTask,
+                new TestServiceContext(LoggerFactory),
+                listenOptions =>
+                {
+                    listenOptions.UseHttps(httpsOptions =>
+                    {
+                        httpsOptions.ServerCertificateSelector = (_, __) => throw new NotImplementedException();
+                        httpsOptions.OnAuthenticate = (connectionContext, authOptions) =>
+                        {
+                            Assert.Null(authOptions.ServerCertificate);
+                            Assert.NotNull(authOptions.ServerCertificateSelectionCallback);
+                            authOptions.ServerCertificate = testCert;
+                            authOptions.ServerCertificateSelectionCallback = null;
+                            onAuthenticateCalled = true;
+                        };
+                    });
+                }))
+            {
+                using (var connection = server.CreateConnection())
+                using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
+                {
+                    await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
+                            enabledSslProtocols: SslProtocols.None,
+                            checkCertificateRevocation: false);
+                }
+            }
+
+            Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
+        }
+
         private class HandshakeErrorLoggerProvider : ILoggerProvider
         {
             public HttpsConnectionFilterLogger FilterLogger { get; } = new HttpsConnectionFilterLogger();
