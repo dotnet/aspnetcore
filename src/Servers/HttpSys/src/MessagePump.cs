@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Diagnostics.Contracts;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,7 +13,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.HttpSys.Internal;
-using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private int _maxAccepts;
         private int _acceptorCounts;
-        private Func<HttpSysListener, NativeRequestContext, IThreadPoolWorkItem> _getRequestWorker;
+        private IWorkerFactory _workerFactory;
 
         private volatile int _stopping;
         private int _outstandingRequests;
@@ -119,11 +119,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             // Can't call Start twice
-            Contract.Assert(_getRequestWorker == null);
+            Contract.Assert(_workerFactory == null);
 
             Contract.Assert(application != null);
 
-            _getRequestWorker = (server, nativeRequestContext) => ApplicationWrapper<TContext>.RentWrapper(server, nativeRequestContext, this, application);
+            _workerFactory = new WorkerFactory<TContext>(this, application);
 
             Listener.Start();
 
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     var requestContext = await Listener.AcceptAsync().SupressContext();
                     try
                     {
-                        var worker = _getRequestWorker(requestContext.Server, requestContext.MemoryBlob);
+                        var worker = _workerFactory.Get(requestContext.Server, requestContext.MemoryBlob);
                         ThreadPool.UnsafeQueueUserWorkItem(worker, preferLocal: false);
                     }
                     catch (Exception ex)
@@ -238,108 +238,138 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Listener.Dispose();
         }
 
-        private sealed class ApplicationWrapper<TContext> : IThreadPoolWorkItem
+        private interface IWorkerFactory
+        {
+            IThreadPoolWorkItem Get(HttpSysListener server, NativeRequestContext requestContext);
+        }
+
+        private sealed class WorkerFactory<TContext> : IWorkerFactory
         {
             private const int _maxPooledContexts = 512;
-            private readonly static ConcurrentQueueSegment<ApplicationWrapper<TContext>> _requestContexts = new ConcurrentQueueSegment<ApplicationWrapper<TContext>>(_maxPooledContexts);
-
-            private readonly RequestContext<TContext> _requestContext;
+            private readonly static ConcurrentQueueSegment<ApplicationWorker> _workers = new ConcurrentQueueSegment<ApplicationWorker>(_maxPooledContexts);
 
             private MessagePump _messagePump;
             private IHttpApplication<TContext> _application;
 
-            private ApplicationWrapper()
-            {
-                _requestContext = new RequestContext<TContext>();
-            }
-
-            private void Initialize(HttpSysListener server, NativeRequestContext nativeRequestContext, MessagePump messagePump, IHttpApplication<TContext> application)
+            public WorkerFactory(MessagePump messagePump, IHttpApplication<TContext> application)
             {
                 _messagePump = messagePump;
                 _application = application;
-                _requestContext.Initialize(server, nativeRequestContext);
             }
 
-            public void Execute() => _ = ProcessRequestAsync();
-
-            private async Task ProcessRequestAsync()
+            public IThreadPoolWorkItem Get(HttpSysListener server, NativeRequestContext requestContext)
             {
-                try
-                {
-                    if (_messagePump.Stopping)
-                    {
-                        SetFatalResponse(_requestContext, 503);
-                        return;
-                    }
 
-                    TContext context = default;
-                    Interlocked.Increment(ref _messagePump._outstandingRequests);
+                if (!_workers.TryDequeue(out var worker))
+                {
+                    worker = new ApplicationWorker(this);
+                }
+
+                worker.Initialize(server, requestContext, _messagePump, _application);
+                return worker;
+            }
+
+            private void Return(ApplicationWorker worker)
+            {
+                worker.Reset();
+
+                _workers.TryEnqueue(worker);
+            }
+
+            private sealed class ApplicationWorker : IThreadPoolWorkItem
+            {
+                private readonly WorkerFactory<TContext> _ownerFactory;
+                private readonly RequestContext<TContext> _requestContext;
+
+                private MessagePump _messagePump;
+                private IHttpApplication<TContext> _application;
+
+                public ApplicationWorker(WorkerFactory<TContext> ownerFactory)
+                {
+                    _ownerFactory = ownerFactory;
+                    _requestContext = new RequestContext<TContext>();
+                }
+
+                public void Initialize(HttpSysListener server, NativeRequestContext nativeRequestContext, MessagePump messagePump, IHttpApplication<TContext> application)
+                {
+                    _messagePump = messagePump;
+                    _application = application;
+                    _requestContext.Initialize(server, nativeRequestContext);
+                }
+
+                public void Reset()
+                {
+                    _requestContext.Reset();
+                    _messagePump = null;
+                    _application = null;
+                }
+
+                public void Execute() => _ = ProcessRequestAsync();
+
+                private async Task ProcessRequestAsync()
+                {
+                    var requestContext = _requestContext;
+                    var messagePump = _messagePump;
                     try
                     {
-                        var featureContext = _requestContext.FeatureContext;
-                        context = _application.CreateContext(featureContext.Features);
+                        if (messagePump.Stopping)
+                        {
+                            SetFatalResponse(requestContext, 503);
+                            return;
+                        }
+
+                        TContext context = default;
+                        Interlocked.Increment(ref messagePump._outstandingRequests);
                         try
                         {
-                            await _application.ProcessRequestAsync(context).SupressContext();
-                            await featureContext.OnResponseStart().SupressContext();
+                            var featureContext = requestContext.FeatureContext;
+                            context = _application.CreateContext(featureContext.Features);
+                            try
+                            {
+                                await _application.ProcessRequestAsync(context).SupressContext();
+                                await featureContext.OnResponseStart().SupressContext();
+                            }
+                            finally
+                            {
+                                await featureContext.OnCompleted().SupressContext();
+                            }
+                            _application.DisposeContext(context, null);
+                            requestContext.Dispose();
+                            // null out the request context as we no longer own it so shouldn't call Abort in the finally blocks.
+                            requestContext = null;
+
+                            _ownerFactory.Return(this);
+                        }
+                        catch (Exception ex)
+                        {
+                            LogHelper.LogException(messagePump._logger, "ProcessRequestAsync", ex);
+                            _application.DisposeContext(context, ex);
+                            if (requestContext.Response.HasStarted)
+                            {
+                                requestContext.Abort();
+                            }
+                            else
+                            {
+                                // We haven't sent a response yet, try to send a 500 Internal Server Error
+                                requestContext.Response.Headers.Clear();
+                                SetFatalResponse(requestContext, 500);
+                            }
                         }
                         finally
                         {
-                            await featureContext.OnCompleted().SupressContext();
+                            if (Interlocked.Decrement(ref messagePump._outstandingRequests) == 0 && messagePump.Stopping)
+                            {
+                                LogHelper.LogInfo(messagePump._logger, "All requests drained.");
+                                messagePump._shutdownSignal.TrySetResult(0);
+                            }
                         }
-                        _application.DisposeContext(context, null);
-                        _requestContext.Dispose();
                     }
                     catch (Exception ex)
                     {
-                        LogHelper.LogException(_messagePump._logger, "ProcessRequestAsync", ex);
-                        _application.DisposeContext(context, ex);
-                        if (_requestContext.Response.HasStarted)
-                        {
-                            _requestContext.Abort();
-                        }
-                        else
-                        {
-                            // We haven't sent a response yet, try to send a 500 Internal Server Error
-                            _requestContext.Response.Headers.Clear();
-                            SetFatalResponse(_requestContext, 500);
-                        }
-                    }
-                    finally
-                    {
-                        if (Interlocked.Decrement(ref _messagePump._outstandingRequests) == 0 && _messagePump.Stopping)
-                        {
-                            LogHelper.LogInfo(_messagePump._logger, "All requests drained.");
-                            _messagePump._shutdownSignal.TrySetResult(0);
-                        }
+                        LogHelper.LogException(messagePump._logger, "ProcessRequestAsync", ex);
+                        requestContext?.Abort();
                     }
                 }
-                catch (Exception ex)
-                {
-                    LogHelper.LogException(_messagePump._logger, "ProcessRequestAsync", ex);
-                    _requestContext?.Abort();
-                }
-
-                ReturnWrapper(this);
-            }
-
-            public static IThreadPoolWorkItem RentWrapper(HttpSysListener server, NativeRequestContext nativeRequestContext, MessagePump messagePump, IHttpApplication<TContext> application)
-            {
-                if (!_requestContexts.TryDequeue(out var wrapper))
-                {
-                    wrapper = new ApplicationWrapper<TContext>();
-                }
-
-                wrapper.Initialize(server, nativeRequestContext, messagePump, application);
-                return wrapper;
-            }
-
-            private static void ReturnWrapper(ApplicationWrapper<TContext> wrapper)
-            {
-                wrapper._requestContext.Reset();
-                wrapper._messagePump = null;
-                wrapper._application = null;
-                _requestContexts.TryEnqueue(wrapper);
             }
         }
     }

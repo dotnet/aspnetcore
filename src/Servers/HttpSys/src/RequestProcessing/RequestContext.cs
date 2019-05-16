@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private static readonly Action<object> AbortDelegate = Abort;
 
-        private NativeRequestContext _memoryBlob;
         private CancellationTokenSource _requestAbortSource;
         private CancellationToken? _disconnectToken;
         private bool _disposed;
@@ -32,7 +31,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal void InitializeCore(HttpSysListener server, NativeRequestContext memoryBlob)
         {
             Server = server;
-            _memoryBlob = memoryBlob;
             AllowSynchronousIO = server.Options.AllowSynchronousIO;
 
             Request.Initialize(memoryBlob);
@@ -42,7 +40,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         protected void ResetCore()
         {
             Server = null;
-            _memoryBlob = null;
             _requestAbortSource = null;
             AllowSynchronousIO = false;
 

@@ -15,12 +15,11 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Features.Authentication;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    using Microsoft.AspNetCore.HttpSys.Internal;
-
     internal class FeatureContext<TContext> :
         IHttpRequestFeature,
         IHttpConnectionFeature,
@@ -65,8 +64,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private Fields _initializedFields;
 
-        private readonly List<(Func<object, Task> callback, object state)> _onStartingActions = new List<(Func<object, Task> callback, object state)>();
-        private readonly List<(Func<object, Task> callback, object state)> _onCompletedActions = new List<(Func<object, Task> callback, object state)>();
+        private readonly Stack<(Func<object, Task> callback, object state)> _onStartingActions = new Stack<(Func<object, Task> callback, object state)>();
+        private readonly Stack<(Func<object, Task> callback, object state)> _onCompletedActions = new Stack<(Func<object, Task> callback, object state)>();
         private bool _responseStarted;
         private bool _completed;
 
@@ -102,75 +101,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal void Reset()
         {
             // Reset fields in sequential order according to layout for better memory/cache access behaviour
-            /*
-            Type layout for 'FeatureContext`1'
-            Size: 200 bytes. Paddings: 1 bytes (%0 of empty space)
-            |=======================================================|
-            | Object Header (8 bytes)                               |
-            |-------------------------------------------------------|
-            | Method Table Ptr (8 bytes)                            |
-            |=======================================================|
-            |   0-7: RequestContext _requestContext (8 bytes)       |
-            |-------------------------------------------------------|
-            |  8-15: FeatureCollection`1 _features (8 bytes)        |
-            |-------------------------------------------------------|
-            | 16-23: Func`1 _onResponseStart (8 bytes)              |
-            |-------------------------------------------------------|
-            | 24-31: Stream _requestBody (8 bytes)                  |
-            |-------------------------------------------------------|
-            | 32-39: IHeaderDictionary _requestHeaders (8 bytes)    |
-            |-------------------------------------------------------|
-            | 40-47: String _scheme (8 bytes)                       |
-            |-------------------------------------------------------|
-            | 48-55: String _httpMethod (8 bytes)                   |
-            |-------------------------------------------------------|
-            | 56-63: String _httpProtocolVersion (8 bytes)          |
-            |-------------------------------------------------------|
-            | 64-71: String _query (8 bytes)                        |
-            |-------------------------------------------------------|
-            | 72-79: String _pathBase (8 bytes)                     |
-            |-------------------------------------------------------|
-            | 80-87: String _path (8 bytes)                         |
-            |-------------------------------------------------------|
-            | 88-95: String _rawTarget (8 bytes)                    |
-            |-------------------------------------------------------|
-            | 96-103: IPAddress _remoteIpAddress (8 bytes)          |
-            |-------------------------------------------------------|
-            | 104-111: IPAddress _localIpAddress (8 bytes)          |
-            |-------------------------------------------------------|
-            | 112-119: String _connectionId (8 bytes)               |
-            |-------------------------------------------------------|
-            | 120-127: String _traceIdentitfier (8 bytes)           |
-            |-------------------------------------------------------|
-            | 128-135: X509Certificate2 _clientCert (8 bytes)       |
-            |-------------------------------------------------------|
-            | 136-143: ClaimsPrincipal _user (8 bytes)              |
-            |-------------------------------------------------------|
-            | 144-151: Stream _responseStream (8 bytes)             |
-            |-------------------------------------------------------|
-            | 152-159: IHeaderDictionary _responseHeaders (8 bytes) |
-            |-------------------------------------------------------|
-            | 160-167: List`1 _onStartingActions (8 bytes)          |
-            |-------------------------------------------------------|
-            | 168-175: List`1 _onCompletedActions (8 bytes)         |
-            |-------------------------------------------------------|
-            | 176-179: Int32 _remotePort (4 bytes)                  |
-            |-------------------------------------------------------|
-            | 180-183: Int32 _localPort (4 bytes)                   |
-            |-------------------------------------------------------|
-            | 184-187: Fields _initializedFields (4 bytes)          |
-            |-------------------------------------------------------|
-            |   188: Boolean _enableResponseCaching (1 byte)        |
-            |-------------------------------------------------------|
-            |   189: Boolean _responseStarted (1 byte)              |
-            |-------------------------------------------------------|
-            |   190: Boolean _completed (1 byte)                    |
-            |-------------------------------------------------------|
-            |   191: padding (1 byte)                               |
-            |-------------------------------------------------------|
-            | 192-199: CancellationToken _disconnectToken (8 bytes) |
-            |=======================================================|
-            */
 
             // RequestContext - kept
             _features.Reset();
@@ -505,7 +435,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw new InvalidOperationException("Cannot register new callbacks, the response has already started.");
             }
 
-            _onStartingActions.Add((callback, state));
+            _onStartingActions.Push((callback, state));
         }
 
         void IHttpResponseFeature.OnCompleted(Func<object, Task> callback, object state)
@@ -519,7 +449,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw new InvalidOperationException("Cannot register new callbacks, the response has already completed.");
             }
 
-            _onCompletedActions.Add((callback, state));
+            _onCompletedActions.Push((callback, state));
         }
 
         string IHttpResponseFeature.ReasonPhrase
@@ -640,16 +570,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.CompletedTask;
             }
 
-            return Awaited(actions);
+            return AwaitActions(actions);
+        }
 
-            static async Task Awaited(List<(Func<object, Task> callback, object state)> actions)
+        static async Task AwaitActions(Stack<(Func<object, Task> callback, object state)> actions)
+        {
+            while (actions.TryPop(out var actionPair))
             {
-                actions.Reverse();
-                // Execute last to first. This mimics a stack unwind.
-                foreach (var actionPair in actions)
-                {
-                    await actionPair.callback(actionPair.state);
-                }
+                await actionPair.callback(actionPair.state);
             }
         }
 
@@ -728,17 +656,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return Task.CompletedTask;
             }
 
-            return Awaited(actions);
-
-            static async Task Awaited(List<(Func<object, Task> callback, object state)> actions)
-            {
-                actions.Reverse();
-                // Execute last to first. This mimics a stack unwind.
-                foreach (var actionPair in actions)
-                {
-                    await actionPair.callback(actionPair.state);
-                }
-            }
+            return AwaitActions(actions);
         }
     }
 }

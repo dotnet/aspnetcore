@@ -38,45 +38,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
             // that we can start over (e.g. to write an error message).
             _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
-            _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
             _nativeResponse.Response_V1.Version.MinorVersion = 1;
+            _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
         }
 
-        internal void Reset()
+        internal unsafe void Reset()
         {
             // Reset fields in sequential order according to layout for better memory/cache access behaviour
-            /*
-            Type layout for 'Response'
-            Size: 640 bytes. Paddings: 212 bytes (%33 of empty space)
-            |=================================================================|
-            | Object Header (8 bytes)                                         |
-            |-----------------------------------------------------------------|
-            | Method Table Ptr (8 bytes)                                      |
-            |=================================================================|
-            |   0-7: String _reasonPhrase (8 bytes)                           |
-            |-----------------------------------------------------------------|
-            |  8-15: ResponseBody _nativeStream (8 bytes)                     |
-            |-----------------------------------------------------------------|
-            | 16-23: RequestContext <RequestContext>k__BackingField (8 bytes) |
-            |-----------------------------------------------------------------|
-            | 24-31: HeaderCollection <Headers>k__BackingField (8 bytes)      |
-            |-----------------------------------------------------------------|
-            | 32-39: Int64 _expectedBodyLength (8 bytes)                      |
-            |-----------------------------------------------------------------|
-            | 40-43: ResponseState _responseState (4 bytes)                   |
-            |-----------------------------------------------------------------|
-            | 44-47: AuthenticationSchemes _authChallenges (4 bytes)          |
-            |-----------------------------------------------------------------|
-            | 48-51: BoundaryType _boundaryType (4 bytes)                     |
-            |-----------------------------------------------------------------|
-            | 52-55: padding (4 bytes)                                        |
-            |-----------------------------------------------------------------|
-            | 56-71: Nullable`1 _cacheTtl (16 bytes)                          |
-            |-----------------------------------------------------------------|
-            | 72-639: HTTP_RESPONSE_V2 _nativeResponse (568 bytes)            |
-            |=================================================================|
-             */
+
             _reasonPhrase = null;
             _nativeStream = null;
             // RequestContext - kept
