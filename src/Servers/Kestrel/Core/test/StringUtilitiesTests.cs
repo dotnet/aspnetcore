@@ -8,6 +8,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 {
     public class StringUtilitiesTests
     {
+        [Fact]
+        public void FailingTest()
+        {
+            Assert.True(false, "This test is 100% flaky");
+        }
+
         [Theory]
         [InlineData(uint.MinValue)]
         [InlineData(0xF)]
