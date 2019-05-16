@@ -137,9 +137,6 @@ namespace Microsoft.AspNetCore.Authorization
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object resource, string policyName) { throw null; }
     }
-    public partial interface IAllowAnonymous
-    {
-    }
     public partial interface IAuthorizationEvaluator
     {
         Microsoft.AspNetCore.Authorization.AuthorizationResult Evaluate(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context);
@@ -169,12 +166,6 @@ namespace Microsoft.AspNetCore.Authorization
     {
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object resource, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement> requirements);
         System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult> AuthorizeAsync(System.Security.Claims.ClaimsPrincipal user, object resource, string policyName);
-    }
-    public partial interface IAuthorizeData
-    {
-        string AuthenticationSchemes { get; set; }
-        string Policy { get; set; }
-        string Roles { get; set; }
     }
 }
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
