@@ -13,7 +13,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class AuthTest : BasicTestAppTestBase
     {
+        // These strings correspond to the links in BasicTestApp\AuthTest\Links.razor
         const string CascadingAuthenticationStateLink = "Cascading authentication state";
+        const string AuthorizeViewCases = "AuthorizeView cases";
 
         public AuthTest(
             BrowserFixture browserFixture,
@@ -49,6 +51,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("True", () => appElement.FindElement(By.Id("identity-authenticated")).Text);
             Browser.Equal("someone cool", () => appElement.FindElement(By.Id("identity-name")).Text);
             Browser.Equal("Test claim value", () => appElement.FindElement(By.Id("test-claim")).Text);
+        }
+
+        [Fact]
+        public void AuthorizeViewCases_NoAuthorizationRule_Unauthenticated()
+        {
+            SignInAs(null);
+            MountAndNavigateToAuthTest(AuthorizeViewCases);
+            WaitUntilExists(By.CssSelector("#no-authorization-rule .not-authorized"));
+        }
+
+        [Fact]
+        public void AuthorizeViewCases_NoAuthorizationRule_Authenticated()
+        {
+            SignInAs("Some User");
+            var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
+            Browser.Equal("Welcome, Some User!", () =>
+                appElement.FindElement(By.CssSelector("#no-authorization-rule .authorized")).Text);
         }
 
         IWebElement MountAndNavigateToAuthTest(string authLinkText)
