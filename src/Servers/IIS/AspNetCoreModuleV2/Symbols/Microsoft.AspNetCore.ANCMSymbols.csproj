@@ -5,7 +5,11 @@
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IsPackable>$(PackNativeAssets)</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
-    <BuildOutputTargetFolder>runtimes/$(TargetRuntimeIdentifier)/native/$(NativeAssetsTargetFramework)</BuildOutputTargetFolder>
+    <BuildOutputTargetFolder>runtimes/$(TargetRuntimeIdentifier)/native/</BuildOutputTargetFolder>
+    <TargetsForTfmSpecificBuildOutput>
+      $(TargetsForTfmSpecificBuildOutput);
+      AddPackNativeComponents
+    </TargetsForTfmSpecificBuildOutput>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
@@ -15,7 +19,7 @@
     <NativeProjectReference Include="$(MSBuildThisFileDirectory)..\..\AspNetCoreModuleV2\AspNetCore\AspNetCore.vcxproj" Platform="$(NativeVCPlatform)" />
   </ItemGroup>
 
-  <Target Name="AddPackNativeComponents" AfterTargets="_CalculateInputsOutputsForPack" Condition="$(PackNativeAssets) == 'true'">
+  <Target Name="AddPackNativeComponents" DependsOnTargets="ResolveReferences;Crossgen" Condition="$(PackNativeAssets) == 'true'">
     <ItemGroup>
       <!-- RunShimComponents is based on the current runtime (NativePlatform) which should be the same as TargetRuntimeIdentifier -->
       <BuiltProjectOutputGroupOutput Include="%(RunShimComponents.DllLocation)"/>
