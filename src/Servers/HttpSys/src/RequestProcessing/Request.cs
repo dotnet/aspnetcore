@@ -33,13 +33,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private bool _isDisposed = false;
 
-        internal Request(RequestContext requestContext, NativeRequestContext nativeRequestContext)
+        internal Request(RequestContext requestContext)
         {
             // TODO: Verbose log
             RequestContext = requestContext;
             Headers = new RequestHeaders();
-
-            Initialize(nativeRequestContext);
         }
 
         internal void Initialize(NativeRequestContext nativeRequestContext)

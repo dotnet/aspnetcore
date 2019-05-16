@@ -31,16 +31,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // TODO: Verbose log
             RequestContext = requestContext;
             Headers = new HeaderCollection();
-            // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
-            // that we can start over (e.g. to write an error message).
-            _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
-            _nativeResponse.Response_V1.Version.MajorVersion = 1;
-            _nativeResponse.Response_V1.Version.MinorVersion = 1;
-            _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
         }
 
         internal void Initialize()
         {
+            // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
+            // that we can start over (e.g. to write an error message).
             _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
             _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
             _nativeResponse.Response_V1.Version.MajorVersion = 1;

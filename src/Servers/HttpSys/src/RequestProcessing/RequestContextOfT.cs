@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         public FeatureContext<TContext> FeatureContext { get; set; }
 
-        public RequestContext(HttpSysListener server, NativeRequestContext memoryBlob) : base(server, memoryBlob)
+        public RequestContext() : base()
         {
             FeatureContext = new FeatureContext<TContext>(this);
         }

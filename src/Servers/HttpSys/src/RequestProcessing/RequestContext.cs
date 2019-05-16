@@ -5,7 +5,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Security.Authentication.ExtendedProtection;
-using System.Security.Claims;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,18 +23,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private CancellationToken? _disconnectToken;
         private bool _disposed;
 
-        internal RequestContext(HttpSysListener server, NativeRequestContext memoryBlob)
+        internal RequestContext()
         {
-            // TODO: Verbose log
-            Server = server;
-            _memoryBlob = memoryBlob;
-            AllowSynchronousIO = server.Options.AllowSynchronousIO;
-
-            Request = new Request(this, memoryBlob);
+            Request = new Request(this);
             Response = new Response(this);
         }
 
-        protected void InitializeCore(HttpSysListener server, NativeRequestContext memoryBlob)
+        internal void InitializeCore(HttpSysListener server, NativeRequestContext memoryBlob)
         {
             Server = server;
             _memoryBlob = memoryBlob;

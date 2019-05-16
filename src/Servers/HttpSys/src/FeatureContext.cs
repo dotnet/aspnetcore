@@ -75,8 +75,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _requestContext = requestContext;
             _features = new FeatureCollection<TContext>(new StandardFeatureCollection<TContext>(this));
             _onResponseStart = OnResponseStart;
-
-            Initialize();
         }
 
         internal void Initialize()

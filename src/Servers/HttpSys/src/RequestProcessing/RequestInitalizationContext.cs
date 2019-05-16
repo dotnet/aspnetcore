@@ -10,6 +10,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public HttpSysListener Server;
         public NativeRequestContext MemoryBlob;
 
-        public RequestContext CreateContext() => new RequestContext(Server, MemoryBlob);
+        // For testing
+        public RequestContext CreateContext()
+        {
+            var context = new RequestContext();
+            context.InitializeCore(Server, MemoryBlob);
+            return context;
+        }
     }
 }
