@@ -343,16 +343,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 options.MaxConnections = 3;
             }, httpContext => Task.FromResult(0)))
             {
-                using (var client1 = await SendHungRequestAsync("GET", address).SupressContext())
-                using (var client2 = await SendHungRequestAsync("GET", address).SupressContext())
+                using (var client1 = await SendHungRequestAsync("GET", address))
+                using (var client2 = await SendHungRequestAsync("GET", address))
                 {
-                    using (var client3 = await SendHungRequestAsync("GET", address).SupressContext())
+                    using (var client3 = await SendHungRequestAsync("GET", address))
                     {
                         // Maxed out, refuses connection and throws
                         await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address)).SupressContext();
                     }
 
                     // A connection has been closed, try again.
+                    await Task.Delay(100); // Give it a little time to respond
                     string responseText = await SendRequestAsync(address).SupressContext();
                     Assert.Equal(string.Empty, responseText);
                 }

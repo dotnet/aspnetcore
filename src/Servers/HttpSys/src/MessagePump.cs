@@ -369,6 +369,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         LogHelper.LogException(messagePump._logger, "ProcessRequestAsync", ex);
                         requestContext?.Abort();
                     }
+                    finally
+                    {
+                        requestContext?.Dispose();
+                    }
                 }
             }
         }

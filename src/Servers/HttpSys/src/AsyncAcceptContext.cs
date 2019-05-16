@@ -179,6 +179,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // We can't reuse overlapped objects
             int newSize = checked((int)((size ?? DefaultBufferSize) + AlignmentPadding));
             var backingBuffer = ArrayPool<byte>.Shared.Rent(newSize);
+            // Zero the buffer
+            new Span<byte>(backingBuffer).Fill(0);
 
             var boundHandle = _server.RequestQueue.BoundHandle;
             var nativeOverlapped = new SafeNativeOverlapped(boundHandle,
