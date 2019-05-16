@@ -19,6 +19,7 @@
     <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>
     <InstallersOutputPath>$(ArtifactsDir)installers\$(Configuration)\</InstallersOutputPath>
     <VisualStudioSetupOutputPath>$(ArtifactsDir)VSSetup\$(Configuration)\</VisualStudioSetupOutputPath>
+    <LogOutputDir>$(ArtifactsDir)log\</LogOutputDir>
 
     <SignCheckExclusionsFile>$(RepoRoot)eng\signcheck.exclusions.txt</SignCheckExclusionsFile>
 
