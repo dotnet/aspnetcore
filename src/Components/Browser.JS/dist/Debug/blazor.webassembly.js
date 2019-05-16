@@ -2463,7 +2463,7 @@ exports.internalFunctions = {
     getLocationHref: function () { return location.href; },
 };
 function listenForNavigationEvents(assemblyName, functionName) {
-    if (hasRegisteredNavigationEventListeners || assemblyName === undefined || functionName === undefined) {
+    if (hasRegisteredNavigationEventListeners) {
         return;
     }
     notifyLocationChangedCallback = { assemblyName: assemblyName, functionName: functionName };
@@ -2499,6 +2499,16 @@ function enableNavigationInterception() {
         }
     });
 }
+function navigateTo(uri, forceLoad) {
+    var absoluteUri = toAbsoluteUri(uri);
+    if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
+        performInternalNavigation(absoluteUri, false);
+    }
+    else {
+        location.href = uri;
+    }
+}
+exports.navigateTo = navigateTo;
 function performInternalNavigation(absoluteInternalHref, interceptedLink) {
     history.pushState(null, /* ignored title */ '', absoluteInternalHref);
     notifyLocationChanged(interceptedLink);
@@ -2518,16 +2528,6 @@ function notifyLocationChanged(interceptedLink) {
         });
     });
 }
-function navigateTo(uri, forceLoad) {
-    var absoluteUri = toAbsoluteUri(uri);
-    if (!forceLoad && isWithinBaseUriSpace(absoluteUri)) {
-        performInternalNavigation(absoluteUri, false);
-    }
-    else {
-        location.href = uri;
-    }
-}
-exports.navigateTo = navigateTo;
 var testAnchor;
 function toAbsoluteUri(relativeUri) {
     testAnchor = testAnchor || document.createElement('a');

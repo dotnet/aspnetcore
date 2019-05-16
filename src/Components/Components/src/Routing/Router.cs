@@ -7,8 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.JSInterop;
-using Interop = Microsoft.AspNetCore.Components.Browser.BrowserUriHelperInterop;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -27,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.Routing
 
         [Inject] private IUriHelper UriHelper { get; set; }
 
-        [Inject] private IJSRuntime JSRuntime { get; set; }
+        [Inject] private INavigationInterception NavigationInterception { get; set; }
 
         [Inject] private IComponentContext ComponentContext { get; set; }
 
@@ -133,7 +131,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             if (!_navigationInterceptionEnabled && ComponentContext.IsConnected)
             {
                 _navigationInterceptionEnabled = true;
-                return JSRuntime.InvokeAsync<object>(Interop.EnableNavigationInterception);
+                return NavigationInterception.EnableNavigationInterceptionAsync();
             }
 
             return Task.CompletedTask;

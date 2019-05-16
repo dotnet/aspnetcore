@@ -849,6 +849,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 }
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    public partial interface INavigationInterception
+    {
+        System.Threading.Tasks.Task EnableNavigationInterceptionAsync();
+    }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct LocationChangedEventArgs
     {

@@ -16,7 +16,7 @@ export const internalFunctions = {
 };
 
 function listenForNavigationEvents(assemblyName: string, functionName: string) {
-  if (hasRegisteredNavigationEventListeners || assemblyName === undefined || functionName === undefined) {
+  if (hasRegisteredNavigationEventListeners) {
     return;
   }
 

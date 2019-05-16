@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -12,10 +12,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.JSInterop" />
     <Reference Include="System.ComponentModel.Annotations" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\..\Browser\src\BrowserUriHelperInterop.cs" LinkBase="Routing" />
   </ItemGroup>
 
 </Project>

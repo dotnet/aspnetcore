@@ -75,7 +75,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 var message = $"{nameof(NotifyLocationChanged)} called without a circuit.";
                 throw new InvalidOperationException(message);
             }
-
             var uriHelper = (RemoteUriHelper)circuit.Services.GetRequiredService<IUriHelper>();
 
             uriHelper.SetAbsoluteUri(uriAbsolute);
