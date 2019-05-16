@@ -5,6 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.RequestQueue" />
+    <Reference Include="Microsoft.AspNetCore.RequestThrottling" />
   </ItemGroup>
 </Project>
