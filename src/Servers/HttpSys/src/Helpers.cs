@@ -42,10 +42,30 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     tcs.TrySetResult(0);
                 }
 
-                if (callback != null)
+                callback?.Invoke(tcs.Task);
+            }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+            return tcs.Task;
+        }
+
+        internal static IAsyncResult ToIAsyncResult(this Task<int> task, AsyncCallback callback, object state)
+        {
+            var tcs = new TaskCompletionSource<int>(state);
+            task.ContinueWith(t =>
+            {
+                if (t.IsFaulted)
                 {
-                    callback(tcs.Task);
+                    tcs.TrySetException(t.Exception.InnerExceptions);
                 }
+                else if (t.IsCanceled)
+                {
+                    tcs.TrySetCanceled();
+                }
+                else
+                {
+                    tcs.TrySetResult(t.Result);
+                }
+
+                callback?.Invoke(tcs.Task);
             }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
             return tcs.Task;
         }

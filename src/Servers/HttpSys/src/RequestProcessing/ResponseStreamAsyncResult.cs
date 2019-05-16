@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal unsafe class ResponseStreamAsyncResult : IAsyncResult, IDisposable
+    internal unsafe class ResponseStreamAsyncResult : IDisposable
     {
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
@@ -303,26 +303,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Dispose();
             _responseStream.Abort();
             _tcs.TrySetException(ex);
-        }
-
-        public object AsyncState
-        {
-            get { return _tcs.Task.AsyncState; }
-        }
-
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
-        }
-
-        public bool CompletedSynchronously
-        {
-            get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
-        }
-
-        public bool IsCompleted
-        {
-            get { return _tcs.Task.IsCompleted; }
         }
 
         public void Dispose()

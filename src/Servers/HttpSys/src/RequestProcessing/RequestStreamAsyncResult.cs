@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal unsafe class RequestStreamAsyncResult : IAsyncResult, IDisposable
+    internal unsafe class RequestStreamAsyncResult : IDisposable
     {
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(Callback);
 
@@ -20,29 +20,27 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private uint _dataAlreadyRead;
         private TaskCompletionSource<int> _tcs;
         private RequestStream _requestStream;
-        private AsyncCallback _callback;
         private CancellationTokenRegistration _cancellationRegistration;
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback)
+        internal RequestStreamAsyncResult(RequestStream requestStream)
         {
             _requestStream = requestStream;
-            _tcs = new TaskCompletionSource<int>(userState);
-            _callback = callback;
+            _tcs = new TaskCompletionSource<int>();
         }
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback, uint dataAlreadyRead)
-            : this(requestStream, userState, callback)
+        internal RequestStreamAsyncResult(RequestStream requestStream, uint dataAlreadyRead)
+            : this(requestStream)
         {
             _dataAlreadyRead = dataAlreadyRead;
         }
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback, byte[] buffer, int offset, uint dataAlreadyRead)
-            : this(requestStream, userState, callback, buffer, offset, dataAlreadyRead, new CancellationTokenRegistration())
+        internal RequestStreamAsyncResult(RequestStream requestStream, byte[] buffer, int offset, uint dataAlreadyRead)
+            : this(requestStream, buffer, offset, dataAlreadyRead, new CancellationTokenRegistration())
         {
         }
 
-        internal RequestStreamAsyncResult(RequestStream requestStream, object userState, AsyncCallback callback, byte[] buffer, int offset, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
-            : this(requestStream, userState, callback)
+        internal RequestStreamAsyncResult(RequestStream requestStream, byte[] buffer, int offset, uint dataAlreadyRead, CancellationTokenRegistration cancellationRegistration)
+            : this(requestStream)
         {
             _dataAlreadyRead = dataAlreadyRead;
             var boundHandle = requestStream.RequestContext.Server.RequestQueue.BoundHandle;
@@ -120,35 +118,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             else if (_tcs.TrySetResult(read + (int)DataAlreadyRead))
             {
                 RequestStream.UpdateAfterRead((uint)errorCode, (uint)(read + DataAlreadyRead));
-                if (_callback != null)
-                {
-                    try
-                    {
-                        _callback(this);
-                    }
-                    catch (Exception)
-                    {
-                        // TODO: Exception handling? This may be an IO callback thread and throwing here could crash the app.
-                    }
-                }
             }
             Dispose();
         }
 
         internal void Fail(Exception ex)
         {
-            if (_tcs.TrySetException(ex) && _callback != null)
-            {
-                try
-                {
-                    _callback(this);
-                }
-                catch (Exception)
-                {
-                    // TODO: Exception handling? This may be an IO callback thread and throwing here could crash the app.
-                    // TODO: Log
-                }
-            }
+            _tcs.TrySetException(ex);
+
             Dispose();
             _requestStream.Abort();
         }
@@ -169,26 +146,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 _cancellationRegistration.Dispose();
             }
-        }
-
-        public object AsyncState
-        {
-            get { return _tcs.Task.AsyncState; }
-        }
-
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
-        }
-
-        public bool CompletedSynchronously
-        {
-            get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
-        }
-
-        public bool IsCompleted
-        {
-            get { return _tcs.Task.IsCompleted; }
         }
     }
 }

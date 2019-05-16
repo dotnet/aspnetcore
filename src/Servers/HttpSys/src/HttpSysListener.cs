@@ -264,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         /// <summary>
         /// Accept a request from the incoming request queue.
         /// </summary>
-        public Task<RequestInitalizationContext> AcceptAsync()
+        public ValueTask<NativeRequestContext> AcceptAsync()
         {
             AsyncAcceptContext asyncResult = null;
             try
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw;
             }
 
-            return asyncResult.Task;
+            return asyncResult.ValueTask;
         }
 
         internal unsafe bool ValidateRequest(NativeRequestContext requestMemory)

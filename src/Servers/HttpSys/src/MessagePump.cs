@@ -152,10 +152,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 try
                 {
                     // Receive a request
-                    var requestContext = await Listener.AcceptAsync().SupressContext();
+                    var requestContext = await Listener.AcceptAsync();
                     try
                     {
-                        var worker = _workerFactory.Get(requestContext.Server, requestContext.MemoryBlob);
+                        var worker = _workerFactory.Get(Listener, requestContext);
                         ThreadPool.UnsafeQueueUserWorkItem(worker, preferLocal: false);
                     }
                     catch (Exception ex)

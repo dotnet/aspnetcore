@@ -688,7 +688,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal unsafe void CancelLastWrite()
         {
             ResponseStreamAsyncResult asyncState = _lastWrite;
-            if (asyncState != null && !asyncState.IsCompleted)
+            if (asyncState != null && !asyncState.Task.IsCompleted)
             {
                 UnsafeNclNativeMethods.CancelIoEx(RequestQueueHandle, asyncState.NativeOverlapped);
             }

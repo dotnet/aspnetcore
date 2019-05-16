@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 {
     // This class is used to load the client certificate on-demand.  Because client certs are optional, all
     // failures are handled internally and reported via ClientCertException or ClientCertError.
-    internal unsafe sealed class ClientCertLoader : IAsyncResult, IDisposable
+    internal unsafe sealed class ClientCertLoader : IDisposable
     {
         private const uint CertBoblSize = 1500;
         private static readonly IOCompletionCallback IOCallback = new IOCompletionCallback(WaitCallback);
@@ -329,26 +329,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     _overlapped.Dispose();
                 }
             }
-        }
-
-        public object AsyncState
-        {
-            get { return _tcs.Task.AsyncState; }
-        }
-
-        public WaitHandle AsyncWaitHandle
-        {
-            get { return ((IAsyncResult)_tcs.Task).AsyncWaitHandle; }
-        }
-
-        public bool CompletedSynchronously
-        {
-            get { return ((IAsyncResult)_tcs.Task).CompletedSynchronously; }
-        }
-
-        public bool IsCompleted
-        {
-            get { return _tcs.Task.IsCompleted; }
         }
 
         internal static unsafe ChannelBinding GetChannelBindingFromTls(RequestQueue requestQueue, ulong connectionId, ILogger logger)
