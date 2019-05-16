@@ -1,11 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core middleware for queuing incoming HTTP requests, to avoid threadpool starvation.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;queue;queuing</PackageTags>
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
   </PropertyGroup>
 

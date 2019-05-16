@@ -4,30 +4,30 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.RequestQueue
+namespace Microsoft.AspNetCore.RequestThrottling
 {
     internal class SemaphoreWrapper
     {
-        private static SemaphoreSlim semaphore;
+        private SemaphoreSlim _semaphore;
 
-        public SemaphoreWrapper(int qlength)
+        public SemaphoreWrapper(int queueLength)
         {
-            semaphore = new SemaphoreSlim(qlength);
+            _semaphore = new SemaphoreSlim(queueLength);
         }
 
         public Task EnterQueue()
         {
-            return semaphore.WaitAsync();
+            return _semaphore.WaitAsync();
         }
 
         public void LeaveQueue()
         {
-            semaphore.Release();
+            _semaphore.Release();
         }
 
-        public int SpotsLeft
+        public int Count
         {
-            get => semaphore.CurrentCount;
+            get => _semaphore.CurrentCount;
         }
     }
 }

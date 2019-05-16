@@ -8,25 +8,25 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Testing;
 
-namespace Microsoft.AspNetCore.RequestQueue.Tests
+namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
     public class SemaphoreWrapperTests
     {
         [Fact]
-        public async Task TestBehavior()
+        public async Task TracksQueueLength()
         {
             var s = new SemaphoreWrapper(1);
-            Assert.Equal(1, s.SpotsLeft);
+            Assert.Equal(1, s.Count);
 
             await s.EnterQueue();
-            Assert.Equal(0, s.SpotsLeft);
+            Assert.Equal(0, s.Count);
 
             s.LeaveQueue();
-            Assert.Equal(1, s.SpotsLeft);
+            Assert.Equal(1, s.Count);
         }
 
         [Fact]
-        public void TestQueueLength()
+        public void DoesNotWaitIfSpaceAvailible()
         {
             var s = new SemaphoreWrapper(2);
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.RequestQueue.Tests
         }
 
         [Fact]
-        public async Task TestWaiting()
+        public async Task WaitsIfNoSpaceAvailible()
         {
             var s = new SemaphoreWrapper(1);
             await s.EnterQueue();
@@ -50,7 +50,17 @@ namespace Microsoft.AspNetCore.RequestQueue.Tests
             Assert.False(waitingTask.IsCompleted);
 
             s.LeaveQueue();
-            await waitingTask.TimeoutAfter(TimeSpan.FromSeconds(1));
+            await waitingTask.TimeoutAfter(TimeSpan.FromSeconds(30));
+        }
+
+        [Fact]
+        public async Task IsEncapsulated()
+        {
+            var s1 = new SemaphoreWrapper(1);
+            var s2 = new SemaphoreWrapper(1);
+
+            await s1.EnterQueue();
+            await s2.EnterQueue().TimeoutAfter(TimeSpan.FromSeconds(30));
         }
     }
 }
