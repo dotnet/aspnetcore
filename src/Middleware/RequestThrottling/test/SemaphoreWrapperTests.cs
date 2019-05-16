@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task TracksQueueLength()
         {
-            var s = new SemaphoreWrapper(1);
+            using var s = new SemaphoreWrapper(1);
             Assert.Equal(1, s.Count);
 
             await s.EnterQueue();
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public void DoesNotWaitIfSpaceAvailible()
         {
-            var s = new SemaphoreWrapper(2);
+            using var s = new SemaphoreWrapper(2);
 
             var t1 = s.EnterQueue();
             Assert.True(t1.IsCompleted);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task WaitsIfNoSpaceAvailible()
         {
-            var s = new SemaphoreWrapper(1);
+            using var s = new SemaphoreWrapper(1);
             await s.EnterQueue();
 
             var waitingTask = s.EnterQueue();
@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task IsEncapsulated()
         {
-            var s1 = new SemaphoreWrapper(1);
-            var s2 = new SemaphoreWrapper(1);
+            using var s1 = new SemaphoreWrapper(1);
+            using var s2 = new SemaphoreWrapper(1);
 
             await s1.EnterQueue();
             await s2.EnterQueue().TimeoutAfter(TimeSpan.FromSeconds(30));

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.RequestThrottling
 {
-    internal class SemaphoreWrapper
+    internal class SemaphoreWrapper : IDisposable
     {
         private SemaphoreSlim _semaphore;
 
@@ -28,6 +28,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
         public int Count
         {
             get => _semaphore.CurrentCount;
+        }
+
+        public void Dispose()
+        {
+            _semaphore.Dispose();
         }
     }
 }
