@@ -126,6 +126,8 @@
       Properties=""
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)Infrastructure\runtimeconfig.norollforward.json" DestinationFolder="$(TestTemplateCreationFolder)" UseHardLinksIfPossible="true" />
+
     <Delete Files="$(TestTemplateTestsProps)" />
 
   </Target>

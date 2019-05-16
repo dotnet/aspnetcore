@@ -2,6 +2,8 @@
   <PropertyGroup>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <RestoreSources>${RestoreSources}</RestoreSources>
+    <!-- This sets an option which prevents the tests from rolling forward into a newer shared framework. -->
+    <UserRuntimeConfig>$(MSBuildThisFileDirectory)runtimeconfig.norollforward.json</UserRuntimeConfig>
     <!-- Workaround https://github.com/dotnet/cli/issues/10528 -->
     <BundledNETCorePlatformsPackageVersion>${MicrosoftNETCorePlatformsPackageVersion}</BundledNETCorePlatformsPackageVersion>
   </PropertyGroup>
