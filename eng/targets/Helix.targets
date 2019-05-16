@@ -42,7 +42,7 @@ Usage: dotnet build /t:Helix src/MyTestProject.csproj
 
     <ItemGroup>
       <!-- Include default queues based on platform -->
-      <_HelixProjectTargetQueue Include="@(HelixAvailibleTargetQueue)" Condition="'$(_SelectedPlatforms.Contains(%(HelixAvailibleTargetQueue.Platform)))' == 'true' AND '%(HelixAvailibleTargetQueue.EnableByDefault)' == 'true'" />
+      <_HelixProjectTargetQueue Include="@(HelixAvailableTargetQueue)" Condition="'$(_SelectedPlatforms.Contains(%(HelixAvailableTargetQueue.Platform)))' == 'true' AND '%(HelixAvailableTargetQueue.EnableByDefault)' == 'true'" />
       <!-- Unconditionally include queues defined by project  -->
       <_HelixProjectTargetQueue Include="@(HelixProjectTargetQueue)" />
 
