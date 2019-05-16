@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         protected override void InitializeAsyncCore()
         {
             // On WebAssembly, page reloads are expensive so skip if possible
-            Navigate(ServerPathBase, noReload: !_serverFixture.UsingAspNetHost);
+            Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
             MountTestComponent<BindCasesComponent>();
             WaitUntilExists(By.Id("bind-cases"));
         }
