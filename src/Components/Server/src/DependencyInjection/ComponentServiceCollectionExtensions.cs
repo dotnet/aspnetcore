@@ -67,6 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddScoped<IUriHelper, RemoteUriHelper>();
             services.AddScoped<IJSRuntime, RemoteJSRuntime>();
             services.AddScoped<IComponentContext, RemoteComponentContext>();
+            services.AddScoped<AuthenticationStateProvider, FixedAuthenticationStateProvider>();
 
             return builder;
         }
