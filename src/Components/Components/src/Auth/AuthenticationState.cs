@@ -12,11 +12,6 @@ namespace Microsoft.AspNetCore.Components
     public class AuthenticationState
     {
         /// <summary>
-        /// Gets a <see cref="ClaimsPrincipal"/> that describes the current user.
-        /// </summary>
-        public ClaimsPrincipal User { get; }
-
-        /// <summary>
         /// Constructs an instance of <see cref="AuthenticationState"/>.
         /// </summary>
         /// <param name="user">A <see cref="ClaimsPrincipal"/> representing the user.</param>
@@ -24,5 +19,10 @@ namespace Microsoft.AspNetCore.Components
         {
             User = user ?? throw new ArgumentNullException(nameof(user));
         }
+
+        /// <summary>
+        /// Gets a <see cref="ClaimsPrincipal"/> that describes the current user.
+        /// </summary>
+        public ClaimsPrincipal User { get; }
     }
 }
