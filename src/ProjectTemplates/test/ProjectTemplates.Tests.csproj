@@ -126,6 +126,9 @@
       Properties=""
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
+    <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)Infrastructure\runtimeconfig.norollforward.json" DestinationFolder="$(TestTemplateCreationFolder)" UseHardLinksIfPossible="true" />
+
     <Delete Files="$(TestTemplateTestsProps)" />
 
   </Target>

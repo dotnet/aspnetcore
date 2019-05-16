@@ -204,7 +204,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
 - Update the versions on `PackageReference` items in your .csproj project file to point to the version from your local build.
   ```xml
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.0.0-preview-0" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.0.0-dev" />
   </ItemGroup>
   ```
 

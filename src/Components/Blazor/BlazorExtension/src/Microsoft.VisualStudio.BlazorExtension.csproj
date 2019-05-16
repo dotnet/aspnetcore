@@ -48,7 +48,7 @@
       is used by our build system.
     -->
     <VsixVersionPrefix>16.0</VsixVersionPrefix>
-    <VsixVersionSuffix Condition="'$(BuildNumberSuffix)'=='t000'">424242.424242</VsixVersionSuffix>
+    <VsixVersionSuffix Condition="'$(OfficialBuild)'!='true'">424242.424242</VsixVersionSuffix>
     <VsixVersionSuffix Condition="'$(VsixVersionSuffix)'==''">$(BuildNumberSuffix.Replace('-', '.'))</VsixVersionSuffix>
     <VsixVersion>$(VsixVersionPrefix).$(VsixVersionSuffix)</VsixVersion>
 
