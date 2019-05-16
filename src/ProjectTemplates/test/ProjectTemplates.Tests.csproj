@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->
   <Import Project="$(SharedSourceRoot)E2ETesting\E2ETesting.props" />
@@ -8,7 +8,7 @@
     <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
-    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
+    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''">true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
 
     <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
@@ -57,6 +57,12 @@
       <_Parameter1>TestPackageRestorePath</_Parameter1>
       <_Parameter2>$(TestPackageRestorePath)</_Parameter2>
     </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Infrastructure\testCert.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
@@ -116,15 +122,9 @@
 
     <Message Importance="high" Text="Created directory %(_CreatedDirectories.Identity)" />
 
-    <Sdk_GenerateFileFromTemplate
-      TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.targets.in"
-      Properties="TemplateTestsPropsPath=$(TestTemplateTestsProps)"
-      OutputPath="$(TestTemplateCreationFolder)Directory.Build.targets" />
+    <Sdk_GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.targets.in" Properties="TemplateTestsPropsPath=$(TestTemplateTestsProps)" OutputPath="$(TestTemplateCreationFolder)Directory.Build.targets" />
 
-    <Sdk_GenerateFileFromTemplate
-      TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.props.in"
-      Properties=""
-      OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
+    <Sdk_GenerateFileFromTemplate TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.props.in" Properties="" OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
 
     <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->
     <Copy SourceFiles="$(MSBuildThisFileDirectory)Infrastructure\runtimeconfig.norollforward.json" DestinationFolder="$(TestTemplateCreationFolder)" UseHardLinksIfPossible="true" />

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -239,7 +240,7 @@ namespace Templates.Test.SpaTemplateTest
                 browser.Equal(5, () => browser.FindElements(By.CssSelector("p+table>tbody>tr")).Count);
             }
 
-            foreach (var logKind in logs.AvailableLogTypes)
+            foreach (var logKind in new string[] { "browser" })
             {
                 var entries = logs.GetLog(logKind);
                 var badEntries = entries.Where(e => new LogLevel[] { LogLevel.Warning, LogLevel.Severe }.Contains(e.Level));

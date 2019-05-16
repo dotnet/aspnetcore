@@ -152,6 +152,7 @@ namespace Templates.Test.Helpers
             {
                 ["ASPNETCORE_ENVIRONMENT"] = "Development"
             };
+            environment = EnsureCertEnv(environment);
 
             var projectDll = Path.Combine(TemplateClientDebugDir, $"{ProjectName}.Client.dll {serverProcess.ListeningUri.Port}");
             return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment, hasListeningUri: false);
@@ -163,6 +164,7 @@ namespace Templates.Test.Helpers
             {
                 ["ASPNETCORE_URLS"] = _urls,
             };
+            environment = EnsureCertEnv(environment);
 
             var projectDll = $"{ProjectName}.Server.dll";
             return new AspNetProcess(Output, TemplateServerReleaseDir, projectDll, environment);
@@ -174,6 +176,7 @@ namespace Templates.Test.Helpers
             {
                 ["ASPNETCORE_URLS"] = _urls,
             };
+            environment = EnsureCertEnv(environment);
 
             var projectDll = $"{ProjectName}.Client.dll";
             return new AspNetProcess(Output, TemplateClientReleaseDir, projectDll, environment);
@@ -186,6 +189,7 @@ namespace Templates.Test.Helpers
                 ["ASPNETCORE_URLS"] = _urls,
                 ["ASPNETCORE_ENVIRONMENT"] = "Development"
             };
+            environment = EnsureCertEnv(environment);
 
             var projectDll = Path.Combine(TemplateBuildDir, $"{ProjectName}.dll");
             return new AspNetProcess(Output, TemplateOutputDir, projectDll, environment);
@@ -197,9 +201,18 @@ namespace Templates.Test.Helpers
             {
                 ["ASPNETCORE_URLS"] = _urls,
             };
+            environment = EnsureCertEnv(environment);
 
             var projectDll = $"{ProjectName}.dll";
             return new AspNetProcess(Output, TemplatePublishDir, projectDll, environment);
+        }
+
+        private Dictionary<string, string> EnsureCertEnv(Dictionary<string, string> envs)
+        {
+            envs["Kestrel:Certificates:Default:Path"] = "SomePath";
+            envs["Kestrel:Certificates:Default:Password"] = Path.Combine(TemplateOutputDir, "..", "Infrastructure", "testCert.pfx");
+
+            return envs;
         }
 
         internal async Task<ProcessEx> RestoreWithRetryAsync(ITestOutputHelper output, string workingDirectory)

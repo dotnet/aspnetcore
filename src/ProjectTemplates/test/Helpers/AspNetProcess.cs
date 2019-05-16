@@ -58,7 +58,7 @@ namespace Templates.Test.Helpers
 
             var arguments = published ? $"exec {dllPath}" : "run";
             Process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), arguments, envVars: environmentVariables);
-            if(hasListeningUri)
+            if (hasListeningUri)
             {
                 ListeningUri = GetListeningUri(output);
             }
