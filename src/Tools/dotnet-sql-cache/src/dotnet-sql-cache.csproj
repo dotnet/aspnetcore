@@ -6,8 +6,7 @@
     <Description>Command line tool to create tables and indexes in a Microsoft SQL Server database for distributed caching.</Description>
     <PackageTags>cache;distributedcache;sqlserver</PackageTags>
     <PackAsTool>true</PackAsTool>
-    <!-- This package is for internal use only. It contains a CLI which is bundled in the .NET Core SDK. -->
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
