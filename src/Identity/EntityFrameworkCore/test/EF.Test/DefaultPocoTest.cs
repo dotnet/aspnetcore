@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             services
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .AddDbContext<IdentityDbContext>(o =>
-                    o.UseSqlServer(fixture.ConnectionString)
+                    o.UseSqlite(fixture.Connection)
                         .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
                 .AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>();

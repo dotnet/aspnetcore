@@ -36,12 +36,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         protected virtual Microsoft.Extensions.Hosting.IHost CreateHost(Microsoft.Extensions.Hosting.IHostBuilder builder) { throw null; }
         protected virtual Microsoft.Extensions.Hosting.IHostBuilder CreateHostBuilder() { throw null; }
         protected virtual Microsoft.AspNetCore.TestHost.TestServer CreateServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }
-        protected virtual Microsoft.AspNetCore.Hosting.IWebHostBuilder CreateWebHostBuilder() { throw null; }
-        public void Dispose() { }
-        protected virtual void Dispose(bool disposing) { }
-        ~WebApplicationFactory() { }
-        protected virtual System.Collections.Generic.IEnumerable<System.Reflection.Assembly> GetTestAssemblies() { throw null; }
-        public Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<TEntryPoint> WithWebHostBuilder(System.Action<Microsoft.AspNetCore.Hosting.IWebHostBuilder> configuration) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.Mvc.Testing.Handlers
