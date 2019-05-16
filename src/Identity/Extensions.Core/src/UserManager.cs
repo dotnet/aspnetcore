@@ -2517,15 +2517,21 @@ namespace Microsoft.AspNetCore.Identity
         protected async Task<IdentityResult> ValidatePasswordAsync(TUser user, string password)
         {
             var errors = new List<IdentityError>();
+            var isValid = true;
             foreach (var v in PasswordValidators)
             {
                 var result = await v.ValidateAsync(this, user, password);
                 if (!result.Succeeded)
                 {
-                    errors.AddRange(result.Errors);
+                    if (result.Errors.Any())
+                    {
+                        errors.AddRange(result.Errors);
+                    }
+
+                    isValid = false;
                 }
             }
-            if (errors.Count > 0)
+            if (!isValid)
             {
                 Logger.LogWarning(14, "User {userId} password validation failed: {errors}.", await GetUserIdAsync(user), string.Join(";", errors.Select(e => e.Code)));
                 return IdentityResult.Failed(errors.ToArray());
