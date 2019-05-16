@@ -308,7 +308,7 @@ if (($All -or $BuildJava) -and -not $NoBuildJava) {
     $javac = Get-Command javac -ErrorAction Ignore
     if ($env:JAVA_HOME) {
         if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
-            Write-Error "The env var JAVA_HOME was set, but ${env:JAVA_HOME}\bin\java.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
+            Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
         }
         $foundJdk = $true
     }
@@ -334,7 +334,7 @@ if (($All -or $BuildJava) -and -not $NoBuildJava) {
     }
 
     if (-not $foundJdk) {
-        Write-Error "Could not find the JDK. Install the JDK and put $JAVA_HOME\bin on the system PATH. See $PSScriptRoot\docs\BuildFromSource.md for details."
+        Write-Error "Could not find the JDK. See $PSScriptRoot\docs\BuildFromSource.md for details on this requirement."
     }
 }
 
