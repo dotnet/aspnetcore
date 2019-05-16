@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.HttpSys.Internal;
+using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -20,11 +21,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private readonly ILogger _logger;
         private readonly HttpSysOptions _options;
 
-        private IHttpApplication<object> _application;
+        private ApplicationWrapper _application;
 
         private int _maxAccepts;
         private int _acceptorCounts;
-        private Action<object> _processRequest;
+        private Action<RequestInitalizationContext> _processRequest;
 
         private volatile int _stopping;
         private int _outstandingRequests;
@@ -56,7 +57,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _serverAddresses = new ServerAddressesFeature();
             Features.Set<IServerAddressesFeature>(_serverAddresses);
 
-            _processRequest = new Action<object>(ProcessRequestAsync);
             _maxAccepts = _options.MaxAccepts;
         }
 
@@ -125,7 +125,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             Contract.Assert(application != null);
 
-            _application = new ApplicationWrapper<TContext>(application);
+            _application = new ApplicationWrapper<TContext>(this, application);
+            _processRequest = new Action<RequestInitalizationContext>((ctx) => _ = _application.ProcessRequestAsync(ctx));
 
             Listener.Start();
 
@@ -138,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             for (int i = _acceptorCounts; i < _maxAccepts; i++)
             {
-                ProcessRequestsWorker();
+                _ = ProcessRequestsWorker();
             }
         }
 
@@ -146,13 +147,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // When we start listening for the next request on one thread, we may need to be sure that the
         // completion continues on another thread as to not block the current request processing.
         // The awaits will manage stack depth for us.
-        private async void ProcessRequestsWorker()
+        private async Task ProcessRequestsWorker()
         {
             int workerIndex = Interlocked.Increment(ref _acceptorCounts);
             while (!Stopping && workerIndex <= _maxAccepts)
             {
                 // Receive a request
-                RequestContext requestContext;
+                RequestInitalizationContext requestContext;
                 try
                 {
                     requestContext = await Listener.AcceptAsync().SupressContext();
@@ -172,7 +173,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 try
                 {
-                    Task ignored = Task.Factory.StartNew(_processRequest, requestContext);
+                    ThreadPool.UnsafeQueueUserWorkItem(_processRequest, requestContext, preferLocal: false);
                 }
                 catch (Exception ex)
                 {
@@ -182,66 +183,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
             }
             Interlocked.Decrement(ref _acceptorCounts);
-        }
-
-        private async void ProcessRequestAsync(object requestContextObj)
-        {
-            var requestContext = requestContextObj as RequestContext;
-            try
-            {
-                if (Stopping)
-                {
-                    SetFatalResponse(requestContext, 503);
-                    return;
-                }
-
-                object context = null;
-                Interlocked.Increment(ref _outstandingRequests);
-                try
-                {
-                    var featureContext = new FeatureContext(requestContext);
-                    context = _application.CreateContext(featureContext.Features);
-                    try
-                    {
-                        await _application.ProcessRequestAsync(context).SupressContext();
-                        await featureContext.OnResponseStart();
-                    }
-                    finally
-                    {
-                        await featureContext.OnCompleted();
-                    }
-                    _application.DisposeContext(context, null);
-                    requestContext.Dispose();
-                }
-                catch (Exception ex)
-                {
-                    LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
-                    _application.DisposeContext(context, ex);
-                    if (requestContext.Response.HasStarted)
-                    {
-                        requestContext.Abort();
-                    }
-                    else
-                    {
-                        // We haven't sent a response yet, try to send a 500 Internal Server Error
-                        requestContext.Response.Headers.Clear();
-                        SetFatalResponse(requestContext, 500);
-                    }
-                }
-                finally
-                {
-                    if (Interlocked.Decrement(ref _outstandingRequests) == 0 && Stopping)
-                    {
-                        LogHelper.LogInfo(_logger, "All requests drained.");
-                        _shutdownSignal.TrySetResult(0);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
-                requestContext.Abort();
-            }
         }
 
         private static void SetFatalResponse(RequestContext context, int status)
@@ -301,28 +242,108 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Listener.Dispose();
         }
 
-        private class ApplicationWrapper<TContext> : IHttpApplication<object>
+        private abstract class ApplicationWrapper
         {
+            public abstract Task ProcessRequestAsync(RequestInitalizationContext initContext);
+        }
+
+        private sealed class ApplicationWrapper<TContext> : ApplicationWrapper
+        {
+            private const int _maxPooledContexts = 512;
+            private readonly static ConcurrentQueueSegment<RequestContext<TContext>> _requestContexts = new ConcurrentQueueSegment<RequestContext<TContext>>(_maxPooledContexts);
+
+            private readonly MessagePump _messagePump;
             private readonly IHttpApplication<TContext> _application;
 
-            public ApplicationWrapper(IHttpApplication<TContext> application)
+            public ApplicationWrapper(MessagePump messagePump, IHttpApplication<TContext> application)
             {
+                _messagePump = messagePump;
                 _application = application;
             }
 
-            public object CreateContext(IFeatureCollection contextFeatures)
+            public override async Task ProcessRequestAsync(RequestInitalizationContext initContext)
             {
-                return _application.CreateContext(contextFeatures);
+                RequestContext<TContext> requestContext = null;
+                try
+                {
+                    requestContext = RentRequestContext(initContext);
+                    if (_messagePump.Stopping)
+                    {
+                        SetFatalResponse(requestContext, 503);
+                        return;
+                    }
+
+                    TContext context = default;
+                    Interlocked.Increment(ref _messagePump._outstandingRequests);
+                    try
+                    {
+                        var featureContext = requestContext.FeatureContext;
+                        context = _application.CreateContext(featureContext.Features);
+                        try
+                        {
+                            await _application.ProcessRequestAsync(context).SupressContext();
+                            await featureContext.OnResponseStart().SupressContext();
+                        }
+                        finally
+                        {
+                            await featureContext.OnCompleted().SupressContext();
+                        }
+                        _application.DisposeContext(context, null);
+                        requestContext.Dispose();
+
+                        ReturnRequestContext(requestContext);
+                        // Null the requestContext as it is no longer ours.
+                        requestContext = null;
+                    }
+                    catch (Exception ex)
+                    {
+                        LogHelper.LogException(_messagePump._logger, "ProcessRequestAsync", ex);
+                        _application.DisposeContext(context, ex);
+                        if (requestContext.Response.HasStarted)
+                        {
+                            requestContext.Abort();
+                        }
+                        else
+                        {
+                            // We haven't sent a response yet, try to send a 500 Internal Server Error
+                            requestContext.Response.Headers.Clear();
+                            SetFatalResponse(requestContext, 500);
+                        }
+                    }
+                    finally
+                    {
+                        if (Interlocked.Decrement(ref _messagePump._outstandingRequests) == 0 && _messagePump.Stopping)
+                        {
+                            LogHelper.LogInfo(_messagePump._logger, "All requests drained.");
+                            _messagePump._shutdownSignal.TrySetResult(0);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    LogHelper.LogException(_messagePump._logger, "ProcessRequestAsync", ex);
+                    requestContext?.Abort();
+                }
             }
 
-            public void DisposeContext(object context, Exception exception)
+            private static RequestContext<TContext> RentRequestContext(RequestInitalizationContext initContext)
             {
-                _application.DisposeContext((TContext)context, exception);
+                if (_requestContexts.TryDequeue(out var requestContext))
+                {
+                    requestContext.Initialize(initContext.Server, initContext.MemoryBlob);
+                }
+                else
+                {
+                    requestContext = new RequestContext<TContext>(initContext.Server, initContext.MemoryBlob);
+                }
+
+                return requestContext;
             }
 
-            public Task ProcessRequestAsync(object context)
+            private static void ReturnRequestContext(RequestContext<TContext> requestContext)
             {
-                return _application.ProcessRequestAsync((TContext)context);
+                requestContext.Reset();
+                _requestContexts.TryEnqueue(requestContext);
             }
         }
     }

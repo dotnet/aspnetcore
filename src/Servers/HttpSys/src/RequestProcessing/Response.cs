@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -34,19 +33,66 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             Headers = new HeaderCollection();
             // We haven't started yet, or we're just buffered, we can clear any data, headers, and state so
             // that we can start over (e.g. to write an error message).
-            _nativeResponse = new HttpApiTypes.HTTP_RESPONSE_V2();
-            Headers.IsReadOnly = false;
-            Headers.Clear();
-            _reasonPhrase = null;
-            _boundaryType = BoundaryType.None;
             _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
             _nativeResponse.Response_V1.Version.MajorVersion = 1;
             _nativeResponse.Response_V1.Version.MinorVersion = 1;
-            _responseState = ResponseState.Created;
-            _expectedBodyLength = 0;
-            _nativeStream = null;
-            _cacheTtl = null;
             _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
+        }
+
+        internal void Initialize()
+        {
+            _authChallenges = RequestContext.Server.Options.Authentication.Schemes;
+            _nativeResponse.Response_V1.StatusCode = (ushort)StatusCodes.Status200OK;
+            _nativeResponse.Response_V1.Version.MajorVersion = 1;
+            _nativeResponse.Response_V1.Version.MinorVersion = 1;
+        }
+
+        internal void Reset()
+        {
+            // Reset fields in sequential order according to layout for better memory/cache access behaviour
+            /*
+            Type layout for 'Response'
+            Size: 640 bytes. Paddings: 212 bytes (%33 of empty space)
+            |=================================================================|
+            | Object Header (8 bytes)                                         |
+            |-----------------------------------------------------------------|
+            | Method Table Ptr (8 bytes)                                      |
+            |=================================================================|
+            |   0-7: String _reasonPhrase (8 bytes)                           |
+            |-----------------------------------------------------------------|
+            |  8-15: ResponseBody _nativeStream (8 bytes)                     |
+            |-----------------------------------------------------------------|
+            | 16-23: RequestContext <RequestContext>k__BackingField (8 bytes) |
+            |-----------------------------------------------------------------|
+            | 24-31: HeaderCollection <Headers>k__BackingField (8 bytes)      |
+            |-----------------------------------------------------------------|
+            | 32-39: Int64 _expectedBodyLength (8 bytes)                      |
+            |-----------------------------------------------------------------|
+            | 40-43: ResponseState _responseState (4 bytes)                   |
+            |-----------------------------------------------------------------|
+            | 44-47: AuthenticationSchemes _authChallenges (4 bytes)          |
+            |-----------------------------------------------------------------|
+            | 48-51: BoundaryType _boundaryType (4 bytes)                     |
+            |-----------------------------------------------------------------|
+            | 52-55: padding (4 bytes)                                        |
+            |-----------------------------------------------------------------|
+            | 56-71: Nullable`1 _cacheTtl (16 bytes)                          |
+            |-----------------------------------------------------------------|
+            | 72-639: HTTP_RESPONSE_V2 _nativeResponse (568 bytes)            |
+            |=================================================================|
+             */
+            _reasonPhrase = null;
+            _nativeStream = null;
+            // RequestContext - kept
+            Headers.IsReadOnly = false;
+            Headers.Clear();
+            _expectedBodyLength = 0;
+            _responseState = ResponseState.Created;
+            _authChallenges = AuthenticationSchemes.None;
+            _boundaryType = BoundaryType.None;
+            _cacheTtl = null;
+
+            _nativeResponse = default; // 568 bytes!
         }
 
         private enum ResponseState
@@ -138,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return true;
         }
 
-        public HeaderCollection Headers { get; }
+        internal HeaderCollection Headers { get; }
 
         internal long ExpectedBodyLength
         {

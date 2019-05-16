@@ -37,6 +37,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             // TODO: Verbose log
             RequestContext = requestContext;
+            Headers = new RequestHeaders();
+
+            Initialize(nativeRequestContext);
+        }
+
+        internal void Initialize(NativeRequestContext nativeRequestContext)
+        {
+            Headers.Initialize(nativeRequestContext);
+
             _nativeRequestContext = nativeRequestContext;
             _contentBoundaryType = BoundaryType.None;
 
@@ -52,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var cookedUrl = nativeRequestContext.GetCookedUrl();
             QueryString = cookedUrl.GetQueryString() ?? string.Empty;
 
-            var prefix = requestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
+            var prefix = RequestContext.Server.Options.UrlPrefixes.GetPrefix((int)nativeRequestContext.UrlContext);
 
             var rawUrlInBytes = _nativeRequestContext.GetRawUrlInBytes();
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
@@ -80,7 +89,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             ProtocolVersion = _nativeRequestContext.GetVersion();
 
-            Headers = new RequestHeaders(_nativeRequestContext);
 
             User = _nativeRequestContext.GetUser();
 
@@ -96,19 +104,119 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // TODO: Verbose log parameters
         }
 
-        internal ulong UConnectionId { get; }
+        internal void Reset()
+        {
+            // Reset fields in sequential order according to layout for better memory/cache access behaviour
+            /*
+            Type layout for 'Request'
+            Size: 184 bytes. Paddings: 2 bytes (%1 of empty space)
+            |================================================================================|
+            | Object Header (8 bytes)                                                        |
+            |--------------------------------------------------------------------------------|
+            | Method Table Ptr (8 bytes)                                                     |
+            |================================================================================|
+            |   0-7: NativeRequestContext _nativeRequestContext (8 bytes)                    |
+            |--------------------------------------------------------------------------------|
+            |  8-15: X509Certificate2 _clientCert (8 bytes)                                  |
+            |--------------------------------------------------------------------------------|
+            | 16-23: RequestStream _nativeStream (8 bytes)                                   |
+            |--------------------------------------------------------------------------------|
+            | 24-31: SocketAddress _localEndPoint (8 bytes)                                  |
+            |--------------------------------------------------------------------------------|
+            | 32-39: SocketAddress _remoteEndPoint (8 bytes)                                 |
+            |--------------------------------------------------------------------------------|
+            | 40-47: RequestContext <RequestContext>k__BackingField (8 bytes)                |
+            |--------------------------------------------------------------------------------|
+            | 48-55: String <QueryString>k__BackingField (8 bytes)                           |
+            |--------------------------------------------------------------------------------|
+            | 56-63: RequestHeaders <Headers>k__BackingField (8 bytes)                       |
+            |--------------------------------------------------------------------------------|
+            | 64-71: String <Method>k__BackingField (8 bytes)                                |
+            |--------------------------------------------------------------------------------|
+            | 72-79: String <PathBase>k__BackingField (8 bytes)                              |
+            |--------------------------------------------------------------------------------|
+            | 80-87: String <Path>k__BackingField (8 bytes)                                  |
+            |--------------------------------------------------------------------------------|
+            | 88-95: String <RawUrl>k__BackingField (8 bytes)                                |
+            |--------------------------------------------------------------------------------|
+            | 96-103: Version <ProtocolVersion>k__BackingField (8 bytes)                     |
+            |--------------------------------------------------------------------------------|
+            | 104-111: WindowsPrincipal <User>k__BackingField (8 bytes)                      |
+            |--------------------------------------------------------------------------------|
+            | 112-119: UInt64 <UConnectionId>k__BackingField (8 bytes)                       |
+            |--------------------------------------------------------------------------------|
+            | 120-127: UInt64 <RequestId>k__BackingField (8 bytes)                           |
+            |--------------------------------------------------------------------------------|
+            | 128-131: BoundaryType _contentBoundaryType (4 bytes)                           |
+            |--------------------------------------------------------------------------------|
+            | 132-135: HTTP_VERB <KnownMethod>k__BackingField (4 bytes)                      |
+            |--------------------------------------------------------------------------------|
+            | 136-139: SslProtocols <Protocol>k__BackingField (4 bytes)                      |
+            |--------------------------------------------------------------------------------|
+            | 140-143: CipherAlgorithmType <CipherAlgorithm>k__BackingField (4 bytes)        |
+            |--------------------------------------------------------------------------------|
+            | 144-147: Int32 <CipherStrength>k__BackingField (4 bytes)                       |
+            |--------------------------------------------------------------------------------|
+            | 148-151: HashAlgorithmType <HashAlgorithm>k__BackingField (4 bytes)            |
+            |--------------------------------------------------------------------------------|
+            | 152-155: Int32 <HashStrength>k__BackingField (4 bytes)                         |
+            |--------------------------------------------------------------------------------|
+            | 156-159: ExchangeAlgorithmType <KeyExchangeAlgorithm>k__BackingField (4 bytes) |
+            |--------------------------------------------------------------------------------|
+            | 160-163: Int32 <KeyExchangeStrength>k__BackingField (4 bytes)                  |
+            |--------------------------------------------------------------------------------|
+            |   164: Boolean _isDisposed (1 byte)                                            |
+            |--------------------------------------------------------------------------------|
+            |   165: SslStatus <SslStatus>k__BackingField (1 byte)                           |
+            |--------------------------------------------------------------------------------|
+            | 166-167: padding (2 bytes)                                                     |
+            |--------------------------------------------------------------------------------|
+            | 168-183: Nullable`1 _contentLength (16 bytes)                                  |
+            |================================================================================|
+             */
+            _nativeRequestContext = null;
+            _clientCert = null;
+            _nativeStream = null;
+            _localEndPoint = null;
+            _remoteEndPoint = null;
+            // RequestContext - kept
+            QueryString = null;
+            Headers.Reset();
+            Method = null;
+            PathBase = null;
+            Path = null;
+            RawUrl = null;
+            ProtocolVersion = null;
+            User = null;
+            UConnectionId = 0;
+            RequestId = 0;
+            _contentBoundaryType = BoundaryType.None;
+            KnownMethod = HttpApiTypes.HTTP_VERB.HttpVerbUnknown;
+            Protocol = SslProtocols.None;
+            CipherAlgorithm = CipherAlgorithmType.None;
+            CipherStrength = 0;
+            HashAlgorithm = HashAlgorithmType.None;
+            HashStrength = 0;
+            KeyExchangeAlgorithm = ExchangeAlgorithmType.None;
+            KeyExchangeStrength = 0;
+            _isDisposed = false;
+            SslStatus = SslStatus.Insecure;
+            _contentLength = null;
+        }
+
+        internal ulong UConnectionId { get; private set; }
 
         // No ulongs in public APIs...
         public long ConnectionId => (long)UConnectionId;
 
-        internal ulong RequestId { get; }
+        internal ulong RequestId { get; private set; }
 
-        private SslStatus SslStatus { get; }
+        private SslStatus SslStatus { get; set; }
 
-        private RequestContext RequestContext { get; }
+        private RequestContext RequestContext { get; set; }
 
         // With the leading ?, if any
-        public string QueryString { get; }
+        public string QueryString { get; private set; }
 
         public long? ContentLength
         {
@@ -142,13 +250,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public RequestHeaders Headers { get; }
+        internal RequestHeaders Headers { get; }
 
-        internal HttpApiTypes.HTTP_VERB KnownMethod { get; }
+        internal HttpApiTypes.HTTP_VERB KnownMethod { get; private set; }
 
         internal bool IsHeadMethod => KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbHEAD;
 
-        public string Method { get; }
+        public string Method { get; private set; }
 
         public Stream Body => EnsureRequestStream() ?? Stream.Null;
 
@@ -176,15 +284,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public string PathBase { get; }
+        public string PathBase { get; private set; }
 
-        public string Path { get; }
+        public string Path { get; private set; }
 
         public bool IsHttps => SslStatus != SslStatus.Insecure;
 
-        public string RawUrl { get; }
+        public string RawUrl { get; private set; }
 
-        public Version ProtocolVersion { get; }
+        public Version ProtocolVersion { get; private set; }
 
         public bool HasEntityBody
         {
@@ -236,7 +344,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // HTTP.Sys allows you to upgrade anything to opaque unless content-length > 0 or chunked are specified.
         internal bool IsUpgradable => !HasEntityBody && ComNetOS.IsWin8orLater;
 
-        internal WindowsPrincipal User { get; }
+        internal WindowsPrincipal User { get; private set; }
 
         public SslProtocols Protocol { get; private set; }
 

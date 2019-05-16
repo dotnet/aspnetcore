@@ -16,71 +16,76 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
     [GeneratedCode("TextTemplatingFileGenerator", "")]
     internal partial class RequestHeaders
     {
-	    // Tracks if individual fields have been read from native or set directly.
-		// Once read or set, their presence in the collection is marked by if their StringValues is null or not.
-        private UInt32 _flag0, _flag1;
+        private struct HeaderFields
+        {
+            // Tracks if individual fields have been read from native or set directly.
+            // Once read or set, their presence in the collection is marked by if their StringValues is null or not.
+            public UInt32 _flag0, _flag1;
 
-        private StringValues _Accept;
-        private StringValues _AcceptCharset;
-        private StringValues _AcceptEncoding;
-        private StringValues _AcceptLanguage;
-        private StringValues _Allow;
-        private StringValues _Authorization;
-        private StringValues _CacheControl;
-        private StringValues _Connection;
-        private StringValues _ContentEncoding;
-        private StringValues _ContentLanguage;
-        private StringValues _ContentLength;
-        private StringValues _ContentLocation;
-        private StringValues _ContentMd5;
-        private StringValues _ContentRange;
-        private StringValues _ContentType;
-        private StringValues _Cookie;
-        private StringValues _Date;
-        private StringValues _Expect;
-        private StringValues _Expires;
-        private StringValues _From;
-        private StringValues _Host;
-        private StringValues _IfMatch;
-        private StringValues _IfModifiedSince;
-        private StringValues _IfNoneMatch;
-        private StringValues _IfRange;
-        private StringValues _IfUnmodifiedSince;
-        private StringValues _KeepAlive;
-        private StringValues _LastModified;
-        private StringValues _MaxForwards;
-        private StringValues _Pragma;
-        private StringValues _ProxyAuthorization;
-        private StringValues _Range;
-        private StringValues _Referer;
-        private StringValues _Te;
-        private StringValues _Trailer;
-        private StringValues _TransferEncoding;
-        private StringValues _Translate;
-        private StringValues _Upgrade;
-        private StringValues _UserAgent;
-        private StringValues _Via;
-        private StringValues _Warning;
+            public StringValues _Accept;
+            public StringValues _AcceptCharset;
+            public StringValues _AcceptEncoding;
+            public StringValues _AcceptLanguage;
+            public StringValues _Allow;
+            public StringValues _Authorization;
+            public StringValues _CacheControl;
+            public StringValues _Connection;
+            public StringValues _ContentEncoding;
+            public StringValues _ContentLanguage;
+            public StringValues _ContentLength;
+            public StringValues _ContentLocation;
+            public StringValues _ContentMd5;
+            public StringValues _ContentRange;
+            public StringValues _ContentType;
+            public StringValues _Cookie;
+            public StringValues _Date;
+            public StringValues _Expect;
+            public StringValues _Expires;
+            public StringValues _From;
+            public StringValues _Host;
+            public StringValues _IfMatch;
+            public StringValues _IfModifiedSince;
+            public StringValues _IfNoneMatch;
+            public StringValues _IfRange;
+            public StringValues _IfUnmodifiedSince;
+            public StringValues _KeepAlive;
+            public StringValues _LastModified;
+            public StringValues _MaxForwards;
+            public StringValues _Pragma;
+            public StringValues _ProxyAuthorization;
+            public StringValues _Range;
+            public StringValues _Referer;
+            public StringValues _Te;
+            public StringValues _Trailer;
+            public StringValues _TransferEncoding;
+            public StringValues _Translate;
+            public StringValues _Upgrade;
+            public StringValues _UserAgent;
+            public StringValues _Via;
+            public StringValues _Warning;
+        }
+
+        private HeaderFields _fields;
 
         internal StringValues Accept
         {
             get
 			{
-			    if (!((_flag0 & 0x1u) != 0))
+			    if (!((_fields._flag0 & 0x1u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Accept);
 					if (nativeValue != null)
 					{
-						_Accept = nativeValue;
+						_fields._Accept = nativeValue;
 					}
-                    _flag0 |= 0x1u;
+                    _fields._flag0 |= 0x1u;
 				}
-			    return _Accept;
+			    return _fields._Accept;
 		    }
             set 
             {
-                _flag0 |= 0x1u;
-                _Accept = value;
+                _fields._flag0 |= 0x1u;
+                _fields._Accept = value;
             }
         }
 
@@ -88,21 +93,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x2u) != 0))
+			    if (!((_fields._flag0 & 0x2u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptCharset);
 					if (nativeValue != null)
 					{
-						_AcceptCharset = nativeValue;
+						_fields._AcceptCharset = nativeValue;
 					}
-                    _flag0 |= 0x2u;
+                    _fields._flag0 |= 0x2u;
 				}
-			    return _AcceptCharset;
+			    return _fields._AcceptCharset;
 		    }
             set 
             {
-                _flag0 |= 0x2u;
-                _AcceptCharset = value;
+                _fields._flag0 |= 0x2u;
+                _fields._AcceptCharset = value;
             }
         }
 
@@ -110,21 +115,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x4u) != 0))
+			    if (!((_fields._flag0 & 0x4u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptEncoding);
 					if (nativeValue != null)
 					{
-						_AcceptEncoding = nativeValue;
+						_fields._AcceptEncoding = nativeValue;
 					}
-                    _flag0 |= 0x4u;
+                    _fields._flag0 |= 0x4u;
 				}
-			    return _AcceptEncoding;
+			    return _fields._AcceptEncoding;
 		    }
             set 
             {
-                _flag0 |= 0x4u;
-                _AcceptEncoding = value;
+                _fields._flag0 |= 0x4u;
+                _fields._AcceptEncoding = value;
             }
         }
 
@@ -132,21 +137,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x8u) != 0))
+			    if (!((_fields._flag0 & 0x8u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.AcceptLanguage);
 					if (nativeValue != null)
 					{
-						_AcceptLanguage = nativeValue;
+						_fields._AcceptLanguage = nativeValue;
 					}
-                    _flag0 |= 0x8u;
+                    _fields._flag0 |= 0x8u;
 				}
-			    return _AcceptLanguage;
+			    return _fields._AcceptLanguage;
 		    }
             set 
             {
-                _flag0 |= 0x8u;
-                _AcceptLanguage = value;
+                _fields._flag0 |= 0x8u;
+                _fields._AcceptLanguage = value;
             }
         }
 
@@ -154,21 +159,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x10u) != 0))
+			    if (!((_fields._flag0 & 0x10u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Allow);
 					if (nativeValue != null)
 					{
-						_Allow = nativeValue;
+						_fields._Allow = nativeValue;
 					}
-                    _flag0 |= 0x10u;
+                    _fields._flag0 |= 0x10u;
 				}
-			    return _Allow;
+			    return _fields._Allow;
 		    }
             set 
             {
-                _flag0 |= 0x10u;
-                _Allow = value;
+                _fields._flag0 |= 0x10u;
+                _fields._Allow = value;
             }
         }
 
@@ -176,21 +181,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x20u) != 0))
+			    if (!((_fields._flag0 & 0x20u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Authorization);
 					if (nativeValue != null)
 					{
-						_Authorization = nativeValue;
+						_fields._Authorization = nativeValue;
 					}
-                    _flag0 |= 0x20u;
+                    _fields._flag0 |= 0x20u;
 				}
-			    return _Authorization;
+			    return _fields._Authorization;
 		    }
             set 
             {
-                _flag0 |= 0x20u;
-                _Authorization = value;
+                _fields._flag0 |= 0x20u;
+                _fields._Authorization = value;
             }
         }
 
@@ -198,21 +203,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x40u) != 0))
+			    if (!((_fields._flag0 & 0x40u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.CacheControl);
 					if (nativeValue != null)
 					{
-						_CacheControl = nativeValue;
+						_fields._CacheControl = nativeValue;
 					}
-                    _flag0 |= 0x40u;
+                    _fields._flag0 |= 0x40u;
 				}
-			    return _CacheControl;
+			    return _fields._CacheControl;
 		    }
             set 
             {
-                _flag0 |= 0x40u;
-                _CacheControl = value;
+                _fields._flag0 |= 0x40u;
+                _fields._CacheControl = value;
             }
         }
 
@@ -220,21 +225,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x80u) != 0))
+			    if (!((_fields._flag0 & 0x80u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Connection);
 					if (nativeValue != null)
 					{
-						_Connection = nativeValue;
+						_fields._Connection = nativeValue;
 					}
-                    _flag0 |= 0x80u;
+                    _fields._flag0 |= 0x80u;
 				}
-			    return _Connection;
+			    return _fields._Connection;
 		    }
             set 
             {
-                _flag0 |= 0x80u;
-                _Connection = value;
+                _fields._flag0 |= 0x80u;
+                _fields._Connection = value;
             }
         }
 
@@ -242,21 +247,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x100u) != 0))
+			    if (!((_fields._flag0 & 0x100u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentEncoding);
 					if (nativeValue != null)
 					{
-						_ContentEncoding = nativeValue;
+						_fields._ContentEncoding = nativeValue;
 					}
-                    _flag0 |= 0x100u;
+                    _fields._flag0 |= 0x100u;
 				}
-			    return _ContentEncoding;
+			    return _fields._ContentEncoding;
 		    }
             set 
             {
-                _flag0 |= 0x100u;
-                _ContentEncoding = value;
+                _fields._flag0 |= 0x100u;
+                _fields._ContentEncoding = value;
             }
         }
 
@@ -264,21 +269,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x200u) != 0))
+			    if (!((_fields._flag0 & 0x200u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLanguage);
 					if (nativeValue != null)
 					{
-						_ContentLanguage = nativeValue;
+						_fields._ContentLanguage = nativeValue;
 					}
-                    _flag0 |= 0x200u;
+                    _fields._flag0 |= 0x200u;
 				}
-			    return _ContentLanguage;
+			    return _fields._ContentLanguage;
 		    }
             set 
             {
-                _flag0 |= 0x200u;
-                _ContentLanguage = value;
+                _fields._flag0 |= 0x200u;
+                _fields._ContentLanguage = value;
             }
         }
 
@@ -286,21 +291,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x400u) != 0))
+			    if (!((_fields._flag0 & 0x400u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLength);
 					if (nativeValue != null)
 					{
-						_ContentLength = nativeValue;
+						_fields._ContentLength = nativeValue;
 					}
-                    _flag0 |= 0x400u;
+                    _fields._flag0 |= 0x400u;
 				}
-			    return _ContentLength;
+			    return _fields._ContentLength;
 		    }
             set 
             {
-                _flag0 |= 0x400u;
-                _ContentLength = value;
+                _fields._flag0 |= 0x400u;
+                _fields._ContentLength = value;
             }
         }
 
@@ -308,21 +313,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x800u) != 0))
+			    if (!((_fields._flag0 & 0x800u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentLocation);
 					if (nativeValue != null)
 					{
-						_ContentLocation = nativeValue;
+						_fields._ContentLocation = nativeValue;
 					}
-                    _flag0 |= 0x800u;
+                    _fields._flag0 |= 0x800u;
 				}
-			    return _ContentLocation;
+			    return _fields._ContentLocation;
 		    }
             set 
             {
-                _flag0 |= 0x800u;
-                _ContentLocation = value;
+                _fields._flag0 |= 0x800u;
+                _fields._ContentLocation = value;
             }
         }
 
@@ -330,21 +335,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x1000u) != 0))
+			    if (!((_fields._flag0 & 0x1000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentMd5);
 					if (nativeValue != null)
 					{
-						_ContentMd5 = nativeValue;
+						_fields._ContentMd5 = nativeValue;
 					}
-                    _flag0 |= 0x1000u;
+                    _fields._flag0 |= 0x1000u;
 				}
-			    return _ContentMd5;
+			    return _fields._ContentMd5;
 		    }
             set 
             {
-                _flag0 |= 0x1000u;
-                _ContentMd5 = value;
+                _fields._flag0 |= 0x1000u;
+                _fields._ContentMd5 = value;
             }
         }
 
@@ -352,21 +357,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x2000u) != 0))
+			    if (!((_fields._flag0 & 0x2000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentRange);
 					if (nativeValue != null)
 					{
-						_ContentRange = nativeValue;
+						_fields._ContentRange = nativeValue;
 					}
-                    _flag0 |= 0x2000u;
+                    _fields._flag0 |= 0x2000u;
 				}
-			    return _ContentRange;
+			    return _fields._ContentRange;
 		    }
             set 
             {
-                _flag0 |= 0x2000u;
-                _ContentRange = value;
+                _fields._flag0 |= 0x2000u;
+                _fields._ContentRange = value;
             }
         }
 
@@ -374,21 +379,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x4000u) != 0))
+			    if (!((_fields._flag0 & 0x4000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ContentType);
 					if (nativeValue != null)
 					{
-						_ContentType = nativeValue;
+						_fields._ContentType = nativeValue;
 					}
-                    _flag0 |= 0x4000u;
+                    _fields._flag0 |= 0x4000u;
 				}
-			    return _ContentType;
+			    return _fields._ContentType;
 		    }
             set 
             {
-                _flag0 |= 0x4000u;
-                _ContentType = value;
+                _fields._flag0 |= 0x4000u;
+                _fields._ContentType = value;
             }
         }
 
@@ -396,21 +401,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x8000u) != 0))
+			    if (!((_fields._flag0 & 0x8000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Cookie);
 					if (nativeValue != null)
 					{
-						_Cookie = nativeValue;
+						_fields._Cookie = nativeValue;
 					}
-                    _flag0 |= 0x8000u;
+                    _fields._flag0 |= 0x8000u;
 				}
-			    return _Cookie;
+			    return _fields._Cookie;
 		    }
             set 
             {
-                _flag0 |= 0x8000u;
-                _Cookie = value;
+                _fields._flag0 |= 0x8000u;
+                _fields._Cookie = value;
             }
         }
 
@@ -418,21 +423,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x10000u) != 0))
+			    if (!((_fields._flag0 & 0x10000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Date);
 					if (nativeValue != null)
 					{
-						_Date = nativeValue;
+						_fields._Date = nativeValue;
 					}
-                    _flag0 |= 0x10000u;
+                    _fields._flag0 |= 0x10000u;
 				}
-			    return _Date;
+			    return _fields._Date;
 		    }
             set 
             {
-                _flag0 |= 0x10000u;
-                _Date = value;
+                _fields._flag0 |= 0x10000u;
+                _fields._Date = value;
             }
         }
 
@@ -440,21 +445,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x20000u) != 0))
+			    if (!((_fields._flag0 & 0x20000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expect);
 					if (nativeValue != null)
 					{
-						_Expect = nativeValue;
+						_fields._Expect = nativeValue;
 					}
-                    _flag0 |= 0x20000u;
+                    _fields._flag0 |= 0x20000u;
 				}
-			    return _Expect;
+			    return _fields._Expect;
 		    }
             set 
             {
-                _flag0 |= 0x20000u;
-                _Expect = value;
+                _fields._flag0 |= 0x20000u;
+                _fields._Expect = value;
             }
         }
 
@@ -462,21 +467,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x40000u) != 0))
+			    if (!((_fields._flag0 & 0x40000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Expires);
 					if (nativeValue != null)
 					{
-						_Expires = nativeValue;
+						_fields._Expires = nativeValue;
 					}
-                    _flag0 |= 0x40000u;
+                    _fields._flag0 |= 0x40000u;
 				}
-			    return _Expires;
+			    return _fields._Expires;
 		    }
             set 
             {
-                _flag0 |= 0x40000u;
-                _Expires = value;
+                _fields._flag0 |= 0x40000u;
+                _fields._Expires = value;
             }
         }
 
@@ -484,21 +489,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x80000u) != 0))
+			    if (!((_fields._flag0 & 0x80000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.From);
 					if (nativeValue != null)
 					{
-						_From = nativeValue;
+						_fields._From = nativeValue;
 					}
-                    _flag0 |= 0x80000u;
+                    _fields._flag0 |= 0x80000u;
 				}
-			    return _From;
+			    return _fields._From;
 		    }
             set 
             {
-                _flag0 |= 0x80000u;
-                _From = value;
+                _fields._flag0 |= 0x80000u;
+                _fields._From = value;
             }
         }
 
@@ -506,21 +511,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x100000u) != 0))
+			    if (!((_fields._flag0 & 0x100000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Host);
 					if (nativeValue != null)
 					{
-						_Host = nativeValue;
+						_fields._Host = nativeValue;
 					}
-                    _flag0 |= 0x100000u;
+                    _fields._flag0 |= 0x100000u;
 				}
-			    return _Host;
+			    return _fields._Host;
 		    }
             set 
             {
-                _flag0 |= 0x100000u;
-                _Host = value;
+                _fields._flag0 |= 0x100000u;
+                _fields._Host = value;
             }
         }
 
@@ -528,21 +533,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x200000u) != 0))
+			    if (!((_fields._flag0 & 0x200000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfMatch);
 					if (nativeValue != null)
 					{
-						_IfMatch = nativeValue;
+						_fields._IfMatch = nativeValue;
 					}
-                    _flag0 |= 0x200000u;
+                    _fields._flag0 |= 0x200000u;
 				}
-			    return _IfMatch;
+			    return _fields._IfMatch;
 		    }
             set 
             {
-                _flag0 |= 0x200000u;
-                _IfMatch = value;
+                _fields._flag0 |= 0x200000u;
+                _fields._IfMatch = value;
             }
         }
 
@@ -550,21 +555,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x400000u) != 0))
+			    if (!((_fields._flag0 & 0x400000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfModifiedSince);
 					if (nativeValue != null)
 					{
-						_IfModifiedSince = nativeValue;
+						_fields._IfModifiedSince = nativeValue;
 					}
-                    _flag0 |= 0x400000u;
+                    _fields._flag0 |= 0x400000u;
 				}
-			    return _IfModifiedSince;
+			    return _fields._IfModifiedSince;
 		    }
             set 
             {
-                _flag0 |= 0x400000u;
-                _IfModifiedSince = value;
+                _fields._flag0 |= 0x400000u;
+                _fields._IfModifiedSince = value;
             }
         }
 
@@ -572,21 +577,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x800000u) != 0))
+			    if (!((_fields._flag0 & 0x800000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfNoneMatch);
 					if (nativeValue != null)
 					{
-						_IfNoneMatch = nativeValue;
+						_fields._IfNoneMatch = nativeValue;
 					}
-                    _flag0 |= 0x800000u;
+                    _fields._flag0 |= 0x800000u;
 				}
-			    return _IfNoneMatch;
+			    return _fields._IfNoneMatch;
 		    }
             set 
             {
-                _flag0 |= 0x800000u;
-                _IfNoneMatch = value;
+                _fields._flag0 |= 0x800000u;
+                _fields._IfNoneMatch = value;
             }
         }
 
@@ -594,21 +599,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x1000000u) != 0))
+			    if (!((_fields._flag0 & 0x1000000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfRange);
 					if (nativeValue != null)
 					{
-						_IfRange = nativeValue;
+						_fields._IfRange = nativeValue;
 					}
-                    _flag0 |= 0x1000000u;
+                    _fields._flag0 |= 0x1000000u;
 				}
-			    return _IfRange;
+			    return _fields._IfRange;
 		    }
             set 
             {
-                _flag0 |= 0x1000000u;
-                _IfRange = value;
+                _fields._flag0 |= 0x1000000u;
+                _fields._IfRange = value;
             }
         }
 
@@ -616,21 +621,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x2000000u) != 0))
+			    if (!((_fields._flag0 & 0x2000000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.IfUnmodifiedSince);
 					if (nativeValue != null)
 					{
-						_IfUnmodifiedSince = nativeValue;
+						_fields._IfUnmodifiedSince = nativeValue;
 					}
-                    _flag0 |= 0x2000000u;
+                    _fields._flag0 |= 0x2000000u;
 				}
-			    return _IfUnmodifiedSince;
+			    return _fields._IfUnmodifiedSince;
 		    }
             set 
             {
-                _flag0 |= 0x2000000u;
-                _IfUnmodifiedSince = value;
+                _fields._flag0 |= 0x2000000u;
+                _fields._IfUnmodifiedSince = value;
             }
         }
 
@@ -638,21 +643,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x4000000u) != 0))
+			    if (!((_fields._flag0 & 0x4000000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.KeepAlive);
 					if (nativeValue != null)
 					{
-						_KeepAlive = nativeValue;
+						_fields._KeepAlive = nativeValue;
 					}
-                    _flag0 |= 0x4000000u;
+                    _fields._flag0 |= 0x4000000u;
 				}
-			    return _KeepAlive;
+			    return _fields._KeepAlive;
 		    }
             set 
             {
-                _flag0 |= 0x4000000u;
-                _KeepAlive = value;
+                _fields._flag0 |= 0x4000000u;
+                _fields._KeepAlive = value;
             }
         }
 
@@ -660,21 +665,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x8000000u) != 0))
+			    if (!((_fields._flag0 & 0x8000000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.LastModified);
 					if (nativeValue != null)
 					{
-						_LastModified = nativeValue;
+						_fields._LastModified = nativeValue;
 					}
-                    _flag0 |= 0x8000000u;
+                    _fields._flag0 |= 0x8000000u;
 				}
-			    return _LastModified;
+			    return _fields._LastModified;
 		    }
             set 
             {
-                _flag0 |= 0x8000000u;
-                _LastModified = value;
+                _fields._flag0 |= 0x8000000u;
+                _fields._LastModified = value;
             }
         }
 
@@ -682,21 +687,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x10000000u) != 0))
+			    if (!((_fields._flag0 & 0x10000000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.MaxForwards);
 					if (nativeValue != null)
 					{
-						_MaxForwards = nativeValue;
+						_fields._MaxForwards = nativeValue;
 					}
-                    _flag0 |= 0x10000000u;
+                    _fields._flag0 |= 0x10000000u;
 				}
-			    return _MaxForwards;
+			    return _fields._MaxForwards;
 		    }
             set 
             {
-                _flag0 |= 0x10000000u;
-                _MaxForwards = value;
+                _fields._flag0 |= 0x10000000u;
+                _fields._MaxForwards = value;
             }
         }
 
@@ -704,21 +709,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x20000000u) != 0))
+			    if (!((_fields._flag0 & 0x20000000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Pragma);
 					if (nativeValue != null)
 					{
-						_Pragma = nativeValue;
+						_fields._Pragma = nativeValue;
 					}
-                    _flag0 |= 0x20000000u;
+                    _fields._flag0 |= 0x20000000u;
 				}
-			    return _Pragma;
+			    return _fields._Pragma;
 		    }
             set 
             {
-                _flag0 |= 0x20000000u;
-                _Pragma = value;
+                _fields._flag0 |= 0x20000000u;
+                _fields._Pragma = value;
             }
         }
 
@@ -726,21 +731,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x40000000u) != 0))
+			    if (!((_fields._flag0 & 0x40000000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.ProxyAuthorization);
 					if (nativeValue != null)
 					{
-						_ProxyAuthorization = nativeValue;
+						_fields._ProxyAuthorization = nativeValue;
 					}
-                    _flag0 |= 0x40000000u;
+                    _fields._flag0 |= 0x40000000u;
 				}
-			    return _ProxyAuthorization;
+			    return _fields._ProxyAuthorization;
 		    }
             set 
             {
-                _flag0 |= 0x40000000u;
-                _ProxyAuthorization = value;
+                _fields._flag0 |= 0x40000000u;
+                _fields._ProxyAuthorization = value;
             }
         }
 
@@ -748,21 +753,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag0 & 0x80000000u) != 0))
+			    if (!((_fields._flag0 & 0x80000000u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Range);
 					if (nativeValue != null)
 					{
-						_Range = nativeValue;
+						_fields._Range = nativeValue;
 					}
-                    _flag0 |= 0x80000000u;
+                    _fields._flag0 |= 0x80000000u;
 				}
-			    return _Range;
+			    return _fields._Range;
 		    }
             set 
             {
-                _flag0 |= 0x80000000u;
-                _Range = value;
+                _fields._flag0 |= 0x80000000u;
+                _fields._Range = value;
             }
         }
 
@@ -770,21 +775,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x1u) != 0))
+			    if (!((_fields._flag1 & 0x1u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Referer);
 					if (nativeValue != null)
 					{
-						_Referer = nativeValue;
+						_fields._Referer = nativeValue;
 					}
-                    _flag1 |= 0x1u;
+                    _fields._flag1 |= 0x1u;
 				}
-			    return _Referer;
+			    return _fields._Referer;
 		    }
             set 
             {
-                _flag1 |= 0x1u;
-                _Referer = value;
+                _fields._flag1 |= 0x1u;
+                _fields._Referer = value;
             }
         }
 
@@ -792,21 +797,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x2u) != 0))
+			    if (!((_fields._flag1 & 0x2u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Te);
 					if (nativeValue != null)
 					{
-						_Te = nativeValue;
+						_fields._Te = nativeValue;
 					}
-                    _flag1 |= 0x2u;
+                    _fields._flag1 |= 0x2u;
 				}
-			    return _Te;
+			    return _fields._Te;
 		    }
             set 
             {
-                _flag1 |= 0x2u;
-                _Te = value;
+                _fields._flag1 |= 0x2u;
+                _fields._Te = value;
             }
         }
 
@@ -814,21 +819,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x4u) != 0))
+			    if (!((_fields._flag1 & 0x4u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Trailer);
 					if (nativeValue != null)
 					{
-						_Trailer = nativeValue;
+						_fields._Trailer = nativeValue;
 					}
-                    _flag1 |= 0x4u;
+                    _fields._flag1 |= 0x4u;
 				}
-			    return _Trailer;
+			    return _fields._Trailer;
 		    }
             set 
             {
-                _flag1 |= 0x4u;
-                _Trailer = value;
+                _fields._flag1 |= 0x4u;
+                _fields._Trailer = value;
             }
         }
 
@@ -836,21 +841,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x8u) != 0))
+			    if (!((_fields._flag1 & 0x8u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.TransferEncoding);
 					if (nativeValue != null)
 					{
-						_TransferEncoding = nativeValue;
+						_fields._TransferEncoding = nativeValue;
 					}
-                    _flag1 |= 0x8u;
+                    _fields._flag1 |= 0x8u;
 				}
-			    return _TransferEncoding;
+			    return _fields._TransferEncoding;
 		    }
             set 
             {
-                _flag1 |= 0x8u;
-                _TransferEncoding = value;
+                _fields._flag1 |= 0x8u;
+                _fields._TransferEncoding = value;
             }
         }
 
@@ -858,21 +863,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x10u) != 0))
+			    if (!((_fields._flag1 & 0x10u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Translate);
 					if (nativeValue != null)
 					{
-						_Translate = nativeValue;
+						_fields._Translate = nativeValue;
 					}
-                    _flag1 |= 0x10u;
+                    _fields._flag1 |= 0x10u;
 				}
-			    return _Translate;
+			    return _fields._Translate;
 		    }
             set 
             {
-                _flag1 |= 0x10u;
-                _Translate = value;
+                _fields._flag1 |= 0x10u;
+                _fields._Translate = value;
             }
         }
 
@@ -880,21 +885,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x20u) != 0))
+			    if (!((_fields._flag1 & 0x20u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Upgrade);
 					if (nativeValue != null)
 					{
-						_Upgrade = nativeValue;
+						_fields._Upgrade = nativeValue;
 					}
-                    _flag1 |= 0x20u;
+                    _fields._flag1 |= 0x20u;
 				}
-			    return _Upgrade;
+			    return _fields._Upgrade;
 		    }
             set 
             {
-                _flag1 |= 0x20u;
-                _Upgrade = value;
+                _fields._flag1 |= 0x20u;
+                _fields._Upgrade = value;
             }
         }
 
@@ -902,21 +907,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x40u) != 0))
+			    if (!((_fields._flag1 & 0x40u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.UserAgent);
 					if (nativeValue != null)
 					{
-						_UserAgent = nativeValue;
+						_fields._UserAgent = nativeValue;
 					}
-                    _flag1 |= 0x40u;
+                    _fields._flag1 |= 0x40u;
 				}
-			    return _UserAgent;
+			    return _fields._UserAgent;
 		    }
             set 
             {
-                _flag1 |= 0x40u;
-                _UserAgent = value;
+                _fields._flag1 |= 0x40u;
+                _fields._UserAgent = value;
             }
         }
 
@@ -924,21 +929,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x80u) != 0))
+			    if (!((_fields._flag1 & 0x80u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Via);
 					if (nativeValue != null)
 					{
-						_Via = nativeValue;
+						_fields._Via = nativeValue;
 					}
-                    _flag1 |= 0x80u;
+                    _fields._flag1 |= 0x80u;
 				}
-			    return _Via;
+			    return _fields._Via;
 		    }
             set 
             {
-                _flag1 |= 0x80u;
-                _Via = value;
+                _fields._flag1 |= 0x80u;
+                _fields._Via = value;
             }
         }
 
@@ -946,21 +951,21 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             get
 			{
-			    if (!((_flag1 & 0x100u) != 0))
+			    if (!((_fields._flag1 & 0x100u) != 0))
 				{
 					string nativeValue = GetKnownHeader(HttpSysRequestHeader.Warning);
 					if (nativeValue != null)
 					{
-						_Warning = nativeValue;
+						_fields._Warning = nativeValue;
 					}
-                    _flag1 |= 0x100u;
+                    _fields._flag1 |= 0x100u;
 				}
-			    return _Warning;
+			    return _fields._Warning;
 		    }
             set 
             {
-                _flag1 |= 0x100u;
-                _Warning = value;
+                _fields._flag1 |= 0x100u;
+                _fields._Warning = value;
             }
         }
 
@@ -1425,7 +1430,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 2:
                     if (string.Equals(key, "Te", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x2u;
+                        _fields._flag1 |= 0x2u;
                         Te = value;
                         return true;
                     }
@@ -1433,7 +1438,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 3:
                     if (string.Equals(key, "Via", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x80u;
+                        _fields._flag1 |= 0x80u;
                         Via = value;
                         return true;
                     }
@@ -1441,19 +1446,19 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 4:
                     if (string.Equals(key, "Date", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x10000u;
+                        _fields._flag0 |= 0x10000u;
                         Date = value;
                         return true;
                     }
                     if (string.Equals(key, "From", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x80000u;
+                        _fields._flag0 |= 0x80000u;
                         From = value;
                         return true;
                     }
                     if (string.Equals(key, "Host", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x100000u;
+                        _fields._flag0 |= 0x100000u;
                         Host = value;
                         return true;
                     }
@@ -1461,13 +1466,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 5:
                     if (string.Equals(key, "Allow", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x10u;
+                        _fields._flag0 |= 0x10u;
                         Allow = value;
                         return true;
                     }
                     if (string.Equals(key, "Range", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x80000000u;
+                        _fields._flag0 |= 0x80000000u;
                         Range = value;
                         return true;
                     }
@@ -1475,25 +1480,25 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 6:
                     if (string.Equals(key, "Accept", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x1u;
+                        _fields._flag0 |= 0x1u;
                         Accept = value;
                         return true;
                     }
                     if (string.Equals(key, "Cookie", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x8000u;
+                        _fields._flag0 |= 0x8000u;
                         Cookie = value;
                         return true;
                     }
                     if (string.Equals(key, "Expect", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x20000u;
+                        _fields._flag0 |= 0x20000u;
                         Expect = value;
                         return true;
                     }
                     if (string.Equals(key, "Pragma", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x20000000u;
+                        _fields._flag0 |= 0x20000000u;
                         Pragma = value;
                         return true;
                     }
@@ -1501,31 +1506,31 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 7:
                     if (string.Equals(key, "Expires", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x40000u;
+                        _fields._flag0 |= 0x40000u;
                         Expires = value;
                         return true;
                     }
                     if (string.Equals(key, "Referer", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x1u;
+                        _fields._flag1 |= 0x1u;
                         Referer = value;
                         return true;
                     }
                     if (string.Equals(key, "Trailer", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x4u;
+                        _fields._flag1 |= 0x4u;
                         Trailer = value;
                         return true;
                     }
                     if (string.Equals(key, "Upgrade", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x20u;
+                        _fields._flag1 |= 0x20u;
                         Upgrade = value;
                         return true;
                     }
                     if (string.Equals(key, "Warning", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x100u;
+                        _fields._flag1 |= 0x100u;
                         Warning = value;
                         return true;
                     }
@@ -1533,13 +1538,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 8:
                     if (string.Equals(key, "If-Match", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x200000u;
+                        _fields._flag0 |= 0x200000u;
                         IfMatch = value;
                         return true;
                     }
                     if (string.Equals(key, "If-Range", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x1000000u;
+                        _fields._flag0 |= 0x1000000u;
                         IfRange = value;
                         return true;
                     }
@@ -1547,7 +1552,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 9:
                     if (string.Equals(key, "Translate", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x10u;
+                        _fields._flag1 |= 0x10u;
                         Translate = value;
                         return true;
                     }
@@ -1555,19 +1560,19 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 10:
                     if (string.Equals(key, "Connection", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x80u;
+                        _fields._flag0 |= 0x80u;
                         Connection = value;
                         return true;
                     }
                     if (string.Equals(key, "Keep-Alive", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x4000000u;
+                        _fields._flag0 |= 0x4000000u;
                         KeepAlive = value;
                         return true;
                     }
                     if (string.Equals(key, "User-Agent", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x40u;
+                        _fields._flag1 |= 0x40u;
                         UserAgent = value;
                         return true;
                     }
@@ -1575,7 +1580,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 11:
                     if (string.Equals(key, "Content-Md5", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x1000u;
+                        _fields._flag0 |= 0x1000u;
                         ContentMd5 = value;
                         return true;
                     }
@@ -1583,13 +1588,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 12:
                     if (string.Equals(key, "Content-Type", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x4000u;
+                        _fields._flag0 |= 0x4000u;
                         ContentType = value;
                         return true;
                     }
                     if (string.Equals(key, "Max-Forwards", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x10000000u;
+                        _fields._flag0 |= 0x10000000u;
                         MaxForwards = value;
                         return true;
                     }
@@ -1597,31 +1602,31 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 13:
                     if (string.Equals(key, "Authorization", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x20u;
+                        _fields._flag0 |= 0x20u;
                         Authorization = value;
                         return true;
                     }
                     if (string.Equals(key, "Cache-Control", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x40u;
+                        _fields._flag0 |= 0x40u;
                         CacheControl = value;
                         return true;
                     }
                     if (string.Equals(key, "Content-Range", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x2000u;
+                        _fields._flag0 |= 0x2000u;
                         ContentRange = value;
                         return true;
                     }
                     if (string.Equals(key, "If-None-Match", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x800000u;
+                        _fields._flag0 |= 0x800000u;
                         IfNoneMatch = value;
                         return true;
                     }
                     if (string.Equals(key, "Last-Modified", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x8000000u;
+                        _fields._flag0 |= 0x8000000u;
                         LastModified = value;
                         return true;
                     }
@@ -1629,13 +1634,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 14:
                     if (string.Equals(key, "Accept-Charset", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x2u;
+                        _fields._flag0 |= 0x2u;
                         AcceptCharset = value;
                         return true;
                     }
                     if (string.Equals(key, "Content-Length", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x400u;
+                        _fields._flag0 |= 0x400u;
                         ContentLength = value;
                         return true;
                     }
@@ -1643,13 +1648,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 15:
                     if (string.Equals(key, "Accept-Encoding", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x4u;
+                        _fields._flag0 |= 0x4u;
                         AcceptEncoding = value;
                         return true;
                     }
                     if (string.Equals(key, "Accept-Language", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x8u;
+                        _fields._flag0 |= 0x8u;
                         AcceptLanguage = value;
                         return true;
                     }
@@ -1657,19 +1662,19 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 16:
                     if (string.Equals(key, "Content-Encoding", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x100u;
+                        _fields._flag0 |= 0x100u;
                         ContentEncoding = value;
                         return true;
                     }
                     if (string.Equals(key, "Content-Language", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x200u;
+                        _fields._flag0 |= 0x200u;
                         ContentLanguage = value;
                         return true;
                     }
                     if (string.Equals(key, "Content-Location", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x800u;
+                        _fields._flag0 |= 0x800u;
                         ContentLocation = value;
                         return true;
                     }
@@ -1677,13 +1682,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 17:
                     if (string.Equals(key, "If-Modified-Since", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x400000u;
+                        _fields._flag0 |= 0x400000u;
                         IfModifiedSince = value;
                         return true;
                     }
                     if (string.Equals(key, "Transfer-Encoding", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag1 |= 0x8u;
+                        _fields._flag1 |= 0x8u;
                         TransferEncoding = value;
                         return true;
                     }
@@ -1691,13 +1696,13 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
                 case 19:
                     if (string.Equals(key, "If-Unmodified-Since", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x2000000u;
+                        _fields._flag0 |= 0x2000000u;
                         IfUnmodifiedSince = value;
                         return true;
                     }
                     if (string.Equals(key, "Proxy-Authorization", StringComparison.OrdinalIgnoreCase)) 
                     {
-                        _flag0 |= 0x40000000u;
+                        _fields._flag0 |= 0x40000000u;
                         ProxyAuthorization = value;
                         return true;
                     }
@@ -1711,322 +1716,322 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             switch (key.Length)
             {
                 case 2:
-                    if (_Te.Count > 0 
+                    if (_fields._Te.Count > 0 
                         && string.Equals(key, "Te", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x2u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x2u) != 0);
                         Te = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 3:
-                    if (_Via.Count > 0 
+                    if (_fields._Via.Count > 0 
                         && string.Equals(key, "Via", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x80u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x80u) != 0);
                         Via = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 4:
-                    if (_Date.Count > 0 
+                    if (_fields._Date.Count > 0 
                         && string.Equals(key, "Date", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x10000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x10000u) != 0);
                         Date = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_From.Count > 0 
+                    if (_fields._From.Count > 0 
                         && string.Equals(key, "From", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x80000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x80000u) != 0);
                         From = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Host.Count > 0 
+                    if (_fields._Host.Count > 0 
                         && string.Equals(key, "Host", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x100000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x100000u) != 0);
                         Host = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 5:
-                    if (_Allow.Count > 0 
+                    if (_fields._Allow.Count > 0 
                         && string.Equals(key, "Allow", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x10u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x10u) != 0);
                         Allow = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Range.Count > 0 
+                    if (_fields._Range.Count > 0 
                         && string.Equals(key, "Range", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x80000000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x80000000u) != 0);
                         Range = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 6:
-                    if (_Accept.Count > 0 
+                    if (_fields._Accept.Count > 0 
                         && string.Equals(key, "Accept", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x1u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x1u) != 0);
                         Accept = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Cookie.Count > 0 
+                    if (_fields._Cookie.Count > 0 
                         && string.Equals(key, "Cookie", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x8000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x8000u) != 0);
                         Cookie = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Expect.Count > 0 
+                    if (_fields._Expect.Count > 0 
                         && string.Equals(key, "Expect", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x20000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x20000u) != 0);
                         Expect = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Pragma.Count > 0 
+                    if (_fields._Pragma.Count > 0 
                         && string.Equals(key, "Pragma", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x20000000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x20000000u) != 0);
                         Pragma = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 7:
-                    if (_Expires.Count > 0 
+                    if (_fields._Expires.Count > 0 
                         && string.Equals(key, "Expires", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x40000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x40000u) != 0);
                         Expires = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Referer.Count > 0 
+                    if (_fields._Referer.Count > 0 
                         && string.Equals(key, "Referer", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x1u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x1u) != 0);
                         Referer = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Trailer.Count > 0 
+                    if (_fields._Trailer.Count > 0 
                         && string.Equals(key, "Trailer", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x4u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x4u) != 0);
                         Trailer = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Upgrade.Count > 0 
+                    if (_fields._Upgrade.Count > 0 
                         && string.Equals(key, "Upgrade", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x20u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x20u) != 0);
                         Upgrade = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_Warning.Count > 0 
+                    if (_fields._Warning.Count > 0 
                         && string.Equals(key, "Warning", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x100u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x100u) != 0);
                         Warning = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 8:
-                    if (_IfMatch.Count > 0 
+                    if (_fields._IfMatch.Count > 0 
                         && string.Equals(key, "If-Match", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x200000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x200000u) != 0);
                         IfMatch = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_IfRange.Count > 0 
+                    if (_fields._IfRange.Count > 0 
                         && string.Equals(key, "If-Range", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x1000000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x1000000u) != 0);
                         IfRange = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 9:
-                    if (_Translate.Count > 0 
+                    if (_fields._Translate.Count > 0 
                         && string.Equals(key, "Translate", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x10u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x10u) != 0);
                         Translate = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 10:
-                    if (_Connection.Count > 0 
+                    if (_fields._Connection.Count > 0 
                         && string.Equals(key, "Connection", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x80u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x80u) != 0);
                         Connection = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_KeepAlive.Count > 0 
+                    if (_fields._KeepAlive.Count > 0 
                         && string.Equals(key, "Keep-Alive", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x4000000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x4000000u) != 0);
                         KeepAlive = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_UserAgent.Count > 0 
+                    if (_fields._UserAgent.Count > 0 
                         && string.Equals(key, "User-Agent", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x40u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x40u) != 0);
                         UserAgent = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 11:
-                    if (_ContentMd5.Count > 0 
+                    if (_fields._ContentMd5.Count > 0 
                         && string.Equals(key, "Content-Md5", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x1000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x1000u) != 0);
                         ContentMd5 = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 12:
-                    if (_ContentType.Count > 0 
+                    if (_fields._ContentType.Count > 0 
                         && string.Equals(key, "Content-Type", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x4000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x4000u) != 0);
                         ContentType = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_MaxForwards.Count > 0 
+                    if (_fields._MaxForwards.Count > 0 
                         && string.Equals(key, "Max-Forwards", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x10000000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x10000000u) != 0);
                         MaxForwards = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 13:
-                    if (_Authorization.Count > 0 
+                    if (_fields._Authorization.Count > 0 
                         && string.Equals(key, "Authorization", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x20u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x20u) != 0);
                         Authorization = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_CacheControl.Count > 0 
+                    if (_fields._CacheControl.Count > 0 
                         && string.Equals(key, "Cache-Control", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x40u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x40u) != 0);
                         CacheControl = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_ContentRange.Count > 0 
+                    if (_fields._ContentRange.Count > 0 
                         && string.Equals(key, "Content-Range", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x2000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x2000u) != 0);
                         ContentRange = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_IfNoneMatch.Count > 0 
+                    if (_fields._IfNoneMatch.Count > 0 
                         && string.Equals(key, "If-None-Match", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x800000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x800000u) != 0);
                         IfNoneMatch = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_LastModified.Count > 0 
+                    if (_fields._LastModified.Count > 0 
                         && string.Equals(key, "Last-Modified", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x8000000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x8000000u) != 0);
                         LastModified = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 14:
-                    if (_AcceptCharset.Count > 0 
+                    if (_fields._AcceptCharset.Count > 0 
                         && string.Equals(key, "Accept-Charset", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x2u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x2u) != 0);
                         AcceptCharset = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_ContentLength.Count > 0 
+                    if (_fields._ContentLength.Count > 0 
                         && string.Equals(key, "Content-Length", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x400u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x400u) != 0);
                         ContentLength = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 15:
-                    if (_AcceptEncoding.Count > 0 
+                    if (_fields._AcceptEncoding.Count > 0 
                         && string.Equals(key, "Accept-Encoding", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x4u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x4u) != 0);
                         AcceptEncoding = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_AcceptLanguage.Count > 0 
+                    if (_fields._AcceptLanguage.Count > 0 
                         && string.Equals(key, "Accept-Language", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x8u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x8u) != 0);
                         AcceptLanguage = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 16:
-                    if (_ContentEncoding.Count > 0 
+                    if (_fields._ContentEncoding.Count > 0 
                         && string.Equals(key, "Content-Encoding", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x100u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x100u) != 0);
                         ContentEncoding = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_ContentLanguage.Count > 0 
+                    if (_fields._ContentLanguage.Count > 0 
                         && string.Equals(key, "Content-Language", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x200u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x200u) != 0);
                         ContentLanguage = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_ContentLocation.Count > 0 
+                    if (_fields._ContentLocation.Count > 0 
                         && string.Equals(key, "Content-Location", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x800u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x800u) != 0);
                         ContentLocation = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 17:
-                    if (_IfModifiedSince.Count > 0 
+                    if (_fields._IfModifiedSince.Count > 0 
                         && string.Equals(key, "If-Modified-Since", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x400000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x400000u) != 0);
                         IfModifiedSince = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_TransferEncoding.Count > 0 
+                    if (_fields._TransferEncoding.Count > 0 
                         && string.Equals(key, "Transfer-Encoding", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag1 & 0x8u) != 0);
+					    bool wasSet = ((_fields._flag1 & 0x8u) != 0);
                         TransferEncoding = StringValues.Empty;
                         return wasSet;
                     }
                    break;
                 case 19:
-                    if (_IfUnmodifiedSince.Count > 0 
+                    if (_fields._IfUnmodifiedSince.Count > 0 
                         && string.Equals(key, "If-Unmodified-Since", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x2000000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x2000000u) != 0);
                         IfUnmodifiedSince = StringValues.Empty;
                         return wasSet;
                     }
-                    if (_ProxyAuthorization.Count > 0 
+                    if (_fields._ProxyAuthorization.Count > 0 
                         && string.Equals(key, "Proxy-Authorization", StringComparison.Ordinal))
                     {
-					    bool wasSet = ((_flag0 & 0x40000000u) != 0);
+					    bool wasSet = ((_fields._flag0 & 0x40000000u) != 0);
                         ProxyAuthorization = StringValues.Empty;
                         return wasSet;
                     }

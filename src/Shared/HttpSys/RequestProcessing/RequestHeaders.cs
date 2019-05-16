@@ -14,14 +14,35 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal partial class RequestHeaders : IHeaderDictionary
     {
-        private IDictionary<string, StringValues> _extra;
+        private Dictionary<string, StringValues> _extra;
         private NativeRequestContext _requestMemoryBlob;
         private long? _contentLength;
         private StringValues _contentLengthText;
 
+        // Used by HttpSys + Initialize
+        internal RequestHeaders()
+        {
+        }
+
+        // Used by IIS
         internal RequestHeaders(NativeRequestContext requestMemoryBlob)
         {
             _requestMemoryBlob = requestMemoryBlob;
+        }
+
+        internal void Initialize(NativeRequestContext requestMemoryBlob)
+        {
+            _requestMemoryBlob = requestMemoryBlob;
+        }
+
+        internal void Reset()
+        {
+            _requestMemoryBlob = null;
+            _contentLength = null;
+            _contentLengthText = default;
+            IsReadOnly = false;
+            _extra = null;
+            _fields = default;
         }
 
         public bool IsReadOnly { get; internal set; }

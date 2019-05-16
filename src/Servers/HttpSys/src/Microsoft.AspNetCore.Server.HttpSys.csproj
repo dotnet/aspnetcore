@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)HttpSys\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)CoreLib\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

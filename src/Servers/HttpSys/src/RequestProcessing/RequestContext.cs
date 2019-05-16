@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
-    internal sealed class RequestContext : IDisposable
+    internal class RequestContext : IDisposable
     {
         private static readonly Action<object> AbortDelegate = Abort;
 
@@ -29,12 +29,37 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // TODO: Verbose log
             Server = server;
             _memoryBlob = memoryBlob;
-            Request = new Request(this, _memoryBlob);
-            Response = new Response(this);
             AllowSynchronousIO = server.Options.AllowSynchronousIO;
+
+            Request = new Request(this, memoryBlob);
+            Response = new Response(this);
         }
 
-        internal HttpSysListener Server { get; }
+        protected void InitializeCore(HttpSysListener server, NativeRequestContext memoryBlob)
+        {
+            Server = server;
+            _memoryBlob = memoryBlob;
+            AllowSynchronousIO = server.Options.AllowSynchronousIO;
+
+            Request.Initialize(memoryBlob);
+            Response.Initialize();
+        }
+
+        protected void ResetCore()
+        {
+            Server = null;
+            _memoryBlob = null;
+            _requestAbortSource = null;
+            AllowSynchronousIO = false;
+
+            _disconnectToken = null;
+            _disposed = false;
+
+            Request.Reset();
+            Response.Reset();
+        }
+
+        internal HttpSysListener Server { get; private set; }
 
         internal ILogger Logger => Server.Logger;
 
