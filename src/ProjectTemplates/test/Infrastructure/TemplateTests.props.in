@@ -19,7 +19,7 @@
       LatestRuntimeFrameworkVersion="${MicrosoftAspNetCoreAppPackageVersion}"
       TargetingPackName="Microsoft.AspNetCore.App.Ref"
       TargetingPackVersion="${MicrosoftAspNetCoreAppPackageVersion}"
-      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.**RID**"
+      RuntimePackNamePatterns="Microsoft.AspNetCore.App.Runtime.**RID**"
       RuntimePackRuntimeIdentifiers="${SupportedRuntimeIdentifiers}" />
   </ItemGroup>
 
