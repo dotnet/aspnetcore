@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IsPackable>$(PackNativeAssets)</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
