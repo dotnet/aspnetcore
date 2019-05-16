@@ -305,18 +305,21 @@ $MSBuildArguments += "/p:TargetOsName=win"
 
 if (($All -or $BuildJava) -and -not $NoBuildJava) {
     $foundJdk = $false
-    $javac = Get-Command javac -ErrorAction Ignore
+    $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
     if ($env:JAVA_HOME) {
         if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
             Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
         }
-        $foundJdk = $true
+        else {
+            Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
+            $foundJdk = $true
+        }
     }
     elseif ($javac) {
         $foundJdk = $true
         $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
         $env:JAVA_HOME = $javaHome
-        Write-Host -f Magenta "Detected JDK in $javaHome"
+        Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
     }
     else {
         try {
@@ -324,7 +327,7 @@ if (($All -or $BuildJava) -and -not $NoBuildJava) {
             $javaHome = (Get-Item HKLM:\SOFTWARE\JavaSoft\JDK\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
             if (Test-Path "${env:JAVA_HOME}\bin\java.exe") {
                 $env:JAVA_HOME = $javaHome
-                Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME"
+                Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
                 $foundJdk = $true
             }
         }
