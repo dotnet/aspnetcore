@@ -21,9 +21,9 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     }
     public partial class HeaderPropagationEntry
     {
-        public HeaderPropagationEntry(string inboundHeaderName, string outboundHeaderName, System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> valueFilter) { }
+        public HeaderPropagationEntry(string inboundHeaderName, string capturedHeaderName, System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> valueFilter) { }
+        public string CapturedHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string InboundHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public string OutboundHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Func<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationContext, Microsoft.Extensions.Primitives.StringValues> ValueFilter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     public sealed partial class HeaderPropagationEntryCollection : System.Collections.ObjectModel.Collection<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationEntry>
@@ -36,8 +36,25 @@ namespace Microsoft.AspNetCore.HeaderPropagation
     }
     public partial class HeaderPropagationMessageHandler : System.Net.Http.DelegatingHandler
     {
-        public HeaderPropagationMessageHandler(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationOptions> options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues values) { }
+        public HeaderPropagationMessageHandler(Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerOptions options, Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationValues values) { }
         protected override System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> SendAsync(System.Net.Http.HttpRequestMessage request, System.Threading.CancellationToken cancellationToken) { throw null; }
+    }
+    public partial class HeaderPropagationMessageHandlerEntry
+    {
+        public HeaderPropagationMessageHandlerEntry(string capturedHeaderName, string outboundHeaderName) { }
+        public string CapturedHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string OutboundHeaderName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public sealed partial class HeaderPropagationMessageHandlerEntryCollection : System.Collections.ObjectModel.Collection<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerEntry>
+    {
+        public HeaderPropagationMessageHandlerEntryCollection() { }
+        public void Add(string headerName) { }
+        public void Add(string capturedHeaderName, string outboundHeaderName) { }
+    }
+    public partial class HeaderPropagationMessageHandlerOptions
+    {
+        public HeaderPropagationMessageHandlerOptions() { }
+        public Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerEntryCollection Headers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public partial class HeaderPropagationMiddleware
     {
@@ -60,6 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static partial class HeaderPropagationHttpClientBuilderExtensions
     {
         public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder AddHeaderPropagation(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IHttpClientBuilder AddHeaderPropagation(this Microsoft.Extensions.DependencyInjection.IHttpClientBuilder builder, System.Action<Microsoft.AspNetCore.HeaderPropagation.HeaderPropagationMessageHandlerOptions> configure) { throw null; }
     }
     public static partial class HeaderPropagationServiceCollectionExtensions
     {
