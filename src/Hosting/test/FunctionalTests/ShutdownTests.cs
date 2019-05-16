@@ -26,6 +26,12 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         public ShutdownTests(ITestOutputHelper output) : base(output) { }
 
         [ConditionalFact]
+        public void FailingTest()
+        {
+            Assert.True(false, "This test is 100% flaky");
+        }
+
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1687", FlakyOn.AzP.Linux)]
