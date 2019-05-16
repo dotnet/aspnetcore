@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                           IHttpRequestIdentifierFeature,
                                           IHttpBodyControlFeature,
                                           IHttpMaxRequestBodySizeFeature,
+                                          IHttpMinRequestBodyDataRateFeature,
                                           IHttpResponseStartFeature,
                                           IEndpointFeature,
                                           IRouteValuesFeature
@@ -225,6 +226,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 MaxRequestBodySize = value;
             }
+        }
+
+        MinDataRate IHttpMinRequestBodyDataRateFeature.MinDataRate
+        {
+            get => MinRequestBodyDataRate;
+            set => MinRequestBodyDataRate = value;
         }
 
         PipeWriter IResponseBodyPipeFeature.Writer

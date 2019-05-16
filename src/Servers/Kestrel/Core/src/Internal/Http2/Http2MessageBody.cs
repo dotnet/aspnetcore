@@ -16,8 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private ReadResult _readResult;
         private long _alreadyExaminedInNextReadResult;
 
-        private Http2MessageBody(Http2Stream context, MinDataRate minRequestBodyDataRate)
-            : base(context, minRequestBodyDataRate)
+        private Http2MessageBody(Http2Stream context)
+            : base(context)
         {
             _context = context;
         }
@@ -47,14 +47,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             AddAndCheckConsumedBytes(bytesRead);
         }
 
-        public static MessageBody For(Http2Stream context, MinDataRate minRequestBodyDataRate)
+        public static MessageBody For(Http2Stream context)
         {
             if (context.ReceivedEmptyRequestBody)
             {
                 return ZeroContentLengthClose;
             }
 
-            return new Http2MessageBody(context, minRequestBodyDataRate);
+            return new Http2MessageBody(context);
         }
 
         public override void AdvanceTo(SequencePosition consumed)

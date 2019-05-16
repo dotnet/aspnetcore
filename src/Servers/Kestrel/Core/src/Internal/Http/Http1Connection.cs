@@ -62,8 +62,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public bool RequestTimedOut => _requestTimedOut;
 
-        public MinDataRate MinRequestBodyDataRate { get; set; }
-
         public MinDataRate MinResponseDataRate { get; set; }
 
         public MemoryPool<byte> MemoryPool { get; }
@@ -542,7 +540,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _remainingRequestHeadersBytesAllowed = ServerOptions.Limits.MaxRequestHeadersTotalSize + 2;
             _requestCount++;
 
-            MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
             MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
         }
 

@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private class MockMessageBody : MessageBody
         {
             public MockMessageBody(bool upgradeable = false)
-                : base(null, null)
+                : base(null)
             {
                 RequestUpgrade = upgradeable;
             }
