@@ -334,7 +334,7 @@ if ($BuildJava) {
     }
 
     if (-not $foundJdk) {
-        Write-Error "Could not find java.exe. Install the JDK and put $JAVA_HOME\bin on the system PATH."
+        Write-Error "Could not find the JDK. Install the JDK and put $JAVA_HOME\bin on the system PATH. See $PSScriptRoot\docs\BuildFromSource.md for details."
     }
 }
 
