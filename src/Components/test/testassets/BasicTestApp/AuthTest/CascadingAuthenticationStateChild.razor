@@ -1,0 +1,44 @@
+@using System.Security.Claims
+
+@if (user == null)
+{
+    <span id="auth-state-pending">Requesting authentication state...</span>
+}
+else
+{
+    <p>
+        Authenticated:
+        <span id="identity-authenticated">@user.Identity.IsAuthenticated</span>
+    </p>
+
+    <p>
+        Name:
+        <span id="identity-name">@user.Identity.Name</span>
+    </p>
+
+    <p>
+        Test claim:
+        @if (user.HasClaim(TestClaimPredicate) == true)
+        {
+            <span id="test-claim">@user.Claims.Single(c => TestClaimPredicate(c)).Value</span>
+        }
+        else
+        {
+            <span id="test-claim">(none)</span>
+        }
+    </p>
+}
+
+@functions
+{
+    static Predicate<Claim> TestClaimPredicate = c => c.Type == "test-claim";
+
+    ClaimsPrincipal user;
+
+    [CascadingParameter] Task<AuthenticationState> AuthenticationStateTask { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        user = (await AuthenticationStateTask).User;
+    }
+}
