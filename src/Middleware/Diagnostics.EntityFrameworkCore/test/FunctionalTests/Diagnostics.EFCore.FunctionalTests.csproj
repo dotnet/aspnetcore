@@ -4,7 +4,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <!-- Mitigation for long path issues -->
     <AssemblyName>Diagnostics.EFCore.FunctionalTests</AssemblyName>
-    <TestDependsOnMssql>true</TestDependsOnMssql>
   </PropertyGroup>
 
   <ItemGroup>

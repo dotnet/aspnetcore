@@ -31,8 +31,4 @@
     <HelixContent Include="$(RepositoryRoot)eng\helix\content\**\*" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TestDependsOnMssql)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
-    <HelixPreCommand Include="call RunPowershell.cmd mssql\InstallSqlServerLocalDB.ps1 || exit /b 1" />
-  </ItemGroup>
-
 </Project>
