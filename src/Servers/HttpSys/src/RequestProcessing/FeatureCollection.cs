@@ -5,19 +5,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     // From src/Http/Http.Features/src/FeatureCollection.cs
-    // With the addition of Initialize, Reset
-    internal sealed class FeatureCollection<TContext> : IFeatureCollection
+    // With the addition of Initialize, Reset and IDefaultHttpContextContainer
+    internal sealed class FeatureCollection<TContext> : IFeatureCollection, IDefaultHttpContextContainer
     {
         private static KeyComparer FeatureKeyComparer = new KeyComparer();
 
         private IFeatureCollection _defaults;
         private IDictionary<Type, object> _features;
         private volatile int _containerRevision;
+        private DefaultHttpContext _httpContext;
 
         public FeatureCollection(IFeatureCollection defaults)
         {
@@ -33,6 +35,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         {
             _containerRevision = 0;
             _features?.Clear();
+            _httpContext?.Uninitialize();
         }
 
         public int Revision
@@ -41,6 +44,23 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
         }
 
         public bool IsReadOnly => false;
+
+        DefaultHttpContext IDefaultHttpContextContainer.HttpContext
+        {
+            get
+            {
+                if (_httpContext is null)
+                {
+                    _httpContext = new DefaultHttpContext(this);
+                }
+                else
+                {
+                    _httpContext.Initialize(this);
+                }
+
+                return _httpContext;
+            }
+        }
 
         public object this[Type key]
         {
