@@ -14,6 +14,6 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// Enables navigation interception on the client.
         /// </summary>
         /// <returns>A <see cref="Task" /> that represents the asynchronous operation.</returns>
-        public Task EnableNavigationInterceptionAsync();
+        Task EnableNavigationInterceptionAsync();
     }
 }
