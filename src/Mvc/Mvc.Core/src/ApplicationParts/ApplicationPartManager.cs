@@ -60,10 +60,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
             {
                 if (!seenAssemblies.Add(assembly))
                 {
-                    // Assembly discovery may be duplicated (e.g. if a user explicitly specified an ApplicationPartAAttribute
-                    // that was also codegened), but we do not want duplicate ApplicationParts.
-                    // Avoid duplicates. Note that we prefer doing this over Distinct since the latter isn't
-                    // guaranteed to preserve the original ordering which is important here.
+                    // "assemblies" may contain duplicate values, but we want unique ApplicationPart instances.
+                    // Note that we prefer using a HashSet over Distinct since the latter isn't
+                    // guaranteed to preserve the original ordering.
                     continue;
                 }
 
