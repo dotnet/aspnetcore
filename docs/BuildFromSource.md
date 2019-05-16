@@ -23,6 +23,10 @@ Building ASP.NET Core on Windows requires:
 * Java Development Kit 11 or newer. Either:
     * OpenJDK <https://jdk.java.net/>
     * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
+    * To install a version of the JDK that will only be used by this repo, run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.ps1)
+        ```ps1
+        PS> ./eng/scripts/InstalLJdk.ps1
+        ```
 
 ### macOS/Linux
 
