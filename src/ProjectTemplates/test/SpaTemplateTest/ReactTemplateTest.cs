@@ -28,6 +28,7 @@ namespace Templates.Test.SpaTemplateTest
             => SpaTemplateImplAsync("reactindividual", "react", useLocalDb: false, usesAuth: true);
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2348", FlakyOn.All)]
         public Task ReactTemplate_IndividualAuth_NetCore_LocalDb()
             => SpaTemplateImplAsync("reactindividualuld", "react", useLocalDb: true, usesAuth: true);
     }
