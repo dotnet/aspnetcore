@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             get { return _containerRevision + (_defaults?.Revision ?? 0); }
         }
 
-        public bool IsReadOnly { get { return false; } }
+        public bool IsReadOnly => false;
 
         public object this[Type key]
         {

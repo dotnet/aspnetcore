@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             //Debug.Assert(size != 0, "unexpected size");
 
             // We can't reuse overlapped objects
-            int newSize = checked((int)((size.HasValue ? size.Value : DefaultBufferSize) + AlignmentPadding));
+            int newSize = checked((int)((size ?? DefaultBufferSize) + AlignmentPadding));
             var backingBuffer = ArrayPool<byte>.Shared.Rent(newSize);
 
             var boundHandle = Server.RequestQueue.BoundHandle;

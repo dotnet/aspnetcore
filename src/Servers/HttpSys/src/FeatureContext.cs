@@ -573,7 +573,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return AwaitActions(actions);
         }
 
-        static async Task AwaitActions(Stack<(Func<object, Task> callback, object state)> actions)
+        private static async Task AwaitActions(Stack<(Func<object, Task> callback, object state)> actions)
         {
             while (actions.TryPop(out var actionPair))
             {
