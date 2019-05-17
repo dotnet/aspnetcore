@@ -111,14 +111,12 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 await Events.ValidateCertificate(validateCertificateContext);
 
-                if (validateCertificateContext.Result != null &&
-                    validateCertificateContext.Result.Succeeded)
+                if (validateCertificateContext?.Result?.Succeeded == true)
                 {
                     return Success(validateCertificateContext.Principal, clientCertificate);
                 }
 
-                if (validateCertificateContext.Result != null &&
-                    validateCertificateContext.Result.Failure != null)
+                if (validateCertificateContext?.Result?.Failure != null)
                 {
                     return AuthenticateResult.Fail(validateCertificateContext.Result.Failure);
                 }
