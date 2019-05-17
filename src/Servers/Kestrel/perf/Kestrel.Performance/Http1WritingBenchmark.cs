@@ -29,7 +29,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private TestHttp1Connection _http1Connection;
         private DuplexPipe.DuplexPipePair _pair;
         private MemoryPool<byte> _memoryPool;
-        private Task _consumeResponseBodyTask;
 
         private readonly byte[] _writeData = Encoding.ASCII.GetBytes("Hello, World!");
 
@@ -38,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _memoryPool = KestrelMemoryPool.Create();
             _http1Connection = MakeHttp1Connection();
-            _consumeResponseBodyTask = ConsumeResponseBody();
         }
 
         [Params(true, false)]
@@ -127,18 +125,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return http1Connection;
         }
 
-        private async Task ConsumeResponseBody()
+        [IterationCleanup]
+        public void Cleanup()
         {
             var reader = _pair.Application.Input;
-            var readResult = await reader.ReadAsync();
-
-            while (!readResult.IsCompleted)
+            if (reader.TryRead(out var readResult))
             {
                 reader.AdvanceTo(readResult.Buffer.End);
-                readResult = await reader.ReadAsync();
             }
-
-            reader.Complete();
         }
 
         public enum Startup
@@ -151,8 +145,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [GlobalCleanup]
         public void Dispose()
         {
-            _pair.Transport.Output.Complete();
-            _consumeResponseBodyTask.GetAwaiter().GetResult();
             _memoryPool?.Dispose();
         }
     }
