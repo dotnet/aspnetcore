@@ -24,6 +24,8 @@ Building ASP.NET Core on Windows requires:
     * OpenJDK <https://jdk.java.net/>
     * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
+*After installing Java, you may need to set the JAVA_HOME environment variable to the install location (ex: `C:\Program Files\Java\jdk-12.0.1`)*
+
 ### macOS/Linux
 
 Building ASP.NET Core on macOS or Linux requires:
