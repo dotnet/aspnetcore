@@ -178,7 +178,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 return _acceptEnumerator.Current;
             }
 
-            throw new OperationCanceledException();
+            // null means we're done...
+            return null;
         }
 
         public async ValueTask DisposeAsync()

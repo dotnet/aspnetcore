@@ -106,10 +106,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
                 return connection;
             }
-            catch (SocketException ex)
+            catch (SocketException)
             {
-                // REVIEW: Do we need more exception types?
-                throw new ConnectionResetException("The connection was reset", ex);
+                return null;
             }
         }
 

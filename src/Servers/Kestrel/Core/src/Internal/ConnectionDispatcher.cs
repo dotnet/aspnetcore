@@ -46,6 +46,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     {
                         var connection = await listener.AcceptAsync();
 
+                        if (connection == null)
+                        {
+                            // We're done listening
+                            break;
+                        }
+
                         // TODO: We need a bit of command and control to do connection management and that requires
                         // that we have access to a couple of methods that only exists on TransportConnection
                         // (specifically RequestClose, TickHeartbeat and CompleteAsync. This dependency needs to be removed or
