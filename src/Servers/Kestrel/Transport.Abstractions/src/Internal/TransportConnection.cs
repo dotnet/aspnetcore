@@ -32,6 +32,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public IPAddress LocalAddress { get; set; }
         public int LocalPort { get; set; }
 
+        public override EndPoint LocalEndpoint { get; set; }
+        public override EndPoint RemoteEndpoint { get; set; }
+
         public override string ConnectionId { get; set; }
 
         public override IFeatureCollection Features => this;

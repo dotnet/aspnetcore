@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    internal class ConnectionDispatcher : IConnectionDispatcher
+    internal class ConnectionDispatcher
     {
         private static long _lastConnectionId = long.MinValue;
 
@@ -28,23 +28,45 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _serviceContext.Log;
 
-        public Task OnConnection(TransportConnection connection)
+        public void StartAcceptingConnections(IConnectionListener listener)
         {
-            // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
-            // for the scheduler and limits are specified here
-            var inputOptions = GetInputPipeOptions(_serviceContext, connection.MemoryPool, connection.InputWriterScheduler);
-            var outputOptions = GetOutputPipeOptions(_serviceContext, connection.MemoryPool, connection.OutputReaderScheduler);
+            ThreadPool.UnsafeQueueUserWorkItem(StartAcceptingConnectionsCore, listener, preferLocal: false);
+        }
 
-            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+        private void StartAcceptingConnectionsCore(IConnectionListener listener)
+        {
+            // REVIEW: Multiple accept loops in parallel?
+            _ = AcceptConnectionsAsync();
 
-            // Set the transport and connection id
-            connection.ConnectionId = CorrelationIdGenerator.GetNextId();
-            connection.Transport = pair.Transport;
+            async Task AcceptConnectionsAsync()
+            {
+                try
+                {
+                    while (true)
+                    {
+                        var connection = await listener.AcceptAsync();
 
-            // This *must* be set before returning from OnConnection
-            connection.Application = pair.Application;
+                        // TODO: We need a bit of command and control to do connection management and that requires
+                        // that we have access to a couple of methods that only exists on TransportConnection
+                        // (specifically RequestClose, TickHeartbeat and CompleteAsync. This dependency needs to be removed or
+                        // the return value of AcceptAsync needs to change.
 
-            return Execute(new KestrelConnection(connection));
+                        _ = OnConnection((TransportConnection)connection);
+                    }
+                }
+                catch (Exception)
+                {
+                    // REVIEW: Today the only way to end the accept loop is an exception
+                }
+            }
+        }
+
+        private async Task OnConnection(TransportConnection connection)
+        {
+            await using (connection)
+            {
+                await Execute(new KestrelConnection(connection));
+            }
         }
 
         private async Task Execute(KestrelConnection connection)

@@ -8,7 +8,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
 namespace PlaintextApp
 {
@@ -31,7 +33,7 @@ namespace PlaintextApp
             });
         }
 
-        public static Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -42,7 +44,49 @@ namespace PlaintextApp
                 .UseStartup<Startup>()
                 .Build();
 
-            return host.RunAsync();
+            var hostTask = host.RunAsync();
+            var serverTask = ServerAsync(5002);
+
+            await hostTask;
+            await serverTask;
+        }
+
+        private static async Task ServerAsync(int port)
+        {
+            var factory = new SocketTransportFactory();
+            await using var listener = await factory.BindAsync(new IPEndPoint(IPAddress.Loopback, port));
+
+            while (true)
+            {
+                var connection = await listener.AcceptAsync();
+
+                // Fire and forget so we can handle more than a single connection at a time
+                _ = HandleConnectionAsync(connection);
+
+                static async Task HandleConnectionAsync(ConnectionContext connection)
+                {
+                    await using (connection)
+                    {
+                        while (true)
+                        {
+                            var result = await connection.Transport.Input.ReadAsync();
+                            var buffer = result.Buffer;
+
+                            foreach (var segment in buffer)
+                            {
+                                await connection.Transport.Output.WriteAsync(segment);
+                            }
+
+                            if (result.IsCompleted)
+                            {
+                                break;
+                            }
+
+                            connection.Transport.Input.AdvanceTo(buffer.End);
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal sealed class SocketConnection : TransportConnection, IDisposable
+    internal sealed class SocketConnection : TransportConnection
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
         private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly object _shutdownLock = new object();
         private volatile bool _socketDisposed;
         private volatile Exception _shutdownReason;
+        private Task _task;
 
         internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
         {
@@ -48,6 +49,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
             var remoteEndPoint = (IPEndPoint)_socket.RemoteEndPoint;
 
+            LocalEndpoint = localEndPoint;
+            RemoteEndpoint = remoteEndPoint;
+
             LocalAddress = localEndPoint.Address;
             LocalPort = localEndPoint.Port;
 
@@ -63,13 +67,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
             _receiver = new SocketReceiver(_socket, awaiterScheduler);
             _sender = new SocketSender(_socket, awaiterScheduler);
+
+            var inputOptions = new PipeOptions(MemoryPool, awaiterScheduler, awaiterScheduler, useSynchronizationContext: false);
+            var outputOptions = new PipeOptions(MemoryPool, awaiterScheduler, awaiterScheduler, useSynchronizationContext: false);
+
+            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+
+            // Set the transport and connection id
+            // connection.ConnectionId = CorrelationIdGenerator.GetNextId();
+            Transport = pair.Transport;
+            Application = pair.Application;
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
         public override PipeScheduler InputWriterScheduler => _scheduler;
         public override PipeScheduler OutputReaderScheduler => _scheduler;
 
-        public async Task StartAsync()
+        public void Start()
+        {
+            _task = StartAsync();
+        }
+
+        private async Task StartAsync()
         {
             try
             {
@@ -88,6 +107,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             catch (Exception ex)
             {
                 _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(StartAsync)}.");
+
+                // REVIEW: Should this dispose the socket?
             }
         }
 
@@ -101,8 +122,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         }
 
         // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
-        public void Dispose()
+        public override async ValueTask DisposeAsync()
         {
+            if (_task != null)
+            {
+                // TODO: Make this timeout configurable, this gives the task time to flush the data to the socket
+                // before timing out
+                var result = await Task.WhenAny(_task, Task.Delay(5000));
+
+                if (result != _task)
+                {
+                    Abort();
+                }
+
+                await _task;
+            }
+
             _connectionClosedTokenSource.Dispose();
             _connectionClosingCts.Dispose();
         }
@@ -211,7 +246,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             }
             catch (SocketException ex) when (IsConnectionResetError(ex.SocketErrorCode))
             {
-                shutdownReason = new ConnectionResetException(ex.Message, ex);;
+                shutdownReason = new ConnectionResetException(ex.Message, ex);
                 _trace.ConnectionReset(ConnectionId);
             }
             catch (Exception ex)

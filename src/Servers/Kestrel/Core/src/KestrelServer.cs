@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -20,23 +21,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     public class KestrelServer : IServer
     {
-        private readonly List<ITransport> _transports = new List<ITransport>();
+        private readonly List<IConnectionListener> _transports = new List<IConnectionListener>();
         private readonly IServerAddressesFeature _serverAddresses;
-        private readonly ITransportFactory _transportFactory;
+        private readonly IConnectionListenerFactory _transportFactory;
 
         private bool _hasStarted;
         private int _stopping;
         private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public KestrelServer(IOptions<KestrelServerOptions> options, ITransportFactory transportFactory, ILoggerFactory loggerFactory)
-#pragma warning restore PUB0001
+        public KestrelServer(IOptions<KestrelServerOptions> options, IConnectionListenerFactory transportFactory, ILoggerFactory loggerFactory)
             : this(transportFactory, CreateServiceContext(options, loggerFactory))
         {
         }
 
         // For testing
-        internal KestrelServer(ITransportFactory transportFactory, ServiceContext serviceContext)
+        internal KestrelServer(IConnectionListenerFactory transportFactory, ServiceContext serviceContext)
         {
             if (transportFactory == null)
             {
@@ -152,10 +151,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
 
                     var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
-                    var transport = _transportFactory.Create(endpoint, connectionDispatcher);
+                    var transport = await _transportFactory.BindAsync(endpoint.Endpoint).ConfigureAwait(false);
                     _transports.Add(transport);
 
-                    await transport.BindAsync().ConfigureAwait(false);
+                    connectionDispatcher.StartAcceptingConnections(transport);
                 }
 
                 await AddressBinder.BindAsync(_serverAddresses, Options, Trace, OnBind).ConfigureAwait(false);
@@ -182,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 var tasks = new Task[_transports.Count];
                 for (int i = 0; i < _transports.Count; i++)
                 {
-                    tasks[i] = _transports[i].UnbindAsync();
+                    tasks[i] = _transports[i].DisposeAsync().AsTask();
                 }
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
@@ -196,10 +195,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
                 }
 
-                for (int i = 0; i < _transports.Count; i++)
-                {
-                    tasks[i] = _transports[i].StopAsync();
-                }
+                // ????
+                //for (int i = 0; i < _transports.Count; i++)
+                //{
+                //    tasks[i] = _transports[i].StopAsync();
+                //}
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 ServiceContext.Heartbeat?.Dispose();

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Net;
 using System.Security.Claims;
 using System.Threading;
 using Microsoft.AspNetCore.Connections.Features;
@@ -17,7 +18,8 @@ namespace Microsoft.AspNetCore.Connections
                                             IConnectionItemsFeature,
                                             IConnectionTransportFeature,
                                             IConnectionUserFeature,
-                                            IConnectionLifetimeFeature
+                                            IConnectionLifetimeFeature,
+                                            IConnectionEndPointFeature
     {
         private CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
@@ -64,6 +66,8 @@ namespace Microsoft.AspNetCore.Connections
         public override IDuplexPipe Transport { get; set; }
 
         public CancellationToken ConnectionClosed { get; set; }
+        public override EndPoint LocalEndpoint { get; set; }
+        public override EndPoint RemoteEndpoint { get; set; }
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
