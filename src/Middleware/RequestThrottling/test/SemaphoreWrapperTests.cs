@@ -10,13 +10,6 @@ using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
-    public static class TaskExtensions
-    {
-        public static Task OrTimeout(this Task task, int seconds = 30)
-        {
-            return task.TimeoutAfter(TimeSpan.FromSeconds(seconds));
-        }
-    }
     public class SemaphoreWrapperTests
     {
         [Fact]
