@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -35,14 +36,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public Task StartAsync(
             string pipeName,
             byte[] pipeMessage,
-            IEndPointInformation endPointInformation,
+            EndPoint endPoint,
             LibuvThread thread)
         {
             _pipeName = pipeName;
             _pipeMessage = pipeMessage;
             _buf = thread.Loop.Libuv.buf_init(_ptr, 4);
 
-            EndPointInformation = endPointInformation;
+            EndPoint = endPoint;
             Thread = thread;
             DispatchPipe = new UvPipeHandle(Log);
 
@@ -152,8 +153,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 DispatchPipe.Accept(acceptSocket);
 
-                // REVIEW: This task should be tracked by the server for graceful shutdown
-                // Today it's handled specifically for http but not for arbitrary middleware
                 _ = HandleConnectionAsync(acceptSocket);
             }
             catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
@@ -179,6 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public async Task DisposeAsync()
         {
+            StopAcceptingConnections();
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
             // to complete, then LibuvTransport will never be disposed and

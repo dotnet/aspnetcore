@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         // otherwise it needs to wait till the next pass of the libuv loop
         private readonly int _maxLoops = 8;
 
-        private readonly LibuvTransport _transport;
+        private readonly LibuvConnectionListener _transport;
         private readonly IHostApplicationLifetime _appLifetime;
         private readonly Thread _thread;
         private readonly TaskCompletionSource<object> _threadTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private Exception _closeError;
         private readonly ILibuvTrace _log;
 
-        public LibuvThread(LibuvTransport transport)
+        public LibuvThread(LibuvConnectionListener transport)
         {
             _transport = transport;
             _appLifetime = transport.AppLifetime;
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         }
 
         // For testing
-        public LibuvThread(LibuvTransport transport, int maxLoops)
+        public LibuvThread(LibuvConnectionListener transport, int maxLoops)
             : this(transport)
         {
             _maxLoops = maxLoops;

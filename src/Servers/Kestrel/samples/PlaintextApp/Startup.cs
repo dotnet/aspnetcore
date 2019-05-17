@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
 namespace PlaintextApp
@@ -40,20 +41,22 @@ namespace PlaintextApp
                 {
                     options.Listen(IPAddress.Loopback, 5001);
                 })
+                .UseLibuv()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();
 
             var hostTask = host.RunAsync();
-            var serverTask = ServerAsync(5002);
+            // var serverTask = ServerAsync(new SocketTransportFactory(), 5002);
+            // var serverTask2 = ServerAsync(new LibuvTransportFactory(), 5003);
 
             await hostTask;
-            await serverTask;
+            // await serverTask;
+            // await serverTask2;
         }
 
-        private static async Task ServerAsync(int port)
+        private static async Task ServerAsync(IConnectionListenerFactory factory, int port)
         {
-            var factory = new SocketTransportFactory();
             await using var listener = await factory.BindAsync(new IPEndPoint(IPAddress.Loopback, port));
 
             while (true)

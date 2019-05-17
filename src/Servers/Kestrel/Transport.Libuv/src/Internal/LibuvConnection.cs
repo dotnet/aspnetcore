@@ -15,7 +15,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    internal partial class LibuvConnection : TransportConnection, IDisposable
+    internal partial class LibuvConnection : TransportConnection
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
 
@@ -42,10 +42,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             LocalAddress = localEndPoint?.Address;
             LocalPort = localEndPoint?.Port ?? 0;
 
+            LocalEndpoint = localEndPoint;
+            RemoteEndpoint = remoteEndPoint;
+
             ConnectionClosed = _connectionClosedTokenSource.Token;
             Logger = log;
             Log = log;
             Thread = thread;
+
+            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, Thread, useSynchronizationContext: false);
+            var outputOptions = new PipeOptions(MemoryPool, Thread, PipeScheduler.ThreadPool, useSynchronizationContext: false);
+
+            var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+
+            // Set the transport and connection id
+            // connection.ConnectionId = CorrelationIdGenerator.GetNextId();
+            Transport = pair.Transport;
+            Application = pair.Application;
         }
 
         public LibuvOutputConsumer OutputConsumer { get; set; }
@@ -131,11 +144,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             Thread.Post(s => s.Dispose(), _socket);
         }
 
-        // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
-        public void Dispose()
+        public override ValueTask DisposeAsync()
         {
             _connectionClosedTokenSource.Dispose();
             _connectionClosingCts.Dispose();
+            return base.DisposeAsync();
         }
 
         // Called on Libuv thread

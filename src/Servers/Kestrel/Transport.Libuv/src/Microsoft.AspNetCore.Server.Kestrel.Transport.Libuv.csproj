@@ -11,11 +11,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Core\src\Internal\DuplexPipe.cs" Link="Internal\DuplexPipe.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Libuv" />
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />
     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="System.Threading.Channels"  />
   </ItemGroup>
 
 </Project>

@@ -13,7 +13,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public IHostApplicationLifetime AppLifetime { get; set; }
 
         public ILibuvTrace Log { get; set; }
-
-        public IConnectionDispatcher ConnectionDispatcher { get; set; }
     }
 }

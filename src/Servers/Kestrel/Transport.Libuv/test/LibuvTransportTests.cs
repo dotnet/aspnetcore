@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task TransportCanBindAndStop()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvTransport(transportContext,
+            var transport = new LibuvConnectionListener(transportContext,
                 new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
 
             // The transport can no longer start threads without binding to an endpoint.
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task TransportCanBindUnbindAndStop()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvTransport(transportContext, new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
+            var transport = new LibuvConnectionListener(transportContext, new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
 
             await transport.BindAsync();
             await transport.UnbindAsync();
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build())
             };
 
-            var transport = new LibuvTransport(transportContext, listenOptions);
+            var transport = new LibuvConnectionListener(transportContext, listenOptions);
 
             await transport.BindAsync();
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }
             };
 
-            var transport = new LibuvTransport(transportContext, listenOptions);
+            var transport = new LibuvConnectionListener(transportContext, listenOptions);
 
             await transport.BindAsync();
 

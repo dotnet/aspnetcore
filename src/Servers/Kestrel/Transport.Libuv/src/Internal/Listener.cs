@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
@@ -25,10 +26,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public ILibuvTrace Log => TransportContext.Log;
 
         public Task StartAsync(
-            IEndPointInformation endPointInformation,
+            EndPoint endPoint,
             LibuvThread thread)
         {
-            EndPointInformation = endPointInformation;
+            EndPoint = endPoint;
             Thread = thread;
 
             return Thread.PostAsync(listener =>
@@ -43,39 +44,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         /// </summary>
         private UvStreamHandle CreateListenSocket()
         {
-            switch (EndPointInformation.Type)
+            switch (EndPoint)
             {
-                case ListenType.IPEndPoint:
-                    return ListenTcp(useFileHandle: false);
-                case ListenType.SocketPath:
-                    return ListenPipe(useFileHandle: false);
-                case ListenType.FileHandle:
-                    return ListenHandle();
+                case IPEndPoint ip:
+                    return ListenTcp(useFileHandle: false, ip);
+                case UnixDomainSocketEndPoint domainSocketEndPoint:
+                    return ListenPipe(useFileHandle: false, domainSocketEndPoint);
+                //case ListenType.FileHandle:
+                //    return ListenHandle();
                 default:
                     throw new NotSupportedException();
             }
         }
 
-        private UvTcpHandle ListenTcp(bool useFileHandle)
+        private UvTcpHandle ListenTcp(bool useFileHandle, IPEndPoint endPoint)
         {
             var socket = new UvTcpHandle(Log);
 
             try
             {
                 socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-                socket.NoDelay(EndPointInformation.NoDelay);
+                // socket.NoDelay(EndPointInformation.NoDelay);
 
-                if (!useFileHandle)
-                {
-                    socket.Bind(EndPointInformation.IPEndPoint);
+                socket.Bind(endPoint);
 
-                    // If requested port was "0", replace with assigned dynamic port.
-                    EndPointInformation.IPEndPoint = socket.GetSockIPEndPoint();
-                }
-                else
-                {
-                    socket.Open((IntPtr)EndPointInformation.FileHandle);
-                }
+                //if (!useFileHandle)
+                //{
+                //    socket.Bind(EndPointInformation.IPEndPoint);
+
+                //    // If requested port was "0", replace with assigned dynamic port.
+                //    EndPointInformation.IPEndPoint = socket.GetSockIPEndPoint();
+                //}
+                //else
+                //{
+                //    socket.Open((IntPtr)EndPointInformation.FileHandle);
+                //}
             }
             catch
             {
@@ -86,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return socket;
         }
 
-        private UvPipeHandle ListenPipe(bool useFileHandle)
+        private UvPipeHandle ListenPipe(bool useFileHandle, UnixDomainSocketEndPoint domainSocketEndPoint)
         {
             var pipe = new UvPipeHandle(Log);
 
@@ -96,11 +99,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                 if (!useFileHandle)
                 {
-                    pipe.Bind(EndPointInformation.SocketPath);
+                    pipe.Bind(domainSocketEndPoint.ToString());
                 }
                 else
                 {
-                    pipe.Open((IntPtr)EndPointInformation.FileHandle);
+                    // pipe.Open((IntPtr)EndPointInformation.FileHandle);
                 }
             }
             catch
@@ -112,36 +115,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return pipe;
         }
 
-        private UvStreamHandle ListenHandle()
-        {
-            switch (EndPointInformation.HandleType)
-            {
-                case FileHandleType.Auto:
-                    break;
-                case FileHandleType.Tcp:
-                    return ListenTcp(useFileHandle: true);
-                case FileHandleType.Pipe:
-                    return ListenPipe(useFileHandle: true);
-                default:
-                    throw new NotSupportedException();
-            }
+        //private UvStreamHandle ListenHandle()
+        //{
+        //    switch (EndPointInformation.HandleType)
+        //    {
+        //        case FileHandleType.Auto:
+        //            break;
+        //        case FileHandleType.Tcp:
+        //            return ListenTcp(useFileHandle: true);
+        //        case FileHandleType.Pipe:
+        //            return ListenPipe(useFileHandle: true);
+        //        default:
+        //            throw new NotSupportedException();
+        //    }
 
-            UvStreamHandle handle;
-            try
-            {
-                handle = ListenTcp(useFileHandle: true);
-                EndPointInformation.HandleType = FileHandleType.Tcp;
-                return handle;
-            }
-            catch (UvException exception) when (exception.StatusCode == LibuvConstants.ENOTSUP)
-            {
-                Log.LogDebug(0, exception, "Listener.ListenHandle");
-            }
+        //    UvStreamHandle handle;
+        //    try
+        //    {
+        //        handle = ListenTcp(useFileHandle: true);
+        //        EndPointInformation.HandleType = FileHandleType.Tcp;
+        //        return handle;
+        //    }
+        //    catch (UvException exception) when (exception.StatusCode == LibuvConstants.ENOTSUP)
+        //    {
+        //        Log.LogDebug(0, exception, "Listener.ListenHandle");
+        //    }
 
-            handle = ListenPipe(useFileHandle: true);
-            EndPointInformation.HandleType = FileHandleType.Pipe;
-            return handle;
-        }
+        //    handle = ListenPipe(useFileHandle: true);
+        //    EndPointInformation.HandleType = FileHandleType.Pipe;
+        //    return handle;
+        //}
 
         private static void ConnectionCallback(UvStreamHandle stream, int status, UvException error, object state)
         {
@@ -186,13 +189,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected virtual void DispatchConnection(UvStreamHandle socket)
         {
-            // REVIEW: This task should be tracked by the server for graceful shutdown
-            // Today it's handled specifically for http but not for arbitrary middleware
             _ = HandleConnectionAsync(socket);
         }
 
         public virtual async Task DisposeAsync()
         {
+            StopAcceptingConnections();
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
             // to complete, then LibuvTransport will never be disposed and

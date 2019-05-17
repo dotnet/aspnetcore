@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transportContextSecondary = new TestLibuvTransportContext();
             transportContextSecondary.ConnectionDispatcher = new ConnectionDispatcher(serviceContextSecondary, builderSecondary.Build());
 
-            var libuvTransport = new LibuvTransport(libuv, transportContextPrimary, listenOptions);
+            var libuvTransport = new LibuvConnectionListener(libuv, transportContextPrimary, listenOptions);
 
             var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
             var pipeMessage = Guid.NewGuid().ToByteArray();
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transportContextSecondary = new TestLibuvTransportContext();
             transportContextSecondary.ConnectionDispatcher = new ConnectionDispatcher(serviceContextSecondary, builderSecondary.Build());
 
-            var libuvTransport = new LibuvTransport(libuv, transportContextPrimary, listenOptions);
+            var libuvTransport = new LibuvConnectionListener(libuv, transportContextPrimary, listenOptions);
 
             var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
             var pipeMessage = Guid.NewGuid().ToByteArray();
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transportContextSecondary = new TestLibuvTransportContext();
             transportContextSecondary.ConnectionDispatcher = new ConnectionDispatcher(serviceContextSecondary, builderSecondary.Build());
 
-            var libuvTransport = new LibuvTransport(libuv, transportContextPrimary, listenOptions);
+            var libuvTransport = new LibuvConnectionListener(libuv, transportContextPrimary, listenOptions);
 
             var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
             var pipeMessage = Guid.NewGuid().ToByteArray();
