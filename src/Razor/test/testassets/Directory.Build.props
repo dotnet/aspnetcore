@@ -23,6 +23,11 @@
     <UseRazorBuildServer>false</UseRazorBuildServer>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Have the SDK treat the MvcShim as an MVC assembly -->
+    <_MvcAssemblyName Include="Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib" />
+  </ItemGroup>
+
   <Import Project="After.Directory.Build.props" Condition="Exists('After.Directory.Build.props')" />
 
 </Project>

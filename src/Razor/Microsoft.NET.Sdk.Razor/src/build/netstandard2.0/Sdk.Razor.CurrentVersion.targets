@@ -25,7 +25,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Paths to tools, tasks, and extensions are calculated relative to the RazorSdkDirectoryRoot. This can be modified to test a local build. -->
     <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\..\</RazorSdkDirectoryRoot>
     <RazorSdkBuildTasksDirectoryRoot Condition="'$(RazorSdkBuildTasksDirectoryRoot)'==''">$(RazorSdkDirectoryRoot)tasks\</RazorSdkBuildTasksDirectoryRoot>
-    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_RazorSdkTasksTFM>
+    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">netcoreapp3.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net46</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
   </PropertyGroup>
@@ -334,6 +334,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.Sdk.Razor.Component.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
+
+  <Import Project="Microsoft.NET.Sdk.Razor.MvcApplicationPartsDiscovery.targets" Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'" />
 
   <!-- 
     These are the targets that actually do compilation using CSC, separated from the main file for ease of maintenance.

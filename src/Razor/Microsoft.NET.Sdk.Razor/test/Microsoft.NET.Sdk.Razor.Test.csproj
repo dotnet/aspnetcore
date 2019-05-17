@@ -34,9 +34,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Tools\Microsoft.AspNetCore.Razor.Tools.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.NET.Sdk.Razor\Microsoft.NET.Sdk.Razor.csproj" />
 
     <!-- We don't need anything in this assembly, we just want to make sure it's built -->
-    <ProjectReference Include="..\..\src\Microsoft.NET.Sdk.Razor\Microsoft.NET.Sdk.Razor.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
 
