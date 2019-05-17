@@ -5,6 +5,7 @@ using System;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             return new ValueTask<IConnectionListener>(transport);
         }
 
-        public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endpoint)
+        public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
             // REVIEW: How do we pick the type of socket? Is the endpoint enough?
             var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);

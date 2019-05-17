@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private static readonly Type IConnectionTransportFeatureType = typeof(IConnectionTransportFeature);
         private static readonly Type IConnectionItemsFeatureType = typeof(IConnectionItemsFeature);
         private static readonly Type IMemoryPoolFeatureType = typeof(IMemoryPoolFeature);
-        private static readonly Type IApplicationTransportFeatureType = typeof(IApplicationTransportFeature);
-        private static readonly Type ITransportSchedulerFeatureType = typeof(ITransportSchedulerFeature);
         private static readonly Type IConnectionLifetimeFeatureType = typeof(IConnectionLifetimeFeature);
         private static readonly Type IConnectionHeartbeatFeatureType = typeof(IConnectionHeartbeatFeature);
         private static readonly Type IConnectionLifetimeNotificationFeatureType = typeof(IConnectionLifetimeNotificationFeature);
@@ -29,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private object _currentIConnectionTransportFeature;
         private object _currentIConnectionItemsFeature;
         private object _currentIMemoryPoolFeature;
-        private object _currentIApplicationTransportFeature;
-        private object _currentITransportSchedulerFeature;
         private object _currentIConnectionLifetimeFeature;
         private object _currentIConnectionHeartbeatFeature;
         private object _currentIConnectionLifetimeNotificationFeature;
@@ -47,8 +43,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             _currentIConnectionTransportFeature = this;
             _currentIConnectionItemsFeature = this;
             _currentIMemoryPoolFeature = this;
-            _currentIApplicationTransportFeature = this;
-            _currentITransportSchedulerFeature = this;
             _currentIConnectionLifetimeFeature = this;
             _currentIConnectionHeartbeatFeature = this;
             _currentIConnectionLifetimeNotificationFeature = this;
@@ -128,14 +122,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     feature = _currentIMemoryPoolFeature;
                 }
-                else if (key == IApplicationTransportFeatureType)
-                {
-                    feature = _currentIApplicationTransportFeature;
-                }
-                else if (key == ITransportSchedulerFeatureType)
-                {
-                    feature = _currentITransportSchedulerFeature;
-                }
                 else if (key == IConnectionLifetimeFeatureType)
                 {
                     feature = _currentIConnectionLifetimeFeature;
@@ -184,14 +170,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     _currentIMemoryPoolFeature = value;
                 }
-                else if (key == IApplicationTransportFeatureType)
-                {
-                    _currentIApplicationTransportFeature = value;
-                }
-                else if (key == ITransportSchedulerFeatureType)
-                {
-                    _currentITransportSchedulerFeature = value;
-                }
                 else if (key == IConnectionLifetimeFeatureType)
                 {
                     _currentIConnectionLifetimeFeature = value;
@@ -237,14 +215,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             else if (typeof(TFeature) == typeof(IMemoryPoolFeature))
             {
                 feature = (TFeature)_currentIMemoryPoolFeature;
-            }
-            else if (typeof(TFeature) == typeof(IApplicationTransportFeature))
-            {
-                feature = (TFeature)_currentIApplicationTransportFeature;
-            }
-            else if (typeof(TFeature) == typeof(ITransportSchedulerFeature))
-            {
-                feature = (TFeature)_currentITransportSchedulerFeature;
             }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
@@ -293,14 +263,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             {
                 _currentIMemoryPoolFeature = feature;
             }
-            else if (typeof(TFeature) == typeof(IApplicationTransportFeature))
-            {
-                _currentIApplicationTransportFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(ITransportSchedulerFeature))
-            {
-                _currentITransportSchedulerFeature = feature;
-            }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeFeature))
             {
                 _currentIConnectionLifetimeFeature = feature;
@@ -344,14 +306,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             if (_currentIMemoryPoolFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IMemoryPoolFeatureType, _currentIMemoryPoolFeature);
-            }
-            if (_currentIApplicationTransportFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(IApplicationTransportFeatureType, _currentIApplicationTransportFeature);
-            }
-            if (_currentITransportSchedulerFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(ITransportSchedulerFeatureType, _currentITransportSchedulerFeature);
             }
             if (_currentIConnectionLifetimeFeature != null)
             {

@@ -20,8 +20,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                                                IConnectionTransportFeature,
                                                IConnectionItemsFeature,
                                                IMemoryPoolFeature,
-                                               IApplicationTransportFeature,
-                                               ITransportSchedulerFeature,
                                                IConnectionLifetimeFeature,
                                                IConnectionHeartbeatFeature,
                                                IConnectionLifetimeNotificationFeature,
@@ -72,20 +70,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => Transport = value;
         }
 
-        IDuplexPipe IApplicationTransportFeature.Application
-        {
-            get => Application;
-            set => Application = value;
-        }
-
         IDictionary<object, object> IConnectionItemsFeature.Items
         {
             get => Items;
             set => Items = value;
         }
-
-        PipeScheduler ITransportSchedulerFeature.InputWriterScheduler => InputWriterScheduler;
-        PipeScheduler ITransportSchedulerFeature.OutputReaderScheduler => OutputReaderScheduler;
 
         CancellationToken IConnectionLifetimeFeature.ConnectionClosed
         {
