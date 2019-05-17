@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
-        event EventHandler<string> OnLocationChanged;
+        event EventHandler<LocationChangedEventArgs> OnLocationChanged;
 
         /// <summary>
         /// Converts a relative URI into an absolute one (by resolving it

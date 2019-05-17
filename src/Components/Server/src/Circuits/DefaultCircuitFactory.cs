@@ -8,6 +8,7 @@ using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,12 +50,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             (authenticationStateProvider as FixedAuthenticationStateProvider)?.Initialize(httpContext.User);
 
             var uriHelper = (RemoteUriHelper)scope.ServiceProvider.GetRequiredService<IUriHelper>();
+            var navigationInterception = (RemoteNavigationInterception)scope.ServiceProvider.GetRequiredService<INavigationInterception>();
             if (client.Connected)
             {
                 uriHelper.AttachJsRuntime(jsRuntime);
                 uriHelper.InitializeState(
                     uriAbsolute,
                     baseUriAbsolute);
+
+                navigationInterception.AttachJSRuntime(jsRuntime);
             }
             else
             {

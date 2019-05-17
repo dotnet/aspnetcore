@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Browser;
 using Microsoft.AspNetCore.Components.Browser.Rendering;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
@@ -119,6 +120,12 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 if (!uriHelper.HasAttachedJSRuntime)
                 {
                     uriHelper.AttachJsRuntime(JSRuntime);
+                }
+
+                var navigationInterception = (RemoteNavigationInterception)Services.GetRequiredService<INavigationInterception>();
+                if (!navigationInterception.HasAttachedJSRuntime)
+                {
+                    navigationInterception.AttachJSRuntime(JSRuntime);
                 }
             }
         }

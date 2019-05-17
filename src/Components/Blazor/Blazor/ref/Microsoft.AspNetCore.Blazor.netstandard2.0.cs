@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         protected override void EnsureInitialized() { }
         protected override void NavigateToCore(string uri, bool forceLoad) { }
         [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
-        public static void NotifyLocationChanged(string newAbsoluteUri) { }
+        public static void NotifyLocationChanged(string newAbsoluteUri, bool isInterceptedLink) { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Builder
