@@ -29,7 +29,7 @@
     "karma-safari-launcher": "^1.0.0",
     "karma-sauce-launcher": "^1.2.0",
     "karma-sourcemap-loader": "^0.3.7",
-    "karma-summary-reporter": "^1.5.0",
+    "karma-summary-reporter": "^1.6.0",
     "rxjs": "^6.3.3",
     "ts-node": "^4.1.0",
     "typescript": "^2.7.1",
