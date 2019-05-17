@@ -18,7 +18,7 @@ if (Test-Path "%HELIX_CORRELATION_PAYLOAD%\node\bin\node.exe")
 $nodeFile="node-v$Version-win-x64"
 $url="http://nodejs.org/dist/v$Version/$nodeFile.zip"
 Write-Host "Starting download of NodeJs ${Version} from $url"
-Invoke-WebRequest -UseBasicParsing -Uri "$url" -Out "nodejs.zip"
+Invoke-WebRequest -UseBasicParsing -Uri "$url" -OutFile "nodejs.zip"
 Write-Host "Done downloading NodeJS ${Version}"
 mkdir node -Force
 Expand-Archive "nodejs.zip" -destination node
