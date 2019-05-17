@@ -147,8 +147,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/corefx/issues/37282")]
+        [Fact]
         public async Task VerifyExpiredSelfSignedFails()
         {
             var server = CreateServer(
@@ -180,8 +179,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "https://github.com/dotnet/corefx/issues/37282")]
+        [Fact]
         public async Task VerifyNotYetValidSelfSignedFails()
         {
             var server = CreateServer(
