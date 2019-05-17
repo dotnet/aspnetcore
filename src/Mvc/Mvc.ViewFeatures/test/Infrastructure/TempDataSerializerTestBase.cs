@@ -239,6 +239,119 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
             Assert.Equal(value, roundTripValue);
         }
 
+        [Fact]
+        public void RoundTripTest_CollectionOfInts()
+        {
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = new[] { 1, 2, 4, 3 };
+            var input = new Dictionary<string, object>
+            {
+                { key, value }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<int[]>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
+        [Fact]
+        public void RoundTripTest_ArrayOfStringss()
+        {
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = new[] { "Hello", "world" };
+            var input = new Dictionary<string, object>
+            {
+                { key, value }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<string[]>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
+        [Fact]
+        public void RoundTripTest_ListOfStringss()
+        {
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = new List<string> { "Hello", "world" };
+            var input = new Dictionary<string, object>
+            {
+                { key, value }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<string[]>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
+        [Fact]
+        public void RoundTripTest_DictionaryOfString()
+        {
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = new Dictionary<string, string>
+            {
+                { "Key1", "Value1" },
+                { "Key2", "Value2" },
+            };
+            var input = new Dictionary<string, object>
+            {
+                { key, value }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<Dictionary<string, string>>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
+        [Fact]
+        public virtual void RoundTripTest_DictionaryOfInt()
+        {
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = new Dictionary<string, int>
+            {
+                { "Key1", 7 },
+                { "Key2", 24 },
+            };
+            var input = new Dictionary<string, object>
+            {
+                { key, value }
+            };
+
+            // Act
+            var bytes = testProvider.Serialize(input);
+            var values = testProvider.Deserialize(bytes);
+
+            // Assert
+            var roundTripValue = Assert.IsType<Dictionary<string, int>>(values[key]);
+            Assert.Equal(value, roundTripValue);
+        }
+
         protected abstract TempDataSerializer GetTempDataSerializer();
     }
 }
