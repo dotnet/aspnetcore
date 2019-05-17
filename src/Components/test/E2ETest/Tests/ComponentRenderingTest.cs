@@ -597,6 +597,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
         }
 
+        [Fact]
+        public void CanSetAttributeTwiceAndLastWins()
+        {
+            var appElement = MountTestComponent<DuplicateAttributesComponent>();
+            Browser.Equal("test2", () => appElement.FindElement(By.Id("duplicate-on-component")).Text);
+
+            Browser.Equal("test2", () => appElement.FindElement(By.Id("duplicate-on-element")).GetAttribute("class"));
+
+            // TODO fix this in the compiler.
+            //Browser.Equal("test2", () => appElement.FindElement(By.Id("duplicate-on-elementmarkupblock")).GetAttribute("class"));
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try
