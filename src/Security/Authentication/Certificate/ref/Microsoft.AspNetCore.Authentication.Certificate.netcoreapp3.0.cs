@@ -31,18 +31,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         public bool ValidateCertificateUse { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public bool ValidateValidityPeriod { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public partial class CertificateForwarderMiddleware
-    {
-        public CertificateForwarderMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authentication.Certificate.CertificateForwarderOptions> options) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
-    }
-    public partial class CertificateForwarderOptions
-    {
-        public System.Func<string, System.Security.Cryptography.X509Certificates.X509Certificate2> HeaderConverter;
-        public CertificateForwarderOptions() { }
-        public string CertificateHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
     [System.FlagsAttribute]
     public enum CertificateTypes
     {
@@ -62,14 +50,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     public static partial class X509Certificate2Extensions
     {
         public static bool IsSelfSigned(this System.Security.Cryptography.X509Certificates.X509Certificate2 certificate) { throw null; }
-    }
-}
-namespace Microsoft.AspNetCore.Hosting
-{
-    public static partial class CertificateForwarderExtensions
-    {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCertificateHeaderForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Authentication.Certificate.CertificateForwarderOptions> configure) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseCertificateHeaderForwarding(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

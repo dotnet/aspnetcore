@@ -4,7 +4,7 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Microsoft.AspNetCore.Authentication.Certificate
+namespace Microsoft.AspNetCore.HttpOverrides
 {
     public class CertificateForwarderOptions
     {

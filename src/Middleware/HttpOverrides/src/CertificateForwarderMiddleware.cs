@@ -9,10 +9,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Authentication.Certificate
+namespace Microsoft.AspNetCore.HttpOverrides
 {
-
-    // TODO: move to header forwarder
     public class CertificateForwarderMiddleware
     {
         private readonly RequestDelegate _next;

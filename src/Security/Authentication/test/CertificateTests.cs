@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
                     if (wireUpHeaderMiddleware)
                     {
-                        app.UseHeaderPropagation();
+                        app.UseCertificateHeaderForwarding();
                     }
 
                     app.UseAuthentication();
