@@ -10,6 +10,13 @@ using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
+    public static class TaskExtensions
+    {
+        public static Task OrTimeout(this Task task, int seconds = 30)
+        {
+            return task.TimeoutAfter(TimeSpan.FromSeconds(seconds));
+        }
+    }
     public class SemaphoreWrapperTests
     {
         [Fact]
@@ -18,7 +25,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             using var s = new SemaphoreWrapper(1);
             Assert.Equal(1, s.Count);
 
-            await s.EnterQueue();
+            await s.EnterQueue().OrTimeout();
             Assert.Equal(0, s.Count);
 
             s.LeaveQueue();
@@ -44,13 +51,13 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         public async Task WaitsIfNoSpaceAvailible()
         {
             using var s = new SemaphoreWrapper(1);
-            await s.EnterQueue();
+            await s.EnterQueue().OrTimeout();
 
             var waitingTask = s.EnterQueue();
             Assert.False(waitingTask.IsCompleted);
 
             s.LeaveQueue();
-            await waitingTask.TimeoutAfter(TimeSpan.FromSeconds(30));
+            await waitingTask.OrTimeout();
         }
 
         [Fact]
@@ -59,8 +66,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             using var s1 = new SemaphoreWrapper(1);
             using var s2 = new SemaphoreWrapper(1);
 
-            await s1.EnterQueue();
-            await s2.EnterQueue().TimeoutAfter(TimeSpan.FromSeconds(30));
+            await s1.EnterQueue().OrTimeout();
+            await s2.EnterQueue().OrTimeout();
         }
     }
 }

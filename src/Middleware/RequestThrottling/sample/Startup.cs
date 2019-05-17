@@ -26,7 +26,9 @@ namespace RequestThrottlingSample
         {
             app.Run(async context =>
             {
+                Console.WriteLine("HEWWWO?");
                 await context.Response.WriteAsync("Hello world!");
+                Console.WriteLine("GOODBWWYWE!");
             });
         }
 
