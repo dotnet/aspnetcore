@@ -27,21 +27,26 @@ int compare_ignore_case(const std::wstring& s1, const std::wstring& s2)
 
 std::wstring to_wide_string(const std::string &source, const unsigned int codePage)
 {
+    return to_wide_string(source, static_cast<int>(source.length()), codePage);
+}
+
+std::wstring to_wide_string(const std::string& source, const int length, const unsigned int codePage)
+{
     // MultiByteToWideChar returns 0 on failure, which is also the same return value
     // for empty strings. Preemptive return.
-    if (source.length() == 0)
+    if (length == 0)
     {
         return L"";
     }
 
     std::wstring destination;
 
-    int nChars = MultiByteToWideChar(codePage, 0, source.data(), static_cast<int>(source.length()), NULL, 0);
+    int nChars = MultiByteToWideChar(codePage, 0, source.data(), length, NULL, 0);
     THROW_LAST_ERROR_IF(nChars == 0);
 
     destination.resize(nChars);
 
-    nChars = MultiByteToWideChar(codePage, 0, source.data(), static_cast<int>(source.length()), destination.data(), nChars);
+    nChars = MultiByteToWideChar(codePage, 0, source.data(), length, destination.data(), nChars);
     THROW_LAST_ERROR_IF(nChars == 0);
 
     return destination;
