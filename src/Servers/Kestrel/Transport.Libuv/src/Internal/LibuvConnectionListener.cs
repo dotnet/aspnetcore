@@ -4,21 +4,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Hosting;
-using System.Net;
-using System.Runtime.CompilerServices;
-using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal class LibuvConnectionListener : IConnectionListener
     {
-        private readonly EndPoint _endPoint;
-
         private readonly List<ListenerContext> _listeners = new List<ListenerContext>();
         private IAsyncEnumerator<LibuvConnection> _acceptEnumerator;
 
@@ -32,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             Libuv = uv;
             TransportContext = context;
 
-            _endPoint = endPoint;
+            Endpoint = endPoint;
         }
 
         public LibuvFunctions Libuv { get; }
@@ -42,6 +38,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public IHostApplicationLifetime AppLifetime => TransportContext.AppLifetime;
         public ILibuvTrace Log => TransportContext.Log;
         public LibuvTransportOptions TransportOptions => TransportContext.Options;
+
+        public EndPoint Endpoint { get; set; }
 
         public async Task StopAsync()
         {
@@ -91,7 +89,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 {
                     var listener = new Listener(TransportContext);
                     _listeners.Add(listener);
-                    await listener.StartAsync(_endPoint, Threads[0]).ConfigureAwait(false);
+                    await listener.StartAsync(Endpoint, Threads[0]).ConfigureAwait(false);
+
+                    if (listener.ListenSocket is UvTcpHandle handle)
+                    {
+                        // If requested port was "0", replace with assigned dynamic port.
+                        Endpoint = handle.GetSockIPEndPoint();
+                    }
                 }
                 else
                 {
@@ -100,13 +104,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     var listenerPrimary = new ListenerPrimary(TransportContext);
                     _listeners.Add(listenerPrimary);
-                    await listenerPrimary.StartAsync(pipeName, pipeMessage, _endPoint, Threads[0]).ConfigureAwait(false);
+                    await listenerPrimary.StartAsync(pipeName, pipeMessage, Endpoint, Threads[0]).ConfigureAwait(false);
 
                     foreach (var thread in Threads.Skip(1))
                     {
                         var listenerSecondary = new ListenerSecondary(TransportContext);
                         _listeners.Add(listenerSecondary);
-                        await listenerSecondary.StartAsync(pipeName, pipeMessage, _endPoint, thread).ConfigureAwait(false);
+                        await listenerSecondary.StartAsync(pipeName, pipeMessage, Endpoint, thread).ConfigureAwait(false);
                     }
                 }
                 _acceptEnumerator = AcceptConnections();
@@ -139,7 +143,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             while (true)
             {
-                (LibuvConnection connection, int slot) = await await Task.WhenAny(slots);
+                // Calling GetAwaiter().GetResult() is safe because we know the task is completed
+                (LibuvConnection connection, int slot) = (await Task.WhenAny(slots)).GetAwaiter().GetResult();
 
                 // Fill that slot with another accept and yield the connection
                 slots[slot] = AcceptAsync(_listeners[slot], slot);

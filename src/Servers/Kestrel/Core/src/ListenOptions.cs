@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
@@ -26,12 +27,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             Type = ListenType.IPEndPoint;
             IPEndPoint = endPoint;
+            Endpoint = endPoint;
         }
 
         internal ListenOptions(string socketPath)
         {
             Type = ListenType.SocketPath;
             SocketPath = socketPath;
+            Endpoint = new UnixDomainSocketEndPoint(socketPath);
         }
 
         internal ListenOptions(ulong fileHandle)
@@ -90,7 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        public EndPoint Endpoint => IPEndPoint;
+        public EndPoint Endpoint { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>

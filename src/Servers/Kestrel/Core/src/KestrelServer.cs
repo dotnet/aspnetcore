@@ -137,12 +137,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 ServiceContext.Heartbeat?.Start();
 
-                async Task OnBind(ListenOptions endpoint)
+                async Task OnBind(ListenOptions options)
                 {
                     // Add the HTTP middleware as the terminal connection middleware
-                    endpoint.UseHttpServer(endpoint.ConnectionAdapters, ServiceContext, application, endpoint.Protocols);
+                    options.UseHttpServer(options.ConnectionAdapters, ServiceContext, application, options.Protocols);
 
-                    var connectionDelegate = endpoint.Build();
+                    var connectionDelegate = options.Build();
 
                     // Add the connection limit middleware
                     if (Options.Limits.MaxConcurrentConnections.HasValue)
@@ -151,7 +151,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
 
                     var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
-                    var transport = await _transportFactory.BindAsync(endpoint.Endpoint).ConfigureAwait(false);
+                    var transport = await _transportFactory.BindAsync(options.Endpoint).ConfigureAwait(false);
+
+                    // Update the endpoint
+                    options.Endpoint = transport.Endpoint;
                     _transports.Add(transport);
 
                     connectionDispatcher.StartAcceptingConnections(transport);

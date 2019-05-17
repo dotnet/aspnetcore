@@ -16,12 +16,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     internal sealed class SocketConnectionListener : IConnectionListener
     {
         private readonly MemoryPool<byte> _memoryPool;
-        private readonly IPEndPoint _endpoint;
         private readonly int _numSchedulers;
         private readonly PipeScheduler[] _schedulers;
         private readonly ISocketsTrace _trace;
         private Socket _listenSocket;
         private int _schedulerIndex;
+
+        public EndPoint Endpoint { get; private set; }
 
         internal SocketConnectionListener(
             EndPoint endpoint,
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             Debug.Assert(endpoint is IPEndPoint);
             Debug.Assert(trace != null);
 
-            _endpoint = (IPEndPoint)endpoint;
+            Endpoint = endpoint;
             _trace = trace;
             _memoryPool = memoryPool;
 
@@ -62,32 +63,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
 
-            IPEndPoint endPoint = _endpoint;
+            var ip = (IPEndPoint)Endpoint;
 
-            var listenSocket = new Socket(endPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            var listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
-            if (endPoint.Address == IPAddress.IPv6Any)
+            if (ip.Address == IPAddress.IPv6Any)
             {
                 listenSocket.DualMode = true;
             }
 
             try
             {
-                listenSocket.Bind(endPoint);
+                listenSocket.Bind(ip);
             }
             catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
             {
                 throw new AddressInUseException(e.Message, e);
             }
 
-            // TODO: This is a problem, we need to enable a way for the caller to know what address got bound.
-            // This is specific to IPEndpoint
-            // If requested port was "0", replace with assigned dynamic port.
-            //if (_endPointInformation.IPEndPoint.Port == 0)
-            //{
-            //    _endPointInformation.IPEndPoint = (IPEndPoint)listenSocket.LocalEndPoint;
-            //}
+            Endpoint = listenSocket.LocalEndPoint;
 
             listenSocket.Listen(512);
 

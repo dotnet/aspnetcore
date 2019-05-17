@@ -41,7 +41,7 @@ namespace PlaintextApp
                 {
                     options.Listen(IPAddress.Loopback, 5001);
                 })
-                .UseLibuv()
+                // .UseLibuv()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();
