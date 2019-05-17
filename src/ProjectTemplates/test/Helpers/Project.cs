@@ -141,6 +141,7 @@ namespace Templates.Test.Helpers
             {
                 ["ASPNETCORE_ENVIRONMENT"] = "Development"
             };
+            environment = EnsureCertEnv(environment);
 
             var projectDll = Path.Combine(TemplateServerDir, $"{ProjectName}.Server.dll");
             return new AspNetProcess(Output, TemplateServerDir, projectDll, environment, published: false);
@@ -209,8 +210,8 @@ namespace Templates.Test.Helpers
 
         private Dictionary<string, string> EnsureCertEnv(Dictionary<string, string> envs)
         {
-            envs["Kestrel:Certificates:Default:Path"] = "SomePath";
-            envs["Kestrel:Certificates:Default:Password"] = Path.Combine(TemplateOutputDir, "..", "Infrastructure", "testCert.pfx");
+            envs["Kestrel:Certificates:Default:Path"] = Path.Combine(TemplateOutputDir, "..", "..", "Infrastructure", "testCert.pfx");
+            envs["Kestrel:Certificates:Default:Password"] = "testPassword";
 
             return envs;
         }
