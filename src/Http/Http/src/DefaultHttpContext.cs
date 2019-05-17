@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Http
         private IHttpRequestIdentifierFeature RequestIdentifierFeature =>
             _features.Fetch(ref _features.Cache.RequestIdentifier, _newHttpRequestIdentifierFeature);
 
-        public override IFeatureCollection Features => _features.Collection;
+        public override IFeatureCollection Features => _features.Collection ?? ContextDisposed();
 
         public override HttpRequest Request => _request;
 
@@ -167,6 +167,16 @@ namespace Microsoft.AspNetCore.Http
         public override void Abort()
         {
             LifetimeFeature.Abort();
+        }
+        private static IFeatureCollection ContextDisposed()
+        {
+            ThrowContextDisposed();
+            return null;
+        }
+
+        private static void ThrowContextDisposed()
+        {
+            throw new ObjectDisposedException(nameof(HttpContext), $"Request has finished and {nameof(HttpContext)} disposed.");
         }
 
         struct FeatureInterfaces

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Hosting.Server.Abstractions.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -31,13 +32,24 @@ namespace Microsoft.AspNetCore.Hosting
         // Set up the request
         public Context CreateContext(IFeatureCollection contextFeatures)
         {
-            var context = new Context();
             var httpContext = _httpContextFactory.Create(contextFeatures);
 
-            _diagnostics.BeginRequest(httpContext, ref context);
+            Context hostContext;
+            if (contextFeatures is IHostContextContainer<Context> container)
+            {
+                // Initalize the wrapper struct in-place; so its object reference gets set
+                container.HostContext.Initialize();
+                // Now we can copy it
+                hostContext = container.HostContext;
+            }
+            else
+            {
+                hostContext = Context.Create();
+            }
 
-            context.HttpContext = httpContext;
-            return context;
+            hostContext.HttpContext = httpContext;
+            _diagnostics.BeginRequest(httpContext, hostContext);
+            return hostContext;
         }
 
         // Execute the request
@@ -53,16 +65,87 @@ namespace Microsoft.AspNetCore.Hosting
             _diagnostics.RequestEnd(httpContext, exception, context);
             _httpContextFactory.Dispose(httpContext);
             _diagnostics.ContextDisposed(context);
+
+            context.Reset();
         }
 
+        // Struct to turn {TContext} uses into faster concrete generic implementations rather than shared generics.
         internal struct Context
         {
-            public HttpContext HttpContext { get; set; }
-            public IDisposable Scope { get; set; }
-            public long StartTimestamp { get; set; }
-            public bool EventLogEnabled { get; set; }
-            public Activity Activity { get; set; }
-            internal bool HasDiagnosticListener { get; set; }
+            // Single field wrapper over an object to keep pass-by-value sematics in a single pointer register
+            // rather than involving stack copies.
+            private InnerContext _context;
+
+            internal static Context Create()
+            {
+                return new Context() { _context = new InnerContext() };
+            }
+
+            internal Context Initialize()
+            {
+                _context ??= new InnerContext();
+                return this;
+            }
+
+            internal void Reset() => _context.Reset();
+
+            public HttpContext HttpContext
+            {
+                get => _context.HttpContext;
+                set => _context.HttpContext = value;
+            }
+
+            public IDisposable Scope
+            {
+                get => _context.Scope;
+                set => _context.Scope = value;
+            }
+
+            public long StartTimestamp
+            {
+                get => _context.StartTimestamp;
+                set => _context.StartTimestamp = value;
+            }
+
+            public bool EventLogEnabled
+            {
+                get => _context.EventLogEnabled;
+                set => _context.EventLogEnabled = value;
+            }
+
+            public Activity Activity
+            {
+                get => _context.Activity;
+                set => _context.Activity = value;
+            }
+
+            internal bool HasDiagnosticListener
+            {
+                get => _context.HasDiagnosticListener;
+                set => _context.HasDiagnosticListener = value;
+            }
+
+            private class InnerContext
+            {
+                public HttpContext HttpContext { get; set; }
+                public IDisposable Scope { get; set; }
+                public Activity Activity { get; set; }
+
+                public long StartTimestamp { get; set; }
+                internal bool HasDiagnosticListener { get; set; }
+                public bool EventLogEnabled { get; set; }
+
+                public void Reset()
+                {
+                    HttpContext = null;
+                    Scope = null;
+                    Activity = null;
+
+                    StartTimestamp = 0;
+                    HasDiagnosticListener = false;
+                    EventLogEnabled = false;
+                }
+            }
         }
     }
 }

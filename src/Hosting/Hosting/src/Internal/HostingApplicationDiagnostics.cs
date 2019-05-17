@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void BeginRequest(HttpContext httpContext, ref HostingApplication.Context context)
+        public void BeginRequest(HttpContext httpContext, HostingApplication.Context context)
         {
             long startTimestamp = 0;
 

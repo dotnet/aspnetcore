@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Http.Features
         public FeatureReferences(IFeatureCollection collection)
         {
             Collection = collection;
-            Cache = default(TCache);
+            Cache = default;
             Revision = collection.Revision;
         }
 
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Http.Features
             Func<TState, TFeature> factory) where TFeature : class
         {
             var flush = false;
-            var revision = Collection.Revision;
+            var revision = Collection?.Revision ?? ContextDisposed();
             if (Revision != revision)
             {
                 // Clear cached value to force call to UpdateCached
@@ -108,5 +108,17 @@ namespace Microsoft.AspNetCore.Http.Features
 
         public TFeature Fetch<TFeature>(ref TFeature cached, Func<IFeatureCollection, TFeature> factory)
             where TFeature : class => Fetch(ref cached, Collection, factory);
+
+        private static int ContextDisposed()
+        {
+            ThrowContextDisposed();
+            return 0;
+        }
+
+        private static void ThrowContextDisposed()
+        {
+            // Can't use nameof as Microsoft.AspNetCore.Http.Abstractions is higher in the stack.
+            throw new ObjectDisposedException("HttpContext", "Request has finished and HttpContext disposed.");
+        }
     }
 }
