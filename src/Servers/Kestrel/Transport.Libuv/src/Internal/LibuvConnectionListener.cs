@@ -134,11 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // Issue parallel accepts on all listeners
             for (int i = 0; i < slots.Length; i++)
             {
-                var elem = slots[i];
-                if (elem == null)
-                {
-                    slots[i] = AcceptAsync(_listeners[i], i);
-                }
+                slots[i] = AcceptAsync(_listeners[i], i);
             }
 
             while (true)
