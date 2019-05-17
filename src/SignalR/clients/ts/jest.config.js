@@ -4,9 +4,9 @@
 module.exports = {
     globals: {
         "ts-jest": {
-            "tsConfigFile": "./tsconfig.jest.json",
-            "skipBabel": true,
-            "enableTsDiagnostics": true
+            "tsConfig": "./tsconfig.jest.json",
+            "babelConfig": true,
+            "diagnostics": true
         }
     },
     reporters: [
