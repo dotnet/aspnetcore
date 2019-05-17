@@ -238,7 +238,6 @@ namespace Microsoft.AspNetCore.Mvc.NewtonsoftJson
         [Fact]
         public void RoundTripTest_ListOfDateTime()
         {
-            // Documents the behavior of round-tripping a Guid value as a string
             // Arrange
             var key = "test-key";
             var dateTime = new DateTime(2007, 1, 1);
