@@ -8,11 +8,4 @@
     <WarningsNotAsErrors>$(WarningsNotAsErrors);CS1591</WarningsNotAsErrors>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Reference Include="Microsoft.AspNetCore.Http" />
-    <Reference Include="Microsoft.AspNetCore.Http.Extensions" />
-    <Reference Include="Microsoft.Extensions.Configuration.Binder" />
-    <Reference Include="Microsoft.Extensions.Options" />
-    <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
-  </ItemGroup>
 </Project>
