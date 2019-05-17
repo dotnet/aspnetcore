@@ -1154,7 +1154,7 @@ SERVER_PROCESS::ReadStdErrHandleInternal()
             &dwNumBytesRead,
             nullptr))
         {
-            auto text = to_wide_string(tempBuffer.substr(0, dwNumBytesRead), GetConsoleOutputCP());
+            auto text = to_wide_string(tempBuffer, dwNumBytesRead, GetConsoleOutputCP());
             auto const writeSize = min(charactersLeft, text.size());
             m_output.write(text.c_str(), writeSize);
             charactersLeft -= writeSize;
