@@ -60,7 +60,6 @@ namespace TestServer
 
                 subdirApp.UseEndpoints(endpoints =>
                 {
-                    endpoints.Map("NotAComponent.html", context => context.Response.WriteAsync("<div id=\"test-info\">Not a component!</div>"));
                     endpoints.MapBlazorHub(typeof(Index), selector: "root");
                     endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
                 });

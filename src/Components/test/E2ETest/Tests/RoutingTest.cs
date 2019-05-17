@@ -349,12 +349,30 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             AssertHighlightedLinks("Default (matches all)", "Default with base-relative URL (matches all)");
         }
 
-        private void SetUrlViaPushState(string relativeUri)
+        [Fact]
+        public void UsingUriHelperWithoutRouterWorks()
+        {
+            var app = MountTestComponent<UriHelperComponent>();
+            var initialUrl = Browser.Url;
+
+            Browser.Equal(Browser.Url, () => app.FindElement(By.Id("test-info")).Text);
+            var uri = SetUrlViaPushState("/mytestpath");
+            Browser.Equal(uri, () => app.FindElement(By.Id("test-info")).Text);
+
+            var jsExecutor = (IJavaScriptExecutor)Browser;
+            jsExecutor.ExecuteScript("history.back()");
+
+            Browser.Equal(initialUrl, () => app.FindElement(By.Id("test-info")).Text);
+        }
+
+        private string SetUrlViaPushState(string relativeUri)
         {
             var pathBaseWithoutHash = ServerPathBase.Split('#')[0];
             var jsExecutor = (IJavaScriptExecutor)Browser;
             var absoluteUri = new Uri(_serverFixture.RootUri, $"{pathBaseWithoutHash}{relativeUri}");
             jsExecutor.ExecuteScript($"Blazor.navigateTo('{absoluteUri.ToString().Replace("'", "\\'")}')");
+
+            return absoluteUri.AbsoluteUri;
         }
 
         private void AssertHighlightedLinks(params string[] linkTexts)
