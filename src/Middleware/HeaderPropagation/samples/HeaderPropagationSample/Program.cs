@@ -15,6 +15,7 @@ namespace HeaderPropagationSample
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHost(webBuilder =>
                 {
+                    webBuilder.UseKestrel();
                     webBuilder.UseStartup<Startup>();
                 });
     }
