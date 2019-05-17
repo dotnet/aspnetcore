@@ -253,6 +253,8 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         // Used to make .NET Runtime always log to event log when there is an unhandled exception.
         LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_UseEntryPointFilter", L"1"));
+        // make this configurable.
+        //LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_DefaultStackSize ", L"1048576"));
 
         bool clrThreadExited;
         {

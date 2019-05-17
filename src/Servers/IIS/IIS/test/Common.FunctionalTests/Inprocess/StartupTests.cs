@@ -673,6 +673,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             VerifyDotnetRuntimeEventLog(deploymentResult);
         }
 
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task StackOverflowIsAvoidedBySettingLargerStack()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/StackSize");
+            Assert.True(result.IsSuccessStatusCode);
+        }
+
         private static void VerifyDotnetRuntimeEventLog(IISDeploymentResult deploymentResult)
         {
             var entries = GetEventLogsFromDotnetRuntime(deploymentResult);
