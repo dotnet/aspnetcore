@@ -68,13 +68,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _receiver = new SocketReceiver(_socket, awaiterScheduler);
             _sender = new SocketSender(_socket, awaiterScheduler);
 
-            var inputOptions = new PipeOptions(MemoryPool, awaiterScheduler, awaiterScheduler, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, awaiterScheduler, awaiterScheduler, useSynchronizationContext: false);
+            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, awaiterScheduler, useSynchronizationContext: false);
+            var outputOptions = new PipeOptions(MemoryPool, awaiterScheduler, PipeScheduler.ThreadPool, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
             // Set the transport and connection id
-            // connection.ConnectionId = CorrelationIdGenerator.GetNextId();
             Transport = pair.Transport;
             Application = pair.Application;
         }

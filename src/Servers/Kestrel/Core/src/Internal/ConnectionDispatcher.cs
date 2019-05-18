@@ -52,6 +52,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             break;
                         }
 
+                        // Set a connection id if the transport didn't set one
+                        connection.ConnectionId ??= CorrelationIdGenerator.GetNextId();
+
                         // TODO: We need a bit of command and control to do connection management and that requires
                         // that we have access to a couple of methods that only exists on TransportConnection
                         // (specifically RequestClose, TickHeartbeat and CompleteAsync. This dependency needs to be removed or
@@ -143,42 +146,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var tcs = new TaskCompletionSource<object>();
             token.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
             return tcs.Task;
-        }
-
-        // Internal for testing
-        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
-        (
-            pool: memoryPool,
-            readerScheduler: serviceContext.Scheduler,
-            writerScheduler: writerScheduler,
-            pauseWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            resumeWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
-        );
-
-        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler readerScheduler) => new PipeOptions
-        (
-            pool: memoryPool,
-            readerScheduler: readerScheduler,
-            writerScheduler: serviceContext.Scheduler,
-            pauseWriterThreshold: GetOutputResponseBufferSize(serviceContext),
-            resumeWriterThreshold: GetOutputResponseBufferSize(serviceContext),
-            useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
-        );
-
-        private static long GetOutputResponseBufferSize(ServiceContext serviceContext)
-        {
-            var bufferSize = serviceContext.ServerOptions.Limits.MaxResponseBufferSize;
-            if (bufferSize == 0)
-            {
-                // 0 = no buffering so we need to configure the pipe so the writer waits on the reader directly
-                return 1;
-            }
-
-            // null means that we have no back pressure
-            return bufferSize ?? 0;
         }
     }
 }
