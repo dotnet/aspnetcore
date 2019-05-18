@@ -126,6 +126,37 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         [Fact]
+        public void RenderComponentAsync_SkipsDuplicatedAttribute()
+        {
+            // Arrange
+            var expectedHtml = new[]
+            {
+                "<", "p", " ",
+                    "another", "=", "\"", "another-value", "\"", " ",
+                    "Class", "=", "\"", "test2", "\"", ">",
+                    "Hello world!",
+                "</", "p", ">"
+            };
+            var serviceProvider = new ServiceCollection().AddSingleton(new RenderFragment(rtb =>
+            {
+                rtb.OpenElement(0, "p");
+                rtb.AddAttribute(1, "class", "test1");
+                rtb.AddAttribute(2, "another", "another-value");
+                rtb.AddAttribute(3, "Class", "test2"); // Matching is case-insensitive.
+                rtb.AddContent(4, "Hello world!");
+                rtb.CloseElement();
+            })).BuildServiceProvider();
+
+            var htmlRenderer = GetHtmlRenderer(serviceProvider);
+
+            // Act
+            var result = GetResult(Dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync<TestComponent>(ParameterCollection.Empty)));
+
+            // Assert
+            Assert.Equal(expectedHtml, result);
+        }
+
+        [Fact]
         public void RenderComponentAsync_HtmlEncodesAttributeValues()
         {
             // Arrange

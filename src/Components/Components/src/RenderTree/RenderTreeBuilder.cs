@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -157,6 +158,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // or absence of an attribute, and false => "False" which isn't falsy in js.
                 Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
             }
+            else
+            {
+                ClearAttributesWithName(name);
+            }
         }
 
         /// <summary>
@@ -177,6 +182,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             if (value != null || _lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
                 Append(RenderTreeFrame.Attribute(sequence, name, value));
+            }
+            else
+            {
+                ClearAttributesWithName(name);
             }
         }
 
@@ -275,6 +284,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 Append(RenderTreeFrame.Attribute(sequence, name, value));
             }
+            else
+            {
+                ClearAttributesWithName(name);
+            }
         }
 
         /// <summary>
@@ -372,7 +385,8 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             {
                 if (value == null)
                 {
-                    // Do nothing, treat 'null' attribute values for elements as a conditional attribute.
+                    // Treat 'null' attribute values for elements as a conditional attribute.
+                    ClearAttributesWithName(name);
                 }
                 else if (value is bool boolValue)
                 {
@@ -380,8 +394,15 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                     {
                         Append(RenderTreeFrame.Attribute(sequence, name, BoxedTrue));
                     }
-
-                    // Don't add anything for false bool value.
+                    else
+                    {
+                        // Don't add anything for false bool value.
+                        ClearAttributesWithName(name);
+                    }
+                }
+                else if (value is IEventCallback callbackValue)
+                {
+                    Append(RenderTreeFrame.Attribute(sequence, name, callbackValue.UnpackForRenderTree()));
                 }
                 else if (value is MulticastDelegate)
                 {
@@ -395,6 +416,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             }
             else if (_lastNonAttributeFrameType == RenderTreeFrameType.Component)
             {
+                // If this is a component, we always want to preserve the original type.
                 Append(RenderTreeFrame.Attribute(sequence, name, value));
             }
             else
@@ -423,6 +445,38 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
             AssertCanAddAttribute();
             Append(frame.WithAttributeSequence(sequence));
+        }
+
+        /// <summary>
+        /// Adds frames representing multiple attributes with the same sequence number.
+        /// </summary>
+        /// <typeparam name="T">The attribute value type.</typeparam>
+        /// <param name="sequence">An integer that represents the position of the instruction in the source code.</param>
+        /// <param name="attributes">A collection of key-value pairs representing attributes.</param>
+        public void AddMultipleAttributes<T>(int sequence, IEnumerable<KeyValuePair<string, T>> attributes)
+        {
+            // NOTE: The IEnumerable<KeyValuePair<string, T>> is the simplest way to support a variety of
+            // different types like IReadOnlyDictionary<>, Dictionary<>, and IDictionary<>.
+            //
+            // None of those types are contravariant, and since we want to support attributes having a value
+            // of type object, the simplest thing to do is drop down to IEnumerable<KeyValuePair<>> which
+            // is contravariant. This also gives us things like List<KeyValuePair<>> and KeyValuePair<>[]
+            // for free even though we don't expect those types to be common.
+
+            // Calling this up-front just to make sure we validate before mutating anything.
+            AssertCanAddAttribute();
+
+            if (attributes != null)
+            {
+                foreach (var attribute in attributes)
+                {
+                    // This will call the AddAttribute(int, string, object) overload.
+                    //
+                    // This is fine because we try to make the object overload behave identically
+                    // to the others.
+                    AddAttribute(sequence, attribute.Key, attribute.Value);
+                }
+            }
         }
 
         /// <summary>
@@ -590,12 +644,41 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 
         private void Append(in RenderTreeFrame frame)
         {
+            var frameType = frame.FrameType;
+            if (frameType == RenderTreeFrameType.Attribute)
+            {
+                ClearAttributesWithName(frame.AttributeName);
+            }
+
             _entries.Append(frame);
 
-            var frameType = frame.FrameType;
             if (frameType != RenderTreeFrameType.Attribute)
             {
                 _lastNonAttributeFrameType = frame.FrameType;
+            }
+        }
+
+        private void ClearAttributesWithName(string name)
+        {
+            // When an AddAttribute or AddMultipleAttributes method is called, we need to clear
+            // any prior attributes that have the same attribute name for the current element
+            // or component.
+            //
+            // This is how we enforce the *last attribute wins* semantic.
+            Debug.Assert(_openElementIndices.Count > 0);
+
+            // Start at the last open element/component and iterate forward until
+            // we find a duplicate.
+            //
+            // Since we prevent duplicates, we can always stop after finding one.
+            for (var i = _openElementIndices.Peek(); i < _entries.Count; i++)
+            {
+                if (_entries.Buffer[i].FrameType == RenderTreeFrameType.Attribute &&
+                    string.Equals(name, _entries.Buffer[i].AttributeName, StringComparison.OrdinalIgnoreCase))
+                {
+                    _entries.RemoveAt(i);
+                    break;
+                }
             }
         }
     }
