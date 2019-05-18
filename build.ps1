@@ -303,7 +303,7 @@ $MSBuildArguments += "/p:_RunSign=$Sign"
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
 
-if (($All -or $BuildJava) -and -not $NoBuildJava) {
+if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
     $foundJdk = $false
     $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
     if ($env:JAVA_HOME) {
