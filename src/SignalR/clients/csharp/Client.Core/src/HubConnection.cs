@@ -420,31 +420,32 @@ namespace Microsoft.AspNetCore.SignalR.Client
             CheckDisposed();
 
             Log.Starting(_logger);
-
-            // Start the connection
-            var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat, cancellationToken);
-            var startingConnectionState = new ConnectionState(connection, this);
-
-            // From here on, if an error occurs we need to shut down the connection because
-            // we still own it.
-            try
+            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _state.StopCts.Token))
             {
-                Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-                await HandshakeAsync(startingConnectionState, cancellationToken);
+                // Start the connection
+                var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat, cts.Token);
+                var startingConnectionState = new ConnectionState(connection, this);
+
+                // From here on, if an error occurs we need to shut down the connection because
+                // we still own it.
+                try
+                {
+                    Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
+                    await HandshakeAsync(startingConnectionState, cancellationToken);   //here we use cancellationToken, as HandshakeAsync combines cts for itself.
+                }
+                catch (Exception ex)
+                {
+                    Log.ErrorStartingConnection(_logger, ex);
+
+                    // Can't have any invocations to cancel, we're in the lock.
+                    await CloseAsync(startingConnectionState.Connection);
+                    throw;
+                }
+
+                // Set this at the end to avoid setting internal state until the connection is real
+                _state.CurrentConnectionStateUnsynchronized = startingConnectionState;
+                startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
             }
-            catch (Exception ex)
-            {
-                Log.ErrorStartingConnection(_logger, ex);
-
-                // Can't have any invocations to cancel, we're in the lock.
-                await CloseAsync(startingConnectionState.Connection);
-                throw;
-            }
-
-            // Set this at the end to avoid setting internal state until the connection is real
-            _state.CurrentConnectionStateUnsynchronized = startingConnectionState;
-            startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
-
             Log.Started(_logger);
         }
 
@@ -1287,7 +1288,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var reconnectStartTime = DateTime.UtcNow;
             var retryReason = closeException;
             var nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, TimeSpan.Zero, retryReason);
-            
+
             // We still have the connection lock from the caller, HandleConnectionClose.
             _state.AssertInConnectionLock();
 
