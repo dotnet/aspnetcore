@@ -8,15 +8,19 @@
     <TestGroupName>ProjectTemplates.E2ETests</TestGroupName>
     <DefineConstants>$(DefineConstants);XPLAT</DefineConstants>
 
-    <RunTemplateTests>true</RunTemplateTests>
+    <RunTemplateTests Condition="'$(RunTemplateTests)' == ''" >true</RunTemplateTests>
     <SkipTests Condition="'$(RunTemplateTests)' != 'true'">true</SkipTests>
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
     <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <BaseOutputPath />
+    <OutputPath />
 
     <!-- Properties that affect test runs -->
     <!-- TestTemplateCreationFolder is the folder where the templates will be created. Will point out to $(OutputDir)$(TestTemplateCreationFolder) -->
-    <TestTemplateCreationFolder>TestTemplates</TestTemplateCreationFolder>
-    <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepositoryRoot)'))obj\template-restore\</TestPackageRestorePath>
+    <TestTemplateCreationFolder>TestTemplates\</TestTemplateCreationFolder>
+    <TestPackageRestorePath>$([MSBuild]::EnsureTrailingSlash('$(RepoRoot)'))obj\template-restore\</TestPackageRestorePath>
     <TestTemplateTestsProps>TemplateTests.props</TestTemplateTestsProps>
   </PropertyGroup>
 
@@ -32,11 +36,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
+    <ProjectReference Include="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj">
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SkipGetTargetFrameworkProperties>true</SkipGetTargetFrameworkProperties>
     </ProjectReference>
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="../testassets/DotNetToolsInstaller/DotNetToolsInstaller.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.Client.ItemTemplates/Microsoft.DotNet.Web.Client.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
     <ProjectReference Include="../Web.ItemTemplates/Microsoft.DotNet.Web.ItemTemplates.csproj" ReferenceOutputAssembly="false" />
@@ -57,7 +61,7 @@
 
   <Target Name="PrepareForTest" BeforeTargets="CoreCompile" Condition="$(DesignTimeBuild) != true">
     <PropertyGroup>
-      <TestTemplateCreationFolder>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)$([MSBuild]::EnsureTrailingSlash('$(OutputPath)$(TestTemplateCreationFolder)'))'))</TestTemplateCreationFolder>
+      <TestTemplateCreationFolder>$([MSBuild]::NormalizePath('$(OutputPath)$(TestTemplateCreationFolder)'))</TestTemplateCreationFolder>
       <TestTemplateTestsProps>$(TestTemplateCreationFolder)$(TestTemplateTestsProps)</TestTemplateTestsProps>
       <CustomTemplateHivePath>$(TestTemplateCreationFolder)\Hives\$([System.Guid]::NewGuid())\.templateengine</CustomTemplateHivePath>
     </PropertyGroup>
@@ -121,6 +125,9 @@
       TemplateFile="$(MSBuildThisFileDirectory)Infrastructure\Directory.Build.props.in"
       Properties=""
       OutputPath="$(TestTemplateCreationFolder)Directory.Build.props" />
+
+    <!-- Workaround https://github.com/dotnet/core-setup/issues/6420 - there is no MSBuild setting for rollforward yet -->
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)Infrastructure\runtimeconfig.norollforward.json" DestinationFolder="$(TestTemplateCreationFolder)" UseHardLinksIfPossible="true" />
 
     <Delete Files="$(TestTemplateTestsProps)" />
 

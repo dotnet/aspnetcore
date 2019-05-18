@@ -101,6 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public string ConnectionIdFeature { get; set; }
         public bool HasStartedConsumingRequestBody { get; set; }
         public long? MaxRequestBodySize { get; set; }
+        public MinDataRate MinRequestBodyDataRate { get; set; }
         public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
@@ -340,6 +341,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             HasStartedConsumingRequestBody = false;
             MaxRequestBodySize = ServerOptions.Limits.MaxRequestBodySize;
+            MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
             AllowSynchronousIO = ServerOptions.AllowSynchronousIO;
             TraceIdentifier = null;
             Method = HttpMethod.None;
@@ -967,7 +969,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             var responseHeaders = CreateResponseHeaders(appCompleted);
 
-            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
+            Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted);
         }
 
         private void VerifyInitializeState(int firstWriteByteCount)
@@ -1454,7 +1456,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (data.Length == 0)
                     {
-                        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
+                        Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
                         return Output.FlushAsync(cancellationToken);
                     }
 
@@ -1468,7 +1470,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
             else
             {
-                Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk);
+                Output.WriteResponseHeaders(StatusCode, ReasonPhrase, responseHeaders, _autoChunk, appCompleted: false);
                 HandleNonBodyResponseWrite();
                 return Output.FlushAsync(cancellationToken);
             }

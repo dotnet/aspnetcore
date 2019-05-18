@@ -6,15 +6,14 @@
     <TestGroupName>IIS.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
     <SkipTests Condition=" '$(SkipIISTests)' == 'true' ">true</SkipTests>
-    <IsIISTest>true</IsIISTest>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
-    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
 
     <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>

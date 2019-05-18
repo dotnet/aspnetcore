@@ -2,12 +2,24 @@
 
   <!-- Item group has to be defined here becasue Helix.props is evaluated before xunit.runner.console.props  -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-      <HelixContent Condition="'$(XunitConsole472Path)' != ''" Include="$([System.IO.Path]::GetDirectoryName('$(XunitConsole472Path)'))/**/*" />
+    <HelixContent Condition="'$(XunitConsole472Path)' != ''" Include="$([System.IO.Path]::GetDirectoryName('$(XunitConsole472Path)'))/**/*" />
   </ItemGroup>
 
   <ItemGroup>
     <Content Include="@(HelixContent)" />
   </ItemGroup>
+
+<!--
+
+This target is meant to be used when invoking helix tests on one project at a time.
+
+Usage: dotnet build /t:Helix src/MyTestProject.csproj
+
+-->
+  <Target Name="Helix">
+    <MSBuild Projects="$(MSBuildThisFileDirectory)..\helix\helix.proj"
+             Properties="Projects=$(MSBuildProjectFullPath)" />
+  </Target>
 
   <!-- Build the actual helix work items to send to helix queues -->
   <Target Name="CreateHelixPayload" Returns="@(HelixWorkItem)">
@@ -30,9 +42,7 @@
 
     <ItemGroup>
       <!-- Include default queues based on platform -->
-      <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'$(_SelectedPlatforms.Contains(%(Platform)))' == 'true' AND '%(EnableByDefault)' == 'true'" />
-      <!-- Unconditionally include queues defined by project  -->
-      <_HelixProjectTargetQueue Include="%(HelixProjectTargetQueue.Identity)" />
+      <_HelixProjectTargetQueue Include="%(HelixAvailableTargetQueue.Identity)" Condition="'%(HelixAvailableTargetQueue.Identity)' != '' AND '$(_SelectedPlatforms.Contains(%(Platform)))' == 'true' AND '%(EnableByDefault)' == 'true'" />
 
       <_HelixApplicableTargetQueue Include="%(_HelixProjectTargetQueue.Identity)" Condition="'%(Identity)' == '$(HelixTargetQueue)'" />
     </ItemGroup>
@@ -44,10 +54,8 @@
   </Target>
 
   <Target Name="_PublishHelixArchive" DependsOnTargets="Publish" >
-
     <ZipDirectory Condition="'$(HelixUseArchive)' == 'true'" SourceDirectory="$(PublishDir)" DestinationFile="$(PublishDir)../$(HelixTestName).zip" Overwrite="true" />
     <RemoveDir Condition="'$(HelixUseArchive)' == 'true'" Directories="$(PublishDir)" />
-
   </Target>
 
   <Target Name="_CreateHelixWorkItem" Condition="$(BuildHelixPayload)">
@@ -64,7 +72,7 @@
         <TestAssembly>$(TargetFileName)</TestAssembly>
         <PreCommands>@(HelixPreCommand)</PreCommands>
         <PostCommands>@(HelixPostCommand)</PostCommands>
-        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion) $(HelixTargetQueue)</Command>
+        <Command Condition="$(IsWindowsHelixQueue)">call runtests.cmd $(TargetFileName) $(TargetFrameworkIdentifier) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion) $(HelixTargetQueue)</Command>
         <Command Condition="!$(IsWindowsHelixQueue)">./runtests.sh $(TargetFileName) $(NETCoreSdkVersion) $(MicrosoftNETCoreAppPackageVersion) $(HelixTargetQueue)</Command>
         <Timeout>$(HelixTimeout)</Timeout>
       </HelixWorkItem>

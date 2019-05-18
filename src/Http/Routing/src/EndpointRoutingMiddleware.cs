@@ -55,12 +55,11 @@ namespace Microsoft.AspNetCore.Routing
 
         public Task Invoke(HttpContext httpContext)
         {
-            var feature = new EndpointSelectorContext(httpContext);
-
             // There's already an endpoint, skip maching completely
-            if (feature.Endpoint != null)
+            var endpoint = httpContext.GetEndpoint();
+            if (endpoint != null)
             {
-                Log.MatchSkipped(_logger, feature.Endpoint);
+                Log.MatchSkipped(_logger, endpoint);
                 return _next(httpContext);
             }
 
@@ -69,44 +68,45 @@ namespace Microsoft.AspNetCore.Routing
             var matcherTask = InitializeAsync();
             if (!matcherTask.IsCompletedSuccessfully)
             {
-                return AwaitMatcher(this, httpContext, feature, matcherTask);
+                return AwaitMatcher(this, httpContext, matcherTask);
             }
 
-            var matchTask = matcherTask.Result.MatchAsync(httpContext, feature);
+            var matchTask = matcherTask.Result.MatchAsync(httpContext);
             if (!matchTask.IsCompletedSuccessfully)
             {
-                return AwaitMatch(this, httpContext, feature, matchTask);
+                return AwaitMatch(this, httpContext, matchTask);
             }
 
-            return SetRoutingAndContinue(httpContext, feature);
+            return SetRoutingAndContinue(httpContext);
 
             // Awaited fallbacks for when the Tasks do not synchronously complete
-            static async Task AwaitMatcher(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task<Matcher> matcherTask)
+            static async Task AwaitMatcher(EndpointRoutingMiddleware middleware, HttpContext httpContext, Task<Matcher> matcherTask)
             {
                 var matcher = await matcherTask;
-                await matcher.MatchAsync(httpContext, feature);
-                await middleware.SetRoutingAndContinue(httpContext, feature);
+                await matcher.MatchAsync(httpContext);
+                await middleware.SetRoutingAndContinue(httpContext);
             }
 
-            static async Task AwaitMatch(EndpointRoutingMiddleware middleware, HttpContext httpContext, EndpointSelectorContext feature, Task matchTask)
+            static async Task AwaitMatch(EndpointRoutingMiddleware middleware, HttpContext httpContext, Task matchTask)
             {
                 await matchTask;
-                await middleware.SetRoutingAndContinue(httpContext, feature);
+                await middleware.SetRoutingAndContinue(httpContext);
             }
 
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private Task SetRoutingAndContinue(HttpContext httpContext, EndpointSelectorContext feature)
+        private Task SetRoutingAndContinue(HttpContext httpContext)
         {
             // If there was no mutation of the endpoint then log failure
-            if (feature.Endpoint is null)
+            var endpoint = httpContext.GetEndpoint();
+            if (endpoint == null)
             {
                 Log.MatchFailure(_logger);
             }
             else
             {
-                Log.MatchSuccess(_logger, feature);
+                Log.MatchSuccess(_logger, endpoint);
             }
 
             return _next(httpContext);
@@ -115,8 +115,8 @@ namespace Microsoft.AspNetCore.Routing
         // Initialization is async to avoid blocking threads while reflection and things
         // of that nature take place.
         //
-        // We've seen cases where startup is very slow if we  allow multiple threads to race 
-        // while initializing the set of endpoints/routes. Doing CPU intensive work is a 
+        // We've seen cases where startup is very slow if we  allow multiple threads to race
+        // while initializing the set of endpoints/routes. Doing CPU intensive work is a
         // blocking operation if you have a low core count and enough work to do.
         private Task<Matcher> InitializeAsync()
         {
@@ -184,9 +184,9 @@ namespace Microsoft.AspNetCore.Routing
                 new EventId(3, "MatchingSkipped"),
                 "Endpoint '{EndpointName}' already set, skipping route matching.");
 
-            public static void MatchSuccess(ILogger logger, EndpointSelectorContext context)
+            public static void MatchSuccess(ILogger logger, Endpoint endpoint)
             {
-                _matchSuccess(logger, context.Endpoint.DisplayName, null);
+                _matchSuccess(logger, endpoint.DisplayName, null);
             }
 
             public static void MatchFailure(ILogger logger)

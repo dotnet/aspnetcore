@@ -24,12 +24,12 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         protected readonly IFilterMetadata[] _filters;
         protected readonly IList<IValueProviderFactory> _valueProviderFactories;
 
-        private AuthorizationFilterContext _authorizationContext;
-        private ResourceExecutingContext _resourceExecutingContext;
-        private ResourceExecutedContext _resourceExecutedContext;
-        private ExceptionContext _exceptionContext;
-        private ResultExecutingContext _resultExecutingContext;
-        private ResultExecutedContext _resultExecutedContext;
+        private AuthorizationFilterContextSealed _authorizationContext;
+        private ResourceExecutingContextSealed _resourceExecutingContext;
+        private ResourceExecutedContextSealed _resourceExecutedContext;
+        private ExceptionContextSealed _exceptionContext;
+        private ResultExecutingContextSealed _resultExecutingContext;
+        private ResultExecutedContextSealed _resultExecutedContext;
 
         // Do not make this readonly, it's mutable. We don't want to make a copy.
         // https://blogs.msdn.microsoft.com/ericlippert/2008/05/14/mutating-readonly-structs/
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_authorizationContext == null)
                             {
-                                _authorizationContext = new AuthorizationFilterContext(_actionContext, _filters);
+                                _authorizationContext = new AuthorizationFilterContextSealed(_actionContext, _filters);
                             }
 
                             state = current.FilterAsync;
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_authorizationContext == null)
                             {
-                                _authorizationContext = new AuthorizationFilterContext(_actionContext, _filters);
+                                _authorizationContext = new AuthorizationFilterContextSealed(_actionContext, _filters);
                             }
 
                             state = current.Filter;
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resourceExecutingContext == null)
                             {
-                                _resourceExecutingContext = new ResourceExecutingContext(
+                                _resourceExecutingContext = new ResourceExecutingContextSealed(
                                     _actionContext,
                                     _filters,
                                     _valueProviderFactories);
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resourceExecutingContext == null)
                             {
-                                _resourceExecutingContext = new ResourceExecutingContext(
+                                _resourceExecutingContext = new ResourceExecutingContextSealed(
                                     _actionContext,
                                     _filters,
                                     _valueProviderFactories);
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         if (_resourceExecutedContext == null)
                         {
                             // If we get here then the filter didn't call 'next' indicating a short circuit.
-                            _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
+                            _resourceExecutedContext = new ResourceExecutedContextSealed(_resourceExecutingContext, _filters)
                             {
                                 Canceled = true,
                                 Result = _resourceExecutingContext.Result,
@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
                         if (resourceExecutingContext.Result != null)
                         {
-                            _resourceExecutedContext = new ResourceExecutedContext(resourceExecutingContext, _filters)
+                            _resourceExecutedContext = new ResourceExecutedContextSealed(resourceExecutingContext, _filters)
                             {
                                 Canceled = true,
                                 Result = _resourceExecutingContext.Result,
@@ -848,7 +848,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                     {
                         if (scope == Scope.Resource)
                         {
-                            _resourceExecutedContext = new ResourceExecutedContext(_actionContext, _filters)
+                            _resourceExecutedContext = new ResourceExecutedContextSealed(_actionContext, _filters)
                             {
                                 Result = _result,
                             };
@@ -901,7 +901,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             Debug.Assert(_resourceExecutedContext != null);
-            return Task.FromResult(_resourceExecutedContext);
+            return Task.FromResult<ResourceExecutedContext>(_resourceExecutedContext);
 
             static async Task<ResourceExecutedContext> Awaited(ResourceInvoker invoker, Task task)
             {
@@ -943,7 +943,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception exception)
             {
-                _resourceExecutedContext = new ResourceExecutedContext(_resourceExecutingContext, _filters)
+                _resourceExecutedContext = new ResourceExecutedContextSealed(_resourceExecutingContext, _filters)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
@@ -965,7 +965,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
                 catch (Exception exception)
                 {
-                    invoker._resourceExecutedContext = new ResourceExecutedContext(invoker._resourceExecutingContext, invoker._filters)
+                    invoker._resourceExecutedContext = new ResourceExecutedContextSealed(invoker._resourceExecutingContext, invoker._filters)
                     {
                         ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                     };
@@ -1015,7 +1015,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
                 catch (Exception exception)
                 {
-                    invoker._exceptionContext = new ExceptionContext(invoker._actionContext, invoker._filters)
+                    invoker._exceptionContext = new ExceptionContextSealed(invoker._actionContext, invoker._filters)
                     {
                         ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                     };
@@ -1122,7 +1122,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resultExecutingContext == null)
                             {
-                                _resultExecutingContext = new ResultExecutingContext(_actionContext, _filters, _result, _instance);
+                                _resultExecutingContext = new ResultExecutingContextSealed(_actionContext, _filters, _result, _instance);
                             }
 
                             state = current.FilterAsync;
@@ -1132,7 +1132,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resultExecutingContext == null)
                             {
-                                _resultExecutingContext = new ResultExecutingContext(_actionContext, _filters, _result, _instance);
+                                _resultExecutingContext = new ResultExecutingContextSealed(_actionContext, _filters, _result, _instance);
                             }
 
                             state = current.Filter;
@@ -1182,7 +1182,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             // Short-circuited by not calling next || Short-circuited by setting Cancel == true
                             _logger.ResultFilterShortCircuited(filter);
 
-                            _resultExecutedContext = new ResultExecutedContext(
+                            _resultExecutedContext = new ResultExecutedContextSealed(
                                 _actionContext,
                                 _filters,
                                 resultExecutingContext.Result,
@@ -1228,7 +1228,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                             // Short-circuited by setting Cancel == true
                             _logger.ResultFilterShortCircuited(filter);
 
-                            _resultExecutedContext = new ResultExecutedContext(
+                            _resultExecutedContext = new ResultExecutedContextSealed(
                                 resultExecutingContext,
                                 _filters,
                                 resultExecutingContext.Result,
@@ -1309,7 +1309,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                         {
                             if (_resultExecutedContext == null)
                             {
-                                _resultExecutedContext = new ResultExecutedContext(_actionContext, _filters, result, _instance);
+                                _resultExecutedContext = new ResultExecutedContextSealed(_actionContext, _filters, result, _instance);
                             }
 
                             return Task.CompletedTask;
@@ -1345,7 +1345,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
             catch (Exception exception)
             {
-                _resultExecutedContext = new ResultExecutedContext(_actionContext, _filters, _result, _instance)
+                _resultExecutedContext = new ResultExecutedContextSealed(_actionContext, _filters, _result, _instance)
                 {
                     ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                 };
@@ -1368,7 +1368,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 }
                 catch (Exception exception)
                 {
-                    invoker._resultExecutedContext = new ResultExecutedContext(invoker._actionContext, invoker._filters, invoker._result, invoker._instance)
+                    invoker._resultExecutedContext = new ResultExecutedContextSealed(invoker._actionContext, invoker._filters, invoker._result, invoker._instance)
                     {
                         ExceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception),
                     };
@@ -1397,7 +1397,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
 
             Debug.Assert(_resultExecutedContext != null);
-            return Task.FromResult(_resultExecutedContext);
+            return Task.FromResult<ResultExecutedContext>(_resultExecutedContext);
 
             static async Task<ResultExecutedContext> Awaited(ResourceInvoker invoker, Task task)
             {
@@ -1421,7 +1421,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         }
 
 
-        private static void Rethrow(ResourceExecutedContext context)
+        private static void Rethrow(ResourceExecutedContextSealed context)
         {
             if (context == null)
             {
@@ -1444,7 +1444,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void Rethrow(ExceptionContext context)
+        private static void Rethrow(ExceptionContextSealed context)
         {
             if (context == null)
             {
@@ -1467,7 +1467,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void Rethrow(ResultExecutedContext context)
+        private static void Rethrow(ResultExecutedContextSealed context)
         {
             if (context == null)
             {
@@ -1549,6 +1549,44 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             public const string ExceptionFilter = "Exception Filter";
             public const string ResultFilter = "Result Filter";
             public const string AlwaysRunResultFilter = "Always Run Result Filter";
+        }
+
+        private sealed class ResultExecutedContextSealed : ResultExecutedContext
+        {
+            public ResultExecutedContextSealed(
+                ActionContext actionContext,
+                IList<IFilterMetadata> filters,
+                IActionResult result,
+                object controller)
+            : base(actionContext, filters, result, controller) { }
+        }
+
+        private sealed class ResultExecutingContextSealed : ResultExecutingContext
+        {
+            public ResultExecutingContextSealed(
+                ActionContext actionContext,
+                IList<IFilterMetadata> filters,
+                IActionResult result,
+                object controller)
+                : base(actionContext, filters, result, controller)
+            { }
+        }
+
+        private sealed class ExceptionContextSealed : ExceptionContext
+        {
+            public ExceptionContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters) : base(actionContext, filters) { }
+        }
+        private sealed class ResourceExecutedContextSealed : ResourceExecutedContext
+        {
+            public ResourceExecutedContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters) : base(actionContext, filters) { }
+        }
+        private sealed class ResourceExecutingContextSealed : ResourceExecutingContext
+        {
+            public ResourceExecutingContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters, IList<IValueProviderFactory> valueProviderFactories) : base(actionContext, filters, valueProviderFactories) { }
+        }
+        private sealed class AuthorizationFilterContextSealed : AuthorizationFilterContext
+        {
+            public AuthorizationFilterContextSealed(ActionContext actionContext, IList<IFilterMetadata> filters) : base(actionContext, filters) { }
         }
     }
 }

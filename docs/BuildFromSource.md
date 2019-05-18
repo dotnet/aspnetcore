@@ -20,7 +20,9 @@ Building ASP.NET Core on Windows requires:
         ```
 * Git. <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
-* Java Development Kit (JDK) v8 with Java Runtime Environment (JRE) v8. See https://www.oracle.com/technetwork/java/javase/downloads/index.html
+* Java Development Kit 11 or newer. Either:
+    * OpenJDK <https://jdk.java.net/>
+    * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
 ### macOS/Linux
 
@@ -31,8 +33,8 @@ Building ASP.NET Core on macOS or Linux requires:
 * At least 10 GB of disk space and a good internet connection (our build scripts download a lot of tools and dependencies)
 * Git <https://git-scm.org>
 * NodeJS. LTS version of 10.14.2 or newer <https://nodejs.org>
-* Java Development Kit 10 or newer. Either:
-    * OpenJDK <http://jdk.java.net/10/>
+* Java Development Kit 11 or newer. Either:
+    * OpenJDK <https://jdk.java.net/>
     * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
 
 ## Clone the source code
@@ -202,7 +204,7 @@ See ["Artifacts"](./Artifacts.md) for more explanation of the different folders 
 - Update the versions on `PackageReference` items in your .csproj project file to point to the version from your local build.
   ```xml
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.0.0-preview-0" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="3.0.0-dev" />
   </ItemGroup>
   ```
 

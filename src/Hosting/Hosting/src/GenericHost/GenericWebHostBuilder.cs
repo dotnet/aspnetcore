@@ -57,15 +57,6 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _builder.ConfigureServices((context, services) =>
             {
-                if (_hostingStartupWebHostBuilder != null)
-                {
-                    var webhostContext = GetWebHostBuilderContext(context);
-                    _hostingStartupWebHostBuilder.ConfigureServices(webhostContext, services);
-                }
-            });
-
-            _builder.ConfigureServices((context, services) =>
-            {
                 var webhostContext = GetWebHostBuilderContext(context);
                 var webHostOptions = (WebHostOptions)context.Properties[typeof(WebHostOptions)];
 
@@ -95,6 +86,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
                 services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
+
+                // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
+                _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);
 
                 // Support UseStartup(assemblyName)
                 if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))

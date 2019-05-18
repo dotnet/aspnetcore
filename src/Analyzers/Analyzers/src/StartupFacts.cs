@@ -122,5 +122,30 @@ namespace Microsoft.AspNetCore.Analyzers
 
             return false;
         }
+
+        // Based on the three known gestures for including SignalR in a ConfigureMethod:
+        // UseSignalR() // middleware
+        // MapHub<>() // endpoint routing
+        // MapBlazorHub() // server-side blazor
+        //
+        // To be slightly less brittle, we don't look at the exact symbols and instead just look
+        // at method names in here. We're NOT worried about false negatives, because all of these
+        // cases contain words like SignalR or Hub. 
+        public static bool IsSignalRConfigureMethodGesture(IMethodSymbol symbol)
+        {
+            if (symbol == null)
+            {
+                throw new ArgumentNullException(nameof(symbol));
+            }
+
+            if (string.Equals(symbol.Name, SymbolNames.SignalRAppBuilderExtensions.UseSignalRMethodName, StringComparison.Ordinal) ||
+                string.Equals(symbol.Name, SymbolNames.HubEndpointRouteBuilderExtensions.MapHubMethodName, StringComparison.Ordinal) ||
+                string.Equals(symbol.Name, SymbolNames.ComponentEndpointRouteBuilderExtensions.MapBlazorHubMethodName, StringComparison.Ordinal))
+            {
+                return true;
+            }
+
+            return false;
+        }
     }
 }

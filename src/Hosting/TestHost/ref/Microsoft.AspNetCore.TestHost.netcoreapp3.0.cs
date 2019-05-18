@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.TestHost
         public System.Uri BaseAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Hosting.IWebHost Host { get { throw null; } }
+        public bool PreserveExecutionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Net.Http.HttpClient CreateClient() { throw null; }
         public System.Net.Http.HttpMessageHandler CreateHandler() { throw null; }
         public Microsoft.AspNetCore.TestHost.RequestBuilder CreateRequest(string path) { throw null; }
@@ -47,6 +48,8 @@ namespace Microsoft.AspNetCore.TestHost
     {
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureTestContainer<TContainer>(this Microsoft.AspNetCore.Hosting.IWebHostBuilder webHostBuilder, System.Action<TContainer> servicesConfiguration) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureTestServices(this Microsoft.AspNetCore.Hosting.IWebHostBuilder webHostBuilder, System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> servicesConfiguration) { throw null; }
+        public static System.Net.Http.HttpClient GetTestClient(this Microsoft.AspNetCore.Hosting.IWebHost host) { throw null; }
+        public static Microsoft.AspNetCore.TestHost.TestServer GetTestServer(this Microsoft.AspNetCore.Hosting.IWebHost host) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, string solutionRelativePath, string solutionName = "*.sln") { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, string solutionRelativePath, string applicationBasePath, string solutionName = "*.sln") { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseTestServer(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }

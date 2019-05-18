@@ -1,10 +1,4 @@
 <Project>
-  <PropertyGroup>
-    <OutputInRepoRoot>true</OutputInRepoRoot>
-    <!-- Temporary flag to disable restoring this project against the artifacts/ folder. -->
-    <_DisableRestoreFromLocalPackages>true</_DisableRestoreFromLocalPackages>
-  </PropertyGroup>
-
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
@@ -109,7 +103,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <CrossgenToolPackagePath>$(CrossgenToolFileName)</CrossgenToolPackagePath>
     <!-- Disambiguated RID-specific crossgen executable relative path -->
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm' ">x64_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
-    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
+    <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'linux-arm64' OR '$(TargetRuntimeIdentifier)' == 'linux-musl-arm64' ">x64_arm64\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
     <CrossgenToolPackagePath Condition=" '$(TargetRuntimeIdentifier)' == 'win-arm' ">x86_arm\$(CrossgenToolPackagePath)</CrossgenToolPackagePath>
 
     <RuntimePackageRoot>$([System.IO.Path]::Combine('$(NuGetPackageRoot)', 'runtime.$(RuntimeIdentifier).microsoft.netcore.app', '$(MicrosoftNETCoreAppPackageVersion)'))</RuntimePackageRoot>
@@ -126,7 +120,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <Reference Include="runtime.$(RuntimeIdentifier).microsoft.netcore.app" ExcludeAssets="All" PrivateAssets="All" />
 
-    <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false' AND '$(VCTargetsPath)' != ''" Include="$(RepositoryRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
+    <ProjectReference Condition="'$(BuildIisNativeProjects)' == 'true' AND '$(BuildNative)' != 'false' AND '$(VCTargetsPath)' != ''" Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\InProcessRequestHandler\InProcessRequestHandler.vcxproj">
       <SetPlatform>Platform=$(TargetArchitecture)</SetPlatform>
       <SetPlatform Condition="'$(TargetArchitecture)' == 'x86'">Platform=Win32</SetPlatform>
       <!-- Custom attribute used to distinguish managed from native references. -->
@@ -376,7 +370,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
       <SharedFxContent Include="$(ProjectDepsFilePath)" />
       <SharedFxContent Include="$(ProjectRuntimeConfigFilePath)" />
       <SharedFxContent Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' != '.pdb'" />
-      <SharedFxContent Include="$(RepositoryRoot)THIRD-PARTY-NOTICES.txt" />
+      <SharedFxContent Include="$(RepoRoot)THIRD-PARTY-NOTICES.txt" />
     </ItemGroup>
   </Target>
 

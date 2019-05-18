@@ -19,7 +19,7 @@
   <files>
     <file src="build\*" target="build" />
     <file src="buildMultiTargeting\*" target="buildMultiTargeting" />
-    <file src="bin\$configuration$\net461\Microsoft.Extensions.ApiDescription.Tasks.*" target="tasks\net461" />
-    <file src="bin\$configuration$\netstandard2.0\Microsoft.Extensions.ApiDescription.Tasks.*" target="tasks\netstandard2.0" />
+    <file src="$baseOutputPath$\$configuration$\net461\Microsoft.Extensions.ApiDescription.Tasks.*" target="tasks\net461" />
+    <file src="$baseOutputPath$\$configuration$\netstandard2.0\Microsoft.Extensions.ApiDescription.Tasks.*" target="tasks\netstandard2.0" />
   </files>
 </package>

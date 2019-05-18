@@ -6,12 +6,14 @@
   </ItemDefinitionGroup>
 
   <!-- this file is shared between Helix.proj and .csproj files -->
-  <ItemGroup>
+  <ItemGroup Condition="'$(IsWindowsOnlyTest)' != 'true'">
     <HelixAvailablePlatform Include="Windows" />
     <HelixAvailablePlatform Include="OSX" />
     <HelixAvailablePlatform Include="Linux" />
 
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.ClientRS4.VS2017.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
     <HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" EnableByDefault="false" />
     <HelixAvailableTargetQueue Include="OSX.1012.Amd64.Open" Platform="OSX" />
     <HelixAvailableTargetQueue Include="OSX.1014.Amd64.Open" Platform="OSX" />
@@ -24,5 +26,21 @@
     <HelixAvailableTargetQueue Include="Fedora.28.Amd64.Open" Platform="Linux" />
 
     <!--  TODO: re-enable Debian.9.Arm64.Open and Ubuntu.1804.Arm64.Open    -->
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(IsWindowsOnlyTest)' == 'true'">
+    <HelixAvailablePlatform Include="Windows" />
+
+    <HelixAvailableTargetQueue Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.81.Amd64.Open" Platform="Windows" />
+    <HelixAvailableTargetQueue Include="Windows.7.Amd64.Open" Platform="Windows" />
+
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\update_schema.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\UpdateIISExpressCertificate.ps1" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\tools\TestCert.pfx" />
+    <HelixContent Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
+
+    <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1 || exit /b 1" />
+    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1 || exit /b 1" />
   </ItemGroup>
 </Project>

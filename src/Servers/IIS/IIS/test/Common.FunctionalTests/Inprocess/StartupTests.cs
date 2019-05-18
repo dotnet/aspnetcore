@@ -113,6 +113,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         [SkipIfNotAdmin]
         [RequiresNewShim]
         [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
+        [SkipOnHelix]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2221", FlakyOn.Helix.All)]
         public async Task StartsWithDotnetInstallLocation(RuntimeArchitecture runtimeArchitecture)
         {

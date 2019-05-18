@@ -23,14 +23,14 @@
     <ANCMOutOfProcessNugetPackageHandlerVersion>2.0.0</ANCMOutOfProcessNugetPackageHandlerVersion>
 
     <!-- Location of main folders-->
-    <AspNetCoreSetupRoot>$(RepositoryRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
+    <AspNetCoreSetupRoot>$(RepoRoot)src\Installers\Windows\AspNetCoreModule-Setup\</AspNetCoreSetupRoot>
     <IIS-Setup>$(AspNetCoreSetupRoot)IIS-Setup\</IIS-Setup>
     <IIS-Common>$(IIS-Setup)IIS-Common\</IIS-Common>
     <ANCMBuildDirectory>$(AspNetCoreSetupRoot)build\</ANCMBuildDirectory>
 
     <!-- Variables used by ANCM wxs projects. -->
 
-    <_ServerIISBasePath>$(RepositoryRoot)\src\Servers\IIS\</_ServerIISBasePath>
+    <_ServerIISBasePath>$(RepoRoot)\src\Servers\IIS\</_ServerIISBasePath>
     <DefineConstants>BLDVERMAJOR=$(BLDVERMAJOR);BLDVERMINOR=$(BLDVERMINOR);BLDNUMMAJOR=$(BLDNUMMAJOR);BLDNUMMINOR=$(BLDNUMMINOR);$(DefineConstants)</DefineConstants>
     <DefineConstants>ANCMMsiVersion=$(ANCMMsiVersion);ANCMFolderVersion=$(ANCMFolderVersion);ANCMOutOfProcessNugetPackageHandlerVersion=$(ANCMOutOfProcessNugetPackageHandlerVersion);$(DefineConstants)</DefineConstants>
     <DefineConstants>

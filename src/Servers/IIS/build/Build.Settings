@@ -5,8 +5,6 @@
      <Configuration Condition="'$(Configuration)'==''">Debug</Configuration>
      <Platform Condition="'$(Platform)' == ''">Win32</Platform>
      <PlatformToolset>v142</PlatformToolset>
-     <OutputPath Condition="'$(OutputPath)' == ''">$(MSBuildProjectDirectory)\bin\$(Configuration)\$(Platform)\</OutputPath>
-     <OutDir>$(OutputPath)</OutDir>
      <AspNetCoreModuleTargetName>aspnetcore</AspNetCoreModuleTargetName>
    </PropertyGroup>
 

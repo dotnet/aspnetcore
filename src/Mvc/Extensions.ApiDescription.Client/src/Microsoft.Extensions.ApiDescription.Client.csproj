@@ -33,6 +33,7 @@
       <NuspecProperties>
         id=$(PackageId);
         authors=$(Authors);
+        baseOutputPath=$(BaseOutputPath);
         configuration=$(Configuration);
         copyright=$(Copyright);
         description=$(PackageDescription);

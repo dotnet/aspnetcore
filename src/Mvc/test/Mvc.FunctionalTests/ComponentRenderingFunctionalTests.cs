@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/components");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent("\n<p>Hello world!</p>", "Greetings", content);
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/components");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent("\n<p>Hello world!</p>", "Greetings", content);
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/components/routable");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent("\nRouter component\n<p>Routed successfully</p>", "Routing", content);
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/components/routable");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent("\nRouter component\n<p>Routed successfully</p>", "Routing", content);
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/components/false");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent("<p>Hello world!</p>", "Greetings", content, unwrap: true);
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/components/routable/false");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent("Router component\n<p>Routed successfully</p>", "Routing", content, unwrap: true);
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await client.GetAsync("http://localhost/components");
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            await response.AssertStatusCodeAsync(HttpStatusCode.OK);
             var content = await response.Content.ReadAsStringAsync();
 
             AssertComponent(expectedHtml, "FetchData", content);

@@ -71,6 +71,7 @@ namespace CodeGenerator
                 "IHttpRequestLifetimeFeature",
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
+                "IHttpMinRequestBodyDataRateFeature",
                 "IHttpBodyControlFeature",
                 "IHttpResponseStartFeature",
                 "IRouteValuesFeature",

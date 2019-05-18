@@ -10,23 +10,6 @@
     <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup>
-    <HelixProjectPlatform Remove="Linux;OSX" />
-    <!-- Remove all default platforms for full IIS -->
-    <HelixProjectPlatform Condition="'$(IsIISTest)' == 'true'" Remove="@(HelixProjectPlatform)" />
-
-    <HelixProjectTargetQueue Condition="'$(IsIISTest)' == 'true'" Include="Windows.10.Amd64.EnterpriseRS3.ASPNET.Open" />
-
-    <HelixContent Include="..\..\..\tools\update_schema.ps1" />
-    <HelixContent Include="..\..\..\tools\InstallIISFeatures.ps1" />
-    <HelixContent Include="..\..\..\tools\UpdateIISExpressCertificate.ps1" />
-    <HelixContent Include="..\..\..\AspNetCoreModuleV2\AspNetCore\aspnetcore_schema_v2.xml" />
-
-    <HelixPreCommand Condition="'$(IsIISTest)' == 'true'" Include="call RunPowershell.cmd InstallIISFeatures.ps1" />
-    <HelixPreCommand Include="call RunPowershell.cmd update_schema.ps1" />
-    <HelixPreCommand Include="call RunPowershell.cmd UpdateIISExpressCertificate.ps1" />
-  </ItemGroup>
-
   <Target Name="BuildAssets" AfterTargets="Build">
     <MSBuild Projects="@(ProjectReference)" Targets="PublishTestsAssets" SkipNonexistentTargets="true" BuildInParallel="True">
       <Output TaskParameter="TargetOutputs" ItemName="PublishedTestAsset" />

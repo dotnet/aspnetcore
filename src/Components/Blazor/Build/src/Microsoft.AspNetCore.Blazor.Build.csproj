@@ -39,7 +39,7 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Condition="'$(BuildNodeJS)' != 'false'" Include="$(RepositoryRoot)src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Condition="'$(BuildNodeJS)' != 'false'" Include="$(RepoRoot)src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj" ReferenceOutputAssembly="false" />
     <Reference Include="Microsoft.AspNetCore.Components" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Microsoft.Extensions.FileProviders.Composite" />

@@ -14,7 +14,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{16
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BasicWebSite", "test\WebSites\BasicWebSite\BasicWebSite.csproj", "{34DF1487-12C6-476C-BE0A-F31DF1939AE5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RoutingWebSite", "test\WebSites\RoutingWebSite\RoutingWebSite.csproj", "{42CDBF4A-E238-4C0F-A416-44588363EB4C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Mvc.RoutingWebSite", "test\WebSites\RoutingWebSite\Mvc.RoutingWebSite.csproj", "{42CDBF4A-E238-4C0F-A416-44588363EB4C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorWebSite", "test\WebSites\RazorWebSite\RazorWebSite.csproj", "{B07CAF59-11ED-40E3-A5DB-E1178F84FA78}"
 EndProject

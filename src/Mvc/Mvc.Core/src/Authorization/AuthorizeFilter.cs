@@ -8,7 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
-using Microsoft.AspNetCore.Http.Endpoints;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             }
 
             // When doing endpoint routing, MVC does not add AllowAnonymousFilters for AllowAnonymousAttributes that
-            // were discovered on controllers and actions. To maintain compat with 2.x, 
+            // were discovered on controllers and actions. To maintain compat with 2.x,
             // we'll check for the presence of IAllowAnonymous in endpoint metadata.
             var endpoint = context.HttpContext.GetEndpoint();
             if (endpoint?.Metadata?.GetMetadata<IAllowAnonymous>() != null)

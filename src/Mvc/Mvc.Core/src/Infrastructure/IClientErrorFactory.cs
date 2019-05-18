@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/>.</param>
         /// <param name="clientError">The <see cref="IClientErrorActionResult"/>.</param>
-        /// <returns>THe <see cref="IActionResult"/> that would be returned to the client.</returns>
+        /// <returns>The <see cref="IActionResult"/> that would be returned to the client.</returns>
         IActionResult GetClientError(ActionContext actionContext, IClientErrorActionResult clientError);
     }
 }

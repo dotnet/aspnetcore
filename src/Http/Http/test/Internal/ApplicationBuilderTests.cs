@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Builder.Internal
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Builder.Internal
             var expected =
                 "The request reached the end of the pipeline without executing the endpoint: 'Test endpoint'. " +
                 "Please register the EndpointMiddleware using 'IApplicationBuilder.UseEndpoints(...)' if " +
-                "using routing, or 'IApplicationBuilder.UseEndpointExecutor()' if not using routing.";
+                "using routing.";
             Assert.Equal(expected, ex.Message);
             Assert.False(endpointCalled);
         }

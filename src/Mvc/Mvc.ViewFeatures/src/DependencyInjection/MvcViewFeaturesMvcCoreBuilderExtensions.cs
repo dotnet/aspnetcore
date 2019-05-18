@@ -5,6 +5,7 @@ using System;
 using System.Buffers;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
@@ -207,6 +208,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddScoped<StaticComponentRenderer>();
             services.TryAddScoped<IUriHelper, HttpUriHelper>();
             services.TryAddScoped<IJSRuntime, UnsupportedJavaScriptRuntime>();
+            services.TryAddScoped<IComponentContext, UnsupportedComponentContext>();
+            services.TryAddScoped<INavigationInterception, UnsupportedNavigationInterception>();
 
             services.TryAddTransient<ControllerSaveTempDataPropertyFilter>();
 

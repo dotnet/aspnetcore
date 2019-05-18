@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 return Task.FromResult(new AuthorizationPolicy(requirements, new string[] { }));
             }
 
-            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+            public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
             {
                 return Task.FromResult<AuthorizationPolicy>(null);
             }

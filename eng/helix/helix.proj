@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.DotNet.Helix.Sdk" DefaultTargets="Test">
 
-  <Import Project="$(RepositoryRoot)\eng\targets\Helix.Common.props" />
-  <Import Project="$(RepositoryRoot)\build\repo.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\targets\Helix.Common.props" />
+  <Import Project="$(MSBuildThisFileDirectory)..\..\build\repo.props" />
 
   <ItemGroup>
     <HelixTargetQueue Include="@(HelixAvailableTargetQueue)" />
@@ -9,16 +9,27 @@
 
   <PropertyGroup>
     <HelixSource>pr/aspnet/aspnetcore</HelixSource>
-    <HelixType>ci</HelixType>
     <HelixBuild>private-$(USERNAME)</HelixBuild>
     <HelixBuild Condition=" '$(USERNAME)' == '' ">private-$(USER)</HelixBuild>
-    <HelixBuild Condition=" '$(CI)' == 'true' ">$(BUILD_BUILDNUMBER)</HelixBuild>
-    <WaitForWorkItemCompletion Condition=" '$(CI)' == 'true' ">false</WaitForWorkItemCompletion>
-    <FailOnMissionControlTestFailure>false</FailOnMissionControlTestFailure>
-    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <IsExternal>true</IsExternal>
-    <Creator>aspnetcore</Creator>
     <SkipInvalidConfigurations>true</SkipInvalidConfigurations>
+    <MaxRetryCount Condition="'$(MaxRetryCount)' == ''">2</MaxRetryCount>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(CI)' == 'true' ">
+    <HelixType>ci</HelixType>
+    <Creator>aspnetcore</Creator>
+    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
+    <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
+    <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(CI)' != 'true' ">
+    <HelixType>dev</HelixType>
+    <Creator>$(USERNAME)</Creator>
+    <Creator Condition="'$(USERNAME)' == ''">$(USER)</Creator>
+    <HelixBuild>$([System.DateTime]::Now.ToString('yyyyMMdd HH:mm'))</HelixBuild>
   </PropertyGroup>
 
   <Target Name="Gather" BeforeTargets="Build">

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// that can be propagated.
         /// </summary>
         /// <remarks>
-        /// The keys of <see cref="Headers"/> correspond to <see cref="HeaderPropagationEntry.OutboundHeaderName"/>.
+        /// The keys of <see cref="Headers"/> correspond to <see cref="HeaderPropagationEntry.CapturedHeaderName"/>.
         /// </remarks>
         public IDictionary<string, StringValues> Headers
         {

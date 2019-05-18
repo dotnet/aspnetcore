@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var scores = new int[] { };
             var candidateSet = CreateCandidateSet(endpoints, scores);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, context, candidateSet);
+            await selector.SelectAsync(httpContext, candidateSet);
 
             // Assert
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -42,14 +42,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet[0].Values = new RouteValueDictionary();
             candidateSet.SetValidity(0, false);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, context, candidateSet);
+            await selector.SelectAsync(httpContext, candidateSet);
 
             // Assert
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -63,14 +63,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet[0].Values = new RouteValueDictionary();
             candidateSet.SetValidity(0, true);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, context, candidateSet);
+            await selector.SelectAsync(httpContext, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[0], context.Endpoint);
+            Assert.Same(endpoints[0], httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -84,14 +84,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet.SetValidity(0, false);
             candidateSet.SetValidity(1, true);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, context, candidateSet);
+            await selector.SelectAsync(httpContext, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[1], context.Endpoint);
+            Assert.Same(endpoints[1], httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -106,14 +106,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet.SetValidity(1, true);
             candidateSet.SetValidity(2, true);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, context, candidateSet);
+            await selector.SelectAsync(httpContext, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[1], context.Endpoint);
+            Assert.Same(endpoints[1], httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -137,14 +137,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet.SetValidity(3, false);
             candidateSet.SetValidity(4, true);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            await selector.SelectAsync(httpContext, context, candidateSet);
+            await selector.SelectAsync(httpContext, candidateSet);
 
             // Assert
-            Assert.Same(endpoints[4], context.Endpoint);
+            Assert.Same(endpoints[4], httpContext.GetEndpoint());
         }
 
         [Fact]
@@ -159,23 +159,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
             candidateSet.SetValidity(1, true);
             candidateSet.SetValidity(2, true);
 
-            var (httpContext, context) = CreateContext();
+            var httpContext = CreateContext();
             var selector = CreateSelector();
 
             // Act
-            var ex = await Assert.ThrowsAsync<AmbiguousMatchException>(() => selector.SelectAsync(httpContext, context, candidateSet));
+            var ex = await Assert.ThrowsAsync<AmbiguousMatchException>(() => selector.SelectAsync(httpContext, candidateSet));
 
             // Assert
             Assert.Equal(
 @"The request matched multiple endpoints. Matches: " + Environment.NewLine + Environment.NewLine +
 "test: /test2" + Environment.NewLine + "test: /test3", ex.Message);
-            Assert.Null(context.Endpoint);
+            Assert.Null(httpContext.GetEndpoint());
         }
 
-        private static (HttpContext httpContext, EndpointSelectorContext context) CreateContext()
+        private static HttpContext CreateContext()
         {
-            var httpContext = new DefaultHttpContext();
-            return (httpContext, new EndpointSelectorContext(httpContext));
+            return new DefaultHttpContext();
         }
 
         private static RouteEndpoint CreateEndpoint(string template)

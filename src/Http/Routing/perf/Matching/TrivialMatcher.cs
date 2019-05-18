@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _candidates = new Candidate[] { new Candidate(endpoint), };
         }
 
-        public sealed override Task MatchAsync(HttpContext httpContext, EndpointSelectorContext context)
+        public sealed override Task MatchAsync(HttpContext httpContext)
         {
             if (httpContext == null)
             {
@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var path = httpContext.Request.Path.Value;
             if (string.Equals(_endpoint.RoutePattern.RawText, path, StringComparison.OrdinalIgnoreCase))
             {
-                context.Endpoint = _endpoint;
-                context.RouteValues = new RouteValueDictionary();
+                httpContext.SetEndpoint(_endpoint);
+                httpContext.Request.RouteValues = new RouteValueDictionary();
             }
 
             return Task.CompletedTask;

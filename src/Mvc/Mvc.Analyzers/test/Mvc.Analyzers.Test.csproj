@@ -4,8 +4,13 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <RootNamespace>Microsoft.AspNetCore.Mvc.Analyzers</RootNamespace>
-    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->	
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <!-- https://github.com/aspnet/AspNetCore/issues/6549 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+    <BaseOutputPath />
+    <OutputPath />
+
    </PropertyGroup>
 
   <ItemGroup>

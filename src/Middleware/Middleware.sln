@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{A86E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EchoApp", "WebSockets\samples\EchoApp\EchoApp.csproj", "{0792C20B-1D18-4D7C-9C0F-A6F45A0F378E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestServer", "WebSockets\samples\TestServer\TestServer.csproj", "{4E5F5FCC-172C-44D9-BEA0-39098A79CD0B}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSockets.TestServer", "WebSockets\samples\TestServer\WebSockets.TestServer.csproj", "{4E5F5FCC-172C-44D9-BEA0-39098A79CD0B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebSockets", "WebSockets\src\Microsoft.AspNetCore.WebSockets.csproj", "{BECAA6A1-1AA4-415E-ADF3-07C103333826}"
 EndProject
@@ -245,7 +245,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Crypto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection.Abstractions", "..\DataProtection\Abstractions\src\Microsoft.AspNetCore.DataProtection.Abstractions.csproj", "{7343B4E4-C5A2-49E2-B431-4D1E6A26E424}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "CORS\test\FunctionalTests\FunctionalTests.csproj", "{E025D98E-BD85-474A-98A9-E7F44F392F8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CORS.FunctionalTests", "CORS\test\FunctionalTests\CORS.FunctionalTests.csproj", "{E025D98E-BD85-474A-98A9-E7F44F392F8E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleDestination", "CORS\samples\SampleDestination\SampleDestination.csproj", "{52CDD110-77DD-4C4D-8C72-4570F6EF20DD}"
 EndProject
@@ -280,6 +280,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{179A159B-87EA-4353-BE92-4FB6CC05BC7D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HeaderPropagationSample", "HeaderPropagation\samples\HeaderPropagationSample\HeaderPropagationSample.csproj", "{CDE2E736-A034-4748-98C4-0DEDAAC8063D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.IIS", "..\Servers\IIS\IIS\src\Microsoft.AspNetCore.Server.IIS.csproj", "{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1527,6 +1529,18 @@ Global
 		{CDE2E736-A034-4748-98C4-0DEDAAC8063D}.Release|x64.Build.0 = Release|Any CPU
 		{CDE2E736-A034-4748-98C4-0DEDAAC8063D}.Release|x86.ActiveCfg = Release|Any CPU
 		{CDE2E736-A034-4748-98C4-0DEDAAC8063D}.Release|x86.Build.0 = Release|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Debug|x64.Build.0 = Debug|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Debug|x86.Build.0 = Debug|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Release|x64.ActiveCfg = Release|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Release|x64.Build.0 = Release|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Release|x86.ActiveCfg = Release|Any CPU
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1648,6 +1662,7 @@ Global
 		{8CDBD9C6-96D8-4987-AFCD-D248FBC7F02D} = {0437D207-864E-429C-92B4-9D08D290188C}
 		{179A159B-87EA-4353-BE92-4FB6CC05BC7D} = {0437D207-864E-429C-92B4-9D08D290188C}
 		{CDE2E736-A034-4748-98C4-0DEDAAC8063D} = {179A159B-87EA-4353-BE92-4FB6CC05BC7D}
+		{B9BE1823-B555-4AAB-AEBC-C8C3F48C8861} = {ACA6DDB9-7592-47CE-A740-D15BF307E9E0}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {83786312-A93B-4BB4-AB06-7C6913A59AFA}

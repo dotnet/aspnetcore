@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return false;
         }
 
-        public Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates)
+        public Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
             if (httpContext == null)
             {

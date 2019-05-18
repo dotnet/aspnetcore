@@ -17,22 +17,24 @@ namespace Microsoft.AspNetCore.TestHost
     internal class ResponseStream : Stream
     {
         private bool _complete;
+        private bool _readerComplete;
         private bool _aborted;
         private Exception _abortException;
-        private SemaphoreSlim _writeLock;
-
-        private Func<Task> _onFirstWriteAsync;
         private bool _firstWrite;
-        private Action _abortRequest;
-        private Func<bool> _allowSynchronousIO;
 
-        private Pipe _pipe = new Pipe();
+        private readonly SemaphoreSlim _writeLock;
+        private readonly Func<Task> _onFirstWriteAsync;
+        private readonly Action _abortRequest;
+        private readonly Func<bool> _allowSynchronousIO;
+        private readonly Action _readComplete;
+        private readonly Pipe _pipe = new Pipe();
 
-        internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest, Func<bool> allowSynchronousIO)
+        internal ResponseStream(Func<Task> onFirstWriteAsync, Action abortRequest, Func<bool> allowSynchronousIO, Action readComplete)
         {
             _onFirstWriteAsync = onFirstWriteAsync ?? throw new ArgumentNullException(nameof(onFirstWriteAsync));
             _abortRequest = abortRequest ?? throw new ArgumentNullException(nameof(abortRequest));
             _allowSynchronousIO = allowSynchronousIO ?? throw new ArgumentNullException(nameof(allowSynchronousIO));
+            _readComplete = readComplete;
             _firstWrite = true;
             _writeLock = new SemaphoreSlim(1, 1);
         }
@@ -108,6 +110,12 @@ namespace Microsoft.AspNetCore.TestHost
         {
             VerifyBuffer(buffer, offset, count, allowEmpty: false);
             CheckAborted();
+
+            if (_readerComplete)
+            {
+                return 0;
+            }
+
             var registration = cancellationToken.Register(Cancel);
             try
             {
@@ -116,6 +124,8 @@ namespace Microsoft.AspNetCore.TestHost
                 if (result.Buffer.IsEmpty && result.IsCompleted)
                 {
                     _pipe.Reader.Complete();
+                    _readComplete();
+                    _readerComplete = true;
                     return 0;
                 }
 

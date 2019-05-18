@@ -46,12 +46,12 @@ namespace Microsoft.AspNetCore.HeaderPropagation
 
                 // We intentionally process entries in order, and allow earlier entries to
                 // take precedence over later entries when they have the same output name.
-                if (!headers.ContainsKey(entry.OutboundHeaderName))
+                if (!headers.ContainsKey(entry.CapturedHeaderName))
                 {
                     var value = GetValue(context, entry);
                     if (!StringValues.IsNullOrEmpty(value))
                     {
-                        headers.Add(entry.OutboundHeaderName, value);
+                        headers.Add(entry.CapturedHeaderName, value);
                     }
                 }
             }

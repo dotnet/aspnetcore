@@ -13,11 +13,6 @@
     <Content Include="$(KestrelRoot)Core\src\Internal\Http\HttpProtocol.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelRoot)Core\src\Internal\Infrastructure\HttpUtilities.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="$(KestrelRoot)Transport.Abstractions\src\Internal\TransportConnection.Generated.cs" LinkBase="shared\GeneratedContent" CopyToOutputDirectory="PreserveNewest" />
-
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>RepositoryRoot</_Parameter1>
-      <_Parameter2>$(RepositoryRoot)</_Parameter2>
-    </AssemblyAttribute>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">

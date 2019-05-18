@@ -5,6 +5,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "build": "yarn run build:debug && yarn run build:production",
     "build:debug": "cd src && webpack --mode development --config ./webpack.config.js",
     "build:production": "cd src && webpack --mode production --config ./webpack.config.js",
     "test": "jest"

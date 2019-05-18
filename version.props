@@ -17,10 +17,10 @@
     <AspNetCoreModuleVersionRevision>$(AspNetCorePatchVersion)</AspNetCoreModuleVersionRevision>
 
     <OfficialBuildId Condition="'$(OfficialBuildId)' == ''">$(BUILD_BUILDNUMBER)</OfficialBuildId>
-    <OfficialBuildId Condition="'$(OfficialBuildId)' == '' AND '$(IsOfficialBuild)' == 'true'">$([System.DateTime]::Now.ToString('yyyyMMdd')).1</OfficialBuildId>
+    <OfficialBuild Condition="'$(OfficialBuildId)' != '' AND '$(BUILD_REASON)' != 'PullRequest'">true</OfficialBuild>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(OfficialBuildId)' != '' ">
+  <PropertyGroup Condition=" '$(OfficialBuild)' == 'true' ">
     <!-- This *mostly*  implements core versioning. Spec: https://github.com/dotnet/arcade/blob/master/Documentation/CorePackages/Versioning.md -->
     <_BuildNumber>$(OfficialBuildId)</_BuildNumber>
 
@@ -40,15 +40,17 @@
     <BuildNumberSuffix>$(_BuildNumberShortDate)-$(VersionSuffixBuildOfTheDayPadded)</BuildNumberSuffix>
 
     <FileRevisionVersion>$(_BuildNumberShortDate)</FileRevisionVersion>
+    <VersionSuffix>$(PreReleaseLabel)-$(BuildNumberSuffix)</VersionSuffix>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(OfficialBuildId)' == '' ">
-    <BuildNumberSuffix>t000</BuildNumberSuffix>
+  <PropertyGroup Condition=" '$(OfficialBuild)' != 'true' ">
+    <BuildNumberSuffix>0</BuildNumberSuffix>
     <FileRevisionVersion>42424</FileRevisionVersion>
+    <VersionSuffix Condition="'$(CI)' != 'true'">dev</VersionSuffix>
+    <VersionSuffix Condition="'$(CI)' == 'true'">ci</VersionSuffix>
   </PropertyGroup>
 
    <PropertyGroup>
-    <VersionSuffix>$(PreReleaseLabel)-$(BuildNumberSuffix)</VersionSuffix>
     <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(BuildNumberSuffix)</BrandingVersionSuffix>
 
     <!-- Servicing builds have different characteristics for the way dependencies, baselines, and versions are handled. -->

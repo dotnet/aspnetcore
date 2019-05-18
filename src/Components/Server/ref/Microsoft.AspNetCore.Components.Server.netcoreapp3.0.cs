@@ -5,11 +5,12 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class ComponentEndpointConventionBuilderExtensions
     {
-        public static TBuilder AddComponent<TBuilder>(this TBuilder builder, System.Type componentType, string selector) where TBuilder : Microsoft.AspNetCore.SignalR.IHubEndpointConventionBuilder { throw null; }
+        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder AddComponent(this Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder builder, System.Type componentType, string selector) { throw null; }
     }
     public static partial class ComponentEndpointRouteBuilderExtensions
     {
         public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints) { throw null; }
+        public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type type, string selector) { throw null; }
         public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, System.Type componentType, string selector, string path) { throw null; }
         public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
         public static Microsoft.AspNetCore.Components.Server.ComponentEndpointConventionBuilder MapBlazorHub<TComponent>(this Microsoft.AspNetCore.Routing.IEndpointRouteBuilder endpoints, string selector, string path) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
@@ -34,17 +35,6 @@ namespace Microsoft.AspNetCore.Components.Server
     {
         internal ComponentEndpointConventionBuilder() { }
         public void Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder> convention) { }
-    }
-    public sealed partial class ComponentHub : Microsoft.AspNetCore.SignalR.Hub
-    {
-        public ComponentHub(System.IServiceProvider services, Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Components.Server.ComponentHub> logger) { }
-        public static Microsoft.AspNetCore.Http.PathString DefaultPath { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public void BeginInvokeDotNetFromJS(string callId, string assemblyName, string methodIdentifier, long dotNetObjectId, string argsJson) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task<bool> ConnectCircuit(string circuitId) { throw null; }
-        public override System.Threading.Tasks.Task OnDisconnectedAsync(System.Exception exception) { throw null; }
-        public void OnRenderCompleted(long renderId, string errorMessageOrNull) { }
-        public string StartCircuit(string uriAbsolute, string baseUriAbsolute) { throw null; }
     }
     public partial class ComponentPrerenderingContext
     {
@@ -93,13 +83,21 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public override void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
         protected override void NavigateToCore(string uri, bool forceLoad) { }
         [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
-        public static void NotifyLocationChanged(string uriAbsolute) { }
+        public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink) { }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class ComponentServiceCollectionExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder AddServerSideBlazor(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
+    }
+    public partial interface IServerSideBlazorBuilder
+    {
+        Microsoft.Extensions.DependencyInjection.IServiceCollection Services { get; }
+    }
+    public static partial class ServerSizeBlazorBuilderExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder AddHubOptions(this Microsoft.Extensions.DependencyInjection.IServerSideBlazorBuilder builder, System.Action<Microsoft.AspNetCore.SignalR.HubOptions> configure) { throw null; }
     }
 }

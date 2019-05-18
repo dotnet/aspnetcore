@@ -24,13 +24,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "contoso.com", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com");
+            var httpContext = CreateContext("/hello", "contoso.com");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -40,13 +40,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "contoso.com:8080", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com:8080");
+            var httpContext = CreateContext("/hello", "contoso.com:8080");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -56,13 +56,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "æon.contoso.com", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "æon.contoso.com");
+            var httpContext = CreateContext("/hello", "æon.contoso.com");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -72,13 +72,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "contoso.com:8080", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com:1111");
+            var httpContext = CreateContext("/hello", "contoso.com:1111");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertNotMatch(context, httpContext);
+            MatcherAssert.AssertNotMatch(httpContext);
         }
 
         [Fact]
@@ -88,13 +88,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "contoso.com:8080", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "www.contoso.com:8080");
+            var httpContext = CreateContext("/hello", "www.contoso.com:8080");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertNotMatch(context, httpContext);
+            MatcherAssert.AssertNotMatch(httpContext);
         }
 
         [Fact]
@@ -104,13 +104,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "æon.contoso.com:8080");
+            var httpContext = CreateContext("/hello", "æon.contoso.com:8080");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -120,13 +120,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*.contoso.com:8080", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "www.contoso.com:8080");
+            var httpContext = CreateContext("/hello", "www.contoso.com:8080");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -136,13 +136,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "Contoso.COM", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com");
+            var httpContext = CreateContext("/hello", "contoso.com");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -152,13 +152,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "contoso.com:80", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com", "http");
+            var httpContext = CreateContext("/hello", "contoso.com", "http");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -168,13 +168,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "contoso.com:443", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com", "https");
+            var httpContext = CreateContext("/hello", "contoso.com", "https");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -184,13 +184,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "contoso.com:443", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", null, "https");
+            var httpContext = CreateContext("/hello", null, "https");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertNotMatch(context, httpContext);
+            MatcherAssert.AssertNotMatch(httpContext);
         }
 
         [Fact]
@@ -200,13 +200,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*:443", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", null, "https");
+            var httpContext = CreateContext("/hello", null, "https");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -216,13 +216,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello");
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com");
+            var httpContext = CreateContext("/hello", "contoso.com");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -232,13 +232,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com");
+            var httpContext = CreateContext("/hello", "contoso.com");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -248,13 +248,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com");
+            var httpContext = CreateContext("/hello", "contoso.com");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         [Fact]
@@ -264,13 +264,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var endpoint = CreateEndpoint("/hello", hosts: new string[] { "*:*", });
 
             var matcher = CreateMatcher(endpoint);
-            var (httpContext, context) = CreateContext("/hello", "contoso.com");
+            var httpContext = CreateContext("/hello", "contoso.com");
 
             // Act
-            await matcher.MatchAsync(httpContext, context);
+            await matcher.MatchAsync(httpContext);
 
             // Assert
-            MatcherAssert.AssertMatch(context, httpContext, endpoint);
+            MatcherAssert.AssertMatch(httpContext, endpoint);
         }
 
         private static Matcher CreateMatcher(params RouteEndpoint[] endpoints)
@@ -290,7 +290,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return builder.Build();
         }
 
-        internal static (HttpContext httpContext, EndpointSelectorContext context) CreateContext(
+        internal static HttpContext CreateContext(
             string path,
             string host,
             string scheme = null)
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             httpContext.Request.Path = path;
             httpContext.Request.Scheme = scheme;
 
-            return (httpContext, new EndpointSelectorContext(httpContext));
+            return httpContext;
         }
 
         internal RouteEndpoint CreateEndpoint(

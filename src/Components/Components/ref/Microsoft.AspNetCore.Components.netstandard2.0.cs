@@ -3,6 +3,34 @@
 
 namespace Microsoft.AspNetCore.Components
 {
+    public partial class AuthenticationState
+    {
+        public AuthenticationState(System.Security.Claims.ClaimsPrincipal user) { }
+        public System.Security.Claims.ClaimsPrincipal User { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public delegate void AuthenticationStateChangedHandler(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task);
+    public abstract partial class AuthenticationStateProvider
+    {
+        protected AuthenticationStateProvider() { }
+        public event Microsoft.AspNetCore.Components.AuthenticationStateChangedHandler AuthenticationStateChanged { add { } remove { } }
+        public abstract System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> GetAuthenticationStateAsync();
+        protected void NotifyAuthenticationStateChanged(System.Threading.Tasks.Task<Microsoft.AspNetCore.Components.AuthenticationState> task) { }
+    }
+    public partial class AuthorizeView : Microsoft.AspNetCore.Components.ComponentBase
+    {
+        public AuthorizeView() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> Authorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment Authorizing { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.AuthenticationState> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment NotAuthorized { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        [System.Diagnostics.DebuggerStepThroughAttribute]
+        protected override System.Threading.Tasks.Task OnParametersSetAsync() { throw null; }
+    }
     [Microsoft.AspNetCore.Components.BindElementAttribute("select", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindElementAttribute("textarea", null, "value", "onchange")]
     [Microsoft.AspNetCore.Components.BindInputElementAttribute("checkbox", null, "checked", "onchange")]
@@ -56,6 +84,15 @@ namespace Microsoft.AspNetCore.Components
         public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<float> setter, float existingValue) { throw null; }
         public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler(System.Action<string> setter, string existingValue) { throw null; }
         public static System.Action<Microsoft.AspNetCore.Components.UIEventArgs> SetValueHandler<T>(System.Action<T> setter, T existingValue) { throw null; }
+    }
+    public partial class CascadingAuthenticationState : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
+    {
+        public CascadingAuthenticationState() { }
+        [Microsoft.AspNetCore.Components.ParameterAttribute]
+        public Microsoft.AspNetCore.Components.RenderFragment ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+        protected override void OnInit() { }
+        void System.IDisposable.Dispose() { }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
     public sealed partial class CascadingParameterAttribute : System.Attribute
@@ -330,7 +367,7 @@ namespace Microsoft.AspNetCore.Components
     }
     public partial interface IUriHelper
     {
-        event System.EventHandler<string> OnLocationChanged;
+        event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged;
         string GetAbsoluteUri();
         string GetBaseUri();
         void NavigateTo(string uri);
@@ -398,7 +435,7 @@ namespace Microsoft.AspNetCore.Components
         public System.Threading.Tasks.Task InvokeAsync(System.Func<System.Threading.Tasks.Task> workItem) { throw null; }
         public void Render(Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
     }
-    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=true)]
+    [System.AttributeUsageAttribute(System.AttributeTargets.Class, AllowMultiple=true, Inherited=false)]
     public partial class RouteAttribute : System.Attribute
     {
         public RouteAttribute(string template) { }
@@ -562,7 +599,7 @@ namespace Microsoft.AspNetCore.Components
     public abstract partial class UriHelperBase : Microsoft.AspNetCore.Components.IUriHelper
     {
         protected UriHelperBase() { }
-        public event System.EventHandler<string> OnLocationChanged { add { } remove { } }
+        public event System.EventHandler<Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs> OnLocationChanged { add { } remove { } }
         protected virtual void EnsureInitialized() { }
         public string GetAbsoluteUri() { throw null; }
         public virtual string GetBaseUri() { throw null; }
@@ -574,7 +611,7 @@ namespace Microsoft.AspNetCore.Components
         protected void SetAbsoluteUri(string uri) { }
         public System.Uri ToAbsoluteUri(string href) { throw null; }
         public string ToBaseRelativePath(string baseUri, string locationAbsolute) { throw null; }
-        protected void TriggerOnLocationChanged() { }
+        protected void TriggerOnLocationChanged(bool isinterceptedLink) { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Forms
@@ -710,7 +747,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         protected internal virtual void AddToRenderQueue(int componentId, Microsoft.AspNetCore.Components.RenderFragment renderFragment) { }
         protected internal int AssignRootComponentId(Microsoft.AspNetCore.Components.IComponent component) { throw null; }
         public static Microsoft.AspNetCore.Components.Rendering.IDispatcher CreateDefaultDispatcher() { throw null; }
-        public System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
+        public virtual System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
         public void Dispose() { }
         protected virtual void Dispose(bool disposing) { }
         protected abstract void HandleException(System.Exception exception);
@@ -812,6 +849,19 @@ namespace Microsoft.AspNetCore.Components.RenderTree
 }
 namespace Microsoft.AspNetCore.Components.Routing
 {
+    public partial interface INavigationInterception
+    {
+        System.Threading.Tasks.Task EnableNavigationInterceptionAsync();
+    }
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct LocationChangedEventArgs
+    {
+        private readonly object _dummy;
+        private readonly int _dummyPrimitive;
+        public LocationChangedEventArgs(string location, bool isNavigationIntercepted) { throw null; }
+        public bool IsNavigationIntercepted { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public enum NavLinkMatch
     {
         Prefix = 0,

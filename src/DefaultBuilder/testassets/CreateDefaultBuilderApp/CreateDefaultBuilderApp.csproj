@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="$(RepositoryRoot)src\Servers\IIS\build\testsite.props" />
+  <Import Project="$(RepoRoot)src\Servers\IIS\build\testsite.props" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>

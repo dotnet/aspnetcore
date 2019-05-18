@@ -9,7 +9,7 @@
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
     <ProjectReference Include="..\..\samples\Cookies\Cookies.csproj" />
     <ProjectReference Include="..\..\samples\ClaimsTransformation\ClaimsTransformation.csproj" />
     <ProjectReference Include="..\..\samples\CustomPolicyProvider\CustomPolicyProvider.csproj" />
@@ -26,16 +26,16 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="AngleSharp" />
   </ItemGroup>
-  
+
   <Target Name="PublishAssets" AfterTargets="Publish">
     <ItemGroup>
-      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\ClaimsTransformation\bin\$(Configuration)\netcoreapp3.0\ClaimsTransformation.deps.json" />
-      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Cookies\bin\$(Configuration)\netcoreapp3.0\Cookies.deps.json" />
-      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\CustomPolicyProvider\bin\$(Configuration)\netcoreapp3.0\CustomPolicyProvider.deps.json" />
-      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\DynamicSchemes\bin\$(Configuration)\netcoreapp3.0\DynamicSchemes.deps.json" />
-      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Identity.ExternalClaims\bin\$(Configuration)\netcoreapp3.0\Identity.ExternalClaims.deps.json" />
-      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\PathSchemeSelection\bin\$(Configuration)\netcoreapp3.0\PathSchemeSelection.deps.json" />
-      <_PublishFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\bin\$(Configuration)\netcoreapp3.0\StaticFilesAuth.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)ClaimsTransformation\$(Configuration)\netcoreapp3.0\ClaimsTransformation.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)Cookies\$(Configuration)\netcoreapp3.0\Cookies.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)CustomPolicyProvider\$(Configuration)\netcoreapp3.0\CustomPolicyProvider.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)DynamicSchemes\$(Configuration)\netcoreapp3.0\DynamicSchemes.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)Identity.ExternalClaims\$(Configuration)\netcoreapp3.0\Identity.ExternalClaims.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)PathSchemeSelection\$(Configuration)\netcoreapp3.0\PathSchemeSelection.deps.json" />
+      <_PublishFiles Include="$(ArtifactsBinDir)StaticFilesAuth\$(Configuration)\netcoreapp3.0\StaticFilesAuth.deps.json" />
       <_claimsWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\ClaimsTransformation\wwwroot\**\*.*" />
       <_cookiesWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\Cookies\wwwroot\**\*.*" />
       <_customProviderFiles Include="$(MSBuildThisFileDirectory)..\..\samples\CustomPolicyProvider\**\*.*" />
@@ -44,9 +44,6 @@
       <_pathWwwrootFiles Include="$(MSBuildThisFileDirectory)..\..\samples\PathSchemeSelection\wwwroot\**\*.*" />
       <_staticFiles Include="$(MSBuildThisFileDirectory)..\..\samples\StaticFilesAuth\**\*.*" />
     </ItemGroup>
-    <Copy
-      SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)" />
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)" />
@@ -76,7 +73,7 @@
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
-        Encoding="Unicode"/>      
+        Encoding="Unicode"/>
   </Target>
-  
+
 </Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>");
-            var rules = new UrlRewriteFileParser().Parse(xml);
+            var rules = new UrlRewriteFileParser().Parse(xml, false);
 
             Assert.Equal(1, rules.Count);
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>");
-            var rules = new UrlRewriteFileParser().Parse(xml);
+            var rules = new UrlRewriteFileParser().Parse(xml, false);
 
             Assert.Equal(1, rules.Count);
             var context = new RewriteContext { HttpContext = new DefaultHttpContext() };
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Rewrite.Tests.UrlRewrite
                 </rule>
                 </rules>
                 </rewrite>");
-            var rules = new UrlRewriteFileParser().Parse(xml);
+            var rules = new UrlRewriteFileParser().Parse(xml, false);
 
             Assert.Equal(1, rules.Count);
             Assert.True(rules[0].Conditions.TrackAllCaptures);

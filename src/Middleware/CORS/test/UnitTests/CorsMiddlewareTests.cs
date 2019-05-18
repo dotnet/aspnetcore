@@ -8,10 +8,10 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -566,6 +566,50 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
+        public async Task Invoke_WithCustomPolicyProviderThatReturnsAsynchronously_Works()
+        {
+            // Arrange
+            var corsService = new CorsService(Options.Create(new CorsOptions()), NullLoggerFactory.Instance);
+            var mockProvider = new Mock<ICorsPolicyProvider>();
+            var loggerFactory = NullLoggerFactory.Instance;
+            var policy = new CorsPolicyBuilder()
+                .WithOrigins(OriginUrl)
+                .WithHeaders("AllowedHeader")
+                .Build();
+            mockProvider.Setup(o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()))
+                .ReturnsAsync(policy, TimeSpan.FromMilliseconds(10));
+
+            var middleware = new CorsMiddleware(
+                Mock.Of<RequestDelegate>(),
+                corsService,
+                loggerFactory,
+                "DefaultPolicyName");
+
+            var httpContext = new DefaultHttpContext();
+            httpContext.Request.Method = "OPTIONS";
+            httpContext.Request.Headers.Add(CorsConstants.Origin, new[] { OriginUrl });
+            httpContext.Request.Headers.Add(CorsConstants.AccessControlRequestMethod, new[] { "PUT" });
+
+            // Act
+            await middleware.Invoke(httpContext, mockProvider.Object);
+
+            // Assert
+            var response = httpContext.Response;
+            Assert.Collection(
+                response.Headers.OrderBy(o => o.Key),
+                kvp =>
+                {
+                    Assert.Equal(CorsConstants.AccessControlAllowHeaders, kvp.Key);
+                    Assert.Equal("AllowedHeader", Assert.Single(kvp.Value));
+                },
+                kvp =>
+                {
+                    Assert.Equal(CorsConstants.AccessControlAllowOrigin, kvp.Key);
+                    Assert.Equal(OriginUrl, Assert.Single(kvp.Value));
+                });
+        }
+
+        [Fact]
         public async Task Invoke_HasEndpointWithNoMetadata_RunsCors()
         {
             // Arrange
@@ -718,7 +762,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         [Fact]
-        public async Task Invoke_HasEndpointWithCorsPolicyMetadata_MiddlewareHasPolicy_RunsCorsWithPolicyName()
+        public async Task Invoke_HasEndpointRequireCorsMetadata_MiddlewareHasPolicy_RunsCorsWithPolicyName()
         {
             // Arrange
             var defaultPolicy = new CorsPolicyBuilder().Build();

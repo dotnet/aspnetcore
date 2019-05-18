@@ -3,8 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {

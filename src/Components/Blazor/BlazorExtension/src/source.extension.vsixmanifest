@@ -14,9 +14,6 @@
     <Installation AllUsers="true">
          <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0,)" />
     </Installation>
-    <Dependencies>
-        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.7.2,)" />
-    </Dependencies>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />
         <Asset Type="Microsoft.VisualStudio.VsPackage"  d:Source="File" Path="Templates.pkgdef" />

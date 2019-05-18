@@ -17,7 +17,6 @@ namespace Templates.Test.SpaTemplateTest
             : base(projectFactory, browserFixture, output) { }
 
         [Fact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2422", FlakyOn.All)]
         public Task AngularTemplate_Works()
             => SpaTemplateImplAsync("angularnoauth", "angular", useLocalDb: false, usesAuth: false);
 

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public partial class HubConnectionTests
     {
-        private static HubConnection CreateHubConnection(TestConnection connection, IHubProtocol protocol = null, ILoggerFactory loggerFactory = null)
+        private static HubConnection CreateHubConnection(TestConnection connection, IHubProtocol protocol = null, ILoggerFactory loggerFactory = null, IRetryPolicy reconnectPolicy = null)
         {
             var builder = new HubConnectionBuilder();
 
@@ -25,6 +25,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             if (protocol != null)
             {
                 builder.Services.AddSingleton(protocol);
+            }
+
+            if (reconnectPolicy != null)
+            {
+                builder.WithAutomaticReconnect(reconnectPolicy);
             }
 
             return builder.Build();

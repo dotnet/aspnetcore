@@ -19,6 +19,10 @@
       return element.value;
     }
 
+    function uriHelperNavigate() {
+      Blazor.navigateTo('/subdir/some-path');
+    }
+
     (function () {
       // Load either blazor.webassembly.js or blazor.server.js depending
       // on the hash part of the URL. This is just to give a way for the

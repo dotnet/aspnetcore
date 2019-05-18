@@ -27,11 +27,6 @@
       $(RestoreSources);
       https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
     </RestoreSources>
-    <!-- Only used to fetch Microsoft.NETFramework.ReferenceAssemblies for x-plat netfx builds. -->
-    <RestoreSources Condition=" '$(OS)' != 'Windows_NT' ">
-      $(RestoreSources);
-      https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
-    </RestoreSources>
 
     <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetcli.blob.core.windows.net/dotnet/</DotNetAssetRootUrl>

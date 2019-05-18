@@ -1,14 +1,10 @@
 <Project>
-  <PropertyGroup>
-    <OutputInRepoRoot>true</OutputInRepoRoot>
-    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
-  </PropertyGroup>
-
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.GenerateFileFromTemplate" AssemblyFile="$(BuildToolsTaskAssembly)" />
 
   <PropertyGroup>
+    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
     <OutputPath>$(InstallersOutputPath)</OutputPath>
     <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
 

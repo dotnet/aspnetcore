@@ -31,10 +31,10 @@
     </ItemGroup>
 
     <ItemGroup>
-      <FileWrites Include="version.h" />
+      <FileWrites Include="$(IntDir)version.h" />
     </ItemGroup>
 
-    <WriteLinesToFile File="version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
+    <WriteLinesToFile File="$(IntDir)version.h" Lines="@(VersionHeaderContents)" OverWrite="true" WriteOnlyWhenDifferent="True" />
   </Target>
 
 </Project>

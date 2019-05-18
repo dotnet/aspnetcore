@@ -38,7 +38,7 @@ try {
             -ci:$ci `
             -sign `
             -BuildInstallers `
-            "-bl:$repoRoot/artifacts/logs/installers.msbuild.binlog" `
+            "-bl:$repoRoot/artifacts/log/installers.msbuild.binlog" `
             @msbuildargs `
             @AdditionalArgs
 }

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return false;
         }
 
-        public async Task ApplyAsync(HttpContext httpContext, EndpointSelectorContext context, CandidateSet candidates)
+        public async Task ApplyAsync(HttpContext httpContext, CandidateSet candidates)
         {
             if (httpContext == null)
             {
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                     // If there's no match this is a configuration error. We can't really check
                     // during startup that the action you configured exists.
                     throw new InvalidOperationException(
-                        "Cannot find the fallback endpoint specified by route values: " + 
+                        "Cannot find the fallback endpoint specified by route values: " +
                         "{ " + string.Join(", ", metadata.Values.Select(kvp => $"{kvp.Key}: {kvp.Value}")) + " }.");
                 }
 
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
                 var compiled = await _loader.LoadAsync(endpoints[0].Metadata.GetMetadata<PageActionDescriptor>());
                 var replacement = compiled.Endpoint;
-                
+
                 // We need to provide the route values associated with this endpoint, so that features
                 // like URL generation work.
                 var values = new RouteValueDictionary(metadata.Values);

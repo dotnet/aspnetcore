@@ -2,17 +2,13 @@
 # yarn lockfile v1
 
 
-"@aspnet/signalr-protocol-msgpack@file:../signalr-protocol-msgpack":
-  version "3.0.0-preview4-t000"
-  dependencies:
-    msgpack5 "^4.0.2"
+"@aspnet/signalr-protocol-msgpack@link:../signalr-protocol-msgpack":
+  version "0.0.0"
+  uid ""
 
-"@aspnet/signalr@file:../signalr":
-  version "3.0.0-preview4-t000"
-  dependencies:
-    eventsource "^1.0.7"
-    request "^2.88.0"
-    ws "^6.0.0"
+"@aspnet/signalr@link:../signalr":
+  version "0.0.0"
+  uid ""
 
 "@types/bluebird@*":
   version "3.5.23"
@@ -1544,10 +1540,10 @@ karma-sourcemap-loader@^0.3.7:
   dependencies:
     graceful-fs "^4.1.2"
 
-karma-summary-reporter@^1.5.0:
-  version "1.5.0"
-  resolved "https://registry.yarnpkg.com/karma-summary-reporter/-/karma-summary-reporter-1.5.0.tgz#dc570299c7074774e388e10fa5f9e58f7a45ec14"
-  integrity sha1-3FcCmccHR3TjiOEPpfnlj3pF7BQ=
+karma-summary-reporter@^1.6.0:
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/karma-summary-reporter/-/karma-summary-reporter-1.6.0.tgz#f624da357b96014a1ea3f9bb0076c6800aa2204d"
+  integrity sha512-ptd4M8NAmtzwp+iN3pI3/s0EHH1lRekAyu+1/FkkyduVW4CUwfGg9B16FLN3+UYW10maWnP5yI+yXn2zahRyQg==
   dependencies:
     chalk "^1.1.3 || 2.x"
 

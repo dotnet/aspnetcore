@@ -48,7 +48,7 @@
       is used by our build system.
     -->
     <VsixVersionPrefix>16.0</VsixVersionPrefix>
-    <VsixVersionSuffix Condition="'$(BuildNumberSuffix)'=='t000'">424242.424242</VsixVersionSuffix>
+    <VsixVersionSuffix Condition="'$(OfficialBuild)'!='true'">424242.424242</VsixVersionSuffix>
     <VsixVersionSuffix Condition="'$(VsixVersionSuffix)'==''">$(BuildNumberSuffix.Replace('-', '.'))</VsixVersionSuffix>
     <VsixVersion>$(VsixVersionPrefix).$(VsixVersionSuffix)</VsixVersion>
 
@@ -114,7 +114,7 @@
     <Content Include="..\..\..\THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true">
       <Link>Content\THIRD-PARTY-NOTICES.txt</Link>
     </Content>
-    <Content Include="$(RepositoryRoot)LICENSE.txt" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true">
+    <Content Include="$(RepoRoot)LICENSE.txt" CopyToOutputDirectory="PreserveNewest" IncludeInVSIX="true">
       <Link>Content\LICENSE.txt</Link>
     </Content>
 

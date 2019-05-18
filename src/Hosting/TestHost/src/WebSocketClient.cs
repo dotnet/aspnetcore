@@ -47,11 +47,12 @@ namespace Microsoft.AspNetCore.TestHost
         }
 
         internal bool AllowSynchronousIO { get; set; }
+        internal bool PreserveExecutionContext { get; set; }
 
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
             WebSocketFeature webSocketFeature = null;
-            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO);
+            var contextBuilder = new HttpContextBuilder(_application, AllowSynchronousIO, PreserveExecutionContext);
             contextBuilder.Configure(context =>
             {
                 var request = context.Request;

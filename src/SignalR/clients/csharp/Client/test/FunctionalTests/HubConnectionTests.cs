@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,11 +37,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             string path = null,
             HttpTransportType? transportType = null,
             IHubProtocol protocol = null,
-            ILoggerFactory loggerFactory = null)
+            ILoggerFactory loggerFactory = null,
+            bool withAutomaticReconnect = false)
         {
             var hubConnectionBuilder = new HubConnectionBuilder();
-            hubConnectionBuilder.Services.AddSingleton(protocol);
-            hubConnectionBuilder.WithLoggerFactory(loggerFactory);
+
+            if (protocol != null)
+            {
+                hubConnectionBuilder.Services.AddSingleton(protocol);
+            }
+
+            if (loggerFactory != null)
+            {
+                hubConnectionBuilder.WithLoggerFactory(loggerFactory);
+            }
+
+            if (withAutomaticReconnect)
+            {
+                hubConnectionBuilder.WithAutomaticReconnect();
+            }
 
             var delegateConnectionFactory = new DelegateConnectionFactory(
                 GetHttpConnectionFactory(url, loggerFactory, path, transportType ?? HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents),
@@ -755,6 +770,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2465", FlakyOn.All)]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
         public async Task CanCancelIAsyncEnumerableClientToServerUpload(string protocolName, HttpTransportType transportType, string path)
@@ -1614,6 +1630,195 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 }
 
                 await stopTask;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TransportTypes))]
+        public async Task CanAutomaticallyReconnect(HttpTransportType transportType)
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "ReconnectingWithError";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connection = CreateHubConnection(
+                    server.Url,
+                    path: HubPaths.First(),
+                    transportType: transportType,
+                    loggerFactory: LoggerFactory,
+                    withAutomaticReconnect: true);
+
+                try
+                {
+                    var echoMessage = "test";
+                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    connection.Reconnecting += _ =>
+                    {
+                        reconnectingTcs.SetResult(null);
+                        return Task.CompletedTask;
+                    };
+
+                    connection.Reconnected += connectionId =>
+                    {
+                        reconnectedTcs.SetResult(connectionId);
+                        return Task.CompletedTask;
+                    };
+
+
+                    await connection.StartAsync().OrTimeout();
+                    var initialConnectionId = connection.ConnectionId;
+
+                    connection.OnServerTimeout();
+
+                    await reconnectingTcs.Task.OrTimeout();
+                    var newConnectionId = await reconnectedTcs.Task.OrTimeout();
+                    Assert.NotEqual(initialConnectionId, newConnectionId);
+                    Assert.Equal(connection.ConnectionId, newConnectionId);
+
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), echoMessage).OrTimeout();
+                    Assert.Equal(echoMessage, result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanAutomaticallyReconnectAfterRedirect()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "ReconnectingWithError";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/redirect")
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                try
+                {
+                    var echoMessage = "test";
+                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    connection.Reconnecting += _ =>
+                    {
+                        reconnectingTcs.SetResult(null);
+                        return Task.CompletedTask;
+                    };
+
+                    connection.Reconnected += connectionId =>
+                    {
+                        reconnectedTcs.SetResult(connectionId);
+                        return Task.CompletedTask;
+                    };
+
+                    await connection.StartAsync().OrTimeout();
+                    var initialConnectionId = connection.ConnectionId;
+
+                    connection.OnServerTimeout();
+
+                    await reconnectingTcs.Task.OrTimeout();
+                    var newConnectionId = await reconnectedTcs.Task.OrTimeout();
+                    Assert.NotEqual(initialConnectionId, newConnectionId);
+                    Assert.Equal(connection.ConnectionId, newConnectionId);
+
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), echoMessage).OrTimeout();
+                    Assert.Equal(echoMessage, result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanAutomaticallyReconnectAfterSkippingNegotiation()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "ReconnectingWithError";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connectionBuilder = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + HubPaths.First(), HttpTransportType.WebSockets)
+                    .WithAutomaticReconnect();
+
+                connectionBuilder.Services.Configure<HttpConnectionOptions>(o =>
+                {
+                    o.SkipNegotiation = true;
+                });
+
+                var connection = connectionBuilder.Build();
+
+                try
+                {
+                    var echoMessage = "test";
+                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    connection.Reconnecting += _ =>
+                    {
+                        reconnectingTcs.SetResult(null);
+                        return Task.CompletedTask;
+                    };
+
+                    connection.Reconnected += connectionId =>
+                    {
+                        reconnectedTcs.SetResult(connectionId);
+                        return Task.CompletedTask;
+                    };
+
+                    await connection.StartAsync().OrTimeout();
+                    Assert.Null(connection.ConnectionId);
+
+                    connection.OnServerTimeout();
+
+                    await reconnectingTcs.Task.OrTimeout();
+                    var newConnectionId = await reconnectedTcs.Task.OrTimeout();
+                    Assert.Null(newConnectionId);
+                    Assert.Null(connection.ConnectionId);
+
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), echoMessage).OrTimeout();
+                    Assert.Equal(echoMessage, result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
             }
         }
 

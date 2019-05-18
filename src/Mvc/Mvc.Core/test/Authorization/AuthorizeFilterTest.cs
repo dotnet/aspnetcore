@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Endpoints;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -252,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 return Task.FromResult(policyName == "true" ? _true : _false);
             }
 
-            public Task<AuthorizationPolicy> GetRequiredPolicyAsync()
+            public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
                 => Task.FromResult<AuthorizationPolicy>(null);
         }
 

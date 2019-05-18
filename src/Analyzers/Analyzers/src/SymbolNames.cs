@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.CodeAnalysis;
-
 namespace Microsoft.AspNetCore.Analyzers
 {
     internal static class SymbolNames
@@ -21,6 +19,27 @@ namespace Microsoft.AspNetCore.Analyzers
         public static class IServiceCollection
         {
             public const string MetadataName = "Microsoft.Extensions.DependencyInjection.IServiceCollection";
+        }
+
+        public static class ComponentEndpointRouteBuilderExtensions
+        {
+            public const string MetadataName = "Microsoft.AspNetCore.Builder.ComponentEndpointRouteBuilderExtensions";
+
+            public const string MapBlazorHubMethodName = "MapBlazorHub";
+        }
+
+        public static class HubEndpointRouteBuilderExtensions
+        {
+            public const string MetadataName = "Microsoft.AspNetCore.Builder.HubEndpointRouteBuilderExtensions";
+
+            public const string MapHubMethodName = "MapHub";
+        }
+
+        public static class SignalRAppBuilderExtensions
+        {
+            public const string MetadataName = "Microsoft.AspNetCore.Builder.SignalRAppBuilderExtensions";
+
+            public const string UseSignalRMethodName = "UseSignalR";
         }
     }
 }

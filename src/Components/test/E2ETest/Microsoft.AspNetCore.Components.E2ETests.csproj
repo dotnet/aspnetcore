@@ -13,6 +13,11 @@
     <SkipTests Condition="'$(SeleniumE2ETestsSupported)' != 'true'">true</SkipTests>
     <!-- https://github.com/aspnet/AspNetCore/issues/6857 -->
     <BuildHelixPayload>false</BuildHelixPayload>
+
+    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
+    <BaseOutputPath />
+    <OutputPath />
+
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,7 +41,7 @@
     <ProjectReference Include="..\testassets\ComponentsApp.App\ComponentsApp.App.csproj" />
     <ProjectReference Include="..\testassets\ComponentsApp.Server\ComponentsApp.Server.csproj" />
     <ProjectReference Include="..\testassets\BasicTestApp\BasicTestApp.csproj" />
-    <ProjectReference Include="..\testassets\TestServer\TestServer.csproj" />
+    <ProjectReference Include="..\testassets\TestServer\Components.TestServer.csproj" />
   </ItemGroup>
 
   <!-- Shared testing infrastructure for running E2E tests using selenium -->

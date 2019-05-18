@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Blazor.Rendering
         public WebAssemblyRenderer(System.IServiceProvider serviceProvider) : base (default(System.IServiceProvider)) { }
         public System.Threading.Tasks.Task AddComponentAsync(System.Type componentType, string domElementSelector) { throw null; }
         public System.Threading.Tasks.Task AddComponentAsync<TComponent>(string domElementSelector) where TComponent : Microsoft.AspNetCore.Components.IComponent { throw null; }
+        public override System.Threading.Tasks.Task DispatchEventAsync(int eventHandlerId, Microsoft.AspNetCore.Components.UIEventArgs eventArgs) { throw null; }
         protected override void Dispose(bool disposing) { }
         protected override void HandleException(System.Exception exception) { }
         protected override System.Threading.Tasks.Task UpdateDisplayAsync(in Microsoft.AspNetCore.Components.Rendering.RenderBatch batch) { throw null; }
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         protected override void EnsureInitialized() { }
         protected override void NavigateToCore(string uri, bool forceLoad) { }
         [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
-        public static void NotifyLocationChanged(string newAbsoluteUri) { }
+        public static void NotifyLocationChanged(string newAbsoluteUri, bool isInterceptedLink) { }
     }
 }
 namespace Microsoft.AspNetCore.Components.Builder
