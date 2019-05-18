@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
         {
-            var transport = new SocketConnectionListener(endpoint, _options.IOQueueCount, _trace, _options.MemoryPoolFactory());
+            var transport = new SocketConnectionListener(endpoint, _options, _trace);
             transport.Bind();
             return new ValueTask<IConnectionListener>(transport);
         }

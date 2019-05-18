@@ -21,14 +21,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly ISocketsTrace _trace;
         private Socket _listenSocket;
         private int _schedulerIndex;
+        private readonly SocketTransportOptions _options;
 
         public EndPoint Endpoint { get; private set; }
 
         internal SocketConnectionListener(
             EndPoint endpoint,
-            int ioQueueCount,
-            ISocketsTrace trace,
-            MemoryPool<byte> memoryPool)
+            SocketTransportOptions options,
+            ISocketsTrace trace)
         {
             Debug.Assert(endpoint != null);
             Debug.Assert(endpoint is IPEndPoint);
@@ -36,7 +36,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             Endpoint = endpoint;
             _trace = trace;
-            _memoryPool = memoryPool;
+            _options = options;
+            _memoryPool = _options.MemoryPoolFactory();
+            var ioQueueCount = options.IOQueueCount;
 
             if (ioQueueCount > 0)
             {
@@ -63,19 +65,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
 
-            var ip = (IPEndPoint)Endpoint;
-
-            var listenSocket = new Socket(ip.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            var listenSocket = new Socket(Endpoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
-            if (ip.Address == IPAddress.IPv6Any)
+            if (Endpoint is IPEndPoint ip && ip.Address == IPAddress.IPv6Any)
             {
                 listenSocket.DualMode = true;
             }
 
             try
             {
-                listenSocket.Bind(ip);
+                listenSocket.Bind(Endpoint);
             }
             catch (SocketException e) when (e.SocketErrorCode == SocketError.AddressAlreadyInUse)
             {
@@ -94,9 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             try
             {
                 var acceptSocket = await _listenSocket.AcceptAsync();
-
-                // REVIEW: This doesn't work anymore, these need to be on SocketOptions
-                // acceptSocket.NoDelay = _endPointInformation.NoDelay;
+                acceptSocket.NoDelay = _options.NoDelay;
 
                 var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace);
 

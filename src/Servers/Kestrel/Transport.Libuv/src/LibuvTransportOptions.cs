@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         /// Defaults to half of <see cref="Environment.ProcessorCount" /> rounded down and clamped between 1 and 16.
         /// </remarks>
         public int ThreadCount { get; set; } = ProcessorThreadCount;
+
+        public bool NoDelay { get; set; }
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = () => KestrelMemoryPool.Create();
 

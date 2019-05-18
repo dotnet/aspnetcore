@@ -186,6 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 {
                     tasks[i] = _transports[i].DisposeAsync().AsTask();
                 }
+
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
@@ -198,12 +199,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
                 }
 
-                // ????
                 //for (int i = 0; i < _transports.Count; i++)
                 //{
                 //    tasks[i] = _transports[i].StopAsync();
                 //}
-                await Task.WhenAll(tasks).ConfigureAwait(false);
+                //await Task.WhenAll(tasks).ConfigureAwait(false);
 
                 ServiceContext.Heartbeat?.Dispose();
             }

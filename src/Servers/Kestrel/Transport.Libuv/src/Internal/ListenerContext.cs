@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
@@ -14,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     internal class ListenerContext
     {
         // REVIEW: This needs to be bounded and we need a strategy for what to do when the queue is full
-        private Channel<LibuvConnection> _acceptQueue = Channel.CreateBounded<LibuvConnection>(new BoundedChannelOptions(512)
+        private readonly Channel<LibuvConnection> _acceptQueue = Channel.CreateBounded<LibuvConnection>(new BoundedChannelOptions(512)
         {
             // REVIEW: Not sure if this is right as nothing is stopping the libuv callback today
             FullMode = BoundedChannelFullMode.Wait
@@ -43,12 +44,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             switch (EndPoint)
             {
-                case IPEndPoint ip:
+                case IPEndPoint _:
                     return AcceptTcp();
-                case UnixDomainSocketEndPoint domainSocket:
+                case UnixDomainSocketEndPoint _:
                     return AcceptPipe();
-                //case ListenType.FileHandle:
-                //    return AcceptHandle();
+                case FileHandleEndPoint _:
+                    return AcceptHandle();
                 default:
                     throw new InvalidOperationException();
             }
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-                // socket.NoDelay(EndPointInformation.NoDelay);
+                socket.NoDelay(TransportContext.Options.NoDelay);
             }
             catch
             {
@@ -127,20 +128,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _acceptQueue.Writer.Complete();
         }
 
-        // TODO: We need a new custom endpoint
-        //private UvStreamHandle AcceptHandle()
-        //{
-        //    switch (EndPointInformation.HandleType)
-        //    {
-        //        case FileHandleType.Auto:
-        //            throw new InvalidOperationException("Cannot accept on a non-specific file handle, listen should be performed first.");
-        //        case FileHandleType.Tcp:
-        //            return AcceptTcp();
-        //        case FileHandleType.Pipe:
-        //            return AcceptPipe();
-        //        default:
-        //            throw new NotSupportedException();
-        //    }
-        //}
+        private UvStreamHandle AcceptHandle()
+        {
+            switch (EndPoint)
+            {
+                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Auto:
+                    throw new InvalidOperationException("Cannot accept on a non-specific file handle, listen should be performed first.");
+                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Tcp:
+                    return AcceptTcp();
+                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Pipe:
+                    return AcceptPipe();
+                default:
+                    throw new NotSupportedException();
+            }
+        }
     }
 }

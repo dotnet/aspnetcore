@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
@@ -44,6 +45,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal ListenOptions(ulong fileHandle, FileHandleType handleType)
         {
+            Endpoint = new FileHandleEndPoint(fileHandle, handleType);
+
             Type = ListenType.FileHandle;
             FileHandle = fileHandle;
             switch (handleType)
