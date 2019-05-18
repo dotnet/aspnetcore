@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Identity
             }
             var errors = new List<IdentityError>();
             var options = manager.Options.Password;
-            if (string.IsNullOrWhiteSpace(password) || password.Length < options.RequiredLength)
+            if (string.IsNullOrWhiteSpace(password) || password.Length < options.RequireLength)
             {
-                errors.Add(Describer.PasswordTooShort(options.RequiredLength));
+                errors.Add(Describer.PasswordTooShort(options.RequireLength));
             }
             if (options.RequireNonAlphanumeric && password.All(IsLetterOrDigit))
             {
@@ -68,9 +68,9 @@ namespace Microsoft.AspNetCore.Identity
             {
                 errors.Add(Describer.PasswordRequiresUpper());
             }
-            if (options.RequiredUniqueChars >= 1 && password.Distinct().Count() < options.RequiredUniqueChars)
+            if (options.RequireUniqueChars >= 1 && password.Distinct().Count() < options.RequireUniqueChars)
             {
-                errors.Add(Describer.PasswordRequiresUniqueChars(options.RequiredUniqueChars));
+                errors.Add(Describer.PasswordRequiresUniqueChars(options.RequireUniqueChars));
             }
             return
                 Task.FromResult(errors.Count == 0

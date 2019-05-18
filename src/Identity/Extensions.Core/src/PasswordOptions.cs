@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Gets or sets the minimum length a password must be. Defaults to 6.
         /// </summary>
-        public int RequiredLength { get; set; } = 6;
+        public int RequireLength { get; set; } = 6;
 
         /// <summary>
         /// Gets or sets the minimum number of unique characters which a password must contain. Defaults to 1.
         /// </summary>
-        public int RequiredUniqueChars { get; set; } = 1;
+        public int RequireUniqueChars { get; set; } = 1;
 
         /// <summary>
         /// Gets or sets a flag indicating if passwords must contain a non-alphanumeric character. Defaults to true.

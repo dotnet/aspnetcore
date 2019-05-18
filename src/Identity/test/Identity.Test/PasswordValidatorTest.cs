@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Theory]
         [InlineData("a")]
         [InlineData("aaaaaaaaaaa")]
-        public async Task FailsWithoutRequiredNonAlphanumericTests(string input)
+        public async Task FailsWithoutRequireNonAlphanumericTests(string input)
         {
             var manager = MockHelpers.TestUserManager<PocoUser>();
             var valid = new PasswordValidator<PocoUser>();
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("@")]
         [InlineData("abcd@e!ld!kajfd")]
         [InlineData("!!!!!!")]
-        public async Task SucceedsWithRequiredNonAlphanumericTests(string input)
+        public async Task SucceedsWithRequireNonAlphanumericTests(string input)
         {
             var manager = MockHelpers.TestUserManager<PocoUser>();
             var valid = new PasswordValidator<PocoUser>();
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("a", 2)]
         [InlineData("aaaaaaaaaaa", 2)]
         [InlineData("abcdabcdabcdabcdabcdabcdabcd", 5)]
-        public async Task FailsWithoutRequiredUniqueCharsTests(string input, int uniqueChars)
+        public async Task FailsWithoutRequireUniqueCharsTests(string input, int uniqueChars)
         {
             var manager = MockHelpers.TestUserManager<PocoUser>();
             var valid = new PasswordValidator<PocoUser>();
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("!@#$%", 5)]
         [InlineData("a", 1)]
         [InlineData("this is a long password with many chars", 10)]
-        public async Task SucceedsWithRequiredUniqueCharsTests(string input, int uniqueChars)
+        public async Task SucceedsWithRequireUniqueCharsTests(string input, int uniqueChars)
         {
             var manager = MockHelpers.TestUserManager<PocoUser>();
             var valid = new PasswordValidator<PocoUser>();
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData("a_b9de", Errors.Upper)]
         [InlineData("abcd@e!ld!kaj9Fd", Errors.None)]
         [InlineData("aB1@df", Errors.None)]
-        public async Task UberMixedRequiredTests(string input, Errors errorMask)
+        public async Task UberMixedRequireTests(string input, Errors errorMask)
         {
             const string alphaError = "Passwords must have at least one non alphanumeric character.";
             const string upperError = "Passwords must have at least one uppercase ('A'-'Z').";
