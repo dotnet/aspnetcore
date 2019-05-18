@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             Libuv = uv;
             TransportContext = context;
 
-            Endpoint = endPoint;
+            EndPoint = endPoint;
         }
 
         public LibuvFunctions Libuv { get; }
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public ILibuvTrace Log => TransportContext.Log;
         public LibuvTransportOptions TransportOptions => TransportContext.Options;
 
-        public EndPoint Endpoint { get; set; }
+        public EndPoint EndPoint { get; set; }
 
         public async Task StopAsync()
         {
@@ -89,12 +89,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 {
                     var listener = new Listener(TransportContext);
                     _listeners.Add(listener);
-                    await listener.StartAsync(Endpoint, Threads[0]).ConfigureAwait(false);
+                    await listener.StartAsync(EndPoint, Threads[0]).ConfigureAwait(false);
 
                     if (listener.ListenSocket is UvTcpHandle handle)
                     {
                         // If requested port was "0", replace with assigned dynamic port.
-                        Endpoint = handle.GetSockIPEndPoint();
+                        EndPoint = handle.GetSockIPEndPoint();
                     }
                 }
                 else
@@ -104,13 +104,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     var listenerPrimary = new ListenerPrimary(TransportContext);
                     _listeners.Add(listenerPrimary);
-                    await listenerPrimary.StartAsync(pipeName, pipeMessage, Endpoint, Threads[0]).ConfigureAwait(false);
+                    await listenerPrimary.StartAsync(pipeName, pipeMessage, EndPoint, Threads[0]).ConfigureAwait(false);
 
                     foreach (var thread in Threads.Skip(1))
                     {
                         var listenerSecondary = new ListenerSecondary(TransportContext);
                         _listeners.Add(listenerSecondary);
-                        await listenerSecondary.StartAsync(pipeName, pipeMessage, Endpoint, thread).ConfigureAwait(false);
+                        await listenerSecondary.StartAsync(pipeName, pipeMessage, EndPoint, thread).ConfigureAwait(false);
                     }
                 }
                 _acceptEnumerator = AcceptConnections();

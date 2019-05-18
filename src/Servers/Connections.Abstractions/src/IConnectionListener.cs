@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Connections
 {
     public interface IConnectionListener
     {
-        EndPoint Endpoint { get; }
+        EndPoint EndPoint { get; }
 
         ValueTask<ConnectionContext> AcceptAsync();
 

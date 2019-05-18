@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     var transport = await _transportFactory.BindAsync(options.Endpoint).ConfigureAwait(false);
 
                     // Update the endpoint
-                    options.Endpoint = transport.Endpoint;
+                    options.Endpoint = transport.EndPoint;
                     _transports.Add(transport);
 
                     connectionDispatcher.StartAcceptingConnections(transport);
