@@ -8,12 +8,12 @@ module.exports = {
     ],
     globals: {
         "ts-jest": {
-            "tsConfigFile": "../tsconfig.jest.json",
-            "skipBabel": true,
+            "tsConfig": "./tsconfig.jest.json",
+            "babelConfig": true,
 
             // Needed in order to properly process the JS files
             // We run 'tsc --noEmit' to get TS diagnostics before the test instead
-            "enableTsDiagnostics": false,
+            "diagnostics": false,
         }
     },
     reporters: [
