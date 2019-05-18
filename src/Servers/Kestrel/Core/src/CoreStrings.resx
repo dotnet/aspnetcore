@@ -599,4 +599,7 @@ For more information on configuring HTTPS see https://go.microsoft.com/fwlink/?l
   <data name="StartAsyncBeforeGetMemory" xml:space="preserve">
     <value>Cannot call GetMemory() until response has started. Call HttpResponse.StartAsync() before calling GetMemory().</value>
   </data>
+  <data name="Http2MinDataRateNotSupported" xml:space="preserve">
+    <value>This feature is not supported for HTTP/2 requests except to disable it entirely by setting the rate to null.</value>
+  </data>
 </root>

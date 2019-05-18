@@ -799,6 +799,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task DATA_Received_SlowlyWhenRateLimitDisabledPerRequest_DoesNotAbortConnection()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            await InitializeConnectionAsync(context =>
+            {
+                // Completely disable rate limiting for this stream.
+                context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
+                return _readRateApplication(context);
+            });
+
+            // _helloWorldBytes is 12 bytes, and 12 bytes / 240 bytes/sec = .05 secs which is far below the grace period.
+            await StartStreamAsync(1, ReadRateRequestHeaders(_helloWorldBytes.Length), endStream: false);
+            await SendDataAsync(1, _helloWorldBytes, endStream: false);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Don't send any more data and advance just to and then past the grace period.
+            AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromTicks(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            await SendDataAsync(1, _helloWorldBytes, endStream: true);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+            _mockConnectionContext.VerifyNoOtherCalls();
+        }
+
+        [Fact]
         public async Task DATA_Received_SlowlyDueToConnectionFlowControl_DoesNotAbortConnection()
         {
             var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;

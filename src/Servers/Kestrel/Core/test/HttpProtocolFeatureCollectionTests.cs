@@ -159,12 +159,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void Http2StreamFeatureCollectionDoesNotIncludeMinRateFeatures()
+        public void Http2StreamFeatureCollectionDoesNotIncludeIHttpMinResponseDataRateFeature()
         {
-            Assert.Null(_http2Collection.Get<IHttpMinRequestBodyDataRateFeature>());
             Assert.Null(_http2Collection.Get<IHttpMinResponseDataRateFeature>());
-
-            Assert.NotNull(_collection.Get<IHttpMinRequestBodyDataRateFeature>());
             Assert.NotNull(_collection.Get<IHttpMinResponseDataRateFeature>());
         }
 
@@ -175,6 +172,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             Assert.NotNull(upgradeFeature);
             Assert.False(upgradeFeature.IsUpgradableRequest);
+        }
+
+        [Fact]
+        public void Http2StreamFeatureCollectionDoesIncludeIHttpMinRequestBodyDataRateFeature()
+        {
+            var minRateFeature = _http2Collection.Get<IHttpMinRequestBodyDataRateFeature>();
+
+            Assert.NotNull(minRateFeature);
+
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate = new MinDataRate(1, TimeSpan.FromSeconds(2)));
+
+            // You can set the MinDataRate to null though.
+            minRateFeature.MinDataRate = null;
+
+            // But you still cannot read the property;
+            Assert.Throws<NotSupportedException>(() => minRateFeature.MinDataRate);
         }
 
         private void CompareGenericGetterToIndexer()

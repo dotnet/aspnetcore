@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var mockBodyControl = new Mock<IHttpBodyControlFeature>();
             mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(() => allowSynchronousIO);
-            var mockMessageBody = new Mock<MessageBody>(null, null);
+            var mockMessageBody = new Mock<MessageBody>(null);
             mockMessageBody.Setup(m => m.ReadAsync(CancellationToken.None)).Returns(new ValueTask<ReadResult>(new ReadResult(default, isCanceled: false, isCompleted: true)));
 
             var pipeReader = new HttpRequestPipeReader();
