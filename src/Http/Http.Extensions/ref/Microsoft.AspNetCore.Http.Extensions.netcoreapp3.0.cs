@@ -3,6 +3,10 @@
 
 namespace Microsoft.AspNetCore.Http
 {
+    public static partial class ContextExtensions
+    {
+        public static string GetServerVariable(this Microsoft.AspNetCore.Http.HttpContext context, string variableName) { throw null; }
+    }
     public static partial class HeaderDictionaryTypeExtensions
     {
         public static void AppendList<T>(this Microsoft.AspNetCore.Http.IHeaderDictionary Headers, string name, System.Collections.Generic.IList<T> values) { }
