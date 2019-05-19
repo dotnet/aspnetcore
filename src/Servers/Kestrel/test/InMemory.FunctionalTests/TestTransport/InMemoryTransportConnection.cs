@@ -24,16 +24,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             MemoryPool = memoryPool;
             _logger = logger;
 
-            LocalAddress = IPAddress.Loopback;
-            RemoteAddress = IPAddress.Loopback;
+            LocalEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
+            RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
-
-        public override PipeScheduler InputWriterScheduler => PipeScheduler.ThreadPool;
-        public override PipeScheduler OutputReaderScheduler => PipeScheduler.ThreadPool;
 
         public ConnectionAbortedException AbortReason { get; private set; }
 

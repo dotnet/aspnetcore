@@ -2,43 +2,56 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Net;
+using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 {
-    internal class InMemoryTransportFactory : ITransportFactory
+    internal class InMemoryTransportFactory : IConnectionListenerFactory, IConnectionListener
     {
-        public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher dispatcher)
+        private Channel<ConnectionContext> _acceptQueue = Channel.CreateUnbounded<ConnectionContext>();
+
+        public EndPoint EndPoint { get; }
+
+        public void AddConnection(ConnectionContext connection)
         {
-            if (ConnectionDispatcher != null)
-            {
-                throw new InvalidOperationException("InMemoryTransportFactory doesn't support creating multiple endpoints");
-            }
-
-            ConnectionDispatcher = dispatcher;
-
-            return new NoopTransport();
+            _acceptQueue.Writer.TryWrite(connection);
         }
 
-        public IConnectionDispatcher ConnectionDispatcher { get; private set; }
-
-        private class NoopTransport : ITransport
+        public async ValueTask<ConnectionContext> AcceptAsync()
         {
-            public Task BindAsync()
+            if (await _acceptQueue.Reader.WaitToReadAsync())
             {
-                return Task.CompletedTask;
+                while (_acceptQueue.Reader.TryRead(out var item))
+                {
+                    return item;
+                }
             }
 
-            public Task StopAsync()
-            {
-                return Task.CompletedTask;
-            }
+            return null;
 
-            public Task UnbindAsync()
-            {
-                return Task.CompletedTask;
-            }
+        }
+
+        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
+        {
+            // The endpoint isn't important
+            return new ValueTask<IConnectionListener>(this);
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            return StopAsync(default);
+        }
+
+        public ValueTask StopAsync(CancellationToken cancellationToken = default)
+        {
+            _acceptQueue.Writer.TryComplete();
+
+            // TODO: Graceful shutdown
+            return default;
         }
     }
 }

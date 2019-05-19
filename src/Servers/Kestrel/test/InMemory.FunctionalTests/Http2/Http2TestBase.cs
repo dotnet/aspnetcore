@@ -429,8 +429,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
             // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
             // it easier to verify request frames are processed correctly immediately after sending the them.
-            var inputPipeOptions = ConnectionDispatcher.GetInputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
-            var outputPipeOptions = ConnectionDispatcher.GetOutputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
+            var inputPipeOptions = new PipeOptions(_memoryPool, PipeScheduler.ThreadPool);
+            var outputPipeOptions = new PipeOptions(_memoryPool, PipeScheduler.ThreadPool);
 
             _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
