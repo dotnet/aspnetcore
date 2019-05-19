@@ -4,6 +4,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
@@ -135,6 +136,142 @@ namespace Microsoft.AspNetCore.Components.Test
             Assert.Equal(
                 $"Object of type '{typeof(HasPropertyWithoutParameterAttribute).FullName}' has a property matching the name '{nameof(HasPropertyWithoutParameterAttribute.IntProp)}', " +
                 $"but it does not have [{nameof(ParameterAttribute)}] or [{nameof(CascadingParameterAttribute)}] applied.",
+                ex.Message);
+        }
+
+        [Fact]
+        public void SettingExtraParameterExplicitlyWorks()
+        {
+            // Arrange
+            var target = new HasExtraProperty();
+            var value = new Dictionary<string, object>();
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { nameof(HasExtraProperty.ExtraProp), value },
+            }.Build();
+
+            // Act
+            parameterCollection.SetParameterProperties(target);
+
+            // Assert
+            Assert.Same(value, target.ExtraProp);
+        }
+
+        [Fact]
+        public void SettingExtraParameterWithExtraValuesWorks()
+        {
+            // Arrange
+            var target = new HasExtraProperty();
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { nameof(HasExtraProperty.StringProp), "hi" },
+                { "test1", 123 },
+                { "test2", 456 },
+            }.Build();
+
+            // Act
+            parameterCollection.SetParameterProperties(target);
+
+            // Assert
+            Assert.Equal("hi", target.StringProp);
+            Assert.Collection(
+                target.ExtraProp.OrderBy(kvp => kvp.Key),
+                kvp =>
+                {
+                    Assert.Equal("test1", kvp.Key);
+                    Assert.Equal(123, kvp.Value);
+                },
+                kvp =>
+                {
+                    Assert.Equal("test2", kvp.Key);
+                    Assert.Equal(456, kvp.Value);
+                });
+        }
+
+        [Fact]
+        public void SettingExtraParameterExplicitlyAndImplicitly_Throws()
+        {
+            // Arrange
+            var target = new HasExtraProperty();
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { nameof(HasExtraProperty.ExtraProp), new Dictionary<string, object>() },
+                { "test1", 123 },
+                { "test2", 456 },
+            }.Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"The property '{nameof(HasExtraProperty.ExtraProp)}' on component type '{typeof(HasExtraProperty).FullName}' cannot be set explicitly when " +
+                $"also used to capture extra parameter values. Extra parameters:" + Environment.NewLine +
+                $"test1" + Environment.NewLine +
+                $"test2",
+                ex.Message);
+        }
+
+        [Fact]
+        public void SettingExtraParameterExplicitlyAndImplicitly_ReverseOrder_Throws()
+        {
+            // Arrange
+            var target = new HasExtraProperty();
+            var parameterCollection = new ParameterCollectionBuilder
+            {
+                { "test2", 456 },
+                { "test1", 123 },
+                { nameof(HasExtraProperty.ExtraProp), new Dictionary<string, object>() },
+            }.Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"The property '{nameof(HasExtraProperty.ExtraProp)}' on component type '{typeof(HasExtraProperty).FullName}' cannot be set explicitly when " +
+                $"also used to capture extra parameter values. Extra parameters:" + Environment.NewLine +
+                $"test1" + Environment.NewLine +
+                $"test2",
+                ex.Message);
+        }
+
+        [Fact]
+        public void HasDuplicateExtraParameters_Throws()
+        {
+            // Arrange
+            var target = new HasDupliateExtraProperty();
+            var parameterCollection = new ParameterCollectionBuilder().Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"Multiple properties were found on component type '{typeof(HasDupliateExtraProperty).FullName}' " +
+                $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}'. " +
+                $"Only a single property per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}'. " +
+                $"Properties:" + Environment.NewLine +
+                $"{nameof(HasDupliateExtraProperty.ExtraProp1)}" + Environment.NewLine +
+                $"{nameof(HasDupliateExtraProperty.ExtraProp2)}",
+                ex.Message);
+        }
+
+        [Fact]
+        public void HasExtraParameteterWithWrongType_Throws()
+        {
+            // Arrange
+            var target = new HasWrongTypeExtraProperty();
+            var parameterCollection = new ParameterCollectionBuilder().Build();
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => parameterCollection.SetParameterProperties(target));
+
+            // Assert
+            Assert.Equal(
+                $"The property '{nameof(HasWrongTypeExtraProperty.ExtraProp)}' on component type '{typeof(HasWrongTypeExtraProperty).FullName}' cannot be used with " +
+                $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}' because it has the wrong type. " +
+                $"The property must be assignable from 'Dictionary<string, object>'.",
                 ex.Message);
         }
 
@@ -271,6 +408,25 @@ namespace Microsoft.AspNetCore.Components.Test
         class HasParameterClashingWithInherited : HasInstanceProperties
         {
             [Parameter] new int IntProp { get; set; }
+        }
+
+        class HasExtraProperty
+        {
+            [Parameter] internal int IntProp { get; set; }
+            [Parameter] internal string StringProp { get; set; }
+            [Parameter] internal object ObjectProp { get; set; }
+            [Parameter(CaptureExtraAttributes = true)] internal IReadOnlyDictionary<string, object> ExtraProp { get; set; }
+        }
+
+        class HasDupliateExtraProperty
+        {
+            [Parameter(CaptureExtraAttributes = true)] internal Dictionary<string, object> ExtraProp1 { get; set; }
+            [Parameter(CaptureExtraAttributes = true)] internal IDictionary<string, object> ExtraProp2 { get; set; }
+        }
+
+        class HasWrongTypeExtraProperty
+        {
+            [Parameter(CaptureExtraAttributes = true)] internal KeyValuePair<string, object>[] ExtraProp { get; set; }
         }
 
         class ParameterCollectionBuilder : IEnumerable

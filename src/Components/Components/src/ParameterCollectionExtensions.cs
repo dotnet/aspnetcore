@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components.Reflection;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Components.Reflection;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -41,17 +42,68 @@ namespace Microsoft.AspNetCore.Components
                 _cachedWritersByType[targetType] = writers;
             }
 
+            // The logic is a little convoluted now that we have "Extra" parameters. We want to avoid allocations where
+            // possible.
+            //
+            // Error cases that are possible here:
+            // 1. Using an unknown parameter when there is no "Extra" parameter defined
+            // 2. Using an unknown parameter when there is an "Extra" parameter defined *AND* explicitly
+            //    providing a value for the extra parameter.
+            //
+            // The second case has to be an error because we want to allow users to set the "Extra" parameter
+            // explicitly, but we don't ever want to mutate a value the user gives us. We also don't want to
+            // implicitly copy a value the user gives us. Either one of those implementation choices would do
+            // something unexpected.
+
+            var isExtraParameterSetExplicitly = false;
+            Dictionary<string, object> extras = null;
             foreach (var parameter in parameterCollection)
             {
                 var parameterName = parameter.Name;
-                if (!writers.WritersByName.TryGetValue(parameterName, out var writerWithIndex))
+                if (string.Equals(parameterName, writers.CaptureExtraAttributesPropertyName, StringComparison.OrdinalIgnoreCase))
                 {
-                    ThrowForUnknownIncomingParameterName(targetType, parameterName);
+                    isExtraParameterSetExplicitly = true;
                 }
 
+                bool isExtraParameter;
+                if (!writers.WritersByName.TryGetValue(parameterName, out var writer) &&
+                    writers.CaptureExtraAttributesWriter == null)
+                {
+                    // Case 1: There is nowhere to put this value.
+                    ThrowForUnknownIncomingParameterName(targetType, parameterName);
+                    throw null; // Unreachable
+                }
+
+                isExtraParameter = writer == null;
+
+                if (isExtraParameter)
+                {
+                    extras ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                    extras[parameterName] = parameter.Value;
+                }
+                else
+                {
+                    SetProperty(targetType, target, writer, parameterName, parameter.Value);
+                }
+            }
+
+            if (extras != null && isExtraParameterSetExplicitly)
+            {
+                // Case 2: Conflict between "Extra" parameters.
+                ThrowForExtraParameterConflict(targetType, writers.CaptureExtraAttributesPropertyName, extras);
+                throw null; // Unreachable
+            }
+            else if (extras != null)
+            {
+                // We had some extra values, set the "Extra" property
+                SetProperty(targetType, target, writers.CaptureExtraAttributesWriter, writers.CaptureExtraAttributesPropertyName, extras);
+            }
+
+            static void SetProperty(Type targetType, object target, IPropertySetter writer, string parameterName, object value)
+            {
                 try
                 {
-                    writerWithIndex.SetValue(target, parameter.Value);
+                    writer.SetValue(target, value);
                 }
                 catch (Exception ex)
                 {
@@ -93,18 +145,49 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
-        class WritersForType
+        private static void ThrowForExtraParameterConflict(Type targetType, string parameterName, Dictionary<string, object> extras)
         {
-            public Dictionary<string, IPropertySetter> WritersByName { get; }
+            throw new InvalidOperationException(
+                $"The property '{parameterName}' on component type '{targetType.FullName}' cannot be set explicitly " +
+                $"when also used to capture extra parameter values. Extra parameters:" + Environment.NewLine +
+                string.Join(Environment.NewLine, extras.Keys.OrderBy(k => k)));
+        }
 
+        private static void ThrowForMultipleCaptureExtraAttributesParameters(Type targetType)
+        {
+            // We don't care about perf here, we want to report an accurate and useful error.
+            var propertyNames = targetType
+                .GetProperties(_bindablePropertyFlags)
+                .Where(p => p.GetCustomAttribute<ParameterAttribute>()?.CaptureExtraAttributes == true)
+                .Select(p => p.Name)
+                .OrderBy(p => p)
+                .ToArray();
+
+            throw new InvalidOperationException(
+                $"Multiple properties were found on component type '{targetType.FullName}' with " +
+                $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}'. Only a single property " +
+                $"per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}'. Properties:" + Environment.NewLine +
+                string.Join(Environment.NewLine, propertyNames));
+        }
+
+        private static void ThrowForInvalidCaptureExtraParameterType(Type targetType, PropertyInfo propertyInfo)
+        {
+            throw new InvalidOperationException(
+                $"The property '{propertyInfo.Name}' on component type '{targetType.FullName}' cannot be used " +
+                $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}' because it has the wrong type. " +
+                $"The property must be assignable from 'Dictionary<string, object>'.");
+        }
+
+        private class WritersForType
+        {
             public WritersForType(Type targetType)
             {
                 WritersByName = new Dictionary<string, IPropertySetter>(StringComparer.OrdinalIgnoreCase);
                 foreach (var propertyInfo in GetCandidateBindableProperties(targetType))
                 {
-                    var shouldCreateWriter = propertyInfo.IsDefined(typeof(ParameterAttribute))
-                        || propertyInfo.IsDefined(typeof(CascadingParameterAttribute));
-                    if (!shouldCreateWriter)
+                    var parameterAttribute = propertyInfo.GetCustomAttribute<ParameterAttribute>();
+                    var isParameter = parameterAttribute != null || propertyInfo.IsDefined(typeof(CascadingParameterAttribute));
+                    if (!isParameter)
                     {
                         continue;
                     }
@@ -120,8 +203,34 @@ namespace Microsoft.AspNetCore.Components
                     }
 
                     WritersByName.Add(propertyName, propertySetter);
+
+                    if (parameterAttribute != null && parameterAttribute.CaptureExtraAttributes)
+                    {
+                        // This is an "Extra" parameter.
+                        //
+                        // There should only be one of these.
+                        if (CaptureExtraAttributesWriter != null)
+                        {
+                            ThrowForMultipleCaptureExtraAttributesParameters(targetType);
+                        }
+
+                        // It must be able to hold a Dictionary<string, object> since that's what we create.
+                        if (!propertyInfo.PropertyType.IsAssignableFrom(typeof(Dictionary<string, object>)))
+                        {
+                            ThrowForInvalidCaptureExtraParameterType(targetType, propertyInfo);
+                        }
+
+                        CaptureExtraAttributesWriter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
+                        CaptureExtraAttributesPropertyName = propertyInfo.Name;
+                    }
                 }
             }
+
+            public Dictionary<string, IPropertySetter> WritersByName { get; }
+
+            public IPropertySetter CaptureExtraAttributesWriter { get; }
+
+            public string CaptureExtraAttributesPropertyName { get; }
         }
     }
 }
