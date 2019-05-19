@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Options.Password.RequireNonAlphanumeric = true;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
-            manager.Options.Password.RequiredLength = 0;
+            manager.Options.Password.RequireLength = 0;
             IdentityResultAssert.IsFailure(await valid.ValidateAsync(manager, null, input),
                 "Passwords must have at least one non alphanumeric character.");
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Options.Password.RequireNonAlphanumeric = true;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
-            manager.Options.Password.RequiredLength = 0;
+            manager.Options.Password.RequireLength = 0;
             IdentityResultAssert.IsSuccess(await valid.ValidateAsync(manager, null, input));
         }
 
@@ -109,8 +109,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Options.Password.RequireNonAlphanumeric = false;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
-            manager.Options.Password.RequiredLength = 0;
-            manager.Options.Password.RequiredUniqueChars = uniqueChars;
+            manager.Options.Password.RequireLength = 0;
+            manager.Options.Password.RequireUniqueChars = uniqueChars;
             IdentityResultAssert.IsFailure(await valid.ValidateAsync(manager, null, input),
                 String.Format("Passwords must use at least {0} different characters.", uniqueChars));
         }
@@ -130,8 +130,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             manager.Options.Password.RequireNonAlphanumeric = false;
             manager.Options.Password.RequireLowercase = false;
             manager.Options.Password.RequireDigit = false;
-            manager.Options.Password.RequiredLength = 0;
-            manager.Options.Password.RequiredUniqueChars = uniqueChars;
+            manager.Options.Password.RequireLength = 0;
+            manager.Options.Password.RequireUniqueChars = uniqueChars;
             IdentityResultAssert.IsSuccess(await valid.ValidateAsync(manager, null, input));
         }
 

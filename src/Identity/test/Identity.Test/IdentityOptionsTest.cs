@@ -24,8 +24,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(options.Password.RequireLowercase);
             Assert.True(options.Password.RequireNonAlphanumeric);
             Assert.True(options.Password.RequireUppercase);
-            Assert.Equal(6, options.Password.RequiredLength);
-            Assert.Equal(1, options.Password.RequiredUniqueChars);
+            Assert.Equal(6, options.Password.RequireLength);
+            Assert.Equal(1, options.Password.RequireUniqueChars);
 
             Assert.Equal("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+", options.User.AllowedUserNameCharacters);
             Assert.False(options.User.RequireUniqueEmail);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void CanCustomizeIdentityOptions()
         {
-            var services = new ServiceCollection().Configure<IdentityOptions>(options => options.Password.RequiredLength = -1);
+            var services = new ServiceCollection().Configure<IdentityOptions>(options => options.Password.RequireLength = -1);
             services.AddIdentity<PocoUser,PocoRole>();
             var serviceProvider = services.BuildServiceProvider();
 
@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(myOptions.Password.RequireDigit);
             Assert.True(myOptions.Password.RequireNonAlphanumeric);
             Assert.True(myOptions.Password.RequireUppercase);
-            Assert.Equal(1, myOptions.Password.RequiredUniqueChars);
-            Assert.Equal(-1, myOptions.Password.RequiredLength);
+            Assert.Equal(1, myOptions.Password.RequireUniqueChars);
+            Assert.Equal(-1, myOptions.Password.RequireLength);
         }
 
         [Fact]
