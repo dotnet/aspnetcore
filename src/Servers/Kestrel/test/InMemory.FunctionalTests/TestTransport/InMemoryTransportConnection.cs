@@ -6,13 +6,14 @@ using System.Buffers;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
 {
-    internal class InMemoryTransportConnection : TransportConnection, IDisposable
+    internal class InMemoryTransportConnection : TransportConnection
     {
         private readonly CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
@@ -26,6 +27,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
             LocalEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
             RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
+
+            var pair = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+            Application = pair.Application;
+            Transport = pair.Transport;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
         }
@@ -59,9 +64,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             }, this);
         }
 
-        public void Dispose()
+        public override ValueTask DisposeAsync()
         {
             _connectionClosedTokenSource.Dispose();
+
+            Transport.Input.Complete();
+            Transport.Output.Complete();
+
+            return base.DisposeAsync();
         }
     }
 }

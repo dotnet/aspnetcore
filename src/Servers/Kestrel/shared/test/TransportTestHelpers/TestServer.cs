@@ -8,11 +8,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         Assert.All(context.ServerOptions.ListenOptions, lo =>
                             Assert.Equal(context.ExpectedConnectionMiddlewareCount, lo._middleware.Count));
 
-                        return new KestrelServer(sp.GetRequiredService<ITransportFactory>(), context);
+                        return new KestrelServer(sp.GetRequiredService<IConnectionListenerFactory>(), context);
                     });
                     configureServices(services);
                 })
