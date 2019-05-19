@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Connections
@@ -11,6 +12,8 @@ namespace Microsoft.AspNetCore.Connections
         EndPoint EndPoint { get; }
 
         ValueTask<ConnectionContext> AcceptAsync();
+
+        ValueTask StopAsync(CancellationToken cancellationToken = default);
 
         ValueTask DisposeAsync();
     }

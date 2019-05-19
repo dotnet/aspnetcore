@@ -3,10 +3,13 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
@@ -22,6 +25,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private Socket _listenSocket;
         private int _schedulerIndex;
         private readonly SocketTransportOptions _options;
+        private TaskCompletionSource<object> _connectionsDrainedTcs;
+        private int _pendingConnections;
+        private int _pendingAccepts;
+        private readonly ConcurrentDictionary<int, TrackedSocketConnection> _connections = new ConcurrentDictionary<int, TrackedSocketConnection>();
 
         public EndPoint EndPoint { get; private set; }
 
@@ -91,12 +98,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public async ValueTask<ConnectionContext> AcceptAsync()
         {
+            Interlocked.Increment(ref _pendingAccepts);
+
             try
             {
                 var acceptSocket = await _listenSocket.AcceptAsync();
                 acceptSocket.NoDelay = _options.NoDelay;
 
-                var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace);
+                int id = Interlocked.Increment(ref _pendingConnections);
+
+                var connection = new TrackedSocketConnection(this, id, acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace);
+                _connections.TryAdd(id, connection);
 
                 connection.Start();
 
@@ -108,16 +120,125 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 return null;
             }
+            finally
+            {
+                Interlocked.Decrement(ref _pendingAccepts);
+            }
+        }
+
+        public async ValueTask StopAsync(CancellationToken cancellationToken)
+        {
+            var listenSocket = Interlocked.Exchange(ref _listenSocket, null);
+
+            if (listenSocket != null)
+            {
+                // Unbind the listen socket, so no new connections can come in
+                listenSocket.Dispose();
+
+                // Wait for all pending accepts to drain
+                var spin = new SpinWait();
+                while (_pendingAccepts > 0)
+                {
+                    spin.SpinOnce();
+                }
+
+                // No more pending accepts by the time we get here, if there any any pending connections, we create a new TCS and wait for them to
+                // drain.
+                if (_pendingConnections > 0)
+                {
+                    _connectionsDrainedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    // Try to do graceful close
+                    foreach (var pair in _connections)
+                    {
+                        pair.Value.RequestClose();
+                    }
+
+                    if (!_connectionsDrainedTcs.Task.IsCompletedSuccessfully)
+                    {
+                        // Wait for connections to drain or for the token to fire
+                        var task = CancellationTokenAsTask(cancellationToken);
+                        var result = await Task.WhenAny(_connectionsDrainedTcs.Task, task);
+
+                        if (result != _connectionsDrainedTcs.Task)
+                        {
+                            // If the connections don't shutdown then we need to abort them
+                            foreach (var pair in _connections)
+                            {
+                                pair.Value.Abort();
+                            }
+                        }
+                    }
+
+                    // REVIEW: Should we try to wait again?
+                    // await _connectionsDrainedTcs.Task;
+                }
+            }
+
+            // Dispose the memory pool
+            _memoryPool.Dispose();
+        }
+
+        private void OnConnectionDisposed(int id)
+        {
+            // Disconnect called, wait for _gracefulShutdownTcs to be assigned
+            if (_listenSocket == null && _connectionsDrainedTcs == null)
+            {
+                var spin = new SpinWait();
+                while (_connectionsDrainedTcs == null)
+                {
+                    spin.SpinOnce();
+                }
+            }
+
+            // If a call to dispose is currently running then we need to wait until the _gracefulShutdownTcs
+            // has been assigned
+            var connections = Interlocked.Decrement(ref _pendingConnections);
+
+            _connections.TryRemove(id, out _);
+
+            if (_connectionsDrainedTcs != null && connections == 0)
+            {
+                _connectionsDrainedTcs.TrySetResult(null);
+            }
+        }
+
+        private static Task CancellationTokenAsTask(CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
+            // Transports already dispatch prior to tripping ConnectionClosed
+            // since application code can register to this token.
+            var tcs = new TaskCompletionSource<object>();
+            token.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
+            return tcs.Task;
         }
 
         public ValueTask DisposeAsync()
         {
-            _listenSocket?.Dispose();
-            _listenSocket = null;
-            _memoryPool.Dispose();
-            // TODO: Wait for all connections to drain (fixed timeout?)
-            return default;
+            return StopAsync(new CancellationTokenSource(5000).Token);
         }
 
+        private class TrackedSocketConnection : SocketConnection
+        {
+            private readonly SocketConnectionListener _listener;
+            private readonly int _id;
+
+            internal TrackedSocketConnection(SocketConnectionListener listener, int id, Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace) : base(socket, memoryPool, scheduler, trace)
+            {
+                _listener = listener;
+                _id = id;
+            }
+
+            public override async ValueTask DisposeAsync()
+            {
+                await base.DisposeAsync();
+
+                _listener.OnConnectionDisposed(_id);
+            }
+        }
     }
 }

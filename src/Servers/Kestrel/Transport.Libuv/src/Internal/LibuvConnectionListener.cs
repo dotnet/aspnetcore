@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
@@ -182,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return null;
         }
 
-        public async ValueTask DisposeAsync()
+        public async ValueTask StopAsync(CancellationToken cancellationToken)
         {
             await UnbindAsync().ConfigureAwait(false);
 
@@ -190,6 +192,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 await _acceptEnumerator.DisposeAsync();
             }
+        }
+
+        public ValueTask DisposeAsync()
+        {
+            return StopAsync(default);
         }
     }
 }
