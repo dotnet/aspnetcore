@@ -1,36 +1,25 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Immutable;
+using System.Linq;
 using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
-using System.Collections.Immutable;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
     public class ComponentParametersShouldNotBePublicAnalyzer : DiagnosticAnalyzer
     {
-        public const string DiagnosticId = "BL9993";
-        private const string Category = "Encapsulation";
+        public ComponentParametersShouldNotBePublicAnalyzer()
+        {
+            SupportedDiagnostics = ImmutableArray.Create(DiagnosticDescriptors.ComponentParametersShouldNotBePublic);
+        }
 
-        private static readonly LocalizableString Title = new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Title), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString MessageFormat = new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Format), Resources.ResourceManager, typeof(Resources));
-        private static readonly LocalizableString Description = new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Description), Resources.ResourceManager, typeof(Resources));
-        private static DiagnosticDescriptor Rule = new DiagnosticDescriptor(
-            DiagnosticId,
-            Title,
-            MessageFormat,
-            Category,
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
-            description: Description);
-
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics
-            => ImmutableArray.Create(Rule);
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
 
         public override void Initialize(AnalysisContext context)
         {
@@ -53,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 if (!string.IsNullOrEmpty(identifierText))
                 {
                     context.ReportDiagnostic(Diagnostic.Create(
-                        Rule,
+                        DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
                         declaration.GetLocation(),
                         identifierText));
                 }
