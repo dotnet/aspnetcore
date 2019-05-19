@@ -23,8 +23,9 @@ namespace Microsoft.AspNetCore.Connections
 
         public abstract CancellationToken ConnectionClosed { get; set; }
 
-        public abstract EndPoint LocalEndpoint { get; set; }
-        public abstract EndPoint RemoteEndpoint { get; set; }
+        public abstract EndPoint LocalEndPoint { get; set; }
+
+        public abstract EndPoint RemoteEndPoint { get; set; }
 
         public virtual void Abort(ConnectionAbortedException abortReason)
         {

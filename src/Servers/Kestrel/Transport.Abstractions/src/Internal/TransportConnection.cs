@@ -25,13 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             ConnectionClosedRequested = _connectionClosingCts.Token;
         }
 
-        public IPAddress RemoteAddress { get; set; }
-        public int RemotePort { get; set; }
-        public IPAddress LocalAddress { get; set; }
-        public int LocalPort { get; set; }
-
-        public override EndPoint LocalEndpoint { get; set; }
-        public override EndPoint RemoteEndpoint { get; set; }
+        public override EndPoint LocalEndPoint { get; set; }
+        public override EndPoint RemoteEndPoint { get; set; }
 
         public override string ConnectionId { get; set; }
 
@@ -40,9 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         protected internal virtual ILogger Logger { get; set; }
 
         public virtual MemoryPool<byte> MemoryPool { get; }
-        public virtual PipeScheduler InputWriterScheduler { get; }
-        public virtual PipeScheduler OutputReaderScheduler { get; }
-
+        
         public override IDuplexPipe Transport { get; set; }
         public IDuplexPipe Application { get; set; }
 

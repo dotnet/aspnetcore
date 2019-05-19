@@ -11,7 +11,6 @@ namespace CodeGenerator
             // See also: src/Kestrel.Transport.Abstractions/Internal/TransportConnection.FeatureCollection.cs
             var features = new[]
             {
-                "IHttpConnectionFeature",
                 "IConnectionIdFeature",
                 "IConnectionTransportFeature",
                 "IConnectionItemsFeature",

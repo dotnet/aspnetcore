@@ -33,8 +33,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 ConnectionStart(
                     connection.ConnectionId,
-                    connection.LocalEndpoint?.ToString(),
-                    connection.RemoteEndpoint?.ToString());
+                    connection.LocalEndPoint?.ToString(),
+                    connection.RemoteEndPoint?.ToString());
             }
         }
 

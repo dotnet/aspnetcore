@@ -37,14 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             _socket = socket;
 
-            RemoteAddress = remoteEndPoint?.Address;
-            RemotePort = remoteEndPoint?.Port ?? 0;
-
-            LocalAddress = localEndPoint?.Address;
-            LocalPort = localEndPoint?.Port ?? 0;
-
-            LocalEndpoint = localEndPoint;
-            RemoteEndpoint = remoteEndPoint;
+            LocalEndPoint = localEndPoint;
+            RemoteEndPoint = remoteEndPoint;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
             Logger = log;
@@ -66,9 +60,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private ILibuvTrace Log { get; }
         private LibuvThread Thread { get; }
         public override MemoryPool<byte> MemoryPool => Thread.MemoryPool;
-        public override PipeScheduler InputWriterScheduler => Thread;
-        public override PipeScheduler OutputReaderScheduler => Thread;
-
         public void Start()
         {
             _task = StartCore();

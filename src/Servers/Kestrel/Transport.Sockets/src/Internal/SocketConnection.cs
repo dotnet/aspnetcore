@@ -46,17 +46,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             Logger = trace;
             _trace = trace;
 
-            var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
-            var remoteEndPoint = (IPEndPoint)_socket.RemoteEndPoint;
-
-            LocalEndpoint = localEndPoint;
-            RemoteEndpoint = remoteEndPoint;
-
-            LocalAddress = localEndPoint.Address;
-            LocalPort = localEndPoint.Port;
-
-            RemoteAddress = remoteEndPoint.Address;
-            RemotePort = remoteEndPoint.Port;
+            LocalEndPoint = _socket.LocalEndPoint;
+            RemoteEndPoint = _socket.RemoteEndPoint;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
 
@@ -79,8 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         }
 
         public override MemoryPool<byte> MemoryPool { get; }
-        public override PipeScheduler InputWriterScheduler => _scheduler;
-        public override PipeScheduler OutputReaderScheduler => _scheduler;
 
         public void Start()
         {

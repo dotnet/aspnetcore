@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public partial class TransportConnection : IFeatureCollection
     {
-        private static readonly Type IHttpConnectionFeatureType = typeof(IHttpConnectionFeature);
         private static readonly Type IConnectionIdFeatureType = typeof(IConnectionIdFeature);
         private static readonly Type IConnectionTransportFeatureType = typeof(IConnectionTransportFeature);
         private static readonly Type IConnectionItemsFeatureType = typeof(IConnectionItemsFeature);
@@ -20,7 +19,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private static readonly Type IConnectionLifetimeFeatureType = typeof(IConnectionLifetimeFeature);
         private static readonly Type IConnectionLifetimeNotificationFeatureType = typeof(IConnectionLifetimeNotificationFeature);
 
-        private object _currentIHttpConnectionFeature;
         private object _currentIConnectionIdFeature;
         private object _currentIConnectionTransportFeature;
         private object _currentIConnectionItemsFeature;
@@ -34,7 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         private void FastReset()
         {
-            _currentIHttpConnectionFeature = this;
             _currentIConnectionIdFeature = this;
             _currentIConnectionTransportFeature = this;
             _currentIConnectionItemsFeature = this;
@@ -96,11 +93,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             get
             {
                 object feature = null;
-                if (key == IHttpConnectionFeatureType)
-                {
-                    feature = _currentIHttpConnectionFeature;
-                }
-                else if (key == IConnectionIdFeatureType)
+                if (key == IConnectionIdFeatureType)
                 {
                     feature = _currentIConnectionIdFeature;
                 }
@@ -136,11 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             {
                 _featureRevision++;
 
-                if (key == IHttpConnectionFeatureType)
-                {
-                    _currentIHttpConnectionFeature = value;
-                }
-                else if (key == IConnectionIdFeatureType)
+                if (key == IConnectionIdFeatureType)
                 {
                     _currentIConnectionIdFeature = value;
                 }
@@ -174,11 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         TFeature IFeatureCollection.Get<TFeature>()
         {
             TFeature feature = default;
-            if (typeof(TFeature) == typeof(IHttpConnectionFeature))
-            {
-                feature = (TFeature)_currentIHttpConnectionFeature;
-            }
-            else if (typeof(TFeature) == typeof(IConnectionIdFeature))
+            if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
                 feature = (TFeature)_currentIConnectionIdFeature;
             }
@@ -213,11 +198,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         void IFeatureCollection.Set<TFeature>(TFeature feature)
         {
             _featureRevision++;
-            if (typeof(TFeature) == typeof(IHttpConnectionFeature))
-            {
-                _currentIHttpConnectionFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IConnectionIdFeature))
+            if (typeof(TFeature) == typeof(IConnectionIdFeature))
             {
                 _currentIConnectionIdFeature = feature;
             }
@@ -249,10 +230,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         private IEnumerable<KeyValuePair<Type, object>> FastEnumerable()
         {
-            if (_currentIHttpConnectionFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(IHttpConnectionFeatureType, _currentIHttpConnectionFeature);
-            }
             if (_currentIConnectionIdFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IConnectionIdFeatureType, _currentIConnectionIdFeature);
