@@ -3,7 +3,6 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -25,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
             {
                 var typeCache = new SymbolCache(compilationStartAnalysisContext.Compilation);
-                if (typeCache.ControllerAttribute == null || typeCache.ControllerAttribute.TypeKind == TypeKind.Error)
+                if (!typeCache.HasRequiredSymbols)
                 {
                     // No-op if we can't find types we care about.
                     return;
@@ -185,20 +184,44 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         internal readonly struct SymbolCache
         {
+#pragma warning disable RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
+            private readonly IMethodSymbol? _idisposableDispose;
+#pragma warning restore RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
+
             public SymbolCache(Compilation compilation)
             {
+                HasRequiredSymbols = true;
+
                 BindAttribute = compilation.GetTypeByMetadataName(SymbolNames.BindAttribute);
+                HasRequiredSymbols &= IsValidSymbol(BindAttribute);
+
                 ControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.ControllerAttribute);
+                HasRequiredSymbols &= IsValidSymbol(ControllerAttribute);
+
                 FromBodyAttribute = compilation.GetTypeByMetadataName(SymbolNames.FromBodyAttribute);
+                HasRequiredSymbols &= IsValidSymbol(FromBodyAttribute);
+
                 IApiBehaviorMetadata = compilation.GetTypeByMetadataName(SymbolNames.IApiBehaviorMetadata);
+                HasRequiredSymbols &= IsValidSymbol(IApiBehaviorMetadata);
+
                 IBinderTypeProviderMetadata = compilation.GetTypeByMetadataName(SymbolNames.IBinderTypeProviderMetadata);
+                HasRequiredSymbols &= IsValidSymbol(IBinderTypeProviderMetadata);
+
                 IModelNameProvider = compilation.GetTypeByMetadataName(SymbolNames.IModelNameProvider);
+                HasRequiredSymbols &= IsValidSymbol(IModelNameProvider);
+
                 NonControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonControllerAttribute);
+                HasRequiredSymbols &= IsValidSymbol(NonControllerAttribute);
+
                 NonActionAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonActionAttribute);
+                HasRequiredSymbols &= IsValidSymbol(NonActionAttribute);
 
                 var disposable = compilation.GetSpecialType(SpecialType.System_IDisposable);
-                var members = disposable.GetMembers(nameof(IDisposable.Dispose));
-                IDisposableDispose = members.Length == 1 ? (IMethodSymbol)members[0] : null;
+                var members = disposable?.GetMembers(nameof(IDisposable.Dispose));
+                _idisposableDispose = (IMethodSymbol?)members?[0];
+                HasRequiredSymbols &= IsValidSymbol(_idisposableDispose);
+
+                static bool IsValidSymbol(ISymbol? symbol) => symbol != null && symbol.Kind != SymbolKind.ErrorType;
             }
 
             public INamedTypeSymbol BindAttribute { get; }
@@ -209,7 +232,9 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             public INamedTypeSymbol IModelNameProvider { get; }
             public INamedTypeSymbol NonControllerAttribute { get; }
             public INamedTypeSymbol NonActionAttribute { get; }
-            public IMethodSymbol IDisposableDispose { get; }
+            public IMethodSymbol IDisposableDispose => _idisposableDispose ?? throw new ArgumentNullException();
+
+            public bool HasRequiredSymbols { get; }
         }
     }
 }

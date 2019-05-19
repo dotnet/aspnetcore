@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             }
         }
 
-        private static AttributeData GetAttribute(ISymbol symbol, INamedTypeSymbol attributeType)
+        private static AttributeData? GetAttribute(ISymbol symbol, INamedTypeSymbol attributeType)
         {
             foreach (var attribute in symbol.GetAttributes())
             {

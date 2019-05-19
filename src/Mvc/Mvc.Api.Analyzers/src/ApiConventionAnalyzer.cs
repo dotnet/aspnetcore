@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
             {
                 var symbolCache = new ApiControllerSymbolCache(compilationStartAnalysisContext.Compilation);
-                if (symbolCache.ApiConventionTypeAttribute == null || symbolCache.ApiConventionTypeAttribute.TypeKind == TypeKind.Error)
+                if (!symbolCache.HasRequiredSymbols)
                 {
                     // No-op if we can't find types we care about.
                     return;

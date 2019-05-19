@@ -31,9 +31,10 @@ namespace Microsoft.CodeAnalysis
             Debug.Assert(methodSymbol != null);
             Debug.Assert(attribute != null);
 
-            while (methodSymbol != null)
+            IMethodSymbol? current = methodSymbol;
+            while (current != null)
             {
-                foreach (var attributeData in GetAttributes(methodSymbol, attribute))
+                foreach (var attributeData in GetAttributes(current, attribute))
                 {
                     yield return attributeData;
                 }
@@ -43,7 +44,7 @@ namespace Microsoft.CodeAnalysis
                     break;
                 }
 
-                methodSymbol = methodSymbol.IsOverride ? methodSymbol.OverriddenMethod : null;
+                current = current.IsOverride ? current.OverriddenMethod : null;
             }
         }
 
@@ -76,14 +77,15 @@ namespace Microsoft.CodeAnalysis
                 return HasAttribute(propertySymbol, attribute);
             }
 
-            while (propertySymbol != null)
+            IPropertySymbol? current = propertySymbol;
+            while (current != null)
             {
-                if (propertySymbol.HasAttribute(attribute))
+                if (current.HasAttribute(attribute))
                 {
                     return true;
                 }
 
-                propertySymbol = propertySymbol.IsOverride ? propertySymbol.OverriddenProperty : null;
+                current = current.IsOverride ? current.OverriddenProperty : null;
             }
 
             return false;

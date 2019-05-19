@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,6 +45,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
         {
             var context = await CreateCodeActionContext(cancellationToken).ConfigureAwait(false);
+            if (!context.SymbolCache.HasRequiredSymbols)
+            {
+                return _document;
+            }
+
             var declaredResponseMetadata = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(context.SymbolCache, context.Method);
             var errorResponseType = SymbolApiResponseMetadataProvider.GetErrorResponseType(context.SymbolCache, context.Method);
 
@@ -56,8 +62,11 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             var documentEditor = await DocumentEditor.CreateAsync(_document, cancellationToken).ConfigureAwait(false);
 
             var addUsingDirective = false;
-            foreach (var (statusCode, returnType) in results.OrderBy(s => s.statusCode))
+            foreach (var item in results.OrderBy(s => s.statusCode))
             {
+                var statusCode = item.statusCode;
+                var returnType = item.typeSymbol;
+
                 AttributeSyntax attributeSyntax;
                 bool addUsing;
 
@@ -152,15 +161,15 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return statusCodeConstants;
         }
 
-        private ICollection<(int statusCode, ITypeSymbol typeSymbol)> CalculateStatusCodesToApply(in CodeActionContext context, IList<DeclaredApiResponseMetadata> declaredResponseMetadata)
+        private ICollection<(int statusCode, ITypeSymbol? typeSymbol)> CalculateStatusCodesToApply(in CodeActionContext context, IList<DeclaredApiResponseMetadata> declaredResponseMetadata)
         {
             if (!ActualApiResponseMetadataFactory.TryGetActualResponseMetadata(context.SymbolCache, context.SemanticModel, context.MethodSyntax, context.CancellationToken, out var actualResponseMetadata))
             {
                 // If we cannot parse metadata correctly, don't offer fixes.
-                return Array.Empty<(int, ITypeSymbol)>();
+                return Array.Empty<(int, ITypeSymbol?)>();
             }
 
-            var statusCodes = new Dictionary<int, (int, ITypeSymbol)>();
+            var statusCodes = new Dictionary<int, (int, ITypeSymbol?)>();
             foreach (var metadata in actualResponseMetadata)
             {
                 if (DeclaredApiResponseMetadata.TryGetDeclaredMetadata(declaredResponseMetadata, metadata, result: out var declaredMetadata) &&
