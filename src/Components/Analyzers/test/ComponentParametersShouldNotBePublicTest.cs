@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -16,6 +15,10 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
     namespace {typeof(ParameterAttribute).Namespace}
     {{
         public class {typeof(ParameterAttribute).Name} : System.Attribute
+        {{
+        }}
+
+        public class {typeof(CascadingParameterAttribute).Name} : System.Attribute
         {{
         }}
     }}
@@ -48,8 +51,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         {
             [Parameter] string MyPropertyNoModifer { get; set; }
             [Parameter] private string MyPropertyPrivate { get; set; }
-            [Parameter] protected string MyPropertyProtected { get; set; }
-            [Parameter] internal string MyPropertyInternal { get; set; }
+            [CascadingParameter] protected string MyPropertyProtected { get; set; }
+            [CascadingParameter] internal string MyPropertyInternal { get; set; }
         }
     }" + ParameterSource;
 
@@ -67,29 +70,29 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         class TypeName
         {
             [Parameter] public string BadProperty1 { get; set; }
-            [Parameter] public object BadProperty2 { get; set; }
+            [CascadingParameter] public object BadProperty2 { get; set; }
         }
     }" + ParameterSource;
 
             VerifyCSharpDiagnostic(test,
                 new DiagnosticResult
                 {
-                    Id = "BL9993",
+                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBePublic.Id,
                     Message = "Component parameter 'BadProperty1' has a public setter, but component parameters should not be publicly settable.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {
-                        new DiagnosticResultLocation("Test0.cs", 8, 13)
+                        new DiagnosticResultLocation("Test0.cs", 8, 39)
                     }
                 },
                 new DiagnosticResult
                 {
-                    Id = "BL9993",
+                    Id = DiagnosticDescriptors.ComponentParametersShouldNotBePublic.Id,
                     Message = "Component parameter 'BadProperty2' has a public setter, but component parameters should not be publicly settable.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {
-                        new DiagnosticResultLocation("Test0.cs", 9, 13)
+                        new DiagnosticResultLocation("Test0.cs", 9, 48)
                     }
                 });
 
@@ -101,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         class TypeName
         {
             [Parameter] string BadProperty1 { get; set; }
-            [Parameter] object BadProperty2 { get; set; }
+            [CascadingParameter] object BadProperty2 { get; set; }
         }
     }" + ParameterSource);
         }

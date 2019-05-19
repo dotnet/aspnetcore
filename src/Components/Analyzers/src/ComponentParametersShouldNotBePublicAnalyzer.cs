@@ -3,7 +3,6 @@
 
 using System.Collections.Immutable;
 using System.Linq;
-using Microsoft.AspNetCore.Components.Shared;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,43 +22,32 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
         public override void Initialize(AnalysisContext context)
         {
-            context.RegisterSyntaxNodeAction(AnalyzeSyntax, SyntaxKind.PropertyDeclaration);
-        }
-
-        private void AnalyzeSyntax(SyntaxNodeAnalysisContext context)
-        {
-            var semanticModel = context.SemanticModel;
-            var declaration = (PropertyDeclarationSyntax)context.Node;
-
-            var parameterAttribute = declaration.AttributeLists
-                .SelectMany(list => list.Attributes)
-                .Where(attr => semanticModel.GetTypeInfo(attr).Type?.ToDisplayString() == ComponentsApi.ParameterAttribute.FullTypeName)
-                .FirstOrDefault();
-
-            if (parameterAttribute != null && IsPubliclySettable(declaration))
+            context.RegisterCompilationStartAction(context =>
             {
-                var identifierText = declaration.Identifier.Text;
-                if (!string.IsNullOrEmpty(identifierText))
+                if (!ComponentSymbols.TryCreate(context.Compilation, out var symbols))
                 {
-                    context.ReportDiagnostic(Diagnostic.Create(
-                        DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
-                        declaration.GetLocation(),
-                        identifierText));
+                    // Types we need are not defined.
+                    return;
                 }
-            }
-        }
 
-        private static bool IsPubliclySettable(PropertyDeclarationSyntax declaration)
-        {
-            // If the property has a setter explicitly marked private/protected/internal, then it's not public
-            var setter = declaration.AccessorList?.Accessors.SingleOrDefault(x => x.Keyword.IsKind(SyntaxKind.SetKeyword));
-            if (setter != null && setter.Modifiers.Any(x => x.IsKind(SyntaxKind.PrivateKeyword) || x.IsKind(SyntaxKind.ProtectedKeyword) || x.IsKind(SyntaxKind.InternalKeyword)))
-            {
-                return false;
-            }
+                context.RegisterSymbolAction(context =>
+                {
+                    var property = (IPropertySymbol)context.Symbol;
+                    if (!ComponentFacts.IsAnyParameter(symbols, property))
+                    {
+                        // Not annotated with [Parameter] or [CascadingParameter]
+                        return;
+                    }
 
-            // Otherwise fallback to the property declaration modifiers
-            return declaration.Modifiers.Any(x => x.IsKind(SyntaxKind.PublicKeyword));
+                    if (property.SetMethod?.DeclaredAccessibility == Accessibility.Public)
+                    {
+                        context.ReportDiagnostic(Diagnostic.Create(
+                            DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
+                            property.Locations[0],
+                            property.Name));
+                    }
+                }, SymbolKind.Property);
+            });
         }
     }
 }
