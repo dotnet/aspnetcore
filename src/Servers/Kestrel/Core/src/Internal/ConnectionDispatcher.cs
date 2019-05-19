@@ -52,11 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         // Set a connection id if the transport didn't set one
                         connection.ConnectionId ??= CorrelationIdGenerator.GetNextId();
 
-                        // TODO: We need a bit of command and control to do connection management and that requires
-                        // that we have access to a couple of methods that only exists on TransportConnection
-                        // (specifically RequestClose, TickHeartbeat and CompleteAsync. This dependency needs to be removed or
-                        // the return value of AcceptAsync needs to change.
-
                         _ = OnConnection(connection);
                     }
                 }
