@@ -255,6 +255,10 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         Microsoft.AspNetCore.Http.IResponseCookies Cookies { get; }
     }
+    public partial interface IServerVariablesFeature
+    {
+        string this[string variableName] { get; set; }
+    }
     public partial interface IServiceProvidersFeature
     {
         System.IServiceProvider RequestServices { get; set; }
