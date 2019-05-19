@@ -1901,6 +1901,76 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void ReRendersChildComponentWhenExtraPropertiesChange()
+        {
+            // Arrange: First render
+            var renderer = new TestRenderer();
+            var firstRender = true;
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<MyStrongComponent>(1);
+                builder.AddAttribute(1, "class", firstRender ? "first" : "second");
+                builder.AddAttribute(2, "id", "some_text");
+                builder.AddAttribute(3, nameof(MyStrongComponent.Text), "hi there.");
+                builder.CloseComponent();
+            });
+
+            var rootComponentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var childComponentId = renderer.Batches.Single()
+                .ReferenceFrames
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+                .ComponentId;
+
+            // Act: Second render
+            firstRender = false;
+            component.TriggerRender();
+            var diff = renderer.Batches[1].DiffsByComponentId[childComponentId].Single();
+
+            // Assert
+            Assert.Collection(diff.Edits,
+                edit =>
+                {
+                    Assert.Equal(RenderTreeEditType.SetAttribute, edit.Type);
+                    Assert.Equal(0, edit.ReferenceFrameIndex);
+                });
+            AssertFrame.Attribute(renderer.Batches[1].ReferenceFrames[0], "class", "second");
+        }
+
+        // This is a sanity check that diffs of "extra" parameters *just work* without any specialized
+        // code in the renderer to handle it. All of the data that's used in the diff is contained in
+        // the render tree, and the diff process does not need to inspect the state of the component.
+        [Fact]
+        public void ReRendersDoesNotReRenderChildComponentWhenExtraPropertiesDoNotChange()
+        {
+            // Arrange: First render
+            var renderer = new TestRenderer();
+            var component = new TestComponent(builder =>
+            {
+                builder.OpenComponent<MyStrongComponent>(1);
+                builder.AddAttribute(1, "class", "cool-beans");
+                builder.AddAttribute(2, "id", "some_text");
+                builder.AddAttribute(3, nameof(MyStrongComponent.Text), "hi there.");
+                builder.CloseComponent();
+            });
+
+            var rootComponentId = renderer.AssignRootComponentId(component);
+            component.TriggerRender();
+
+            var childComponentId = renderer.Batches.Single()
+                .ReferenceFrames
+                .Single(frame => frame.FrameType == RenderTreeFrameType.Component)
+                .ComponentId;
+
+            // Act: Second render
+            component.TriggerRender();
+
+            // Assert
+            Assert.False(renderer.Batches[1].DiffsByComponentId.ContainsKey(childComponentId));
+        }
+
+        [Fact]
         public void RenderBatchIncludesListOfDisposedComponents()
         {
             // Arrange
@@ -3267,6 +3337,21 @@ namespace Microsoft.AspNetCore.Components.Test
             protected override void BuildRenderTree(RenderTreeBuilder builder)
             {
                 builder.AddContent(0, Message);
+            }
+        }
+
+        private class MyStrongComponent : AutoRenderComponent
+        {
+            [Parameter(CaptureExtraAttributes = true)] internal IDictionary<string, object> Attributes { get; set; }
+
+            [Parameter] internal string Text { get; set; }
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.OpenElement(0, "strong");
+                builder.AddMultipleAttributes(1, Attributes);
+                builder.AddContent(2, Text);
+                builder.CloseElement();
             }
         }
 
