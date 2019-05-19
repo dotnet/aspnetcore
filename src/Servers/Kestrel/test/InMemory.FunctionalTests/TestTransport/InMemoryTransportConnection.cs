@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             LocalEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
             RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
 
-            var pair = DuplexPipe.CreateConnectionPair(new PipeOptions(), new PipeOptions());
+            var pair = DuplexPipe.CreateConnectionPair(new PipeOptions(memoryPool), new PipeOptions(memoryPool));
             Application = pair.Application;
             Transport = pair.Transport;
 
