@@ -1,11 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
@@ -35,39 +36,71 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                     return;
                 }
 
-                context.RegisterSymbolAction(context =>
+                // This operates per-type because one of the validations we need has to look for duplicates
+                // defined on the same type.
+                context.RegisterSymbolStartAction(context =>
                 {
-                    var property = (IPropertySymbol)context.Symbol;
-                    if (!ComponentFacts.IsAnyParameter(symbols, property))
-                    {
-                        // Not annotated with [Parameter] or [CascadingParameter]
-                        return;
-                    }
+                    var properties = new List<IPropertySymbol>();
 
-                    if (property.SetMethod?.DeclaredAccessibility == Accessibility.Public)
+                    var type = (INamedTypeSymbol)context.Symbol;
+                    foreach (var member in type.GetMembers())
                     {
-                        context.ReportDiagnostic(Diagnostic.Create(
-                            DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
-                            property.Locations[0],
-                            property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
-                    }
-
-                    if (ComponentFacts.IsParameterWithCaptureExtraAttribute(symbols, property))
-                    {
-                        // Check the type, we need to be able to assign a Dictionary<string, object>
-                        var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureExtraAttributesValueType, property.Type);
-                        if (!conversion.Exists || conversion.IsExplicit)
+                        if (member is IPropertySymbol property && ComponentFacts.IsAnyParameter(symbols, property))
                         {
-                            context.ReportDiagnostic(Diagnostic.Create(
-                                DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterHasWrongType,
-                                property.Locations[0],
-                                property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
-                                property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
-                                symbols.ParameterCaptureExtraAttributesValueType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                            // Annotated with [Parameter] or [CascadingParameter]
+                            properties.Add(property);
                         }
                     }
 
-                }, SymbolKind.Property);
+                    if (properties.Count > 0)
+                    {
+                        context.RegisterSymbolEndAction(context =>
+                        {
+                            var extraParameters = new List<IPropertySymbol>();
+
+                            // Per-property validations
+                            foreach (var property in properties)
+                            {
+                                if (property.SetMethod?.DeclaredAccessibility == Accessibility.Public)
+                                {
+                                    context.ReportDiagnostic(Diagnostic.Create(
+                                        DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
+                                        property.Locations[0],
+                                        property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                                }
+
+                                if (ComponentFacts.IsParameterWithCaptureExtraAttribute(symbols, property))
+                                {
+                                    extraParameters.Add(property);
+
+                                    // Check the type, we need to be able to assign a Dictionary<string, object>
+                                    var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureExtraAttributesValueType, property.Type);
+                                    if (!conversion.Exists || conversion.IsExplicit)
+                                    {
+                                        context.ReportDiagnostic(Diagnostic.Create(
+                                            DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterHasWrongType,
+                                            property.Locations[0],
+                                            property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                            property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                            symbols.ParameterCaptureExtraAttributesValueType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                                    }
+                                }
+                            }
+
+                            // Check if the type defines multiple *Extra* parameters. Doing this outside the loop means we place the
+                            // errors on the type.
+                            if (extraParameters.Count > 1)
+                            {
+                                context.ReportDiagnostic(Diagnostic.Create(
+                                    DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterMustBeUnique,
+                                    context.Symbol.Locations[0],
+                                    type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                    Environment.NewLine,
+                                    string.Join(Environment.NewLine, extraParameters.Select(p => p.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)).OrderBy(n => n))));
+                            }
+                        });
+                    }
+                }, SymbolKind.NamedType);
             });
         }
     }

@@ -133,7 +133,7 @@
     <value>Components may only define a single parameter with CaptureExtraAttribute.</value>
   </data>
   <data name="ComponentCaptureExtraAttributesParameterMustBeUnique_Format" xml:space="preserve">
-    <value>Component type '{0}' defines properties multiple properties ('{1}') with CaptureExtraAttribute.</value>
+    <value>Component type '{0}' defines properties multiple parameters with CaptureExtraAttribute. Properties: {1}{2}</value>
   </data>
   <data name="ComponentCaptureExtraAttributesParameterMustBeUnique_Title" xml:space="preserve">
     <value>Component has multiple CaptureExtraAttribute parameters</value>
