@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -40,9 +39,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var target = Browser.FindElement(By.CssSelector($"#{@case} button"));
             var count = Browser.FindElement(By.Id("render_count"));
-            Assert.Equal("Render Count: 1", count.Text);
+            Browser.Equal("Render Count: 1", () => count.Text);
             target.Click();
-            Assert.Equal("Render Count: 2", count.Text);
+            Browser.Equal("Render Count: 2", () => count.Text);
         }
     }
 }
