@@ -20,20 +20,20 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
         public static readonly DiagnosticDescriptor ComponentCaptureExtraAttributesParameterMustBeUnique = new DiagnosticDescriptor(
             "BL0002",
-            new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Title), Resources.ResourceManager, typeof(Resources)),
-            new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Format), Resources.ResourceManager, typeof(Resources)),
-            "Encapsulation",
+            new LocalizableResourceString(nameof(Resources.ComponentCaptureExtraAttributesParameterMustBeUnique_Title), Resources.ResourceManager, typeof(Resources)),
+            new LocalizableResourceString(nameof(Resources.ComponentCaptureExtraAttributesParameterMustBeUnique_Format), Resources.ResourceManager, typeof(Resources)),
+            "Usage",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Description), Resources.ResourceManager, typeof(Resources)));
+            description: new LocalizableResourceString(nameof(Resources.ComponentCaptureExtraAttributesParameterMustBeUnique_Description), Resources.ResourceManager, typeof(Resources)));
 
         public static readonly DiagnosticDescriptor ComponentCaptureExtraAttributesParameterHasWrongType = new DiagnosticDescriptor(
             "BL0003",
-            new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Title), Resources.ResourceManager, typeof(Resources)),
-            new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Format), Resources.ResourceManager, typeof(Resources)),
-            "Encapsulation",
+            new LocalizableResourceString(nameof(Resources.ComponentCaptureExtraAttributesParameterHasWrongType_Title), Resources.ResourceManager, typeof(Resources)),
+            new LocalizableResourceString(nameof(Resources.ComponentCaptureExtraAttributesParameterHasWrongType_Format), Resources.ResourceManager, typeof(Resources)),
+            "Usage",
             DiagnosticSeverity.Warning,
             isEnabledByDefault: true,
-            description: new LocalizableResourceString(nameof(Resources.ComponentParametersShouldNotBePublic_Description), Resources.ResourceManager, typeof(Resources)));
+            description: new LocalizableResourceString(nameof(Resources.ComponentCaptureExtraAttributesParameterHasWrongType_Description), Resources.ResourceManager, typeof(Resources)));
     }
 }

@@ -11,19 +11,6 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
 {
     public class ComponentParametersShouldNotBePublic : CodeFixVerifier
     {
-        static string ParameterSource = $@"
-    namespace {typeof(ParameterAttribute).Namespace}
-    {{
-        public class {typeof(ParameterAttribute).Name} : System.Attribute
-        {{
-        }}
-
-        public class {typeof(CascadingParameterAttribute).Name} : System.Attribute
-        {{
-        }}
-    }}
-";
-
         [Fact]
         public void IgnoresPublicPropertiesWithoutParameterAttribute()
         {
@@ -34,7 +21,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         {
             public string MyProperty { get; set; }
         }
-    }" + ParameterSource;
+    }" + ComponentsTestDeclarations.Source;
 
             VerifyCSharpDiagnostic(test);
         }
@@ -54,7 +41,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [CascadingParameter] protected string MyPropertyProtected { get; set; }
             [CascadingParameter] internal string MyPropertyInternal { get; set; }
         }
-    }" + ParameterSource;
+    }" + ComponentsTestDeclarations.Source;
 
             VerifyCSharpDiagnostic(test);
         }
@@ -72,13 +59,13 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [Parameter] public string BadProperty1 { get; set; }
             [CascadingParameter] public object BadProperty2 { get; set; }
         }
-    }" + ParameterSource;
+    }" + ComponentsTestDeclarations.Source;
 
             VerifyCSharpDiagnostic(test,
                 new DiagnosticResult
                 {
                     Id = DiagnosticDescriptors.ComponentParametersShouldNotBePublic.Id,
-                    Message = "Component parameter 'BadProperty1' has a public setter, but component parameters should not be publicly settable.",
+                    Message = "Component parameter 'ConsoleApplication1.TypeName.BadProperty1' has a public setter, but component parameters should not be publicly settable.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {
@@ -88,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
                 new DiagnosticResult
                 {
                     Id = DiagnosticDescriptors.ComponentParametersShouldNotBePublic.Id,
-                    Message = "Component parameter 'BadProperty2' has a public setter, but component parameters should not be publicly settable.",
+                    Message = "Component parameter 'ConsoleApplication1.TypeName.BadProperty2' has a public setter, but component parameters should not be publicly settable.",
                     Severity = DiagnosticSeverity.Warning,
                     Locations = new[]
                     {
@@ -106,7 +93,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [Parameter] string BadProperty1 { get; set; }
             [CascadingParameter] object BadProperty2 { get; set; }
         }
-    }" + ParameterSource);
+    }" + ComponentsTestDeclarations.Source);
         }
 
         [Fact]
@@ -123,7 +110,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
             [Parameter] public object MyProperty2 { get; protected set; }
             [Parameter] public object MyProperty2 { get; internal set; }
         }
-    }" + ParameterSource;
+    }" + ComponentsTestDeclarations.Source;
 
             VerifyCSharpDiagnostic(test);
         }
@@ -135,7 +122,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
 
         protected override DiagnosticAnalyzer GetCSharpDiagnosticAnalyzer()
         {
-            return new ComponentParametersShouldNotBePublicAnalyzer();
+            return new ComponentParameterAnalyzer();
         }
     }
 }

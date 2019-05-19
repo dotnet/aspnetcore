@@ -42,6 +42,35 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             return property.GetAttributes().Any(a => a.AttributeClass == symbols.ParameterAttribute);
         }
 
+        public static bool IsParameterWithCaptureExtraAttribute(ComponentSymbols symbols, IPropertySymbol property)
+        {
+            if (symbols == null)
+            {
+                throw new ArgumentNullException(nameof(symbols));
+            }
+
+            if (property == null)
+            {
+                throw new ArgumentNullException(nameof(property));
+            }
+
+            var attribute = property.GetAttributes().FirstOrDefault(a => a.AttributeClass == symbols.ParameterAttribute);
+            if (attribute == null)
+            {
+                return false;
+            }
+
+            foreach (var kvp in attribute.NamedArguments)
+            {
+                if (string.Equals(kvp.Key, ComponentsApi.ParameterAttribute.CaptureExtraAttributes, StringComparison.Ordinal))
+                {
+                    return kvp.Value.Value as bool? ?? false;
+                }
+            }
+
+            return false;
+        }
+
         public static bool IsCascadingParameter(ComponentSymbols symbols, IPropertySymbol property)
         {
             if (symbols == null)

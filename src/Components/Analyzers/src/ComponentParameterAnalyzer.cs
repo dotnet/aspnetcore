@@ -11,11 +11,16 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace Microsoft.AspNetCore.Components.Analyzers
 {
     [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class ComponentParametersShouldNotBePublicAnalyzer : DiagnosticAnalyzer
+    public class ComponentParameterAnalyzer : DiagnosticAnalyzer
     {
-        public ComponentParametersShouldNotBePublicAnalyzer()
+        public ComponentParameterAnalyzer()
         {
-            SupportedDiagnostics = ImmutableArray.Create(DiagnosticDescriptors.ComponentParametersShouldNotBePublic);
+            SupportedDiagnostics = ImmutableArray.Create(new[]
+            {
+                DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
+                DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterMustBeUnique,
+                DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterHasWrongType,
+            });
         }
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; }
@@ -44,8 +49,24 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                         context.ReportDiagnostic(Diagnostic.Create(
                             DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
                             property.Locations[0],
-                            property.Name));
+                            property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                     }
+
+                    if (ComponentFacts.IsParameterWithCaptureExtraAttribute(symbols, property))
+                    {
+                        // Check the type, we need to be able to assign a Dictionary<string, object>
+                        var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureExtraAttributesValueType, property.Type);
+                        if (!conversion.Exists || conversion.IsExplicit)
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterHasWrongType,
+                                property.Locations[0],
+                                property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                symbols.ParameterCaptureExtraAttributesValueType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                        }
+                    }
+
                 }, SymbolKind.Property);
             });
         }

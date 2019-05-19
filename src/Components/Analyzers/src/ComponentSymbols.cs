@@ -29,17 +29,35 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 return false;
             }
 
-            symbols = new ComponentSymbols(parameterAttribute, cascadingParameterAttribute);
+            var dictionary = compilation.GetTypeByMetadataName(ComponentsApi.SystemCollectionsGenericDictionary);
+            if (dictionary == null)
+            {
+                symbols = null;
+                return false;
+            }
+
+            var parameterCaptureExtraAttributesValueType = dictionary.Construct(
+                compilation.GetSpecialType(SpecialType.System_String),
+                compilation.GetSpecialType(SpecialType.System_Object));
+
+            symbols = new ComponentSymbols(parameterAttribute, cascadingParameterAttribute, parameterCaptureExtraAttributesValueType);
             return true;
         }
 
-        private ComponentSymbols(INamedTypeSymbol parameterAttribute, INamedTypeSymbol cascadingParameterAttribute)
+        private ComponentSymbols(
+            INamedTypeSymbol parameterAttribute,
+            INamedTypeSymbol cascadingParameterAttribute,
+            INamedTypeSymbol parameterCaptureExtraAttributesValueType)
         {
             ParameterAttribute = parameterAttribute;
             CascadingParameterAttribute = cascadingParameterAttribute;
+            ParameterCaptureExtraAttributesValueType = parameterCaptureExtraAttributesValueType;
         }
 
         public INamedTypeSymbol ParameterAttribute { get; }
+
+        // Dictionary<string, object>
+        public INamedTypeSymbol ParameterCaptureExtraAttributesValueType { get; }
 
         public INamedTypeSymbol CascadingParameterAttribute { get; }
     }

@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers
     // Keep these in sync with the actual definitions
     internal static class ComponentsApi
     {
+        public static readonly string SystemCollectionsGenericDictionary = "System.Collections.Generic.Dictionary`2";
+
         public static readonly string AssemblyName = "Microsoft.AspNetCore.Components";
 
         public static class ParameterAttribute
