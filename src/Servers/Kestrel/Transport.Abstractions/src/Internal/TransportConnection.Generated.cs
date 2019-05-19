@@ -18,9 +18,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private static readonly Type IConnectionItemsFeatureType = typeof(IConnectionItemsFeature);
         private static readonly Type IMemoryPoolFeatureType = typeof(IMemoryPoolFeature);
         private static readonly Type IConnectionLifetimeFeatureType = typeof(IConnectionLifetimeFeature);
-        private static readonly Type IConnectionHeartbeatFeatureType = typeof(IConnectionHeartbeatFeature);
         private static readonly Type IConnectionLifetimeNotificationFeatureType = typeof(IConnectionLifetimeNotificationFeature);
-        private static readonly Type IConnectionCompleteFeatureType = typeof(IConnectionCompleteFeature);
 
         private object _currentIHttpConnectionFeature;
         private object _currentIConnectionIdFeature;
@@ -28,9 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         private object _currentIConnectionItemsFeature;
         private object _currentIMemoryPoolFeature;
         private object _currentIConnectionLifetimeFeature;
-        private object _currentIConnectionHeartbeatFeature;
         private object _currentIConnectionLifetimeNotificationFeature;
-        private object _currentIConnectionCompleteFeature;
 
         private int _featureRevision;
 
@@ -44,9 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             _currentIConnectionItemsFeature = this;
             _currentIMemoryPoolFeature = this;
             _currentIConnectionLifetimeFeature = this;
-            _currentIConnectionHeartbeatFeature = this;
             _currentIConnectionLifetimeNotificationFeature = this;
-            _currentIConnectionCompleteFeature = this;
 
         }
 
@@ -126,17 +120,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     feature = _currentIConnectionLifetimeFeature;
                 }
-                else if (key == IConnectionHeartbeatFeatureType)
-                {
-                    feature = _currentIConnectionHeartbeatFeature;
-                }
                 else if (key == IConnectionLifetimeNotificationFeatureType)
                 {
                     feature = _currentIConnectionLifetimeNotificationFeature;
-                }
-                else if (key == IConnectionCompleteFeatureType)
-                {
-                    feature = _currentIConnectionCompleteFeature;
                 }
                 else if (MaybeExtra != null)
                 {
@@ -174,17 +160,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                 {
                     _currentIConnectionLifetimeFeature = value;
                 }
-                else if (key == IConnectionHeartbeatFeatureType)
-                {
-                    _currentIConnectionHeartbeatFeature = value;
-                }
                 else if (key == IConnectionLifetimeNotificationFeatureType)
                 {
                     _currentIConnectionLifetimeNotificationFeature = value;
-                }
-                else if (key == IConnectionCompleteFeatureType)
-                {
-                    _currentIConnectionCompleteFeature = value;
                 }
                 else
                 {
@@ -220,17 +198,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             {
                 feature = (TFeature)_currentIConnectionLifetimeFeature;
             }
-            else if (typeof(TFeature) == typeof(IConnectionHeartbeatFeature))
-            {
-                feature = (TFeature)_currentIConnectionHeartbeatFeature;
-            }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeNotificationFeature))
             {
                 feature = (TFeature)_currentIConnectionLifetimeNotificationFeature;
-            }
-            else if (typeof(TFeature) == typeof(IConnectionCompleteFeature))
-            {
-                feature = (TFeature)_currentIConnectionCompleteFeature;
             }
             else if (MaybeExtra != null)
             {
@@ -267,17 +237,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             {
                 _currentIConnectionLifetimeFeature = feature;
             }
-            else if (typeof(TFeature) == typeof(IConnectionHeartbeatFeature))
-            {
-                _currentIConnectionHeartbeatFeature = feature;
-            }
             else if (typeof(TFeature) == typeof(IConnectionLifetimeNotificationFeature))
             {
                 _currentIConnectionLifetimeNotificationFeature = feature;
-            }
-            else if (typeof(TFeature) == typeof(IConnectionCompleteFeature))
-            {
-                _currentIConnectionCompleteFeature = feature;
             }
             else
             {
@@ -311,17 +273,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             {
                 yield return new KeyValuePair<Type, object>(IConnectionLifetimeFeatureType, _currentIConnectionLifetimeFeature);
             }
-            if (_currentIConnectionHeartbeatFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(IConnectionHeartbeatFeatureType, _currentIConnectionHeartbeatFeature);
-            }
             if (_currentIConnectionLifetimeNotificationFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IConnectionLifetimeNotificationFeatureType, _currentIConnectionLifetimeNotificationFeature);
-            }
-            if (_currentIConnectionCompleteFeature != null)
-            {
-                yield return new KeyValuePair<Type, object>(IConnectionCompleteFeatureType, _currentIConnectionCompleteFeature);
             }
 
             if (MaybeExtra != null)

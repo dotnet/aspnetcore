@@ -2,13 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
-using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -74,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             await using (connection)
             {
-                await Execute(new KestrelConnection(connection));
+                await Execute(new KestrelConnection(connection, _serviceContext.Log));
             }
         }
 
