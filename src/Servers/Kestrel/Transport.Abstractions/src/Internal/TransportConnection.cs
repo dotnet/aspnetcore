@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public PipeWriter Input => Application.Output;
         public PipeReader Output => Application.Input;
 
-        public CancellationToken ConnectionClosed { get; set; }
+        public override CancellationToken ConnectionClosed { get; set; }
 
         public CancellationToken ConnectionClosedRequested { get; set; }
 

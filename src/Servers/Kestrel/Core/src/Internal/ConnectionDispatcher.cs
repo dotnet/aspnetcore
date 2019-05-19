@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         // (specifically RequestClose, TickHeartbeat and CompleteAsync. This dependency needs to be removed or
                         // the return value of AcceptAsync needs to change.
 
-                        _ = OnConnection((TransportConnection)connection);
+                        _ = OnConnection(connection);
                     }
                 }
                 catch (Exception)
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        private async Task OnConnection(TransportConnection connection)
+        private async Task OnConnection(ConnectionContext connection)
         {
             await using (connection)
             {
@@ -100,12 +100,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     {
                         Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
                     }
-                    finally
-                    {
-                        // Complete the transport PipeReader and PipeWriter after calling into application code
-                        connectionContext.Transport.Input.Complete();
-                        connectionContext.Transport.Output.Complete();
-                    }
 
                     // Wait for the transport to close
                     await CancellationTokenAsTask(connectionContext.ConnectionClosed);
@@ -113,12 +107,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
-                await connectionContext.CompleteAsync();
+                await connection.CompleteAsync();
 
                 Log.ConnectionStop(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStop(connectionContext);
-
-                connection.Complete();
 
                 _serviceContext.ConnectionManager.RemoveConnection(id);
             }

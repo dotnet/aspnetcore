@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
@@ -19,6 +20,8 @@ namespace Microsoft.AspNetCore.Connections
         public abstract IDictionary<object, object> Items { get; set; }
 
         public abstract IDuplexPipe Transport { get; set; }
+
+        public abstract CancellationToken ConnectionClosed { get; set; }
 
         public abstract EndPoint LocalEndpoint { get; set; }
         public abstract EndPoint RemoteEndpoint { get; set; }

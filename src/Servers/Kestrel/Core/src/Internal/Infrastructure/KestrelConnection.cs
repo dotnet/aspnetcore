@@ -1,25 +1,31 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     internal class KestrelConnection
     {
-        private TaskCompletionSource<object> _executionTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-
-        public KestrelConnection(TransportConnection transportConnection)
+        public KestrelConnection(ConnectionContext connectionContext)
         {
-            TransportConnection = transportConnection;
-            ExecutionTask = _executionTcs.Task;
+            TransportConnection = connectionContext;
         }
 
-        public TransportConnection TransportConnection { get; }
+        public ConnectionContext TransportConnection { get; set; }
 
-        public Task ExecutionTask { get; }
+        public Task CompleteAsync()
+        {
+            // TODO
+            return Task.CompletedTask;
+        }
 
-        internal void Complete() => _executionTcs.TrySetResult(null);
+        public void TickHeartbeat()
+        {
+            
+        }
     }
 }

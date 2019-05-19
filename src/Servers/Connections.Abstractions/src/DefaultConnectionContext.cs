@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Connections
 
         public override IDuplexPipe Transport { get; set; }
 
-        public CancellationToken ConnectionClosed { get; set; }
+        public override CancellationToken ConnectionClosed { get; set; }
         public override EndPoint LocalEndpoint { get; set; }
         public override EndPoint RemoteEndpoint { get; set; }
 

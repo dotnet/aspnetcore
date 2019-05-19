@@ -189,16 +189,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
-                /*if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
-                {
-                    Trace.NotAllConnectionsClosedGracefully();
-
-                    if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
-                    {
-                        Trace.NotAllConnectionsAborted();
-                    }
-                }*/
-
                 ServiceContext.Heartbeat?.Dispose();
             }
             catch (Exception ex)

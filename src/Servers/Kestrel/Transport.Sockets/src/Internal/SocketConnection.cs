@@ -125,17 +125,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         {
             if (_task != null)
             {
-                // TODO: Make this timeout configurable, this gives the task time to flush the data to the socket
-                // before timing out
-                var result = await Task.WhenAny(_task, Task.Delay(5000));
-
-                if (result != _task)
-                {
-                    Abort();
-                }
-
                 await _task;
             }
+
+            Transport.Input.Complete();
+            Transport.Output.Complete();
 
             _connectionClosedTokenSource.Dispose();
             _connectionClosingCts.Dispose();

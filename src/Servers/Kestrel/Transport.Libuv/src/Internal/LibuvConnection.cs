@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private volatile ConnectionAbortedException _abortReason;
 
         private MemoryHandle _bufferHandle;
+        private Task _task;
 
         public LibuvConnection(UvStreamHandle socket, ILibuvTrace log, LibuvThread thread, IPEndPoint remoteEndPoint, IPEndPoint localEndPoint)
         {
@@ -68,7 +69,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public override PipeScheduler InputWriterScheduler => Thread;
         public override PipeScheduler OutputReaderScheduler => Thread;
 
-        public async Task Start()
+        public void Start()
+        {
+            _task = StartCore();
+        }
+
+        private async Task StartCore()
         {
             try
             {
@@ -144,11 +150,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             Thread.Post(s => s.Dispose(), _socket);
         }
 
-        public override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
+            if (_task != null)
+            {
+                await _task;
+            }
+
             _connectionClosedTokenSource.Dispose();
             _connectionClosingCts.Dispose();
-            return base.DisposeAsync();
+
+            Transport.Input.Complete();
+            Transport.Output.Complete();
         }
 
         // Called on Libuv thread
