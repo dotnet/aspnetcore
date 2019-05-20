@@ -12,15 +12,24 @@
 #include "RedirectionOutput.h"
 #include "HostFxr.h"
 
+struct ErrorContext
+{
+    std::string errorContent;
+    USHORT statusCode;
+    USHORT subStatusCode;
+    std::string specificErrorString;
+    std::string solution;
+};
+
 class HandlerResolver
 {
 public:
     HandlerResolver(HMODULE hModule, const IHttpServer &pServer);
-    HRESULT GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, std::string& error);
+    HRESULT GetApplicationFactory(const IHttpApplication &pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& error);
     void ResetHostingModel();
 
 private:
-    HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, std::string& error);
+    HRESULT LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, ErrorContext& error);
     HRESULT FindNativeAssemblyFromGlobalLocation(const ShimOptions& pConfiguration, PCWSTR libraryName, std::wstring& handlerDllPath);
     HRESULT FindNativeAssemblyFromHostfxr(
         const HostFxrResolutionResult& hostfxrOptions,

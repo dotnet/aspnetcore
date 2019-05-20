@@ -77,7 +77,7 @@ private:
     CreateApplication(IHttpContext& pHttpContext);
 
     HRESULT
-    TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, std::string& error);
+    TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, ErrorContext& error);
 
     IHttpServer            &m_pServer;
     HandlerResolver        &m_handlerResolver;

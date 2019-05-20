@@ -87,7 +87,9 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
             ShimOptions options(configurationSource);
 
             // Instead of this being an object, make it a context for errors!
-            std::string error;
+            ErrorContext error;
+            error.statusCode = 500i16;
+            error.subStatusCode = 0i16;
 
             const auto hr = TryCreateApplication(pHttpContext, options, error);
 
@@ -106,9 +108,9 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                         pHttpApplication,
                         hr,
                         options.QueryDisableStartupPage(),
-                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, 500, 0, error) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, 500, 0),
-                        500i16,
-                        0i16,
+                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.errorContent) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode),
+                        error.statusCode,
+                        error.subStatusCode,
                         "Internal Server Error");
                 }
                 else
@@ -117,9 +119,9 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                         pHttpApplication,
                         hr,
                         options.QueryDisableStartupPage(),
-                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, 500, 0) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, 500, 0),
-                        500i16,
-                        0i16,
+                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode),
+                        error.statusCode,
+                        error.subStatusCode,
                         "Internal Server Error");
                 }
             }
@@ -154,7 +156,7 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 }
 
 HRESULT
-APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, std::string& error)
+APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, ErrorContext& error)
 {
     const auto startupEvent = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_STARTUP_SUSPEND_EVENT");
     if (startupEvent.has_value())

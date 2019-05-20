@@ -28,7 +28,7 @@ HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
 }
 
 HRESULT
-HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, std::string& error)
+HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, ErrorContext& error)
 {
     HRESULT hr = S_OK;
     PCWSTR pstrHandlerDllName = nullptr;
@@ -72,9 +72,13 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
             {
                 // TODO this can be more efficient by passing in the string to copy to.
                 auto output = to_multi_byte_string(redirectionOutput->GetOutput(), CP_UTF8);
-                error.resize(output.length());
-                memcpy(&error[0], output.c_str(), output.length());
+                error.errorContent.resize(output.length());
+                memcpy(&error.errorContent[0], output.c_str(), output.length());
 
+                error.statusCode = 500i16;
+                error.subStatusCode = 31i16;
+                error.specificErrorString = "Failed to find dependencies";
+                error.solution = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found."; // TODO more details here
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
                     ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG,
@@ -114,7 +118,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 }
 
 HRESULT
-HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, std::string& error)
+HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& error)
 {
     SRWExclusiveLock lock(m_requestHandlerLoadLock);
     if (m_loadedApplicationHostingModel != HOSTING_UNKNOWN)
