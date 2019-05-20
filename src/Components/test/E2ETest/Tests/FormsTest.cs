@@ -95,12 +95,37 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        public void InputPasswordInteractsWithEditContext()
+        {
+            var appElement = MountTestComponent<TypicalValidationComponent>();
+            var passwordInput = appElement.FindElement(By.ClassName("password")).FindElement(By.TagName("input"));
+            var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+            Browser.Equal("password", () => passwordInput.GetAttribute("type"));
+
+            // Validates on edit
+            Browser.Equal("valid", () => passwordInput.GetAttribute("class"));
+            passwordInput.SendKeys("Bert1234\t");
+            Browser.Equal("modified valid", () => passwordInput.GetAttribute("class"));
+
+            // Can become invalid
+            passwordInput.Clear();
+            passwordInput.SendKeys("hello\t");
+            Browser.Equal("modified invalid", () => passwordInput.GetAttribute("class"));
+            Browser.Equal(new[] { "Passwords must be at least 8 characters long" }, messagesAccessor);
+
+            // Can become valid
+            passwordInput.SendKeys("this is nice\t");
+            Browser.Equal("modified valid", () => passwordInput.GetAttribute("class"));
+            Browser.Empty(messagesAccessor);
+        }
+
+        [Fact]
         public void InputNumberInteractsWithEditContext_NonNullableInt()
         {
             var appElement = MountTestComponent<TypicalValidationComponent>();
             var ageInput = appElement.FindElement(By.ClassName("age")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
-
+            
             // Validates on edit
             Browser.Equal("valid", () => ageInput.GetAttribute("class"));
             ageInput.SendKeys("123\t");
