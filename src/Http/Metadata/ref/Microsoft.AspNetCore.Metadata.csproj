@@ -4,9 +4,7 @@
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-    <Compile Include="Microsoft.AspNetCore.Authorization.netstandard2.0.cs" />
-    <Reference Include="Microsoft.AspNetCore.Metadata"  />
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions"  />
-    <Reference Include="Microsoft.Extensions.Options"  />
+    <Compile Include="Microsoft.AspNetCore.Metadata.netstandard2.0.cs" />
+    
   </ItemGroup>
 </Project>
