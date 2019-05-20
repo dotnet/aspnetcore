@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void FailingTest()
         {
-            Assert.True(false, "This test is 100% flaky");
+            Assert.True(false, "This test is 100% flaky 100% of the time.");
         }
 
         [Theory]
