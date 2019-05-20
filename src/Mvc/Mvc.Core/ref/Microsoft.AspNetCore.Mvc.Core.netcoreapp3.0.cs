@@ -1547,6 +1547,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         protected ApplicationPart() { }
         public abstract string Name { get; }
     }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=true)]
+    public sealed partial class ApplicationPartAttribute : System.Attribute
+    {
+        public ApplicationPartAttribute(string assemblyName) { }
+        public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public abstract partial class ApplicationPartFactory
     {
         protected ApplicationPartFactory() { }
@@ -1560,13 +1566,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationFeatureProvider> FeatureProviders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void PopulateFeature<TFeature>(TFeature feature) { }
     }
-    public partial class AssemblyPart : Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart, Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationPartTypeProvider, Microsoft.AspNetCore.Mvc.ApplicationParts.ICompilationReferencesProvider
+    public partial class AssemblyPart : Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart, Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationPartTypeProvider
     {
         public AssemblyPart(System.Reflection.Assembly assembly) { }
         public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override string Name { get { throw null; } }
         public System.Collections.Generic.IEnumerable<System.Reflection.TypeInfo> Types { get { throw null; } }
-        public System.Collections.Generic.IEnumerable<string> GetReferencePaths() { throw null; }
     }
     public partial class DefaultApplicationPartFactory : Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartFactory
     {
