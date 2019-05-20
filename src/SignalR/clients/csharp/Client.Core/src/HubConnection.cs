@@ -1018,14 +1018,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
             if (sendHandshakeResult.IsCompleted)
             {
                 // The other side disconnected
-                throw new InvalidOperationException("The server disconnected before the handshake was completed");
+                var ex = new IOException("The server disconnected before the handshake could be started.");
+                Log.ErrorReceivingHandshakeResponse(_logger, ex);
+                throw ex;
             }
 
             var input = startingConnectionState.Connection.Transport.Input;
 
+            using var handshakeCts = new CancellationTokenSource(HandshakeTimeout);
+
             try
             {
-                using (var handshakeCts = new CancellationTokenSource(HandshakeTimeout))
                 // cancellationToken already contains _state.StopCts.Token, so we don't have to link it again
                 using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, handshakeCts.Token))
                 {
@@ -1057,6 +1060,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                             $"Unable to complete handshake with the server due to an error: {message.Error}");
                                     }
 
+                                    Log.HandshakeComplete(_logger);
                                     break;
                                 }
                             }
@@ -1075,17 +1079,34 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     }
                 }
             }
+            catch (HubException)
+            {
+                // This was already logged as a HandshakeServerError
+                throw;
+            }
+            catch (InvalidDataException ex)
+            {
+                Log.ErrorInvalidHandshakeResponse(_logger, ex);
+                throw;
+            }
+            catch (OperationCanceledException ex)
+            {
+                if (handshakeCts.IsCancellationRequested)
+                {
+                    Log.ErrorHandshakeTimedOut(_logger, HandshakeTimeout, ex);
+                }
+                else
+                {
+                    Log.ErrorHandshakeCanceled(_logger, ex);
+                }
 
-            // shutdown if we're unable to read handshake
-            // Ignore HubException because we throw it when we receive a handshake response with an error
-            // And because we already have the error, we don't need to log that the handshake failed
-            catch (Exception ex) when (!(ex is HubException))
+                throw;
+            }
+            catch (Exception ex)
             {
                 Log.ErrorReceivingHandshakeResponse(_logger, ex);
                 throw;
             }
-
-            Log.HandshakeComplete(_logger);
         }
 
         private async Task ReceiveLoop(ConnectionState connectionState)

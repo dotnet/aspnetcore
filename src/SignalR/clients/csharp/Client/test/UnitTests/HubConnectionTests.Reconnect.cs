@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 return writeContext.LoggerName == typeof(HubConnection).FullName &&
                        (writeContext.EventId.Name == "ServerDisconnectedWithError" ||
                         writeContext.EventId.Name == "ReconnectingWithError" ||
-                        writeContext.EventId.Name == "ErrorReceivingHandshakeResponse" ||
+                        writeContext.EventId.Name == "ErrorHandshakeCanceled" ||
                         writeContext.EventId.Name == "ErrorStartingConnection");
             }
 
