@@ -142,6 +142,12 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override bool TryParseValueFromString(string value, out T result, out string validationErrorMessage) { throw null; }
     }
 
+    public partial class InputPassword : Microsoft.AspNetCore.Components.Forms.InputText
+    {
+        public InputPassword() { }
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
+    }
+
     public partial class InputSelect<T> : Microsoft.AspNetCore.Components.Forms.InputBase<T>
     {
         public InputSelect() { }

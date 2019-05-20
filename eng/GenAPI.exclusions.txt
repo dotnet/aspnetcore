@@ -11,6 +11,7 @@ T:Microsoft.AspNetCore.Components.Forms.InputBase`1
 T:Microsoft.AspNetCore.Components.Forms.InputCheckbox
 T:Microsoft.AspNetCore.Components.Forms.InputDate`1
 T:Microsoft.AspNetCore.Components.Forms.InputNumber`1
+T:Microsoft.AspNetCore.Components.Forms.InputPassword
 T:Microsoft.AspNetCore.Components.Forms.InputSelect`1
 T:Microsoft.AspNetCore.Components.Forms.InputText
 T:Microsoft.AspNetCore.Components.Forms.InputTextArea
