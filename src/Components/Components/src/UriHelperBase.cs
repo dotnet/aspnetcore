@@ -154,7 +154,10 @@ namespace Microsoft.AspNetCore.Components
                 // baseUri ends with a slash), and from that we return "something"
                 return locationAbsolute.Substring(baseUri.Length);
             }
-            else if ($"{locationAbsolute}/".Equals(baseUri, StringComparison.Ordinal))
+
+            var hashIndex = locationAbsolute.IndexOf('#');
+            var locationAbsoluteNoHash = hashIndex < 0 ? locationAbsolute : locationAbsolute.Substring(0, hashIndex);
+            if ($"{locationAbsoluteNoHash}/".Equals(baseUri, StringComparison.Ordinal))
             {
                 // Special case: for the base URI "/something/", if you're at
                 // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -162,7 +165,7 @@ namespace Microsoft.AspNetCore.Components
                 // whether the server would return the same page whether or not the
                 // slash is present, but ASP.NET Core at least does by default when
                 // using PathBase.
-                return string.Empty;
+                return locationAbsolute.Substring(baseUri.Length - 1);
             }
 
             var message = $"The URI '{locationAbsolute}' is not contained by the base URI '{baseUri}'.";
