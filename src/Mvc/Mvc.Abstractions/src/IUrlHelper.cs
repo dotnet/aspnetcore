@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="ActionContext"/> for the current request.
         /// </summary>
-        ActionContext ActionContext { get; }
+        ActionContext ActionContext { get; } Fail
 
         /// <summary>
         /// Generates a URL with an absolute path for an action method, which contains the action
