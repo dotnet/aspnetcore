@@ -306,7 +306,13 @@ $MSBuildArguments += "/p:TargetOsName=win"
 if (($All -or $BuildJava) -and -not $NoBuildJava) {
     $foundJdk = $false
     $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
-    if ($env:JAVA_HOME) {
+    $localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
+    if (Test-Path "$localJdkPath\bin\javac.exe") {
+        $foundJdk = $true
+        Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
+        $env:JAVA_HOME = $localJdkPath
+    }
+    elseif ($env:JAVA_HOME) {
         if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
             Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
         }
@@ -337,7 +343,7 @@ if (($All -or $BuildJava) -and -not $NoBuildJava) {
     }
 
     if (-not $foundJdk) {
-        Write-Error "Could not find the JDK. See $PSScriptRoot\docs\BuildFromSource.md for details on this requirement."
+        Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
     }
 }
 
