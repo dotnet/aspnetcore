@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Real-time Chat with SignalR</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/css/bootstrap.min.css"
+              crossorigin="anonymous"
+              integrity="sha256-eSi1q2PG6J7g7ib17yAaWMcrr5GrtohYChqibrV7PBE="/>
+    <link rel="stylesheet" href="/css/site.css" />
+</head>
+<body>
+
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container">
+                <a class="nav-link text-dark" href="/index.html">Chat with SignalR</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <ul class="nav navbar-nav navbar-right">
+                    <li><span>Server Time: </span><span id="serverTime" style="width: 200px; display: inline-block;"></span></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <main role="main" class="pb-3">
+            <div class="container">
+                <div class="row">&nbsp;</div>
+                <div class="row">
+                    <div class="col-12">
+                        <form class="form-inline">
+                            <div class="input-prepend input-append">
+                                <input type="text" name="group-name" id="group-name" placeholder="Type a group name" />
+                                <input type="button" id="join-group" class="btn btn-sm btn-primary" value="Join Group" />
+                                <input type="button" id="leave-group" class="btn btn-sm btn-primary" value="Leave Group" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <form class="form-inline">
+                            <div class="input-prepend input-append">
+                                <input type="text" name="group-message" id="group-message-text" placeholder="Type a message" />
+                                <input type="button" id="groupmsg" class="btn btn-sm btn-primary" value="Send to Group" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <hr />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-6">&nbsp;</div>
+                    <div class="col-6">
+                        <ul id="messagesList"></ul>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2019 - SignalRTemplate
+        </div>
+    </footer>
+    
+    <!-- JQuery is only being used here to enable advanced Bootstrap features. 
+         JQuery is not a requirement for ASP.NET Core SignalR. -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
+            crossorigin="anonymous"
+            integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.1.3/js/bootstrap.bundle.min.js"
+            crossorigin="anonymous"
+            integrity="sha256-E/V4cWE4qvAeO5MOhjtGtqDzPndRO1LBk8lJ/PR7CA4=">
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aspnet-signalr/1.1.4/signalr.min.js"
+            crossorigin="anonymous">
+    </script>
+    <script src="/js/site.js"></script>
+    <script src="/js/chat.js"></script>
+    <script src="/js/serverTime.js"></script>
+    
+</body>
+</html>

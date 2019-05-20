@@ -43,6 +43,7 @@
     <GeneratedContent Include="RazorComponentsWeb-CSharp.csproj.in" OutputPath="content/RazorComponentsWeb-CSharp/RazorComponentsWeb-CSharp.csproj" />
     <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="RazorClassLibrary-CSharp.csproj.in" OutputPath="content/RazorClassLibrary-CSharp/Company.RazorClassLibrary1.csproj" />
+    <GeneratedContent Include="SignalR-CSharp.csproj.in" OutputPath="content/SignalR-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj" />
     <GeneratedContent Include="StarterWeb-FSharp.fsproj.in" OutputPath="content/StarterWeb-FSharp/Company.WebApplication1.fsproj" />
     <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj" />

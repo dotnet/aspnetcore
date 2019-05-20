@@ -938,6 +938,26 @@
       ]
     }
   },
+  "signalr": {
+    "None": {
+      "Template": "signalr",
+      "Arguments": "new signalr",
+      "Files": [
+        "Hubs/ChatHub.cs",
+        "Hubs/StreamingTimerHub.cs",
+        "Properties/launchSettings.json",
+        "appsettings.Development.json",
+        "appsettings.json",
+        "Program.cs",
+        "Startup.cs",
+        "wwwroot/css/site.css",
+        "wwwroot/js/chat.js",
+        "wwwroot/js/serverTime.js",
+        "wwwroot/js/site.js",
+        "wwwroot/index.html"
+      ]
+    }
+  },
   "angular": {
     "None": {
       "Template": "angular",
