@@ -50,7 +50,7 @@ namespace Company.WebApplication1.Controllers
     public class WeatherResult
     {
         public int Temperature { get; set; }
-        public TemperatureUnit Temperature { get; set; }
+        public TemperatureUnit TemperatureUnit { get; set; }
         public string Location { get; set; }
     }
 }

@@ -404,7 +404,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/ValuesController.cs",
+        "Controllers/WeatherController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "IndividualB2C"
@@ -417,7 +417,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/ValuesController.cs",
+        "Controllers/WeatherController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "SingleOrg"
@@ -430,7 +430,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/ValuesController.cs",
+        "Controllers/WeatherController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "None"
@@ -443,7 +443,7 @@
         "appsettings.json",
         "Program.cs",
         "Startup.cs",
-        "Controllers/ValuesController.cs",
+        "Controllers/WeatherController.cs",
         "Properties/launchSettings.json"
       ],
       "AuthOption": "Windows"
@@ -456,7 +456,7 @@
         "appsettings.json",
         "Program.fs",
         "Startup.fs",
-        "Controllers/ValuesController.fs",
+        "Controllers/WeatherController.fs",
         "Properties/launchSettings.json"
       ]
     }
