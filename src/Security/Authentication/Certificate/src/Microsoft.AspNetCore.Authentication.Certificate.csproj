@@ -5,7 +5,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <DefineConstants>$(DefineConstants);SECURITY</DefineConstants>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security;x509;certificate</PackageTags>
   </PropertyGroup>
