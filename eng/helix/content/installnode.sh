@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+if type -P "node" &>/dev/null; then
+    echo "node is in \$PATH"
+    exit
+fi
+
 node_version=$1
 platformarch=$2
 output_dir=$HELIX_CORRELATION_PAYLOAD/node
