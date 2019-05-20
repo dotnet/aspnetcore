@@ -331,7 +331,7 @@ if (($All -or $BuildJava) -and -not $NoBuildJava) {
         try {
             $jdkVersion = (Get-Item HKLM:\SOFTWARE\JavaSoft\JDK | Get-ItemProperty -name CurrentVersion).CurrentVersion
             $javaHome = (Get-Item HKLM:\SOFTWARE\JavaSoft\JDK\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
-            if (Test-Path "${env:JAVA_HOME}\bin\java.exe") {
+            if (Test-Path "$javaHome\bin\javac.exe") {
                 $env:JAVA_HOME = $javaHome
                 Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
                 $foundJdk = $true
