@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
     {
         /// <summary>
         /// Adds a middleware to the pipeline that will look for a certificate in a request header
-        /// and put that certificate on the request client certificate property.
+        /// decode it, and updates HttpContext.Connection.ClientCertificate.
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
