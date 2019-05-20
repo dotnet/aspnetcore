@@ -48,6 +48,10 @@
           Condition=" '$(IsProductInstaller)' == 'true' "
           AfterTargets="Build">
     <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(InstallersOutputPath)" />
+    <ItemGroup>
+      <_cabs Include="$(TargetDir)**/*.cab" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_cabs)" DestinationFolder="$(InstallersOutputPath)" />
   </Target>
 
 </Project>

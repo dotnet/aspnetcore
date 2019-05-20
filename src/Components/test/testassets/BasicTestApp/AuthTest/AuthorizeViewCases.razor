@@ -1,0 +1,17 @@
+@page "/AuthorizeViewCases"
+
+<div id="no-authorization-rule">
+    <h3>Scenario: No authorization rule</h3>
+
+    <AuthorizeView>
+        <Authorizing>
+            <p class="authorizing">Authorizing...</p>
+        </Authorizing>
+        <Authorized>
+            <p class="authorized">Welcome, @context.User.Identity.Name!</p>
+        </Authorized>
+        <NotAuthorized>
+            <p class="not-authorized">You're not logged in.</p>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>

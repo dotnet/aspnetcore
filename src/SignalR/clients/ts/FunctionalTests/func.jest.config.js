@@ -8,17 +8,17 @@ module.exports = {
     ],
     globals: {
         "ts-jest": {
-            "tsConfigFile": "../tsconfig.jest.json",
-            "skipBabel": true,
-            
+            "tsConfig": "./tsconfig.jest.json",
+            "babelConfig": true,
+
             // Needed in order to properly process the JS files
             // We run 'tsc --noEmit' to get TS diagnostics before the test instead
-            "enableTsDiagnostics": false,
+            "diagnostics": false,
         }
     },
     reporters: [
         "default",
-        ["../common/node_modules/jest-junit/index.js", { "output": "../../../../../artifacts/logs/" + `${process.platform}` + ".node.functional.junit.xml" }]
+        ["../common/node_modules/jest-junit/index.js", { "output": "../../../../../artifacts/log/" + `${process.platform}` + ".node.functional.junit.xml" }]
     ],
     transform: {
         "^.+\\.(jsx?|tsx?)$": "../common/node_modules/ts-jest"

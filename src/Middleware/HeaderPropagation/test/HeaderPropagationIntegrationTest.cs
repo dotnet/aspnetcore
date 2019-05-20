@@ -92,6 +92,35 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Fact]
+        public async Task MultipleHeaders_HeadersInRequest_AddAllHeaders()
+        {
+            // Arrange
+            var handler = new SimpleHandler();
+            var builder = CreateBuilder(c =>
+                {
+                    c.Headers.Add("first");
+                    c.Headers.Add("second");
+                },
+                handler);
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage();
+            request.Headers.Add("first", "value");
+            request.Headers.Add("second", "other");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(handler.Headers.Contains("first"));
+            Assert.Equal(new[] { "value" }, handler.Headers.GetValues("first"));
+            Assert.True(handler.Headers.Contains("second"));
+            Assert.Equal(new[] { "other" }, handler.Headers.GetValues("second"));
+        }
+
+        [Fact]
         public void Builder_UseHeaderPropagation_Without_AddHeaderPropagation_Throws()
         {
             var builder = new WebHostBuilder()
@@ -106,7 +135,31 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
                 exception.Message);
         }
 
-        private IWebHostBuilder CreateBuilder(Action<HeaderPropagationOptions> configure, HttpMessageHandler primaryHandler)
+        [Fact]
+        public async Task HeaderInRequest_OverrideHeaderPerClient_AddCorrectValue()
+        {
+            // Arrange
+            var handler = new SimpleHandler();
+            var builder = CreateBuilder(
+                c => c.Headers.Add("in", "out"),
+                handler,
+                c => c.Headers.Add("out", "different"));
+            var server = new TestServer(builder);
+            var client = server.CreateClient();
+
+            var request = new HttpRequestMessage();
+            request.Headers.Add("in", "test");
+
+            // Act
+            var response = await client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(handler.Headers.Contains("different"));
+            Assert.Equal(new[] { "test" }, handler.Headers.GetValues("different"));
+        }
+
+        private IWebHostBuilder CreateBuilder(Action<HeaderPropagationOptions> configure, HttpMessageHandler primaryHandler, Action<HeaderPropagationMessageHandlerOptions> configureClient = null)
         {
             return new WebHostBuilder()
                 .Configure(app =>
@@ -116,13 +169,21 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
+                    services.AddHeaderPropagation(configure);
+                    var client = services.AddHttpClient("example.com", c => c.BaseAddress = new Uri("http://example.com"))
                         .ConfigureHttpMessageHandlerBuilder(b =>
                         {
                             b.PrimaryHandler = primaryHandler;
-                        })
-                        .AddHeaderPropagation();
-                    services.AddHeaderPropagation(configure);
+                        });
+
+                    if (configureClient != null)
+                    {
+                        client.AddHeaderPropagation(configureClient);
+                    }
+                    else
+                    {
+                        client.AddHeaderPropagation();
+                    }
                 });
         }
 

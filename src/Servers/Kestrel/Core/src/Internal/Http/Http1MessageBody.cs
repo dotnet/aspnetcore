@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected readonly Http1Connection _context;
 
         protected Http1MessageBody(Http1Connection context)
-            : base(context, context.MinRequestBodyDataRate)
+            : base(context)
         {
             _context = context;
         }

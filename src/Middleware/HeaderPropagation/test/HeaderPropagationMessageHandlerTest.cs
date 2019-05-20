@@ -7,7 +7,6 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -22,10 +21,10 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             State = new HeaderPropagationValues();
             State.Headers = new Dictionary<string, StringValues>(StringComparer.OrdinalIgnoreCase);
 
-            Configuration = new HeaderPropagationOptions();
+            Configuration = new HeaderPropagationMessageHandlerOptions();
 
             var headerPropagationMessageHandler =
-                new HeaderPropagationMessageHandler(Options.Create(Configuration), State)
+                new HeaderPropagationMessageHandler(Configuration, State)
                 {
                     InnerHandler = Handler
                 };
@@ -38,14 +37,14 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
 
         private SimpleHandler Handler { get; }
         public HeaderPropagationValues State { get; set; }
-        public HeaderPropagationOptions Configuration { get; set; }
+        public HeaderPropagationMessageHandlerOptions Configuration { get; set; }
         public HttpClient Client { get; set; }
 
         [Fact]
         public async Task HeaderInState_AddCorrectValue()
         {
             // Arrange
-            Configuration.Headers.Add("in", "out");
+            Configuration.Headers.Add("out");
             State.Headers.Add("out", "test");
 
             // Act
@@ -60,7 +59,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         public async Task HeaderInState_WithMultipleValues_AddAllValues()
         {
             // Arrange
-            Configuration.Headers.Add("in", "out");
+            Configuration.Headers.Add("out");
             State.Headers.Add("out", new[] { "one", "two" });
 
             // Act
@@ -74,8 +73,8 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_RequestWithContent_ContentHeaderPresent_DoesNotAddIt()
         {
-            Configuration.Headers.Add("in", "Content-Type");
-            State.Headers.Add("in", "test");
+            Configuration.Headers.Add("Content-Type");
+            State.Headers.Add("Content-Type", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage() { Content = new StringContent("test") });
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_RequestWithContent_ContentHeaderNotPresent_AddValue()
         {
-            Configuration.Headers.Add("in", "Content-Language");
+            Configuration.Headers.Add("Content-Language");
             State.Headers.Add("Content-Language", "test");
 
             // Act
@@ -102,7 +101,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [Fact]
         public async Task HeaderInState_WithMultipleValues_RequestWithContent_ContentHeaderNotPresent_AddAllValues()
         {
-            Configuration.Headers.Add("in", "Content-Language");
+            Configuration.Headers.Add("Content-Language");
             State.Headers.Add("Content-Language", new[] { "one", "two" });
 
             // Act
@@ -114,18 +113,18 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         }
 
         [Fact]
-        public async Task HeaderInState_NoOutputName_UseInputName()
+        public async Task HeaderInState_WithOutboundName_UseOutboundName()
         {
             // Arrange
-            Configuration.Headers.Add("in");
-            State.Headers.Add("in", "test");
+            Configuration.Headers.Add("state", "out");
+            State.Headers.Add("state", "test");
 
             // Act
             await Client.SendAsync(new HttpRequestMessage());
 
             // Assert
-            Assert.True(Handler.Headers.Contains("in"));
-            Assert.Equal(new[] { "test" }, Handler.Headers.GetValues("in"));
+            Assert.True(Handler.Headers.Contains("out"));
+            Assert.Equal(new[] { "test" }, Handler.Headers.GetValues("out"));
         }
 
         [Fact]
@@ -193,7 +192,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
         [InlineData("", new[] { "" })]
         [InlineData(null, new[] { "" })]
         [InlineData("42", new[] { "42" })]
-        public async Task HeaderInState_HeaderAlreadyInOutgoingRequest(string outgoingValue,
+        public async Task HeaderInState_HeaderAlreadyInOutgoingRequest_DoesNotOverrideIt(string outgoingValue,
             string[] expectedValues)
         {
             // Arrange
@@ -209,6 +208,57 @@ namespace Microsoft.AspNetCore.HeaderPropagation.Tests
             // Assert
             Assert.True(Handler.Headers.Contains("inout"));
             Assert.Equal(expectedValues, Handler.Headers.GetValues("inout"));
+        }
+
+        [Fact]
+        public async Task HeaderInState_HeaderTwiceInOptions_DoesNotAddItTwice()
+        {
+            // Arrange
+            State.Headers.Add("name", "value");
+            Configuration.Headers.Add("name");
+            Configuration.Headers.Add("name");
+
+            // Act
+            await Client.SendAsync(new HttpRequestMessage());
+
+            // Assert
+            Assert.True(Handler.Headers.Contains("name"));
+            Assert.Equal(new[] { "value" }, Handler.Headers.GetValues("name"));
+        }
+
+        [Fact]
+        public async Task HeaderInState_HeaderTwiceInOptionsWithDifferentNames_AddsBoth()
+        {
+            // Arrange
+            State.Headers.Add("name", "value");
+            Configuration.Headers.Add("name");
+            Configuration.Headers.Add("name", "other");
+
+            // Act
+            await Client.SendAsync(new HttpRequestMessage());
+
+            // Assert
+            Assert.True(Handler.Headers.Contains("name"));
+            Assert.Equal(new[] { "value" }, Handler.Headers.GetValues("name"));
+            Assert.True(Handler.Headers.Contains("other"));
+            Assert.Equal(new[] { "value" }, Handler.Headers.GetValues("name"));
+        }
+
+        [Fact]
+        public async Task TwoHeadersInState_BothHeadersInOptionsWithSameName_AddsFirst()
+        {
+            // Arrange
+            State.Headers.Add("name", "value");
+            State.Headers.Add("other", "override");
+            Configuration.Headers.Add("name");
+            Configuration.Headers.Add("other", "name");
+
+            // Act
+            await Client.SendAsync(new HttpRequestMessage());
+
+            // Assert
+            Assert.True(Handler.Headers.Contains("name"));
+            Assert.Equal(new[] { "value" }, Handler.Headers.GetValues("name"));
         }
 
         private class SimpleHandler : DelegatingHandler

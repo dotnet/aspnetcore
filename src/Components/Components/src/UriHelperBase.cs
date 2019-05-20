@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Components.Routing;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -10,12 +11,12 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public abstract class UriHelperBase : IUriHelper
     {
-        private EventHandler<string> _onLocationChanged;
+        private EventHandler<LocationChangedEventArgs> _onLocationChanged;
 
         /// <summary>
         /// An event that fires when the navigation location has changed.
         /// </summary>
-        public event EventHandler<string> OnLocationChanged
+        public event EventHandler<LocationChangedEventArgs> OnLocationChanged
         {
             add
             {
@@ -153,7 +154,10 @@ namespace Microsoft.AspNetCore.Components
                 // baseUri ends with a slash), and from that we return "something"
                 return locationAbsolute.Substring(baseUri.Length);
             }
-            else if ($"{locationAbsolute}/".Equals(baseUri, StringComparison.Ordinal))
+
+            var hashIndex = locationAbsolute.IndexOf('#');
+            var locationAbsoluteNoHash = hashIndex < 0 ? locationAbsolute : locationAbsolute.Substring(0, hashIndex);
+            if ($"{locationAbsoluteNoHash}/".Equals(baseUri, StringComparison.Ordinal))
             {
                 // Special case: for the base URI "/something/", if you're at
                 // "/something" then treat it as if you were at "/something/" (i.e.,
@@ -161,7 +165,7 @@ namespace Microsoft.AspNetCore.Components
                 // whether the server would return the same page whether or not the
                 // slash is present, but ASP.NET Core at least does by default when
                 // using PathBase.
-                return string.Empty;
+                return locationAbsolute.Substring(baseUri.Length - 1);
             }
 
             var message = $"The URI '{locationAbsolute}' is not contained by the base URI '{baseUri}'.";
@@ -205,9 +209,9 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Triggers the <see cref="OnLocationChanged"/> event with the current URI value.
         /// </summary>
-        protected void TriggerOnLocationChanged()
+        protected void TriggerOnLocationChanged(bool isinterceptedLink)
         {
-            _onLocationChanged?.Invoke(this, _uri);
+            _onLocationChanged?.Invoke(this, new LocationChangedEventArgs(_uri, isinterceptedLink));
         }
 
         private void AssertInitialized()

@@ -127,8 +127,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
             var timeoutFeature = context.Features.Get<IConnectionTimeoutFeature>();
             timeoutFeature.SetTimeout(_options.HandshakeTimeout);
 
-            _options.OnHandshakeStarted?.Invoke();
-
             try
             {
                 // Adapt to the SslStream signature
@@ -169,6 +167,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 {
                     sslOptions.ApplicationProtocols.Add(SslApplicationProtocol.Http11);
                 }
+
+                _options.OnAuthenticate?.Invoke(context.ConnectionContext, sslOptions);
 
                 await sslStream.AuthenticateAsServerAsync(sslOptions, CancellationToken.None);
             }

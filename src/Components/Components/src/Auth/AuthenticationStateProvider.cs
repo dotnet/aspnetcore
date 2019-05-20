@@ -12,19 +12,16 @@ namespace Microsoft.AspNetCore.Components
     public abstract class AuthenticationStateProvider
     {
         /// <summary>
-        /// Gets an <see cref="AuthenticationState"/> instance that describes
-        /// the current user.
+        /// Asynchronously gets an <see cref="AuthenticationState"/> that describes the current user.
         /// </summary>
-        /// <returns>An <see cref="AuthenticationState"/> instance that describes the current user.</returns>
+        /// <returns>A task that, when resolved, gives an <see cref="AuthenticationState"/> instance that describes the current user.</returns>
         public abstract Task<AuthenticationState> GetAuthenticationStateAsync();
 
         /// <summary>
         /// An event that provides notification when the <see cref="AuthenticationState"/>
         /// has changed. For example, this event may be raised if a user logs in or out.
         /// </summary>
-#pragma warning disable 0067 // "Never used" (it's only raised by subclasses)
         public event AuthenticationStateChangedHandler AuthenticationStateChanged;
-#pragma warning restore 0067
 
         /// <summary>
         /// Raises the <see cref="AuthenticationStateChanged"/> event.

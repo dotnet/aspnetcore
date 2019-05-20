@@ -29,7 +29,7 @@
       "test\\testassets\\ComponentsApp.App\\ComponentsApp.App.csproj",
       "test\\testassets\\ComponentsApp.Server\\ComponentsApp.Server.csproj",
       "test\\testassets\\TestContentPackage\\TestContentPackage.csproj",
-      "test\\testassets\\TestServer\\TestServer.csproj"
+      "test\\testassets\\TestServer\\Components.TestServer.csproj"
     ]
   }
 }

@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public override void InitializeState(string uriAbsolute, string baseUriAbsolute) { }
         protected override void NavigateToCore(string uri, bool forceLoad) { }
         [Microsoft.JSInterop.JSInvokableAttribute("NotifyLocationChanged")]
-        public static void NotifyLocationChanged(string uriAbsolute) { }
+        public static void NotifyLocationChanged(string uriAbsolute, bool isInterceptedLink) { }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection

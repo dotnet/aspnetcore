@@ -48,6 +48,8 @@ namespace Microsoft.AspNetCore.TestHost
     {
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureTestContainer<TContainer>(this Microsoft.AspNetCore.Hosting.IWebHostBuilder webHostBuilder, System.Action<TContainer> servicesConfiguration) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureTestServices(this Microsoft.AspNetCore.Hosting.IWebHostBuilder webHostBuilder, System.Action<Microsoft.Extensions.DependencyInjection.IServiceCollection> servicesConfiguration) { throw null; }
+        public static System.Net.Http.HttpClient GetTestClient(this Microsoft.AspNetCore.Hosting.IWebHost host) { throw null; }
+        public static Microsoft.AspNetCore.TestHost.TestServer GetTestServer(this Microsoft.AspNetCore.Hosting.IWebHost host) { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, string solutionRelativePath, string solutionName = "*.sln") { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseSolutionRelativeContentRoot(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, string solutionRelativePath, string applicationBasePath, string solutionName = "*.sln") { throw null; }
         public static Microsoft.AspNetCore.Hosting.IWebHostBuilder UseTestServer(this Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { throw null; }

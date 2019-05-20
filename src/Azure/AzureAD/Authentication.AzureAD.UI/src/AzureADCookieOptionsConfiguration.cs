@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
@@ -29,6 +30,7 @@ namespace Microsoft.AspNetCore.Authentication.AzureAD.UI
             options.LoginPath = $"/AzureAD/Account/SignIn/{AzureADScheme}";
             options.LogoutPath = $"/AzureAD/Account/SignOut/{AzureADScheme}";
             options.AccessDeniedPath = "/AzureAD/Account/AccessDenied";
+            options.Cookie.SameSite = SameSiteMode.None;
         }
 
         public void Configure(CookieAuthenticationOptions options)

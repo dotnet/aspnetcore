@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
         protected override void InitializeAsyncCore()
         {
-            Navigate(ServerPathBase, noReload: !_serverFixture.UsingAspNetHost);
+            Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
             MountTestComponent<BasicTestApp.CascadingValueTest.CascadingValueSupplier>();
         }
 

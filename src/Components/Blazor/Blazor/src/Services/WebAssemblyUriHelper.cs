@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Blazor.Services
         protected override void EnsureInitialized()
         {
             WebAssemblyJSRuntime.Instance.Invoke<object>(
-                Interop.EnableNavigationInterception,
+                Interop.ListenForNavigationEvents,
                 typeof(WebAssemblyUriHelper).Assembly.GetName().Name,
                 nameof(NotifyLocationChanged));
 
@@ -54,10 +54,10 @@ namespace Microsoft.AspNetCore.Blazor.Services
         /// For framework use only.
         /// </summary>
         [JSInvokable(nameof(NotifyLocationChanged))]
-        public static void NotifyLocationChanged(string newAbsoluteUri)
+        public static void NotifyLocationChanged(string newAbsoluteUri, bool isInterceptedLink)
         {
             Instance.SetAbsoluteUri(newAbsoluteUri);
-            Instance.TriggerOnLocationChanged();
+            Instance.TriggerOnLocationChanged(isInterceptedLink);
         }
 
         /// <summary>

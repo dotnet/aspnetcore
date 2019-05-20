@@ -9,5 +9,6 @@
     <Reference Include="Microsoft.AspNetCore.Mvc.RazorPages"  />
     <Reference Include="Microsoft.AspNetCore.Razor.Runtime"  />
     <Reference Include="Microsoft.CodeAnalysis.Razor"  />
+    <Reference Include="Microsoft.Extensions.DependencyModel"  />
   </ItemGroup>
 </Project>
