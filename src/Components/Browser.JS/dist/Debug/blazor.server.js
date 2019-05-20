@@ -12932,7 +12932,7 @@ var DefaultReconnectDisplay = /** @class */ (function () {
             'right: 0',
             'bottom: 0',
             'left: 0',
-            'z-index: 1000',
+            'z-index: 2147483647',
             'display: none',
             'overflow: hidden',
             'background-color: #fff',
