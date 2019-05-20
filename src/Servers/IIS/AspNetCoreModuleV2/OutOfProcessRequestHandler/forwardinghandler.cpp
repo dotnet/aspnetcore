@@ -4,6 +4,7 @@
 #include "forwardinghandler.h"
 #include "url_utility.h"
 #include "exceptions.h"
+#include "ServerErrorApplication.h"
 #include "ServerErrorHandler.h"
 #include "resource.h"
 
@@ -302,7 +303,7 @@ Failure:
     }
     else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
-        ServerErrorHandler handler(*m_pW3Context, 502, 5, "Bad Gateway", hr, g_hOutOfProcessRHModule, m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(), OUT_OF_PROCESS_RH_STATIC_HTML);
+        ServerErrorHandler handler(*m_pW3Context, 502, 5, "Bad Gateway", hr, m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(), GetHtml(g_hOutOfProcessRHModule, OUT_OF_PROCESS_RH_STATIC_HTML, 502, 5));
         handler.ExecuteRequestHandler();
     }
     else

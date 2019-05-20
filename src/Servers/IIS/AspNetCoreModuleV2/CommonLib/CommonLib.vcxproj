@@ -196,7 +196,6 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="HostfxrStartupFailure.h" />
     <ClInclude Include="PollingAppOfflineApplication.h" />
     <ClInclude Include="application.h" />
     <ClInclude Include="BindingInformation.h" />

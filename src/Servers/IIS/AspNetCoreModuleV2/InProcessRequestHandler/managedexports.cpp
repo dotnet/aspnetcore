@@ -7,7 +7,7 @@
 #include "EventLog.h"
 
 extern bool g_fInProcessApplicationCreated;
-extern std::vector<byte> g_errorPageContent;
+extern std::string g_errorPageContent;
 extern IHttpServer* g_pHttpServer;
 
 //

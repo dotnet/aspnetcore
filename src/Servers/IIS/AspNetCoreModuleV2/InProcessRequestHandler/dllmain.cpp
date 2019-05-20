@@ -28,7 +28,7 @@ HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 bool                g_fInProcessApplicationCreated = false;
-std::vector<byte>   g_errorPageContent;
+std::string         g_errorPageContent; // TODO we can remove the global error by using the original inprocess app
 HINSTANCE           g_hServerModule;
 
 HRESULT
@@ -129,7 +129,7 @@ CreateApplication(
             std::unique_ptr<InProcessOptions> options;
             THROW_IF_FAILED(InProcessOptions::Create(*pServer, pSite, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
-            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, g_hServerModule, options->QueryDisableStartUpErrorPage(), hr, std::move(g_errorPageContent));
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, options->QueryDisableStartUpErrorPage(), hr, std::move(g_errorPageContent), 500i16, 30i16, "Internal Server Error");
 
             RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
             *ppApplication = pErrorApplication.release();

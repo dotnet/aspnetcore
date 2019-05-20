@@ -15,7 +15,6 @@
 #include "WebConfigConfigurationSource.h"
 #include "ConfigurationLoadException.h"
 #include "resource.h"
-#include "HostfxrStartupFailure.h"
 
 extern HINSTANCE           g_hServerModule;
 
@@ -87,34 +86,41 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
             const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
             ShimOptions options(configurationSource);
 
-            std::vector<byte> error;
+            // Instead of this being an object, make it a context for errors!
+            std::string error;
 
             const auto hr = TryCreateApplication(pHttpContext, options, error);
 
             if (FAILED_LOG(hr))
             {
-                // Log the failure and update application info to not try again
+                // From here, the only issue is knowing which status and substatus codes to write based on error code.
                 EventLog::Error(
                     ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
                     ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
                     pHttpApplication.GetApplicationId(),
                     hr);
 
-                if (options.QueryIsDevelopment() && error.size() > 0)
+                if (options.QueryIsDevelopment())
                 {
-                    m_pApplication = make_application<HostfxrStartupFailure>(
+                    m_pApplication = make_application<ServerErrorApplication>(
                         pHttpApplication,
-                        error,
-                        options.QueryDisableStartupPage());
+                        hr,
+                        options.QueryDisableStartupPage(),
+                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, 500, 0, error) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, 500, 0),
+                        500i16,
+                        0i16,
+                        "Internal Server Error");
                 }
                 else
                 {
                     m_pApplication = make_application<ServerErrorApplication>(
                         pHttpApplication,
                         hr,
-                        g_hServerModule,
                         options.QueryDisableStartupPage(),
-                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML);
+                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, 500, 0) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, 500, 0),
+                        500i16,
+                        0i16,
+                        "Internal Server Error");
                 }
             }
             return S_OK;
@@ -137,14 +143,18 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
         m_pApplication = make_application<ServerErrorApplication>(
             pHttpApplication,
             E_FAIL,
-            g_hServerModule);
+            false,
+            "",
+            500i16,
+            0i16,
+            "Internal Server Error");
 
         return S_OK;
     }
 }
 
 HRESULT
-APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, std::vector<byte>& error)
+APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, std::string& error)
 {
     const auto startupEvent = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_STARTUP_SUSPEND_EVENT");
     if (startupEvent.has_value())
