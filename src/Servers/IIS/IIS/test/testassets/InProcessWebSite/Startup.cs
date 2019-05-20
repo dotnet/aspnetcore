@@ -20,6 +20,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Xunit;
+using HttpFeatures = Microsoft.AspNetCore.Http.Features;
 
 namespace TestSite
 {
@@ -34,7 +35,7 @@ namespace TestSite
         {
             var varName = ctx.Request.Query["q"];
             var newValue = ctx.Request.Query["v"];
-            var feature = ctx.Features.Get<IServerVariablesFeature>();
+            var feature = ctx.Features.Get<HttpFeatures.IServerVariablesFeature>();
             if (newValue.Count != 0)
             {
                 feature[varName] = newValue;
@@ -702,7 +703,7 @@ namespace TestSite
             // executed on background thread while request thread calls GetServerVariable
             // concurrent native calls may cause native object corruption
 
-            var serverVariableFeature = ctx.Features.Get<IServerVariablesFeature>();
+            var serverVariableFeature = ctx.Features.Get<HttpFeatures.IServerVariablesFeature>();
             await ctx.Response.WriteAsync("Response Begin");
             for (int i = 0; i < 1000; i++)
             {
