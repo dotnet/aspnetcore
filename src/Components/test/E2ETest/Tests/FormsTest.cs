@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountTestComponent<TypicalValidationComponent>();
             var ageInput = appElement.FindElement(By.ClassName("age")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
-            
+
             // Validates on edit
             Browser.Equal("valid", () => ageInput.GetAttribute("class"));
             ageInput.SendKeys("123\t");
