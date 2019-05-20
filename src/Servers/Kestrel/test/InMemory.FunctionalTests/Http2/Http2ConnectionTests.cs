@@ -1174,7 +1174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task HEADERS_Received_WithTrailers_Discarded(bool sendData)
+        public async Task HEADERS_Received_WithTrailers_Available(bool sendData)
         {
             await InitializeConnectionAsync(_readTrailersApplication);
 
@@ -1206,10 +1206,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             VerifyDecodedRequestHeaders(_browserRequestHeaders);
 
-            // Make sure the trailers are missing. https://github.com/aspnet/KestrelHttpServer/issues/2630
+            // Make sure the trailers are in the trailers collection.
             foreach (var header in _requestTrailers)
             {
                 Assert.False(_receivedHeaders.ContainsKey(header.Key));
+                Assert.True(_receivedTrailers.ContainsKey(header.Key));
+                Assert.Equal(header.Value, _receivedTrailers[header.Key]);
             }
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
@@ -3288,7 +3290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task CONTINUATION_Received_WithTrailers_Discarded(bool sendData)
+        public async Task CONTINUATION_Received_WithTrailers_Available(bool sendData)
         {
             await InitializeConnectionAsync(_readTrailersApplication);
 
@@ -3331,9 +3333,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             VerifyDecodedRequestHeaders(_browserRequestHeaders);
 
-            // Make sure the trailers are missing. https://github.com/aspnet/KestrelHttpServer/issues/2630
+            // Make sure the trailers are in the trailers collection.
             Assert.False(_receivedHeaders.ContainsKey("trailer-1"));
             Assert.False(_receivedHeaders.ContainsKey("trailer-2"));
+            Assert.True(_receivedTrailers.ContainsKey("trailer-1"));
+            Assert.True(_receivedTrailers.ContainsKey("trailer-2"));
+            Assert.Equal("1", _receivedTrailers["trailer-1"]);
+            Assert.Equal("2", _receivedTrailers["trailer-2"]);
 
             await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
         }

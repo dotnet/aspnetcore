@@ -232,18 +232,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                 var buffer = new byte[200];
 
+                Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable"); // Not yet
+                Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));  // Not yet
+
+                // The last request is content-length with no trailers.
+                if (requestsReceived < requestCount)
+                {
+                    Assert.Equal("X-Trailer-Header", request.GetDeclaredTrailers().ToString());
+                }
+
                 while (await request.Body.ReadAsync(buffer, 0, buffer.Length) != 0)
                 {
                     ;// read to end
                 }
 
+                Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+
                 if (requestsReceived < requestCount)
                 {
-                    Assert.Equal(new string('a', requestsReceived), request.Headers["X-Trailer-Header"].ToString());
+                    Assert.False(request.Headers.ContainsKey("X-Trailer-Header"));
+                    Assert.Equal(new string('a', requestsReceived), request.GetTrailer("X-Trailer-Header").ToString());
                 }
                 else
                 {
-                    Assert.True(string.IsNullOrEmpty(request.Headers["X-Trailer-Header"]));
+                    Assert.False(request.Headers.ContainsKey("X-Trailer-Header"));
+                    Assert.True(string.IsNullOrEmpty(request.GetTrailer("X-Trailer-Header")));
                 }
 
                 requestsReceived++;
@@ -278,6 +293,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "POST / HTTP/1.1",
                         "Host:",
                         "Transfer-Encoding: chunked",
+                        "Trailer: X-Trailer-Header",
                         "",
                         "C",
                         $"HelloChunk{i:00}",
@@ -315,6 +331,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 var response = httpContext.Response;
                 var request = httpContext.Request;
 
+                Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable"); // Not yet
+                Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));  // Not yet
+
+                // The last request is content-length with no trailers.
+                if (requestsReceived < requestCount)
+                {
+                    Assert.Equal("X-Trailer-Header", request.GetDeclaredTrailers().ToString());
+                }
+
                 while (true)
                 {
                     var result = await request.BodyReader.ReadAsync();
@@ -325,13 +351,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     }
                 }
 
+                Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+
                 if (requestsReceived < requestCount)
                 {
-                    Assert.Equal(new string('a', requestsReceived), request.Headers["X-Trailer-Header"].ToString());
+                    Assert.False(request.Headers.ContainsKey("X-Trailer-Header"));
+                    Assert.Equal(new string('a', requestsReceived), request.GetTrailer("X-Trailer-Header").ToString());
                 }
                 else
                 {
-                    Assert.True(string.IsNullOrEmpty(request.Headers["X-Trailer-Header"]));
+                    Assert.False(request.Headers.ContainsKey("X-Trailer-Header"));
+                    Assert.True(string.IsNullOrEmpty(request.GetTrailer("X-Trailer-Header")));
                 }
 
                 requestsReceived++;
@@ -366,6 +397,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "POST / HTTP/1.1",
                         "Host:",
                         "Transfer-Encoding: chunked",
+                        "Trailer: X-Trailer-Header",
                         "",
                         "C",
                         $"HelloChunk{i:00}",
