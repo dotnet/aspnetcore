@@ -6,12 +6,14 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.RequestThrottling
 {
-    internal class SemaphoreWrapper : IDisposable
+    public class SemaphoreWrapper : IDisposable
     {
         private SemaphoreSlim _semaphore;
+        public int TotalRequests { get; set; } = 0;
 
         public SemaphoreWrapper(int queueLength)
         {
+            TotalRequests += 1;
             _semaphore = new SemaphoreSlim(queueLength);
         }
 
