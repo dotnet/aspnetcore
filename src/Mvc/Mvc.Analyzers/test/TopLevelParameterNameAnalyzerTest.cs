@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var method = (IMethodSymbol)modelType.GetMembers("ActionMethod").First();
             var parameter = method.Parameters[0];
 
-            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
             var result = TopLevelParameterNameAnalyzer.IsProblematicParameter(symbolCache, parameter);
             return result;
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             var methodName = nameof(GetNameTests.SingleAttribute);
             var compilation = await GetCompilationForGetName();
-            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
             var type = compilation.GetTypeByMetadataName(typeof(GetNameTests).FullName);
             var method = (IMethodSymbol)type.GetMembers(methodName).First();
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             var methodName = nameof(GetNameTests.NoAttribute);
             var compilation = await GetCompilationForGetName();
-            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
             var type = compilation.GetTypeByMetadataName(typeof(GetNameTests).FullName);
             var method = (IMethodSymbol)type.GetMembers(methodName).First();
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             var methodName = nameof(GetNameTests.SingleAttributeWithoutName);
             var compilation = await GetCompilationForGetName();
-            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
             var type = compilation.GetTypeByMetadataName(typeof(GetNameTests).FullName);
             var method = (IMethodSymbol)type.GetMembers(methodName).First();
@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         {
             var methodName = nameof(GetNameTests.MultipleAttributes);
             var compilation = await GetCompilationForGetName();
-            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
             var type = compilation.GetTypeByMetadataName(typeof(GetNameTests).FullName);
             var method = (IMethodSymbol)type.GetMembers(methodName).First();
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await project.GetCompilationAsync();
-            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
             var type = compilation.GetTypeByMetadataName(typeof(SpecifiesModelTypeTests).FullName);
             var method = (IMethodSymbol)type.GetMembers(testMethod).First();
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await project.GetCompilationAsync();
-            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
             var type = compilation.GetTypeByMetadataName(typeof(SpecifiesModelTypeTests).FullName);
             var method = (IMethodSymbol)type.GetMembers(testMethod).First();
@@ -257,7 +257,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             var project = DiagnosticProject.Create(GetType().Assembly, new[] { testSource.Source });
 
             var compilation = await project.GetCompilationAsync();
-            var symbolCache = new TopLevelParameterNameAnalyzer.SymbolCache(compilation);
+            Assert.True(TopLevelParameterNameAnalyzer.SymbolCache.TryCreate(compilation, out var symbolCache));
 
             var type = compilation.GetTypeByMetadataName(typeof(SpecifiesModelTypeTests).FullName);
             var method = (IMethodSymbol)type.GetMembers(testMethod).First();

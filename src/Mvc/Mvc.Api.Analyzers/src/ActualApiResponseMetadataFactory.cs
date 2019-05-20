@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 var symbolInfo = semanticModel.GetSymbolInfo(identifier, cancellationToken);
                 if (symbolInfo.Symbol is IPropertySymbol property)
                 {
-                    if (IsInterfaceImplementation(property, symbolCache.StatusCodeActionResultStatusProperty!) &&
+                    if (IsInterfaceImplementation(property, symbolCache.StatusCodeActionResultStatusProperty) &&
                         TryGetExpressionStatusCode(semanticModel, assignment.Right, cancellationToken, out var statusCodeValue))
                     {
                         // Look for assignments to IStatusCodeActionResult.StatusCode

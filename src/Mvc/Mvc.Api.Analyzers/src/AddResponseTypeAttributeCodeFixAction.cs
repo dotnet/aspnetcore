@@ -44,11 +44,13 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         protected override async Task<Document> GetChangedDocumentAsync(CancellationToken cancellationToken)
         {
-            var context = await CreateCodeActionContext(cancellationToken).ConfigureAwait(false);
-            if (!context.SymbolCache.HasRequiredSymbols)
+            var nullableContext = await CreateCodeActionContext(cancellationToken).ConfigureAwait(false);
+            if (nullableContext == null)
             {
                 return _document;
             }
+
+            var context = nullableContext.Value;
 
             var declaredResponseMetadata = SymbolApiResponseMetadataProvider.GetDeclaredResponseMetadata(context.SymbolCache, context.Method);
             var errorResponseType = SymbolApiResponseMetadataProvider.GetErrorResponseType(context.SymbolCache, context.Method);
@@ -122,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return document.WithSyntaxRoot(root);
         }
 
-        private async Task<CodeActionContext> CreateCodeActionContext(CancellationToken cancellationToken)
+        private async Task<CodeActionContext?> CreateCodeActionContext(CancellationToken cancellationToken)
         {
             var root = await _document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var semanticModel = await _document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
@@ -133,7 +135,10 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             var statusCodesType = semanticModel.Compilation.GetTypeByMetadataName(ApiSymbolNames.HttpStatusCodes);
             var statusCodeConstants = GetStatusCodeConstants(statusCodesType);
 
-            var symbolCache = new ApiControllerSymbolCache(semanticModel.Compilation);
+            if (!ApiControllerSymbolCache.TryCreate(semanticModel.Compilation, out var symbolCache))
+            {
+                return null;
+            }
 
             var codeActionContext = new CodeActionContext(semanticModel, symbolCache, method, methodSyntax, statusCodeConstants, cancellationToken);
             return codeActionContext;

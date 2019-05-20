@@ -23,8 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
             context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
             {
-                var typeCache = new SymbolCache(compilationStartAnalysisContext.Compilation);
-                if (!typeCache.HasRequiredSymbols)
+                if (!SymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var typeCache))
                 {
                     // No-op if we can't find types we care about.
                     return;
@@ -184,44 +183,100 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         internal readonly struct SymbolCache
         {
-#pragma warning disable RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
-            private readonly IMethodSymbol? _idisposableDispose;
-#pragma warning restore RS1008 // Avoid storing per-compilation data into the fields of a diagnostic analyzer.
-
-            public SymbolCache(Compilation compilation)
+            public SymbolCache(
+                INamedTypeSymbol bindAttribute,
+                INamedTypeSymbol controllerAttribute,
+                INamedTypeSymbol fromBodyAttribute,
+                INamedTypeSymbol apiBehaviorMetadata,
+                INamedTypeSymbol binderTypeProviderMetadata,
+                INamedTypeSymbol modelNameProvider,
+                INamedTypeSymbol nonControllerAttribute,
+                INamedTypeSymbol nonActionAttribute,
+                IMethodSymbol disposableDispose)
             {
-                HasRequiredSymbols = true;
+                BindAttribute = bindAttribute;
+                ControllerAttribute = controllerAttribute;
+                FromBodyAttribute = fromBodyAttribute;
+                IApiBehaviorMetadata = apiBehaviorMetadata;
+                IBinderTypeProviderMetadata = binderTypeProviderMetadata;
+                IModelNameProvider = modelNameProvider;
+                NonControllerAttribute = nonControllerAttribute;
+                NonActionAttribute = nonActionAttribute;
+                IDisposableDispose = disposableDispose;
+            }
 
-                BindAttribute = compilation.GetTypeByMetadataName(SymbolNames.BindAttribute);
-                HasRequiredSymbols &= IsValidSymbol(BindAttribute);
+            public static bool TryCreate(Compilation compilation, out SymbolCache symbolCache)
+            {
+                symbolCache = default;
 
-                ControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.ControllerAttribute);
-                HasRequiredSymbols &= IsValidSymbol(ControllerAttribute);
+                if (!TryGetType(SymbolNames.BindAttribute, out var bindAttribute))
+                {
+                    return false;
+                }
 
-                FromBodyAttribute = compilation.GetTypeByMetadataName(SymbolNames.FromBodyAttribute);
-                HasRequiredSymbols &= IsValidSymbol(FromBodyAttribute);
 
-                IApiBehaviorMetadata = compilation.GetTypeByMetadataName(SymbolNames.IApiBehaviorMetadata);
-                HasRequiredSymbols &= IsValidSymbol(IApiBehaviorMetadata);
+                if (!TryGetType(SymbolNames.ControllerAttribute, out var controllerAttribute))
+                {
+                    return false;
+                }
 
-                IBinderTypeProviderMetadata = compilation.GetTypeByMetadataName(SymbolNames.IBinderTypeProviderMetadata);
-                HasRequiredSymbols &= IsValidSymbol(IBinderTypeProviderMetadata);
 
-                IModelNameProvider = compilation.GetTypeByMetadataName(SymbolNames.IModelNameProvider);
-                HasRequiredSymbols &= IsValidSymbol(IModelNameProvider);
+                if (!TryGetType(SymbolNames.FromBodyAttribute, out var fromBodyAttribute))
+                {
+                    return false;
+                }
 
-                NonControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonControllerAttribute);
-                HasRequiredSymbols &= IsValidSymbol(NonControllerAttribute);
+                if (!TryGetType(SymbolNames.IApiBehaviorMetadata, out var apiBehaviorMetadata))
+                {
+                    return false;
+                }
 
-                NonActionAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonActionAttribute);
-                HasRequiredSymbols &= IsValidSymbol(NonActionAttribute);
+                if (!TryGetType(SymbolNames.IBinderTypeProviderMetadata, out var iBinderTypeProviderMetadata))
+                {
+                    return false;
+                }
+
+                if (!TryGetType(SymbolNames.IModelNameProvider, out var iModelNameProvider))
+                {
+                    return false;
+                }
+
+                if (!TryGetType(SymbolNames.NonControllerAttribute, out var nonControllerAttribute))
+                {
+                    return false;
+                }
+
+                if (!TryGetType(SymbolNames.NonActionAttribute, out var nonActionAttribute))
+                {
+                    return false;
+                }
 
                 var disposable = compilation.GetSpecialType(SpecialType.System_IDisposable);
                 var members = disposable?.GetMembers(nameof(IDisposable.Dispose));
-                _idisposableDispose = (IMethodSymbol?)members?[0];
-                HasRequiredSymbols &= IsValidSymbol(_idisposableDispose);
+                var idisposableDispose = (IMethodSymbol?)members?[0];
+                if (idisposableDispose == null)
+                {
+                    return false;
+                }
 
-                static bool IsValidSymbol(ISymbol? symbol) => symbol != null && symbol.Kind != SymbolKind.ErrorType;
+                symbolCache = new SymbolCache(
+                    bindAttribute,
+                    controllerAttribute,
+                    fromBodyAttribute,
+                    apiBehaviorMetadata,
+                    iBinderTypeProviderMetadata,
+                    iModelNameProvider,
+                    nonControllerAttribute,
+                    nonActionAttribute,
+                    idisposableDispose);
+
+                return true;
+
+                bool TryGetType(string typeName, out INamedTypeSymbol typeSymbol)
+                {
+                    typeSymbol = compilation.GetTypeByMetadataName(typeName);
+                    return typeSymbol != null && typeSymbol.TypeKind != TypeKind.Error;
+                }
             }
 
             public INamedTypeSymbol BindAttribute { get; }
@@ -232,9 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
             public INamedTypeSymbol IModelNameProvider { get; }
             public INamedTypeSymbol NonControllerAttribute { get; }
             public INamedTypeSymbol NonActionAttribute { get; }
-            public IMethodSymbol IDisposableDispose => _idisposableDispose ?? throw new ArgumentNullException();
-
-            public bool HasRequiredSymbols { get; }
+            public IMethodSymbol IDisposableDispose { get; }
         }
     }
 }

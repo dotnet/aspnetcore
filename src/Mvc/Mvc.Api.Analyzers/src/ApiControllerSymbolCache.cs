@@ -8,68 +8,164 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 {
     internal readonly struct ApiControllerSymbolCache
     {
-        private readonly IPropertySymbol? _statusCodeActionResultStatusProperty;
-        private readonly IMethodSymbol? _iDisposableDispose;
-
-        public ApiControllerSymbolCache(Compilation compilation)
+        public static bool TryCreate(Compilation compilation, out ApiControllerSymbolCache symbolCache)
         {
-            HasRequiredSymbols = true;
+            symbolCache = default;
 
-            ApiConventionMethodAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ApiConventionMethodAttribute);
-            HasRequiredSymbols &= IsValidSymbol(ApiConventionMethodAttribute);
+            if (!TryGetType(ApiSymbolNames.ApiConventionMethodAttribute, out var apiConventionMethodAttribute))
+            {
+                return false;
+            }
 
-            ApiConventionNameMatchAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ApiConventionNameMatchAttribute);
-            HasRequiredSymbols &= IsValidSymbol(ApiConventionNameMatchAttribute);
+            if (!TryGetType(ApiSymbolNames.ApiConventionNameMatchAttribute, out var apiConventionNameMatchAttribute))
+            {
+                return false;
+            }
 
-            ApiConventionTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ApiConventionTypeAttribute);
-            HasRequiredSymbols &= IsValidSymbol(ApiConventionTypeAttribute);
+            if (!TryGetType(ApiSymbolNames.ApiConventionTypeAttribute, out var apiConventionTypeAttribute))
+            {
+                return false;
+            }
 
-            ApiConventionTypeMatchAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ApiConventionTypeMatchAttribute);
-            HasRequiredSymbols &= IsValidSymbol(ApiConventionTypeMatchAttribute);
+            if (!TryGetType(ApiSymbolNames.ApiConventionTypeMatchAttribute, out var apiConventionTypeMatchAttribute))
+            {
+                return false;
+            }
 
-            ControllerAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ControllerAttribute);
-            HasRequiredSymbols &= IsValidSymbol(ControllerAttribute);
+            if (!TryGetType(ApiSymbolNames.ControllerAttribute, out var controllerAttribute))
+            {
+                return false;
+            }
 
-            DefaultStatusCodeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.DefaultStatusCodeAttribute);
-            HasRequiredSymbols &= IsValidSymbol(DefaultStatusCodeAttribute);
+            if (!TryGetType(ApiSymbolNames.DefaultStatusCodeAttribute, out var defaultStatusCodeAttribute))
+            {
+                return false;
+            }
 
-            IActionResult = compilation.GetTypeByMetadataName(ApiSymbolNames.IActionResult);
-            HasRequiredSymbols &= IsValidSymbol(IActionResult);
+            if (!TryGetType(ApiSymbolNames.IActionResult, out var iActionResult))
+            {
+                return false;
+            }
 
-            IApiBehaviorMetadata = compilation.GetTypeByMetadataName(ApiSymbolNames.IApiBehaviorMetadata);
-            HasRequiredSymbols &= IsValidSymbol(IApiBehaviorMetadata);
+            if (!TryGetType(ApiSymbolNames.IApiBehaviorMetadata, out var iApiBehaviorMetadata))
+            {
+                return false;
+            }
 
-            ModelStateDictionary = compilation.GetTypeByMetadataName(ApiSymbolNames.ModelStateDictionary);
-            HasRequiredSymbols &= IsValidSymbol(ModelStateDictionary);
+            if (!TryGetType(ApiSymbolNames.ModelStateDictionary, out var modelStateDictionary))
+            {
+                return false;
+            }
 
-            NonActionAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.NonActionAttribute);
-            HasRequiredSymbols &= IsValidSymbol(NonActionAttribute);
+            if (!TryGetType(ApiSymbolNames.NonActionAttribute, out var nonActionAttribute))
+            {
+                return false;
+            }
 
-            NonControllerAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.NonControllerAttribute);
-            HasRequiredSymbols &= IsValidSymbol(NonControllerAttribute);
+            if (!TryGetType(ApiSymbolNames.NonControllerAttribute, out var nonControllerAttribute))
+            {
+                return false;
+            }
 
-            ProblemDetails = compilation.GetTypeByMetadataName(ApiSymbolNames.ProblemDetails);
-            HasRequiredSymbols &= IsValidSymbol(ProblemDetails);
+            if (!TryGetType(ApiSymbolNames.ProblemDetails, out var problemDetails))
+            {
+                return false;
+            }
 
-            ProducesDefaultResponseTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ProducesDefaultResponseTypeAttribute);
-            HasRequiredSymbols &= IsValidSymbol(ProducesDefaultResponseTypeAttribute);
+            if (!TryGetType(ApiSymbolNames.ProducesDefaultResponseTypeAttribute, out var producesDefaultResponseTypeAttribute))
+            {
+                return false;
+            }
 
-            ProducesErrorResponseTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ProducesErrorResponseTypeAttribute);
-            HasRequiredSymbols &= IsValidSymbol(ProducesErrorResponseTypeAttribute);
+            if (!TryGetType(ApiSymbolNames.ProducesErrorResponseTypeAttribute, out var producesErrorResponseTypeAttribute))
+            {
+                return false;
+            }
 
-            ProducesResponseTypeAttribute = compilation.GetTypeByMetadataName(ApiSymbolNames.ProducesResponseTypeAttribute);
-            HasRequiredSymbols &= IsValidSymbol(ProducesResponseTypeAttribute);
+            if (!TryGetType(ApiSymbolNames.ProducesResponseTypeAttribute, out var producesResponseTypeAttribute))
+            {
+                return false;
+            }
 
             var statusCodeActionResult = compilation.GetTypeByMetadataName(ApiSymbolNames.IStatusCodeActionResult);
-            _statusCodeActionResultStatusProperty = (IPropertySymbol?)statusCodeActionResult?.GetMembers("StatusCode")[0];
-            HasRequiredSymbols &= IsValidSymbol(_statusCodeActionResultStatusProperty);
+            var statusCodeActionResultStatusProperty = (IPropertySymbol?)statusCodeActionResult?.GetMembers("StatusCode")[0];
+            if (statusCodeActionResultStatusProperty == null)
+            {
+                return false;
+            }
 
             var disposable = compilation.GetSpecialType(SpecialType.System_IDisposable);
             var members = disposable?.GetMembers(nameof(IDisposable.Dispose));
-            _iDisposableDispose = (IMethodSymbol?)members?[0];
-            HasRequiredSymbols &= IsValidSymbol(_iDisposableDispose);
+            var iDisposableDispose = (IMethodSymbol?)members?[0];
+            if (iDisposableDispose == null)
+            {
+                return false;
+            }
 
-            static bool IsValidSymbol(ISymbol? symbol) => symbol != null && symbol.Kind != SymbolKind.ErrorType;
+            symbolCache = new ApiControllerSymbolCache(
+                apiConventionMethodAttribute,
+                apiConventionNameMatchAttribute,
+                apiConventionTypeAttribute,
+                apiConventionTypeMatchAttribute,
+                controllerAttribute,
+                defaultStatusCodeAttribute,
+                iActionResult,
+                iApiBehaviorMetadata,
+                iDisposableDispose,
+                statusCodeActionResultStatusProperty,
+                modelStateDictionary,
+                nonActionAttribute,
+                nonControllerAttribute,
+                problemDetails,
+                producesDefaultResponseTypeAttribute,
+                producesResponseTypeAttribute,
+                producesErrorResponseTypeAttribute);
+
+            return true;
+
+            bool TryGetType(string typeName, out INamedTypeSymbol typeSymbol)
+            {
+                typeSymbol = compilation.GetTypeByMetadataName(typeName);
+                return typeSymbol != null && typeSymbol.TypeKind != TypeKind.Error;
+            }
+        }
+
+        private ApiControllerSymbolCache(
+            INamedTypeSymbol apiConventionMethodAttribute,
+            INamedTypeSymbol apiConventionNameMatchAttribute,
+            INamedTypeSymbol apiConventionTypeAttribute,
+            INamedTypeSymbol apiConventionTypeMatchAttribute,
+            INamedTypeSymbol controllerAttribute,
+            INamedTypeSymbol defaultStatusCodeAttribute,
+            INamedTypeSymbol actionResult,
+            INamedTypeSymbol apiBehaviorMetadata,
+            IMethodSymbol disposableDispose,
+            IPropertySymbol statusCodeActionResultStatusProperty,
+            ITypeSymbol modelStateDictionary,
+            INamedTypeSymbol nonActionAttribute,
+            INamedTypeSymbol nonControllerAttribute,
+            INamedTypeSymbol problemDetails,
+            INamedTypeSymbol producesDefaultResponseTypeAttribute,
+            INamedTypeSymbol producesResponseTypeAttribute,
+            INamedTypeSymbol producesErrorResponseTypeAttribute)
+        {
+            ApiConventionMethodAttribute = apiConventionMethodAttribute;
+            ApiConventionNameMatchAttribute = apiConventionNameMatchAttribute;
+            ApiConventionTypeAttribute = apiConventionTypeAttribute;
+            ApiConventionTypeMatchAttribute = apiConventionTypeMatchAttribute;
+            ControllerAttribute = controllerAttribute;
+            DefaultStatusCodeAttribute = defaultStatusCodeAttribute;
+            IActionResult = actionResult;
+            IApiBehaviorMetadata = apiBehaviorMetadata;
+            IDisposableDispose = disposableDispose;
+            StatusCodeActionResultStatusProperty = statusCodeActionResultStatusProperty;
+            ModelStateDictionary = modelStateDictionary;
+            NonActionAttribute = nonActionAttribute;
+            NonControllerAttribute = nonControllerAttribute;
+            ProblemDetails = problemDetails;
+            ProducesDefaultResponseTypeAttribute = producesDefaultResponseTypeAttribute;
+            ProducesResponseTypeAttribute = producesResponseTypeAttribute;
+            ProducesErrorResponseTypeAttribute = producesErrorResponseTypeAttribute;
         }
 
         public INamedTypeSymbol ApiConventionMethodAttribute { get; }
@@ -88,9 +184,9 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
 
         public INamedTypeSymbol IApiBehaviorMetadata { get; }
 
-        public IMethodSymbol IDisposableDispose => _iDisposableDispose ?? throw new ArgumentNullException(nameof(IDisposableDispose));
+        public IMethodSymbol IDisposableDispose { get; }
 
-        public IPropertySymbol StatusCodeActionResultStatusProperty => _statusCodeActionResultStatusProperty ?? throw new ArgumentNullException(nameof(StatusCodeActionResultStatusProperty));
+        public IPropertySymbol StatusCodeActionResultStatusProperty { get; }
 
         public ITypeSymbol ModelStateDictionary { get; }
 
@@ -105,7 +201,5 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
         public INamedTypeSymbol ProducesResponseTypeAttribute { get; }
 
         public INamedTypeSymbol ProducesErrorResponseTypeAttribute { get; }
-
-        public bool HasRequiredSymbols { get; }
     }
 }
