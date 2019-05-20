@@ -74,4 +74,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <None Remove="**\*.razor" />
   </ItemGroup>
 
+  <Import 
+    Project="$(MSBuildThisFileDirectory)..\..\Sdk\Sdk.Razor.StaticAssets.ProjectSystem.props"
+    Condition=" '$(EnableRazorSdkContent)' == 'true' " />
+
 </Project>
