@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Indicates if the server supports receiving trailer headers.
+        /// Indicates if the request supports receiving trailer headers.
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Http
         }
 
         /// <summary>
-        /// Checks if the server supports trailers and they are available to be read now.
+        /// Checks if the request supports trailers and they are available to be read now.
         /// This does not mean that there are any trailers to read.
         /// </summary>
         /// <param name="request"></param>

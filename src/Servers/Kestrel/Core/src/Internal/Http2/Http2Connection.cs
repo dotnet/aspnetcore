@@ -575,9 +575,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _currentHeadersStream.Reset();
                 _headerFlags = _incomingFrame.HeadersFlags;
 
-                // All HTTP/2 requests support request trailers.
-                _currentHeadersStream.EnableRequestTrailersFeature();
-
                 var headersPayload = payload.Slice(0, _incomingFrame.HeadersPayloadLength); // Minus padding
                 return DecodeHeadersAsync(_incomingFrame.HeadersEndHeaders, headersPayload);
             }

@@ -298,6 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             _currentIHttp2StreamIdFeature = this;
             _currentIHttpResponseTrailersFeature = this;
+            _currentIHttpRequestTrailersFeature = this;
         }
 
         void IHttpResponseFeature.OnStarting(Func<object, Task> callback, object state)
