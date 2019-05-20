@@ -13,9 +13,14 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public static class RequestTrailerExtensions
     {
+        /// <summary>
+        /// Gets the request "Trailer" header that lists which trailers to expect after the body.
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         public static StringValues GetDeclaredTrailers(this HttpRequest request)
         {
-            return request.Headers[HeaderNames.Trailer];
+            return request.Headers.GetCommaSeparatedValues(HeaderNames.Trailer);
         }
 
         /// <summary>
@@ -36,7 +41,7 @@ namespace Microsoft.AspNetCore.Http
         /// <returns></returns>
         public static bool CheckTrailersAvailable(this HttpRequest request)
         {
-            return request.HttpContext.Features.Get<IHttpRequestTrailersFeature>()?.Trailers != null;
+            return request.HttpContext.Features.Get<IHttpRequestTrailersFeature>()?.Available == true;
         }
 
         /// <summary>
@@ -51,11 +56,7 @@ namespace Microsoft.AspNetCore.Http
             var feature = request.HttpContext.Features.Get<IHttpRequestTrailersFeature>();
             if (feature == null)
             {
-                throw new NotSupportedException("This server does not support request trailers.");
-            }
-            if (feature.Trailers == null)
-            {
-                throw new InvalidOperationException("The trailers are not available yet. Did you finish reading the request body?");
+                throw new NotSupportedException("This request does not support trailers.");
             }
 
             return feature.Trailers[trailerName];

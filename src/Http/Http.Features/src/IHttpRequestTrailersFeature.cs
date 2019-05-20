@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Http.Features
 {
     /// <summary>
@@ -9,8 +11,15 @@ namespace Microsoft.AspNetCore.Http.Features
     public interface IHttpRequestTrailersFeature
     {
         /// <summary>
-        /// The trailing headers received. This will return null if the request body has not been read yet.
-        /// If there are no trailers this will return an empty collection.
+        /// Indicates if the <see cref="Trailers"/> are available yet. They may not be available until the
+        /// request body is fully read.
+        /// </summary>
+        bool Available { get; }
+
+        /// <summary>
+        /// The trailing headers received. This will throw <see cref="InvalidOperationException"/> if <see cref="Available"/>
+        /// returns false. They may not be available until the request body is fully read. If there are no trailers this will
+        /// return an empty collection.
         /// </summary>
         IHeaderDictionary Trailers { get; }
     }

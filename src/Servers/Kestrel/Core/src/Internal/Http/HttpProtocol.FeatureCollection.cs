@@ -134,10 +134,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        bool IHttpRequestTrailersFeature.Available => RequestTrailersAvailable;
+
         IHeaderDictionary IHttpRequestTrailersFeature.Trailers
         {
             get
             {
+                if (!RequestTrailersAvailable)
+                {
+                    throw new InvalidOperationException(CoreStrings.RequestTrailersNotAvailable);
+                }
                 return RequestTrailers;
             }
         }
