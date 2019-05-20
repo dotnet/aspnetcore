@@ -150,6 +150,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // TODO may push more into the wrapper rather than just calling into the message body
                 // NBD for now.
+                context.EnableRequestTrailersFeature();
                 return new Http1ChunkedEncodingMessageBody(keepAlive, context);
             }
 

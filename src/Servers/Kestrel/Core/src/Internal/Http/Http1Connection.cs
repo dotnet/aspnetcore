@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         break;
                     }
                 case RequestProcessingStatus.ParsingHeaders:
-                    if (TakeMessageHeaders(buffer, out consumed, out examined))
+                    if (TakeMessageHeaders(buffer, trailers: false, out consumed, out examined))
                     {
                         _requestProcessingStatus = RequestProcessingStatus.AppStarted;
                     }
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return result;
         }
 
-        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, out SequencePosition consumed, out SequencePosition examined)
+        public bool TakeMessageHeaders(ReadOnlySequence<byte> buffer, bool trailers, out SequencePosition consumed, out SequencePosition examined)
         {
             // Make sure the buffer is limited
             bool overLength = false;
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 overLength = true;
             }
 
-            var result = _parser.ParseHeaders(new Http1ParsingHandler(this), buffer, out consumed, out examined, out var consumedBytes);
+            var result = _parser.ParseHeaders(new Http1ParsingHandler(this, trailers), buffer, out consumed, out examined, out var consumedBytes);
             _remainingRequestHeadersBytesAllowed -= consumedBytes;
 
             if (!result && overLength)

@@ -26,6 +26,7 @@ namespace CodeGenerator
             var commonFeatures = new[]
             {
                 "IHttpAuthenticationFeature",
+                "IHttpRequestTrailersFeature",
                 "IQueryFeature",
                 "IFormFeature",
             };
