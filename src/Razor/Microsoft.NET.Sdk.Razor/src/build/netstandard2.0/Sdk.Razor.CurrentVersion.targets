@@ -151,7 +151,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <GetCopyToOutputDirectoryItemsDependsOn>
       _RazorGetCopyToOutputDirectoryItems;
-      $(GetCopyToOutputDirectoryItems)
+      $(GetCopyToOutputDirectoryItemsDependsOn)
     </GetCopyToOutputDirectoryItemsDependsOn>
 
   </PropertyGroup>
