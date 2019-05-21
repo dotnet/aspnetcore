@@ -11,7 +11,7 @@
     "id": "1034"
   },
   "order": 450,
-  "icon": "vs-2017.3/signalr.png",
+  "icon": "vs-2017.3/Empty.png",
   "learnMoreLink": "https://aka.ms/signalr/docs",
   "uiFilters": [ "oneaspnet" ],
   "supportsDocker": true,
