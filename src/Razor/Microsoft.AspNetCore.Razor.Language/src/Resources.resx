@@ -547,4 +547,7 @@
   <data name="TagHelper_InvalidBoundAttributeParameterNullOrWhitespace" xml:space="preserve">
     <value>Invalid tag helper bound attribute parameter '{0}'. Tag helpers cannot bind to HTML attribute parameters with a null or empty name.</value>
   </data>
+  <data name="DirectiveExpectsCSharpAttribute" xml:space="preserve">
+    <value>The '{0}' directive expects a C# attribute.</value>
+  </data>
 </root>

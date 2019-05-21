@@ -9,5 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         Namespace,
         Member,
         String,
+        Attribute,
     }
 }

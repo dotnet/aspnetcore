@@ -95,6 +95,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
+        public static IDirectiveDescriptorBuilder AddAttributeToken(this IDirectiveDescriptorBuilder builder)
+        {
+            return AddAttributeToken(builder, name: null, description: null);
+        }
+
+        public static IDirectiveDescriptorBuilder AddAttributeToken(this IDirectiveDescriptorBuilder builder, string name, string description)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Tokens.Add(
+                DirectiveTokenDescriptor.CreateToken(
+                    DirectiveTokenKind.Attribute,
+                    optional: false,
+                    name: name,
+                    description: description));
+
+            return builder;
+        }
+
         public static IDirectiveDescriptorBuilder AddOptionalMemberToken(this IDirectiveDescriptorBuilder builder)
         {
             return AddOptionalMemberToken(builder, name: null, description: null);
@@ -176,6 +198,28 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Tokens.Add(
                 DirectiveTokenDescriptor.CreateToken(
                     DirectiveTokenKind.Type,
+                    optional: true,
+                    name: name,
+                    description: description));
+
+            return builder;
+        }
+
+        public static IDirectiveDescriptorBuilder AddOptionalAttributeToken(this IDirectiveDescriptorBuilder builder)
+        {
+            return AddOptionalAttributeToken(builder, name: null, description: null);
+        }
+
+        public static IDirectiveDescriptorBuilder AddOptionalAttributeToken(this IDirectiveDescriptorBuilder builder, string name, string description)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.Tokens.Add(
+                DirectiveTokenDescriptor.CreateToken(
+                    DirectiveTokenKind.Attribute,
                     optional: true,
                     name: name,
                     description: description));

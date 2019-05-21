@@ -416,6 +416,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return RazorDiagnostic.Create(Parsing_InvalidTagHelperLookupText, location, lookupText);
         }
+
+        internal static readonly RazorDiagnosticDescriptor Parsing_DirectiveExpectsCSharpAttribute =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}1037",
+                () => Resources.DirectiveExpectsCSharpAttribute,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DirectiveExpectsCSharpAttribute(SourceSpan location, string directiveName)
+        {
+            return RazorDiagnostic.Create(Parsing_DirectiveExpectsCSharpAttribute, location, directiveName);
+        }
         #endregion
 
         #region Semantic Errors

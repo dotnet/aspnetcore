@@ -118,5 +118,33 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("Name", token.Name);
             Assert.Equal("Description", token.Description);
         }
+
+        [Fact]
+        public void AddAttributeToken_AddsToken()
+        {
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddAttributeToken("Name", "Description"));
+
+            // Assert
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.Attribute, token.Kind);
+            Assert.False(token.Optional);
+            Assert.Equal("Name", token.Name);
+            Assert.Equal("Description", token.Description);
+        }
+
+        [Fact]
+        public void AddOptionalAttributeToken_AddsToken()
+        {
+            // Arrange & Act
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalAttributeToken());
+
+            // Assert
+            var token = Assert.Single(descriptor.Tokens);
+            Assert.Equal(DirectiveTokenKind.Attribute, token.Kind);
+            Assert.True(token.Optional);
+            Assert.Null(token.Name);
+            Assert.Null(token.Description);
+        }
     }
 }

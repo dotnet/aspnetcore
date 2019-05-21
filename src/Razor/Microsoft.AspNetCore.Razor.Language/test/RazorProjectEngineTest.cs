@@ -45,6 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var features = engine.EngineFeatures.OrderBy(f => f.GetType().Name).ToArray();
             Assert.Collection(
                 features,
+                feature => Assert.IsType<AttributeDirectivePass>(feature),
                 feature => Assert.IsType<ComponentBindLoweringPass>(feature),
                 feature => Assert.IsType<ComponentChildContentDiagnosticPass>(feature),
                 feature => Assert.IsType<ComponentComplexAttributeContentPass>(feature),
@@ -91,7 +92,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 directive => Assert.Same(FunctionsDirective.Directive, directive),
                 directive => Assert.Same(ImplementsDirective.Directive, directive),
                 directive => Assert.Same(InheritsDirective.Directive, directive),
-                directive => Assert.Same(NamespaceDirective.Directive, directive));
+                directive => Assert.Same(NamespaceDirective.Directive, directive),
+                directive => Assert.Same(AttributeDirective.Directive, directive));
         }
 
         private static void AssertDefaultTargetExtensions(RazorProjectEngine engine)

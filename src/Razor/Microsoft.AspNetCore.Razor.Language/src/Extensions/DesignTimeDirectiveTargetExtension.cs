@@ -44,6 +44,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
+            if (tokenKind == DirectiveTokenKind.Attribute)
+            {
+                // We don't need to do anything special here.
+                // We let the Roslyn take care of providing syntax errors for C# attributes.
+                return;
+            }
+
             // Wrap the directive token in a lambda to isolate variable names.
             context.CodeWriter
                 .Write("((")

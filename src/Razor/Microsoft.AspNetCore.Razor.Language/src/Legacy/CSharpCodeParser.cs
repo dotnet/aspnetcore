@@ -1259,7 +1259,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                         if (tokenDescriptor.Kind == DirectiveTokenKind.Member ||
                             tokenDescriptor.Kind == DirectiveTokenKind.Namespace ||
-                            tokenDescriptor.Kind == DirectiveTokenKind.Type)
+                            tokenDescriptor.Kind == DirectiveTokenKind.Type ||
+                            tokenDescriptor.Kind == DirectiveTokenKind.Attribute)
                         {
                             SpanContext.ChunkGenerator = SpanChunkGenerator.Null;
                             SpanContext.EditHandler.AcceptedCharacters = AcceptedCharactersInternal.Whitespace;
@@ -1351,6 +1352,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     builder.Add(BuildDirective());
                                     return;
                                 }
+                                break;
+                            case DirectiveTokenKind.Attribute:
+                                if (At(SyntaxKind.LeftBracket))
+                                {
+                                    if (Balance(directiveBuilder, BalancingModes.NoErrorOnFailure))
+                                    {
+                                        TryAccept(SyntaxKind.RightBracket);
+                                    }
+                                }
+                                else
+                                {
+                                    Context.ErrorSink.OnError(
+                                        RazorDiagnosticFactory.CreateParsing_DirectiveExpectsCSharpAttribute(
+                                            new SourceSpan(CurrentStart, CurrentToken.Content.Length), descriptor.Directive));
+                                    builder.Add(BuildDirective());
+                                    return;
+                                }
+                                
                                 break;
                         }
 
@@ -2426,7 +2445,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var startPosition = CurrentStart.AbsoluteIndex;
             var nesting = 1;
-            if (!EndOfFile)
+            var stopAtEndOfLine = (mode & BalancingModes.StopAtEndOfLine) == BalancingModes.StopAtEndOfLine;
+            if (!EndOfFile &&
+                !(stopAtEndOfLine && At(SyntaxKind.NewLine)))
             {
                 var tokens = new List<SyntaxToken>();
                 do
@@ -2455,7 +2476,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         tokens.Add(CurrentToken);
                     }
                 }
-                while (nesting > 0 && NextToken());
+                while (nesting > 0 && NextToken() && !(stopAtEndOfLine && At(SyntaxKind.NewLine)));
 
                 if (nesting > 0)
                 {

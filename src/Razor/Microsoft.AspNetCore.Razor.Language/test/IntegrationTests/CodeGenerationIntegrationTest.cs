@@ -488,6 +488,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             RunTimeTest();
         }
 
+        [Fact]
+        public void AttributeDirective_Runtime()
+        {
+            RunTimeTest();
+        }
+
         #endregion
 
         #region DesignTime
@@ -963,6 +969,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         [Fact]
         public void Implements_DesignTime()
+        {
+            DesignTimeTest();
+        }
+
+        [Fact]
+        public void AttributeDirective_DesignTime()
         {
             DesignTimeTest();
         }

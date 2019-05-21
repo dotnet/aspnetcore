@@ -117,6 +117,15 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AttributeDirective_AttributeToken_Description" xml:space="preserve">
+    <value>The C# attribute that will be applied to the current class.</value>
+  </data>
+  <data name="AttributeDirective_AttributeToken_Name" xml:space="preserve">
+    <value>Attribute</value>
+  </data>
+  <data name="AttributeDirective_Description" xml:space="preserve">
+    <value>Specifies the C# attribute that will be applied to the current class.</value>
+  </data>
   <data name="BindTagHelper_Component_Documentation" xml:space="preserve">
     <value>Binds the provided expression to the '{0}' property and a change event delegate to the '{1}' property of the component.</value>
   </data>
@@ -151,10 +160,10 @@
     <value>Sets the '{0}' attribute to the provided string or delegate value. A delegate value should be of type '{1}'.</value>
   </data>
   <data name="ImplementsDirective_Description" xml:space="preserve">
-    <value>Declares an interface implementation for the current document.</value>
+    <value>Declares an interface implementation for the current class.</value>
   </data>
   <data name="ImplementsDirective_TypeToken_Description" xml:space="preserve">
-    <value>The interface type implemented by the current document.</value>
+    <value>The interface type implemented by the current class.</value>
   </data>
   <data name="ImplementsDirective_TypeToken_Name" xml:space="preserve">
     <value>TypeName</value>
