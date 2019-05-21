@@ -3,13 +3,11 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
-using MessagePack;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.SignalR;
@@ -24,7 +22,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
         private readonly CircuitClientProxy _client;
         private readonly RendererRegistry _rendererRegistry;
         private readonly ILogger _logger;
-        private long _nextRenderId = 1;
+        // Start from 0. We always increment this prior assiging it to a render batch.
+        private long _nextRenderId = 0;
         private bool _disposing = false;
 
         /// <summary>
@@ -201,30 +200,46 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 return;
             }
 
-            if (!PendingRenderBatches.TryDequeue(out var entry) || entry.BatchId != incomingBatchId)
+            if (_nextRenderId < incomingBatchId)
             {
+                // The batch Id that the client sent is newer than all the batches currently queued. This is clearly exceptional.
                 HandleException(
-                    new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Batch id '{incomingBatchId}'."));
+                    new InvalidOperationException($"Received a notification for a rendered batch when not expecting it. Most recent entry: '{_nextRenderId}'. Actual batch id: '{incomingBatchId}'."));
             }
-            else
-            {
-                var message = $"Completing batch {entry.BatchId} " +
-                    (errorMessageOrNull == null ? "without error." : "with error.");
 
-                _logger.LogDebug(message);
-                CompleteRender(entry.CompletionSource, errorMessageOrNull);
+            // Always peek first. We might be getting an acknowledgment for a batch that's earlier than earliest batch the renderer is currently tracking.
+            while (PendingRenderBatches.TryPeek(out var entry) && entry.BatchId <= incomingBatchId)
+            {
+                var result = PendingRenderBatches.TryDequeue(out var dequeuedEntry);
+                if (!result || entry.BatchId != dequeuedEntry.BatchId)
+                {
+                    HandleException(
+                        new InvalidOperationException($"Dequeueing batch failed. Attempted to dequeue entry with id {entry.BatchId}, but dequeued {dequeuedEntry.BatchId}."));
+                }
+
+                if (entry.BatchId == incomingBatchId)
+                {
+                    var remoteRenderException = errorMessageOrNull == null ? default : new RemoteRendererException(errorMessageOrNull);
+                    Log.AcknowledgeBatchDataReceived(_logger, entry.BatchId, remoteRenderException);
+                    CompleteRender(entry.CompletionSource, remoteRenderException);
+                    break;
+                }
+                else
+                {
+                    CompleteRender(entry.CompletionSource, exception: null);
+                }
             }
         }
 
-        private void CompleteRender(TaskCompletionSource<object> pendingRenderInfo, string errorMessageOrNull)
+        private void CompleteRender(TaskCompletionSource<object> pendingRenderInfo, RemoteRendererException exception)
         {
-            if (errorMessageOrNull == null)
+            if (exception == null)
             {
                 pendingRenderInfo.TrySetResult(null);
             }
             else
             {
-                pendingRenderInfo.TrySetException(new RemoteRendererException(errorMessageOrNull));
+                pendingRenderInfo.TrySetException(exception);
             }
         }
 
@@ -259,6 +274,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
             private static readonly Action<ILogger, string, Exception> _beginUpdateDisplayAsync;
             private static readonly Action<ILogger, string, Exception> _bufferingRenderDisconnectedClient;
             private static readonly Action<ILogger, string, Exception> _sendBatchDataFailed;
+            private static readonly Action<ILogger, long, Exception> _acknowledgeBatchDataReceived;
+            private static readonly Action<ILogger, long, Exception> _acknowledgeBatchDataReceivedWithError;
 
             private static class EventIds
             {
@@ -266,6 +283,8 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                 public static readonly EventId BeginUpdateDisplayAsync = new EventId(101, "BeginUpdateDisplayAsync");
                 public static readonly EventId SkipUpdateDisplayAsync = new EventId(102, "SkipUpdateDisplayAsync");
                 public static readonly EventId SendBatchDataFailed = new EventId(103, "SendBatchDataFailed");
+                public static readonly EventId BatchDataRecevied = new EventId(104, "BatchDataRecevied");
+                public static readonly EventId BatchDataReceviedWithError = new EventId(105, "BatchDataReceviedWithError");
             }
 
             static Log()
@@ -289,6 +308,17 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                     LogLevel.Information,
                     EventIds.SendBatchDataFailed,
                     "Sending data for batch failed: {Message}");
+
+                _acknowledgeBatchDataReceived = LoggerMessage.Define<long>(
+                    LogLevel.Debug,
+                    EventIds.BatchDataRecevied,
+                    "Received acknowledgement for batch data {BatchId}");
+
+                _acknowledgeBatchDataReceivedWithError = LoggerMessage.Define<long>(
+                    LogLevel.Debug,
+                    EventIds.BatchDataRecevied,
+                    "Received acknowledgement for batch data {BatchId} with error.");
+
             }
 
             public static void SendBatchDataFailed(ILogger logger, Exception exception)
@@ -318,6 +348,18 @@ namespace Microsoft.AspNetCore.Components.Browser.Rendering
                     logger,
                     connectionId,
                     null);
+            }
+
+            public static void AcknowledgeBatchDataReceived(ILogger logger, long batchId, RemoteRendererException renderException = null)
+            {
+                if (renderException == null)
+                {
+                    _acknowledgeBatchDataReceived(logger, batchId, arg3: null);
+                }
+                else
+                {
+                    _acknowledgeBatchDataReceivedWithError(logger, batchId, renderException);
+                }
             }
         }
     }

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.Http;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     public class FixedAuthenticationStateProviderTest
     {

@@ -14,7 +14,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     public class CircuitPrerendererTest
     {
