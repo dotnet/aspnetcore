@@ -95,39 +95,31 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 
             if (FAILED_LOG(hr))
             {
-                // From here, the only issue is knowing which status and substatus codes to write based on error code.
                 EventLog::Error(
                     ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
                     ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
                     pHttpApplication.GetApplicationId(),
                     hr);
 
-                if (options.QueryIsDevelopment())
+                auto page = options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? IN_PROCESS_SHIM_STATIC_HTML : OUT_OF_PROCESS_SHIM_STATIC_HTML;
+                std::string responseContent;
+                if (options.QueryShowDetailedErrors())
                 {
-                    m_pApplication = make_application<ServerErrorApplication>(
-                        pHttpApplication,
-                        hr,
-                        options.QueryDisableStartupPage(),
-                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS
-                            ? FILE_UTILITY::GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.specificErrorString, error.errorContent)
-                            : FILE_UTILITY::GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.specificErrorString),
-                        error.statusCode,
-                        error.subStatusCode,
-                        "Internal Server Error");
+                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, error.statusCode, error.subStatusCode, error.generalErrorType, error.detailedErrorContent);
                 }
                 else
                 {
-                    m_pApplication = make_application<ServerErrorApplication>(
-                        pHttpApplication,
-                        hr,
-                        options.QueryDisableStartupPage(),
-                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS
-                        ? FILE_UTILITY::GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.specificErrorString)
-                        : FILE_UTILITY::GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.specificErrorString),
-                        error.statusCode,
-                        error.subStatusCode,
-                        "Internal Server Error");
+                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, error.statusCode, error.subStatusCode, error.generalErrorType);
                 }
+
+                m_pApplication = make_application<ServerErrorApplication>(
+                    pHttpApplication,
+                    hr,
+                    options.QueryDisableStartupPage(),
+                    responseContent,
+                    error.statusCode,
+                    error.subStatusCode,
+                    "Internal Server Error");
             }
             return S_OK;
         }
@@ -149,10 +141,10 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
         m_pApplication = make_application<ServerErrorApplication>(
             pHttpApplication,
             E_FAIL,
-            false,
-            "",
-            500i16,
-            0i16,
+            false /* disableStartupPage */,
+            "" /* responseContent */,
+            500i16 /* statusCode */,
+            0i16 /* subStatusCode */,
             "Internal Server Error");
 
         return S_OK;

@@ -18,17 +18,12 @@ public:
         m_statusText(statusText),
         PollingAppOfflineApplication(pApplication, PollingAppOfflineApplicationMode::StopWhenAdded)
     {
-        // switch here
-        //options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML)
     }
 
     ~ServerErrorApplication() = default;
 
     HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler) override
     {
-        // TODO consider adding enum here to make it easier to switch between modes
-        // Everything should just accept a byte array
-        // enum may still be helpful for deciding which handler
         *pRequestHandler = std::make_unique<ServerErrorHandler>(*pHttpContext, m_statusCode, m_subStatusCode, m_statusText, m_HR, m_disableStartupPage, m_responseContent).release();
 
         return S_OK;

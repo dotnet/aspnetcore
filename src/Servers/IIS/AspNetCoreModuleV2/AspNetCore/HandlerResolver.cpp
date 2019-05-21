@@ -28,7 +28,10 @@ HandlerResolver::HandlerResolver(HMODULE hModule, const IHttpServer &pServer)
 }
 
 HRESULT
-HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication, const ShimOptions& pConfiguration, std::unique_ptr<ApplicationFactory>& pApplicationFactory, ErrorContext& error)
+HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication,
+    const ShimOptions& pConfiguration,
+    std::unique_ptr<ApplicationFactory>& pApplicationFactory,
+    ErrorContext& errorContext)
 {
     HRESULT hr = S_OK;
     PCWSTR pstrHandlerDllName = nullptr;
@@ -53,7 +56,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
     {
         if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
-            error.specificErrorString = "ANCM In-Process Handler Load Failure";
+            errorContext.generalErrorType = "ANCM In-Process Handler Load Failure";
 
             std::unique_ptr<HostFxrResolutionResult> options;
 
@@ -68,38 +71,35 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
             auto redirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 
-            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, pApplication, pConfiguration, redirectionOutput, error);
+            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, pApplication, pConfiguration, redirectionOutput, errorContext);
 
             if (FAILED_LOG(hr))
             {
-                // TODO this can be more efficient by passing in the string to copy to.
-                auto output = to_multi_byte_string(redirectionOutput->GetOutput(), CP_UTF8);
+                auto output = redirectionOutput->GetOutput();
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
                     ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG,
-                    redirectionOutput->GetOutput().c_str());
+                    output.c_str());
                 return hr;
             }
         }
         else
         {
-            // Know it is out of proc at this point
-            error.specificErrorString = "ANCM Out-Of-Process Handler Load Failure";
+            errorContext.generalErrorType = "ANCM Out-Of-Process Handler Load Failure";
 
             if (FAILED_LOG(hr = FindNativeAssemblyFromGlobalLocation(pConfiguration, pstrHandlerDllName, handlerDllPath)))
             {
+                auto handlerName = handlerDllPath.empty() ? s_pwzAspnetcoreOutOfProcessRequestHandlerName : handlerDllPath.c_str();
                 EventLog::Error(
                     ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
                     ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG,
-                    handlerDllPath.empty() ? s_pwzAspnetcoreOutOfProcessRequestHandlerName : handlerDllPath.c_str());
+                    handlerName);
 
-
-                error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG, handlerDllPath.empty() ? s_pwzAspnetcoreOutOfProcessRequestHandlerName : handlerDllPath.c_str()), CP_UTF8);
-
-                error.statusCode = 500i16;
-                error.subStatusCode = 36i16;
-                error.solution = "The out of process request handler, aspnetcorev2_outofprocess.dll, could not be found next to the aspnetcorev2.dll.";
+                errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG, handlerName), CP_UTF8);
+                errorContext.statusCode = 500i16;
+                errorContext.subStatusCode = 36i16;
+                errorContext.solution = "The out of process request handler, aspnetcorev2_outofprocess.dll, could not be found next to the aspnetcorev2.dll.";
 
                 return hr;
             }
@@ -124,7 +124,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 }
 
 HRESULT
-HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& error)
+HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std::unique_ptr<ApplicationFactory>& pApplicationFactory, const ShimOptions& options, ErrorContext& errorContext)
 {
     SRWExclusiveLock lock(m_requestHandlerLoadLock);
     if (m_loadedApplicationHostingModel != HOSTING_UNKNOWN)
@@ -132,11 +132,11 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
         // Mixed hosting models
         if (m_loadedApplicationHostingModel != options.QueryHostingModel())
         {
-            error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
-            error.statusCode = 500i16;
-            error.subStatusCode = 34i16;
-            error.specificErrorString = "ANCM Mixed Hosting Models Not Supported";
-            error.solution = "";
+            errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
+            errorContext.statusCode = 500i16;
+            errorContext.subStatusCode = 34i16;
+            errorContext.generalErrorType = "ANCM Mixed Hosting Models Not Supported";
+            errorContext.solution = "";
 
             EventLog::Error(
                 ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
@@ -149,12 +149,12 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
         // Multiple in-process apps
         if (m_loadedApplicationHostingModel == HOSTING_IN_PROCESS && m_loadedApplicationId != pApplication.GetApplicationId())
         {
-            error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
+            errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
 
-            error.statusCode = 500i16;
-            error.subStatusCode = 35i16;
-            error.specificErrorString = "ANCM Multiple In-Process Applications in same Process";
-            error.solution = "Select a different application pool to create another in-process application";
+            errorContext.statusCode = 500i16;
+            errorContext.subStatusCode = 35i16;
+            errorContext.generalErrorType = "ANCM Multiple In-Process Applications in same Process";
+            errorContext.solution = "Select a different application pool to create another in-process application";
 
             EventLog::Error(
                 ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
@@ -167,7 +167,7 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
 
     m_loadedApplicationHostingModel = options.QueryHostingModel();
     m_loadedApplicationId = pApplication.GetApplicationId();
-    RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory, error));
+    RETURN_IF_FAILED(LoadRequestHandlerAssembly(pApplication, options, pApplicationFactory, errorContext));
 
     return S_OK;
 }
@@ -207,7 +207,6 @@ HandlerResolver::FindNativeAssemblyFromGlobalLocation(
     }
     catch (...)
     {
-
         EventLog::Info(
                 ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
                 ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG,
@@ -232,7 +231,7 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
     const IHttpApplication &pApplication,
     const ShimOptions& pConfiguration,
     std::shared_ptr<StringStreamRedirectionOutput> stringRedirectionOutput,
-    ErrorContext& error
+    ErrorContext& errorContext
 )
 try
 {
@@ -248,12 +247,11 @@ try
     }
     catch (...)
     {
-        // TODO figure out how to get the HRESULT in the response (as the hresult here is spot on for what the error is).
-        error.errorContent = "Could not load hostfxr.dll.";
-        error.statusCode = 500i16;
-        error.subStatusCode = 32i16;
-        error.specificErrorString = "ANCM Failed to Load dll";
-        error.solution = "Most likely, the application was published for a different bitness than w3wp.exe/iisexpress.exe is running as.";
+        errorContext.detailedErrorContent = "Could not load hostfxr.dll.";
+        errorContext.statusCode = 500i16;
+        errorContext.subStatusCode = 32i16;
+        errorContext.generalErrorType = "ANCM Failed to Load dll";
+        errorContext.solution = "Most likely, the application was published for a different bitness than w3wp.exe/iisexpress.exe is running as.";
         throw;
     }
     {
@@ -298,13 +296,13 @@ try
                 // If hostfxr didn't set the required buffer size, something in the app is misconfigured
                 // This like almost always is framework not found.
                 auto output = to_multi_byte_string(stringRedirectionOutput->GetOutput(), CP_UTF8);
-                error.errorContent.resize(output.length());
-                memcpy(&error.errorContent[0], output.c_str(), output.length());
+                errorContext.detailedErrorContent.resize(output.length());
+                memcpy(&errorContext.detailedErrorContent[0], output.c_str(), output.length());
 
-                error.statusCode = 500i16;
-                error.subStatusCode = 31i16;
-                error.specificErrorString = "ANCM Failed to Find Native Dependencies";
-                error.solution = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found.";
+                errorContext.statusCode = 500i16;
+                errorContext.subStatusCode = 31i16;
+                errorContext.generalErrorType = "ANCM Failed to Find Native Dependencies";
+                errorContext.solution = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found.";
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
@@ -346,14 +344,14 @@ try
     if (!fFound)
     {
         // This only occurs if the request handler isn't referenced by the app, which rarely happens if they are targeting the shared framework.
-        error.statusCode = 500i16;
-        error.subStatusCode = 33i16;
-        error.specificErrorString = "ANCM Request Handler Load Failure";
-        error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG, handlerDllPath.empty()
+        errorContext.statusCode = 500i16;
+        errorContext.subStatusCode = 33i16;
+        errorContext.generalErrorType = "ANCM Request Handler Load Failure";
+        errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG, handlerDllPath.empty()
                 ? s_pwzAspnetcoreInProcessRequestHandlerName
                 : handlerDllPath.c_str()),
             CP_UTF8);
-        error.solution = "Make sure Microsoft.AspNetCore.App is referenced by your application.";
+        errorContext.solution = "Make sure Microsoft.AspNetCore.App is referenced by your application.";
 
         EventLog::Error(
             ASPNETCORE_EVENT_GENERAL_ERROR,

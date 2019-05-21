@@ -60,7 +60,7 @@ public:
     }
 
     bool
-    QueryIsDevelopment() const noexcept
+    QueryShowDetailedErrors() const noexcept
     {
         return m_fShowDetailedErrors;
     }

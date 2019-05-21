@@ -14,10 +14,11 @@ typedef corehost_error_writer_fn(*corehost_set_error_writer_fn) (corehost_error_
 
 struct ErrorContext
 {
-    std::string errorContent;
+    // TODO consider adding HRESULT here
+    std::string detailedErrorContent;
     USHORT statusCode;
     USHORT subStatusCode;
-    std::string specificErrorString;
+    std::string generalErrorType;
     std::string solution;
 };
 
