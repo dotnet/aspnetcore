@@ -9,6 +9,9 @@ namespace Microsoft.AspNetCore.Testing
 {
     public class TestPathUtilitiesTest
     {
+        // Entire test pending removal - see https://github.com/aspnet/Extensions/issues/1697
+#pragma warning disable 0618
+
         [Fact]
         public void GetSolutionRootDirectory_ResolvesSolutionRoot()
         {
@@ -27,5 +30,6 @@ namespace Microsoft.AspNetCore.Testing
             var exception = Assert.Throws<Exception>(() => TestPathUtilities.GetSolutionRootDirectory("NotTesting"));
             Assert.Equal($"Solution file NotTesting.sln could not be found in {AppContext.BaseDirectory} or its parent directories.", exception.Message);
         }
+#pragma warning restore 0618
     }
 }
