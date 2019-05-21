@@ -7,7 +7,7 @@
 <Project>
   <PropertyGroup Label="Arcade settings">
     <!-- Opt-in to using the version of the Roslyn compiler bundled with Arcade. -->
-    <UsingToolMicrosoftNetCompilers>true</UsingToolMicrosoftNetCompilers>
+    <UsingToolMicrosoftNetCompilers Condition="'$(MSBuildProjectExtension)' == '.csproj' or '$(MSBuildProjectExtension)' == '.fsproj' or '$(MSBuildProjectExtension)' == '.vbproj'">true</UsingToolMicrosoftNetCompilers>
   </PropertyGroup>
   <!--
 
