@@ -38,7 +38,7 @@
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
     <HelixPreCommand Include="./installnode.sh $(NodeVersion) linux-x64" />
-    <HelixPreCommand Include="export PATH=%24PATH&quot;:&quot;%24HELIX_CORRELATION_PAYLOAD/node/bin" />
+    <HelixPreCommand Include="set PATH=%24PATH&quot;:&quot;%24HELIX_CORRELATION_PAYLOAD/node/bin" />
   </ItemGroup>
   
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'true'">
