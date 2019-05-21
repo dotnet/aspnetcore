@@ -49,8 +49,11 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(testName);
 
+// https://github.com/aspnet/AspNetCore/issues/8247
+#pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
+#pragma warning restore 0618
 
                 var deploymentParameters = new DeploymentParameters(
                     applicationPath,

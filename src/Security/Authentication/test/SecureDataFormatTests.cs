@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Authentication.DataHandler
         }
 
         [ConditionalFact]
-        [SkipOnHelix]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore-Internal/issues/1974")]
         public void UnprotectWithDifferentPurposeFails()
         {
             var provider = ServiceProvider.GetRequiredService<IDataProtectionProvider>();
