@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Components
                         throw null; // Unreachable
                     }
 
-                    SetProperty(targetType, target, writer, parameterName, parameter.Value);
+                    SetProperty(target, writer, parameterName, parameter.Value);
                 }
             }
             else
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components
                     else
                     {
                         Debug.Assert(writer != null);
-                        SetProperty(targetType, target, writer, parameterName, parameter.Value);
+                        SetProperty(target, writer, parameterName, parameter.Value);
                     }
                 }
 
@@ -100,11 +100,11 @@ namespace Microsoft.AspNetCore.Components
                 else if (unmatched != null)
                 {
                     // We had some unmatched values, set the CaptureUnmatchedValues property
-                    SetProperty(targetType, target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName, unmatched);
+                    SetProperty(target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName, unmatched);
                 }
             }
 
-            static void SetProperty(Type targetType, object target, IPropertySetter writer, string parameterName, object value)
+            static void SetProperty(object target, IPropertySetter writer, string parameterName, object value)
             {
                 try
                 {
