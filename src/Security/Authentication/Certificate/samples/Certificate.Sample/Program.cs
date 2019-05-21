@@ -18,26 +18,23 @@ namespace Certificate.Sample
             BuildWebHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .ConfigureKestrel(options =>
-                {
-                    options.Listen(IPAddress.Loopback, 5001, listenOptions =>
-                    {
-                        listenOptions.UseHttps(new HttpsConnectionAdapterOptions
-                        {
-                            ServerCertificate = FindHttpsCertificate(),
-                            ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                            //ClientCertificateValidation = CertificateValidator.DisableChannelValidation
-                        });
-                    });
-                    options.Listen(IPAddress.Loopback, 5000);
-                })
-                .UseStartup<Startup>()
-                .Build();
-
-        }
+        public static IWebHost BuildWebHost(string[] args) => null; // TODO: fix
+            //WebHost.CreateDefaultBuilder(args)
+            //    .UseStartup<Startup>()
+            //    .ConfigureKestrel(options =>
+            //    {
+            //        options.Listen(IPAddress.Loopback, 5001, listenOptions =>
+            //        {
+            //            listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+            //            {
+            //                ServerCertificate = FindHttpsCertificate(),
+            //                ClientCertificateMode = ClientCertificateMode.RequireCertificate,
+            //            });
+            //        });
+            //        options.Listen(IPAddress.Loopback, 5000);
+            //    })
+            //    .UseStartup<Startup>()
+            //    .Build();
 
         private static X509Certificate2 FindHttpsCertificate()
         {
