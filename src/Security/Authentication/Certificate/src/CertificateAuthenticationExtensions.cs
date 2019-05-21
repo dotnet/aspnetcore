@@ -13,21 +13,43 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class CertificateAuthenticationAppBuilderExtensions
     {
+        /// <summary>
+        /// Adds certificate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder)
             => builder.AddCertificate(CertificateAuthenticationDefaults.AuthenticationScheme);
 
+        /// <summary>
+        /// Adds certificate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="authenticationScheme"></param>
+        /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder, string authenticationScheme)
             => builder.AddCertificate(authenticationScheme, configureOptions: null);
 
+        /// <summary>
+        /// Adds certificate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="configureOptions"></param>
+        /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(this AuthenticationBuilder builder, Action<CertificateAuthenticationOptions> configureOptions)
             => builder.AddCertificate(CertificateAuthenticationDefaults.AuthenticationScheme, configureOptions);
 
+        /// <summary>
+        /// Adds certificate authentication.
+        /// </summary>
+        /// <param name="builder">The <see cref="AuthenticationBuilder"/>.</param>
+        /// <param name="authenticationScheme"></param>
+        /// <param name="configureOptions"></param>
+        /// <returns>The <see cref="AuthenticationBuilder"/>.</returns>
         public static AuthenticationBuilder AddCertificate(
             this AuthenticationBuilder builder,
             string authenticationScheme,
             Action<CertificateAuthenticationOptions> configureOptions)
-        {
-            return builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler>(authenticationScheme, configureOptions);
-        }
+            => builder.AddScheme<CertificateAuthenticationOptions, CertificateAuthenticationHandler>(authenticationScheme, configureOptions);
     }
 }

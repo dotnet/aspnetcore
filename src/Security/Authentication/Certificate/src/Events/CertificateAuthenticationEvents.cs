@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         public Func<CertificateAuthenticationFailedContext, Task> OnAuthenticationFailed { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
-        /// A delegate assigned to this property will be invoked when a certificate has based basic validation, but where custom validation may be needed.
+        /// A delegate assigned to this property will be invoked when a certificate has passed basic validation, but where custom validation may be needed.
         /// </summary>
         /// <remarks>
         /// You must provide a delegate for this property for authentication to occur.
@@ -28,8 +28,18 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// </remarks>
         public Func<ValidateCertificateContext, Task> OnValidateCertificate { get; set; } = context => Task.CompletedTask;
 
+        /// <summary>
+        /// Invoked when a certificate fails authentication.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public virtual Task AuthenticationFailed(CertificateAuthenticationFailedContext context) => OnAuthenticationFailed(context);
 
+        /// <summary>
+        /// Invoked when a certificate fails authentication.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
         public virtual Task ValidateCertificate(ValidateCertificateContext context) => OnValidateCertificate(context);
     }
 }

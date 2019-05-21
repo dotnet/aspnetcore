@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -17,6 +19,26 @@ namespace Microsoft.AspNetCore.HttpOverrides
 {
     public class CertificateForwarderTests
     {
+        [Fact]
+        public void VerifySettingNullHeaderOptionThrows()
+        {
+            var services = new ServiceCollection()
+                .AddOptions()
+                .AddCertificateHeaderForwarding(o => o.CertificateHeader = null);
+            var options = services.BuildServiceProvider().GetRequiredService<IOptions<CertificateForwarderOptions>>();
+            Assert.Throws<OptionsValidationException>(() => options.Value);
+        }
+
+        [Fact]
+        public void VerifySettingEmptyHeaderOptionThrows()
+        {
+            var services = new ServiceCollection()
+                .AddOptions()
+                .AddCertificateHeaderForwarding(o => o.CertificateHeader = "");
+            var options = services.BuildServiceProvider().GetRequiredService<IOptions<CertificateForwarderOptions>>();
+            Assert.Throws<OptionsValidationException>(() => options.Value);
+        }
+
         [Fact]
         public async Task VerifyHeaderIsUsedIfNoCertificateAlreadySet()
         {

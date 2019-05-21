@@ -53,24 +53,21 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// <returns>A <see cref="Task"/>.</returns>
         public async Task Invoke(HttpContext httpContext)
         {
-            if (!string.IsNullOrEmpty(_options.CertificateHeader))
-            {
-                var clientCertificate = await httpContext.Connection.GetClientCertificateAsync();
+            var clientCertificate = await httpContext.Connection.GetClientCertificateAsync();
 
-                if (clientCertificate == null)
+            if (clientCertificate == null)
+            {
+                // Check for forwarding header
+                string certificateHeader = httpContext.Request.Headers[_options.CertificateHeader];
+                if (!string.IsNullOrEmpty(certificateHeader))
                 {
-                    // Check for forwarding header
-                    string certificateHeader = httpContext.Request.Headers[_options.CertificateHeader];
-                    if (!string.IsNullOrEmpty(certificateHeader))
+                    try
                     {
-                        try
-                        {
-                            httpContext.Connection.ClientCertificate = _options.HeaderConverter(certificateHeader);
-                        }
-                        catch (Exception e)
-                        {
-                            _logger.LogError(e, "Could not read certificate from header.");
-                        }
+                        httpContext.Connection.ClientCertificate = _options.HeaderConverter(certificateHeader);
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogError(e, "Could not read certificate from header.");
                     }
                 }
             }

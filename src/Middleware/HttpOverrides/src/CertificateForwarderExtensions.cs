@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configure));
             }
 
+            services.AddOptions<CertificateForwarderOptions>().Validate(o => !string.IsNullOrEmpty(o.CertificateHeader), "CertificateForwarderOptions.CertificateHeader cannot be null or empty.");
             return services.Configure(configure);
         }
     }
