@@ -22,7 +22,7 @@ namespace Certificate.Sample
         public static IWebHost BuildWebHost(string[] args) =>
             WebHost.CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
-                .UseKestrel(options =>
+                .ConfigureKestrel(options =>
                 {
                     options.Listen(IPAddress.Loopback, 5001, listenOptions =>
                     {
