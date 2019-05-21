@@ -10,8 +10,8 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.Aspnetcore.RequestThrottling
 {
     /// <summary>
-    /// Limits the flow of <see cref="HttpContext"/>s through your application,
-    /// hopefully decreasing congestion in the form of threadpool starvation.
+    /// Limits the flow of requests through your application,
+    /// hopefully decreasing congestion by preventing threadpool starvation.
     /// </summary>
     public class RequestThrottlingMiddleware
     {
@@ -58,7 +58,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
 
         /// <summary>
         /// The number of live requests that are downstream from this middleware.
-        /// Cannot exceeed `_options.MaxConcurrentRequests`
+        /// Cannot exceeed <see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
         /// </summary>
         public int ConcurrentRequests
         {
