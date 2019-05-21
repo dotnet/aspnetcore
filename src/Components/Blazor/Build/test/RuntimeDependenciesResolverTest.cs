@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6549")]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10426")]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
             // Arrange
