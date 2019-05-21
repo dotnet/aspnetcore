@@ -12,6 +12,7 @@
     <FxProjectToBuild Condition=" '$(BuildSiteExtensions)' == 'true' " Include="$(RepoRoot)src\SiteExtensions\LoggingBranch\LoggingBranch.csproj" />
 
     <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'win-x86' " Include="$(RepoRoot)src\Framework\src\Microsoft.AspNetCore.App.Runtime.csproj" />
+    <FxProjectToBuild Condition=" '$(TargetRuntimeIdentifier)' == 'win-x86' " Include="$(RepoRoot)src\Servers\IIS\AspNetCoreModuleV2\Symbols\Microsoft.AspNetCore.ANCMSymbols.csproj" />
   </ItemGroup>
 
   <Target Name="BuildSharedFx" DependsOnTargets="$(BuildSharedFxDependsOn)" />
