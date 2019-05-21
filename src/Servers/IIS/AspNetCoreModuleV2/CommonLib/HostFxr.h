@@ -12,6 +12,15 @@ typedef INT(*hostfxr_main_fn) (DWORD argc, CONST PCWSTR argv[]);
 typedef void(*corehost_error_writer_fn) (const WCHAR* message);
 typedef corehost_error_writer_fn(*corehost_set_error_writer_fn) (corehost_error_writer_fn error_writer);
 
+struct ErrorContext
+{
+    std::string errorContent;
+    USHORT statusCode;
+    USHORT subStatusCode;
+    std::string specificErrorString;
+    std::string solution;
+};
+
 class HostFxrErrorRedirector: NonCopyable
 {
 public:

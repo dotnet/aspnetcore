@@ -31,7 +31,7 @@ GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, std::
             additionalHtml = format("<a href=\"%S\"> <cite> %S </cite></a> and ", additionalErrorLink->c_str(), additionalErrorLink->c_str());
         }
 
-        return format(data, statusCode, subStatusCode, error.c_str(), additionalHtml.c_str());
+        return format(data, statusCode, subStatusCode, statusCode, subStatusCode, error.c_str(), additionalHtml.c_str());
     }
     catch (...)
     {

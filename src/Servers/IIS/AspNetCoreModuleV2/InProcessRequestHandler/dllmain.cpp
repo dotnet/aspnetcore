@@ -120,6 +120,10 @@ CreateApplication(
         g_fInProcessApplicationCreated = true;
 
         std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> inProcessApplication;
+
+        // TODO not sure how easy it will be to untangle errors here
+        // ErrorContext errorContext;
+
         if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, pSite, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
         {
             *ppApplication = inProcessApplication.release();

@@ -66,19 +66,13 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
             auto redirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 
-            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, pApplication, pConfiguration, redirectionOutput);
+            hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, pApplication, pConfiguration, redirectionOutput, error);
 
             if (FAILED_LOG(hr))
             {
                 // TODO this can be more efficient by passing in the string to copy to.
                 auto output = to_multi_byte_string(redirectionOutput->GetOutput(), CP_UTF8);
-                error.errorContent.resize(output.length());
-                memcpy(&error.errorContent[0], output.c_str(), output.length());
 
-                error.statusCode = 500i16;
-                error.subStatusCode = 31i16;
-                error.specificErrorString = "Failed to find dependencies";
-                error.solution = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found."; // TODO more details here
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
                     ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG,
@@ -102,6 +96,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
         LOG_INFOF(L"Loading request handler:  '%ls'", handlerDllPath.c_str());
 
         hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str());
+        // this is bitness mismatch I believe.
         RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll);
         if (preventUnload)
         {
@@ -126,6 +121,12 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
         // Mixed hosting models
         if (m_loadedApplicationHostingModel != options.QueryHostingModel())
         {
+            error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
+            error.statusCode = 500i16;
+            error.subStatusCode = 34i16;
+            error.specificErrorString = "Mixed hosting models";
+            error.solution = "";
+
             EventLog::Error(
                 ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
                 ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG,
@@ -137,6 +138,13 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
         // Multiple in-process apps
         if (m_loadedApplicationHostingModel == HOSTING_IN_PROCESS && m_loadedApplicationId != pApplication.GetApplicationId())
         {
+            error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
+
+            error.statusCode = 500i16;
+            error.subStatusCode = 35i16;
+            error.specificErrorString = "Multiple in-process applications in same process";
+            error.solution = "Select a different application pool to create another in-process application";
+
             EventLog::Error(
                 ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
                 ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG,
@@ -211,7 +219,8 @@ HandlerResolver::FindNativeAssemblyFromHostfxr(
     std::wstring& handlerDllPath,
     const IHttpApplication &pApplication,
     const ShimOptions& pConfiguration,
-    std::shared_ptr<RedirectionOutput> stringRedirectionOutput
+    std::shared_ptr<StringStreamRedirectionOutput> stringRedirectionOutput,
+    ErrorContext& error
 )
 try
 {
@@ -221,14 +230,26 @@ try
     DWORD          dwBufferSize = s_initialGetNativeSearchDirectoriesBufferSize;
     DWORD          dwRequiredBufferSize = 0;
 
-    m_hHostFxrDll.Load(hostfxrOptions.GetHostFxrLocation());
-
+    try
+    {
+        m_hHostFxrDll.Load(hostfxrOptions.GetHostFxrLocation());
+    }
+    catch (...)
+    {
+        // TODO figure out how to get the HRESULT in the response (as the hresult here is spot on for what the error is).
+        error.errorContent = "Could not load hostfxr.dll.";
+        error.statusCode = 500i16;
+        error.subStatusCode = 32i16;
+        error.specificErrorString = "Dll Load Error";
+        error.solution = "Most likely, the application was published for a different bitness than w3wp.exe/iisexpress.exe is running as.";
+        throw;
+    }
     {
         auto redirectionOutput = LoggingHelpers::CreateOutputs(
                 pConfiguration.QueryStdoutLogEnabled(),
                 pConfiguration.QueryStdoutLogFile(),
                 pApplication.GetApplicationPhysicalPath(),
-                std::move(stringRedirectionOutput)
+                stringRedirectionOutput
             );
 
         StandardStreamRedirection stdOutRedirection(*redirectionOutput.get(), m_pServer.IsCommandLineLaunch());
@@ -263,7 +284,16 @@ try
             else
             {
                 // If hostfxr didn't set the required buffer size, something in the app is misconfigured
-                // Ex: Framework not found.
+                // This like almost always is framework not found.
+                auto output = to_multi_byte_string(stringRedirectionOutput->GetOutput(), CP_UTF8);
+                error.errorContent.resize(output.length());
+                memcpy(&error.errorContent[0], output.c_str(), output.length());
+
+                error.statusCode = 500i16;
+                error.subStatusCode = 31i16;
+                error.specificErrorString = "Failed to find dependencies";
+                error.solution = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found."; // TODO more details here
+
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
                     ASPNETCORE_EVENT_HOSTFXR_FAILURE_MSG
@@ -303,6 +333,16 @@ try
 
     if (!fFound)
     {
+        // This only occurs if the request handler isn't referenced by the app, which rarely happens if they are targeting the shared framework.
+        error.statusCode = 500i16;
+        error.subStatusCode = 33i16;
+        error.specificErrorString = "Request handler load failure";
+        error.specificErrorString = to_multi_byte_string(format(ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG, handlerDllPath.empty()
+                ? s_pwzAspnetcoreInProcessRequestHandlerName
+                : handlerDllPath.c_str()),
+            CP_UTF8);
+        error.solution = "Make sure Microsoft.AspNetCore.App is referenced by your application.";
+
         EventLog::Error(
             ASPNETCORE_EVENT_GENERAL_ERROR,
             ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG,

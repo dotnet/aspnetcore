@@ -12,15 +12,6 @@
 #include "RedirectionOutput.h"
 #include "HostFxr.h"
 
-struct ErrorContext
-{
-    std::string errorContent;
-    USHORT statusCode;
-    USHORT subStatusCode;
-    std::string specificErrorString;
-    std::string solution;
-};
-
 class HandlerResolver
 {
 public:
@@ -37,7 +28,8 @@ private:
         std::wstring& handlerDllPath,
         const IHttpApplication &pApplication,
         const ShimOptions& pConfiguration,
-        std::shared_ptr<RedirectionOutput> stringRedirectionOutput);
+        std::shared_ptr<StringStreamRedirectionOutput> stringRedirectionOutput,
+        ErrorContext& error);
 
     HMODULE m_hModule;
     const IHttpServer &m_pServer;

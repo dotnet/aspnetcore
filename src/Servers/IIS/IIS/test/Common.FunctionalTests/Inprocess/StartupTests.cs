@@ -275,6 +275,40 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
 
         [ConditionalFact]
+        public async Task PublishWithWrongBitness()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
+            if (deploymentParameters.ServerType == ServerType.IISExpress)
+            {
+                // TODO skip conditions for IISExpress
+                return;
+            }
+
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            deploymentParameters.AddServerConfigAction(element =>
+            {
+                element.RequiredElement("system.applicationHost").RequiredElement("applicationPools").RequiredElement("add").SetAttributeValue("enable32BitAppOnWin64", "true");
+            });
+
+            // Change ANCM dll to 32 bit
+            deploymentParameters.AddServerConfigAction(
+                           element =>
+                           {
+                               var ancmElement = element
+                                   .RequiredElement("system.webServer")
+                                   .RequiredElement("globalModules")
+                                   .Elements("add")
+                                   .FirstOrDefault(e => e.Attribute("name").Value == "AspNetCoreModuleV2");
+
+                               ancmElement.SetAttributeValue("image", ancmElement.Attribute("image").Value.Replace("x64", "x86"));
+                           });
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+        }
+
+        [ConditionalFact]
         [RequiresNewShim]
         public async Task RemoveHostfxrFromApp_InProcessHostfxrLoadFailure()
         {
@@ -296,7 +330,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            Assert.Contains("HTTP Error 500.31 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+            StopServer();
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
         }
