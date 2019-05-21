@@ -9,7 +9,7 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
-    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, bool disableStartupPage, const std::string& responseContent) noexcept
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, bool disableStartupPage, std::string& responseContent) noexcept
         : REQUEST_HANDLER(pContext),
         m_HR(hr),
         m_disableStartupPage(disableStartupPage),
@@ -28,7 +28,6 @@ public:
     }
 
 private:
-    // TODO split these up into different handlers. This split isn't efficient.
     void WriteResponse()
     {
         if (m_disableStartupPage)
@@ -47,8 +46,7 @@ private:
         );
 
         dataChunk.DataChunkType = HttpDataChunkFromMemory;
-        // TODO why cast?
-        dataChunk.FromMemory.pBuffer = (PVOID)m_ExceptionInfoContent.data();
+        dataChunk.FromMemory.pBuffer = m_ExceptionInfoContent.data();
         dataChunk.FromMemory.BufferLength = static_cast<ULONG>(m_ExceptionInfoContent.size());
 
         pResponse->WriteEntityChunkByReference(&dataChunk);
@@ -59,5 +57,5 @@ private:
     USHORT m_statusCode;
     USHORT m_subStatusCode;
     std::string m_statusText;
-    const std::string& m_ExceptionInfoContent;
+    std::string& m_ExceptionInfoContent;
 };

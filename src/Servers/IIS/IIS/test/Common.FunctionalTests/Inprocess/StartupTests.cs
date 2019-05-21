@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
             else
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM In-Process Handler Load Failure");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
             }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
             else
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM In-Process Handler Load Failure");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
             }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
             else
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM In-Process Handler Load Failure");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
             }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);

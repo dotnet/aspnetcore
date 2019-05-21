@@ -135,7 +135,7 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
             error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
             error.statusCode = 500i16;
             error.subStatusCode = 34i16;
-            error.specificErrorString = "Mixed hosting models";
+            error.specificErrorString = "ANCM Mixed Hosting Models Not Supported";
             error.solution = "";
 
             EventLog::Error(
@@ -153,7 +153,7 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
 
             error.statusCode = 500i16;
             error.subStatusCode = 35i16;
-            error.specificErrorString = "Multiple in-process applications in same process";
+            error.specificErrorString = "ANCM Multiple In-Process Applications in same Process";
             error.solution = "Select a different application pool to create another in-process application";
 
             EventLog::Error(
@@ -252,7 +252,7 @@ try
         error.errorContent = "Could not load hostfxr.dll.";
         error.statusCode = 500i16;
         error.subStatusCode = 32i16;
-        error.specificErrorString = "Dll Load Error";
+        error.specificErrorString = "ANCM Failed to Load dll";
         error.solution = "Most likely, the application was published for a different bitness than w3wp.exe/iisexpress.exe is running as.";
         throw;
     }
@@ -303,8 +303,8 @@ try
 
                 error.statusCode = 500i16;
                 error.subStatusCode = 31i16;
-                error.specificErrorString = "Failed to find dependencies";
-                error.solution = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found."; // TODO more details here
+                error.specificErrorString = "ANCM Failed to Find Native Dependencies";
+                error.solution = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found.";
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
@@ -348,8 +348,8 @@ try
         // This only occurs if the request handler isn't referenced by the app, which rarely happens if they are targeting the shared framework.
         error.statusCode = 500i16;
         error.subStatusCode = 33i16;
-        error.specificErrorString = "Request handler load failure";
-        error.specificErrorString = to_multi_byte_string(format(ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG, handlerDllPath.empty()
+        error.specificErrorString = "ANCM Request Handler Load Failure";
+        error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_INPROCESS_RH_REFERENCE_MSG, handlerDllPath.empty()
                 ? s_pwzAspnetcoreInProcessRequestHandlerName
                 : handlerDllPath.c_str()),
             CP_UTF8);
