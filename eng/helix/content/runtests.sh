@@ -103,7 +103,7 @@ fi
 
 FLAKY_FILTER="Flaky:All=true|Flaky:Helix:All=true|Flaky:Helix:Queue:All=true|Flaky:Helix:Queue:$helix_queue_name=true"
 echo "Running known-flaky tests."
-$DOTNET_ROOT/dotnet vstest $test_binary_path --logger:trx --TestCaseFilter:"$FLAKY_FILTER"
+$DOTNET_ROOT/dotnet vstest $test_binary_path --TestCaseFilter:"$FLAKY_FILTER"
 if [ $? != 0 ]; then
     echo "Flaky tests failed!" 1>&2
     # DO NOT EXIT

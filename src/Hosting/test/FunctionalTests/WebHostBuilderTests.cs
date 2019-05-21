@@ -28,7 +28,10 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(nameof(InjectedStartup_DefaultApplicationNameIsEntryAssembly));
 
+// https://github.com/aspnet/AspNetCore/issues/8247
+#pragma warning disable 0618
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "testassets", "IStartupInjectionAssemblyName");
+#pragma warning restore 0618
 
                 var deploymentParameters = new DeploymentParameters(variant)
                 {

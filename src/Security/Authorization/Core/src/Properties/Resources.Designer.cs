@@ -52,20 +52,6 @@ namespace Microsoft.AspNetCore.Authorization
         internal static string FormatException_RoleRequirementEmpty()
             => GetString("Exception_RoleRequirementEmpty");
 
-        /// <summary>
-        /// Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.
-        /// </summary>
-        internal static string Exception_UnableToFindServices
-        {
-            get => GetString("Exception_UnableToFindServices");
-        }
-
-        /// <summary>
-        /// Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.
-        /// </summary>
-        internal static string FormatException_UnableToFindServices(object p0, object p1, object p2)
-            => string.Format(CultureInfo.CurrentCulture, GetString("Exception_UnableToFindServices"), p0, p1, p2);
-
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -3,7 +3,6 @@
 
 
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -24,8 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
             context.RegisterCompilationStartAction(compilationStartAnalysisContext =>
             {
-                var typeCache = new SymbolCache(compilationStartAnalysisContext.Compilation);
-                if (typeCache.ControllerAttribute == null || typeCache.ControllerAttribute.TypeKind == TypeKind.Error)
+                if (!SymbolCache.TryCreate(compilationStartAnalysisContext.Compilation, out var typeCache))
                 {
                     // No-op if we can't find types we care about.
                     return;
@@ -185,20 +183,100 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
 
         internal readonly struct SymbolCache
         {
-            public SymbolCache(Compilation compilation)
+            public SymbolCache(
+                INamedTypeSymbol bindAttribute,
+                INamedTypeSymbol controllerAttribute,
+                INamedTypeSymbol fromBodyAttribute,
+                INamedTypeSymbol apiBehaviorMetadata,
+                INamedTypeSymbol binderTypeProviderMetadata,
+                INamedTypeSymbol modelNameProvider,
+                INamedTypeSymbol nonControllerAttribute,
+                INamedTypeSymbol nonActionAttribute,
+                IMethodSymbol disposableDispose)
             {
-                BindAttribute = compilation.GetTypeByMetadataName(SymbolNames.BindAttribute);
-                ControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.ControllerAttribute);
-                FromBodyAttribute = compilation.GetTypeByMetadataName(SymbolNames.FromBodyAttribute);
-                IApiBehaviorMetadata = compilation.GetTypeByMetadataName(SymbolNames.IApiBehaviorMetadata);
-                IBinderTypeProviderMetadata = compilation.GetTypeByMetadataName(SymbolNames.IBinderTypeProviderMetadata);
-                IModelNameProvider = compilation.GetTypeByMetadataName(SymbolNames.IModelNameProvider);
-                NonControllerAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonControllerAttribute);
-                NonActionAttribute = compilation.GetTypeByMetadataName(SymbolNames.NonActionAttribute);
+                BindAttribute = bindAttribute;
+                ControllerAttribute = controllerAttribute;
+                FromBodyAttribute = fromBodyAttribute;
+                IApiBehaviorMetadata = apiBehaviorMetadata;
+                IBinderTypeProviderMetadata = binderTypeProviderMetadata;
+                IModelNameProvider = modelNameProvider;
+                NonControllerAttribute = nonControllerAttribute;
+                NonActionAttribute = nonActionAttribute;
+                IDisposableDispose = disposableDispose;
+            }
+
+            public static bool TryCreate(Compilation compilation, out SymbolCache symbolCache)
+            {
+                symbolCache = default;
+
+                if (!TryGetType(SymbolNames.BindAttribute, out var bindAttribute))
+                {
+                    return false;
+                }
+
+
+                if (!TryGetType(SymbolNames.ControllerAttribute, out var controllerAttribute))
+                {
+                    return false;
+                }
+
+
+                if (!TryGetType(SymbolNames.FromBodyAttribute, out var fromBodyAttribute))
+                {
+                    return false;
+                }
+
+                if (!TryGetType(SymbolNames.IApiBehaviorMetadata, out var apiBehaviorMetadata))
+                {
+                    return false;
+                }
+
+                if (!TryGetType(SymbolNames.IBinderTypeProviderMetadata, out var iBinderTypeProviderMetadata))
+                {
+                    return false;
+                }
+
+                if (!TryGetType(SymbolNames.IModelNameProvider, out var iModelNameProvider))
+                {
+                    return false;
+                }
+
+                if (!TryGetType(SymbolNames.NonControllerAttribute, out var nonControllerAttribute))
+                {
+                    return false;
+                }
+
+                if (!TryGetType(SymbolNames.NonActionAttribute, out var nonActionAttribute))
+                {
+                    return false;
+                }
 
                 var disposable = compilation.GetSpecialType(SpecialType.System_IDisposable);
-                var members = disposable.GetMembers(nameof(IDisposable.Dispose));
-                IDisposableDispose = members.Length == 1 ? (IMethodSymbol)members[0] : null;
+                var members = disposable?.GetMembers(nameof(IDisposable.Dispose));
+                var idisposableDispose = (IMethodSymbol?)members?[0];
+                if (idisposableDispose == null)
+                {
+                    return false;
+                }
+
+                symbolCache = new SymbolCache(
+                    bindAttribute,
+                    controllerAttribute,
+                    fromBodyAttribute,
+                    apiBehaviorMetadata,
+                    iBinderTypeProviderMetadata,
+                    iModelNameProvider,
+                    nonControllerAttribute,
+                    nonActionAttribute,
+                    idisposableDispose);
+
+                return true;
+
+                bool TryGetType(string typeName, out INamedTypeSymbol typeSymbol)
+                {
+                    typeSymbol = compilation.GetTypeByMetadataName(typeName);
+                    return typeSymbol != null && typeSymbol.TypeKind != TypeKind.Error;
+                }
             }
 
             public INamedTypeSymbol BindAttribute { get; }

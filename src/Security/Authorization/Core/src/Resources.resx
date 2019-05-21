@@ -126,7 +126,4 @@
   <data name="Exception_RoleRequirementEmpty" xml:space="preserve">
     <value>At least one role must be specified.</value>
   </data>
-  <data name="Exception_UnableToFindServices" xml:space="preserve">
-    <value>Unable to find the required services. Please add all the required services by calling '{0}.{1}' inside the call to '{2}' in the application startup code.</value>
-  </data>
 </root>

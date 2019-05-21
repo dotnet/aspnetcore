@@ -51,7 +51,11 @@ namespace Microsoft.AspNetCore.Analyzers
                 return AppContext.BaseDirectory;
             }
 
+// This test code needs to be updated to support distributed testing.
+// See https://github.com/aspnet/AspNetCore/issues/10422
+#pragma warning disable 0618
             var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("Analyzers");
+#pragma warning restore 0618
             var projectDirectory = Path.Combine(solutionDirectory, "Analyzers", "test");
             return projectDirectory;
         }

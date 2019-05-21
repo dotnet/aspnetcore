@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authorization.Test
         private IAuthorizationService BuildAuthorizationService(Action<IServiceCollection> setupServices = null)
         {
             var services = new ServiceCollection();
-            services.AddAuthorization();
+            services.AddAuthorizationCore();
             services.AddLogging();
             services.AddOptions();
             setupServices?.Invoke(services);

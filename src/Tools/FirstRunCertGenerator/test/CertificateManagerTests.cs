@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
         }
 
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6721
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate2_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try
