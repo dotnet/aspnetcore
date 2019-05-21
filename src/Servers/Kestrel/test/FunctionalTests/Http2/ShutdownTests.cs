@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
-    [SkipOnHelix(Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
+    [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
     public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     {
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
         }
 
         [ConditionalFact]
-        [SkipOnHelix(Queues = "Fedora.28.Amd64.Open")] // https://github.com/aspnet/AspNetCore/issues/9985
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/9985", Queues = "Fedora.28.Amd64.Open")] // https://github.com/aspnet/AspNetCore/issues/9985
         [Flaky("https://github.com/aspnet/AspNetCore/issues/9985", FlakyOn.All)]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
