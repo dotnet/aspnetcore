@@ -50,8 +50,7 @@ namespace Identity.DefaultUI.WebSite
                 .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<TContext>();
 
-            services.AddMvc()
-                .AddNewtonsoftJson();
+            services.AddMvc();
                 
             services.AddSingleton<IFileVersionProvider, FileVersionProvider>();
         }
