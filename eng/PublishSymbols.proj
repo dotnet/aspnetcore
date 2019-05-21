@@ -5,6 +5,9 @@
     <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
     <ManifestsPath>artifacts\manifests\</ManifestsPath>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+
+    <!-- Expire symbols after 10 years (or so) by default. -->
+    <DotNetSymbolExpirationInDays Condition="'$(DotNetSymbolExpirationInDays)' == ''">3650</DotNetSymbolExpirationInDays>
   </PropertyGroup>
 
   <ItemGroup>
@@ -54,6 +57,6 @@
       <SymbolPackagesToPublish Include="$(SymbolDirectory)/**/*.symbols.nupkg" />
     </ItemGroup>
 
-    <Message Importance="High" Text="Publishing symbol packages to '$(SymbolServerDescription)': @(SymbolPackagesToPublish)"/>
+    <Message Importance="High" Text="Publishing symbol packages to '$(SymbolServerDescription)':%0A  @(SymbolPackagesToPublish, '%0A  ')"/>
   </Target>
 </Project>
