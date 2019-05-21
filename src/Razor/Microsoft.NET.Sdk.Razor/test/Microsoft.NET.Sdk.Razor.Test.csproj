@@ -21,9 +21,28 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildUtilitiesCorePackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(MicrosoftAspNetCoreTestingPackageVersion)" />
     <PackageReference Include="Moq" Version="$(MoqPackageVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.ProjectToPack</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\PackageLibraryDirectDependency</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.ProjectToPack</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\PackageLibraryTransitiveDependency</_Parameter2>
+    </AssemblyAttribute>
+
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>Testing.AdditionalRestoreSources</_Parameter1>
+      <_Parameter2>$(MSBuildThisFileDirectory)..\testapps\TestPackageRestoreSource</_Parameter2>
+    </AssemblyAttribute>
+
   </ItemGroup>
 
   <!-- The test projects rely on these binaries being available -->
@@ -51,11 +70,7 @@
     Inputs="$(MSBuildAllProjects)"
     Outputs="$(MSBuildLocationFileOutput)">
 
-    <Exec
-      Condition="'$(OS)' == 'Windows_NT'"
-      Command='"$(NuGetPackageRoot)vswhere\$(VSWhereVersion)\tools\vswhere.exe" -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild'
-      ConsoleToMsBuild="true"
-      StandardErrorImportance="high">
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="&quot;$(NuGetPackageRoot)vswhere\$(VSWhereVersion)\tools\vswhere.exe&quot; -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild" ConsoleToMsBuild="true" StandardErrorImportance="high">
       <Output TaskParameter="ConsoleOutput" PropertyName="_VSInstallDir" />
     </Exec>
     <Error Condition="'$(OS)' == 'Windows_NT' and '$(_VSInstallDir)'==''" Text="Visual Studio not found on Windows." />

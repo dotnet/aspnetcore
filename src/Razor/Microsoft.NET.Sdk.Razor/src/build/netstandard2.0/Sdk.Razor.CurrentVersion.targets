@@ -338,6 +338,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Razor.Component.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
 
+  <Import Project="Microsoft.NET.Sdk.Razor.StaticWebAssets.targets" Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true'" />
+
   <Import Project="Microsoft.NET.Sdk.Razor.GenerateAssemblyInfo.targets" />
 
   <Import Project="Microsoft.NET.Sdk.Razor.MvcApplicationPartsDiscovery.targets" Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'" />
@@ -480,6 +482,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       '$(EnableDefaultRazorGenerateItems)'=='true'">
 
       <Content Condition="'%(Content.Extension)'=='.cshtml'" Pack="$(IncludeRazorContentInPack)" />
+      <Content Condition="'%(Content.Extension)'=='.razor'" Pack="$(IncludeRazorContentInPack)" />
     </ItemGroup>
   </Target>
 

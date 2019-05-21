@@ -4,6 +4,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\SimpleMvc11NetFx\SimpleMvc11NetFx.csproj" />
+    <ProjectReference Include="..\SimpleMvc11\SimpleMvc11.csproj" />
+    <ProjectReference Include="..\SimpleMvc21\SimpleMvc21.csproj" />
+    <ProjectReference Include="..\SimpleMvc22\SimpleMvc22.csproj" />
+    <ProjectReference Include="..\ClassLibraryMvc21\ClassLibraryMvc21.csproj" />
+
     <ProjectReference Include="..\AppWithP2PReference\AppWithP2PReference.csproj" />
     <ProjectReference Include="..\ClassLibrary\ClassLibrary.csproj" />
     <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" />
@@ -14,11 +20,14 @@
     <ProjectReference Include="..\MvcWithComponents\MvcWithComponents.csproj" />
     <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" />
     <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" />
-    <ProjectReference Include="..\SimpleMvc11NetFx\SimpleMvc11NetFx.csproj" />
-    <ProjectReference Include="..\SimpleMvc11\SimpleMvc11.csproj" />
-    <ProjectReference Include="..\SimpleMvc21\SimpleMvc21.csproj" />
-    <ProjectReference Include="..\SimpleMvc22\SimpleMvc22.csproj" />
     <ProjectReference Include="..\SimplePages\SimplePages.csproj" />
+
+    <!--
+      We don't add AppWithPackageAndP2PReference, PackageLibraryDirectDependency or PackageLibraryTransitiveDependency here
+      as PackageLibraryDirectDependency and PackageLibraryTransitiveDependency are test packages that
+      need to be produced on the fly and AppWithPackageAndP2PReference depends on them so adding them here
+      will make restore fail.
+    -->
 
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib.csproj"/>
     <ProjectReference Include="..\..\Microsoft.AspNetCore.Razor.Test.ComponentShim\Microsoft.AspNetCore.Razor.Test.ComponentShim.csproj"/>

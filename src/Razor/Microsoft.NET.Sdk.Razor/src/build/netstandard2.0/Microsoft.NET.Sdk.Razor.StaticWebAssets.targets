@@ -1,0 +1,172 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.Razor.StaticWebAssets.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="14.0">
+
+  <!-- Targets that support static content scenarios in ASP.NET Core.
+       The main targets are:
+       * GenerateStaticWebAssetsManifest: Creates a manifest file to use in development with
+         the paths to all the references packages and projects content roots.
+       * ResolveStaticWebAssetsInputs: Collects all the static assets from different sources
+         * Current project.
+         * Referenced project.
+         * Referenced packages.
+  -->
+
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.GenerateStaticWebAssetsManifest"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+
+  <PropertyGroup>
+    <GenerateStaticWebAssetsManifestDependsOn>
+      ResolveStaticWebAssetsInputs;
+      _CreateStaticWebAssetsInputsCacheFile
+    </GenerateStaticWebAssetsManifestDependsOn>
+
+    <AssignTargetPathsDependsOn>
+      GenerateStaticWebAssetsManifest;
+      $(AssignTargetPathsDependsOn)
+    </AssignTargetPathsDependsOn>
+
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <_GeneratedStaticWebAssetsInputsCacheFile>$(IntermediateOutputPath)$(TargetName).StaticWebAssets.cache</_GeneratedStaticWebAssetsInputsCacheFile>
+    <_GeneratedStaticWebAssetsDevelopmentManifest>$(IntermediateOutputPath)$(TargetName).StaticWebAssets.xml</_GeneratedStaticWebAssetsDevelopmentManifest>
+  </PropertyGroup>
+
+  <Target 
+    Name="_CreateStaticWebAssetsInputsCacheFile"
+    DependsOnTargets="ResolveStaticWebAssetsInputs">
+    
+    <ItemGroup>
+      <!-- 
+      This is the list of inputs that will be used for generating the manifest used during development. 
+      -->
+      <_ExternalStaticWebAsset
+        Include="%(StaticWebAsset.Identity)"
+        Condition="'%(SourceType)' != ''">
+          <BasePath>%(StaticWebAsset.BasePath)</BasePath>
+          <ContentRoot>%(StaticWebAsset.ContentRoot)</ContentRoot>
+      </_ExternalStaticWebAsset>
+    </ItemGroup>
+
+    <!-- We need a transform here to make sure we hash the metadata -->
+    <Hash ItemsToHash="@(_ExternalStaticWebAsset->'%(Identity)%(BasePath)%(ContentRoot)')">
+      <Output TaskParameter="HashResult" PropertyName="_StaticWebAssetsCacheHash" />
+    </Hash>
+
+    <WriteLinesToFile 
+      Lines="$(_StaticWebAssetsCacheHash)" 
+      File="$(_GeneratedStaticWebAssetsInputsCacheFile)" 
+      Overwrite="True" 
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedStaticWebAssetsInputsCacheFile)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!-- 
+    This target generates a manifest for development time that includes information
+    about the base path for the referenced package and project static web assets. The
+    manifest includes the content root and the base path for each of the referenced
+    packages and projects.
+
+    Ideally, each package/project contains a unique base path and a given content
+    root, but we don't check for duplicates on either of them.
+     -->
+
+  <Target 
+    Name="GenerateStaticWebAssetsManifest"
+    Inputs="$(_GeneratedStaticWebAssetsInputsCacheFile)"
+    Outputs="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
+    DependsOnTargets="$(GenerateStaticWebAssetsManifestDependsOn)">
+  
+    <GenerateStaticWebAssetsManifest 
+      ContentRootDefinitions="@(_ExternalStaticWebAsset)"
+      TargetManifestPath="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
+  
+      <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
+    <ItemGroup>
+      <EmbeddedResource Condition="'@(_ExternalStaticWebAsset->Count())' != '0'"
+        Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
+        LogicalName="Microsoft.AspNetCore.StaticWebAssets.xml" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <FileWrites Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!-- This target collects all the StaticWebAssets from different sources:
+       * The current project StaticWebAssets that come from wwwroot\** by default.
+       * Assets from referenced projects that get retrieved invoking an MSBuild target on
+         the referenced projects.
+       * Assets from the referenced packages. These will be implicitly included when nuget
+         restores the package and includes the package props file for the package.
+  -->
+  <Target 
+    Name="ResolveStaticWebAssetsInputs">
+    <PropertyGroup>
+      <!-- The _SafeBasePath is used as a path segment in the urls that we will
+           be exposing content from when the library is referenced as a package
+           or as a project by a web application. Our convention will be to expose
+           content directly on _content/<<_SafeBasePath>>
+           
+           We simply remove the dots from the package id so that a package
+           like Microsoft.AspNetCore.Identity becomes MicrosoftAspNetCoreIdentity 
+           
+           TODO: Investigate if we need to do something more sophisticated here.
+      -->
+      <_SafeBasePath>$(PackageId.Replace('.',''))</_SafeBasePath>
+    </PropertyGroup>
+
+    <!-- StaticWebAssets from the current project -->
+
+    <ItemGroup>
+      <!-- 
+        Should we promote 'wwwroot\**'' to a property?
+        We don't want to capture any content outside the content root, that's why we don't do
+        @(Content) here.
+      -->
+      <StaticWebAsset Include="wwwroot\**" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)">
+        <!-- (PackageReference,ProjectReference,'' (CurrentProject)) -->
+        <SourceType></SourceType>
+        <!-- Identifier describing the source, the package id, the project name, empty for the current project.  -->
+        <SourceId></SourceId>
+        <!-- 
+          Full path to the content root for the item:
+          * For packages it corresponds to %userprofile%/.nuget/packages/<<PackageId>>/<<PackageVersion>>/razorContent
+          * For referenced projects it corresponds to <<FullProjectRefPath>>/wwwroot
+          * For the current projects it corresponds to $(MSBuildThisProjectFileDirectory)wwwroot\
+        -->
+        <ContentRoot>$(MSBuildProjectDirectory)\wwwroot\</ContentRoot>
+        <!-- Subsection (folder) from the url space where content for this library will be served. -->
+        <BasePath>_content\$(_SafeBasePath)\</BasePath>
+        <!-- Relative path from the content root for the file. At publish time, we combine the BasePath + Relative
+  path to determine the final path for the file. -->
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+
+      </StaticWebAsset>
+    </ItemGroup>
+
+    <!-- StaticWebAssets from referenced projects. -->
+    <!-- TODO: Include implementation -->
+
+    <!-- StaticWebAssets from packages are already available, so we don't do anything. -->
+  </Target>
+
+</Project>
