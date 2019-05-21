@@ -19,7 +19,11 @@ namespace IIS.FunctionalTests
         [SkipOnHelix]
         public void CheckMofFile()
         {
+// This test code needs to be updated to support distributed testing.
+// See https://github.com/aspnet/AspNetCore-Internal/issues/2222
+#pragma warning disable 0618
             var path = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("IISIntegration"), "aspnetcoremodulev2", "aspnetcore", "ancm.mof");
+#pragma warning restore 0618
             var process = Process.Start("mofcomp.exe", path);
             process.WaitForExit();
             Assert.Equal(0, process.ExitCode);
