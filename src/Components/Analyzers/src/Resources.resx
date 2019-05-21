@@ -129,22 +129,22 @@
   <data name="ComponentParametersShouldNotBePublic_Title" xml:space="preserve">
     <value>Component parameter has public setter</value>
   </data>
-  <data name="ComponentCaptureExtraAttributesParameterMustBeUnique_Description" xml:space="preserve">
-    <value>Components may only define a single parameter with CaptureExtraAttribute.</value>
+  <data name="ComponentParameterCaptureUnmatchedValuesMustBeUnique_Description" xml:space="preserve">
+    <value>Components may only define a single parameter with CaptureUnmatchedValues.</value>
   </data>
-  <data name="ComponentCaptureExtraAttributesParameterMustBeUnique_Format" xml:space="preserve">
-    <value>Component type '{0}' defines properties multiple parameters with CaptureExtraAttribute. Properties: {1}{2}</value>
+  <data name="ComponentParameterCaptureUnmatchedValuesMustBeUnique_Format" xml:space="preserve">
+    <value>Component type '{0}' defines properties multiple parameters with CaptureUnmatchedValues. Properties: {1}{2}</value>
   </data>
-  <data name="ComponentCaptureExtraAttributesParameterMustBeUnique_Title" xml:space="preserve">
-    <value>Component has multiple CaptureExtraAttribute parameters</value>
+  <data name="ComponentParameterCaptureUnmatchedValuesMustBeUnique_Title" xml:space="preserve">
+    <value>Component has multiple CaptureUnmatchedValues parameters</value>
   </data>
-  <data name="ComponentCaptureExtraAttributesParameterHasWrongType_Description" xml:space="preserve">
-    <value>Component parameters with CaptureExtraAttributes must be a correct type.</value>
+  <data name="ComponentParameterCaptureUnmatchedValuesHasWrongType_Description" xml:space="preserve">
+    <value>Component parameters with CaptureUnmatchedValues must be a correct type.</value>
   </data>
-  <data name="ComponentCaptureExtraAttributesParameterHasWrongType_Format" xml:space="preserve">
-    <value>Component parameter '{0}' defines CaptureExtraAttributes but has an unsupported type '{1}'. Use a type assignable from '{2}'.</value>
+  <data name="ComponentParameterCaptureUnmatchedValuesHasWrongType_Format" xml:space="preserve">
+    <value>Component parameter '{0}' defines CaptureUnmatchedValues but has an unsupported type '{1}'. Use a type assignable from '{2}'.</value>
   </data>
-  <data name="ComponentCaptureExtraAttributesParameterHasWrongType_Title" xml:space="preserve">
-    <value>Component parameter with CaptureExtraAttribute has the wrong type</value>
+  <data name="ComponentParameterCaptureUnmatchedValuesHasWrongType_Title" xml:space="preserve">
+    <value>Component parameter with CaptureUnmatchedValues has the wrong type</value>
   </data>
 </root>

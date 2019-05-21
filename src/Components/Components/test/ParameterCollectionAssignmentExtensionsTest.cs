@@ -249,8 +249,8 @@ namespace Microsoft.AspNetCore.Components.Test
             // Assert
             Assert.Equal(
                 $"Multiple properties were found on component type '{typeof(HasDupliateExtraProperty).FullName}' " +
-                $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}'. " +
-                $"Only a single property per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}'. " +
+                $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
+                $"Only a single property per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. " +
                 $"Properties:" + Environment.NewLine +
                 $"{nameof(HasDupliateExtraProperty.ExtraProp1)}" + Environment.NewLine +
                 $"{nameof(HasDupliateExtraProperty.ExtraProp2)}",
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Components.Test
             // Assert
             Assert.Equal(
                 $"The property '{nameof(HasWrongTypeExtraProperty.ExtraProp)}' on component type '{typeof(HasWrongTypeExtraProperty).FullName}' cannot be used with " +
-                $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}' because it has the wrong type. " +
+                $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}' because it has the wrong type. " +
                 $"The property must be assignable from 'Dictionary<string, object>'.",
                 ex.Message);
         }
@@ -415,18 +415,18 @@ namespace Microsoft.AspNetCore.Components.Test
             [Parameter] internal int IntProp { get; set; }
             [Parameter] internal string StringProp { get; set; }
             [Parameter] internal object ObjectProp { get; set; }
-            [Parameter(CaptureExtraAttributes = true)] internal IReadOnlyDictionary<string, object> ExtraProp { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] internal IReadOnlyDictionary<string, object> ExtraProp { get; set; }
         }
 
         class HasDupliateExtraProperty
         {
-            [Parameter(CaptureExtraAttributes = true)] internal Dictionary<string, object> ExtraProp1 { get; set; }
-            [Parameter(CaptureExtraAttributes = true)] internal IDictionary<string, object> ExtraProp2 { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] internal Dictionary<string, object> ExtraProp1 { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] internal IDictionary<string, object> ExtraProp2 { get; set; }
         }
 
         class HasWrongTypeExtraProperty
         {
-            [Parameter(CaptureExtraAttributes = true)] internal KeyValuePair<string, object>[] ExtraProp { get; set; }
+            [Parameter(CaptureUnmatchedValues = true)] internal KeyValuePair<string, object>[] ExtraProp { get; set; }
         }
 
         class ParameterCollectionBuilder : IEnumerable

@@ -30,34 +30,34 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             }
 
             var dictionary = compilation.GetTypeByMetadataName(ComponentsApi.SystemCollectionsGenericDictionary);
-            if (dictionary == null)
+            var @string = compilation.GetSpecialType(SpecialType.System_String);
+            var @object = compilation.GetSpecialType(SpecialType.System_Object);
+            if (dictionary == null || @string == null || @object == null)
             {
                 symbols = null;
                 return false;
             }
 
-            var parameterCaptureExtraAttributesValueType = dictionary.Construct(
-                compilation.GetSpecialType(SpecialType.System_String),
-                compilation.GetSpecialType(SpecialType.System_Object));
+            var parameterCaptureUnmatchedValuesRuntimeType = dictionary.Construct(@string, @object);
 
-            symbols = new ComponentSymbols(parameterAttribute, cascadingParameterAttribute, parameterCaptureExtraAttributesValueType);
+            symbols = new ComponentSymbols(parameterAttribute, cascadingParameterAttribute, parameterCaptureUnmatchedValuesRuntimeType);
             return true;
         }
 
         private ComponentSymbols(
             INamedTypeSymbol parameterAttribute,
             INamedTypeSymbol cascadingParameterAttribute,
-            INamedTypeSymbol parameterCaptureExtraAttributesValueType)
+            INamedTypeSymbol parameterCaptureUnmatchedValuesRuntimeType)
         {
             ParameterAttribute = parameterAttribute;
             CascadingParameterAttribute = cascadingParameterAttribute;
-            ParameterCaptureExtraAttributesValueType = parameterCaptureExtraAttributesValueType;
+            ParameterCaptureUnmatchedValuesRuntimeType = parameterCaptureUnmatchedValuesRuntimeType;
         }
 
         public INamedTypeSymbol ParameterAttribute { get; }
 
         // Dictionary<string, object>
-        public INamedTypeSymbol ParameterCaptureExtraAttributesValueType { get; }
+        public INamedTypeSymbol ParameterCaptureUnmatchedValuesRuntimeType { get; }
 
         public INamedTypeSymbol CascadingParameterAttribute { get; }
     }

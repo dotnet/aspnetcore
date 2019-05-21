@@ -60,14 +60,14 @@ namespace Microsoft.AspNetCore.Components
             foreach (var parameter in parameterCollection)
             {
                 var parameterName = parameter.Name;
-                if (string.Equals(parameterName, writers.CaptureExtraAttributesPropertyName, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(parameterName, writers.CaptureUnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))
                 {
                     isExtraParameterSetExplicitly = true;
                 }
 
                 bool isExtraParameter;
                 if (!writers.WritersByName.TryGetValue(parameterName, out var writer) &&
-                    writers.CaptureExtraAttributesWriter == null)
+                    writers.CaptureUnmatchedValuesWriter == null)
                 {
                     // Case 1: There is nowhere to put this value.
                     ThrowForUnknownIncomingParameterName(targetType, parameterName);
@@ -90,13 +90,13 @@ namespace Microsoft.AspNetCore.Components
             if (extras != null && isExtraParameterSetExplicitly)
             {
                 // Case 2: Conflict between "Extra" parameters.
-                ThrowForExtraParameterConflict(targetType, writers.CaptureExtraAttributesPropertyName, extras);
+                ThrowForExtraParameterConflict(targetType, writers.CaptureUnmatchedValuesPropertyName, extras);
                 throw null; // Unreachable
             }
             else if (extras != null)
             {
                 // We had some extra values, set the "Extra" property
-                SetProperty(targetType, target, writers.CaptureExtraAttributesWriter, writers.CaptureExtraAttributesPropertyName, extras);
+                SetProperty(targetType, target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName, extras);
             }
 
             static void SetProperty(Type targetType, object target, IPropertySetter writer, string parameterName, object value)
@@ -153,28 +153,28 @@ namespace Microsoft.AspNetCore.Components
                 string.Join(Environment.NewLine, extras.Keys.OrderBy(k => k)));
         }
 
-        private static void ThrowForMultipleCaptureExtraAttributesParameters(Type targetType)
+        private static void ThrowForMultipleCaptureUnmatchedValuesParameters(Type targetType)
         {
             // We don't care about perf here, we want to report an accurate and useful error.
             var propertyNames = targetType
                 .GetProperties(_bindablePropertyFlags)
-                .Where(p => p.GetCustomAttribute<ParameterAttribute>()?.CaptureExtraAttributes == true)
+                .Where(p => p.GetCustomAttribute<ParameterAttribute>()?.CaptureUnmatchedValues == true)
                 .Select(p => p.Name)
                 .OrderBy(p => p)
                 .ToArray();
 
             throw new InvalidOperationException(
                 $"Multiple properties were found on component type '{targetType.FullName}' with " +
-                $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}'. Only a single property " +
-                $"per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}'. Properties:" + Environment.NewLine +
+                $"'{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. Only a single property " +
+                $"per type can use '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}'. Properties:" + Environment.NewLine +
                 string.Join(Environment.NewLine, propertyNames));
         }
 
-        private static void ThrowForInvalidCaptureExtraParameterType(Type targetType, PropertyInfo propertyInfo)
+        private static void ThrowForInvalidCaptureUnmatchedValuesParameterType(Type targetType, PropertyInfo propertyInfo)
         {
             throw new InvalidOperationException(
                 $"The property '{propertyInfo.Name}' on component type '{targetType.FullName}' cannot be used " +
-                $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureExtraAttributes)}' because it has the wrong type. " +
+                $"with '{nameof(ParameterAttribute)}.{nameof(ParameterAttribute.CaptureUnmatchedValues)}' because it has the wrong type. " +
                 $"The property must be assignable from 'Dictionary<string, object>'.");
         }
 
@@ -204,33 +204,33 @@ namespace Microsoft.AspNetCore.Components
 
                     WritersByName.Add(propertyName, propertySetter);
 
-                    if (parameterAttribute != null && parameterAttribute.CaptureExtraAttributes)
+                    if (parameterAttribute != null && parameterAttribute.CaptureUnmatchedValues)
                     {
                         // This is an "Extra" parameter.
                         //
                         // There should only be one of these.
-                        if (CaptureExtraAttributesWriter != null)
+                        if (CaptureUnmatchedValuesWriter != null)
                         {
-                            ThrowForMultipleCaptureExtraAttributesParameters(targetType);
+                            ThrowForMultipleCaptureUnmatchedValuesParameters(targetType);
                         }
 
                         // It must be able to hold a Dictionary<string, object> since that's what we create.
                         if (!propertyInfo.PropertyType.IsAssignableFrom(typeof(Dictionary<string, object>)))
                         {
-                            ThrowForInvalidCaptureExtraParameterType(targetType, propertyInfo);
+                            ThrowForInvalidCaptureUnmatchedValuesParameterType(targetType, propertyInfo);
                         }
 
-                        CaptureExtraAttributesWriter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
-                        CaptureExtraAttributesPropertyName = propertyInfo.Name;
+                        CaptureUnmatchedValuesWriter = MemberAssignment.CreatePropertySetter(targetType, propertyInfo);
+                        CaptureUnmatchedValuesPropertyName = propertyInfo.Name;
                     }
                 }
             }
 
             public Dictionary<string, IPropertySetter> WritersByName { get; }
 
-            public IPropertySetter CaptureExtraAttributesWriter { get; }
+            public IPropertySetter CaptureUnmatchedValuesWriter { get; }
 
-            public string CaptureExtraAttributesPropertyName { get; }
+            public string CaptureUnmatchedValuesPropertyName { get; }
         }
     }
 }

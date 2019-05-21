@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             SupportedDiagnostics = ImmutableArray.Create(new[]
             {
                 DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
-                DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterMustBeUnique,
-                DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterHasWrongType,
+                DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
+                DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
             });
         }
 
@@ -69,20 +69,20 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                                         property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                                 }
 
-                                if (ComponentFacts.IsParameterWithCaptureExtraAttribute(symbols, property))
+                                if (ComponentFacts.IsParameterWithCaptureUnmatchedValues(symbols, property))
                                 {
                                     extraParameters.Add(property);
 
                                     // Check the type, we need to be able to assign a Dictionary<string, object>
-                                    var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureExtraAttributesValueType, property.Type);
+                                    var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureUnmatchedValuesRuntimeType, property.Type);
                                     if (!conversion.Exists || conversion.IsExplicit)
                                     {
                                         context.ReportDiagnostic(Diagnostic.Create(
-                                            DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterHasWrongType,
+                                            DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
                                             property.Locations[0],
                                             property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
                                             property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
-                                            symbols.ParameterCaptureExtraAttributesValueType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                                            symbols.ParameterCaptureUnmatchedValuesRuntimeType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                                     }
                                 }
                             }
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                             if (extraParameters.Count > 1)
                             {
                                 context.ReportDiagnostic(Diagnostic.Create(
-                                    DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterMustBeUnique,
+                                    DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
                                     context.Symbol.Locations[0],
                                     type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
                                     Environment.NewLine,

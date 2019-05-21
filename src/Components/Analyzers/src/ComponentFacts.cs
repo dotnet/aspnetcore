@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             return property.GetAttributes().Any(a => a.AttributeClass == symbols.ParameterAttribute);
         }
 
-        public static bool IsParameterWithCaptureExtraAttribute(ComponentSymbols symbols, IPropertySymbol property)
+        public static bool IsParameterWithCaptureUnmatchedValues(ComponentSymbols symbols, IPropertySymbol property)
         {
             if (symbols == null)
             {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
             foreach (var kvp in attribute.NamedArguments)
             {
-                if (string.Equals(kvp.Key, ComponentsApi.ParameterAttribute.CaptureExtraAttributes, StringComparison.Ordinal))
+                if (string.Equals(kvp.Key, ComponentsApi.ParameterAttribute.CaptureUnmatchedValues, StringComparison.Ordinal))
                 {
                     return kvp.Value.Value as bool? ?? false;
                 }

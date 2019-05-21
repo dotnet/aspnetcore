@@ -8,10 +8,10 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Analyzers.Test
 {
-    public class ComponentCaptureExtraAttributesParameterMustBeUniqueTest : DiagnosticVerifier
+    public class ComponentParameterCaptureUnmatchedValuesMustBeUniqueTest : DiagnosticVerifier
     {
         [Fact]
-        public void IgnoresPropertiesWithCaptureExtraAttributesFalse()
+        public void IgnoresPropertiesWithCaptureUnmatchedValuesFalse()
         {
             var test = $@"
     namespace ConsoleApplication1
@@ -20,8 +20,8 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureExtraAttributes = false)] string MyProperty {{ get; set; }}
-            [Parameter(CaptureExtraAttributes = true)] Dictionary<string, object> MyOtherProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = false)] string MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] Dictionary<string, object> MyOtherProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         }
 
         [Fact]
-        public void AddsDiagnosticForMultipleCaptureExtraProperties()
+        public void AddsDiagnosticForMultipleCaptureUnmatchedValuesProperties()
         {
             var test = $@"
     namespace ConsoleApplication1
@@ -38,19 +38,19 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureExtraAttributes = true)] Dictionary<string, object> MyProperty {{ get; set; }}
-            [Parameter(CaptureExtraAttributes = true)] Dictionary<string, object> MyOtherProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] Dictionary<string, object> MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] Dictionary<string, object> MyOtherProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            var message = @"Component type 'ConsoleApplication1.TypeName' defines properties multiple parameters with CaptureExtraAttribute. Properties: 
+            var message = @"Component type 'ConsoleApplication1.TypeName' defines properties multiple parameters with CaptureUnmatchedValues. Properties: 
 ConsoleApplication1.TypeName.MyOtherProperty
 ConsoleApplication1.TypeName.MyProperty";
 
             VerifyCSharpDiagnostic(test,
                     new DiagnosticResult
                     {
-                        Id = DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterMustBeUnique.Id,
+                        Id = DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique.Id,
                         Message = message,
                         Severity = DiagnosticSeverity.Warning,
                         Locations = new[]

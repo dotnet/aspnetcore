@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Analyzers.Test
 {
-    public class ComponentCaptureExtraAttributesParameterHasWrongTypeTest : DiagnosticVerifier
+    public class ComponentParameterCaptureUnmatchedValuesHasWrongTypeTest : DiagnosticVerifier
     {
         [Theory]
         [InlineData("System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, object>>")]
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureExtraAttributes = true)] {propertyType} MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] {propertyType} MyProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         }
 
         [Fact]
-        public void IgnoresPropertiesWithCaptureExtraAttributesFalse()
+        public void IgnoresPropertiesWithCaptureUnmatchedValuesFalse()
         {
             var test = $@"
     namespace ConsoleApplication1
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureExtraAttributes = false)] string MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = false)] string MyProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
@@ -55,15 +55,15 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         using {typeof(ParameterAttribute).Namespace};
         class TypeName
         {{
-            [Parameter(CaptureExtraAttributes = true)] string MyProperty {{ get; set; }}
+            [Parameter(CaptureUnmatchedValues = true)] string MyProperty {{ get; set; }}
         }}
     }}" + ComponentsTestDeclarations.Source;
 
             VerifyCSharpDiagnostic(test,
                     new DiagnosticResult
                     {
-                        Id = DiagnosticDescriptors.ComponentCaptureExtraAttributesParameterHasWrongType.Id,
-                        Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty' defines CaptureExtraAttributes but has an unsupported type 'string'. Use a type assignable from 'System.Collections.Generic.Dictionary<string, object>'.",
+                        Id = DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType.Id,
+                        Message = "Component parameter 'ConsoleApplication1.TypeName.MyProperty' defines CaptureUnmatchedValues but has an unsupported type 'string'. Use a type assignable from 'System.Collections.Generic.Dictionary<string, object>'.",
                         Severity = DiagnosticSeverity.Warning,
                         Locations = new[]
                         {

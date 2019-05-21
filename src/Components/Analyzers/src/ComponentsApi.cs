@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
             public static readonly string FullTypeName = "Microsoft.AspNetCore.Components.ParameterAttribute";
             public static readonly string MetadataName = FullTypeName;
 
-            public static readonly string CaptureExtraAttributes = "CaptureExtraAttributes";
+            public static readonly string CaptureUnmatchedValues = "CaptureUnmatchedValues";
         }
 
         public static class CascadingParameterAttribute

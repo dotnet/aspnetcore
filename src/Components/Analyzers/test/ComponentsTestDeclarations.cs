@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
     {{
         public class {typeof(ParameterAttribute).Name} : System.Attribute
         {{
-            public bool CaptureExtraAttributes {{ get; set; }}
+            public bool CaptureUnmatchedValues {{ get; set; }}
         }}
 
         public class {typeof(CascadingParameterAttribute).Name} : System.Attribute
