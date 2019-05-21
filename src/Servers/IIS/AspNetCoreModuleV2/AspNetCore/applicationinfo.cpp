@@ -15,6 +15,7 @@
 #include "WebConfigConfigurationSource.h"
 #include "ConfigurationLoadException.h"
 #include "resource.h"
+#include "file_utility.h"
 
 extern HINSTANCE           g_hServerModule;
 
@@ -86,7 +87,6 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
             const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
             ShimOptions options(configurationSource);
 
-            // Instead of this being an object, make it a context for errors!
             ErrorContext error;
             error.statusCode = 500i16;
             error.subStatusCode = 0i16;
@@ -108,7 +108,9 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                         pHttpApplication,
                         hr,
                         options.QueryDisableStartupPage(),
-                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.errorContent) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode),
+                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS
+                            ? FILE_UTILITY::GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.specificErrorString, error.errorContent)
+                            : FILE_UTILITY::GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.specificErrorString),
                         error.statusCode,
                         error.subStatusCode,
                         "Internal Server Error");
@@ -119,7 +121,9 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                         pHttpApplication,
                         hr,
                         options.QueryDisableStartupPage(),
-                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS ? GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode) : GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode),
+                        options.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS
+                        ? FILE_UTILITY::GetHtml(g_hServerModule, IN_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.specificErrorString)
+                        : FILE_UTILITY::GetHtml(g_hServerModule, OUT_OF_PROCESS_SHIM_STATIC_HTML, error.statusCode, error.subStatusCode, error.specificErrorString),
                         error.statusCode,
                         error.subStatusCode,
                         "Internal Server Error");

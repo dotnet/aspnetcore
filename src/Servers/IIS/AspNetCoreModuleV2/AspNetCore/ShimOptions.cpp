@@ -53,5 +53,5 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     auto aspnetCoreEnvironmentEnabled = equals_ignore_case(L"Development", aspnetCoreEnvironment);
     auto dotnetEnvironmentEnabled = equals_ignore_case(L"Development", dotnetEnvironment);
 
-    m_fIsDevelopment = detailedErrorsEnabled || aspnetCoreEnvironmentEnabled || dotnetEnvironmentEnabled;
+    m_fShowDetailedErrors = detailedErrorsEnabled || aspnetCoreEnvironmentEnabled || dotnetEnvironmentEnabled;
 }

@@ -7,6 +7,7 @@
 #include "ServerErrorApplication.h"
 #include "ServerErrorHandler.h"
 #include "resource.h"
+#include "file_utility.h"
 
 // Just to be aware of the FORWARDING_HANDLER object size.
 C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
@@ -303,7 +304,14 @@ Failure:
     }
     else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
-        ServerErrorHandler handler(*m_pW3Context, 502, 5, "Bad Gateway", hr, m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(), GetHtml(g_hOutOfProcessRHModule, OUT_OF_PROCESS_RH_STATIC_HTML, 502, 5));
+        auto htmlResponse = FILE_UTILITY::GetHtml(g_hOutOfProcessRHModule, OUT_OF_PROCESS_RH_STATIC_HTML, 502, 5, "ANCM Out-Of-Process Startup Failure");
+        ServerErrorHandler handler(*m_pW3Context,
+            502,
+            5,
+            "Bad Gateway",
+            hr,
+            m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(),
+            htmlResponse);
         handler.ExecuteRequestHandler();
     }
     else

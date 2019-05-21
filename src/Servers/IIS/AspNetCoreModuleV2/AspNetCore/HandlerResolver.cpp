@@ -53,6 +53,8 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
     {
         if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
+            error.specificErrorString = "ANCM In-Process Handler Load Failure";
+
             std::unique_ptr<HostFxrResolutionResult> options;
 
             RETURN_IF_FAILED(HostFxrResolutionResult::Create(
@@ -82,6 +84,9 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
         }
         else
         {
+            // Know it is out of proc at this point
+            error.specificErrorString = "ANCM Out-Of-Process Handler Load Failure";
+
             if (FAILED_LOG(hr = FindNativeAssemblyFromGlobalLocation(pConfiguration, pstrHandlerDllName, handlerDllPath)))
             {
                 EventLog::Error(
@@ -89,15 +94,21 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
                     ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG,
                     handlerDllPath.empty() ? s_pwzAspnetcoreOutOfProcessRequestHandlerName : handlerDllPath.c_str());
 
+
+                error.errorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG, handlerDllPath.empty() ? s_pwzAspnetcoreOutOfProcessRequestHandlerName : handlerDllPath.c_str()), CP_UTF8);
+
+                error.statusCode = 500i16;
+                error.subStatusCode = 36i16;
+                error.solution = "The out of process request handler, aspnetcorev2_outofprocess.dll, could not be found next to the aspnetcorev2.dll.";
+
                 return hr;
             }
         }
 
         LOG_INFOF(L"Loading request handler:  '%ls'", handlerDllPath.c_str());
 
-        hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str());
-        // this is bitness mismatch I believe.
-        RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll);
+        RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str()));
+
         if (preventUnload)
         {
             // Pin module in memory
@@ -196,7 +207,8 @@ HandlerResolver::FindNativeAssemblyFromGlobalLocation(
     }
     catch (...)
     {
-       EventLog::Info(
+
+        EventLog::Info(
                 ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING,
                 ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG,
                 pstrHandlerDllName);

@@ -17,6 +17,7 @@
 #include "WebConfigConfigurationSource.h"
 #include "ConfigurationLoadException.h"
 #include "StartupExceptionApplication.h"
+#include "file_utility.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 
@@ -133,7 +134,11 @@ CreateApplication(
             std::unique_ptr<InProcessOptions> options;
             THROW_IF_FAILED(InProcessOptions::Create(*pServer, pSite, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
-            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, options->QueryDisableStartUpErrorPage(), hr, std::move(g_errorPageContent), 500i16, 30i16, "Internal Server Error");
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer,
+                *pHttpApplication,
+                options->QueryDisableStartUpErrorPage(),
+                hr,
+                FILE_UTILITY::GetHtml(g_hServerModule, IN_PROCESS_RH_STATIC_HTML, 500i16, 30i16, "ANCM In-Process Start Failure", std::move(g_errorPageContent)), 500i16, 30i16, "Internal Server Error");
 
             RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
             *ppApplication = pErrorApplication.release();

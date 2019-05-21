@@ -269,7 +269,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll"),
                 Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"),
                 true);
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            if (DeployerSelector.IsForwardsCompatibilityTest)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM In-Process Handler Load Failure");
+            }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
         }
@@ -318,7 +326,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             // We don't distinguish between load failure types so making dll empty should be enough
             File.WriteAllText(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"), "");
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            if (DeployerSelector.IsForwardsCompatibilityTest)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM In-Process Handler Load Failure");
+            }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
         }
@@ -330,10 +346,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            Assert.Contains("HTTP Error 500.31 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
-            StopServer();
+            if (DeployerSelector.IsForwardsCompatibilityTest)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM In-Process Handler Load Failure");
+            }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
         }
@@ -347,14 +367,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             File.Delete(Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll"));
 
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
-
             if (DeployerSelector.IsForwardsCompatibilityTest)
             {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
             }
             else
             {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.33 - ANCM In-Process Handler Load Failure");
+
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
             }
         }
@@ -766,11 +788,16 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             });
         }
 
-        private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult)
+        private Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult)
+        {
+            return AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.30 - ANCM In-Process Handler Load Failure");
+        }
+
+        private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult, string error)
         {
             var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+            Assert.Contains(error, await response.Content.ReadAsStringAsync());
             StopServer();
         }
     }
