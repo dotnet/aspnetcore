@@ -304,7 +304,12 @@ Failure:
     }
     else if (fFailedToStartKestrel && !m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage())
     {
-        static std::string htmlResponse = FILE_UTILITY::GetHtml(g_hOutOfProcessRHModule, OUT_OF_PROCESS_RH_STATIC_HTML, 502, 5, "ANCM Out-Of-Process Startup Failure");
+        static std::string htmlResponse = FILE_UTILITY::GetHtml(g_hOutOfProcessRHModule,
+            OUT_OF_PROCESS_RH_STATIC_HTML,
+            502,
+            5,
+            "ANCM Out-Of-Process Startup Failure",
+            "<ul><li> The application process failed to start </li><li> The application process started but then stopped </li><li> The application process started but failed to listen on the configured port </li></ul>");
         ServerErrorHandler handler(*m_pW3Context,
             502,
             5,

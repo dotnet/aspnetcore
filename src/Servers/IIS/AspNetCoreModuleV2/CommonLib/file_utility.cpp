@@ -168,13 +168,13 @@ Finished:
     return hr;
 }
 
-std::string FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, std::string speicificReasonPhrase)
+std::string FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, std::string speicificReasonPhrase, std::string solution)
 {
-    return GetHtml(module, page, statusCode, subStatusCode, speicificReasonPhrase, std::string());
+    return GetHtml(module, page, statusCode, subStatusCode, speicificReasonPhrase, solution, std::string());
 }
 
 std::string
-FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, std::string speicificReasonPhrase, std::string error)
+FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, std::string specificReasonPhrase, std::string solution, std::string error)
 {
     try
     {
@@ -203,7 +203,12 @@ FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subSta
             error = format("<h2>Specific error detected by ANCM:</h2><h3>%s</h3>", error.c_str());
         }
 
-        return format(data, statusCode, subStatusCode, speicificReasonPhrase.c_str(), statusCode, subStatusCode, speicificReasonPhrase.c_str(), error.c_str(), additionalHtml.c_str());
+        if (!solution.empty())
+        {
+            solution = format("<h2> Common solutions to this issue: </h2><h3>%s</h3>", solution.c_str());
+        }
+
+        return format(data, statusCode, subStatusCode, specificReasonPhrase.c_str(), statusCode, subStatusCode, specificReasonPhrase.c_str(), solution.c_str(), error.c_str(), additionalHtml.c_str());
     }
     catch (...)
     {

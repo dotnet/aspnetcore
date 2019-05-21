@@ -87,11 +87,11 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
             const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
             ShimOptions options(configurationSource);
 
-            ErrorContext error;
-            error.statusCode = 500i16;
-            error.subStatusCode = 0i16;
+            ErrorContext errorContext;
+            errorContext.statusCode = 500i16;
+            errorContext.subStatusCode = 0i16;
 
-            const auto hr = TryCreateApplication(pHttpContext, options, error);
+            const auto hr = TryCreateApplication(pHttpContext, options, errorContext);
 
             if (FAILED_LOG(hr))
             {
@@ -105,11 +105,11 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                 std::string responseContent;
                 if (options.QueryShowDetailedErrors())
                 {
-                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, error.statusCode, error.subStatusCode, error.generalErrorType, error.detailedErrorContent);
+                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.solution, errorContext.detailedErrorContent);
                 }
                 else
                 {
-                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, error.statusCode, error.subStatusCode, error.generalErrorType);
+                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.solution);
                 }
 
                 m_pApplication = make_application<ServerErrorApplication>(
@@ -117,8 +117,8 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                     hr,
                     options.QueryDisableStartupPage(),
                     responseContent,
-                    error.statusCode,
-                    error.subStatusCode,
+                    errorContext.statusCode,
+                    errorContext.subStatusCode,
                     "Internal Server Error");
             }
             return S_OK;
