@@ -395,33 +395,28 @@ namespace Test
             Assert.False(attribute.IsBooleanProperty);
             Assert.False(attribute.IsEnum);
 
-            attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("format"));
+            var parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("format"));
 
             // Invariants
-            Assert.Empty(attribute.Diagnostics);
-            Assert.False(attribute.HasErrors);
-            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, attribute.Kind);
-            Assert.False(attribute.IsDefaultKind());
-            Assert.False(attribute.HasIndexer);
-            Assert.Null(attribute.IndexerNamePrefix);
-            Assert.Null(attribute.IndexerTypeName);
-            Assert.False(attribute.IsIndexerBooleanProperty);
-            Assert.False(attribute.IsIndexerStringProperty);
+            Assert.Empty(parameter.Diagnostics);
+            Assert.False(parameter.HasErrors);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, parameter.Kind);
+            Assert.False(parameter.IsDefaultKind());
 
             Assert.Equal(
                 "Specifies a format to convert the value specified by the 'bind' attribute. " + 
                 "The format string can currently only be used with expressions of type <code>DateTime</code>.",
-                attribute.Documentation);
+                parameter.Documentation);
 
-            Assert.Equal("format-myprop", attribute.Name);
-            Assert.Equal("Format_myprop", attribute.GetPropertyName());
-            Assert.Equal("string Test.BindAttributes.Format_myprop", attribute.DisplayName);
+            Assert.Equal("format", parameter.Name);
+            Assert.Equal("Format_myprop", parameter.GetPropertyName());
+            Assert.Equal(":format", parameter.DisplayName);
 
             // Defined from the property type
-            Assert.Equal("System.String", attribute.TypeName);
-            Assert.True(attribute.IsStringProperty);
-            Assert.False(attribute.IsBooleanProperty);
-            Assert.False(attribute.IsEnum);
+            Assert.Equal("System.String", parameter.TypeName);
+            Assert.True(parameter.IsStringProperty);
+            Assert.False(parameter.IsBooleanProperty);
+            Assert.False(parameter.IsEnum);
         }
 
         [Fact]
@@ -529,10 +524,10 @@ namespace Test
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind", attribute.DisplayName);
 
-            attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("format"));
-            Assert.Equal("format-myprop", attribute.Name);
-            Assert.Equal("Format_myprop", attribute.GetPropertyName());
-            Assert.Equal("string Test.BindAttributes.Format_myprop", attribute.DisplayName);
+            var parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("format"));
+            Assert.Equal("format", parameter.Name);
+            Assert.Equal("Format_myprop", parameter.GetPropertyName());
+            Assert.Equal(":format", parameter.DisplayName);
         }
 
         [Fact]
@@ -597,10 +592,10 @@ namespace Test
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind", attribute.DisplayName);
 
-            attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("format"));
-            Assert.Equal("format-myprop", attribute.Name);
-            Assert.Equal("Format_myprop", attribute.GetPropertyName());
-            Assert.Equal("string Test.BindAttributes.Format_myprop", attribute.DisplayName);
+            var parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("format"));
+            Assert.Equal("format", parameter.Name);
+            Assert.Equal("Format_myprop", parameter.GetPropertyName());
+            Assert.Equal(":format", parameter.DisplayName);
         }
 
         [Fact]
@@ -665,10 +660,10 @@ namespace Test
             Assert.Equal("Bind_somevalue", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind_somevalue", attribute.DisplayName);
 
-            attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("format"));
-            Assert.Equal("format-somevalue", attribute.Name);
-            Assert.Equal("Format_somevalue", attribute.GetPropertyName());
-            Assert.Equal("string Test.BindAttributes.Format_somevalue", attribute.DisplayName);
+            var parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("format"));
+            Assert.Equal("format", parameter.Name);
+            Assert.Equal("Format_somevalue", parameter.GetPropertyName());
+            Assert.Equal(":format", parameter.DisplayName);
         }
 
         [Fact]
@@ -710,7 +705,7 @@ namespace Test
 
             Assert.Equal(
                 "Binds the provided expression to an attribute and a change event, based on the naming of " +
-                    "the bind attribute. For example: <code>bind-value-onchange=\"...\"</code> will assign the " +
+                    "the bind attribute. For example: <code>bind-value=\"...\"</code> and <code>bind-value:event=\"onchange\"</code> will assign the " +
                     "current value of the expression to the 'value' attribute, and assign a delegate that attempts " +
                     "to set the value to the 'onchange' attribute.",
                 bind.Documentation);
@@ -753,7 +748,7 @@ namespace Test
 
             Assert.Equal(
                 "Binds the provided expression to an attribute and a change event, based on the naming of " +
-                    "the bind attribute. For example: <code>bind-value-onchange=\"...\"</code> will assign the " +
+                    "the bind attribute. For example: <code>bind-value=\"...\"</code> and <code>bind-value:event=\"onchange\"</code> will assign the " +
                     "current value of the expression to the 'value' attribute, and assign a delegate that attempts " +
                     "to set the value to the 'onchange' attribute.",
                 attribute.Documentation);
@@ -770,37 +765,30 @@ namespace Test
             Assert.False(attribute.IsBooleanProperty);
             Assert.False(attribute.IsEnum);
 
-            attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("format"));
+            var parameter = Assert.Single(attribute.BoundAttributeParameters, a => a.Name.Equals("format"));
 
             // Invariants
-            Assert.Empty(attribute.Diagnostics);
-            Assert.False(attribute.HasErrors);
-            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, attribute.Kind);
-            Assert.False(attribute.IsDefaultKind());
-            Assert.True(attribute.HasIndexer);
-            Assert.Equal("format-", attribute.IndexerNamePrefix);
-            Assert.Equal("System.String", attribute.IndexerTypeName);
-            Assert.False(attribute.IsIndexerBooleanProperty);
-            Assert.True(attribute.IsIndexerStringProperty);
+            Assert.Empty(parameter.Diagnostics);
+            Assert.False(parameter.HasErrors);
+            Assert.Equal(ComponentMetadata.Bind.TagHelperKind, parameter.Kind);
+            Assert.False(parameter.IsDefaultKind());
 
             Assert.Equal(
                 "Specifies a format to convert the value specified by the corresponding bind attribute. " +
-                    "For example: <code>format-value=\"...\"</code> will apply a format string to the value " +
-                    "specified in <code>bind-value-...</code>. The format string can currently only be used with " +
+                    "For example: <code>bind-value:format=\"...\"</code> will apply a format string to the value " +
+                    "specified in <code>bind-value=\"...\"</code>. The format string can currently only be used with " +
                     "expressions of type <code>DateTime</code>.",
-                attribute.Documentation);
+                parameter.Documentation);
 
-            Assert.Equal("format-...", attribute.Name);
-            Assert.Equal("Format", attribute.GetPropertyName());
-            Assert.Equal(
-                "System.Collections.Generic.Dictionary<string, string> Microsoft.AspNetCore.Components.Bind.Format",
-                attribute.DisplayName);
+            Assert.Equal("format", parameter.Name);
+            Assert.Equal("Format", parameter.GetPropertyName());
+            Assert.Equal(":format", parameter.DisplayName);
 
             // Defined from the property type
-            Assert.Equal("System.Collections.Generic.Dictionary<string, string>", attribute.TypeName);
-            Assert.False(attribute.IsStringProperty);
-            Assert.False(attribute.IsBooleanProperty);
-            Assert.False(attribute.IsEnum);
+            Assert.Equal("System.String", parameter.TypeName);
+            Assert.True(parameter.IsStringProperty);
+            Assert.False(parameter.IsBooleanProperty);
+            Assert.False(parameter.IsEnum);
         }
 
 

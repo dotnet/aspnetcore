@@ -7,14 +7,14 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [50] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (35:0,35 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
+                Component - (0:0,0 [69] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (25:0,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (35:0,35 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            IntermediateToken - (25:0,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (35:0,35 [11] x:\dir\subdir\Test\TestComponent.cshtml) - OnChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (25:0,25 [11] x:\dir\subdir\Test\TestComponent.cshtml) - OnChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
-            CSharpCode - (59:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (59:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n
+            CSharpCode - (78:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (78:1,7 [50] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public int ParentValue { get; set; } = 42;\n

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -7,21 +7,14 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    /// <summary>
-    /// A metadata class describing a tag helper attribute.
-    /// </summary>
-    public abstract class BoundAttributeDescriptor : IEquatable<BoundAttributeDescriptor>
+    public abstract class BoundAttributeParameterDescriptor : IEquatable<BoundAttributeParameterDescriptor>
     {
-        protected BoundAttributeDescriptor(string kind)
+        protected BoundAttributeParameterDescriptor(string kind)
         {
             Kind = kind;
         }
 
         public string Kind { get; }
-
-        public bool IsIndexerStringProperty { get; protected set; }
-
-        public bool IsIndexerBooleanProperty { get; protected set; }
 
         public bool IsEnum { get; protected set; }
 
@@ -31,13 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string Name { get; protected set; }
 
-        public string IndexerNamePrefix { get; protected set; }
-
         public string TypeName { get; protected set; }
-
-        public string IndexerTypeName { get; protected set; }
-
-        public bool HasIndexer { get; protected set; }
 
         public string Documentation { get; protected set; }
 
@@ -46,8 +33,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         public IReadOnlyList<RazorDiagnostic> Diagnostics { get; protected set; }
 
         public IReadOnlyDictionary<string, string> Metadata { get; protected set; }
-
-        public virtual IReadOnlyList<BoundAttributeParameterDescriptor> BoundAttributeParameters { get; protected set; }
 
         public bool HasErrors
         {
@@ -64,19 +49,19 @@ namespace Microsoft.AspNetCore.Razor.Language
             return DisplayName ?? base.ToString();
         }
 
-        public bool Equals(BoundAttributeDescriptor other)
+        public bool Equals(BoundAttributeParameterDescriptor other)
         {
-            return BoundAttributeDescriptorComparer.Default.Equals(this, other);
+            return BoundAttributeParameterDescriptorComparer.Default.Equals(this, other);
         }
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as BoundAttributeDescriptor);
+            return Equals(obj as BoundAttributeParameterDescriptor);
         }
 
         public override int GetHashCode()
         {
-            return BoundAttributeDescriptorComparer.Default.GetHashCode(this);
+            return BoundAttributeParameterDescriptorComparer.Default.GetHashCode(this);
         }
     }
 }

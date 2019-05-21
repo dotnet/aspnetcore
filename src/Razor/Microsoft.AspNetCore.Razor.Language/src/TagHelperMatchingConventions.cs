@@ -128,7 +128,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static bool CanSatisfyBoundAttribute(string name, BoundAttributeDescriptor descriptor)
         {
-            return SatisfiesBoundAttributeName(name, descriptor) || SatisfiesBoundAttributeIndexer(name, descriptor);
+            return SatisfiesBoundAttributeName(name, descriptor) ||
+                SatisfiesBoundAttributeIndexer(name, descriptor) ||
+                descriptor.BoundAttributeParameters.Any(p => SatisfiesBoundAttributeWithParameter(name, descriptor, p));
         }
 
         public static bool SatisfiesBoundAttributeIndexer(string name, BoundAttributeDescriptor descriptor)
@@ -136,6 +138,84 @@ namespace Microsoft.AspNetCore.Razor.Language
             return descriptor.IndexerNamePrefix != null &&
                 !SatisfiesBoundAttributeName(name, descriptor) &&
                 name.StartsWith(descriptor.IndexerNamePrefix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static bool SatisfiesBoundAttributeWithParameter(string name, BoundAttributeDescriptor parent, BoundAttributeParameterDescriptor descriptor)
+        {
+            if (TryGetBoundAttributeParameter(name, out var attributeName, out var parameterName))
+            {
+                var satisfiesBoundAttributeName = SatisfiesBoundAttributeName(attributeName, parent);
+                var satisfiesBoundAttributeIndexer = SatisfiesBoundAttributeIndexer(attributeName, parent);
+                var matchesParameter = string.Equals(descriptor.Name, parameterName, StringComparison.Ordinal);
+                return (satisfiesBoundAttributeName || satisfiesBoundAttributeIndexer) && matchesParameter;
+            }
+
+            return false;
+        }
+
+        public static bool TryGetBoundAttributeParameter(string fullAttributeName, out string boundAttributeName, out string parameterName)
+        {
+            boundAttributeName = null;
+            parameterName = null;
+
+            if (!string.IsNullOrEmpty(fullAttributeName) && fullAttributeName.IndexOf(':') != -1)
+            {
+                var segments = fullAttributeName.Split(new[] { ':' }, 2);
+                boundAttributeName = segments[0];
+                parameterName = segments[1];
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool TryGetFirstBoundAttributeMatch(
+            string name,
+            TagHelperDescriptor descriptor,
+            out BoundAttributeDescriptor boundAttribute,
+            out bool indexerMatch,
+            out bool parameterMatch,
+            out BoundAttributeParameterDescriptor boundAttributeParameter)
+        {
+            indexerMatch = false;
+            parameterMatch = false;
+            boundAttribute = null;
+            boundAttributeParameter = null;
+
+            if (string.IsNullOrEmpty(name) || descriptor == null)
+            {
+                return false;
+            }
+
+            // First, check if we have a bound attribute descriptor that matches the parameter if it exists.
+            foreach (var attribute in descriptor.BoundAttributes)
+            {
+                boundAttributeParameter = attribute.BoundAttributeParameters.FirstOrDefault(
+                    p => SatisfiesBoundAttributeWithParameter(name, attribute, p));
+
+                if (boundAttributeParameter != null)
+                {
+                    boundAttribute = attribute;
+                    indexerMatch = SatisfiesBoundAttributeIndexer(name, attribute);
+                    parameterMatch = true;
+                    return true;
+                }
+            }
+
+            // If we reach here, either the attribute name doesn't contain a parameter portion or
+            // the specified parameter isn't supported by any of the BoundAttributeDescriptors.
+            foreach (var attribute in descriptor.BoundAttributes)
+            {
+                if (CanSatisfyBoundAttribute(name, attribute))
+                {
+                    boundAttribute = attribute;
+                    indexerMatch = SatisfiesBoundAttributeIndexer(name, attribute);
+                    return true;
+                }
+            }
+
+            // No matches found.
+            return false;
         }
 
         private static bool SatisfiesBoundAttributeName(string name, BoundAttributeDescriptor descriptor)

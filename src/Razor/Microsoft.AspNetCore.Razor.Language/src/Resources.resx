@@ -541,4 +541,10 @@
   <data name="NamespaceDirective_NamespaceToken_Name" xml:space="preserve">
     <value>Namespace</value>
   </data>
+  <data name="TagHelper_InvalidBoundAttributeParameterName" xml:space="preserve">
+    <value>Invalid tag helper bound attribute parameter '{1}' on bound attribute '{0}'. Tag helpers cannot bind to HTML attribute parameters with name '{1}' because the name contains a '{3}' character.</value>
+  </data>
+  <data name="TagHelper_InvalidBoundAttributeParameterNullOrWhitespace" xml:space="preserve">
+    <value>Invalid tag helper bound attribute parameter '{0}'. Tag helpers cannot bind to HTML attribute parameters with a null or empty name.</value>
+  </data>
 </root>

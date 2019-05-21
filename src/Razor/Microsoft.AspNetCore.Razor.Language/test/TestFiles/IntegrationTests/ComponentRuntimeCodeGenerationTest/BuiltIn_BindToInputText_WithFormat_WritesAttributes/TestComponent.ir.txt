@@ -7,7 +7,7 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [66] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                MarkupElement - (0:0,0 [65] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
                         HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
@@ -21,5 +21,5 @@ Document -
                     HtmlAttribute - (25:0,25 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, "MM/dd/yyyy")
-            CSharpCode - (75:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (75:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n
+            CSharpCode - (74:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (74:1,7 [77] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n

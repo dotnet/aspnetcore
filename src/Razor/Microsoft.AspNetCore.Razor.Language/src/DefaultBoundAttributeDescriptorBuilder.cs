@@ -31,6 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly DefaultTagHelperDescriptorBuilder _parent;
         private readonly string _kind;
         private readonly Dictionary<string, string> _metadata;
+        private List<DefaultBoundAttributeParameterDescriptorBuilder> _attributeParameterBuilders;
 
         private RazorDiagnosticCollection _diagnostics;
 
@@ -73,6 +74,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
+        public override void BindAttributeParameter(Action<BoundAttributeParameterDescriptorBuilder> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            EnsureAttributeParameterBuilders();
+
+            var builder = new DefaultBoundAttributeParameterDescriptorBuilder(this, _kind);
+            configure(builder);
+            _attributeParameterBuilders.Add(builder);
+        }
+
         public BoundAttributeDescriptor Build()
         {
             var validationDiagnostics = Validate();
@@ -80,6 +95,19 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (_diagnostics != null)
             {
                 diagnostics.UnionWith(_diagnostics);
+            }
+
+            var parameters = Array.Empty<BoundAttributeParameterDescriptor>();
+            if (_attributeParameterBuilders != null)
+            {
+                // Attribute parameters are case-sensitive.
+                var parameterset = new HashSet<BoundAttributeParameterDescriptor>(BoundAttributeParameterDescriptorComparer.CaseSensitive);
+                for (var i = 0; i < _attributeParameterBuilders.Count; i++)
+                {
+                    parameterset.Add(_attributeParameterBuilders[i].Build());
+                }
+
+                parameters = parameterset.ToArray();
             }
 
             var descriptor = new DefaultBoundAttributeDescriptor(
@@ -92,6 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 IndexerValueTypeName,
                 Documentation,
                 GetDisplayName(),
+                parameters,
                 new Dictionary<string, string>(Metadata),
                 diagnostics.ToArray());
 
@@ -203,6 +232,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                         }
                     }
                 }
+            }
+        }
+
+        private void EnsureAttributeParameterBuilders()
+        {
+            if (_attributeParameterBuilders == null)
+            {
+                _attributeParameterBuilders = new List<DefaultBoundAttributeParameterDescriptorBuilder>();
             }
         }
     }

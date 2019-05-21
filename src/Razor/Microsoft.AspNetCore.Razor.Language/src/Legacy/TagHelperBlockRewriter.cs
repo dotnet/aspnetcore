@@ -273,17 +273,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         // Determines the full name of the Type of the property corresponding to an attribute with the given name.
         private static string GetPropertyType(string name, IEnumerable<TagHelperDescriptor> descriptors)
         {
-            var firstBoundAttribute = FindFirstBoundAttribute(name, descriptors);
-            var isBoundToIndexer = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, firstBoundAttribute);
+            foreach (var descriptor in descriptors)
+            {
+                if (TagHelperMatchingConventions.TryGetFirstBoundAttributeMatch(name, descriptor, out var firstBoundAttribute, out var indexerMatch, out var _, out var _))
+                {
+                    if (indexerMatch)
+                    {
+                        return firstBoundAttribute.IndexerTypeName;
+                    }
+                    else
+                    {
+                        return firstBoundAttribute.TypeName;
+                    }
+                }
+            }
 
-            if (isBoundToIndexer)
-            {
-                return firstBoundAttribute?.IndexerTypeName;
-            }
-            else
-            {
-                return firstBoundAttribute?.TypeName;
-            }
+            return null;
         }
 
         // Create a TryParseResult for given name, filling in binding details.
@@ -292,13 +297,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             IEnumerable<TagHelperDescriptor> descriptors,
             HashSet<string> processedBoundAttributeNames)
         {
-            var firstBoundAttribute = FindFirstBoundAttribute(name, descriptors);
-            var isBoundAttribute = firstBoundAttribute != null;
-            var isBoundNonStringAttribute = isBoundAttribute && !firstBoundAttribute.ExpectsStringValue(name);
-            var isBoundBooleanAttribute = isBoundAttribute && firstBoundAttribute.ExpectsBooleanValue(name);
-            var isMissingDictionaryKey = isBoundAttribute &&
-                firstBoundAttribute.IndexerNamePrefix != null &&
-                name.Length == firstBoundAttribute.IndexerNamePrefix.Length;
+            var isBoundAttribute = false;
+            var isBoundNonStringAttribute = false;
+            var isBoundBooleanAttribute = false;
+            var isMissingDictionaryKey = false;
+
+            foreach (var descriptor in descriptors)
+            {
+                if (TagHelperMatchingConventions.TryGetFirstBoundAttributeMatch(
+                    name,
+                    descriptor,
+                    out var firstBoundAttribute,
+                    out var indexerMatch,
+                    out var parameterMatch,
+                    out var boundAttributeParameter))
+                {
+                    isBoundAttribute = true;
+                    if (parameterMatch)
+                    {
+                        isBoundNonStringAttribute = !boundAttributeParameter.IsStringProperty;
+                        isBoundBooleanAttribute = boundAttributeParameter.IsBooleanProperty;
+                        isMissingDictionaryKey = false;
+                    }
+                    else
+                    {
+                        isBoundNonStringAttribute = !firstBoundAttribute.ExpectsStringValue(name);
+                        isBoundBooleanAttribute = firstBoundAttribute.ExpectsBooleanValue(name);
+                        isMissingDictionaryKey = firstBoundAttribute.IndexerNamePrefix != null &&
+                            name.Length == firstBoundAttribute.IndexerNamePrefix.Length;
+                    }
+
+                    break;
+                }
+            }
 
             var isDuplicateAttribute = false;
             if (isBoundAttribute && !processedBoundAttributeNames.Add(name))
@@ -316,18 +347,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 IsMissingDictionaryKey = isMissingDictionaryKey,
                 IsDuplicateAttribute = isDuplicateAttribute
             };
-        }
-
-        // Finds first TagHelperAttributeDescriptor matching given name.
-        private static BoundAttributeDescriptor FindFirstBoundAttribute(
-            string name,
-            IEnumerable<TagHelperDescriptor> descriptors)
-        {
-            var firstBoundAttribute = descriptors
-                .SelectMany(descriptor => descriptor.BoundAttributes)
-                .FirstOrDefault(attributeDescriptor => TagHelperMatchingConventions.CanSatisfyBoundAttribute(name, attributeDescriptor));
-
-            return firstBoundAttribute;
         }
 
         private static string GetAttributeValueContent(RazorSyntaxNode attributeBlock)

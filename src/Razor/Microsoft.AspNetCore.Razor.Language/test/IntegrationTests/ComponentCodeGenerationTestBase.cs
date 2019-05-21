@@ -644,7 +644,7 @@ namespace Test
 }"));
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value-OnChanged=""ParentValue"" />
+<MyComponent bind-Value=""ParentValue"" bind-Value:event=""OnChanged"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -674,7 +674,7 @@ namespace Test
 }"));
 
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value-OnChanged=""ParentValue"" />
+<MyComponent bind-Value=""ParentValue"" bind-Value:event=""OnChanged"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -982,7 +982,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind=""@CurrentDate"" format-value=""MM/dd/yyyy""/>
+<input type=""text"" bind=""@CurrentDate"" bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
@@ -1000,7 +1000,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind=""@CurrentDate"" format-value=""@Format""/>
+<input type=""text"" bind=""@CurrentDate"" bind:format=""@Format""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 
@@ -1056,7 +1056,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind-value-onchange=""@ParentValue"" />
+<input type=""text"" bind-value=""@ParentValue"" bind-value:event=""onchange"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -1074,7 +1074,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind-value-onchange=""@CurrentDate"" format-value=""MM/dd"" />
+<input type=""text"" bind-value=""@CurrentDate"" bind-value:event=""onchange"" bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");

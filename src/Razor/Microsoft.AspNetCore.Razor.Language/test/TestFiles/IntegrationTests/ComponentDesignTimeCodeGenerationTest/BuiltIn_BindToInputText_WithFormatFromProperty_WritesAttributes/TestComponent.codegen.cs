@@ -31,7 +31,7 @@ namespace Test
             , 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                      Format
+                                                     Format
 
 #line default
 #line hidden

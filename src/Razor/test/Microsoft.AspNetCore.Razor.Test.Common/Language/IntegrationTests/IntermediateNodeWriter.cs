@@ -128,6 +128,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.AttributeName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
         }
 
+        public override void VisitTagHelperAttributeParameter(TagHelperAttributeParameterIntermediateNode node)
+        {
+            WriteContentNode(node, node.AttributeName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
+        }
+
         public override void VisitComponent(ComponentIntermediateNode node)
         {
             WriteContentNode(node, node.TagName);

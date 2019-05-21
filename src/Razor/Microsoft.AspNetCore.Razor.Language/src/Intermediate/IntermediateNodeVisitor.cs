@@ -129,6 +129,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
+        public virtual void VisitTagHelperAttributeParameter(TagHelperAttributeParameterIntermediateNode node)
+        {
+            VisitDefault(node);
+        }
+
         public virtual void VisitComponent(ComponentIntermediateNode node)
         {
             VisitDefault(node);

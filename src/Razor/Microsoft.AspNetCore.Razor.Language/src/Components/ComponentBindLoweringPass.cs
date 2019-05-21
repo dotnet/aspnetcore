@@ -30,11 +30,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // For each bind *usage* we need to rewrite the tag helper node to map to basic constructs.
             var references = documentNode.FindDescendantReferences<TagHelperPropertyIntermediateNode>();
+            var parameterReferences = documentNode.FindDescendantReferences<TagHelperAttributeParameterIntermediateNode>();
 
             var parents = new HashSet<IntermediateNode>();
             for (var i = 0; i < references.Count; i++)
             {
                 parents.Add(references[i].Parent);
+            }
+            for (var i = 0; i < parameterReferences.Count; i++)
+            {
+                parents.Add(parameterReferences[i].Parent);
             }
 
             foreach (var parent in parents)
@@ -42,6 +47,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 ProcessDuplicates(parent);
             }
 
+            // First, collect all the non-parameterized bind or bind-* attributes.
+            var bindEntries = new Dictionary<string, BindEntry>();
             for (var i = 0; i < references.Count; i++)
             {
                 var reference = references[i];
@@ -55,14 +62,60 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 if (node.TagHelper.IsBindTagHelper() && node.AttributeName.StartsWith("bind"))
                 {
-                    // Workaround for https://github.com/aspnet/Blazor/issues/703
-                    var rewritten = RewriteUsage(reference.Parent, node);
-                    reference.Remove();
+                    bindEntries[node.AttributeName] = new BindEntry(reference);
+                }
+            }
 
-                    for (var j = 0; j < rewritten.Length; j++)
+            // Now collect all the parameterized attributes and store them along with their corresponding bind or bind-* attributes.
+            for (var i = 0; i < parameterReferences.Count; i++)
+            {
+                var parameterReference = parameterReferences[i];
+                var node = (TagHelperAttributeParameterIntermediateNode)parameterReference.Node;
+
+                if (!parameterReference.Parent.Children.Contains(node))
+                {
+                    // This node was removed as a duplicate, skip it.
+                    continue;
+                }
+
+                if (node.TagHelper.IsBindTagHelper() && node.AttributeName.StartsWith("bind"))
+                {
+                    if (!bindEntries.TryGetValue(node.AttributeNameWithoutParameter, out var entry))
                     {
-                        reference.Parent.Children.Add(rewritten[j]);
+                        // There is no corresponding bind node. Add a diagnostic and move on.
+                        parameterReference.Parent.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttributeParameter_MissingBind(
+                            node.Source,
+                            node.AttributeName));
                     }
+                    else if (node.BoundAttributeParameter.Name == "event")
+                    {
+                        entry.BindEventNode = node;
+                    }
+                    else if (node.BoundAttributeParameter.Name == "format")
+                    {
+                        entry.BindFormatNode = node;
+                    }
+                    else
+                    {
+                        // Unsupported bind attribute parameter. This can only happen if bound attribute descriptor
+                        // is configured to expect a parameter other than 'event' and 'format'.
+                    }
+
+                    // We've extracted what we need from the parameterized bind node. Remove it.
+                    parameterReference.Remove();
+                }
+            }
+
+            // We now have all the info we need to rewrite the tag helper.
+            foreach (var entry in bindEntries)
+            {
+                var reference = entry.Value.BindNodeReference;
+                var rewritten = RewriteUsage(reference.Parent, entry.Value);
+                reference.Remove();
+
+                for (var j = 0; j < rewritten.Length; j++)
+                {
+                    reference.Parent.Children.Add(rewritten[j]);
                 }
             }
         }
@@ -78,18 +131,42 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 // For each usage of the general 'fallback' bind tag helper, it could duplicate
                 // the usage of a more specific one. Look for duplicates and remove the fallback.
-                var attribute = node.Children[i] as TagHelperPropertyIntermediateNode;
+                TagHelperDescriptor tagHelper = null;
+                string attributeName = null;
+                var attribute = node.Children[i];
+                if (attribute is TagHelperPropertyIntermediateNode propertyAttribute)
+                {
+                    attributeName = propertyAttribute.AttributeName;
+                    tagHelper = propertyAttribute.TagHelper;
+                }
+                else if (attribute is TagHelperAttributeParameterIntermediateNode parameterAttribute)
+                {
+                    attributeName = parameterAttribute.AttributeName;
+                    tagHelper = parameterAttribute.TagHelper;
+                }
                 if (attribute != null &&
-                    attribute.TagHelper != null &&
-                    attribute.TagHelper.IsFallbackBindTagHelper())
+                    tagHelper != null &&
+                    tagHelper.IsFallbackBindTagHelper())
                 {
                     for (var j = 0; j < node.Children.Count; j++)
                     {
-                        var duplicate = node.Children[j] as TagHelperPropertyIntermediateNode;
+                        TagHelperDescriptor duplicateTagHelper = null;
+                        string duplicateAttributeName = null;
+                        var duplicate = node.Children[j];
+                        if (duplicate is TagHelperPropertyIntermediateNode duplicatePropertyAttribute)
+                        {
+                            duplicateAttributeName = duplicatePropertyAttribute.AttributeName;
+                            duplicateTagHelper = duplicatePropertyAttribute.TagHelper;
+                        }
+                        else if (duplicate is TagHelperAttributeParameterIntermediateNode duplicateParameterAttribute)
+                        {
+                            duplicateAttributeName = duplicateParameterAttribute.AttributeName;
+                            duplicateTagHelper = duplicateParameterAttribute.TagHelper;
+                        }
                         if (duplicate != null &&
-                            duplicate.TagHelper != null &&
-                            duplicate.TagHelper.IsBindTagHelper() &&
-                            duplicate.AttributeName == attribute.AttributeName &&
+                            duplicateTagHelper != null &&
+                            duplicateTagHelper.IsBindTagHelper() &&
+                            duplicateAttributeName == attributeName &&
                             !object.ReferenceEquals(attribute, duplicate))
                         {
                             // Found a duplicate - remove the 'fallback' in favor of the
@@ -104,16 +181,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // This is a workaround for a limitation where you can't write a tag helper that binds only
                 // when a specific attribute is **not** present.
                 if (attribute != null &&
-                    attribute.TagHelper != null &&
-                    attribute.TagHelper.IsInputElementFallbackBindTagHelper())
+                    tagHelper != null &&
+                    tagHelper.IsInputElementFallbackBindTagHelper())
                 {
                     for (var j = 0; j < node.Children.Count; j++)
                     {
-                        var duplicate = node.Children[j] as TagHelperPropertyIntermediateNode;
+                        TagHelperDescriptor duplicateTagHelper = null;
+                        string duplicateAttributeName = null;
+                        var duplicate = node.Children[j];
+                        if (duplicate is TagHelperPropertyIntermediateNode duplicatePropertyAttribute)
+                        {
+                            duplicateAttributeName = duplicatePropertyAttribute.AttributeName;
+                            duplicateTagHelper = duplicatePropertyAttribute.TagHelper;
+                        }
+                        else if (duplicate is TagHelperAttributeParameterIntermediateNode duplicateParameterAttribute)
+                        {
+                            duplicateAttributeName = duplicateParameterAttribute.AttributeName;
+                            duplicateTagHelper = duplicateParameterAttribute.TagHelper;
+                        }
                         if (duplicate != null &&
-                            duplicate.TagHelper != null &&
-                            duplicate.TagHelper.IsInputElementBindTagHelper() &&
-                            duplicate.AttributeName == attribute.AttributeName &&
+                            duplicateTagHelper != null &&
+                            duplicateTagHelper.IsInputElementBindTagHelper() &&
+                            duplicateAttributeName == attributeName &&
                             !object.ReferenceEquals(attribute, duplicate))
                         {
                             // Found a duplicate - remove the 'fallback' input tag helper in favor of the
@@ -144,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private IntermediateNode[] RewriteUsage(IntermediateNode parent, TagHelperPropertyIntermediateNode node)
+        private IntermediateNode[] RewriteUsage(IntermediateNode parent, BindEntry bindEntry)
         {
             // Bind works similarly to a macro, it always expands to code that the user could have written.
             //
@@ -168,10 +257,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // We also assume that the element will be treated as a component for now because
             // multiple passes handle 'special' tag helpers. We have another pass that translates
             // a tag helper node back into 'regular' element when it doesn't have an associated component
+            var node = bindEntry.BindNode;
             if (!TryComputeAttributeNames(
                 parent,
-                node,
-                node.AttributeName,
+                bindEntry,
                 out var valueAttributeName,
                 out var changeAttributeName,
                 out var expressionAttributeName,
@@ -198,16 +287,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // Look for a matching format node. If we find one then we need to pass the format into the
             // two nodes we generate.
             IntermediateToken format = null;
+            if (bindEntry.BindFormatNode != null)
+            {
+                format = GetAttributeContent(bindEntry.BindFormatNode);
+            }
+
             if (TryGetFormatNode(
                 parent,
                 node,
                 valueAttributeName,
                 out var formatNode))
             {
-                // Don't write the format out as its own attribute, just capture it as a string
-                // or expression.
+                // If there is a format- attribute present, add a warning to say that it's unsupported.
                 parent.Children.Remove(formatNode);
-                format = GetAttributeContent(formatNode);
+                parent.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_FormatNode_Unsupported(formatNode.Source));
             }
 
             var valueExpressionTokens = new List<IntermediateToken>();
@@ -336,16 +429,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         }
 
         private bool TryParseBindAttribute(
-            string attributeName,
+            BindEntry bindEntry,
             out string valueAttributeName,
             out string changeAttributeName)
         {
+            var attributeName = bindEntry.BindNode.AttributeName;
             valueAttributeName = null;
             changeAttributeName = null;
 
             if (!attributeName.StartsWith("bind"))
             {
                 return false;
+            }
+
+            if (bindEntry.BindEventNode != null)
+            {
+                changeAttributeName = GetAttributeContent(bindEntry.BindEventNode)?.Content?.Trim('"');
             }
 
             if (attributeName == "bind")
@@ -369,8 +468,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     return true;
 
                 case 3:
-                    changeAttributeName = segments[2];
                     valueAttributeName = segments[1];
+                    changeAttributeName = segments[2];
+                    bindEntry.BindNode.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_UnsupportedFormat(bindEntry.BindNode.Source));
                     return true;
 
                 default:
@@ -381,8 +481,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
         // Attempts to compute the attribute names that should be used for an instance of 'bind'.
         private bool TryComputeAttributeNames(
             IntermediateNode parent,
-            TagHelperPropertyIntermediateNode node,
-            string attributeName,
+            BindEntry bindEntry,
             out string valueAttributeName,
             out string changeAttributeName,
             out string expressionAttributeName,
@@ -397,7 +496,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // Even though some of our 'bind' tag helpers specify the attribute names, they
             // should still satisfy one of the valid syntaxes.
-            if (!TryParseBindAttribute(attributeName, out valueAttributeName, out changeAttributeName))
+            if (!TryParseBindAttribute(bindEntry, out valueAttributeName, out changeAttributeName))
             {
                 return false;
             }
@@ -408,6 +507,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // generated to match a specific tag and has metadata that identify the attributes.
             //
             // We expect 1 bind tag helper per-node.
+            var node = bindEntry.BindNode;
+            var attributeName = node.AttributeName;
             valueAttributeName = node.TagHelper.GetValueAttributeName() ?? valueAttributeName;
             changeAttributeName = node.TagHelper.GetChangeAttributeName() ?? changeAttributeName;
             expressionAttributeName = node.TagHelper.GetExpressionAttributeName() ?? expressionAttributeName;
@@ -630,7 +731,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             });
         }
 
-        private static IntermediateToken GetAttributeContent(TagHelperPropertyIntermediateNode node)
+        private static IntermediateToken GetAttributeContent(IntermediateNode node)
         {
             var template = node.FindDescendantNodes<TemplateIntermediateNode>().FirstOrDefault();
             if (template != null)
@@ -673,6 +774,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     Content = string.Join(string.Empty, parent.Children.OfType<IntermediateToken>().Select(t => t.Content)),
                 };
             }
+        }
+
+        private class BindEntry
+        {
+            public BindEntry(IntermediateNodeReference bindNodeReference)
+            {
+                BindNodeReference = bindNodeReference;
+                BindNode = (TagHelperPropertyIntermediateNode)bindNodeReference.Node;
+            }
+
+            public IntermediateNodeReference BindNodeReference { get; }
+
+            public TagHelperPropertyIntermediateNode BindNode { get; }
+
+            public TagHelperAttributeParameterIntermediateNode BindEventNode { get; set; }
+
+            public TagHelperAttributeParameterIntermediateNode BindFormatNode { get; set; }
         }
     }
 }

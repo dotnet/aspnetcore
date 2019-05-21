@@ -46,7 +46,7 @@ namespace Microsoft.CodeAnalysis.Razor
             //
             // We handle a few different cases here:
             //
-            //  1.  When given an attribute like **anywhere**'bind-value-onchange="@FirstName"' we will
+            //  1.  When given an attribute like **anywhere**'bind-value="@FirstName"' and 'bind-value:event="onchange"' we will
             //      generate the 'value' attribute and 'onchange' attribute. 
             //
             //      We don't do any transformation or inference for this case, because the developer has
@@ -143,15 +143,35 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 attribute.Documentation = ComponentResources.BindTagHelper_Fallback_Documentation;
 
-                attribute.Name = "bind-...";
+                var attributeName = "bind-...";
+                attribute.Name = attributeName;
                 attribute.AsDictionary("bind-", typeof(object).FullName);
 
                 // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                 // a C# property will crash trying to create the toolips.
                 attribute.SetPropertyName("Bind");
                 attribute.TypeName = "System.Collections.Generic.Dictionary<string, object>";
+
+                attribute.BindAttributeParameter(parameter =>
+                {
+                    parameter.Name = "format";
+                    parameter.TypeName = typeof(string).FullName;
+                    parameter.Documentation = ComponentResources.BindTagHelper_Fallback_Format_Documentation;
+
+                    parameter.SetPropertyName("Format");
+                });
+
+                attribute.BindAttributeParameter(parameter =>
+                {
+                    parameter.Name = "event";
+                    parameter.TypeName = typeof(string).FullName;
+                    parameter.Documentation = string.Format(ComponentResources.BindTagHelper_Fallback_Event_Documentation, attributeName);
+
+                    parameter.SetPropertyName("Event");
+                });
             });
 
+            // This is no longer supported. This is just here so we can add a diagnostic later on when this matches.
             builder.BindAttribute(attribute =>
             {
                 attribute.Documentation = ComponentResources.BindTagHelper_Fallback_Format_Documentation;
@@ -237,6 +257,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             return results;
         }
+
         private List<TagHelperDescriptor> CreateElementBindTagHelpers(List<ElementBindData> data)
         {
             var results = new List<TagHelperDescriptor>();
@@ -250,6 +271,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 var formatName = entry.Suffix == null ? "Format_" + entry.ValueAttribute : "Format_" + entry.Suffix;
                 var formatAttributeName = entry.Suffix == null ? "format-" + entry.ValueAttribute : "format-" + entry.Suffix;
+
+                var eventName = entry.Suffix == null ? "Event_" + entry.ValueAttribute : "Event_" + entry.Suffix;
 
                 var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, name, ComponentsApi.AssemblyName);
                 builder.Documentation = string.Format(
@@ -315,14 +338,32 @@ namespace Microsoft.CodeAnalysis.Razor
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the toolips.
                     a.SetPropertyName(name);
+
+                    a.BindAttributeParameter(parameter =>
+                    {
+                        parameter.Name = "format";
+                        parameter.TypeName = typeof(string).FullName;
+                        parameter.Documentation = string.Format(ComponentResources.BindTagHelper_Element_Format_Documentation, attributeName);
+
+                        parameter.SetPropertyName(formatName);
+                    });
+
+                    a.BindAttributeParameter(parameter =>
+                    {
+                        parameter.Name = "event";
+                        parameter.TypeName = typeof(string).FullName;
+                        parameter.Documentation = string.Format(ComponentResources.BindTagHelper_Element_Event_Documentation, attributeName);
+
+                        parameter.SetPropertyName(eventName);
+                    });
                 });
 
+                // This is no longer supported. This is just here so we can add a diagnostic later on when this matches.
                 builder.BindAttribute(attribute =>
                 {
-                    attribute.Documentation = string.Format(ComponentResources.BindTagHelper_Element_Format_Documentation, attributeName);
-
                     attribute.Name = formatAttributeName;
                     attribute.TypeName = "System.String";
+                    attribute.Documentation = string.Format(ComponentResources.BindTagHelper_Element_Format_Documentation, attributeName);
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the toolips.
@@ -376,7 +417,6 @@ namespace Microsoft.CodeAnalysis.Razor
                         if (tagHelper.BoundAttributes[j].Name == valueAttributeName)
                         {
                             valueAttribute = tagHelper.BoundAttributes[j];
-                            
                         }
 
                         if (tagHelper.BoundAttributes[j].Name == expressionAttributeName)

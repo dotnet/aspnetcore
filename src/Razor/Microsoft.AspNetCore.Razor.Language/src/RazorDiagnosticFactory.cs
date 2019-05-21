@@ -779,6 +779,41 @@ namespace Microsoft.AspNetCore.Razor.Language
             return diagnostic;
         }
 
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributeParameterNullOrWhitespace =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}3013",
+                () => Resources.TagHelper_InvalidBoundAttributeParameterNullOrWhitespace,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributeParameterNullOrWhitespace(string attributeName)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                TagHelper_InvalidBoundAttributeParameterNullOrWhitespace,
+                new SourceSpan(SourceLocation.Undefined, contentLength: 0),
+                attributeName);
+
+            return diagnostic;
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributeParameterName =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}3014",
+                () => Resources.TagHelper_InvalidBoundAttributeParameterName,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributeParameterName(
+            string attributeName,
+            string invalidName,
+            char invalidCharacter)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                TagHelper_InvalidBoundAttributeParameterName,
+                new SourceSpan(SourceLocation.Undefined, contentLength: 0),
+                attributeName,
+                invalidName,
+                invalidCharacter);
+
+            return diagnostic;
+        }
+
         #endregion
 
         #region Rewriter Errors

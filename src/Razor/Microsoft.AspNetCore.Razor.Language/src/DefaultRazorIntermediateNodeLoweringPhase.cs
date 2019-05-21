@@ -1716,6 +1716,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 var descriptors = element.TagHelperInfo.BindingResult.Descriptors;
                 var attributeName = node.Name.GetContent();
                 var attributeValueNode = node.Value;
+
                 var associatedDescriptors = descriptors.Where(descriptor =>
                     descriptor.BoundAttributes.Any(attributeDescriptor => TagHelperMatchingConventions.CanSatisfyBoundAttribute(attributeName, attributeDescriptor)));
 
@@ -1723,24 +1724,47 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     foreach (var associatedDescriptor in associatedDescriptors)
                     {
-                        var associatedAttributeDescriptor = associatedDescriptor.BoundAttributes.First(a =>
+                        if (TagHelperMatchingConventions.TryGetFirstBoundAttributeMatch(
+                            attributeName,
+                            associatedDescriptor,
+                            out var associatedAttributeDescriptor,
+                            out var indexerMatch,
+                            out var parameterMatch,
+                            out var associatedAttributeParameterDescriptor))
                         {
-                            return TagHelperMatchingConventions.CanSatisfyBoundAttribute(attributeName, a);
-                        });
+                            IntermediateNode attributeNode;
+                            if (parameterMatch &&
+                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(attributeName, out var attributeNameWithoutParameter, out var _))
+                            {
+                                attributeNode = new TagHelperAttributeParameterIntermediateNode()
+                                {
+                                    AttributeName = attributeName,
+                                    AttributeNameWithoutParameter = attributeNameWithoutParameter,
+                                    BoundAttributeParameter = associatedAttributeParameterDescriptor,
+                                    BoundAttribute = associatedAttributeDescriptor,
+                                    TagHelper = associatedDescriptor,
+                                    IsIndexerNameMatch = indexerMatch,
+                                    AttributeStructure = node.TagHelperAttributeInfo.AttributeStructure,
+                                    Source = BuildSourceSpanFromNode(attributeValueNode),
+                                };
+                            }
+                            else
+                            {
+                                attributeNode = new TagHelperPropertyIntermediateNode()
+                                {
+                                    AttributeName = attributeName,
+                                    BoundAttribute = associatedAttributeDescriptor,
+                                    TagHelper = associatedDescriptor,
+                                    AttributeStructure = node.TagHelperAttributeInfo.AttributeStructure,
+                                    Source = BuildSourceSpanFromNode(attributeValueNode),
+                                    IsIndexerNameMatch = indexerMatch,
+                                };
+                            }
 
-                        var setTagHelperProperty = new TagHelperPropertyIntermediateNode()
-                        {
-                            AttributeName = attributeName,
-                            BoundAttribute = associatedAttributeDescriptor,
-                            TagHelper = associatedDescriptor,
-                            AttributeStructure = node.TagHelperAttributeInfo.AttributeStructure,
-                            Source = BuildSourceSpanFromNode(attributeValueNode),
-                            IsIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(attributeName, associatedAttributeDescriptor),
-                        };
-
-                        _builder.Push(setTagHelperProperty);
-                        VisitAttributeValue(attributeValueNode);
-                        _builder.Pop();
+                            _builder.Push(attributeNode);
+                            VisitAttributeValue(attributeValueNode);
+                            _builder.Pop();
+                        }
                     }
                 }
                 else

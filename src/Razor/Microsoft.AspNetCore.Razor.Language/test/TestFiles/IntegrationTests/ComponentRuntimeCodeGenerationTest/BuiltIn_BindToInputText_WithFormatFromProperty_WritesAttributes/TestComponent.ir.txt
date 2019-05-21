@@ -7,7 +7,7 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [63] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                MarkupElement - (0:0,0 [62] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
                         HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
@@ -16,10 +16,10 @@ Document -
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
                             IntermediateToken - (26:0,26 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - CurrentDate
                             IntermediateToken -  - CSharp - , 
-                            IntermediateToken - (54:0,54 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Format
+                            IntermediateToken - (53:0,53 [6] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Format
                             IntermediateToken -  - CSharp - )
                     HtmlAttribute - (25:0,25 [12] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => CurrentDate = __value, CurrentDate, Format)
-            CSharpCode - (72:1,7 [135] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (72:1,7 [135] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n\n    public string Format { get; set; } = "MM/dd/yyyy";\n
+            CSharpCode - (71:1,7 [135] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (71:1,7 [135] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);\n\n    public string Format { get; set; } = "MM/dd/yyyy";\n
