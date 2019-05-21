@@ -6,8 +6,17 @@ using Microsoft.Aspnetcore.RequestThrottling;
 
 namespace Microsoft.AspNetCore.Builder
 {
+    /// <summary>
+    /// Extension methods for adding the <see cref="RequestThrottlingMiddleware"/> to an application.
+    /// </summary>
     public static class RequestThrottlingExtensions
     {
+        /// <summary>
+        /// Adds the <see cref="RequestThrottlingMiddleware"/> to limit the number of active requests within
+        /// your server.
+        /// </summary>
+        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
+        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         public static IApplicationBuilder UseRequestThrottling(this IApplicationBuilder app)
         {
             if (app == null)

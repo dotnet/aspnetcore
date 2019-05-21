@@ -1,15 +1,9 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information
+
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Aspnetcore.RequestThrottling;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
@@ -24,6 +18,30 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             // a request should go through with no problems
             await middleware.Invoke(context).OrTimeout();
+        }
+
+        [Fact]
+        public async Task SemaphoreStatePreservedIfRequestsErrorLaterOn()
+        {
+            var middleware = TestUtils.CreateTestMiddleWare(
+                maxConcurrentRequests: 1,
+                next: httpContext =>
+                {
+                    throw new DivideByZeroException();
+                });
+
+            Assert.Equal(0, middleware.ConcurrentRequests);
+
+            try
+            {
+                await middleware.Invoke(new DefaultHttpContext());
+            }
+            catch (DivideByZeroException)
+            {
+
+            }
+
+            Assert.Equal(0, middleware.ConcurrentRequests);
         }
 
         [Fact]
