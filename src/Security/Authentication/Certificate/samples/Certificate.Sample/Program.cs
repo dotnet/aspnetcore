@@ -35,7 +35,6 @@ namespace Certificate.Sample
                     });
                     options.Listen(IPAddress.Loopback, 5000);
                 })
-                .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();
 
