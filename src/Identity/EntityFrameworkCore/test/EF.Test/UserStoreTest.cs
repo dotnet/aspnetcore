@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             }
         }
 
-        [ConditionalFact(Skip = "TODO: Fix for new EF. Issue #10670")]
+        [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]

@@ -16,6 +16,7 @@
   <ItemGroup>
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
+    <Compile Remove="TestFiles\TagHelpersInCodeBlocksAnalyzerTest\*.*" />
     <Content Include="TestFiles\**\*.*" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 

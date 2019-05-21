@@ -5,14 +5,17 @@ using System;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitPrerenderer : IComponentPrerenderer
     {
         private static object CircuitHostKey = new object();
+        private static object NavigationStatusKey = new object();
 
         private readonly CircuitFactory _circuitFactory;
         private readonly CircuitRegistry _registry;
@@ -26,11 +29,41 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task<ComponentPrerenderResult> PrerenderComponentAsync(ComponentPrerenderingContext prerenderingContext)
         {
             var context = prerenderingContext.Context;
-            var circuitHost = GetOrCreateCircuitHost(context);
+            var navigationStatus = GetOrCreateNavigationStatus(context);
+            if (navigationStatus.Navigated)
+            {
+                // Avoid creating a circuit host if other component earlier in the pipeline already triggered
+                // a navigation request. Instead rendre nothing
+                return new ComponentPrerenderResult(Array.Empty<string>());
+            }
+            var circuitHost = GetOrCreateCircuitHost(context, navigationStatus);
+            ComponentRenderedText renderResult = default;
+            try
+            {
+                renderResult = await circuitHost.PrerenderComponentAsync(
+                    prerenderingContext.ComponentType,
+                    prerenderingContext.Parameters);
+            }
+            catch (NavigationException navigationException)
+            {
+                // Cleanup the state as we won't need it any longer.
+                // Signal callbacks that we don't have to register the circuit.
+                await CleanupCircuitState(context, navigationStatus, circuitHost);
 
-            var renderResult = await circuitHost.PrerenderComponentAsync(
-                prerenderingContext.ComponentType,
-                prerenderingContext.Parameters);
+                // Navigation was attempted during prerendering.
+                if (prerenderingContext.Context.Response.HasStarted)
+                {
+                    // We can't perform a redirect as the server already started sending the response.
+                    // This is considered an application error as the developer should buffer the response until
+                    // all components have rendered.
+                    throw new InvalidOperationException("A navigation command was attempted during prerendering after the server already started sending the response. " +
+                        "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                        "reponse and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.", navigationException);
+                }
+
+                context.Response.Redirect(navigationException.Location);
+                return new ComponentPrerenderResult(Array.Empty<string>());
+            }
 
             circuitHost.Descriptors.Add(new ComponentDescriptor
             {
@@ -38,9 +71,9 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Prerendered = true
             });
 
-            var result = new[] {
+            var result = (new[] {
                 $"<!-- M.A.C.Component:{{\"circuitId\":\"{circuitHost.CircuitId}\",\"rendererId\":\"{circuitHost.Renderer.Id}\",\"componentId\":\"{renderResult.ComponentId}\"}} -->",
-            }.Concat(renderResult.Tokens).Concat(
+            }).Concat(renderResult.Tokens).Concat(
                 new[] {
                     $"<!-- M.A.C.Component: {renderResult.ComponentId} -->"
                 });
@@ -48,7 +81,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return new ComponentPrerenderResult(result);
         }
 
-        private CircuitHost GetOrCreateCircuitHost(HttpContext context)
+        private CircuitNavigationStatus GetOrCreateNavigationStatus(HttpContext context)
+        {
+            if (context.Items.TryGetValue(NavigationStatusKey, out var existingHost))
+            {
+                return (CircuitNavigationStatus)existingHost;
+            }
+            else
+            {
+                var navigationStatus = new CircuitNavigationStatus();
+                context.Items[NavigationStatusKey] = navigationStatus;
+                return navigationStatus;
+            }
+        }
+
+        private static async Task CleanupCircuitState(HttpContext context, CircuitNavigationStatus navigationStatus, CircuitHost circuitHost)
+        {
+            navigationStatus.Navigated = true;
+            context.Items.Remove(CircuitHostKey);
+            await circuitHost.DisposeAsync();
+        }
+
+        private CircuitHost GetOrCreateCircuitHost(HttpContext context, CircuitNavigationStatus navigationStatus)
         {
             if (context.Items.TryGetValue(CircuitHostKey, out var existingHost))
             {
@@ -66,7 +120,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 context.Response.OnCompleted(() =>
                 {
                     result.UnhandledException -= CircuitHost_UnhandledException;
-                    _registry.RegisterDisconnectedCircuit(result);
+                    if (!navigationStatus.Navigated)
+                    {
+                        _registry.RegisterDisconnectedCircuit(result);
+                    }
+
                     return Task.CompletedTask;
                 });
                 context.Items.Add(CircuitHostKey, result);
@@ -104,6 +162,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             }
 
             return result;
+        }
+
+        private class CircuitNavigationStatus
+        {
+            public bool Navigated { get; set; }
         }
     }
 }

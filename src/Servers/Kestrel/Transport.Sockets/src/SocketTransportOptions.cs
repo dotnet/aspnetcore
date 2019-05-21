@@ -3,7 +3,6 @@
 
 using System;
 using System.Buffers;
-using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
@@ -25,9 +24,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// </remarks>
         public bool NoDelay { get; set; } = true;
 
-        public long? MaxReadBufferSize { get; set; } = PipeOptions.Default.PauseWriterThreshold;
+        public long? MaxReadBufferSize { get; set; } = 1024 * 1024;
 
-        public long? MaxWriteBufferSize { get; set; } = PipeOptions.Default.PauseWriterThreshold;
+        public long? MaxWriteBufferSize { get; set; } = 64 * 1024;
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = System.Buffers.MemoryPoolFactory.Create;
     }

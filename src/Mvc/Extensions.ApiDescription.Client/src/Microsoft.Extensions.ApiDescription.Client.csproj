@@ -3,10 +3,8 @@
     <!-- Do not complain about lack of lib folder. -->
     <NoPackageAnalysis>true</NoPackageAnalysis>
 
-    <AssemblyName>Microsoft.Extensions.ApiDescription.Tasks</AssemblyName>
     <Description>MSBuild tasks and targets for code generation</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <IncludeSymbols>false</IncludeSymbols>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <PackageId>$(MSBuildProjectName)</PackageId>
     <PackageTags>Build Tasks;MSBuild;Swagger;Open API;code generation; Web API client</PackageTags>

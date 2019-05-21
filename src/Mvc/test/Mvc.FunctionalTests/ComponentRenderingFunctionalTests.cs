@@ -75,6 +75,37 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task Redirects_Navigation_Component()
+        {
+            // Arrange & Act
+            var fixture = Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor()));
+            fixture.ClientOptions.AllowAutoRedirect = false;
+            var client = CreateClient(fixture);
+
+            var response = await client.GetAsync("http://localhost/components/Navigation");
+
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
+            Assert.Equal("/navigation-redirect", response.Headers.Location.ToString());
+        }
+
+        [Fact]
+        public async Task Redirects_Navigation_ComponentInteractive()
+        {
+            // Arrange & Act
+            var fixture = Factory.WithWebHostBuilder(builder => builder.ConfigureServices(services => services.AddServerSideBlazor()));
+            fixture.ClientOptions.AllowAutoRedirect = false;
+            var client = CreateClient(fixture);
+
+            var response = await client.GetAsync("http://localhost/components/Navigation/false");
+
+            // Assert
+            // Assert
+            await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
+            Assert.Equal("/navigation-redirect", response.Headers.Location.ToString());
+        }
+
+        [Fact]
         public async Task Renders_RoutingComponent_UsingRazorComponents_Prerenderer()
         {
             // Arrange & Act
@@ -224,7 +255,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        private HttpClient CreateClient(WebApplicationFactory<BasicWebSite.StartupWithoutEndpointRouting> fixture)
+        private HttpClient CreateClient(
+            WebApplicationFactory<BasicWebSite.StartupWithoutEndpointRouting> fixture)
         {
             var loopHandler = new LoopHttpHandler();
 

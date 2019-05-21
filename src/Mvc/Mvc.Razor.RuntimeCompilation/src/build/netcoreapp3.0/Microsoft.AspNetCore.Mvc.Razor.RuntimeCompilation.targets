@@ -5,5 +5,10 @@
 
     <!-- Generate hosting attributes during build time compilation to support runtime compilation -->
     <GenerateRazorHostingAssemblyInfo Condition="'$(GenerateRazorHostingAssemblyInfo)'==''">true</GenerateRazorHostingAssemblyInfo>
+
+    <!-- Prevent VS from restarting the application when cshtml files change since this package handles it -->
+    <RazorUpToDateReloadFileTypes>$(RazorUpToDateReloadFileTypes.Replace('.cshtml', ''))</RazorUpToDateReloadFileTypes>
+
+    <AddCshtmlFilesToDotNetWatchList>false</AddCshtmlFilesToDotNetWatchList>
   </PropertyGroup>
 </Project>

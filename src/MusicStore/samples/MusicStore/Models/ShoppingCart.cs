@@ -115,17 +115,18 @@ namespace MusicStore.Models
                 .SumAsync();
         }
 
-        public Task<decimal> GetTotal()
+        public async Task<decimal> GetTotal()
         {
             // Multiply album price by count of that album to get
             // the current price for each of those albums in the cart
             // sum all album price totals to get the cart total
 
-            return _dbContext
+            return (await _dbContext
                 .CartItems
                 .Where(c => c.CartId == _shoppingCartId)
                 .Select(c => c.Album.Price * c.Count)
-                .SumAsync();
+                .ToListAsync())
+                .Sum();
         }
 
         public async Task CreateOrder(Order order)
