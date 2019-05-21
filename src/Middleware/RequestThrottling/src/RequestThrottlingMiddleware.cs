@@ -4,6 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling;
+using Microsoft.AspNetCore.RequestThrottling.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -44,8 +45,20 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         {
             try
             {
-                await _semaphore.EnterQueue();
-                _logger.LogDebug("EnteredQueue");
+                var entryTask = _semaphore.EnterQueue();
+                var neededToWaitOnQueue = !entryTask.IsCompleted;
+
+                if (neededToWaitOnQueue)
+                {
+                    _logger.RequestEnqueued();
+                }
+
+                await entryTask;
+
+                if (neededToWaitOnQueue)
+                {
+                    _logger.RequestDequeued();
+                }
 
                 await _next(context);
             }

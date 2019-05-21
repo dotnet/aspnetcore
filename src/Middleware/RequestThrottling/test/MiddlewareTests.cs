@@ -32,14 +32,9 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             Assert.Equal(0, middleware.ConcurrentRequests);
 
-            try
-            {
-                await middleware.Invoke(new DefaultHttpContext());
-            }
-            catch (DivideByZeroException)
-            {
-
-            }
+            await Assert.ThrowsAsync<DivideByZeroException>(() =>
+                    middleware.Invoke(new DefaultHttpContext())
+                );
 
             Assert.Equal(0, middleware.ConcurrentRequests);
         }
