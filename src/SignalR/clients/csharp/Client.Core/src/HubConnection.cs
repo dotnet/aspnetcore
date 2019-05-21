@@ -252,9 +252,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started while {nameof(StopAsync)} is running.");
                 }
-
-                await StartAsyncCore(cancellationToken);
-
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _state.StopCts.Token))
+                {
+                    await StartAsyncCore(cancellationToken);
+                }
                 _state.ChangeState(HubConnectionState.Connecting, HubConnectionState.Connected);
             }
             catch
@@ -420,32 +421,31 @@ namespace Microsoft.AspNetCore.SignalR.Client
             CheckDisposed();
 
             Log.Starting(_logger);
-            using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _state.StopCts.Token))
+
+            // Start the connection
+            var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat, cancellationToken);
+            var startingConnectionState = new ConnectionState(connection, this);
+
+            // From here on, if an error occurs we need to shut down the connection because
+            // we still own it.
+            try
             {
-                // Start the connection
-                var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat, cts.Token);
-                var startingConnectionState = new ConnectionState(connection, this);
-
-                // From here on, if an error occurs we need to shut down the connection because
-                // we still own it.
-                try
-                {
-                    Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
-                    await HandshakeAsync(startingConnectionState, cancellationToken);   //here we use cancellationToken, as HandshakeAsync combines cts for itself.
-                }
-                catch (Exception ex)
-                {
-                    Log.ErrorStartingConnection(_logger, ex);
-
-                    // Can't have any invocations to cancel, we're in the lock.
-                    await CloseAsync(startingConnectionState.Connection);
-                    throw;
-                }
-
-                // Set this at the end to avoid setting internal state until the connection is real
-                _state.CurrentConnectionStateUnsynchronized = startingConnectionState;
-                startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
+                Log.HubProtocol(_logger, _protocol.Name, _protocol.Version);
+                await HandshakeAsync(startingConnectionState, cancellationToken);
             }
+            catch (Exception ex)
+            {
+                Log.ErrorStartingConnection(_logger, ex);
+
+                // Can't have any invocations to cancel, we're in the lock.
+                await CloseAsync(startingConnectionState.Connection);
+                throw;
+            }
+
+            // Set this at the end to avoid setting internal state until the connection is real
+            _state.CurrentConnectionStateUnsynchronized = startingConnectionState;
+            startingConnectionState.ReceiveTask = ReceiveLoop(startingConnectionState);
+
             Log.Started(_logger);
         }
 
@@ -1024,7 +1024,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             try
             {
                 using (var handshakeCts = new CancellationTokenSource(HandshakeTimeout))
-                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, handshakeCts.Token, _state.StopCts.Token))
+                //cancellationToken already contains _state.StopCts.Token, so we don't have to link it again
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, handshakeCts.Token))
                 {
                     while (true)
                     {
@@ -1348,8 +1349,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, null),
                         "Someone other than Reconnect set the connection state!");
 
-                    // HandshakeAsync already checks ReconnectingConnectionState.StopCts.Token.
-                    await StartAsyncCore(CancellationToken.None);
+                    await StartAsyncCore(_state.StopCts.Token);
 
                     Log.Reconnected(_logger, previousReconnectAttempts, DateTime.UtcNow - reconnectStartTime);
 
