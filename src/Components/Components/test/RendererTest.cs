@@ -1901,7 +1901,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void ReRendersChildComponentWhenExtraPropertiesChange()
+        public void ReRendersChildComponentWhenUnmatchedValuesChange()
         {
             // Arrange: First render
             var renderer = new TestRenderer();
@@ -1938,11 +1938,11 @@ namespace Microsoft.AspNetCore.Components.Test
             AssertFrame.Attribute(renderer.Batches[1].ReferenceFrames[0], "class", "second");
         }
 
-        // This is a sanity check that diffs of "extra" parameters *just work* without any specialized
+        // This is a sanity check that diffs of "unmatched" values *just work* without any specialized
         // code in the renderer to handle it. All of the data that's used in the diff is contained in
         // the render tree, and the diff process does not need to inspect the state of the component.
         [Fact]
-        public void ReRendersDoesNotReRenderChildComponentWhenExtraPropertiesDoNotChange()
+        public void ReRendersDoesNotReRenderChildComponentWhenUnmatchedValuesDoNotChange()
         {
             // Arrange: First render
             var renderer = new TestRenderer();

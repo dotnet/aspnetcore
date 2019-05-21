@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Reflection;
@@ -42,61 +43,65 @@ namespace Microsoft.AspNetCore.Components
                 _cachedWritersByType[targetType] = writers;
             }
 
-            // The logic is a little convoluted now that we have "Extra" parameters. We want to avoid allocations where
-            // possible.
-            //
-            // Error cases that are possible here:
-            // 1. Using an unknown parameter when there is no "Extra" parameter defined
-            // 2. Using an unknown parameter when there is an "Extra" parameter defined *AND* explicitly
-            //    providing a value for the extra parameter.
-            //
-            // The second case has to be an error because we want to allow users to set the "Extra" parameter
-            // explicitly, but we don't ever want to mutate a value the user gives us. We also don't want to
-            // implicitly copy a value the user gives us. Either one of those implementation choices would do
-            // something unexpected.
-
-            var isExtraParameterSetExplicitly = false;
-            Dictionary<string, object> extras = null;
-            foreach (var parameter in parameterCollection)
+            // The logic is split up for simplicity now that we have CaptureUnmatchedValues parameters.
+            if (writers.CaptureUnmatchedValuesWriter == null)
             {
-                var parameterName = parameter.Name;
-                if (string.Equals(parameterName, writers.CaptureUnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))
+                // Logic for components without a CaptureUnmatchedValues parameter
+                foreach (var parameter in parameterCollection)
                 {
-                    isExtraParameterSetExplicitly = true;
-                }
+                    var parameterName = parameter.Name;
+                    if (!writers.WritersByName.TryGetValue(parameterName, out var writer))
+                    {
+                        // Case 1: There is nowhere to put this value.
+                        ThrowForUnknownIncomingParameterName(targetType, parameterName);
+                        throw null; // Unreachable
+                    }
 
-                bool isExtraParameter;
-                if (!writers.WritersByName.TryGetValue(parameterName, out var writer) &&
-                    writers.CaptureUnmatchedValuesWriter == null)
-                {
-                    // Case 1: There is nowhere to put this value.
-                    ThrowForUnknownIncomingParameterName(targetType, parameterName);
-                    throw null; // Unreachable
-                }
-
-                isExtraParameter = writer == null;
-
-                if (isExtraParameter)
-                {
-                    extras ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-                    extras[parameterName] = parameter.Value;
-                }
-                else
-                {
                     SetProperty(targetType, target, writer, parameterName, parameter.Value);
                 }
             }
+            else
+            {
+                // Logic with components with a CaptureUnmatchedValues parameter
+                var isCaptureUnmatchedValuesParameterSetExplicitly = false;
+                Dictionary<string, object> unmatched = null;
+                foreach (var parameter in parameterCollection)
+                {
+                    var parameterName = parameter.Name;
+                    if (string.Equals(parameterName, writers.CaptureUnmatchedValuesPropertyName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        isCaptureUnmatchedValuesParameterSetExplicitly = true;
+                    }
 
-            if (extras != null && isExtraParameterSetExplicitly)
-            {
-                // Case 2: Conflict between "Extra" parameters.
-                ThrowForExtraParameterConflict(targetType, writers.CaptureUnmatchedValuesPropertyName, extras);
-                throw null; // Unreachable
-            }
-            else if (extras != null)
-            {
-                // We had some extra values, set the "Extra" property
-                SetProperty(targetType, target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName, extras);
+                    var isUnmatchedValue = !writers.WritersByName.TryGetValue(parameterName, out var writer);
+                    if (isUnmatchedValue)
+                    {
+                        unmatched ??= new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                        unmatched[parameterName] = parameter.Value;
+                    }
+                    else
+                    {
+                        Debug.Assert(writer != null);
+                        SetProperty(targetType, target, writer, parameterName, parameter.Value);
+                    }
+                }
+
+                if (unmatched != null && isCaptureUnmatchedValuesParameterSetExplicitly)
+                {
+                    // This has to be an error because we want to allow users to set the CaptureUnmatchedValues
+                    // parameter explicitly and ....
+                    // 1. We don't ever want to mutate a value the user gives us.
+                    // 2. We also don't want to implicitly copy a value the user gives us.
+                    //
+                    // Either one of those implementation choices would do something unexpected.
+                    ThrowForCaptureUnmatchedValuesConflict(targetType, writers.CaptureUnmatchedValuesPropertyName, unmatched);
+                    throw null; // Unreachable
+                }
+                else if (unmatched != null)
+                {
+                    // We had some unmatched values, set the CaptureUnmatchedValues property
+                    SetProperty(targetType, target, writers.CaptureUnmatchedValuesWriter, writers.CaptureUnmatchedValuesPropertyName, unmatched);
+                }
             }
 
             static void SetProperty(Type targetType, object target, IPropertySetter writer, string parameterName, object value)
@@ -145,12 +150,12 @@ namespace Microsoft.AspNetCore.Components
             }
         }
 
-        private static void ThrowForExtraParameterConflict(Type targetType, string parameterName, Dictionary<string, object> extras)
+        private static void ThrowForCaptureUnmatchedValuesConflict(Type targetType, string parameterName, Dictionary<string, object> unmatched)
         {
             throw new InvalidOperationException(
                 $"The property '{parameterName}' on component type '{targetType.FullName}' cannot be set explicitly " +
-                $"when also used to capture extra parameter values. Extra parameters:" + Environment.NewLine +
-                string.Join(Environment.NewLine, extras.Keys.OrderBy(k => k)));
+                $"when also used to capture unmatched values. Unmatched values:" + Environment.NewLine +
+                string.Join(Environment.NewLine, unmatched.Keys.OrderBy(k => k)));
         }
 
         private static void ThrowForMultipleCaptureUnmatchedValuesParameters(Type targetType)

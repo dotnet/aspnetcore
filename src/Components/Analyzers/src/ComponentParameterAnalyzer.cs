@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                     {
                         context.RegisterSymbolEndAction(context =>
                         {
-                            var extraParameters = new List<IPropertySymbol>();
+                            var captureUnmatchedValuesParameters = new List<IPropertySymbol>();
 
                             // Per-property validations
                             foreach (var property in properties)
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
 
                                 if (ComponentFacts.IsParameterWithCaptureUnmatchedValues(symbols, property))
                                 {
-                                    extraParameters.Add(property);
+                                    captureUnmatchedValuesParameters.Add(property);
 
                                     // Check the type, we need to be able to assign a Dictionary<string, object>
                                     var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureUnmatchedValuesRuntimeType, property.Type);
@@ -87,16 +87,18 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                                 }
                             }
 
-                            // Check if the type defines multiple *Extra* parameters. Doing this outside the loop means we place the
+                            // Check if the type defines multiple CaptureUnmatchedValues parameters. Doing this outside the loop means we place the
                             // errors on the type.
-                            if (extraParameters.Count > 1)
+                            if (captureUnmatchedValuesParameters.Count > 1)
                             {
                                 context.ReportDiagnostic(Diagnostic.Create(
                                     DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
                                     context.Symbol.Locations[0],
                                     type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
                                     Environment.NewLine,
-                                    string.Join(Environment.NewLine, extraParameters.Select(p => p.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)).OrderBy(n => n))));
+                                    string.Join(
+                                        Environment.NewLine,
+                                        captureUnmatchedValuesParameters.Select(p => p.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)).OrderBy(n => n))));
                             }
                         });
                     }
