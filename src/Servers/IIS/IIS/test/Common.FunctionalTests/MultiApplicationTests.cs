@@ -47,6 +47,12 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             Assert.Equal(200, (int)result1.StatusCode);
             Assert.Equal(500, (int)result2.StatusCode);
             StopServer();
+
+            if (DeployerSelector.HasNewShim)
+            {
+                Assert.Contains("500.35 - ANCM Multiple In-Process Applications in same Process", await result2.Content.ReadAsStringAsync());
+            }
+
             EventLogHelpers.VerifyEventLogEvent(result, EventLogHelpers.OnlyOneAppPerAppPool(), Logger);
         }
 
