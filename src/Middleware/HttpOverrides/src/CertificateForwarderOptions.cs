@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// The function used to convert the header to an instance of <see cref="X509Certificate2"/>.
         /// </summary>
         /// <remarks>
-        /// This defaults to a conversion from a base64 converted string.
+        /// This defaults to a conversion from a base64 encoded string.
         /// </remarks>
         public Func<string, X509Certificate2> HeaderConverter = (headerValue) => new X509Certificate2(Convert.FromBase64String(headerValue));
     }
