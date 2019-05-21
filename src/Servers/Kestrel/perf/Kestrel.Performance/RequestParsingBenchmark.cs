@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 readableBuffer = readableBuffer.Slice(consumed);
 
-                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 readableBuffer = result.Buffer;
 
-                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }

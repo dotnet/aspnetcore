@@ -35,7 +35,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             : base(context)
         {
             RequestKeepAlive = keepAlive;
-
             _requestBodyPipe = CreateRequestBodyPipe(context);
         }
 
@@ -301,7 +300,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // _consumedBytes aren't tracked for trailer headers, since headers have separate limits.
             if (_mode == Mode.TrailerHeaders)
             {
-                if (_context.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (_context.TakeMessageHeaders(readableBuffer, trailers: true, out consumed, out examined))
                 {
                     _mode = Mode.Complete;
                 }
@@ -489,6 +488,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 consumed = trailerBuffer.End;
                 AddAndCheckConsumedBytes(2);
                 _mode = Mode.Complete;
+                // No trailers
+                _context.OnTrailersComplete();
             }
             else
             {

@@ -12,7 +12,7 @@
         <PreviewImage>Content\WebConfiguration.png</PreviewImage>
     </Metadata>
     <Installation AllUsers="true">
-         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.0,)" />
+         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[16.2,)" />
     </Installation>
     <Assets>
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%;PkgdefProjectOutputGroup|" />

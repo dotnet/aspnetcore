@@ -130,6 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         protected readonly ConcurrentDictionary<int, TaskCompletionSource<object>> _runningStreams = new ConcurrentDictionary<int, TaskCompletionSource<object>>();
         protected readonly Dictionary<string, string> _receivedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        protected readonly Dictionary<string, string> _receivedTrailers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         protected readonly Dictionary<string, string> _decodedHeaders = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         protected readonly HashSet<int> _abortedStreamIds = new HashSet<int>();
         protected readonly object _abortedStreamIdsLock = new object();
@@ -199,15 +200,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _readTrailersApplication = async context =>
             {
+                Assert.True(context.Request.SupportsTrailers(), "SupportsTrailers");
+                Assert.False(context.Request.CheckTrailersAvailable(), "SupportsTrailers");
+
                 using (var ms = new MemoryStream())
                 {
                     // Consuming the entire request body guarantees trailers will be available
                     await context.Request.Body.CopyToAsync(ms);
                 }
 
+                Assert.True(context.Request.SupportsTrailers(), "SupportsTrailers");
+                Assert.True(context.Request.CheckTrailersAvailable(), "SupportsTrailers");
+
                 foreach (var header in context.Request.Headers)
                 {
                     _receivedHeaders[header.Key] = header.Value.ToString();
+                }
+
+                var trailers = context.Features.Get<IHttpRequestTrailersFeature>().Trailers;
+
+                foreach (var header in trailers)
+                {
+                    _receivedTrailers[header.Key] = header.Value.ToString();
                 }
             };
 

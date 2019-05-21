@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
@@ -14,6 +16,10 @@ namespace Microsoft.AspNetCore.Components
 {
     public class AuthorizeViewTest
     {
+        // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
+        // failures.
+        private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+
         [Fact]
         public void RendersNothingIfNotAuthorized()
         {
@@ -180,7 +186,11 @@ namespace Microsoft.AspNetCore.Components
         public void RendersNothingUntilAuthorizationCompleted()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var @event = new ManualResetEventSlim();
+            var renderer = new TestRenderer()
+            {
+                OnUpdateDisplayComplete = () => { @event.Set(); },
+            };
             var rootComponent = WrapInAuthorizeView(
                 notAuthorizedContent: builder => builder.AddContent(0, "You are not authorized"));
             var authTcs = new TaskCompletionSource<AuthenticationState>();
@@ -195,7 +205,12 @@ namespace Microsoft.AspNetCore.Components
             Assert.Empty(diff1.Edits);
 
             // Act/Assert 2: Auth process completes asynchronously
+            @event.Reset();
             authTcs.SetResult(new AuthenticationState(new ClaimsPrincipal()));
+
+            // We need to wait here because the continuations of SetResult will be scheduled to run asynchronously.
+            @event.Wait(Timeout);
+
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
@@ -212,7 +227,11 @@ namespace Microsoft.AspNetCore.Components
         public void RendersAuthorizingContentUntilAuthorizationCompleted()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var @event = new ManualResetEventSlim();
+            var renderer = new TestRenderer()
+            {
+                OnUpdateDisplayComplete = () => { @event.Set(); },
+            };
             var rootComponent = WrapInAuthorizeView(
                 authorizingContent: builder => builder.AddContent(0, "Auth pending..."),
                 authorizedContent: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
@@ -234,7 +253,12 @@ namespace Microsoft.AspNetCore.Components
             });
 
             // Act/Assert 2: Auth process completes asynchronously
+            @event.Reset();
             authTcs.SetResult(CreateAuthenticationState("Monsieur").Result);
+
+            // We need to wait here because the continuations of SetResult will be scheduled to run asynchronously.
+            @event.Wait(Timeout);
+
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();

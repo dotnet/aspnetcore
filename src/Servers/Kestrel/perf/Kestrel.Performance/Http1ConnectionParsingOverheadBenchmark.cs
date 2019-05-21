@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ErrorUtilities.ThrowInvalidRequestLine();
             }
 
-            if (!_http1Connection.TakeMessageHeaders(_buffer, out consumed, out examined))
+            if (!_http1Connection.TakeMessageHeaders(_buffer, trailers: false, out consumed, out examined))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             _http1Connection.Reset();
 
-            if (!_http1Connection.TakeMessageHeaders(_buffer, out var consumed, out var examined))
+            if (!_http1Connection.TakeMessageHeaders(_buffer, trailers: false, out var consumed, out var examined))
             {
                 ErrorUtilities.ThrowInvalidRequestHeaders();
             }
