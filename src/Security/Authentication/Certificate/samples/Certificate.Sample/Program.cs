@@ -15,7 +15,6 @@ namespace Certificate.Sample
     {
         public static void Main(string[] args)
         {
-            var host = new WebHostBuilder()
             BuildWebHost(args).Run();
         }
 
