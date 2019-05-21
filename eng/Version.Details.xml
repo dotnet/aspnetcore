@@ -301,9 +301,9 @@
       <Uri>https://github.com/dotnet/corefx</Uri>
       <Sha>ef1a5aa730098b6c3350977a991232c1ff11cfe3</Sha>
     </Dependency>
-    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview6.19270.12" CoherentParentDependency="Microsoft.NETCore.App">
+    <Dependency Name="System.Data.SqlClient" Version="4.7.0-preview6.19264.9" CoherentParentDependency="Microsoft.NETCore.App" Pinned="true">
       <Uri>https://github.com/dotnet/corefx</Uri>
-      <Sha>ef1a5aa730098b6c3350977a991232c1ff11cfe3</Sha>
+      <Sha>a28176b5ec68b6da1472934fe9493790d1665cae</Sha>
     </Dependency>
     <Dependency Name="System.Diagnostics.EventLog" Version="4.6.0-preview6.19270.12" CoherentParentDependency="Microsoft.NETCore.App">
       <Uri>https://github.com/dotnet/corefx</Uri>

@@ -25,7 +25,7 @@
     <MicrosoftCSharpPackageVersion>4.6.0-preview6.19270.12</MicrosoftCSharpPackageVersion>
     <MicrosoftWin32RegistryPackageVersion>4.6.0-preview6.19270.12</MicrosoftWin32RegistryPackageVersion>
     <SystemComponentModelAnnotationsPackageVersion>4.6.0-preview6.19270.12</SystemComponentModelAnnotationsPackageVersion>
-    <SystemDataSqlClientPackageVersion>4.7.0-preview6.19270.12</SystemDataSqlClientPackageVersion>
+    <SystemDataSqlClientPackageVersion>4.7.0-preview6.19264.9</SystemDataSqlClientPackageVersion>
     <SystemDiagnosticsEventLogPackageVersion>4.6.0-preview6.19270.12</SystemDiagnosticsEventLogPackageVersion>
     <SystemIOPipelinesPackageVersion>4.6.0-preview6.19270.12</SystemIOPipelinesPackageVersion>
     <SystemNetHttpWinHttpHandlerPackageVersion>4.6.0-preview6.19270.12</SystemNetHttpWinHttpHandlerPackageVersion>
