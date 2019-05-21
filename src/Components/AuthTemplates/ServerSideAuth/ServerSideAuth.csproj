@@ -12,7 +12,6 @@
     <Reference Include="Microsoft.AspNetCore.Mvc" />
     <Reference Include="Microsoft.AspNetCore.HttpsPolicy" />
     <Reference Include="Newtonsoft.Json" />
-    <Reference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="3.0.0-preview5-19227-01" />
   </ItemGroup>
 
 </Project>
