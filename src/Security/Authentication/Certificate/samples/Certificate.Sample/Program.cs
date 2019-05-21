@@ -37,7 +37,6 @@ namespace Certificate.Sample
                 .UseStartup<Startup>()
                 .Build();
 
-            host.Run();
         }
 
         private static X509Certificate2 FindHttpsCertificate()
