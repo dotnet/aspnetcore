@@ -329,12 +329,19 @@ if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
     }
     else {
         try {
-            $jdkVersion = (Get-Item HKLM:\SOFTWARE\JavaSoft\JDK | Get-ItemProperty -name CurrentVersion).CurrentVersion
-            $javaHome = (Get-Item HKLM:\SOFTWARE\JavaSoft\JDK\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
-            if (Test-Path "$javaHome\bin\javac.exe") {
-                $env:JAVA_HOME = $javaHome
-                Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
-                $foundJdk = $true
+            $jdkRegistryKeys = @(
+                "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
+                "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
+            )
+            $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if ($jdkRegistryKey) {
+                $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
+                $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
+                if (Test-Path "${javaHome}\bin\javac.exe") {
+                    $env:JAVA_HOME = $javaHome
+                    Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
+                    $foundJdk = $true
+                }
             }
         }
         catch {
