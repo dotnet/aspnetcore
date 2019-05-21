@@ -1,44 +1,39 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.RequestThrottling;
-
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Aspnetcore.RequestThrottling
 {
     public class RequestThrottlingMiddleware
     {
-        private static SemaphoreWrapper slimshady;
+        private SemaphoreWrapper _semaphore;
 
+        private readonly RequestThrottlingOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
 
-        public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
+        public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<RequestThrottlingOptions> options)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-            else if (loggerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
-            
+            _options = options.Value;
+            _semaphore = new SemaphoreWrapper(_options.MaxConcurrentRequests); 
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public async Task Invoke(HttpContext context)
         {
-            // put the content here
-
-            _logger.LogDebug("OwO what's this?????");
+            await _semaphore.EnterQueue();
+            _logger.LogDebug("Entered Queue");
 
             await _next(context);
+
+            _semaphore.LeaveQueue();
+            _logger.LogDebug($"request finished, semaphore count at: {_semaphore.Count}");
         }
     }
 }
