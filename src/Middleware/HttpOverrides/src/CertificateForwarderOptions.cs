@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
     public class CertificateForwarderOptions
     {
         /// <summary>
-        /// The header name containing the Base64 encoded client certificate.
+        /// The name of the header containing the client certificate.
         /// </summary>
         /// <remarks>
         /// This defaults to X-ARR-ClientCert, which is the header Azure Web Apps uses.
