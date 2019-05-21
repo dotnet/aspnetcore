@@ -1,0 +1,9 @@
+<AuthorizeView>
+    <Authorized>
+        Hello, @context.User.Identity.Name!
+        <a href="AzureADB2C/Account/SignOut">Sign out</a>
+    </Authorized>
+    <NotAuthorized>
+        <a href="AzureADB2C/Account/SignIn">Sign in</a>
+    </NotAuthorized>
+</AuthorizeView>
