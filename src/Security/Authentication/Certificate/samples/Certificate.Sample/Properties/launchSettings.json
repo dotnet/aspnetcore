@@ -8,7 +8,7 @@
     }
   },
   "profiles": {
-    "idunno.Authentication.Certificate.Sample": {
+    "Certificate.Sample": {
       "commandName": "Project",
       "launchBrowser": true,
       "environmentVariables": {
