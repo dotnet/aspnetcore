@@ -4,4 +4,17 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+      <SignalRScripts Include="node_modules/@aspnet/signalr/dist/browser/signalr.js"/>
+  </ItemGroup>
+
+  <Target Name="NpmInstall"
+          BeforeTargets="AfterBuild">
+    <Exec Command="npm install @aspnet/signalr" />
+    <Copy
+        SourceFiles="@(SignalRScripts)"
+        DestinationFolder="wwwroot/js"
+    />
+  </Target>
+
 </Project>

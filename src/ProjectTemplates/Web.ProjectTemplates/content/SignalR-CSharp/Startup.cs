@@ -36,7 +36,6 @@ namespace Company.WebApplication1
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<ChatHub>("/chathub");
-                endpoints.MapHub<StreamingTimerHub>("/streamingtime");
             });
         }
     }

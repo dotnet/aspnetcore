@@ -1,4 +1,4 @@
-var chatConnection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+var chatConnection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
 
 chatConnection.on("Send", function (message) {
     var li = document.createElement("li");
@@ -7,10 +7,11 @@ chatConnection.on("Send", function (message) {
 });
 
 document.getElementById("groupmsg").addEventListener("click", async (event) => {
+    var userName = document.getElementById("user-name").value;
     var groupName = document.getElementById("group-name").value;
     var groupMsg = document.getElementById("group-message-text").value;
     try {
-        await chatConnection.invoke("SendMessageToGroup", groupName, groupMsg);
+        await chatConnection.invoke("SendMessageToGroup", userName, groupName, groupMsg);
     }
     catch (e) {
         console.error(e.toString());
@@ -19,9 +20,10 @@ document.getElementById("groupmsg").addEventListener("click", async (event) => {
 });
 
 document.getElementById("join-group").addEventListener("click", async (event) => {
+    var userName = document.getElementById("user-name").value;
     var groupName = document.getElementById("group-name").value;
     try {
-        await chatConnection.invoke("AddToGroup", groupName);
+        await chatConnection.invoke("AddToGroup", userName, groupName);
     }
     catch (e) {
         console.error(e.toString());
@@ -30,9 +32,10 @@ document.getElementById("join-group").addEventListener("click", async (event) =>
 });
 
 document.getElementById("leave-group").addEventListener("click", async (event) => {
+    var userName = document.getElementById("user-name").value;
     var groupName = document.getElementById("group-name").value;
     try {
-        await chatConnection.invoke("RemoveFromGroup", groupName);
+        await chatConnection.invoke("RemoveFromGroup", userName, groupName);
     }
     catch (e) {
         console.error(e.toString());
@@ -40,8 +43,18 @@ document.getElementById("leave-group").addEventListener("click", async (event) =
     event.preventDefault();
 });
 
-chatConnection.start().then(function () {
-    // do your own post-connection-started work here
-}).catch(function (err) {
-    return console.error(err.toString());
+async function start() {
+    try {
+        await chatConnection.start();
+        console.log("connected");
+    } catch (err) {
+        console.log(err);
+        setTimeout(() => start(), 5000);
+    }
+};
+
+chatConnection.onclose(async () => {
+    await start();
 });
+
+start();

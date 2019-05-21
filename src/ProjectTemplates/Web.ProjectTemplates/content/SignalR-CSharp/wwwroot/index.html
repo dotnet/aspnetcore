@@ -19,9 +19,6 @@
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-                <ul class="nav navbar-nav navbar-right">
-                    <li><span>Server Time: </span><span id="serverTime" style="width: 200px; display: inline-block;"></span></li>
-                </ul>
             </div>
         </nav>
     </header>
@@ -29,6 +26,15 @@
         <main role="main" class="pb-3">
             <div class="container">
                 <div class="row">&nbsp;</div>
+                <div class="row">
+                    <div class="col-12">
+                        <form class="form-inline">
+                            <div class="input-prepend input-append">
+                                <input type="text" name="user-name" id="user-name" placeholder="Type your user name" />
+                            </div>
+                        </form>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="col-12">
                         <form class="form-inline">
@@ -71,8 +77,8 @@
         </div>
     </footer>
     
-    <!-- JQuery is only being used here to enable advanced Bootstrap features. 
-         JQuery is not a requirement for ASP.NET Core SignalR. -->
+    <!-- jQuery is only being used here to enable advanced Bootstrap features. 
+         jQuery is not a requirement for ASP.NET Core SignalR. -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
             crossorigin="anonymous"
             integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=">
@@ -81,12 +87,9 @@
             crossorigin="anonymous"
             integrity="sha256-E/V4cWE4qvAeO5MOhjtGtqDzPndRO1LBk8lJ/PR7CA4=">
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/aspnet-signalr/1.1.4/signalr.min.js"
-            crossorigin="anonymous">
-    </script>
+    <script src="/js/signalr.js"></script>
     <script src="/js/site.js"></script>
     <script src="/js/chat.js"></script>
-    <script src="/js/serverTime.js"></script>
     
 </body>
 </html>
