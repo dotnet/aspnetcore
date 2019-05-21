@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
@@ -3793,6 +3794,308 @@ namespace New.Test
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
             AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
             CompileToAssembly(generated);
+        }
+
+        [Fact]
+        public void DuplicateMarkupAttributes_IsAnError()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<div>
+  <a href=""/cool-url"" style="""" disabled href=""/even-cooler-url"">Learn the ten cool tricks your compiler author will hate!</a>
+</div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttribute.Id, diagnostic.Id);
+        }
+
+        // Right now this is almost indistinguishable from the previous case, but when we add the @ for directive attributes
+        // it won't be. This is a placeholder to be updated when that change goes in.
+        [Fact]
+        public void DuplicateMarkupAttributes_IsAnError_EventHandler()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<div>
+  <a onclick=""test()"" onclick=""@(() => {})"">Learn the ten cool tricks your compiler author will hate!</a>
+</div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void DuplicateMarkupAttributes_Multiple_IsAnError()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<div>
+  <a href=""/cool-url"" style="""" disabled href=""/even-cooler-url"" href>Learn the ten cool tricks your compiler author will hate!</a>
+</div>");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            Assert.All(generated.Diagnostics, d =>
+            {
+                Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttribute.Id, d.Id);
+            });
+        }
+
+        [Fact]
+        public void DuplicateMarkupAttributes_IsAnError_BindValue()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<div>
+  <input type=""text"" value=""17"" bind=""@text""></input>
+</div>
+@functions {
+    private string text = ""hi"";
+}
+");
+
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void DuplicateMarkupAttributes_IsAnError_BindOnInput()
+        {
+            // Arrange
+
+            // Act
+            var generated = CompileToCSharp(@"
+<div>
+  <input type=""text"" bind-value=""@text"" bind-value:event=""oninput"" oninput=""@(() => {})""></input>
+</div>
+@functions {
+    private string text = ""hi"";
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttributeDirective.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void DuplicateComponentParameters_IsAnError()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] public string Message { get; private set; }
+    }
+}
+"));
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent Message=""test"" mESSAGE=""test"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void DuplicateComponentParameters_IsAnError_Multiple()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] public string Message { get; private set; }
+    }
+}
+"));
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent Message=""test"" mESSAGE=""test"" Message=""anotherone"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            Assert.All(generated.Diagnostics, d =>
+            {
+                Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, d.Id);
+            });
+        }
+
+        [Fact]
+        public void DuplicateComponentParameters_IsAnError_WeaklyTyped()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] public string Message { get; private set; }
+    }
+}
+"));
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent Foo=""test"" foo=""test"" />
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameter.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void DuplicateComponentParameters_IsAnError_BindMessage()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] public string Message { get; private set; }
+        [Parameter] public EventCallback<string> MessageChanged { get; private set; }
+        [Parameter] public Expression<Action<string>> MessageExpression { get; private set; }
+    }
+}
+"));
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent Message=""@message"" bind-Message=""@message"" />
+@functions {
+    string message = ""hi"";
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void DuplicateComponentParameters_IsAnError_BindMessageChanged()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] public string Message { get; private set; }
+        [Parameter] public EventCallback<string> MessageChanged { get; private set; }
+        [Parameter] public Expression<Action<string>> MessageExpression { get; private set; }
+    }
+}
+"));
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent MessageChanged=""@((s) => {})"" bind-Message=""@message"" />
+@functions {
+    string message = ""hi"";
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
+        }
+
+        [Fact]
+        public void DuplicateComponentParameters_IsAnError_BindMessageExpression()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(Parse(@"
+using System;
+using System.Linq.Expressions;
+using Microsoft.AspNetCore.Components;
+
+namespace Test
+{
+    public class MyComponent : ComponentBase
+    {
+        [Parameter] public string Message { get; private set; }
+        [Parameter] public EventCallback<string> MessageChanged { get; private set; }
+        [Parameter] public Expression<Action<string>> MessageExpression { get; private set; }
+    }
+}
+"));
+            // Act
+            var generated = CompileToCSharp(@"
+<MyComponent bind-Message=""@message"" MessageExpression=""@((s) => {})"" />
+@functions {
+    string message = ""hi"";
+}
+");
+
+            // Assert
+            AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
+            AssertCSharpDocumentMatchesBaseline(generated.CodeDocument);
+
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.DuplicateComponentParameterDirective.Id, diagnostic.Id);
         }
 
         [Fact]

@@ -47,6 +47,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             return className.StartsWith(MangledClassNamePrefix, StringComparison.Ordinal);
         }
 
+        public static class Common
+        {
+            public static readonly string OriginalAttributeName = "Common.OriginalAttributeName";
+        }
+
         public static class Bind
         {
             public static readonly string RuntimeName = "Components.None";

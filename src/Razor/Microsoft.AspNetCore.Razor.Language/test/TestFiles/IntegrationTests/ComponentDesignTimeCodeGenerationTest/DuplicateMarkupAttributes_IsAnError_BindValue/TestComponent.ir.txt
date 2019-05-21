@@ -1,0 +1,42 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [12] ) - System
+        UsingDirective - (18:2,1 [32] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [17] ) - System.Linq
+        UsingDirective - (73:4,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [37] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            DesignTimeDirective - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                MarkupElement - (0:0,0 [68] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    HtmlContent - (5:0,5 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (5:0,5 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
+                    MarkupElement - (9:1,2 [51] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                        HtmlAttribute -  - type=" - "
+                            HtmlAttributeValue - (22:1,15 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                                IntermediateToken - (22:1,15 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
+                        HtmlAttribute -  - value=" - "
+                            HtmlAttributeValue - (35:1,28 [2] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                                IntermediateToken - (35:1,28 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - 17
+                        HtmlAttribute - (45:1,38 [5] x:\dir\subdir\Test\TestComponent.cshtml) - value=" - "
+                            CSharpExpressionAttributeValue -  - 
+                                IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
+                                IntermediateToken - (46:1,39 [4] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - text
+                                IntermediateToken -  - CSharp - )
+                        HtmlAttribute - (45:1,38 [5] x:\dir\subdir\Test\TestComponent.cshtml) - onchange=" - "
+                            CSharpExpressionAttributeValue -  - 
+                                IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => text = __value, text)
+                    HtmlContent - (60:1,53 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (60:1,53 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (68:2,6 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (68:2,6 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (118:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (118:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (82:3,12 [35] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (82:3,12 [35] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private string text = "hi";\n

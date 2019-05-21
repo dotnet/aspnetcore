@@ -17,7 +17,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     internal class ComponentMarkupBlockPass : ComponentIntermediateNodePassBase, IRazorOptimizationPass
     {
         // Runs LATE because we want to destroy structure.
-        public override int Order => 10000;
+        //
+        // We also need to run after ComponentMarkupDiagnosticPass to avoid destroying diagnostics
+        // added in that pass.
+        public override int Order => ComponentMarkupDiagnosticPass.DefaultOrder + 10;
 
         protected override void ExecuteCore(
             RazorCodeDocument codeDocument,

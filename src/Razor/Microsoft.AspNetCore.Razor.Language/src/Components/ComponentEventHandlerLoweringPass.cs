@@ -151,6 +151,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 var result = new HtmlAttributeIntermediateNode()
                 {
+                    Annotations =
+                    {
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                    },
                     AttributeName = node.AttributeName,
                     Source = node.Source,
 
@@ -173,7 +177,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
             else
             {
-                var result = new ComponentAttributeIntermediateNode(node);
+                var result = new ComponentAttributeIntermediateNode(node)
+                {
+                    Annotations =
+                    {
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                    },
+                };
 
                 result.Children.Clear();
                 result.Children.Add(new CSharpExpressionIntermediateNode());

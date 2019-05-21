@@ -325,6 +325,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
         }
 
+        // We want duplicate attributes to result in an error and prevent rewriting.
+        //
+        // This is because Blazor de-duplicates attributes differently from browsers, so we don't
+        // want to allow any markup blocks to exist with duplicate attributes or else they will have
+        // the browser's behavior.
+        [Fact]
+        public void Execute_CannotRewriteHtml_DuplicateAttribute()
+        {
+            // Arrange
+            var document = CreateDocument(@"
+<html>
+  <a href=""test1"" href=""test2""></a>
+</html>");
+
+            var documentNode = Lower(document);
+
+            // Act
+            Pass.Execute(document, documentNode);
+
+            // Assert
+            Assert.Empty(documentNode.FindDescendantNodes<MarkupBlockIntermediateNode>());
+
+            var diagnostic = Assert.Single(documentNode.GetAllDiagnostics());
+            Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttribute.Id, diagnostic.Id);
+        }
+
         [Fact]
         public void Execute_RewritesHtml_MismatchedClosingTag()
         {
@@ -385,6 +411,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             var document = codeDocument.GetDocumentIntermediateNode();
             Engine.Features.OfType<ComponentDocumentClassifierPass>().Single().Execute(codeDocument, document);
+            Engine.Features.OfType<ComponentMarkupDiagnosticPass>().Single().Execute(codeDocument, document);
             return document;
         }
 

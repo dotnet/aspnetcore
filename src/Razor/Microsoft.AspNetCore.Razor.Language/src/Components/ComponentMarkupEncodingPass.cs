@@ -3,9 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
@@ -14,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
     internal class ComponentMarkupEncodingPass : ComponentIntermediateNodePassBase, IRazorOptimizationPass
     {
         // Runs after ComponentMarkupBlockPass
-        public override int Order => 10010;
+        public override int Order => ComponentMarkupDiagnosticPass.DefaultOrder + 20;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {

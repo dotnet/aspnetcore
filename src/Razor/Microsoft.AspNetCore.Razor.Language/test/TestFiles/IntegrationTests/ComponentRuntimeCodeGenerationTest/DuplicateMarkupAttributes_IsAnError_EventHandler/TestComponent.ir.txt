@@ -1,0 +1,25 @@
+Document - 
+    NamespaceDeclaration -  - Test
+        UsingDirective - (3:1,1 [14] ) - System
+        UsingDirective - (18:2,1 [34] ) - System.Collections.Generic
+        UsingDirective - (53:3,1 [19] ) - System.Linq
+        UsingDirective - (73:4,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
+        ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
+            MethodDeclaration -  - protected override - void - BuildRenderTree
+                MarkupElement - (0:0,0 [120] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    HtmlContent - (5:0,5 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (5:0,5 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n  
+                    MarkupElement - (9:1,2 [103] x:\dir\subdir\Test\TestComponent.cshtml) - a
+                        HtmlContent - (51:1,44 [57] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (51:1,44 [57] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Learn the ten cool tricks your compiler author will hate!
+                        HtmlAttribute - (21:1,14 [6] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                            CSharpExpressionAttributeValue -  - 
+                                IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
+                                IntermediateToken -  - CSharp - "test()"
+                                IntermediateToken -  - CSharp - )
+                        HtmlAttribute -  - onclick=" - "
+                            CSharpExpression - (40:1,33 [8] x:\dir\subdir\Test\TestComponent.cshtml)
+                                IntermediateToken - (40:1,33 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - () => {}
+                    HtmlContent - (112:1,105 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (112:1,105 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
