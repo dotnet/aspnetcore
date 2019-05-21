@@ -33,13 +33,14 @@ if ((Get-Command "Expand-Archive" -ErrorAction SilentlyContinue))
 }
 else
 {
+    Write-Host "Expand-Archive not found"
     $shell = new-object -com shell.application
-    $zip = $shell.NameSpace("nodejs.zip")
+    $zip = $shell.NameSpace((Get-Location).Path + "\nodejs.zip")
     foreach($item in $zip.items())
     {
         $shell.Namespace($output_dir).copyhere($item)
+        Start-Sleep -milliseconds 500
     }
-    Start-Sleep -s 5
 }
 
 Write-Host "Expanded NodeJs"
