@@ -1,4 +1,7 @@
-var connection = new signalR.HubConnectionBuilder().withUrl("/chat").build();
+var connection = new signalR.HubConnectionBuilder()
+    .withUrl("/chat")
+    .withAutomaticReconnect()
+    .build();
 
 connection.on("Send", function (message) {
     var li = document.createElement("li");
@@ -43,18 +46,33 @@ document.getElementById("leave-group").addEventListener("click", async (event) =
     event.preventDefault();
 });
 
+connection.onreconnecting((error) => {
+    document.getElementById("leave-group").disabled = true;
+    document.getElementById("join-group").disabled = true;
+    document.getElementById("groupmsg").disabled = true;
+  
+    const li = document.createElement("li");
+    li.textContent = `Connection lost due to error "${error}". Reconnecting.`;
+    document.getElementById("messagesList").appendChild(li);
+});
+
+connection.onreconnected((connectionId) => {
+    document.getElementById("leave-group").disabled = false;
+    document.getElementById("join-group").disabled = false;
+    document.getElementById("groupmsg").disabled = false;
+  
+    const li = document.createElement("li");
+    li.textContent = `Connection reestablished. Connected.`;
+    document.getElementById("messagesList").appendChild(li);
+  });
+
 async function start() {
     try {
         await connection.start();
         console.log("connected");
     } catch (err) {
         console.log(err);
-        setTimeout(() => start(), 5000);
     }
 };
-
-connection.onclose(async () => {
-    await start();
-});
 
 start();
