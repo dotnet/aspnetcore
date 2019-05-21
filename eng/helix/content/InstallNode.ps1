@@ -1,7 +1,10 @@
 
 param(
     [Parameter(Mandatory = $true)]
-    $Version
+    $Version,
+    
+    [Parameter(Mandatory = $true)]
+    $output_dir
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,9 +18,9 @@ if ((Get-Command "node.exe" -ErrorAction SilentlyContinue))
     exit
 }
 
-if (Test-Path "%HELIX_CORRELATION_PAYLOAD%\node\bin\node.exe")
+if (Test-Path "$output_dir\node.exe")
 {
-    Write-Host "Node.exe found at %HELIX_CORRELATION_PAYLOAD%\node\bin"
+    Write-Host "Node.exe found at $output_dir"
     exit
 }
 
@@ -27,22 +30,20 @@ Write-Host "Starting download of NodeJs ${Version} from $url"
 Invoke-WebRequest -UseBasicParsing -Uri "$url" -OutFile "nodejs.zip"
 Write-Host "Done downloading NodeJS ${Version}"
 
-if ((Get-Command "Expand-Archive" -ErrorAction SilentlyContinue)) 
-{ 
-    Expand-Archive "nodejs.zip"
+mkdir nodejs -Force
+$temp_dir = Join-Path (Get-Location) nodejs
+Write-Host "Extracting to $temp_dir"
+
+if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
+    # Use built-in commands where possible as they are cross-plat compatible
+    Microsoft.PowerShell.Archive\Expand-Archive -Path "nodejs.zip" -DestinationPath $temp_dir
 }
-else
-{
-    Write-Host "Expand-Archive not found"
-    $shell = new-object -com shell.application
-    $zip = $shell.NameSpace((Get-Location).Path + "\nodejs.zip")
-    foreach($item in $zip.items())
-    {
-        $shell.Namespace($output_dir).copyhere($item)
-        Start-Sleep -milliseconds 500
-    }
+else {
+    # Fallback to old approach for old installations of PowerShell
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $temp_dir)
 }
 
 Write-Host "Expanded NodeJs"
-mkdir %HELIX_CORRELATION_PAYLOAD%\node\bin -Force
-copy nodejs/$nodeFile/node.exe %HELIX_CORRELATION_PAYLOAD%\node\bin
+mkdir $output_dir -Force
+copy nodejs/$nodeFile/node.exe $output_dir
