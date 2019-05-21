@@ -61,6 +61,6 @@ Most tests that don't just work on helix automatically are ones that depend on t
 ## How to skip tests on helix
 There are two main ways to opt out of helix
 - Skipping the entire test project via `<BuildHelixPayload>false</BuildHelixPayload>` in csproj (the default value for this is IsTestProject).
-- Skipping an individual test via `[SkipOnHelix]` which might require including a compile reference to: `<Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />`
+- Skipping an individual test via `[SkipOnHelix("url to github issue")]` which might require including a compile reference to: `<Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />`
 
 Make sure to file an issue for any skipped tests and include that in a comment next to either of these

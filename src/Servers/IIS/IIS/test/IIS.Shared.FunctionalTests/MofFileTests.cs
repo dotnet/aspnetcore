@@ -15,8 +15,7 @@ namespace IIS.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         [RequiresIIS(IISCapability.TracingModule)]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2222", FlakyOn.Helix.All)]
-        [SkipOnHelix]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore-Internal/issues/2222")]
         public void CheckMofFile()
         {
 // This test code needs to be updated to support distributed testing.

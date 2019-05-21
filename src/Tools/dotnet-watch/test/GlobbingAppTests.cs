@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task ChangeExcludedFile()
         {
             await _app.StartWatcherAsync();
@@ -101,7 +101,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/8267
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/8267")]
         public async Task ListsFiles()
         {
             await _app.PrepareAsync();
