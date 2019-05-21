@@ -597,9 +597,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
         private static class Certificates
         {
-            private static readonly string collateralPath =
-                Path.Combine(AppContext.BaseDirectory, "TestCertificates");
-
             public static X509Certificate2 SelfSignedValidWithClientEku { get; private set; } =
                 new X509Certificate2(GetFullyQualifiedFilePath("validSelfSignedClientEkuCertificate.cer"));
 
@@ -617,7 +614,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
             private static string GetFullyQualifiedFilePath(string filename)
             {
-                var filePath = Path.Combine(collateralPath, filename);
+                var filePath = Path.Combine(AppContext.BaseDirectory, filename);
                 if (!File.Exists(filePath))
                 {
                     throw new FileNotFoundException(filePath);

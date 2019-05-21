@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
-    /// Extension methods for using the certificate fowarder
+    /// Extension methods for using the certificate fowarder.
     /// </summary>
     public static class CertificateForwarderExtensions
     {

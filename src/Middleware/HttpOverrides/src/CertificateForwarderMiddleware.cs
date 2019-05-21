@@ -67,9 +67,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         {
                             httpContext.Connection.ClientCertificate = _options.HeaderConverter(certificateHeader);
                         }
-                        catch
+                        catch (Exception e)
                         {
-                            _logger.LogError("Could not read certificate from header.");
+                            _logger.LogError(e, "Could not read certificate from header.");
                         }
                     }
                 }
