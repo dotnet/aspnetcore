@@ -598,15 +598,23 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void CanSetAttributeTwiceAndLastWins()
+        public void CanUseAddMultipleAttributes()
         {
             var appElement = MountTestComponent<DuplicateAttributesComponent>();
-            Browser.Equal("test2", () => appElement.FindElement(By.Id("duplicate-on-component")).Text);
 
-            Browser.Equal("test2", () => appElement.FindElement(By.Id("duplicate-on-element")).GetAttribute("class"));
+            var selector = By.CssSelector("#duplicate-on-element > div");
+            WaitUntilExists(selector);
 
-            // TODO fix this in the compiler.
-            //Browser.Equal("test2", () => appElement.FindElement(By.Id("duplicate-on-elementmarkupblock")).GetAttribute("class"));
+            var element = appElement.FindElement(selector);
+            Assert.Equal(string.Empty, element.GetAttribute("bool")); // attribute is present
+            Assert.Equal("middle-value", element.GetAttribute("string"));
+            Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
+
+            selector = By.CssSelector("#duplicate-on-element-override > div");
+            element = appElement.FindElement(selector);
+            Assert.Null(element.GetAttribute("bool")); // attribute is not present
+            Assert.Equal("other-text", element.GetAttribute("string"));
+            Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
         }
 
         static IAlert SwitchToAlert(IWebDriver driver)

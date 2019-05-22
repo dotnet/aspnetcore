@@ -1,5 +1,28 @@
-<div id="duplicate-on-component">
-    <DuplicateAttributesChildComponent Message="test1" Message="test2" />
+<div id="duplicate-on-element">
+    <DuplicateAttributesOnElementChildComponent
+        BoolAttributeBefore="true"
+        StringAttributeBefore="original-text"
+        UnmatchedValues="@elementValues"/>
 </div>
-<div id="duplicate-on-element" class="test1" class="@("test2")"></div>
-<div id="duplicate-on-elementmarkupblock" class="test1" class="test2"></div>
+
+<div id="duplicate-on-element-override">
+    <DuplicateAttributesOnElementChildComponent
+        BoolAttributeBefore="true"
+        StringAttributeBefore="original-text"
+        UnmatchedValues="@elementValues"
+        BoolAttributeAfter="false"
+        StringAttributeAfter="other-text" />
+</div>
+
+@functions {
+    void SomeMethod()
+    {
+    }
+
+    Dictionary<string, object> elementValues = new Dictionary<string, object>()
+    {
+        { "bool",  true },
+        { "string", "middle-value" },
+        { "unmatched", "unmatched-value" },
+    };
+}
