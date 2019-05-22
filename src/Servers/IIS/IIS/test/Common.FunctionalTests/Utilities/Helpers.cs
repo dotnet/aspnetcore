@@ -28,8 +28,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             return DeployerSelector.IsForwardsCompatibilityTest ? "InProcessForwardsCompatWebSite" : "InProcessWebSite";
         }
 
-        public static string GetOutOfProcessTestSitesName() => "OutOfProcessWebSite";
-
         public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
         {
             var response = await deploymentResult.HttpClient.GetAsync(path);

@@ -12,7 +12,6 @@
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=netcoreapp3.0" />
     <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win-x64;" />
-    <TestAssetPublishProfile Include="Standalone-x86" Properties="RuntimeIdentifier=win-x86;" />
   </ItemGroup>
 
   <ItemGroup>
