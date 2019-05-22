@@ -25,7 +25,7 @@ namespace WsProxy {
 		public const string GET_ARRAY_VALUES = "MONO.mono_wasm_get_array_values({0})";
 	}
 
-	public enum MonoErrorCodes {
+	internal enum MonoErrorCodes {
 		BpNotFound = 100000,
 	}
 
@@ -73,7 +73,7 @@ namespace WsProxy {
 		Over
 	}
 
-	public class MonoProxy : WsProxy {
+	internal class MonoProxy : WsProxy {
 		DebugStore store;
 		List<Breakpoint> breakpoints = new List<Breakpoint> ();
 		List<Frame> current_callstack;

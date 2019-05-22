@@ -11,7 +11,7 @@ using System.Collections.Generic;
 
 namespace WsProxy {
 
-	public struct Result {
+	internal struct Result {
 		public JObject Value { get; private set; }
 		public JObject Error { get; private set; }
 
@@ -95,7 +95,7 @@ namespace WsProxy {
 		}
 	}
 
-	public class WsProxy {
+	internal class WsProxy {
 		TaskCompletionSource<bool> side_exception = new TaskCompletionSource<bool> ();
 		List<(int, TaskCompletionSource<Result>)> pending_cmds = new List<(int, TaskCompletionSource<Result>)> ();
 		ClientWebSocket browser;
