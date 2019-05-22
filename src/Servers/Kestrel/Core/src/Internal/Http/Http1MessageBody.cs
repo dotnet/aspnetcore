@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
+                context.OnTrailersComplete(); // No trailers for these.
                 return new Http1UpgradeMessageBody(context);
             }
 
@@ -150,7 +151,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 // TODO may push more into the wrapper rather than just calling into the message body
                 // NBD for now.
-                context.EnableRequestTrailersFeature();
                 return new Http1ChunkedEncodingMessageBody(keepAlive, context);
             }
 
@@ -174,6 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 BadHttpRequestException.Throw(requestRejectionReason, context.Method);
             }
 
+            context.OnTrailersComplete(); // No trailers for these.
             return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
         }
     }

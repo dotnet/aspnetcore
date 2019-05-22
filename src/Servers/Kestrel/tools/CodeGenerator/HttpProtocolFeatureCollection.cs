@@ -70,6 +70,7 @@ namespace CodeGenerator
                 "IHttpUpgradeFeature",
                 "IHttpRequestIdentifierFeature",
                 "IHttpRequestLifetimeFeature",
+                "IHttpRequestTrailersFeature",
                 "IHttpConnectionFeature",
                 "IHttpMaxRequestBodySizeFeature",
                 "IHttpMinRequestBodyDataRateFeature",

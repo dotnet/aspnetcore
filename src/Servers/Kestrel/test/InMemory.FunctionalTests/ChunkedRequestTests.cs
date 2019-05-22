@@ -250,9 +250,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 // The last request is content-length with no trailers.
                 else
                 {
-                    Assert.False(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
                     Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
-                    Assert.Throws<NotSupportedException>(() => request.GetTrailer("X-Trailer-Header"));
+                    Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));
                 }
 
                 while (await request.Body.ReadAsync(buffer, 0, buffer.Length) != 0)
@@ -281,10 +281,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 // The last request is content-length with no trailers.
                 else
                 {
-                    Assert.False(request.SupportsTrailers(), "SupportsTrailers");
-                    Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
                     Assert.Equal(string.Empty, request.GetDeclaredTrailers().ToString());
-                    Assert.Throws<NotSupportedException>(() => request.GetTrailer("X-Trailer-Header"));
+                    Assert.Equal(string.Empty, request.GetTrailer("X-Trailer-Header").ToString());
                 }
 
                 requestsReceived++;
@@ -375,9 +375,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 // The last request is content-length with no trailers.
                 else
                 {
-                    Assert.False(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
                     Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
-                    Assert.Throws<NotSupportedException>(() => request.GetTrailer("X-Trailer-Header"));
+                    Assert.Throws<InvalidOperationException>(() => request.GetTrailer("X-Trailer-Header"));
                 }
 
                 while (true)
@@ -411,10 +411,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 // The last request is content-length with no trailers.
                 else
                 {
-                    Assert.False(request.SupportsTrailers(), "SupportsTrailers");
-                    Assert.False(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
+                    Assert.True(request.SupportsTrailers(), "SupportsTrailers");
+                    Assert.True(request.CheckTrailersAvailable(), "CheckTrailersAvailable");
                     Assert.Equal(string.Empty, request.GetDeclaredTrailers().ToString());
-                    Assert.Throws<NotSupportedException>(() => request.GetTrailer("X-Trailer-Header"));
+                    Assert.Equal(string.Empty, request.GetTrailer("X-Trailer-Header").ToString());
                 }
 
                 requestsReceived++;

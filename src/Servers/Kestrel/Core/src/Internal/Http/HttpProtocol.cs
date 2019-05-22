@@ -552,11 +552,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestTrailersAvailable = true;
         }
 
-        public void EnableRequestTrailersFeature()
-        {
-            _currentIHttpRequestTrailersFeature = this;
-        }
-
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
         {
             try

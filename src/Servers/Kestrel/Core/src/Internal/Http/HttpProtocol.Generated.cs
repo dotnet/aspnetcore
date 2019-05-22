@@ -84,6 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpUpgradeFeature = this;
             _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestLifetimeFeature = this;
+            _currentIHttpRequestTrailersFeature = this;
             _currentIHttpConnectionFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpMinRequestBodyDataRateFeature = this;
@@ -94,7 +95,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             _currentIServiceProvidersFeature = null;
             _currentIHttpAuthenticationFeature = null;
-            _currentIHttpRequestTrailersFeature = null;
             _currentIQueryFeature = null;
             _currentIFormFeature = null;
             _currentIHttp2StreamIdFeature = null;
