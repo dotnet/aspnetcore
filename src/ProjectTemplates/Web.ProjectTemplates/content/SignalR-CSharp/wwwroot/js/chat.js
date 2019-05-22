@@ -72,6 +72,7 @@ async function start() {
         console.log("connected");
     } catch (err) {
         console.log(err);
+        setTimeout(() => start(), 5000);
     }
 };
 
