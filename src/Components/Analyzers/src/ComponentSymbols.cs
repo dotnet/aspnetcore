@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 return false;
             }
 
-            var dictionary = compilation.GetTypeByMetadataName(typeof(Dictionary<,>).FullName);
+            var dictionary = compilation.GetTypeByMetadataName("System.Collections.Generic.Dictionary`2");
             var @string = compilation.GetSpecialType(SpecialType.System_String);
             var @object = compilation.GetSpecialType(SpecialType.System_Object);
             if (dictionary == null || @string == null || @object == null)

@@ -1,15 +1,14 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Test.Helpers;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Test.Helpers;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
@@ -865,25 +864,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_BoolTrue_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", true);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", true, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_BoolFalse_IgnoresFrame()
         {
             // Arrange
@@ -892,24 +872,6 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attr", false);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 1, 0));
-        }
-
-        [Fact]
-        public void AddAttribute_Element_BoolFalse_RemovesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", false);
             builder.CloseElement();
 
             // Assert
@@ -938,27 +900,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void AddAttribute_Component_Bool_ReplacesPreviousFrame(bool value)
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", value);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
-        }
-
         [Fact]
         public void AddAttribute_Element_StringValue_AddsFrame()
         {
@@ -978,25 +919,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_StringValue_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", "hi");
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", "hi", 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_StringNull_IgnoresFrame()
         {
             // Arrange
@@ -1005,24 +927,6 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attr", (string)null);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 1, 0));
-        }
-
-        [Fact]
-        public void AddAttribute_Element_StringNull_RemovesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (string)null);
             builder.CloseElement();
 
             // Assert
@@ -1051,27 +955,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
 
-        [Theory]
-        [InlineData("hi")]
-        [InlineData(null)]
-        public void AddAttribute_Component_StringValue_ReplacesPreviousFrame(string value)
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", value);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
-        }
-
         [Fact]
         public void AddAttribute_Element_EventHandler_AddsFrame()
         {
@@ -1093,27 +976,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_EventHandler_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            var value = new Action<UIEventArgs>((e) => { });
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", value);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_NullEventHandler_IgnoresFrame()
         {
             // Arrange
@@ -1122,24 +984,6 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attr", (Action<UIEventArgs>)null);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 1, 0));
-        }
-
-        [Fact]
-        public void AddAttribute_Element_NullEventHandler_RemovesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (Action<UIEventArgs>)null);
             builder.CloseElement();
 
             // Assert
@@ -1169,27 +1013,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_Action_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            var value = new Action(() => { });
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", value);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_NullAction_IgnoresFrame()
         {
             // Arrange
@@ -1198,24 +1021,6 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attr", (Action)null);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 1, 0));
-        }
-
-        [Fact]
-        public void AddAttribute_Element_NullAction_RemovesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (Action)null);
             builder.CloseElement();
 
             // Assert
@@ -1247,26 +1052,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
-        }
-
-        [Theory]
-        [MemberData(nameof(EventHandlerValues))]
-        public void AddAttribute_Component_EventHandlerValue_ReplacesPreviousFrame(Action<UIEventArgs> value)
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", value);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
         }
 
         [Fact]
@@ -1307,26 +1092,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_EventCallback_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var callback = new EventCallback(null, new Action(() => { }));
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", callback);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_EventCallbackWithReceiver_AddsFrame()
         {
             // Arrange
@@ -1347,27 +1112,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_EventCallbackWithReceiver_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var receiver = Mock.Of<IHandleEvent>();
-            var callback = new EventCallback(receiver, new Action(() => { }));
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", callback);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Component_EventCallback_AddsFrame()
         {
             // Arrange
@@ -1385,27 +1129,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", callback, 1));
-        }
-
-        [Fact]
-        public void AddAttribute_Component_EventCallback_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var receiver = Mock.Of<IHandleEvent>();
-            var callback = new EventCallback(receiver, new Action(() => { }));
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", callback);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback, 2));
         }
 
         [Fact]
@@ -1446,26 +1169,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_EventCallbackOfT_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var callback = new EventCallback<string>(null, new Action<string>((s) => { }));
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", callback);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_EventCallbackWithReceiverOfT_AddsFrame()
         {
             // Arrange
@@ -1483,27 +1186,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", new EventCallback(callback.Receiver, callback.Delegate), 1));
-        }
-
-        [Fact]
-        public void AddAttribute_Element_EventCallbackWithReceiverOfT_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var receiver = Mock.Of<IHandleEvent>();
-            var callback = new EventCallback<string>(receiver, new Action<string>((s) => { }));
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", callback);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", new EventCallback(callback.Receiver, callback.Delegate), 2));
         }
 
         [Fact]
@@ -1527,27 +1209,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Component_EventCallbackOfT_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var receiver = Mock.Of<IHandleEvent>();
-            var callback = new EventCallback<string>(receiver, new Action<string>((s) => { }));
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", callback);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_ObjectBoolTrue_AddsFrame()
         {
             // Arrange
@@ -1566,25 +1227,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectBoolTrue_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)true);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", true, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_ObjectBoolFalse_IgnoresFrame()
         {
             // Arrange
@@ -1593,24 +1235,6 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attr", (object)false);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 1, 0));
-        }
-
-        [Fact]
-        public void AddAttribute_Element_ObjectBoolFalse_RemovesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)false);
             builder.CloseElement();
 
             // Assert
@@ -1639,27 +1263,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public void AddAttribute_Component_ObjectBoolValue_ReplacesPreviousFrame(bool value)
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)value);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
-        }
-
         [Fact]
         public void AddAttribute_Element_ObjectStringValue_AddsFrame()
         {
@@ -1679,25 +1282,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectStringValue_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)"hi");
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", "hi", 2));
-        }
-
-        [Fact]
         public void AddAttribute_Component_ObjectStringValue_SetsAttributeValue()
         {
             // Arrange
@@ -1713,25 +1297,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", "hi", 1));
-        }
-
-        [Fact]
-        public void AddAttribute_Component_ObjectStringValue_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)"hi");
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", "hi", 2));
         }
 
         [Fact]
@@ -1755,27 +1320,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectEventHandler_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            var value = new Action<UIEventArgs>((e) => { });
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)value);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Component_ObjectUIEventHandleValue_SetsAttributeValue()
         {
             // Arrange
@@ -1793,27 +1337,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
-        }
-
-        [Fact]
-        public void AddAttribute_Component_ObjectUIEventHandleValue_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            var value = new Action<UIEventArgs>((e) => { });
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)value);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
         }
 
         [Fact]
@@ -1837,27 +1360,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectAction_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            var value = new Action(() => { });
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)value);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Component_ObjectAction_SetsAttributeValue()
         {
             // Arrange
@@ -1875,27 +1377,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", value, 1));
-        }
-
-        [Fact]
-        public void AddAttribute_Component_ObjectAction_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            var value = new Action(() => { });
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)value);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", value, 2));
         }
 
         [Fact]
@@ -1936,26 +1417,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectEventCallback_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var callback = new EventCallback(null, new Action(() => { }));
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)callback);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_ObjectEventCallbackWithReceiver_AddsFrame()
         {
             // Arrange
@@ -1976,27 +1437,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectEventCallbackWithReceiver_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var receiver = Mock.Of<IHandleEvent>();
-            var callback = new EventCallback(receiver, new Action(() => { }));
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)callback);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Component_ObjectEventCallback_AddsFrame()
         {
             // Arrange
@@ -2014,27 +1454,6 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", callback, 1));
-        }
-
-        [Fact]
-        public void AddAttribute_Component_ObjectEventCallback_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var receiver = Mock.Of<IHandleEvent>();
-            var callback = new EventCallback(receiver, new Action(() => { }));
-
-            // Act
-            builder.OpenComponent<TestComponent>(0);
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)callback);
-            builder.CloseComponent();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Component<TestComponent>(frame, 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback, 2));
         }
 
         [Fact]
@@ -2075,26 +1494,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectEventCallbackOfT_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var callback = new EventCallback<string>(null, new Action<string>((s) => { }));
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)callback);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_ObjectEventCallbackWithReceiverOfT_AddsFrame()
         {
             // Arrange
@@ -2115,27 +1514,6 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
-        public void AddAttribute_Element_ObjectEventCallbackWithReceiverOfT_ReplacesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-            var receiver = Mock.Of<IHandleEvent>();
-            var callback = new EventCallback<string>(receiver, new Action<string>((s) => { }));
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)callback);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 2, 0),
-                frame => AssertFrame.Attribute(frame, "attr", new EventCallback(callback.Receiver, callback.Delegate), 2));
-        }
-
-        [Fact]
         public void AddAttribute_Element_ObjectNull_IgnoresFrame()
         {
             // Arrange
@@ -2144,24 +1522,6 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             builder.OpenElement(0, "elem");
             builder.AddAttribute(1, "attr", (object)null);
-            builder.CloseElement();
-
-            // Assert
-            Assert.Collection(
-                builder.GetFrames().AsEnumerable(),
-                frame => AssertFrame.Element(frame, "elem", 1, 0));
-        }
-
-        [Fact]
-        public void AddAttribute_Element_ObjectNull_RemovesPreviousFrame()
-        {
-            // Arrange
-            var builder = new RenderTreeBuilder(new TestRenderer());
-
-            // Act
-            builder.OpenElement(0, "elem");
-            builder.AddAttribute(1, "ATTR", new object());
-            builder.AddAttribute(2, "attr", (object)null);
             builder.CloseElement();
 
             // Assert
@@ -2269,6 +1629,215 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.SetKey(null);
             });
             Assert.Equal("value", ex.ParamName);
+        }
+
+        [Fact]
+        public void ProcessDuplicateAttributes_DoesNotRemoveDuplicatesWithoutAddMultipleAttributes()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(0, "id", "hi");
+            builder.AddAttribute(0, "id", "bye");
+            builder.CloseElement();
+
+            // Act
+            var frames = builder.GetFrames().AsEnumerable();
+
+            // Assert
+            Assert.Collection(
+                frames,
+                f => AssertFrame.Element(f, "div", 3, 0),
+                f => AssertFrame.Attribute(f, "id", "hi"),
+                f => AssertFrame.Attribute(f, "id", "bye"));
+        }
+
+
+        [Fact]
+        public void ProcessDuplicateAttributes_StopsAtFirstNonAttributeFrame_Capture()
+        {
+            // Arrange
+            var capture = (Action<ElementRef>)((_) => { });
+
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(0, "id", "hi");
+            builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "id", "bye" },
+            });
+            builder.AddElementReferenceCapture(0, capture);
+            builder.CloseElement();
+
+            // Act
+            var frames = builder.GetFrames().AsEnumerable();
+
+            // Assert
+            Assert.Collection(
+                frames,
+                f => AssertFrame.Element(f, "div", 3, 0),
+                f => AssertFrame.Attribute(f, "id", "bye"),
+                f => AssertFrame.ElementReferenceCapture(f, capture));
+        }
+
+        [Fact]
+        public void ProcessDuplicateAttributes_StopsAtFirstNonAttributeFrame_Content()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(0, "id", "hi");
+            builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "id", "bye" },
+            });
+            builder.AddContent(0, "hey");
+            builder.CloseElement();
+
+            // Act
+            var frames = builder.GetFrames().AsEnumerable();
+
+            // Assert
+            Assert.Collection(
+                frames,
+                f => AssertFrame.Element(f, "div", 3, 0),
+                f => AssertFrame.Attribute(f, "id", "bye"),
+                f => AssertFrame.Text(f, "hey"));
+        }
+
+        [Fact]
+        public void ProcessDuplicateAttributes_CanRemoveDuplicateInsideElement()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(0, "id", "hi");
+            builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "id", "bye" },
+            });
+            builder.CloseElement();
+
+            // Act
+            var frames = builder.GetFrames().AsEnumerable();
+
+            // Assert
+            Assert.Collection(
+                frames,
+                f => AssertFrame.Element(f, "div", 2, 0),
+                f => AssertFrame.Attribute(f, "id", "bye"));
+        }
+
+        [Fact]
+        public void ProcessDuplicateAttributes_CanRemoveDuplicateInsideComponent()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddAttribute(0, "id", "hi");
+            builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "id", "bye" },
+            });
+            builder.CloseComponent();
+
+            // Act
+            var frames = builder.GetFrames().AsEnumerable();
+
+            // Assert
+            Assert.Collection(
+                frames,
+                f => AssertFrame.Component<TestComponent>(f, 2, 0),
+                f => AssertFrame.Attribute(f, "id", "bye"));
+        }
+
+        // This covers a special case we have to handle explicitly in the RTB logic.
+        [Fact]
+        public void ProcessDuplicateAttributes_SilentFrameFollowedBySameAttribute()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            builder.OpenComponent<TestComponent>(0);
+            builder.AddAttribute(0, "id", (string)null);
+            builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "id", "bye" },
+            });
+            builder.CloseComponent();
+
+            // Act
+            var frames = builder.GetFrames().AsEnumerable();
+
+            // Assert
+            Assert.Collection(
+                frames,
+                f => AssertFrame.Component<TestComponent>(f, 2, 0),
+                f => AssertFrame.Attribute(f, "id", "bye"));
+        }
+
+        [Fact]
+        public void ProcessDuplicateAttributes_DoesNotRemoveDuplicatesInsideChildElement()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(0, "id", "hi");
+            builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "id", "bye" },
+            });
+            builder.OpenElement(0, "strong");
+            builder.AddAttribute(0, "id", "hi");
+            builder.AddAttribute(0, "id", "bye");
+            builder.CloseElement();
+            builder.CloseElement();
+
+            // Act
+            var frames = builder.GetFrames().AsEnumerable();
+
+            // Assert
+            Assert.Collection(
+                frames,
+                f => AssertFrame.Element(f, "div", 5, 0),
+                f => AssertFrame.Attribute(f, "id", "bye"),
+                f => AssertFrame.Element(f, "strong", 3),
+                f => AssertFrame.Attribute(f, "id", "hi"),
+                f => AssertFrame.Attribute(f, "id", "bye"));
+        }
+
+        [Fact]
+        public void ProcessDuplicateAttributes_CanRemoveOverwrittenAttributes()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(0, "A", "hi");
+            builder.AddAttribute(0, "2", new EventCallback(null, (Action)(() => { })));
+            builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "a", null }, // Replace with null value (case-insensitive)
+                { "2", false }, // Replace with 'false'
+                { "3", "hey there" }, // Add a new value
+            });
+            builder.AddAttribute(0, "3", "see ya"); // Overwrite value added by splat
+            builder.AddAttribute(0, "4", false); // Add a false value
+            builder.AddAttribute(0, "5", "another one");
+            builder.AddMultipleAttributes(0, new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase)
+            {
+                { "5", null }, // overwrite value with null
+                { "6", new EventCallback(null, (Action)(() =>{ })) },
+            });
+            builder.AddAttribute(0, "6", default(EventCallback<string>)); // Replace with a 'silent' EventCallback<string>
+            builder.CloseElement();
+
+            // Act
+            var frames = builder.GetFrames().AsEnumerable();
+
+            // Assert
+            Assert.Collection(
+                frames,
+                f => AssertFrame.Element(f, "div", 2, 0),
+                f => AssertFrame.Attribute(f, "3", "see ya"));
         }
 
         private class TestComponent : IComponent

@@ -142,7 +142,10 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 rtb.OpenElement(0, "p");
                 rtb.AddAttribute(1, "class", "test1");
                 rtb.AddAttribute(2, "another", "another-value");
-                rtb.AddAttribute(3, "Class", "test2"); // Matching is case-insensitive.
+                rtb.AddMultipleAttributes(3, new Dictionary<string, object>()
+                {
+                    { "Class", "test2" }, // Matching is case-insensitive.
+                });
                 rtb.AddContent(4, "Hello world!");
                 rtb.CloseElement();
             })).BuildServiceProvider();

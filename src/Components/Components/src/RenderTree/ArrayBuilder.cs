@@ -98,17 +98,6 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => _items[index] = value;
 
         /// <summary>
-        /// Removes the item at the specified index.
-        /// </summary>
-        /// <param name="index">The index of the item to remove.</param>
-        public void RemoveAt(int index)
-        {
-            Array.Copy(_items, index + 1, _items, index, _itemsInUse - 1 - index);
-            Array.Clear(_items, _itemsInUse - 1, 1); // Clear last item
-            _itemsInUse--;
-        }
-
-        /// <summary>
         /// Removes the last item.
         /// </summary>
         public void RemoveLast()
