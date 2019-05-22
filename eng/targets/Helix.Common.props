@@ -23,7 +23,7 @@
     <HelixAvailableTargetQueue Include="Debian.8.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Debian.9.Amd64.Open" Platform="Linux" />
     <HelixAvailableTargetQueue Include="Redhat.7.Amd64.Open" Platform="Linux" />
-    <HelixAvailableTargetQueue Include="Fedora.28.Amd64.Open" Platform="Linux" />
+    <HelixAvailableTargetQueue Include="(Fedora.28.Amd64.Open)Ubuntu.1604.Amd64.Open@mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-28-helix-09ca40b-20190508143249" Platform="Linux" />
 
     <!--  TODO: re-enable Debian.9.Arm64.Open and Ubuntu.1804.Arm64.Open    -->
   </ItemGroup>
