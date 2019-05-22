@@ -8,9 +8,14 @@ Param(
 
 . $PSScriptRoot\tools.ps1
 
+$dotnetRoot = Join-Path $RepoRoot ".dotnet"
+
+$installdir = $dotnetRoot
 try {
-  $dotnetRoot = Join-Path $RepoRoot ".dotnet"
-  InstallDotNet $dotnetRoot $version $architecture $runtime $true
+    if ($architecture -and $architecture.Trim() -eq "x86") {
+        $installdir = Join-Path $installdir "x86"
+    }
+   InstallDotNet $installdir $version $architecture $runtime $true
 } 
 catch {
   Write-Host $_

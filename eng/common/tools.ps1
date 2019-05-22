@@ -213,7 +213,11 @@ function InitializeVisualStudioMSBuild([bool]$install, [object]$vsRequirements =
   if ($env:VSINSTALLDIR -ne $null) {
     $msbuildCmd = Get-Command "msbuild.exe" -ErrorAction SilentlyContinue
     if ($msbuildCmd -ne $null) {
-      if ($msbuildCmd.Version -ge $vsMinVersion) {
+      # Workaround for https://github.com/dotnet/roslyn/issues/35793
+      # Due to this issue $msbuildCmd.Version returns 0.0.0.0 for msbuild.exe 16.2+
+      $msbuildVersion = [Version]::new((Get-Item $msbuildCmd.Path).VersionInfo.ProductVersion.Split(@('-', '+'))[0])
+
+      if ($msbuildVersion -ge $vsMinVersion) {
         return $global:_MSBuildExe = $msbuildCmd.Path
       }
 
