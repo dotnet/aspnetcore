@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public async Task StartAsync(Uri url, TransferFormat transferFormat)
+        public async Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
         {
             if (transferFormat != TransferFormat.Binary && transferFormat != TransferFormat.Text)
             {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             // Make initial long polling request
             // Server uses first long polling request to finish initializing connection and it returns without data
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            using (var response = await _httpClient.SendAsync(request))
+            using (var response = await _httpClient.SendAsync(request, cancellationToken))
             {
                 response.EnsureSuccessStatusCode();
             }

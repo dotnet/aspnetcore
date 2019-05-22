@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
 {
     public partial interface ITransport : System.IO.Pipelines.IDuplexPipe
     {
-        System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat);
+        System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
         System.Threading.Tasks.Task StopAsync();
     }
     public partial interface ITransportFactory
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public System.IO.Pipelines.PipeReader Input { get { throw null; } }
         public System.IO.Pipelines.PipeWriter Output { get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat) { throw null; }
+        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task StopAsync() { throw null; }
     }
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public System.IO.Pipelines.PipeReader Input { get { throw null; } }
         public System.IO.Pipelines.PipeWriter Output { get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat) { throw null; }
+        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task StopAsync() { throw null; }
     }
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         public System.IO.Pipelines.PipeReader Input { get { throw null; } }
         public System.IO.Pipelines.PipeWriter Output { get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat) { throw null; }
+        public System.Threading.Tasks.Task StartAsync(System.Uri url, Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task StopAsync() { throw null; }
     }

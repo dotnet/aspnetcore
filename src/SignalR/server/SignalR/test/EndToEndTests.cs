@@ -568,7 +568,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            public Task StartAsync(Uri url, TransferFormat transferFormat)
+            public Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
             {
                 var options = ClientPipeOptions.DefaultOptions;
                 var pair = DuplexPipe.CreateConnectionPair(options, options);

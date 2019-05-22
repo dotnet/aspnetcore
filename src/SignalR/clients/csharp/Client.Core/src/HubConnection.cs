@@ -253,7 +253,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started while {nameof(StopAsync)} is running.");
                 }
 
-                await StartAsyncCore(cancellationToken);
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _state.StopCts.Token))
+                {
+                    await StartAsyncCore(cancellationToken);
+                }
 
                 _state.ChangeState(HubConnectionState.Connecting, HubConnectionState.Connected);
             }
@@ -422,7 +425,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             Log.Starting(_logger);
 
             // Start the connection
-            var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat);
+            var connection = await _connectionFactory.ConnectAsync(_protocol.TransferFormat, cancellationToken);
             var startingConnectionState = new ConnectionState(connection, this);
 
             // From here on, if an error occurs we need to shut down the connection because
@@ -1023,7 +1026,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             try
             {
                 using (var handshakeCts = new CancellationTokenSource(HandshakeTimeout))
-                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, handshakeCts.Token, _state.StopCts.Token))
+                // cancellationToken already contains _state.StopCts.Token, so we don't have to link it again
+                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, handshakeCts.Token))
                 {
                     while (true)
                     {
@@ -1287,7 +1291,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             var reconnectStartTime = DateTime.UtcNow;
             var retryReason = closeException;
             var nextRetryDelay = GetNextRetryDelay(previousReconnectAttempts++, TimeSpan.Zero, retryReason);
-            
+
             // We still have the connection lock from the caller, HandleConnectionClose.
             _state.AssertInConnectionLock();
 
@@ -1347,8 +1351,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     SafeAssert(ReferenceEquals(_state.CurrentConnectionStateUnsynchronized, null),
                         "Someone other than Reconnect set the connection state!");
 
-                    // HandshakeAsync already checks ReconnectingConnectionState.StopCts.Token.
-                    await StartAsyncCore(CancellationToken.None);
+                    await StartAsyncCore(_state.StopCts.Token);
 
                     Log.Reconnected(_logger, previousReconnectAttempts, DateTime.UtcNow - reconnectStartTime);
 
