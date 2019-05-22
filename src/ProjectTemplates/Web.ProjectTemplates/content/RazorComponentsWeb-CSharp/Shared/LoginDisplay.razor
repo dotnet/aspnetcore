@@ -41,5 +41,7 @@
     }
 }
 #elseif (WindowsAuth)
-    Hello, @User.Identity.Name!
+<AuthorizeView>
+    Hello, @context.User.Identity.Name!
+</AuthorizeView>
 #endif*@

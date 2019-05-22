@@ -10,13 +10,13 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb_CSharp</RootNamespace>
   </PropertyGroup>
 
-  <!--#if (IndividualLocalAuth && !UseLocalDB) -->
-
-  <!--#endif -->
-  <ItemGroup Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True' ">
+  <!--#if (IndividualLocalAuth && UseLocalDB) -->
+  <ItemGroup>
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
+  <!--#endif -->
+  <!--#if (IndividualAuth || OrganizationalAuth) -->
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureAD.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADUIPackageVersion}" Condition="'$(OrganizationalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.AzureADB2C.UI" Version="${MicrosoftAspNetCoreAuthenticationAzureADB2CUIPackageVersion}" Condition="'$(IndividualB2CAuth)' == 'True'" />
@@ -29,4 +29,5 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="${MicrosoftEntityFrameworkCoreToolsPackageVersion}" Condition=" '$(IndividualLocalAuth)' == 'True' " />
   </ItemGroup>
 
+  <!--#endif -->
 </Project>

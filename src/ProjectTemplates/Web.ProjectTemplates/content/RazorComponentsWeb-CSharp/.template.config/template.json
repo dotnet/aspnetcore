@@ -64,6 +64,12 @@
           "exclude": [
             "Data/SqlServer/**"
           ]
+        },
+        {
+          "condition": "(NoAuth)",
+          "exclude": [
+            "Shared/LoginDisplay.razor"
+          ]
         }
       ]
     }
