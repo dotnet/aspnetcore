@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.NotNull(dataSource.Endpoints[1].Metadata.GetMetadata<IAuthorizeData>());
             }
 
-            Assert.Equal(1, authCount);
+            Assert.Equal(0, authCount);
         }
 
         [Fact]

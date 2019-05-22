@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -6,19 +6,25 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Policy;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Http.Connections.Internal
 {
     internal static class AuthorizeHelper
     {
-        public static async Task<bool> AuthorizeAsync(HttpContext context, IList<IAuthorizeData> policies)
+        public static Task<bool> AuthorizeAsync(HttpContext context, IList<IAuthorizeData> policies)
         {
             if (policies.Count == 0)
             {
-                return true;
+                return TaskCache.True;
             }
 
+            return AuthorizeAsyncSlow(context, policies);
+        }
+
+        private static async Task<bool> AuthorizeAsyncSlow(HttpContext context, IList<IAuthorizeData> policies)
+        {
             var policyProvider = context.RequestServices.GetRequiredService<IAuthorizationPolicyProvider>();
 
             var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, policies);

@@ -32,9 +32,16 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             app.UseAuthentication();
             app.UseAuthorization();
 
+            // Legacy routing, runs different code path for mapping hubs
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<AuthHub>("/authHub");
+            });
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapHub<UncreatableHub>("/uncreatable");
+                endpoints.MapHub<AuthHub>("/authHubEndpoints");
 
                 endpoints.MapConnectionHandler<EchoConnectionHandler>("/echo");
                 endpoints.MapConnectionHandler<WriteThenCloseConnectionHandler>("/echoAndClose");

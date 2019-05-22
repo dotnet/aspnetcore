@@ -44,14 +44,6 @@ namespace Microsoft.AspNetCore.Builder
             }
 
             var options = new HttpConnectionDispatcherOptions();
-            // REVIEW: WE should consider removing this and instead just relying on the
-            // AuthorizationMiddleware
-            var attributes = typeof(THub).GetCustomAttributes(inherit: true);
-            foreach (var attribute in attributes.OfType<AuthorizeAttribute>())
-            {
-                options.AuthorizationData.Add(attribute);
-            }
-
             configureOptions?.Invoke(options);
 
             var conventionBuilder = endpoints.MapConnections(pattern, options, b =>
@@ -59,9 +51,10 @@ namespace Microsoft.AspNetCore.Builder
                 b.UseHub<THub>();
             });
 
+            var attributes = typeof(THub).GetCustomAttributes(inherit: true);
             conventionBuilder.Add(e =>
             {
-                // Add all attributes on the Hub has metadata (this will allow for things like)
+                // Add all attributes on the Hub as metadata (this will allow for things like)
                 // auth attributes and cors attributes to work seamlessly
                 foreach (var item in attributes)
                 {

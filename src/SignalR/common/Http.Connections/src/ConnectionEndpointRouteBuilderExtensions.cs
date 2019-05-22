@@ -48,13 +48,6 @@ namespace Microsoft.AspNetCore.Builder
         public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
             var options = new HttpConnectionDispatcherOptions();
-            // REVIEW: WE should consider removing this and instead just relying on the
-            // AuthorizationMiddleware
-            var attributes = typeof(TConnectionHandler).GetCustomAttributes(inherit: true);
-            foreach (var attribute in attributes.OfType<AuthorizeAttribute>())
-            {
-                options.AuthorizationData.Add(attribute);
-            }
             configureOptions?.Invoke(options);
 
             var conventionBuilder = endpoints.MapConnections(pattern, options, b =>
@@ -62,6 +55,7 @@ namespace Microsoft.AspNetCore.Builder
                 b.UseConnectionHandler<TConnectionHandler>();
             });
 
+            var attributes = typeof(TConnectionHandler).GetCustomAttributes(inherit: true);
             conventionBuilder.Add(e =>
             {
                 // Add all attributes on the ConnectionHandler has metadata (this will allow for things like)
