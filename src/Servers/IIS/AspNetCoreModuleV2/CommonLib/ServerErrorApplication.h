@@ -9,7 +9,7 @@
 class ServerErrorApplication : public PollingAppOfflineApplication
 {
 public:
-    ServerErrorApplication(const IHttpApplication& pApplication, HRESULT hr, bool disableStartupPage, std::string responseContent, USHORT status, USHORT substatus, std::string statusText)
+    ServerErrorApplication(const IHttpApplication& pApplication, HRESULT hr, bool disableStartupPage, const std::string& responseContent, USHORT status, USHORT substatus, const std::string& statusText)
         : m_HR(hr),
         m_disableStartupPage(disableStartupPage),
         m_responseContent(responseContent),

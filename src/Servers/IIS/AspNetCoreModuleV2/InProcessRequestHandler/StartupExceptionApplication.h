@@ -15,10 +15,10 @@ public:
         IHttpApplication& pApplication,
         BOOL disableLogs,
         HRESULT hr,
-        std::string errorPageContent,
+        const std::string& errorPageContent,
         USHORT statusCode,
         USHORT subStatusCode,
-        std::string statusText)
+        const std::string& statusText)
         : m_disableLogs(disableLogs),
         m_HR(hr),
         m_error(errorPageContent),
@@ -33,8 +33,6 @@ public:
 
     HRESULT CreateHandler(IHttpContext* pHttpContext, IREQUEST_HANDLER** pRequestHandler)
     {
-        // TOOD this should now take std::string
-        // TODO make this take in status and substatus codes.
         *pRequestHandler = new ServerErrorHandler(*pHttpContext, m_statusCode, m_subStatusCode, m_statusText, m_HR, m_disableLogs, m_error);
 
         return S_OK;

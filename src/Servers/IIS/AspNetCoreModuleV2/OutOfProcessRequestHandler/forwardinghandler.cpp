@@ -310,6 +310,7 @@ Failure:
             5,
             "ANCM Out-Of-Process Startup Failure",
             "<ul><li> The application process failed to start </li><li> The application process started but then stopped </li><li> The application process started but failed to listen on the configured port </li></ul>");
+
         ServerErrorHandler handler(*m_pW3Context,
             502,
             5,
@@ -317,6 +318,7 @@ Failure:
             hr,
             m_pApplication->QueryConfig()->QueryDisableStartUpErrorPage(),
             htmlResponse);
+
         handler.ExecuteRequestHandler();
     }
     else

@@ -19,7 +19,7 @@ struct ErrorContext
     USHORT statusCode;
     USHORT subStatusCode;
     std::string generalErrorType;
-    std::string solution;
+    std::string errorReason;
 };
 
 class HostFxrErrorRedirector: NonCopyable

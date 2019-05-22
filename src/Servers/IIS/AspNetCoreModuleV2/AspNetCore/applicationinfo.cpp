@@ -105,11 +105,11 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
                 std::string responseContent;
                 if (options.QueryShowDetailedErrors())
                 {
-                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.solution, errorContext.detailedErrorContent);
+                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.errorReason, errorContext.detailedErrorContent);
                 }
                 else
                 {
-                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.solution);
+                    responseContent = FILE_UTILITY::GetHtml(g_hServerModule, page, errorContext.statusCode, errorContext.subStatusCode, errorContext.generalErrorType, errorContext.errorReason);
                 }
 
                 m_pApplication = make_application<ServerErrorApplication>(

@@ -29,7 +29,7 @@ HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 bool                g_fInProcessApplicationCreated = false;
-std::string         g_errorPageContent; // TODO we can remove the global error by using the original inprocess app
+std::string         g_errorPageContent;
 HINSTANCE           g_hServerModule;
 
 HRESULT

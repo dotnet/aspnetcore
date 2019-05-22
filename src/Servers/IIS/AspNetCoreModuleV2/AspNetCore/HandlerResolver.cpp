@@ -99,7 +99,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
                 errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_OUT_OF_PROCESS_RH_MISSING_MSG, handlerName), CP_UTF8);
                 errorContext.statusCode = 500i16;
                 errorContext.subStatusCode = 36i16;
-                errorContext.solution = "The out of process request handler, aspnetcorev2_outofprocess.dll, could not be found next to the aspnetcorev2.dll.";
+                errorContext.errorReason = "The out of process request handler, aspnetcorev2_outofprocess.dll, could not be found next to the aspnetcorev2.dll.";
 
                 return hr;
             }
@@ -107,7 +107,8 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
         LOG_INFOF(L"Loading request handler:  '%ls'", handlerDllPath.c_str());
 
-        RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str()));
+        hRequestHandlerDll = LoadLibrary(handlerDllPath.c_str());
+        RETURN_LAST_ERROR_IF_NULL(hRequestHandlerDll);
 
         if (preventUnload)
         {
@@ -136,7 +137,7 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
             errorContext.statusCode = 500i16;
             errorContext.subStatusCode = 34i16;
             errorContext.generalErrorType = "ANCM Mixed Hosting Models Not Supported";
-            errorContext.solution = "";
+            errorContext.errorReason = "Select a different application pool to create another application.";
 
             EventLog::Error(
                 ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR,
@@ -149,12 +150,12 @@ HandlerResolver::GetApplicationFactory(const IHttpApplication& pApplication, std
         // Multiple in-process apps
         if (m_loadedApplicationHostingModel == HOSTING_IN_PROCESS && m_loadedApplicationId != pApplication.GetApplicationId())
         {
-            errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR_MSG, pApplication.GetApplicationId(), options.QueryHostingModel()), CP_UTF8);
+            errorContext.detailedErrorContent = to_multi_byte_string(format(ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP_MSG, pApplication.GetApplicationId()), CP_UTF8);
 
             errorContext.statusCode = 500i16;
             errorContext.subStatusCode = 35i16;
             errorContext.generalErrorType = "ANCM Multiple In-Process Applications in same Process";
-            errorContext.solution = "Select a different application pool to create another in-process application";
+            errorContext.errorReason = "Select a different application pool to create another in-process application.";
 
             EventLog::Error(
                 ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP,
@@ -251,7 +252,7 @@ try
         errorContext.statusCode = 500i16;
         errorContext.subStatusCode = 32i16;
         errorContext.generalErrorType = "ANCM Failed to Load dll";
-        errorContext.solution = "Most likely, the application was published for a different bitness than w3wp.exe/iisexpress.exe is running as.";
+        errorContext.errorReason = "The application was likely published for a different bitness than w3wp.exe/iisexpress.exe is running as.";
         throw;
     }
     {
@@ -302,7 +303,7 @@ try
                 errorContext.statusCode = 500i16;
                 errorContext.subStatusCode = 31i16;
                 errorContext.generalErrorType = "ANCM Failed to Find Native Dependencies";
-                errorContext.solution = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found.";
+                errorContext.errorReason = "The specified version of Microsoft.NetCore.App or Microsoft.AspNetCore.App was not found.";
 
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
@@ -351,7 +352,7 @@ try
                 ? s_pwzAspnetcoreInProcessRequestHandlerName
                 : handlerDllPath.c_str()),
             CP_UTF8);
-        errorContext.solution = "Make sure Microsoft.AspNetCore.App is referenced by your application.";
+        errorContext.errorReason = "Make sure Microsoft.AspNetCore.App is referenced by your application.";
 
         EventLog::Error(
             ASPNETCORE_EVENT_GENERAL_ERROR,
