@@ -944,7 +944,6 @@
       "Arguments": "new signalr",
       "Files": [
         "Hubs/ChatHub.cs",
-        "Hubs/StreamingTimerHub.cs",
         "Properties/launchSettings.json",
         "appsettings.Development.json",
         "appsettings.json",
