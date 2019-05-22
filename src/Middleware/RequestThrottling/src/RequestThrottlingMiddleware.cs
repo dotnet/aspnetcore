@@ -16,7 +16,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
     /// </summary>
     public class RequestThrottlingMiddleware
     {
-        private SemaphoreWrapper _semaphore;
+        private readonly SemaphoreWrapper _semaphore;
 
         private readonly RequestThrottlingOptions _options;
         private readonly RequestDelegate _next;
@@ -43,29 +43,23 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
+            var waitInQueueTask = _semaphore.EnterQueue();
+
             try
             {
-                var entryTask = _semaphore.EnterQueue();
-                var neededToWaitOnQueue = !entryTask.IsCompleted;
-
-                if (neededToWaitOnQueue)
+                var needsToWaitOnQueue = !waitInQueueTask.IsCompleted;
+                if (needsToWaitOnQueue)
                 {
-                    _logger.RequestEnqueued();
-                }
-
-                await entryTask;
-
-                if (neededToWaitOnQueue)
-                {
-                    _logger.RequestDequeued();
+                    _logger.RequestEnqueued(WaitingRequests);
+                    await waitInQueueTask;
+                    _logger.RequestDequeued(WaitingRequests);
                 }
 
                 await _next(context);
             }
             finally
             {
-                _semaphore.LeaveQueue();
-                _logger.LogDebug($"request finished, semaphore count at: {_semaphore.Count}");
+                _semaphore.Release();
             }
         }
 
@@ -73,9 +67,19 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// The number of live requests that are downstream from this middleware.
         /// Cannot exceeed <see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
         /// </summary>
-        public int ConcurrentRequests
+        internal int ConcurrentRequests
         {
             get => (_options.MaxConcurrentRequests - _semaphore.Count);
         }
+
+        /// <summary>
+        /// Number of requests currently enqueued and waiting to be processed.
+        /// </summary>
+        internal int WaitingRequests
+        {
+            get => _semaphore.WaitingRequests; 
+        }
+
+
     }
 }

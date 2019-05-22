@@ -10,18 +10,30 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
     internal class SemaphoreWrapper : IDisposable
     {
         private SemaphoreSlim _semaphore;
+        private int _waitingRequests;
+        private object _waitingRequestsLock = new object();
 
         public SemaphoreWrapper(int queueLength)
         {
             _semaphore = new SemaphoreSlim(queueLength);
         }
 
-        public Task EnterQueue()
+        public async Task EnterQueue()
         {
-            return _semaphore.WaitAsync();
+            lock (_waitingRequestsLock)
+            {
+                _waitingRequests++;
+            }
+
+            await _semaphore.WaitAsync();
+
+            lock (_waitingRequestsLock)
+            {
+                _waitingRequests--;
+            }
         }
 
-        public void LeaveQueue()
+        public void Release()
         {
             _semaphore.Release();
         }
@@ -29,6 +41,10 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
         public int Count
         {
             get => _semaphore.CurrentCount;
+        }
+        public int WaitingRequests
+        {
+            get => _waitingRequests;
         }
 
         public void Dispose()

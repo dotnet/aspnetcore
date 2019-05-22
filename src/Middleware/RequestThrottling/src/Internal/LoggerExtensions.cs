@@ -1,37 +1,27 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Internal
 {
     internal static class LoggerExtensions
     {
-        private static readonly Action<ILogger, Exception> _requestEnqueued;
-        private static readonly Action<ILogger, Exception> _requestDequeued;
+        private static readonly Action<ILogger, int, Exception> _requestEnqueued =
+            LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "Request Enqueued"), "Server is busy; request queued in middleware. Current queue length: {queuedRequests}.");
 
-        static LoggerExtensions()
+        private static readonly Action<ILogger, int, Exception> _requestDequeued =
+            LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "Request Dequeued"), "Space availible on server; request has left queue. Current queue length: {queuedRequests}.");
+
+        internal static void RequestEnqueued(this ILogger logger, int queuedRequests)
         {
-            _requestEnqueued = LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(1, "Request Enqueued"),
-                formatString: "Server is busy; queuing request in middleware."
-                );
-            _requestDequeued = LoggerMessage.Define(
-                logLevel: LogLevel.Debug,
-                eventId: new EventId(2, "Request Dequeued"),
-                formatString: "Space availible on server; request is leaving queue."
-                );
+            _requestEnqueued(logger, queuedRequests, null);
         }
 
-        internal static void RequestEnqueued(this ILogger logger)
+        internal static void RequestDequeued(this ILogger logger, int queuedRequests)
         {
-            _requestEnqueued(logger, null);
-        }
-
-        internal static void RequestDequeued(this ILogger logger)
-        {
-            _requestDequeued(logger, null);
+            _requestDequeued(logger, queuedRequests, null);
         }
     }
 }

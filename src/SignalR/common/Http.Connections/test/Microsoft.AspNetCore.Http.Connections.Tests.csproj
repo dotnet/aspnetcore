@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Buffers.Testing\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)test\SyncPoint.cs" />
   </ItemGroup>
 
   <ItemGroup>

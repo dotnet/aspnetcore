@@ -1,9 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="$(SharedSourceRoot)test\SyncPoint.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(SignalRTestUtilsProject)" />
