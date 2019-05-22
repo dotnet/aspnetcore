@@ -6,8 +6,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Xml;
+using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
@@ -21,6 +24,9 @@ namespace RepoTasks
 
         [Required]
         public ITaskItem[] FrameworkOnlyPackages { get; set; }
+
+        [Required]
+        public string SharedFrameworkTargetFramework { get; set; }
 
         public override bool Execute()
         {
@@ -43,7 +49,7 @@ namespace RepoTasks
             using (var package = new ZipArchive(fileStream, ZipArchiveMode.Update))
             using (var packageReader = new PackageArchiveReader(fileStream, leaveStreamOpen: true))
             {
-                var dirty = false;
+                var referencesFrameworkOnlyAssembly = false;
                 var nuspecFile = packageReader.GetNuspecFile();
                 using (var stream = package.OpenFile(nuspecFile))
                 {
@@ -60,7 +66,7 @@ namespace RepoTasks
                         {
                             if (dependencyToRemove.Contains(dependency.Id))
                             {
-                                dirty = true;
+                                referencesFrameworkOnlyAssembly = true;
                                 Log.LogMessage($"  Remove dependency on '{dependency.Id}'");
                                 continue;
                             }
@@ -71,15 +77,27 @@ namespace RepoTasks
                         updatedGroups.Add(updatedGroup);
                     }
 
-                    if (dirty)
+                    if (referencesFrameworkOnlyAssembly)
                     {
                         packageBuilder.DependencyGroups.Clear();
                         packageBuilder.DependencyGroups.AddRange(updatedGroups);
 
                         var updatedManifest = Manifest.Create(packageBuilder);
+                        var inMemory = new MemoryStream();
+                        updatedManifest.Save(inMemory);
+                        inMemory.Position = 0;
+                        // Hack the raw nuspec to add the <frameworkReference> dependency
+                        var rawNuspec = XDocument.Load(inMemory, LoadOptions.PreserveWhitespace);
+                        var ns = rawNuspec.Root.GetDefaultNamespace();
+                        var metadata = rawNuspec.Root.Descendants(ns + "metadata").Single();
+                        metadata.Add(
+                            new XElement(ns + "frameworkReferences",
+                                new XElement(ns + "group",
+                                    new XAttribute("targetFramework", NuGetFramework.Parse(SharedFrameworkTargetFramework).GetFrameworkString()),
+                                    new XElement(ns + "frameworkReference", new XAttribute("name", "Microsoft.AspNetCore.App")))));
                         stream.Position = 0;
                         stream.SetLength(0);
-                        updatedManifest.Save(stream);
+                        rawNuspec.Save(stream);
                     }
                     else
                     {
