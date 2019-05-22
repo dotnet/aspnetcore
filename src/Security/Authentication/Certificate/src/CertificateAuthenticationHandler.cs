@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -145,14 +144,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         {
             // Certificate authentication takes place at the connection level. We can't prompt once we're in
             // user code, so the best thing to do is Forbid, not Challenge.
-            Response.StatusCode = 403;
-            return Task.CompletedTask;
-        }
-
-        protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
-        {
-            Response.StatusCode = 403;
-            return Task.CompletedTask;
+            return HandleForbiddenAsync(properties)
         }
 
         private X509ChainPolicy BuildChainPolicy(X509Certificate2 certificate)
@@ -168,7 +160,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                 revocationMode = X509RevocationMode.NoCheck;
             }
 
-            X509ChainPolicy chainPolicy = new X509ChainPolicy
+            var chainPolicy = new X509ChainPolicy
             {
                 RevocationFlag = revocationFlag,
                 RevocationMode = revocationMode,
