@@ -48,13 +48,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             // First, collect all the non-parameterized bind or bind-* attributes.
-            var bindEntries = new Dictionary<string, BindEntry>();
+            // The dict key is a tuple of (parent, attributeName) to differentiate attributes with the same name in two different elements.
+            // We don't have to worry about duplicate bound attributes in the same element
+            // like, <Foo bind="bar" bind="bar" />, because IR lowering takes care of that.
+            var bindEntries = new Dictionary<(IntermediateNode, string), BindEntry>();
             for (var i = 0; i < references.Count; i++)
             {
                 var reference = references[i];
+                var parent = reference.Parent;
                 var node = (TagHelperPropertyIntermediateNode)reference.Node;
 
-                if (!reference.Parent.Children.Contains(node))
+                if (!parent.Children.Contains(node))
                 {
                     // This node was removed as a duplicate, skip it.
                     continue;
@@ -62,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 if (node.TagHelper.IsBindTagHelper() && node.AttributeName.StartsWith("bind"))
                 {
-                    bindEntries[node.AttributeName] = new BindEntry(reference);
+                    bindEntries[(parent, node.AttributeName)] = new BindEntry(reference);
                 }
             }
 
@@ -70,9 +74,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             for (var i = 0; i < parameterReferences.Count; i++)
             {
                 var parameterReference = parameterReferences[i];
+                var parent = parameterReference.Parent;
                 var node = (TagHelperAttributeParameterIntermediateNode)parameterReference.Node;
 
-                if (!parameterReference.Parent.Children.Contains(node))
+                if (!parent.Children.Contains(node))
                 {
                     // This node was removed as a duplicate, skip it.
                     continue;
@@ -80,7 +85,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
                 if (node.TagHelper.IsBindTagHelper() && node.AttributeName.StartsWith("bind"))
                 {
-                    if (!bindEntries.TryGetValue(node.AttributeNameWithoutParameter, out var entry))
+                    // Check if this tag contains a corresponding non-parameterized bind node.
+                    if (!bindEntries.TryGetValue((parent, node.AttributeNameWithoutParameter), out var entry))
                     {
                         // There is no corresponding bind node. Add a diagnostic and move on.
                         parameterReference.Parent.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttributeParameter_MissingBind(

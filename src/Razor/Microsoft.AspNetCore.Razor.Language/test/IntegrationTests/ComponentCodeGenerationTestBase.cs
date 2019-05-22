@@ -2573,6 +2573,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 <MyComponent bind-Item=Value/>
+<MyComponent bind-Item=Value/>
 @code {
     string Value;
 }");

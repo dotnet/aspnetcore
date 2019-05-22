@@ -22,10 +22,20 @@ namespace Test
 #line hidden
 #nullable disable
             ), 2, __value => Value = __value);
+            builder.AddMarkupContent(3, "\r\n");
+            __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(builder, 4, 5, Microsoft.AspNetCore.Components.BindMethods.GetValue(
+#nullable restore
+#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+                       Value
+
+#line default
+#line hidden
+#nullable disable
+            ), 6, __value => Value = __value);
         }
         #pragma warning restore 1998
 #nullable restore
-#line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
+#line 3 "x:\dir\subdir\Test\TestComponent.cshtml"
        
     string Value;
 
@@ -40,6 +50,13 @@ namespace __Blazor.Test.TestComponent
     internal static class TypeInference
     {
         public static void CreateMyComponent_0<TItem>(global::Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0, int __seq1, global::System.Action<TItem> __arg1)
+        {
+        builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
+        builder.AddAttribute(__seq0, "Item", __arg0);
+        builder.AddAttribute(__seq1, "ItemChanged", __arg1);
+        builder.CloseComponent();
+        }
+        public static void CreateMyComponent_1<TItem>(global::Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder, int seq, int __seq0, TItem __arg0, int __seq1, global::System.Action<TItem> __arg1)
         {
         builder.OpenComponent<global::Test.MyComponent<TItem>>(seq);
         builder.AddAttribute(__seq0, "Item", __arg0);
