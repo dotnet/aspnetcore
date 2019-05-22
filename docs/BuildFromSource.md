@@ -87,7 +87,7 @@ Opening solution files and building may produce an error code CS0006 with a mess
 
 > Error CS0006 Metadata file 'C:\src\aspnet\AspNetCore\artifacts\bin\Microsoft.AspNetCore.Metadata\Debug\netstandard2.0\Microsoft.AspNetCore.Metadata.dll' could not be found
 
-The cause of this problem is that the solution you are using does not include the project that produces this .dll. This most often occurs after we have added new projects to the repo, but failed to update our .sln files to include the new project, but it is sometimes the indented behavior. 
+The cause of this problem is that the solution you are using does not include the project that produces this .dll. This most often occurs after we have added new projects to the repo, but failed to update our .sln files to include the new project. In some cases, it is sometimes the intended behavior of the .sln which has been crafted to only include a subset of projects.
 
 **You can fix this in one of two ways**
 1. Build the project on command line. In most cases, running `build.cmd` on command line solve this problem.
