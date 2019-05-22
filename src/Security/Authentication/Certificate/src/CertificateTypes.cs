@@ -24,6 +24,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// <summary>
         /// All certificates.
         /// </summary>
-        All = 3
+        All = Chained | SelfSigned
     }
 }
