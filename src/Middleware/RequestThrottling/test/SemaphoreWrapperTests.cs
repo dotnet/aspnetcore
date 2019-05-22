@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.RequestThrottling.Internal;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.RequestThrottling.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
     public class SemaphoreWrapperTests
     {
         [Fact]
-        public async Task TracksQueueLength()
+        public async Task LimitsIncomingRequests()
         {
             using var s = new SemaphoreWrapper(1);
             Assert.Equal(1, s.Count);
@@ -18,8 +18,25 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             await s.EnterQueue().OrTimeout();
             Assert.Equal(0, s.Count);
 
-            s.LeaveQueue();
+            s.Release();
             Assert.Equal(1, s.Count);
+        }
+
+        [Fact]
+        public async Task TracksQueueLength()
+        {
+            using var s = new SemaphoreWrapper(1);
+            Assert.Equal(0, s.WaitingRequests);
+
+            await s.EnterQueue();
+            Assert.Equal(0, s.WaitingRequests);
+
+            var enterQueueTask = s.EnterQueue();
+            Assert.Equal(1, s.WaitingRequests);
+
+            s.Release();
+            await enterQueueTask;
+            Assert.Equal(0, s.WaitingRequests);
         }
 
         [Fact]
@@ -46,7 +63,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             var waitingTask = s.EnterQueue();
             Assert.False(waitingTask.IsCompleted);
 
-            s.LeaveQueue();
+            s.Release();
             await waitingTask.OrTimeout();
         }
 

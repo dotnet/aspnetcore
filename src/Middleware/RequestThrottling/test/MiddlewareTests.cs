@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR.Tests;
 using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
@@ -21,7 +22,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         }
 
         [Fact]
-        public async Task SemaphoreStatePreservedIfRequestsErrorLaterOn()
+        public async Task SemaphoreStatePreservedIfRequestsError()
         {
             var middleware = TestUtils.CreateTestMiddleWare(
                 maxConcurrentRequests: 1,
@@ -32,17 +33,15 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             Assert.Equal(0, middleware.ConcurrentRequests);
 
-            await Assert.ThrowsAsync<DivideByZeroException>(() =>
-                    middleware.Invoke(new DefaultHttpContext())
-                );
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext()));
 
             Assert.Equal(0, middleware.ConcurrentRequests);
         }
 
         [Fact]
-        public async Task RequestsAreBlockedIfNoSpaceAvailible()
+        public async Task QueuedRequestsContinueWhenSpaceBecomesAvailible()
         {
-            var blocker = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var blocker = new SyncPoint();
             var firstRequest = true;
 
             var middleware = TestUtils.CreateTestMiddleWare(
@@ -52,22 +51,24 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     if (firstRequest)
                     {
                         firstRequest = false;
-                        return blocker.Task;
+                        return blocker.WaitToContinue();
                     }
                     return Task.CompletedTask;
                 });
 
             // t1 (as the first request) is blocked by the tcs blocker
             var t1 = middleware.Invoke(new DefaultHttpContext());
+            Assert.Equal(1, middleware.ConcurrentRequests);
+            Assert.Equal(0, middleware.WaitingRequests);
 
             // t2 is blocked from entering the server since t1 already exists there
             // note: increasing MaxConcurrentRequests would allow t2 through while t1 is blocked
             var t2 = middleware.Invoke(new DefaultHttpContext());
+            Assert.Equal(1, middleware.ConcurrentRequests);
+            Assert.Equal(1, middleware.WaitingRequests);
 
-            Assert.False(t1.IsCompleted);
-            Assert.False(t2.IsCompleted);
-
-            blocker.SetResult("t1 completes");
+            // unblock the first task, and the second should follow
+            blocker.Continue();
             await t1.OrTimeout();
             await t2.OrTimeout();
         }
