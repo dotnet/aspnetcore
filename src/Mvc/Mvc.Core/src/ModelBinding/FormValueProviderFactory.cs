@@ -2,8 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -33,9 +36,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         private static async Task AddValueProviderAsync(ValueProviderFactoryContext context)
         {
             var request = context.ActionContext.HttpContext.Request;
+            IFormCollection form;
+            try
+            {
+                form = await request.ReadFormAsync();
+            }
+            catch (InvalidDataException ex)
+            {
+                form = FormCollection.Empty;
+                context.ActionContext.ModelState.TryAddModelException(string.Empty, ex);
+            }
+
             var valueProvider = new FormValueProvider(
                 BindingSource.Form,
-                await request.ReadFormAsync(),
+                form,
                 CultureInfo.CurrentCulture);
 
             context.ValueProviders.Add(valueProvider);
