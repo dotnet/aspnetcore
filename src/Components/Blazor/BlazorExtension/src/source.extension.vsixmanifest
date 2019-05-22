@@ -20,6 +20,6 @@
         <Asset Type="Microsoft.VisualStudio.VsPackage" d:Source="File" Path="CodeSnippets.pkgdef" />
     </Assets>
     <Prerequisites>
-        <Prerequisite Id="Microsoft.VisualStudio.Component.Web" Version="[16.2,)" DisplayName="ASP.NET and web development tools" />
+        <Prerequisite Id="Microsoft.VisualStudio.Component.Web" Version="[16.0,)" DisplayName="ASP.NET and web development tools" />
     </Prerequisites>
 </PackageManifest>
