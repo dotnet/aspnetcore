@@ -13,7 +13,6 @@ namespace Microsoft.AspNetCore.TestHost
     /// </summary>
     public class RequestBuilder
     {
-        private readonly TestServer _server;
         private readonly HttpRequestMessage _req;
 
         /// <summary>
@@ -23,14 +22,14 @@ namespace Microsoft.AspNetCore.TestHost
         /// <param name="path"></param>
         public RequestBuilder(TestServer server, string path)
         {
-            if (server == null)
-            {
-                throw new ArgumentNullException(nameof(server));
-            }
-
-            _server = server;
+            TestServer = server ?? throw new ArgumentNullException(nameof(server));
             _req = new HttpRequestMessage(HttpMethod.Get, path);
         }
+
+        /// <summary>
+        /// Gets the <see cref="TestServer"/> instance for which the request is being built.
+        /// </summary>
+        public TestServer TestServer { get; }
 
         /// <summary>
         /// Configure any HttpRequestMessage properties.
@@ -79,7 +78,7 @@ namespace Microsoft.AspNetCore.TestHost
         public Task<HttpResponseMessage> SendAsync(string method)
         {
             _req.Method = new HttpMethod(method);
-            return _server.CreateClient().SendAsync(_req);
+            return TestServer.CreateClient().SendAsync(_req);
         }
 
         /// <summary>
@@ -89,7 +88,7 @@ namespace Microsoft.AspNetCore.TestHost
         public Task<HttpResponseMessage> GetAsync()
         {
             _req.Method = HttpMethod.Get;
-            return _server.CreateClient().SendAsync(_req);
+            return TestServer.CreateClient().SendAsync(_req);
         }
 
         /// <summary>
@@ -99,7 +98,7 @@ namespace Microsoft.AspNetCore.TestHost
         public Task<HttpResponseMessage> PostAsync()
         {
             _req.Method = HttpMethod.Post;
-            return _server.CreateClient().SendAsync(_req);
+            return TestServer.CreateClient().SendAsync(_req);
         }
     }
 }

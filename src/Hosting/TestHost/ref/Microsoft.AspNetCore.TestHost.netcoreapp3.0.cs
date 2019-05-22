@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.TestHost
     public partial class RequestBuilder
     {
         public RequestBuilder(Microsoft.AspNetCore.TestHost.TestServer server, string path) { }
+        public Microsoft.AspNetCore.TestHost.TestServer TestServer { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.TestHost.RequestBuilder AddHeader(string name, string value) { throw null; }
         public Microsoft.AspNetCore.TestHost.RequestBuilder And(System.Action<System.Net.Http.HttpRequestMessage> configure) { throw null; }
         public System.Threading.Tasks.Task<System.Net.Http.HttpResponseMessage> GetAsync() { throw null; }
