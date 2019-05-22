@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // so we can get it out on the other side.
                 Append(RenderTreeFrame.Attribute(sequence, name, (object)value));
             }
-            else
+            else if (value.HasDelegate)
             {
                 // In the common case the receiver is also the delegate's target, so we
                 // just need to retain the delegate. This allows us to avoid an allocation.
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 // need to preserve the type of an EventCallback<T> when it's invoked from the DOM.
                 Append(RenderTreeFrame.Attribute(sequence, name, (object)value.AsUntyped()));
             }
-            else
+            else if (value.HasDelegate)
             {
                 // In the common case the receiver is also the delegate's target, so we
                 // just need to retain the delegate. This allows us to avoid an allocation.
@@ -402,7 +402,14 @@ namespace Microsoft.AspNetCore.Components.RenderTree
                 }
                 else if (value is IEventCallback callbackValue)
                 {
-                    Append(RenderTreeFrame.Attribute(sequence, name, callbackValue.UnpackForRenderTree()));
+                    if (callbackValue.HasDelegate)
+                    {
+                        Append(RenderTreeFrame.Attribute(sequence, name, callbackValue.UnpackForRenderTree()));
+                    }
+                    else
+                    {
+                        ClearAttributesWithName(name);
+                    }
                 }
                 else if (value is MulticastDelegate)
                 {

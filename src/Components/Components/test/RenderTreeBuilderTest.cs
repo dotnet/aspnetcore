@@ -1289,6 +1289,24 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void AddAttribute_Element_EventCallback_Default_DoesNotAddFrame()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            var callback = default(EventCallback);
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "attr", callback);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame => AssertFrame.Element(frame, "elem", 1, 0));
+        }
+
+        [Fact]
         public void AddAttribute_Element_EventCallback_ReplacesPreviousFrame()
         {
             // Arrange
@@ -1407,6 +1425,24 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 1));
+        }
+
+        [Fact]
+        public void AddAttribute_Element_EventCallbackOfT_Default_DoesNotAddFrame()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            var callback = default(EventCallback<string>);
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "attr", callback);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
         [Fact]
@@ -1882,6 +1918,24 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [Fact]
+        public void AddAttribute_Element_ObjectEventCallback_Default_DoesNotAddFrame()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            var callback = default(EventCallback);
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "attr", (object)callback);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame => AssertFrame.Element(frame, "elem", 1, 0));
+        }
+
+        [Fact]
         public void AddAttribute_Element_ObjectEventCallback_ReplacesPreviousFrame()
         {
             // Arrange
@@ -2000,6 +2054,24 @@ namespace Microsoft.AspNetCore.Components.Test
                 builder.GetFrames().AsEnumerable(),
                 frame => AssertFrame.Element(frame, "elem", 2, 0),
                 frame => AssertFrame.Attribute(frame, "attr", callback.Delegate, 1));
+        }
+
+        [Fact]
+        public void AddAttribute_Element_ObjectEventCallbackOfT_Default_DoesNotAddFrame()
+        {
+            // Arrange
+            var builder = new RenderTreeBuilder(new TestRenderer());
+            var callback = default(EventCallback<string>);
+
+            // Act
+            builder.OpenElement(0, "elem");
+            builder.AddAttribute(1, "attr", (object)callback);
+            builder.CloseElement();
+
+            // Assert
+            Assert.Collection(
+                builder.GetFrames().AsEnumerable(),
+                frame => AssertFrame.Element(frame, "elem", 1, 0));
         }
 
         [Fact]
