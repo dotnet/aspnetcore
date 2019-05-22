@@ -37,7 +37,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TestDependsOnNode)' == 'true' AND '$(IsWindowsHelixQueue)' == 'false'">
-    <HelixPreCommand Include="./installnode.sh $(NodeVersion) linux-x64" Condition="!$(HelixTargetQueue.Contains('OSX')" />
+    <HelixPreCommand Include="./installnode.sh $(NodeVersion) linux-x64" Condition="!($(HelixTargetQueue.Contains('OSX'))" />
     <HelixPreCommand Include="./installnode.sh $(NodeVersion) darwin-x64" Condition="$(HelixTargetQueue.Contains('OSX')" />
     <HelixPreCommand Include="export PATH=%24PATH&quot;:&quot;%24HELIX_CORRELATION_PAYLOAD/node/bin" />
   </ItemGroup>
