@@ -205,7 +205,7 @@ FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subSta
 
         if (!solution.empty())
         {
-            solution = format("<h2> Common solutions to this issue: </h2><h3>%s</h3>", solution.c_str());
+            solution = format("<h2> Common solutions to this issue: </h2>%s", solution.c_str());
         }
 
         return format(data, statusCode, subStatusCode, specificReasonPhrase.c_str(), statusCode, subStatusCode, specificReasonPhrase.c_str(), solution.c_str(), error.c_str(), additionalHtml.c_str());

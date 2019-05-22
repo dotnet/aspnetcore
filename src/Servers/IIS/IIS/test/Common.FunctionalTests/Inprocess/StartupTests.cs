@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             }
             else
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.33 - ANCM In-Process Handler Load Failure");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.33 - ANCM Request Handler Load Failure ");
 
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
             }
