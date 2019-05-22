@@ -252,10 +252,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 {
                     throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started while {nameof(StopAsync)} is running.");
                 }
+
                 using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _state.StopCts.Token))
                 {
                     await StartAsyncCore(cancellationToken);
                 }
+
                 _state.ChangeState(HubConnectionState.Connecting, HubConnectionState.Connected);
             }
             catch
@@ -1024,7 +1026,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             try
             {
                 using (var handshakeCts = new CancellationTokenSource(HandshakeTimeout))
-                //cancellationToken already contains _state.StopCts.Token, so we don't have to link it again
+                // cancellationToken already contains _state.StopCts.Token, so we don't have to link it again
                 using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, handshakeCts.Token))
                 {
                     while (true)
