@@ -29,7 +29,6 @@ using Microsoft.AspNetCore.Mvc.Authorization;
 #endif
 #if (IndividualLocalAuth)
 using Microsoft.EntityFrameworkCore;
-using Company.WebApplication1.Data;
 #endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +42,15 @@ namespace RazorComponentsWeb_CSharp
 {
     public class Startup
     {
+#if (OrganizationalAuth || IndividualAuth)
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+        }
+
+        public IConfiguration Configuration { get; }
+
+#endif
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
