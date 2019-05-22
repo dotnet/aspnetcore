@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DiagnosticAdapter;
 using Microsoft.Extensions.Hosting;
@@ -276,6 +275,32 @@ namespace Microsoft.AspNetCore.TestHost
                 .Configure(b => { });
 
             Assert.Throws<ArgumentNullException>(() => new TestServer(builder, null));
+        }
+
+        [Fact]
+        public void TestServerConstructorWithEmptyServiceProvider()
+        {
+            // Arrange & Act
+            var testServer = new TestServer();
+
+            // Assert
+            Assert.NotNull(testServer.Services);
+        }
+
+        [Fact]
+        public void TestServerConstructorShouldProvideServicesFromWebHost()
+        {
+            // Arrange
+            var testService = new TestService();
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services => services.AddSingleton(testService))
+                .Configure(_ => { });
+
+            // Act
+            var testServer = new TestServer(builder);
+
+            // Assert
+            Assert.Equal(testService, testServer.Services.GetService<TestService>());
         }
 
         public class TestService { public string Message { get; set; } }

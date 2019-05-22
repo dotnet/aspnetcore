@@ -29,12 +29,14 @@ namespace Microsoft.AspNetCore.TestHost
         public TestServer() { }
         public TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder) { }
         public TestServer(Microsoft.AspNetCore.Hosting.IWebHostBuilder builder, Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { }
-        public TestServer(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection) { }
+        public TestServer(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection, System.IServiceProvider services) { }
+        public TestServer(System.IServiceProvider services) { }
         public bool AllowSynchronousIO { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public System.Uri BaseAddress { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Http.Features.IFeatureCollection Features { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Hosting.IWebHost Host { get { throw null; } }
         public bool PreserveExecutionContext { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.IServiceProvider Services { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public System.Net.Http.HttpClient CreateClient() { throw null; }
         public System.Net.Http.HttpMessageHandler CreateHandler() { throw null; }
         public Microsoft.AspNetCore.TestHost.RequestBuilder CreateRequest(string path) { throw null; }
