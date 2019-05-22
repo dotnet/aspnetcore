@@ -28,6 +28,18 @@ type TemperatureUnit =
    | Fahrenheit
 
 type WeatherResult =
-    member val Temperature  "" with get, set
-    member val TemperatureUnit "" with get, set
-    member val Location  "" with get, set
+    let mutable _temperature : int = 0;
+    let mutable _temperatureUnit : TemperatureUnit = null;
+    let mutable _location : string = null;
+
+    member x.Temperature
+        with public get() : int = _temperature
+        and  public set(value) = _temperature <- value
+
+    member x.TemperatureUnit
+        with public get() : TemperatureUnit = _temperatureUnit
+        and  public set(value) = _temperatureUnit <- value
+
+    member x.Location
+        with public get() : string = _location
+        and  public set(value) = _location <- value
