@@ -12,6 +12,14 @@ Copyright (c) .NET Foundation. All rights reserved.
 
 <Project ToolsVersion="14.0">
 
+  <PropertyGroup>
+    <!--
+      Defines the list of file extensions that VS will monitor to reload the application.
+      We'll only define these for C# projects targeting RazorLangVersion 3.0 or later, and let VS use defaults in other cases.
+    -->
+    <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true'">$(UpToDateReloadFileTypes);.cs;.razor;.resx;.cshtml</UpToDateReloadFileTypes>
+  </PropertyGroup>
+
   <ItemGroup>
     <!--
       Defines the generic .NET Core 'Razor' capability.
