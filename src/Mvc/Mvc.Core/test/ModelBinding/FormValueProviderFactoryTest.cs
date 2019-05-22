@@ -3,6 +3,8 @@
 
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
@@ -18,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
         public async Task GetValueProviderAsync_ReturnsNull_WhenContentTypeIsNotFormUrlEncoded()
         {
             // Arrange
-            var context = CreateContext("some-content-type");
+            var context = CreateContext("some-content-type", true);
             var factory = new FormValueProviderFactory();
 
             // Act
@@ -36,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
         public async Task GetValueProviderAsync_ReturnsValueProvider_WithCurrentCulture(string contentType)
         {
             // Arrange
-            var context = CreateContext(contentType);
+            var context = CreateContext(contentType, true);
             var factory = new FormValueProviderFactory();
 
             // Act
@@ -47,12 +49,30 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Test
             Assert.Equal(CultureInfo.CurrentCulture, valueProvider.Culture);
         }
 
-        private static ValueProviderFactoryContext CreateContext(string contentType)
+        [Fact]
+        public async Task GetValueProviderAsync_AddErrorToModelState_IfMultipartFormdataIsIncorrect()
+        {
+            // Arrange
+            var context = CreateContext("multipart/form-data", false);
+            var factory = new FormValueProviderFactory();
+
+            // Act
+            await factory.CreateValueProviderAsync(context);
+
+            // Assert
+            var modelState = context.ActionContext.ModelState;
+            Assert.False(modelState.IsValid);
+            Assert.Equal("", modelState.Single().Key);
+            var invalidDataException = Assert.IsType<InvalidDataException>(modelState.Single().Value.Errors.Single().Exception);
+            Assert.Equal("Missing content-type boundary.", invalidDataException.Message);
+        }
+
+        private static ValueProviderFactoryContext CreateContext(string contentType, bool assignForm)
         {
             var context = new DefaultHttpContext();
             context.Request.ContentType = contentType;
 
-            if (context.Request.HasFormContentType)
+            if (context.Request.HasFormContentType && assignForm)
             {
                 context.Request.Form = new FormCollection(new Dictionary<string, StringValues>());
             }
