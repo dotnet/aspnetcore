@@ -42,6 +42,45 @@ function LogError {
 
 try {
     if ($ci) {
+        $vswherePath = "${env:ProgramFiles(x86)}/Microsoft Visual Studio/Installer/vswhere.exe"
+        if (-not (Test-Path $vswherePath)) {
+            $vswherePath = "$PSScriptRoot/../modules/KoreBuild.Tasks/vswhere.exe"
+        }
+
+        if (-not (Test-Path $vswherePath)) {
+            # Couldn't use vswhere, return 'msbuild.exe' and let PATH do its thing.
+            Write-Host -f Red "Could not find VSWhere. Relying on MSBuild to exist on PATH"
+        }
+        else {
+            [string[]] $vswhereArgs = @('-latest', '-format', 'json', '-products', '*', '-prerelease', '-version', '[16.0, 17.0)')
+            Write-Host -f Magenta "> $vswherePath $vsWhereArgs"
+            & $vswherePath @vswhereArgs | Write-Host
+
+            $vswhereArgs += '-property', 'displayName', '-format', 'text', '-nologo'
+            foreach ($requirement in
+                "Microsoft.Net.Component.4.6.1.TargetingPack",
+                "Microsoft.Net.Component.4.6.2.TargetingPack",
+                "Microsoft.Net.Component.4.7.1.TargetingPack",
+                "Microsoft.Net.Component.4.7.2.SDK",
+                "Microsoft.Net.Component.4.7.2.TargetingPack",
+                "Microsoft.Net.Component.4.7.TargetingPack",
+                "Microsoft.VisualStudio.Component.Azure.Storage.Emulator",
+                "Microsoft.VisualStudio.Component.VC.ATL",
+                "Microsoft.VisualStudio.Component.VC.Tools.x86.x64",
+                "Microsoft.VisualStudio.Component.VC.v141.ATL",
+                "Microsoft.VisualStudio.Component.VC.v141.x86.x64",
+                "Microsoft.VisualStudio.Component.Windows10SDK.17134",
+                "Microsoft.VisualStudio.Workload.ManagedDesktop",
+                "Microsoft.VisualStudio.Workload.NativeDesktop",
+                "Microsoft.VisualStudio.Workload.NetCoreTools",
+                "Microsoft.VisualStudio.Workload.NetWeb",
+                "Microsoft.VisualStudio.Workload.VisualStudioExtension") {
+                    $vsWhereArgs_Requires = $vsWhereArgs + '-requires', $requirement
+                    Write-Host -f Magenta "> $vswherePath $vsWhereArgs_Requires"
+                    & $vswherePath @vsWhereArgs_Requires | Write-Host
+            }
+        }
+
         # Install dotnet.exe
         & $repoRoot/build.ps1 -ci -norestore /t:InstallDotNet
     }
