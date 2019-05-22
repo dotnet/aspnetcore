@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.AspNetCore.Components.Analyzers
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                 return false;
             }
 
-            var dictionary = compilation.GetTypeByMetadataName(ComponentsApi.SystemCollectionsGenericDictionary);
+            var dictionary = compilation.GetTypeByMetadataName(typeof(Dictionary<,>).FullName);
             var @string = compilation.GetSpecialType(SpecialType.System_String);
             var @object = compilation.GetSpecialType(SpecialType.System_Object);
             if (dictionary == null || @string == null || @object == null)

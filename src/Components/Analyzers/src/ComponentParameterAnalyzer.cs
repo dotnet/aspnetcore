@@ -52,56 +52,58 @@ namespace Microsoft.AspNetCore.Components.Analyzers
                         }
                     }
 
-                    if (properties.Count > 0)
+                    if (properties.Count == 0)
                     {
-                        context.RegisterSymbolEndAction(context =>
-                        {
-                            var captureUnmatchedValuesParameters = new List<IPropertySymbol>();
+                        return;
+                    }
+
+                    context.RegisterSymbolEndAction(context =>
+                    {
+                        var captureUnmatchedValuesParameters = new List<IPropertySymbol>();
 
                             // Per-property validations
                             foreach (var property in properties)
+                        {
+                            if (property.SetMethod?.DeclaredAccessibility == Accessibility.Public)
                             {
-                                if (property.SetMethod?.DeclaredAccessibility == Accessibility.Public)
-                                {
-                                    context.ReportDiagnostic(Diagnostic.Create(
-                                        DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
-                                        property.Locations[0],
-                                        property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
-                                }
+                                context.ReportDiagnostic(Diagnostic.Create(
+                                    DiagnosticDescriptors.ComponentParametersShouldNotBePublic,
+                                    property.Locations[0],
+                                    property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
+                            }
 
-                                if (ComponentFacts.IsParameterWithCaptureUnmatchedValues(symbols, property))
-                                {
-                                    captureUnmatchedValuesParameters.Add(property);
+                            if (ComponentFacts.IsParameterWithCaptureUnmatchedValues(symbols, property))
+                            {
+                                captureUnmatchedValuesParameters.Add(property);
 
                                     // Check the type, we need to be able to assign a Dictionary<string, object>
                                     var conversion = context.Compilation.ClassifyConversion(symbols.ParameterCaptureUnmatchedValuesRuntimeType, property.Type);
-                                    if (!conversion.Exists || conversion.IsExplicit)
-                                    {
-                                        context.ReportDiagnostic(Diagnostic.Create(
-                                            DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
-                                            property.Locations[0],
-                                            property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
-                                            property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
-                                            symbols.ParameterCaptureUnmatchedValuesRuntimeType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
-                                    }
+                                if (!conversion.Exists || conversion.IsExplicit)
+                                {
+                                    context.ReportDiagnostic(Diagnostic.Create(
+                                        DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesHasWrongType,
+                                        property.Locations[0],
+                                        property.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                        property.Type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                        symbols.ParameterCaptureUnmatchedValuesRuntimeType.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)));
                                 }
                             }
+                        }
 
                             // Check if the type defines multiple CaptureUnmatchedValues parameters. Doing this outside the loop means we place the
                             // errors on the type.
                             if (captureUnmatchedValuesParameters.Count > 1)
-                            {
-                                context.ReportDiagnostic(Diagnostic.Create(
-                                    DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
-                                    context.Symbol.Locations[0],
-                                    type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                        {
+                            context.ReportDiagnostic(Diagnostic.Create(
+                                DiagnosticDescriptors.ComponentParameterCaptureUnmatchedValuesMustBeUnique,
+                                context.Symbol.Locations[0],
+                                type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat),
+                                Environment.NewLine,
+                                string.Join(
                                     Environment.NewLine,
-                                    string.Join(
-                                        Environment.NewLine,
-                                        captureUnmatchedValuesParameters.Select(p => p.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)).OrderBy(n => n))));
-                            }
-                        });
-                    }
+                                    captureUnmatchedValuesParameters.Select(p => p.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat)).OrderBy(n => n))));
+                        }
+                    });
                 }, SymbolKind.NamedType);
             });
         }
