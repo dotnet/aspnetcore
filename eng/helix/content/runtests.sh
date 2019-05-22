@@ -28,7 +28,7 @@ export DOTNET_CLI_HOME="$DIR/.home$RANDOM"
 export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
 
 # Used by SkipOnHelix attribute
-export HELIX="$helix_queue_name"
+export helix="$helix_queue_name"
 
 
 RESET="\033[0m"
