@@ -30,8 +30,8 @@ Write-Host "Starting download of NodeJs ${Version} from $url"
 Invoke-WebRequest -UseBasicParsing -Uri "$url" -OutFile "nodejs.zip"
 Write-Host "Done downloading NodeJS ${Version}"
 
-mkdir nodejs -Force
-$temp_dir = Join-Path (Get-Location) nodejs
+$temp_dir = Join-Path ([System.IO.Path]::GetTempPath()) [System.Guid]::NewGuid()
+mkdir $temp_dir -Force
 Write-Host "Extracting to $temp_dir"
 
 if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
