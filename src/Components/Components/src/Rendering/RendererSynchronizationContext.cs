@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Task Invoke(Action action)
         {
             var completion = new TaskCompletionSource<object>();
-            Post(_ =>
+            ExecuteSynchronouslyIfPossible(_ =>
             {
                 try
                 {
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Task InvokeAsync(Func<Task> asyncAction)
         {
             var completion = new TaskCompletionSource<object>();
-            Post(async (_) =>
+            ExecuteSynchronouslyIfPossible(async (_) =>
             {
                 try
                 {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Task<TResult> Invoke<TResult>(Func<TResult> function)
         {
             var completion = new TaskCompletionSource<TResult>();
-            Post(_ =>
+            ExecuteSynchronouslyIfPossible(_ =>
             {
                 try
                 {
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> asyncFunction)
         {
             var completion = new TaskCompletionSource<TResult>();
-            Post(async (_) =>
+            ExecuteSynchronouslyIfPossible(async (_) =>
             {
                 try
                 {
@@ -130,24 +130,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
         }
 
         // asynchronously runs the callback
+        //
+        // NOTE: this must always run async. It's not legal here to execute the work item synchronously.
         public override void Post(SendOrPostCallback d, object state)
         {
-            TaskCompletionSource<object> completion;
             lock (_state.Lock)
             {
-                if (!_state.Task.IsCompleted)
-                {
-                    _state.Task = Enqueue(_state.Task, d, state);
-                    return;
-                }
-
-                // We can execute this synchronously because nothing is currently running
-                // or queued.
-                completion = new TaskCompletionSource<object>();
-                _state.Task = completion.Task;
+                _state.Task = Enqueue(_state.Task, d, state, forceAsync: true);
             }
-
-            ExecuteSynchronously(completion, d, state);
         }
 
         // synchronously runs the callback
@@ -177,10 +167,33 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return new RendererSynchronizationContext(_state);
         }
 
-        private Task Enqueue(Task antecedant, SendOrPostCallback d, object state)
+        // Similar to Post, but it can runs the work item synchronously if the context is not busy.
+        //
+        // This is the main code path used by components, we want to be able to run async work but only dispatch
+        // if necessary.
+        private void ExecuteSynchronouslyIfPossible(SendOrPostCallback d, object state)
         {
-            // If we get here is means that a callback is being queued while something is currently executing
-            // in this context. Let's instead add it to the queue and yield.
+            TaskCompletionSource<object> completion;
+            lock (_state.Lock)
+            {
+                if (!_state.Task.IsCompleted)
+                {
+                    _state.Task = Enqueue(_state.Task, d, state);
+                    return;
+                }
+
+                // We can execute this synchronously because nothing is currently running
+                // or queued.
+                completion = new TaskCompletionSource<object>();
+                _state.Task = completion.Task;
+            }
+
+            ExecuteSynchronously(completion, d, state);
+        }
+
+        private Task Enqueue(Task antecedant, SendOrPostCallback d, object state, bool forceAsync = false)
+        {
+            // If we get here is means that a callback is being explicitly queued. Let's instead add it to the queue and yield.
             //
             // We use our own queue here to maintain the execution order of the callbacks scheduled here. Also
             // we need a queue rather than just scheduling an item in the thread pool - those items would immediately
@@ -194,13 +207,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 executionContext = ExecutionContext.Capture();
             }
 
+            var flags = forceAsync ? TaskContinuationOptions.RunContinuationsAsynchronously : TaskContinuationOptions.None;
             return antecedant.ContinueWith(BackgroundWorkThunk, new WorkItem()
             {
                 SynchronizationContext = this,
                 ExecutionContext = executionContext,
                 Callback = d,
                 State = state,
-            }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Current);
+            }, CancellationToken.None, flags, TaskScheduler.Current);
         }
 
         private void ExecuteSynchronously(

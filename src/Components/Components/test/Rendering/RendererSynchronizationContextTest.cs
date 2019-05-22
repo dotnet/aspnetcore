@@ -1,8 +1,9 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
@@ -16,34 +17,51 @@ namespace Microsoft.AspNetCore.Components.Rendering
         public TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
 
         [Fact]
-        public void Post_CanRunSynchronously_WhenNotBusy()
+        public void Post_RunsAsynchronously_WhenNotBusy()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
             var thread = Thread.CurrentThread;
             Thread capturedThread = null;
 
+            var e = new ManualResetEventSlim();
+            
             // Act
             context.Post((_) =>
             {
                 capturedThread = Thread.CurrentThread;
+
+                e.Set();
             }, null);
 
             // Assert
-            Assert.Same(thread, capturedThread);
+            Assert.True(e.Wait(Timeout), "timeout");
+            Assert.NotSame(thread, capturedThread);
         }
 
         [Fact]
-        public void Post_CanRunSynchronously_WhenNotBusy_Exception()
+        public void Post_RunsAynchronously_WhenNotBusy_Exception()
         {
             // Arrange
             var context = new RendererSynchronizationContext();
 
-            // Act & Assert
-            Assert.Throws<InvalidTimeZoneException>(() => context.Post((_) =>
+            Exception exception = null;
+            context.UnhandledException += (sender, e) =>
+            {
+                exception = (InvalidTimeZoneException)e.ExceptionObject;
+            };
+
+            // Act
+            context.Post((_) =>
             {
                 throw new InvalidTimeZoneException();
-            }, null));
+            }, null);
+
+            // Assert
+            //
+            // Use another item to 'push through' the throwing one
+            context.Send((_) => { }, null);
+            Assert.NotNull(exception);
         }
 
         [Fact]
