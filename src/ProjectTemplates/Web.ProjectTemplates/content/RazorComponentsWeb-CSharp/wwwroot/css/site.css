@@ -27,7 +27,12 @@ app {
     .main .top-row {
         background-color: #e6e6e6;
         border-bottom: 1px solid #d6d5d5;
+        justify-content: flex-end;
     }
+
+        .main .top-row > a {
+            margin-left: 1.5rem;
+        }
 
 .sidebar {
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
