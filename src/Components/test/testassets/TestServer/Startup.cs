@@ -30,6 +30,12 @@ namespace TestServer
             });
             services.AddServerSideBlazor();
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("NameMustStartWithB", policy =>
+                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

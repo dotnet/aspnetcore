@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CascadingAuthenticationState_Unauthenticated()
         {
-            SignInAs(null);
+            SignInAs(null, null);
 
             var appElement = MountAndNavigateToAuthTest(CascadingAuthenticationStateLink);
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void CascadingAuthenticationState_Authenticated()
         {
-            SignInAs("someone cool");
+            SignInAs("someone cool", null);
 
             var appElement = MountAndNavigateToAuthTest(CascadingAuthenticationStateLink);
 
@@ -56,18 +56,56 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         [Fact]
         public void AuthorizeViewCases_NoAuthorizationRule_Unauthenticated()
         {
-            SignInAs(null);
-            MountAndNavigateToAuthTest(AuthorizeViewCases);
+            SignInAs(null, null);
+            var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
             WaitUntilExists(By.CssSelector("#no-authorization-rule .not-authorized"));
+            Browser.Equal("You're not authorized, anonymous", () =>
+                appElement.FindElement(By.CssSelector("#no-authorization-rule .not-authorized")).Text);
         }
 
         [Fact]
         public void AuthorizeViewCases_NoAuthorizationRule_Authenticated()
         {
-            SignInAs("Some User");
+            SignInAs("Some User", null);
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
             Browser.Equal("Welcome, Some User!", () =>
                 appElement.FindElement(By.CssSelector("#no-authorization-rule .authorized")).Text);
+        }
+
+        [Fact]
+        public void AuthorizeViewCases_RequireRole_Authenticated()
+        {
+            SignInAs("Some User", "IrrelevantRole,TestRole");
+            var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
+            Browser.Equal("Welcome, Some User!", () =>
+                appElement.FindElement(By.CssSelector("#authorize-role .authorized")).Text);
+        }
+
+        [Fact]
+        public void AuthorizeViewCases_RequireRole_Unauthenticated()
+        {
+            SignInAs("Some User", "IrrelevantRole");
+            var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
+            Browser.Equal("You're not authorized, Some User", () =>
+                appElement.FindElement(By.CssSelector("#authorize-role .not-authorized")).Text);
+        }
+
+        [Fact]
+        public void AuthorizeViewCases_RequirePolicy_Authenticated()
+        {
+            SignInAs("Bert", null);
+            var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
+            Browser.Equal("Welcome, Bert!", () =>
+                appElement.FindElement(By.CssSelector("#authorize-policy .authorized")).Text);
+        }
+
+        [Fact]
+        public void AuthorizeViewCases_RequirePolicy_Unauthenticated()
+        {
+            SignInAs("Mallory", null);
+            var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
+            Browser.Equal("You're not authorized, Mallory", () =>
+                appElement.FindElement(By.CssSelector("#authorize-policy .not-authorized")).Text);
         }
 
         IWebElement MountAndNavigateToAuthTest(string authLinkText)
@@ -79,12 +117,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             return appElement;
         }
 
-        void SignInAs(string usernameOrNull)
+        void SignInAs(string usernameOrNull, string rolesOrNull)
         {
             const string authenticationPageUrl = "/Authentication";
             var baseRelativeUri = usernameOrNull == null
                 ? $"{authenticationPageUrl}?signout=true"
-                : $"{authenticationPageUrl}?username={usernameOrNull}";
+                : $"{authenticationPageUrl}?username={usernameOrNull}&roles={rolesOrNull}";
             Navigate(baseRelativeUri);
             WaitUntilExists(By.CssSelector("h1#authentication"));
         }

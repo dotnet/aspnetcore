@@ -11,7 +11,39 @@
             <p class="authorized">Welcome, @context.User.Identity.Name!</p>
         </Authorized>
         <NotAuthorized>
-            <p class="not-authorized">You're not logged in.</p>
+            <p class="not-authorized">You're not authorized, @(context.User.Identity.Name ?? "anonymous")</p>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+<div id="authorize-role">
+    <h3>Scenario: Require role</h3>
+
+    <AuthorizeView Roles="TestRole">
+        <Authorizing>
+            <p class="authorizing">Authorizing...</p>
+        </Authorizing>
+        <Authorized>
+            <p class="authorized">Welcome, @context.User.Identity.Name!</p>
+        </Authorized>
+        <NotAuthorized>
+            <p class="not-authorized">You're not authorized, @(context.User.Identity.Name ?? "anonymous")</p>
+        </NotAuthorized>
+    </AuthorizeView>
+</div>
+
+<div id="authorize-policy">
+    <h3>Scenario: Require policy</h3>
+
+    <AuthorizeView Policy="NameMustStartWithB">
+        <Authorizing>
+            <p class="authorizing">Authorizing...</p>
+        </Authorizing>
+        <Authorized>
+            <p class="authorized">Welcome, @context.User.Identity.Name!</p>
+        </Authorized>
+        <NotAuthorized>
+            <p class="not-authorized">You're not authorized, @(context.User.Identity.Name ?? "anonymous")</p>
         </NotAuthorized>
     </AuthorizeView>
 </div>
