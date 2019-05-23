@@ -253,9 +253,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     throw new InvalidOperationException($"The {nameof(HubConnection)} cannot be started while {nameof(StopAsync)} is running.");
                 }
 
-                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _state.StopCts.Token))
+                using (CreateLinkedToken(cancellationToken, _state.StopCts.Token, out var linkedToken))
                 {
-                    await StartAsyncCore(cancellationToken);
+                    await StartAsyncCore(linkedToken);
                 }
 
                 _state.ChangeState(HubConnectionState.Connecting, HubConnectionState.Connected);
@@ -1030,11 +1030,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             try
             {
                 // cancellationToken already contains _state.StopCts.Token, so we don't have to link it again
-                using (var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, handshakeCts.Token))
+                using (CreateLinkedToken(cancellationToken, handshakeCts.Token, out var linkedToken))
                 {
                     while (true)
                     {
-                        var result = await input.ReadAsync(cts.Token);
+                        var result = await input.ReadAsync(linkedToken);
 
                         var buffer = result.Buffer;
                         var consumed = buffer.Start;
@@ -1506,6 +1506,26 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
+        private IDisposable CreateLinkedToken(CancellationToken token1, CancellationToken token2, out CancellationToken linkedToken)
+        {
+            if (!token1.CanBeCanceled)
+            {
+                linkedToken = token2;
+                return null;
+            }
+            else if (!token2.CanBeCanceled)
+            {
+                linkedToken = token1;
+                return null;
+            }
+            else
+            {
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(token1, token2);
+                linkedToken = cts.Token;
+                return cts;
+            }
+        }
+
         // Debug.Assert plays havoc with Unit Tests. But I want something that I can "assert" only in Debug builds.
         [Conditional("DEBUG")]
         private static void SafeAssert(bool condition, string message, [CallerMemberName] string memberName = null, [CallerFilePath] string fileName = null, [CallerLineNumber] int lineNumber = 0)
@@ -1515,7 +1535,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new Exception($"Assertion failed in {memberName}, at {fileName}:{lineNumber}: {message}");
             }
         }
-
 
         private class Subscription : IDisposable
         {
