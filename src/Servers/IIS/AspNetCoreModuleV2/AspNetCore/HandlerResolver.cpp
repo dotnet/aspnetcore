@@ -73,10 +73,10 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
 
             hr = FindNativeAssemblyFromHostfxr(*options, pstrHandlerDllName, handlerDllPath, pApplication, pConfiguration, redirectionOutput, errorContext);
 
+            auto output = redirectionOutput->GetOutput();
+
             if (FAILED_LOG(hr))
             {
-                auto output = redirectionOutput->GetOutput();
-
                 EventLog::Error(
                     ASPNETCORE_EVENT_GENERAL_ERROR,
                     ASPNETCORE_EVENT_INPROCESS_RH_ERROR_MSG,

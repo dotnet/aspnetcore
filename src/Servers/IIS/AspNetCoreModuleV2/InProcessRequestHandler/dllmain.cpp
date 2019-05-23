@@ -144,7 +144,7 @@ CreateApplication(
                     30i16,
                     "ANCM In-Process Start Failure",
                     "<ul><li>The application failed to start</li><li>The application started but then stopped</li><li>The application started but threw an exception during startup</li></ul>",
-                    std::move(g_errorPageContent)),
+                    g_errorPageContent),
                 500i16,
                 30i16,
                 "Internal Server Error");

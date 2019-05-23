@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -795,7 +796,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult, string error)
         {
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            HttpResponseMessage response = null;
+
+            // Make sure strings aren't freed.
+            for (var i = 0; i < 2; i++)
+            {
+                response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            }
+
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
             Assert.Contains(error, await response.Content.ReadAsStringAsync());
             StopServer();

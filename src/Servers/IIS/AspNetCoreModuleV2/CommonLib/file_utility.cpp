@@ -168,13 +168,13 @@ Finished:
     return hr;
 }
 
-std::string FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, std::string speicificReasonPhrase, std::string solution)
+std::string FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& speicificReasonPhrase, const std::string& solution)
 {
     return GetHtml(module, page, statusCode, subStatusCode, speicificReasonPhrase, solution, std::string());
 }
 
 std::string
-FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, std::string specificReasonPhrase, std::string solution, std::string error)
+FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& specificReasonPhrase, const std::string& errorReason, const std::string& specificError)
 {
     try
     {
@@ -198,17 +198,19 @@ FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subSta
             additionalHtml = format("<a href=\"%S\"> <cite> %S </cite></a> and ", additionalErrorLink->c_str(), additionalErrorLink->c_str());
         }
 
-        if (!error.empty())
+        std::string formattedError;
+        if (!specificError.empty())
         {
-            error = format("<h2>Specific error detected by ANCM:</h2><h3>%s</h3>", error.c_str());
+            formattedError = format("<h2>Specific error detected by ANCM:</h2><h3>%s</h3>", specificError.c_str());
         }
 
-        if (!solution.empty())
+        std::string formattedErrorReason;
+        if (!errorReason.empty())
         {
-            solution = format("<h2> Common solutions to this issue: </h2>%s", solution.c_str());
+            formattedErrorReason = format("<h2> Common solutions to this issue: </h2>%s", errorReason.c_str());
         }
 
-        return format(data, statusCode, subStatusCode, specificReasonPhrase.c_str(), statusCode, subStatusCode, specificReasonPhrase.c_str(), solution.c_str(), error.c_str(), additionalHtml.c_str());
+        return format(data, statusCode, subStatusCode, specificReasonPhrase.c_str(), statusCode, subStatusCode, specificReasonPhrase.c_str(), formattedErrorReason.c_str(), formattedError.c_str(), additionalHtml.c_str());
     }
     catch (...)
     {
