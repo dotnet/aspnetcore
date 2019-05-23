@@ -1,7 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -160,6 +157,32 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal(2, dataSource.Endpoints.Count);
                 Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<IAuthorizeData>());
                 Assert.NotNull(dataSource.Endpoints[1].Metadata.GetMetadata<IAuthorizeData>());
+            }
+
+            Assert.Equal(0, authCount);
+        }
+
+        [Fact]
+        public void MapHubEndPointRoutingFindsAttributesOnHubAndFromOptions()
+        {
+            var authCount = 0;
+            HttpConnectionDispatcherOptions configuredOptions = null;
+            using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapHub<AuthHub>("/path", options =>
+            {
+                authCount += options.AuthorizationData.Count;
+                options.AuthorizationData.Add(new AuthorizeAttribute());
+                configuredOptions = options;
+            })))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(2, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(2, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+
+                Assert.Empty(configuredOptions.AuthorizationData);
             }
 
             Assert.Equal(0, authCount);

@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             services.AddAuthorization();
 
-            services.AddSingleton<IAuthorizationHandler, Auth>();
+            services.AddSingleton<IAuthorizationHandler, TestAuthHandler>();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -100,34 +100,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var credentials = new SigningCredentials(SecurityKey, SecurityAlgorithms.HmacSha256);
             var token = new JwtSecurityToken("SignalRTestServer", "SignalRTests", claims, expires: DateTime.UtcNow.AddMinutes(1), signingCredentials: credentials);
             return JwtTokenHandler.WriteToken(token);
-        }
-    }
-
-    public class Auth : IAuthorizationHandler
-    {
-        public Task HandleAsync(AuthorizationHandlerContext context)
-        {
-            foreach (var req in context.Requirements)
-            {
-                context.Succeed(req);
-            }
-
-            var hasClaim = context.User.HasClaim(o =>
-            {
-                return o.Type == ClaimTypes.NameIdentifier && true;
-            });
-
-            if (!hasClaim)
-            {
-                context.Fail();
-            }
-
-            if (!context.User.HasClaim(ClaimTypes.NameIdentifier, "bob"))
-            {
-                context.Fail();
-            }
-
-            return Task.CompletedTask;
         }
     }
 }
