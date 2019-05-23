@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Threading;
@@ -19,6 +20,10 @@ namespace Microsoft.AspNetCore.Components.Test
 {
     public class RendererTest
     {
+        // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
+        // failures.
+        private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+
         private const string EventActionsName = nameof(NestedAsyncComponent.EventActions);
         private const string WhatToRenderName = nameof(NestedAsyncComponent.WhatToRender);
         private const string LogName = nameof(NestedAsyncComponent.Log);
@@ -2458,13 +2463,17 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CallsAfterRenderAfterTheUIHasFinishedUpdatingAsynchronously()
         {
             // Arrange
+            var @event = new ManualResetEventSlim();
             var tcs = new TaskCompletionSource<object>();
             var afterRenderTcs = new TaskCompletionSource<object>();
             var onAfterRenderCallCountLog = new List<int>();
-            var component = new AsyncAfterRenderComponent(afterRenderTcs.Task);
+            var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
+            {
+                OnAfterRenderComplete = () => @event.Set(),
+            };
             var renderer = new AsyncUpdateTestRenderer()
             {
-                OnUpdateDisplayAsync = _ => tcs.Task
+                OnUpdateDisplayAsync = _ => tcs.Task,
             };
             renderer.AssignRootComponentId(component);
 
@@ -2472,6 +2481,9 @@ namespace Microsoft.AspNetCore.Components.Test
             component.TriggerRender();
             tcs.SetResult(null);
             afterRenderTcs.SetResult(null);
+
+            // We need to wait here because the completions from SetResult will be scheduled.
+            @event.Wait(Timeout);
 
             // Assert
             Assert.True(component.Called);
@@ -2481,9 +2493,13 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CallsAfterRenderAfterTheUIHasFinishedUpdatingSynchronously()
         {
             // Arrange
+            var @event = new ManualResetEventSlim();
             var afterRenderTcs = new TaskCompletionSource<object>();
             var onAfterRenderCallCountLog = new List<int>();
-            var component = new AsyncAfterRenderComponent(afterRenderTcs.Task);
+            var component = new AsyncAfterRenderComponent(afterRenderTcs.Task)
+            {
+                OnAfterRenderComplete = () => @event.Set(),
+            };
             var renderer = new AsyncUpdateTestRenderer()
             {
                 OnUpdateDisplayAsync = _ => Task.CompletedTask
@@ -2493,6 +2509,9 @@ namespace Microsoft.AspNetCore.Components.Test
             // Act
             component.TriggerRender();
             afterRenderTcs.SetResult(null);
+
+            // We need to wait here because the completions from SetResult will be scheduled.
+            @event.Wait(Timeout);
 
             // Assert
             Assert.True(component.Called);
@@ -2798,7 +2817,12 @@ namespace Microsoft.AspNetCore.Components.Test
             // code paths are special cased for the first render because of prerendering.
 
             // Arrange
-            var renderer = new TestRenderer { ShouldHandleExceptions = true };
+            var @event = new ManualResetEventSlim();
+            var renderer = new TestRenderer()
+            {
+                ShouldHandleExceptions = true,
+                OnExceptionHandled = () => { @event.Set(); },
+            };
             var taskToAwait = Task.CompletedTask;
             var component = new TestComponent(builder =>
             {
@@ -2815,7 +2839,12 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act
             var exception = new InvalidOperationException();
+
+            @event.Reset();
             asyncExceptionTcs.SetException(exception);
+
+            // We need to wait here because the continuations of SetException will be scheduled to run asynchronously.
+            @event.Wait(Timeout);
 
             // Assert
             Assert.Same(exception, Assert.Single(renderer.HandledExceptions).GetBaseException());
@@ -3829,10 +3858,14 @@ namespace Microsoft.AspNetCore.Components.Test
 
             public bool Called { get; private set; }
 
+            public Action OnAfterRenderComplete { get; set; }
+
             public async Task OnAfterRenderAsync()
             {
                 await _task;
                 Called = true;
+
+                OnAfterRenderComplete?.Invoke();
             }
 
             protected override void BuildRenderTree(RenderTreeBuilder builder)
