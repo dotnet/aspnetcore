@@ -1,12 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Xunit;
 
@@ -19,12 +17,12 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         {
             // Arrange
             var skipStatusCodeAttribute = new SkipStatusCodePagesAttribute();
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { skipStatusCodeAttribute });
+            var resultExecutingContext = CreateResultExecutingContext(new IFilterMetadata[] { skipStatusCodeAttribute });
             var statusCodePagesFeature = new TestStatusCodeFeature();
-            resourceExecutingContext.HttpContext.Features.Set<IStatusCodePagesFeature>(statusCodePagesFeature);
+            resultExecutingContext.HttpContext.Features.Set<IStatusCodePagesFeature>(statusCodePagesFeature);
 
             // Act
-            skipStatusCodeAttribute.OnResourceExecuting(resourceExecutingContext);
+            skipStatusCodeAttribute.OnResultExecuting(resultExecutingContext);
 
             // Assert
             Assert.False(statusCodePagesFeature.Enabled);
@@ -35,18 +33,19 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
         {
             // Arrange
             var skipStatusCodeAttribute = new SkipStatusCodePagesAttribute();
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { skipStatusCodeAttribute });
+            var resultExecutingContext = CreateResultExecutingContext(new IFilterMetadata[] { skipStatusCodeAttribute });
 
             // Act
-            skipStatusCodeAttribute.OnResourceExecuting(resourceExecutingContext);
+            skipStatusCodeAttribute.OnResultExecuting(resultExecutingContext);
         }
 
-        private static ResourceExecutingContext CreateResourceExecutingContext(IFilterMetadata[] filters)
+        private static ResultExecutingContext CreateResultExecutingContext(IFilterMetadata[] filters)
         {
-            return new ResourceExecutingContext(
+            return new ResultExecutingContext(
                 CreateActionContext(),
                 filters,
-                new List<IValueProviderFactory>());
+                null,
+                new object());
         }
 
         private static ActionContext CreateActionContext()

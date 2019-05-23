@@ -11,15 +11,16 @@ namespace Microsoft.AspNetCore.Mvc
     /// A filter that prevents execution of the StatusCodePages middleware.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter
+    public class SkipStatusCodePagesAttribute : Attribute, IAlwaysRunResultFilter
     {
         /// <inheritdoc />
-        public void OnResourceExecuted(ResourceExecutedContext context)
+        public void OnResultExecuted(ResultExecutedContext context)
         {
+            // Intentionally empty.
         }
 
         /// <inheritdoc />
-        public void OnResourceExecuting(ResourceExecutingContext context)
+        public void OnResultExecuting(ResultExecutingContext context)
         {
             if (context == null)
             {
