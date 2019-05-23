@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Description>Common primitives for ASP.NET Connection Handlers and clients</Description>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard2.1</TargetFrameworks>
     <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <RootNamespace>Microsoft.AspNetCore.Http.Connections</RootNamespace>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'" >
+    <Reference Include="System.Text.Json" />
+  </ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'" >
     <Reference Include="System.Text.Json" />
   </ItemGroup>
 
