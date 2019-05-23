@@ -381,7 +381,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore-Internal/issues/2490", Queues = "Windows.7.Amd64.Open")]
         public async Task OnAuthenticate_SeesOtherSettings()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -409,7 +408,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.None,
+                            enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
                             checkCertificateRevocation: false);
                 }
             }
@@ -418,7 +417,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         }
 
         [ConditionalFact]
-        [SkipOnHelix("https://github.com/aspnet/AspNetCore-Internal/issues/2490", Queues = "Windows.7.Amd64.Open")]
         public async Task OnAuthenticate_CanSetSettings()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -449,7 +447,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.None,
+                            enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
                             checkCertificateRevocation: false);
                 }
             }
