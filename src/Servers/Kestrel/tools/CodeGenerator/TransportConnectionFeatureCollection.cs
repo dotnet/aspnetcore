@@ -15,8 +15,7 @@ namespace CodeGenerator
                 "IConnectionTransportFeature",
                 "IConnectionItemsFeature",
                 "IMemoryPoolFeature",
-                "IConnectionLifetimeFeature",
-                "IConnectionLifetimeNotificationFeature",
+                "IConnectionLifetimeFeature"
             };
 
             var usings = $@"

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Connections
     {
         EndPoint EndPoint { get; }
 
-        ValueTask<ConnectionContext> AcceptAsync();
+        ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default);
 
         ValueTask StopAsync(CancellationToken cancellationToken = default);
 

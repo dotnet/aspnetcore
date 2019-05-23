@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
@@ -32,9 +33,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public LibuvThread Thread { get; set; }
 
-        public ValueTask<LibuvConnection> AcceptAsync()
+        public ValueTask<LibuvConnection> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            return _acceptQueue.Reader.ReadAsync();
+            return _acceptQueue.Reader.ReadAsync(cancellationToken);
         }
 
         /// <summary>

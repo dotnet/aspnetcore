@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Setup(transport => transport.AcceptAsync())
                 .Returns(new ValueTask<ConnectionContext>((ConnectionContext)null));
             mockTransport
-                .Setup(transport => transport.StopAsync(It.IsAny<CancellationToken>()))
+                .Setup(transport => transport.StopListeningAsync(It.IsAny<CancellationToken>()))
                 .Returns(async () => await stop.WaitAsync());
 
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).DefaultTimeout();
 
-            mockTransport.Verify(transport => transport.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockTransport.Verify(transport => transport.StopListeningAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         //[Fact]

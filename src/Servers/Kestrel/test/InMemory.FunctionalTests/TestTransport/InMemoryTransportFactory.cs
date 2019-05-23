@@ -21,9 +21,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             _acceptQueue.Writer.TryWrite(connection);
         }
 
-        public async ValueTask<ConnectionContext> AcceptAsync()
+        public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            if (await _acceptQueue.Reader.WaitToReadAsync())
+            if (await _acceptQueue.Reader.WaitToReadAsync(cancellationToken))
             {
                 while (_acceptQueue.Reader.TryRead(out var item))
                 {

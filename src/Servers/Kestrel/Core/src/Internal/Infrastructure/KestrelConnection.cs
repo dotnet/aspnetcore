@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Connections.Features;
@@ -10,7 +11,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature
+    internal class KestrelConnection : IConnectionHeartbeatFeature, IConnectionCompleteFeature, IConnectionLifetimeNotificationFeature
     {
         private List<(Action<object> handler, object state)> _heartbeatHandlers;
         private readonly object _heartbeatLock = new object();
@@ -18,17 +19,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
         private bool _completed;
 
+        private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
+
         public KestrelConnection(ConnectionContext connectionContext, ILogger logger)
         {
             Logger = logger;
             TransportConnection = connectionContext;
             connectionContext.Features.Set<IConnectionHeartbeatFeature>(this);
             connectionContext.Features.Set<IConnectionCompleteFeature>(this);
+            connectionContext.Features.Set<IConnectionLifetimeNotificationFeature>(this);
+            ConnectionClosedRequested = _connectionClosingCts.Token;
         }
 
         private ILogger Logger { get; }
 
         public ConnectionContext TransportConnection { get; set; }
+        public CancellationToken ConnectionClosedRequested { get; set; }
 
         public void TickHeartbeat()
         {
@@ -133,6 +139,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 {
                     Logger.LogError(ex, "An error occured running an IConnectionCompleteFeature.OnCompleted callback.");
                 }
+            }
+        }
+
+        public void RequestClose()
+        {
+            try
+            {
+                _connectionClosingCts.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                // There's a race where the token could be disposed
+                // swallow the exception and no-op
             }
         }
     }

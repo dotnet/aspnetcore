@@ -14,8 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
                                                IConnectionTransportFeature,
                                                IConnectionItemsFeature,
                                                IMemoryPoolFeature,
-                                               IConnectionLifetimeFeature,
-                                               IConnectionLifetimeNotificationFeature
+                                               IConnectionLifetimeFeature
     {
         // NOTE: When feature interfaces are added to or removed from this TransportConnection class implementation,
         // then the list of `features` in the generated code project MUST also be updated.
@@ -41,14 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => ConnectionClosed = value;
         }
 
-        CancellationToken IConnectionLifetimeNotificationFeature.ConnectionClosedRequested
-        {
-            get => ConnectionClosedRequested;
-            set => ConnectionClosedRequested = value;
-        }
-
         void IConnectionLifetimeFeature.Abort() => Abort(new ConnectionAbortedException("The connection was aborted by the application via IConnectionLifetimeFeature.Abort()."));
-
-        void IConnectionLifetimeNotificationFeature.RequestClose() => RequestClose();
     }
 }

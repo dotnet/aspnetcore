@@ -149,7 +149,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
 
             _connectionClosedTokenSource.Dispose();
-            _connectionClosingCts.Dispose();
 
             Transport.Input.Complete();
             Transport.Output.Complete();

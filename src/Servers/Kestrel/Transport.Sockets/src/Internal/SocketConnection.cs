@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 {
-    internal class SocketConnection : TransportConnection
+    internal sealed class SocketConnection : TransportConnection
     {
         private static readonly int MinAllocBufferSize = KestrelMemoryPool.MinimumSegmentSize / 2;
         private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
@@ -121,7 +121,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             Transport.Output.Complete();
 
             _connectionClosedTokenSource.Dispose();
-            _connectionClosingCts.Dispose();
         }
 
         private async Task DoReceive()

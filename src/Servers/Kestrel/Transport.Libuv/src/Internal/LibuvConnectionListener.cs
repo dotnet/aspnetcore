@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false) == task;
         }
 
-        public async ValueTask<ConnectionContext> AcceptAsync()
+        public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
             if (await _acceptEnumerator.MoveNextAsync())
             {

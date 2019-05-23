@@ -1,8 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -10,6 +12,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     {
         private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
         private readonly IKestrelTrace _trace;
+        private TaskCompletionSource<object> _connectionDrainedTcs;
+        private int _connectionCount;
 
         public ConnectionManager(IKestrelTrace trace, long? upgradedConnectionLimit)
             : this(trace, GetCounter(upgradedConnectionLimit))
@@ -29,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void AddConnection(long id, KestrelConnection connection)
         {
+            Interlocked.Increment(ref _connectionCount);
             if (!_connectionReferences.TryAdd(id, new ConnectionReference(connection)))
             {
                 throw new ArgumentException(nameof(id));
@@ -41,6 +46,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             {
                 throw new ArgumentException(nameof(id));
             }
+            var count = Interlocked.Decrement(ref _connectionCount);
+
+            if (count == 0 && _connectionDrainedTcs != null)
+            {
+                _connectionDrainedTcs.TrySetResult(null);
+            }
+        }
+
+        // This method should be called when no new connections can be added
+        public bool TryStartDrainingConnection()
+        {
+            if (_connectionCount == 0)
+            {
+                return false;
+            }
+
+            _connectionDrainedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            return true;
+        }
+
+        public Task WaitForConnectionDrainAsync()
+        {
+            if (_connectionDrainedTcs == null)
+            {
+                throw new InvalidOperationException("TryStartDrainingConnection must be called before WaitForConnectionDrainAsync()");
+            }
+
+            return _connectionDrainedTcs.Task;
         }
 
         public void Walk(Action<KestrelConnection> callback)

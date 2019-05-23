@@ -16,13 +16,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
     public abstract partial class TransportConnection : ConnectionContext
     {
         private IDictionary<object, object> _items;
-        protected readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
 
         public TransportConnection()
         {
             FastReset();
-
-            ConnectionClosedRequested = _connectionClosingCts.Token;
         }
 
         public override EndPoint LocalEndPoint { get; set; }
@@ -57,8 +54,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 
         public override CancellationToken ConnectionClosed { get; set; }
 
-        public CancellationToken ConnectionClosedRequested { get; set; }
-
         // DO NOT remove this override to ConnectionContext.Abort. Doing so would cause
         // any TransportConnection that does not override Abort or calls base.Abort
         // to stack overflow when IConnectionLifetimeFeature.Abort() is called.
@@ -68,19 +63,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public override void Abort(ConnectionAbortedException abortReason)
         {
             Output.CancelPendingRead();
-        }
-
-        public void RequestClose()
-        {
-            try
-            {
-                _connectionClosingCts.Cancel();
-            }
-            catch (ObjectDisposedException)
-            {
-                // There's a race where the token could be disposed
-                // swallow the exception and no-op
-            }
         }
     }
 }

@@ -189,6 +189,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
+                if (ConnectionManager.TryStartDrainingConnection())
+                {
+                    if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
+                    {
+                        Trace.NotAllConnectionsClosedGracefully();
+
+                        if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
+                        {
+                            Trace.NotAllConnectionsAborted();
+                        }
+                    }
+                }
+
+                for (int i = 0; i < _transports.Count; i++)
+                {
+                    tasks[i] = _transports[i].DisposeAsync().AsTask();
+                }
+
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+
                 ServiceContext.Heartbeat?.Dispose();
             }
             catch (Exception ex)
