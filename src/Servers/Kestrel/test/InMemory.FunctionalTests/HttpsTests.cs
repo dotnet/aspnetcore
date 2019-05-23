@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task OnAuthenticate_SeesOtherSettings()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
         }
 
-        [ConditionalFact]
+        [Fact]
         public async Task OnAuthenticate_CanSetSettings()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
