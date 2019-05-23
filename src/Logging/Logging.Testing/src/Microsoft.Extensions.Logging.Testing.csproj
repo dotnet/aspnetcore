@@ -10,6 +10,7 @@
     <!-- This is an internal package for testing purposes only. -->
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
   </PropertyGroup>
 
   <ItemGroup>
