@@ -271,13 +271,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"),
                 true);
 
-            if (DeployerSelector.IsForwardsCompatibilityTest)
+            if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
             }
             else
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
             }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                            });
             var deploymentResult = await DeployAsync(deploymentParameters);
 
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.32 - ANCM Failed to Load dll");
         }
 
         [ConditionalFact]
@@ -328,13 +328,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             // We don't distinguish between load failure types so making dll empty should be enough
             File.WriteAllText(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"), "");
 
-            if (DeployerSelector.IsForwardsCompatibilityTest)
+            if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
             }
             else
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
             }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
@@ -347,13 +347,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
-            if (DeployerSelector.IsForwardsCompatibilityTest)
+            if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
             }
             else
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
             }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
@@ -368,17 +368,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             File.Delete(Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll"));
 
-            if (DeployerSelector.IsForwardsCompatibilityTest)
-            {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
-
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
-            }
-            else
+            if (DeployerSelector.HasNewShim)
             {
                 await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.33 - ANCM Request Handler Load Failure ");
 
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
             }
         }
 
