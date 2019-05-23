@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Blazor.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Hosting
@@ -101,6 +103,10 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
                     BaseAddress = new Uri(WebAssemblyUriHelper.Instance.GetBaseUri())
                 };
             });
+
+            // Needed for authorization
+            services.AddOptions();
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(WebAssemblyConsoleLogger<>)));
 
             foreach (var configureServicesAction in _configureServicesActions)
             {
