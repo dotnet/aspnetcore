@@ -40,6 +40,16 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// </summary>
         [Parameter] public RenderFragment NotFoundContent { get; private set; }
 
+        /// <summary>
+        /// The content that will be displayed if the user is not authorized.
+        /// </summary>
+        [Parameter] public RenderFragment<AuthenticationState> NotAuthorizedContent { get; private set; }
+
+        /// <summary>
+        /// The content that will be displayed while asynchronous authorization is in progress.
+        /// </summary>
+        [Parameter] public RenderFragment AuthorizingContent { get; private set; }
+
         private RouteTable Routes { get; set; }
 
         /// <inheritdoc />
@@ -79,8 +89,10 @@ namespace Microsoft.AspNetCore.Components.Routing
         protected virtual void Render(RenderTreeBuilder builder, Type handler, IDictionary<string, object> parameters)
         {
             builder.OpenComponent(0, typeof(PageDisplay));
-            builder.AddAttribute(1, PageDisplay.NameOfPage, handler);
-            builder.AddAttribute(2, PageDisplay.NameOfPageParameters, parameters);
+            builder.AddAttribute(1, nameof(PageDisplay.Page), handler);
+            builder.AddAttribute(2, nameof(PageDisplay.PageParameters), parameters);
+            builder.AddAttribute(3, nameof(PageDisplay.NotAuthorizedContent), NotAuthorizedContent);
+            builder.AddAttribute(4, nameof(PageDisplay.AuthorizingContent), AuthorizingContent);
             builder.CloseComponent();
         }
 

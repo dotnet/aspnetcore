@@ -63,6 +63,11 @@ else
             throw new InvalidOperationException($"When using {nameof(AuthorizeView)}, do not specify both '{nameof(Authorized)}' and '{nameof(ChildContent)}'.");
         }
 
+        if (AuthenticationState == null)
+        {
+            throw new InvalidOperationException($"Authorization requires a cascading parameter of type Task<{nameof(AuthenticationState)}>. Consider using {typeof(CascadingAuthenticationState).Name} to supply this.");
+        }
+
         // First render in pending state
         // If the task has already completed, this render will be skipped
         currentAuthenticationState = null;
