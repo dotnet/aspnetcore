@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -25,11 +26,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         protected SqlStoreOnlyUsersTestBase(ScratchDatabaseFixture fixture)
         {
             _fixture = fixture;
-        }
-
-        protected override bool ShouldSkipDbTests()
-        {
-            return TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
         }
 
         public class TestUserDbContext : IdentityUserContext<TUser, TKey>
@@ -54,9 +50,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override Expression<Func<TUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
 
-        public TestUserDbContext CreateContext()
+        private TestUserDbContext CreateContext()
         {
-            var db = DbUtil.Create<TestUserDbContext>(_fixture.ConnectionString);
+            var db = DbUtil.Create<TestUserDbContext>(_fixture.Connection);
             db.Database.EnsureCreated();
             return db;
         }
@@ -89,7 +85,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         {
             var sqlConn = dbContext.Database.GetDbConnection();
 
-            using (var db = new SqlConnection(sqlConn.ConnectionString))
+            using (var db = new SqliteConnection(sqlConn.ConnectionString))
             {
                 db.Open();
                 Assert.True(DbUtil.VerifyColumns(db, "AspNetUsers", "Id", "UserName", "Email", "PasswordHash", "SecurityStamp",
@@ -104,7 +100,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 DbUtil.VerifyIndex(db, "AspNetUsers", "UserNameIndex", isUnique: true);
                 DbUtil.VerifyIndex(db, "AspNetUsers", "EmailIndex");
 
-                DbUtil.VerifyMaxLength(db, "AspNetUsers", 256, "UserName", "Email", "NormalizeUserName", "NormalizeEmail");
+                DbUtil.VerifyMaxLength(dbContext, "AspNetUsers", 256, "UserName", "Email", "NormalizeUserName", "NormalizeEmail");
 
                 db.Close();
             }

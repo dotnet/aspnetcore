@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         }
 
-        public CustomDbContext<TKey> GetContext<TKey>() where TKey : IEquatable<TKey>
+        private CustomDbContext<TKey> GetContext<TKey>() where TKey : IEquatable<TKey>
         {
-            return DbUtil.Create<CustomDbContext<TKey>>(_fixture.ConnectionString);
+            return DbUtil.Create<CustomDbContext<TKey>>(_fixture.Connection);
         }
 
         public CustomDbContext<TKey> CreateContext<TKey>(bool delete = false) where TKey : IEquatable<TKey>

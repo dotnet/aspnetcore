@@ -23,9 +23,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             _fixture = fixture;
         }
 
-        protected override bool ShouldSkipDbTests()
-            => TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
-
         public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
         {
             public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
@@ -48,9 +45,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             }
         }
 
-        public IdentityDbContext CreateContext(bool delete = false)
+        private IdentityDbContext CreateContext(bool delete = false)
         {
-            var db = DbUtil.Create<IdentityDbContext>(_fixture.ConnectionString);
+            var db = DbUtil.Create<IdentityDbContext>(_fixture.Connection);
             if (delete)
             {
                 db.Database.EnsureDeleted();
@@ -62,13 +59,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         protected override object CreateTestContext()
         {
             return CreateContext();
-        }
-
-        public ApplicationDbContext CreateAppContext()
-        {
-            var db = DbUtil.Create<ApplicationDbContext>(_fixture.ConnectionString);
-            db.Database.EnsureCreated();
-            return db;
         }
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
