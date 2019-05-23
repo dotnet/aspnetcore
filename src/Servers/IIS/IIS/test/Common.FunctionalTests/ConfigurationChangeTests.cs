@@ -72,11 +72,9 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
                 .SetAttributeValue("hostingModel", "inprocess"));
 
             // Have to retry here to allow ANCM to receive notification and react to it
-            // Verify that inprocess application was created and tried to start
-            await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.StatusCode == HttpStatusCode.InternalServerError);
-
-            StopServer();
-            EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.CouldNotFindHandler(), Logger);
+            // Verify that inprocess application was created and started, checking the server
+            // header to see that it is running inprocess
+            await deploymentResult.HttpClient.RetryRequestAsync("/HelloWorld", r => r.Headers.Server.ToString().StartsWith("Microsoft"));
         }
 
         [ConditionalTheory]

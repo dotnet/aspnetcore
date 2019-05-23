@@ -66,7 +66,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
 
             Assert.Equal("null", responseText);
 
-            Assert.Equal(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
+            // Trailing slash
+            Assert.StartsWith(deploymentResult.ContentRoot, await deploymentResult.HttpClient.GetStringAsync("/ContentRootPath"));
             Assert.Equal(deploymentResult.ContentRoot + "\\wwwroot", await deploymentResult.HttpClient.GetStringAsync("/WebRootPath"));
             var expectedDll = "aspnetcorev2.dll";
             Assert.Contains(deploymentResult.HostProcess.Modules.OfType<ProcessModule>(), m => m.FileName.Contains(expectedDll));

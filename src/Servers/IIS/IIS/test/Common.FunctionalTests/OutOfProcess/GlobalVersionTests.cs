@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
             foreach (FileInfo fileInfo in source.GetFiles())
             {
                 var destFileName = Path.Combine(target.FullName, fileInfo.Name);
-                fileInfo.CopyTo(destFileName);
+                fileInfo.CopyTo(destFileName, overwrite: true);
             }
         }
 
