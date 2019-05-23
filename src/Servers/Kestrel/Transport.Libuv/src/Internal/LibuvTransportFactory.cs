@@ -3,24 +3,17 @@
 
 using System;
 using System.Net;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvTransportFactory : IConnectionListenerFactory
+    internal class LibuvTransportFactory : IConnectionListenerFactory
     {
         private readonly LibuvTransportContext _baseTransportContext;
-
-        public LibuvTransportFactory() : this(Options.Create(new LibuvTransportOptions()), new DefaultHostLifetime(), NullLoggerFactory.Instance)
-        {
-
-        }
 
         public LibuvTransportFactory(
             IOptions<LibuvTransportOptions> options,
@@ -82,19 +75,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             var transport = new LibuvConnectionListener(transportContext, endpoint);
             await transport.BindAsync();
             return transport;
-        }
-
-        private class DefaultHostLifetime : IHostApplicationLifetime
-        {
-            public CancellationToken ApplicationStarted => throw new NotSupportedException();
-
-            public CancellationToken ApplicationStopping => throw new NotSupportedException();
-
-            public CancellationToken ApplicationStopped => throw new NotSupportedException();
-
-            public void StopApplication()
-            {
-            }
         }
     }
 }
