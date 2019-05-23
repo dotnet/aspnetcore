@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var connection = new Mock<TransportConnection> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
 
-            dispatcher.OnConnection(connection);
+            _ = dispatcher.OnConnection(connection);
 
             // The scope should be created
             var scopeObjects = ((TestKestrelTrace)serviceContext.Log)

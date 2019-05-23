@@ -62,7 +62,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        private async Task OnConnection(ConnectionContext connection)
+        // Internal for testing
+        internal async Task OnConnection(ConnectionContext connection)
         {
             await using (connection)
             {

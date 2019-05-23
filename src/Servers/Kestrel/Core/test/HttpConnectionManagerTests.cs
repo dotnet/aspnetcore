@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var mock = new Mock<TransportConnection>();
             mock.Setup(m => m.ConnectionId).Returns(connectionId);
-            var httpConnection = new KestrelConnection(mock.Object);
+            var httpConnection = new KestrelConnection(mock.Object, Mock.Of<ILogger>());
 
             httpConnectionManager.AddConnection(0, httpConnection);
 
