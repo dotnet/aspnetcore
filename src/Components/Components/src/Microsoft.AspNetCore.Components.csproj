@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Reference Include="Microsoft.AspNetCore.Authorization" />
     <Reference Include="Microsoft.JSInterop" />
     <Reference Include="System.ComponentModel.Annotations" />
   </ItemGroup>
