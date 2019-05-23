@@ -7,7 +7,13 @@ $ErrorActionPreference = 'Stop'
 function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     $tmpDir = "$PSScriptRoot/$templateName"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
-    dotnet pack
+    Push-Location ..
+    try {
+        dotnet pack
+    }
+    finally {
+        Pop-Location
+    }
 
     Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
 

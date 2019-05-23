@@ -188,11 +188,11 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         {
             using (_logger.BeginScope(_logScope))
             {
-                await StartAsyncCore(transferFormat).ForceAsync();
+                await StartAsyncCore(transferFormat, cancellationToken).ForceAsync();
             }
         }
 
-        private async Task StartAsyncCore(TransferFormat transferFormat)
+        private async Task StartAsyncCore(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             CheckDisposed();
 
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 Log.Starting(_logger);
 
-                await SelectAndStartTransport(transferFormat);
+                await SelectAndStartTransport(transferFormat, cancellationToken);
 
                 _started = true;
                 Log.Started(_logger);
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             }
         }
 
-        private async Task SelectAndStartTransport(TransferFormat transferFormat)
+        private async Task SelectAndStartTransport(TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             var uri = _httpConnectionOptions.Url;
             // Set the initial access token provider back to the original one from options
@@ -301,7 +301,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                 if (_httpConnectionOptions.Transports == HttpTransportType.WebSockets)
                 {
                     Log.StartingTransport(_logger, _httpConnectionOptions.Transports, uri);
-                    await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat);
+                    await StartTransport(uri, _httpConnectionOptions.Transports, transferFormat, cancellationToken);
                 }
                 else
                 {
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 
                 do
                 {
-                    negotiationResponse = await GetNegotiationResponseAsync(uri);
+                    negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
 
                     if (negotiationResponse.Url != null)
                     {
@@ -379,12 +379,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                             // The negotiation response gets cleared in the fallback scenario.
                             if (negotiationResponse == null)
                             {
-                                negotiationResponse = await GetNegotiationResponseAsync(uri);
+                                negotiationResponse = await GetNegotiationResponseAsync(uri, cancellationToken);
                                 connectUrl = CreateConnectUrl(uri, negotiationResponse.ConnectionId);
                             }
 
                             Log.StartingTransport(_logger, transportType, connectUrl);
-                            await StartTransport(connectUrl, transportType, transferFormat);
+                            await StartTransport(connectUrl, transportType, transferFormat, cancellationToken);
                             break;
                         }
                     }
@@ -414,7 +414,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             }
         }
 
-        private async Task<NegotiationResponse> NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger)
+        private async Task<NegotiationResponse> NegotiateAsync(Uri url, HttpClient httpClient, ILogger logger, CancellationToken cancellationToken)
         {
             try
             {
@@ -436,7 +436,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
                     // rather than buffer the entire response. This gives a small perf boost.
                     // Note that it is important to dispose of the response when doing this to
                     // avoid leaving the connection open.
-                    using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead))
+                    using (var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken))
                     {
                         response.EnsureSuccessStatusCode();
                         var responseBuffer = await response.Content.ReadAsByteArrayAsync();
@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             return Utils.AppendQueryString(url, "id=" + connectionId);
         }
 
-        private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat)
+        private async Task StartTransport(Uri connectUrl, HttpTransportType transportType, TransferFormat transferFormat, CancellationToken cancellationToken)
         {
             // Construct the transport
             var transport = _transportFactory.CreateTransport(transportType);
@@ -475,7 +475,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
             // Start the transport, giving it one end of the pipe
             try
             {
-                await transport.StartAsync(connectUrl, transferFormat);
+                await transport.StartAsync(connectUrl, transferFormat, cancellationToken);
             }
             catch (Exception ex)
             {
@@ -604,9 +604,9 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
 #endif
         }
 
-        private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri)
+        private async Task<NegotiationResponse> GetNegotiationResponseAsync(Uri uri, CancellationToken cancellationToken)
         {
-            var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger);
+            var negotiationResponse = await NegotiateAsync(uri, _httpClient, _logger, cancellationToken);
             _connectionId = negotiationResponse.ConnectionId;
             _logScope.ConnectionId = _connectionId;
             return negotiationResponse;

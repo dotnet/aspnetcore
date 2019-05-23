@@ -403,6 +403,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 }
             }
 
+            OnTrailersComplete();
             RequestBodyPipe.Writer.Complete();
 
             _inputFlowControl.StopWindowUpdates();

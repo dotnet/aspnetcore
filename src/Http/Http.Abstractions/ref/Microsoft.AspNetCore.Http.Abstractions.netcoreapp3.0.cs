@@ -373,6 +373,13 @@ namespace Microsoft.AspNetCore.Http
         public string ToUriComponent() { throw null; }
     }
     public delegate System.Threading.Tasks.Task RequestDelegate(Microsoft.AspNetCore.Http.HttpContext context);
+    public static partial class RequestTrailerExtensions
+    {
+        public static bool CheckTrailersAvailable(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+        public static Microsoft.Extensions.Primitives.StringValues GetDeclaredTrailers(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+        public static Microsoft.Extensions.Primitives.StringValues GetTrailer(this Microsoft.AspNetCore.Http.HttpRequest request, string trailerName) { throw null; }
+        public static bool SupportsTrailers(this Microsoft.AspNetCore.Http.HttpRequest request) { throw null; }
+    }
     public static partial class ResponseTrailerExtensions
     {
         public static void AppendTrailer(this Microsoft.AspNetCore.Http.HttpResponse response, string trailerName, Microsoft.Extensions.Primitives.StringValues trailerValues) { }

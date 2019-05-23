@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                           IHttpConnectionFeature,
                                           IHttpRequestLifetimeFeature,
                                           IHttpRequestIdentifierFeature,
+                                          IHttpRequestTrailersFeature,
                                           IHttpBodyControlFeature,
                                           IHttpMaxRequestBodySizeFeature,
                                           IHttpResponseStartFeature,
@@ -130,6 +131,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 RequestBodyPipeReader = value;
                 RequestBody = new ReadOnlyPipeStream(RequestBodyPipeReader);
+            }
+        }
+
+        bool IHttpRequestTrailersFeature.Available => RequestTrailersAvailable;
+
+        IHeaderDictionary IHttpRequestTrailersFeature.Trailers
+        {
+            get
+            {
+                if (!RequestTrailersAvailable)
+                {
+                    throw new InvalidOperationException(CoreStrings.RequestTrailersNotAvailable);
+                }
+                return RequestTrailers;
             }
         }
 

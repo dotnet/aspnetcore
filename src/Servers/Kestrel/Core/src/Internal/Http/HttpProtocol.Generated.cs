@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly Type IRouteValuesFeatureType = typeof(IRouteValuesFeature);
         private static readonly Type IEndpointFeatureType = typeof(IEndpointFeature);
         private static readonly Type IHttpAuthenticationFeatureType = typeof(IHttpAuthenticationFeature);
+        private static readonly Type IHttpRequestTrailersFeatureType = typeof(IHttpRequestTrailersFeature);
         private static readonly Type IQueryFeatureType = typeof(IQueryFeature);
         private static readonly Type IFormFeatureType = typeof(IFormFeature);
         private static readonly Type IHttpUpgradeFeatureType = typeof(IHttpUpgradeFeature);
@@ -52,6 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private object _currentIRouteValuesFeature;
         private object _currentIEndpointFeature;
         private object _currentIHttpAuthenticationFeature;
+        private object _currentIHttpRequestTrailersFeature;
         private object _currentIQueryFeature;
         private object _currentIFormFeature;
         private object _currentIHttpUpgradeFeature;
@@ -82,6 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpUpgradeFeature = this;
             _currentIHttpRequestIdentifierFeature = this;
             _currentIHttpRequestLifetimeFeature = this;
+            _currentIHttpRequestTrailersFeature = this;
             _currentIHttpConnectionFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpMinRequestBodyDataRateFeature = this;
@@ -200,6 +203,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 else if (key == IHttpAuthenticationFeatureType)
                 {
                     feature = _currentIHttpAuthenticationFeature;
+                }
+                else if (key == IHttpRequestTrailersFeatureType)
+                {
+                    feature = _currentIHttpRequestTrailersFeature;
                 }
                 else if (key == IQueryFeatureType)
                 {
@@ -321,6 +328,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _currentIHttpAuthenticationFeature = value;
                 }
+                else if (key == IHttpRequestTrailersFeatureType)
+                {
+                    _currentIHttpRequestTrailersFeature = value;
+                }
                 else if (key == IQueryFeatureType)
                 {
                     _currentIQueryFeature = value;
@@ -438,6 +449,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             else if (typeof(TFeature) == typeof(IHttpAuthenticationFeature))
             {
                 feature = (TFeature)_currentIHttpAuthenticationFeature;
+            }
+            else if (typeof(TFeature) == typeof(IHttpRequestTrailersFeature))
+            {
+                feature = (TFeature)_currentIHttpRequestTrailersFeature;
             }
             else if (typeof(TFeature) == typeof(IQueryFeature))
             {
@@ -563,6 +578,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 _currentIHttpAuthenticationFeature = feature;
             }
+            else if (typeof(TFeature) == typeof(IHttpRequestTrailersFeature))
+            {
+                _currentIHttpRequestTrailersFeature = feature;
+            }
             else if (typeof(TFeature) == typeof(IQueryFeature))
             {
                 _currentIQueryFeature = feature;
@@ -678,6 +697,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpAuthenticationFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpAuthenticationFeatureType, _currentIHttpAuthenticationFeature);
+            }
+            if (_currentIHttpRequestTrailersFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpRequestTrailersFeatureType, _currentIHttpRequestTrailersFeature);
             }
             if (_currentIQueryFeature != null)
             {
