@@ -121,6 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection[typeof(IRequestBodyPipeFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpRequestIdentifierFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpRequestLifetimeFeature)] = CreateHttp1Connection();
+            _collection[typeof(IHttpRequestTrailersFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpConnectionFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMaxRequestBodySizeFeature)] = CreateHttp1Connection();
             _collection[typeof(IHttpMinRequestBodyDataRateFeature)] = CreateHttp1Connection();
@@ -144,6 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _collection.Set<IRequestBodyPipeFeature>(CreateHttp1Connection());
             _collection.Set<IHttpRequestIdentifierFeature>(CreateHttp1Connection());
             _collection.Set<IHttpRequestLifetimeFeature>(CreateHttp1Connection());
+            _collection.Set<IHttpRequestTrailersFeature>(CreateHttp1Connection());
             _collection.Set<IHttpConnectionFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMaxRequestBodySizeFeature>(CreateHttp1Connection());
             _collection.Set<IHttpMinRequestBodyDataRateFeature>(CreateHttp1Connection());

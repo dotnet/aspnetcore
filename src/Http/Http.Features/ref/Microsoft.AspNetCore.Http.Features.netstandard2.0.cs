@@ -195,6 +195,11 @@ namespace Microsoft.AspNetCore.Http.Features
         System.Threading.CancellationToken RequestAborted { get; set; }
         void Abort();
     }
+    public partial interface IHttpRequestTrailersFeature
+    {
+        bool Available { get; }
+        Microsoft.AspNetCore.Http.IHeaderDictionary Trailers { get; }
+    }
     public partial interface IHttpResponseFeature
     {
         System.IO.Stream Body { get; set; }

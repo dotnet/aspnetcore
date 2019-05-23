@@ -206,6 +206,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }
 
         public IHeaderDictionary RequestHeaders { get; set; }
+        public IHeaderDictionary RequestTrailers { get; } = new HeaderDictionary();
+        public bool RequestTrailersAvailable { get; set; }
         public Stream RequestBody { get; set; }
         public PipeReader RequestBodyPipeReader { get; set; }
 
@@ -369,6 +371,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpResponseHeaders.Reset();
             RequestHeaders = HttpRequestHeaders;
             ResponseHeaders = HttpResponseHeaders;
+            RequestTrailers.Clear();
+            RequestTrailersAvailable = false;
 
             _isLeasedMemoryInvalid = true;
             _hasAdvanced = false;
@@ -524,9 +528,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             HttpRequestHeaders.Append(name, value);
         }
 
+        public void OnTrailer(Span<byte> name, Span<byte> value)
+        {
+            // Trailers still count towards the limit.
+            _requestHeadersParsed++;
+            if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
+            {
+                BadHttpRequestException.Throw(RequestRejectionReason.TooManyHeaders);
+            }
+
+            string key = name.GetHeaderName();
+            var valueStr = value.GetAsciiOrUTF8StringNonNullCharacters();
+            RequestTrailers.Append(key, valueStr);
+        }
+
         public void OnHeadersComplete()
         {
             HttpRequestHeaders.OnHeadersComplete();
+        }
+
+        public void OnTrailersComplete()
+        {
+            RequestTrailersAvailable = true;
         }
 
         public async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)

@@ -212,6 +212,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     _context.Input.AdvanceTo(consumed);
                     _finalAdvanceCalled = true;
+                    _context.OnTrailersComplete();
                 }
 
                 return;
