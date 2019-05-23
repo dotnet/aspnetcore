@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Net;
-using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
@@ -15,7 +12,7 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
-    public sealed class SocketTransportFactory : IConnectionListenerFactory, IConnectionFactory
+    public sealed class SocketTransportFactory : IConnectionListenerFactory
     {
         private readonly SocketTransportOptions _options;
         private readonly SocketsTrace _trace;
@@ -49,14 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             var transport = new SocketConnectionListener(endpoint, _options, _trace);
             transport.Bind();
             return new ValueTask<IConnectionListener>(transport);
-        }
-
-        public async ValueTask<ConnectionContext> ConnectAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
-        {
-            // REVIEW: How do we pick the type of socket? Is the endpoint enough?
-            var socket = new Socket(SocketType.Stream, ProtocolType.Tcp);
-            await socket.ConnectAsync(endpoint);
-            return new SocketConnection(socket, _options.MemoryPoolFactory(), PipeScheduler.ThreadPool, _trace);
         }
     }
 }

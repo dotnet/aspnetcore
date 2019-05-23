@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Net;
 using System.Security.Claims;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -44,6 +45,7 @@ namespace Microsoft.AspNetCore.Connections
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
+            Features.Set<IConnectionEndPointFeature>(this);
         }
 
         public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
@@ -77,6 +79,12 @@ namespace Microsoft.AspNetCore.Connections
         public void Dispose()
         {
             _connectionClosedTokenSource.Dispose();
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            _connectionClosedTokenSource.Dispose();
+            return base.DisposeAsync();
         }
     }
 }

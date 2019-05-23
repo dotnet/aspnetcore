@@ -21,11 +21,11 @@ namespace Microsoft.AspNetCore.Connections
 
         public abstract IDuplexPipe Transport { get; set; }
 
-        public abstract CancellationToken ConnectionClosed { get; set; }
+        public virtual CancellationToken ConnectionClosed { get; set; }
 
-        public abstract EndPoint LocalEndPoint { get; set; }
+        public virtual EndPoint LocalEndPoint { get; set; }
 
-        public abstract EndPoint RemoteEndPoint { get; set; }
+        public virtual EndPoint RemoteEndPoint { get; set; }
 
         public virtual void Abort(ConnectionAbortedException abortReason)
         {
