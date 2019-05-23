@@ -2,17 +2,13 @@
 # yarn lockfile v1
 
 
-"@aspnet/signalr-protocol-msgpack@^1.0.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@aspnet/signalr-protocol-msgpack/-/signalr-protocol-msgpack-1.1.0.tgz#155038149e8e0eee1f97f4d1319f9f3271ff06fb"
-  integrity sha512-AQv5AavWvoFz2iLSIDK1DAIXMNhQ1Jt1qRDouXxLKAKP13u8iFq7i3/MwJ30ShOBGBoL5/zn6pBlNjAzTmAsMA==
+"@aspnet/signalr-protocol-msgpack@file:../../SignalR/clients/ts/signalr-protocol-msgpack":
+  version "3.0.0-dev"
   dependencies:
     msgpack5 "^4.0.2"
 
-"@aspnet/signalr@^1.0.0":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@aspnet/signalr/-/signalr-1.1.2.tgz#eb9cbc758ff5bfe9a2aba6669e05dfc25a6d783d"
-  integrity sha512-Xu2ndFTWYhyE+TOCK3LkPWGmc5xGLezBKgGEchyOA++alJ6fdWJ8P/Wsb4Mmd1buzcxGLlIyjpLfUP20rrCHIg==
+"@aspnet/signalr@file:../../SignalR/clients/ts/signalr":
+  version "3.0.0-dev"
   dependencies:
     eventsource "^1.0.7"
     request "^2.88.0"

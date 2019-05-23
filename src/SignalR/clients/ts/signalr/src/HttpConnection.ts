@@ -63,6 +63,7 @@ export class HttpConnection implements IConnection {
     private stopPromiseResolver!: (value?: PromiseLike<void>) => void;
     private stopError?: Error;
     private accessTokenFactory?: () => string | Promise<string>;
+    private sendQueue: Promise<void> = Promise.resolve();
 
     public readonly features: any = {};
     public connectionId?: string;
@@ -147,7 +148,13 @@ export class HttpConnection implements IConnection {
         }
 
         // Transport will not be null if state is connected
-        return this.transport!.send(data);
+        const send = () => this.transport!.send(data);
+        if (this.options.ensureMessageSendOrder) {
+            this.sendQueue = this.sendQueue.then(send, send);
+            return this.sendQueue;
+        }
+
+        return send();
     }
 
     public async stop(error?: Error): Promise<void> {
