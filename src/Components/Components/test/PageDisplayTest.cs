@@ -11,26 +11,26 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Components.Test
 {
-    public class LayoutTest
+    public class PageDisplayTest
     {
         private TestRenderer _renderer = new TestRenderer();
-        private LayoutDisplay _layoutDisplayComponent = new LayoutDisplay();
-        private int _layoutDisplayComponentId;
+        private PageDisplay _pageDisplayComponent = new PageDisplay();
+        private int _pageDisplayComponentId;
 
-        public LayoutTest()
+        public PageDisplayTest()
         {
             _renderer = new TestRenderer();
-            _layoutDisplayComponent = new LayoutDisplay();
-            _layoutDisplayComponentId = _renderer.AssignRootComponentId(_layoutDisplayComponent);
+            _pageDisplayComponent = new PageDisplay();
+            _pageDisplayComponentId = _renderer.AssignRootComponentId(_pageDisplayComponent);
         }
 
         [Fact]
         public void DisplaysComponentInsideLayout()
         {
             // Arrange/Act
-            _renderer.Invoke(() => _layoutDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Invoke(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
+                { PageDisplay.NameOfPage, typeof(ComponentWithLayout) }
             })));
 
             // Assert
@@ -85,9 +85,9 @@ namespace Microsoft.AspNetCore.Components.Test
         public void DisplaysComponentInsideNestedLayout()
         {
             // Arrange/Act
-            _renderer.Invoke(() => _layoutDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Invoke(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                { LayoutDisplay.NameOfPage, typeof(ComponentWithNestedLayout) }
+                { PageDisplay.NameOfPage, typeof(ComponentWithNestedLayout) }
             })));
 
             // Assert
@@ -112,15 +112,15 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanChangeDisplayedPageWithSameLayout()
         {
             // Arrange
-            _renderer.Invoke(() => _layoutDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Invoke(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
+                { PageDisplay.NameOfPage, typeof(ComponentWithLayout) }
             })));
 
             // Act
-            _renderer.Invoke(() => _layoutDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Invoke(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                { LayoutDisplay.NameOfPage, typeof(DifferentComponentWithLayout) }
+                { PageDisplay.NameOfPage, typeof(DifferentComponentWithLayout) }
             })));
 
             // Assert
@@ -163,15 +163,15 @@ namespace Microsoft.AspNetCore.Components.Test
         public void CanChangeDisplayedPageWithDifferentLayout()
         {
             // Arrange
-            _renderer.Invoke(() => _layoutDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Invoke(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                { LayoutDisplay.NameOfPage, typeof(ComponentWithLayout) }
+                { PageDisplay.NameOfPage, typeof(ComponentWithLayout) }
             })));
 
             // Act
-            _renderer.Invoke(() => _layoutDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
+            _renderer.Invoke(() => _pageDisplayComponent.SetParametersAsync(ParameterCollection.FromDictionary(new Dictionary<string, object>
             {
-                { LayoutDisplay.NameOfPage, typeof(ComponentWithNestedLayout) }
+                { PageDisplay.NameOfPage, typeof(ComponentWithNestedLayout) }
             })));
 
             // Assert

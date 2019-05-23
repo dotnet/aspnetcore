@@ -78,9 +78,9 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// <inheritdoc />
         protected virtual void Render(RenderTreeBuilder builder, Type handler, IDictionary<string, object> parameters)
         {
-            builder.OpenComponent(0, typeof(LayoutDisplay));
-            builder.AddAttribute(1, LayoutDisplay.NameOfPage, handler);
-            builder.AddAttribute(2, LayoutDisplay.NameOfPageParameters, parameters);
+            builder.OpenComponent(0, typeof(PageDisplay));
+            builder.AddAttribute(1, PageDisplay.NameOfPage, handler);
+            builder.AddAttribute(2, PageDisplay.NameOfPageParameters, parameters);
             builder.CloseComponent();
         }
 

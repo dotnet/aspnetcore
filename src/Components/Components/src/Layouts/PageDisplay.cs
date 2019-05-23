@@ -6,15 +6,15 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Layouts;
 
-namespace Microsoft.AspNetCore.Components.Layouts
+namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
     /// Displays the specified page component, rendering it inside its layout
-    /// and any further nested layouts.
+    /// and any further nested layouts, plus applying any authorization rules.
     /// </summary>
-    public class LayoutDisplay : IComponent
+    public class PageDisplay : IComponent
     {
         internal const string NameOfPage = nameof(Page);
         internal const string NameOfPageParameters = nameof(PageParameters);
