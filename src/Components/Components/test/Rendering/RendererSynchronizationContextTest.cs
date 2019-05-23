@@ -591,7 +591,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
             Thread capturedThread = null;
 
             // Act
-            var task = context.Invoke(() =>
+            var task = context.InvokeAsync(() =>
             {
                 capturedThread = Thread.CurrentThread;
                 return Task.CompletedTask;

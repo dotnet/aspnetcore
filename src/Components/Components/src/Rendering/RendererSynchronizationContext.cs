@@ -39,12 +39,13 @@ namespace Microsoft.AspNetCore.Components.Rendering
 
         public Task Invoke(Action action)
         {
-            var completion = new TaskCompletionSource<object>();
-            ExecuteSynchronouslyIfPossible(_ =>
+            var completion = new RendererSynchronizationTaskCompletionSource<Action, object>(action);
+            ExecuteSynchronouslyIfPossible((state) =>
             {
+                var completion = (RendererSynchronizationTaskCompletionSource<Action, object>)state;
                 try
                 {
-                    action();
+                    completion.Callback();
                     completion.SetResult(null);
                 }
                 catch (OperationCanceledException)
@@ -55,19 +56,20 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     completion.SetException(exception);
                 }
-            }, null);
+            }, completion);
 
             return completion.Task;
         }
 
         public Task InvokeAsync(Func<Task> asyncAction)
         {
-            var completion = new TaskCompletionSource<object>();
-            ExecuteSynchronouslyIfPossible(async (_) =>
+            var completion = new RendererSynchronizationTaskCompletionSource<Func<Task>, object>(asyncAction);
+            ExecuteSynchronouslyIfPossible(async (state) =>
             {
+                var completion = (RendererSynchronizationTaskCompletionSource<Func<Task>, object>)state;
                 try
                 {
-                    await asyncAction();
+                    await completion.Callback();
                     completion.SetResult(null);
                 }
                 catch (OperationCanceledException)
@@ -78,19 +80,20 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     completion.SetException(exception);
                 }
-            }, null);
+            }, completion);
 
             return completion.Task;
         }
 
         public Task<TResult> Invoke<TResult>(Func<TResult> function)
         {
-            var completion = new TaskCompletionSource<TResult>();
-            ExecuteSynchronouslyIfPossible(_ =>
+            var completion = new RendererSynchronizationTaskCompletionSource<Func<TResult>, TResult>(function);
+            ExecuteSynchronouslyIfPossible((state) =>
             {
+                var completion = (RendererSynchronizationTaskCompletionSource<Func<TResult>, TResult>)state;
                 try
                 {
-                    var result = function();
+                    var result = completion.Callback();
                     completion.SetResult(result);
                 }
                 catch (OperationCanceledException)
@@ -101,19 +104,20 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     completion.SetException(exception);
                 }
-            }, null);
+            }, completion);
 
             return completion.Task;
         }
 
         public Task<TResult> InvokeAsync<TResult>(Func<Task<TResult>> asyncFunction)
         {
-            var completion = new TaskCompletionSource<TResult>();
-            ExecuteSynchronouslyIfPossible(async (_) =>
+            var completion = new RendererSynchronizationTaskCompletionSource<Func<Task<TResult>>, TResult>(asyncFunction);
+            ExecuteSynchronouslyIfPossible(async (state) =>
             {
+                var completion = (RendererSynchronizationTaskCompletionSource<Func<Task<TResult>>, TResult>)state;
                 try
                 {
-                    var result = await asyncFunction();
+                    var result = await completion.Callback();
                     completion.SetResult(result);
                 }
                 catch (OperationCanceledException)
@@ -124,7 +128,7 @@ namespace Microsoft.AspNetCore.Components.Rendering
                 {
                     completion.SetException(exception);
                 }
-            }, null);
+            }, completion);
 
             return completion.Task;
         }
@@ -293,6 +297,16 @@ namespace Microsoft.AspNetCore.Components.Rendering
             public ExecutionContext ExecutionContext;
             public SendOrPostCallback Callback;
             public object State;
+        }
+
+        private class RendererSynchronizationTaskCompletionSource<TCallback, TResult> : TaskCompletionSource<TResult>
+        {
+            public RendererSynchronizationTaskCompletionSource(TCallback callback)
+            {
+                Callback = callback;
+            }
+
+            public TCallback Callback { get; }
         }
     }
 }
