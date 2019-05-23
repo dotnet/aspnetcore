@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
 namespace PlaintextApp
@@ -47,12 +46,9 @@ namespace PlaintextApp
                 .Build();
 
             var hostTask = host.RunAsync();
-            // var serverTask = ServerAsync(new SocketTransportFactory(), 5002);
-            // var serverTask2 = ServerAsync(new LibuvTransportFactory(), 5003);
+            var serverTask = ServerAsync(new SocketTransportFactory(), 5002);
 
-            await hostTask;
-            // await serverTask;
-            // await serverTask2;
+            await hostTask;;
         }
 
         private static async Task ServerAsync(IConnectionListenerFactory factory, int port)

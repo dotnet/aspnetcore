@@ -51,7 +51,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
             // Set the transport and connection id
-            // connection.ConnectionId = CorrelationIdGenerator.GetNextId();
             Transport = pair.Transport;
             Application = pair.Application;
         }
