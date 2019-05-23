@@ -14,9 +14,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         [Fact]
         public async Task LibuvThreadDoesNotThrowIfPostingWorkAfterDispose()
         {
-            var mockConnectionDispatcher = new MockConnectionDispatcher();
             var mockLibuv = new MockLibuv();
-            var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
+            var transportContext = new TestLibuvTransportContext();
             var transport = new LibuvConnectionListener(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
             var ranOne = false;

@@ -134,10 +134,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                     }
 
                     var connectionDispatcher = new ConnectionDispatcher(ServiceContext, connectionDelegate);
-                    var transport = await _transportFactory.BindAsync(options.Endpoint).ConfigureAwait(false);
+                    var transport = await _transportFactory.BindAsync(options.EndPoint).ConfigureAwait(false);
 
                     // Update the endpoint
-                    options.Endpoint = transport.EndPoint;
+                    options.EndPoint = transport.EndPoint;
                     _transports.Add(transport);
 
                     connectionDispatcher.StartAcceptingConnections(transport);

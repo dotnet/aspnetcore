@@ -38,8 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task TransportCanBindAndStop()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvConnectionListener(transportContext,
-                new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             // The transport can no longer start threads without binding to an endpoint.
             await transport.BindAsync();
@@ -50,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task TransportCanBindUnbindAndStop()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvConnectionListener(transportContext, new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0)));
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             await transport.BindAsync();
             await transport.UnbindAsync();
@@ -64,16 +63,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var serviceContext = new TestServiceContext();
             listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, new DummyApplication(TestApp.EchoApp), HttpProtocols.Http1);
 
-            var transportContext = new TestLibuvTransportContext
-            {
-                ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build())
-            };
-
-            var transport = new LibuvConnectionListener(transportContext, listenOptions);
+            var transportContext = new TestLibuvTransportContext();
+            var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);
 
             await transport.BindAsync();
 
-            using (var socket = TestConnection.CreateConnectedLoopbackSocket(listenOptions.IPEndPoint.Port))
+            var dispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build());
+            dispatcher.StartAcceptingConnections(transport);
+
+            using (var socket = TestConnection.CreateConnectedLoopbackSocket(((IPEndPoint)listenOptions.EndPoint).Port))
             {
                 var data = "Hello World";
                 socket.Send(Encoding.ASCII.GetBytes($"POST / HTTP/1.0\r\nContent-Length: 11\r\n\r\n{data}"));
@@ -85,6 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 }
             }
 
+            serviceContext.ConnectionManager.TryStartDrainingConnection();
             Assert.True(await serviceContext.ConnectionManager.CloseAllConnectionsAsync(new CancellationTokenSource(TestConstants.DefaultTimeout).Token));
             await transport.UnbindAsync();
             await transport.StopAsync();
@@ -106,13 +105,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var transportContext = new TestLibuvTransportContext
             {
-                ConnectionDispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build()),
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }
             };
 
-            var transport = new LibuvConnectionListener(transportContext, listenOptions);
-
+            var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);
             await transport.BindAsync();
+
+            var dispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build());
+            dispatcher.StartAcceptingConnections(transport);
 
             using (var client = new HttpClient())
             {
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var requestTasks = new List<Task<string>>();
                 for (int i = 0; i < 20; i++)
                 {
-                    var requestTask = client.GetStringAsync($"http://127.0.0.1:{listenOptions.IPEndPoint.Port}/");
+                    var requestTask = client.GetStringAsync($"http://127.0.0.1:{((IPEndPoint)listenOptions.EndPoint).Port}/");
                     requestTasks.Add(requestTask);
                 }
 
@@ -131,6 +131,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
 
             await transport.UnbindAsync();
+
+            serviceContext.ConnectionManager.TryStartDrainingConnection();
 
             if (!await serviceContext.ConnectionManager.CloseAllConnectionsAsync(default).ConfigureAwait(false))
             {

@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
-        protected async Task HandleConnectionAsync(UvStreamHandle socket)
+        protected internal async Task HandleConnectionAsync(UvStreamHandle socket)
         {
             try
             {

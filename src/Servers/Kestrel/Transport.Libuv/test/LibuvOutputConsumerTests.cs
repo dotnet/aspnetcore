@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             _memoryPool = KestrelMemoryPool.Create();
             _mockLibuv = new MockLibuv();
 
-            var libuvTransport = new LibuvConnectionListener(_mockLibuv, new TestLibuvTransportContext(), new ListenOptions((ulong)0));
+            var libuvTransport = new LibuvConnectionListener(_mockLibuv, new TestLibuvTransportContext(), new ListenOptions((ulong)0).EndPoint);
             _libuvThread = new LibuvThread(libuvTransport, maxLoops: 1);
             _libuvThread.StartAsync().Wait();
         }
@@ -767,6 +767,44 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 http1Connection.Abort(new ConnectionAbortedException(ex.Message, ex));
                 outputReader.Complete(ex);
+            }
+        }
+
+        // Work around the internal type conflict (multiple assemblies have internalized this type and that fails with IVT)
+        private class DuplexPipe : IDuplexPipe
+        {
+            public DuplexPipe(PipeReader reader, PipeWriter writer)
+            {
+                Input = reader;
+                Output = writer;
+            }
+
+            public PipeReader Input { get; }
+
+            public PipeWriter Output { get; }
+
+            public static DuplexPipePair CreateConnectionPair(PipeOptions inputOptions, PipeOptions outputOptions)
+            {
+                var input = new Pipe(inputOptions);
+                var output = new Pipe(outputOptions);
+
+                var transportToApplication = new DuplexPipe(output.Reader, input.Writer);
+                var applicationToTransport = new DuplexPipe(input.Reader, output.Writer);
+
+                return new DuplexPipePair(applicationToTransport, transportToApplication);
+            }
+
+            // This class exists to work around issues with value tuple on .NET Framework
+            public readonly struct DuplexPipePair
+            {
+                public IDuplexPipe Transport { get; }
+                public IDuplexPipe Application { get; }
+
+                public DuplexPipePair(IDuplexPipe transport, IDuplexPipe application)
+                {
+                    Transport = transport;
+                    Application = application;
+                }
             }
         }
     }

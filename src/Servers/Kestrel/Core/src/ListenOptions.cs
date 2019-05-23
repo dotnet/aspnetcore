@@ -28,14 +28,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         {
             Type = ListenType.IPEndPoint;
             IPEndPoint = endPoint;
-            Endpoint = endPoint;
+            EndPoint = endPoint;
         }
 
         internal ListenOptions(string socketPath)
         {
             Type = ListenType.SocketPath;
             SocketPath = socketPath;
-            Endpoint = new UnixDomainSocketEndPoint(socketPath);
+            EndPoint = new UnixDomainSocketEndPoint(socketPath);
         }
 
         internal ListenOptions(ulong fileHandle)
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal ListenOptions(ulong fileHandle, FileHandleType handleType)
         {
-            Endpoint = new FileHandleEndPoint(fileHandle, handleType);
+            EndPoint = new FileHandleEndPoint(fileHandle, handleType);
 
             Type = ListenType.FileHandle;
             FileHandle = fileHandle;
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        public EndPoint Endpoint { get; set; }
+        public EndPoint EndPoint { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>

@@ -6,10 +6,13 @@ using System.Buffers;
 using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
@@ -45,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 .UseKestrel()
                 // Bind to a single non-HTTPS endpoint
                 .UseUrls("http://127.0.0.1:5000")
-                .ConfigureServices(services => services.AddSingleton<ITransportFactory>(transportFactory))
+                .ConfigureServices(services => services.AddSingleton<IConnectionListenerFactory>(transportFactory))
                 .Configure(app => app.UseMiddleware<PlaintextMiddleware>())
                 .Build();
 
@@ -94,21 +97,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             await _connection.ReadResponseAsync(_plaintextPipelinedExpectedResponse.Length);
         }
 
-        internal class InMemoryTransportFactory : ITransportFactory
+        internal class InMemoryTransportFactory : IConnectionListenerFactory
         {
             private readonly int _connectionsPerEndPoint;
 
-            private readonly Dictionary<IEndPointInformation, IReadOnlyList<InMemoryConnection>> _connections =
-                new Dictionary<IEndPointInformation, IReadOnlyList<InMemoryConnection>>();
+            private readonly Dictionary<EndPoint, IReadOnlyList<InMemoryConnection>> _connections =
+                new Dictionary<EndPoint, IReadOnlyList<InMemoryConnection>>();
 
-            public IReadOnlyDictionary<IEndPointInformation, IReadOnlyList<InMemoryConnection>> Connections => _connections;
+            public IReadOnlyDictionary<EndPoint, IReadOnlyList<InMemoryConnection>> Connections => _connections;
 
             public InMemoryTransportFactory(int connectionsPerEndPoint)
             {
                 _connectionsPerEndPoint = connectionsPerEndPoint;
             }
 
-            public ITransport Create(IEndPointInformation endPointInformation, IConnectionDispatcher handler)
+            public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
             {
                 var connections = new InMemoryConnection[_connectionsPerEndPoint];
                 for (var i = 0; i < _connectionsPerEndPoint; i++)
@@ -116,46 +119,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                     connections[i] = new InMemoryConnection();
                 }
 
-                _connections.Add(endPointInformation, connections);
+                _connections.Add(endpoint, connections);
 
-                return new InMemoryTransport(handler, connections);
+                return new ValueTask<IConnectionListener>(new InMemoryTransport(endpoint, connections));
             }
         }
 
-        public class InMemoryTransport : ITransport
+        public class InMemoryTransport : IConnectionListener
         {
-            private readonly IConnectionDispatcher _dispatcher;
             private readonly IReadOnlyList<InMemoryConnection> _connections;
+            private readonly TaskCompletionSource<ConnectionContext> _tcs = new TaskCompletionSource<ConnectionContext>(TaskCreationOptions.RunContinuationsAsynchronously);
+            private int _acceptedConnections;
 
-            public InMemoryTransport(IConnectionDispatcher dispatcher, IReadOnlyList<InMemoryConnection> connections)
+            public InMemoryTransport(EndPoint endpoint, IReadOnlyList<InMemoryConnection> connections)
             {
-                _dispatcher = dispatcher;
+                EndPoint = endpoint;
                 _connections = connections;
             }
 
-            public Task BindAsync()
+            public EndPoint EndPoint { get; }
+
+            public ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
             {
-                foreach (var connection in _connections)
+                if (_acceptedConnections < _connections.Count)
                 {
-                    _dispatcher.OnConnection(connection);
+                    return new ValueTask<ConnectionContext>(_connections[_acceptedConnections++]);
                 }
-
-                return Task.CompletedTask;
+                return new ValueTask<ConnectionContext>(_tcs.Task);   
             }
 
-            public Task StopAsync()
+            public ValueTask DisposeAsync()
             {
-                return Task.CompletedTask;
+                _tcs.TrySetResult(null);
+                return default;
             }
 
-            public Task UnbindAsync()
+            public ValueTask StopAsync(CancellationToken cancellationToken = default)
             {
-                return Task.CompletedTask;
+                _tcs.TrySetResult(null);
+                return default;
             }
         }
 
         public class InMemoryConnection : TransportConnection
         {
+            public InMemoryConnection()
+            {
+                var inputOptions = new PipeOptions(useSynchronizationContext: false);
+                var outputOptions = new PipeOptions(useSynchronizationContext: false);
+
+                var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
+
+                // Set the transport and connection id
+                Transport = pair.Transport;
+                Application = pair.Application;
+            }
+
             public ValueTask<FlushResult> SendRequestAsync(byte[] request)
             {
                 return Input.WriteAsync(request);
