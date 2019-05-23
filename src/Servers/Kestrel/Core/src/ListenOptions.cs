@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// Describes either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor for an already open
     /// socket that Kestrel should bind to or open.
     /// </summary>
-    public class ListenOptions : IEndPointInformation, IConnectionBuilder
+    public class ListenOptions : IConnectionBuilder
     {
         private FileHandleType _handleType;
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();

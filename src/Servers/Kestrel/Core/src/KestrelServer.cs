@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -78,27 +77,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 DebuggerWrapper.Singleton,
                 trace);
 
-            // TODO: This logic will eventually move into the IConnectionHandler<T> and off
-            // the service context once we get to https://github.com/aspnet/KestrelHttpServer/issues/1662
-            PipeScheduler scheduler = null;
-            switch (serverOptions.ApplicationSchedulingMode)
-            {
-                case SchedulingMode.Default:
-                case SchedulingMode.ThreadPool:
-                    scheduler = PipeScheduler.ThreadPool;
-                    break;
-                case SchedulingMode.Inline:
-                    scheduler = PipeScheduler.Inline;
-                    break;
-                default:
-                    throw new NotSupportedException(CoreStrings.FormatUnknownTransportMode(serverOptions.ApplicationSchedulingMode));
-            }
-
             return new ServiceContext
             {
                 Log = trace,
                 HttpParser = new HttpParser<Http1ParsingHandler>(trace.IsEnabled(LogLevel.Information)),
-                Scheduler = scheduler,
+                Scheduler = PipeScheduler.ThreadPool,
                 SystemClock = heartbeatManager,
                 DateHeaderValueManager = dateHeaderValueManager,
                 ConnectionManager = connectionManager,
