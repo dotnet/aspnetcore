@@ -30,7 +30,9 @@ Write-Host "Starting download of NodeJs ${Version} from $url"
 Invoke-WebRequest -UseBasicParsing -Uri "$url" -OutFile "nodejs.zip"
 Write-Host "Done downloading NodeJS ${Version}"
 
-$temp_dir = Join-Path ([System.IO.Path]::GetTempPath()) [System.Guid]::NewGuid()
+$temppath = [System.IO.Path]::GetTempPath()
+$guid = [System.Guid]::NewGuid()
+$temp_dir = Join-Path $temppath $guid 
 mkdir $temp_dir -Force
 Write-Host "Extracting to $temp_dir"
 
