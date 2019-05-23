@@ -380,7 +380,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.Equal(LogLevel.Debug, loggerProvider.FilterLogger.LastLogLevel);
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore-Internal/issues/2490", Queues = "Windows.7.Amd64.Open")]
         public async Task OnAuthenticate_SeesOtherSettings()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
@@ -416,7 +417,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             Assert.True(onAuthenticateCalled, "onAuthenticateCalled");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore-Internal/issues/2490", Queues = "Windows.7.Amd64.Open")]
         public async Task OnAuthenticate_CanSetSettings()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
