@@ -38,10 +38,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         SelfSigned = 2,
         All = 3,
     }
-    public static partial class CertificateValidator
-    {
-        public static bool DisableChannelValidation(System.Security.Cryptography.X509Certificates.X509Certificate2 certificate, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors errors) { throw null; }
-    }
     public partial class ValidateCertificateContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions>
     {
         public ValidateCertificateContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions)) { }
