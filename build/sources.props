@@ -27,6 +27,11 @@
       $(RestoreSources);
       https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json;
     </RestoreSources>
+    <!-- TODO remove this once we move Microsoft.AspNetCore.Blazor.Mono to a non-myget feed -->
+    <RestoreSources>
+      $(RestoreSources);
+      https://dotnet.myget.org/F/blazor-dev/api/v3/index.json;
+    </RestoreSources>
 
     <!-- In an orchestrated build, this may be overriden to other Azure feeds. -->
     <DotNetAssetRootUrl Condition="'$(DotNetAssetRootUrl)'==''">https://dotnetcli.blob.core.windows.net/dotnet/</DotNetAssetRootUrl>
