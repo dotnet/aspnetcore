@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange/Act
             var testDateFormat = "ddd yyyy-MM-dd";
             var component = CompileToComponent(
-                $@"<input bind=""@MyDate"" format-value=""{testDateFormat}"" />
+                $@"<input bind=""@MyDate"" bind:format=""{testDateFormat}"" />
                 @functions {{
                     public DateTime MyDate {{ get; set; }} = new DateTime(2018, 3, 4);
                 }}");
