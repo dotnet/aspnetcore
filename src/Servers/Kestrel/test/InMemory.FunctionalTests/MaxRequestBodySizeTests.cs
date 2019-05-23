@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport;
@@ -360,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 } while (count != 0);
 
                 Assert.Equal("Hello World", Encoding.ASCII.GetString(buffer));
-                Assert.Equal("trailing-value", context.Request.Headers["Trailing-Header"].ToString());
+                Assert.Equal("trailing-value", context.Request.GetTrailer("Trailing-Header").ToString());
             },
             new TestServiceContext(LoggerFactory) { ServerOptions = { Limits = { MaxRequestBodySize = globalMaxRequestBodySize } } }))
             {

@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure
     public class BasicTestAppTestBase : ServerTestBase<ToggleExecutionModeServerFixture<Program>>
     {
         public string ServerPathBase
-            => "/subdir" + (_serverFixture.UsingAspNetHost ? "#server" : "");
+            => "/subdir" + (_serverFixture.ExecutionMode == ExecutionMode.Server ? "#server" : "");
 
         public BasicTestAppTestBase(
             BrowserFixture browserFixture,

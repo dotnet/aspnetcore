@@ -144,7 +144,7 @@ namespace WsProxy {
 
 		void Send (WebSocket to, JObject o, CancellationToken token)
 		{
-			var bytes = Encoding.UTF8.GetBytes (o.ToString ());		
+			var bytes = Encoding.UTF8.GetBytes (o.ToString ());
 
 			var queue = GetQueueForSocket (to);
 			var task = queue.Send (bytes, token);
@@ -256,7 +256,7 @@ namespace WsProxy {
 		}
 
 		 // , HttpContext context)
-		public async Task Run (Uri browserUri, WebSocket ideSocket) 
+		public async Task Run (Uri browserUri, WebSocket ideSocket)
 		{
 			Debug ("wsproxy start");
 			using (this.ide = ideSocket) {
@@ -276,7 +276,7 @@ namespace WsProxy {
 
 					try {
 						while (!x.IsCancellationRequested) {
-							var task = await Task.WhenAny (pending_ops);
+							var task = await Task.WhenAny (pending_ops.ToArray ());
 							//Console.WriteLine ("pump {0} {1}", task, pending_ops.IndexOf (task));
 							if (task == pending_ops [0]) {
 								var msg = ((Task<string>)task).Result;

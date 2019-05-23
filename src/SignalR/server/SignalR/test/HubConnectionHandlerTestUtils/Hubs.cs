@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Channels;
@@ -851,7 +852,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return channel.Reader;
         }
 
-        public async IAsyncEnumerable<int> CancelableStreamGeneratedAsyncEnumerable(CancellationToken token)
+        public async IAsyncEnumerable<int> CancelableStreamGeneratedAsyncEnumerable([EnumeratorCancellation] CancellationToken token)
         {
             _tcsService.StartedMethod.SetResult(null);
             await token.WaitForCancellationAsync();

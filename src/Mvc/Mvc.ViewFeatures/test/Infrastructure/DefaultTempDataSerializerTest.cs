@@ -34,5 +34,26 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Infrastructure
             var roundTripValue = Assert.IsType<string>(values[key]);
             Assert.Equal(value.ToString("r"), roundTripValue);
         }
+
+        [Fact]
+        public override void RoundTripTest_DictionaryOfInt()
+        {
+            // Arrange
+            var key = "test-key";
+            var testProvider = GetTempDataSerializer();
+            var value = new Dictionary<string, int>
+            {
+                { "Key1", 7 },
+                { "Key2", 24 },
+            };
+            var input = new Dictionary<string, object>
+            {
+                { key, value }
+            };
+
+            // Act
+            var ex = Assert.Throws<InvalidOperationException>(() => testProvider.Serialize(input));
+            Assert.Equal($"The '{testProvider.GetType()}' cannot serialize an object of type '{value.GetType()}'.", ex.Message);
+        }
     }
 }

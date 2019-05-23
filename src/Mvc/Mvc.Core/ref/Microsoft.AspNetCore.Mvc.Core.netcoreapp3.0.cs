@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(202)]
     public partial class AcceptedAtActionResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public AcceptedAtActionResult(string actionName, string controllerName, object routeValues, object value) : base (default(object)) { }
+        public AcceptedAtActionResult(string actionName, string controllerName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
         public string ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -48,8 +48,8 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(202)]
     public partial class AcceptedAtRouteResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public AcceptedAtRouteResult(object routeValues, object value) : base (default(object)) { }
-        public AcceptedAtRouteResult(string routeName, object routeValues, object value) : base (default(object)) { }
+        public AcceptedAtRouteResult(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
+        public AcceptedAtRouteResult(string routeName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
         public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -59,8 +59,8 @@ namespace Microsoft.AspNetCore.Mvc
     public partial class AcceptedResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
         public AcceptedResult() : base (default(object)) { }
-        public AcceptedResult(string location, object value) : base (default(object)) { }
-        public AcceptedResult(System.Uri locationUri, object value) : base (default(object)) { }
+        public AcceptedResult(string location, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
+        public AcceptedResult(System.Uri locationUri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
         public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
     }
@@ -151,8 +151,8 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(400)]
     public partial class BadRequestObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public BadRequestObjectResult(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) : base (default(object)) { }
-        public BadRequestObjectResult(object error) : base (default(object)) { }
+        public BadRequestObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) : base (default(object)) { }
+        public BadRequestObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object error) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(400)]
     public partial class BadRequestResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -226,8 +226,8 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(409)]
     public partial class ConflictObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public ConflictObjectResult(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) : base (default(object)) { }
-        public ConflictObjectResult(object error) : base (default(object)) { }
+        public ConflictObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) : base (default(object)) { }
+        public ConflictObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object error) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(409)]
     public partial class ConflictResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -278,43 +278,43 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(string uri) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(string uri, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(string uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(System.Uri uri) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(System.Uri uri, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedResult Accepted(System.Uri uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, object routeValues, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, object routeValues, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtActionResult AcceptedAtAction(string actionName, string controllerName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(object routeValues) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(object routeValues, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string routeName) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.AcceptedAtRouteResult AcceptedAtRoute(string routeName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.BadRequestResult BadRequest() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.BadRequestObjectResult BadRequest(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.BadRequestObjectResult BadRequest([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.BadRequestObjectResult BadRequest(object error) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.BadRequestObjectResult BadRequest([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object error) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ChallengeResult Challenge() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -326,9 +326,9 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ConflictResult Conflict() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ConflictObjectResult Conflict(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ConflictObjectResult Conflict([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ConflictObjectResult Conflict(object error) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ConflictObjectResult Conflict([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object error) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ContentResult Content(string content) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -338,21 +338,21 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ContentResult Content(string content, string contentType, System.Text.Encoding contentEncoding) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedResult Created(string uri, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedResult Created(string uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedResult Created(System.Uri uri, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedResult Created(System.Uri uri, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, string controllerName, object routeValues, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtActionResult CreatedAtAction(string actionName, string controllerName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(object routeValues, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(string routeName, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(string routeName, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.CreatedAtRouteResult CreatedAtRoute(string routeName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.FileContentResult File(byte[] fileContents, string contentType) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -422,11 +422,11 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.NotFoundResult NotFound() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.NotFoundObjectResult NotFound(object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.NotFoundObjectResult NotFound([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.OkResult Ok() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.OkObjectResult Ok(object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.OkObjectResult Ok([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.PhysicalFileResult PhysicalFile(string physicalPath, string contentType) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
@@ -540,9 +540,9 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.SignOutResult SignOut(params string[] authenticationSchemes) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.StatusCodeResult StatusCode(int statusCode) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.StatusCodeResult StatusCode([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultStatusCodeAttribute]int statusCode) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ObjectResult StatusCode(int statusCode, object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ObjectResult StatusCode([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultStatusCodeAttribute]int statusCode, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public virtual System.Threading.Tasks.Task<bool> TryUpdateModelAsync(object model, System.Type modelType, string prefix) { throw null; }
@@ -572,19 +572,19 @@ namespace Microsoft.AspNetCore.Mvc
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.UnauthorizedResult Unauthorized() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.UnauthorizedObjectResult Unauthorized(object value) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.UnauthorizedObjectResult Unauthorized([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.UnprocessableEntityResult UnprocessableEntity() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.UnprocessableEntityObjectResult UnprocessableEntity(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.UnprocessableEntityObjectResult UnprocessableEntity([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.UnprocessableEntityObjectResult UnprocessableEntity(object error) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.UnprocessableEntityObjectResult UnprocessableEntity([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object error) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
         public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem() { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelStateDictionary) { throw null; }
         [Microsoft.AspNetCore.Mvc.NonActionAttribute]
-        public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem(Microsoft.AspNetCore.Mvc.ValidationProblemDetails descriptor) { throw null; }
+        public virtual Microsoft.AspNetCore.Mvc.ActionResult ValidationProblem([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ValidationProblemDetails descriptor) { throw null; }
     }
     public partial class ControllerContext : Microsoft.AspNetCore.Mvc.ActionContext
     {
@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(201)]
     public partial class CreatedAtActionResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public CreatedAtActionResult(string actionName, string controllerName, object routeValues, object value) : base (default(object)) { }
+        public CreatedAtActionResult(string actionName, string controllerName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
         public string ActionName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string ControllerName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -611,8 +611,8 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(201)]
     public partial class CreatedAtRouteResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public CreatedAtRouteResult(object routeValues, object value) : base (default(object)) { }
-        public CreatedAtRouteResult(string routeName, object routeValues, object value) : base (default(object)) { }
+        public CreatedAtRouteResult(object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
+        public CreatedAtRouteResult(string routeName, object routeValues, [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
         public string RouteName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Routing.RouteValueDictionary RouteValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Mvc.IUrlHelper UrlHelper { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
@@ -914,7 +914,7 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(404)]
     public partial class NotFoundObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public NotFoundObjectResult(object value) : base (default(object)) { }
+        public NotFoundObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(404)]
     public partial class NotFoundResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -928,6 +928,7 @@ namespace Microsoft.AspNetCore.Mvc
         public System.Type DeclaredType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public Microsoft.AspNetCore.Mvc.Formatters.FormatterCollection<Microsoft.AspNetCore.Mvc.Formatters.IOutputFormatter> Formatters { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public int? StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        [Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]
         public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override System.Threading.Tasks.Task ExecuteResultAsync(Microsoft.AspNetCore.Mvc.ActionContext context) { throw null; }
         public virtual void OnFormatting(Microsoft.AspNetCore.Mvc.ActionContext context) { }
@@ -1167,7 +1168,7 @@ namespace Microsoft.AspNetCore.Mvc
     }
     public partial class StatusCodeResult : Microsoft.AspNetCore.Mvc.ActionResult, Microsoft.AspNetCore.Mvc.IActionResult, Microsoft.AspNetCore.Mvc.Infrastructure.IClientErrorActionResult, Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult
     {
-        public StatusCodeResult(int statusCode) { }
+        public StatusCodeResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultStatusCodeAttribute]int statusCode) { }
         int? Microsoft.AspNetCore.Mvc.Infrastructure.IStatusCodeActionResult.StatusCode { get { throw null; } }
         public int StatusCode { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override void ExecuteResult(Microsoft.AspNetCore.Mvc.ActionContext context) { }
@@ -1186,7 +1187,7 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(401)]
     public partial class UnauthorizedObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public UnauthorizedObjectResult(object value) : base (default(object)) { }
+        public UnauthorizedObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object value) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(401)]
     public partial class UnauthorizedResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -1196,8 +1197,8 @@ namespace Microsoft.AspNetCore.Mvc
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(422)]
     public partial class UnprocessableEntityObjectResult : Microsoft.AspNetCore.Mvc.ObjectResult
     {
-        public UnprocessableEntityObjectResult(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) : base (default(object)) { }
-        public UnprocessableEntityObjectResult(object error) : base (default(object)) { }
+        public UnprocessableEntityObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary modelState) : base (default(object)) { }
+        public UnprocessableEntityObjectResult([Microsoft.AspNetCore.Mvc.Infrastructure.ActionResultObjectValueAttribute]object error) : base (default(object)) { }
     }
     [Microsoft.AspNetCore.Mvc.Infrastructure.DefaultStatusCodeAttribute(422)]
     public partial class UnprocessableEntityResult : Microsoft.AspNetCore.Mvc.StatusCodeResult
@@ -1547,6 +1548,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         protected ApplicationPart() { }
         public abstract string Name { get; }
     }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Assembly, AllowMultiple=true)]
+    public sealed partial class ApplicationPartAttribute : System.Attribute
+    {
+        public ApplicationPartAttribute(string assemblyName) { }
+        public string AssemblyName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     public abstract partial class ApplicationPartFactory
     {
         protected ApplicationPartFactory() { }
@@ -1560,13 +1567,12 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationParts
         public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationFeatureProvider> FeatureProviders { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public void PopulateFeature<TFeature>(TFeature feature) { }
     }
-    public partial class AssemblyPart : Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart, Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationPartTypeProvider, Microsoft.AspNetCore.Mvc.ApplicationParts.ICompilationReferencesProvider
+    public partial class AssemblyPart : Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPart, Microsoft.AspNetCore.Mvc.ApplicationParts.IApplicationPartTypeProvider
     {
         public AssemblyPart(System.Reflection.Assembly assembly) { }
         public System.Reflection.Assembly Assembly { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public override string Name { get { throw null; } }
         public System.Collections.Generic.IEnumerable<System.Reflection.TypeInfo> Types { get { throw null; } }
-        public System.Collections.Generic.IEnumerable<string> GetReferencePaths() { throw null; }
     }
     public partial class DefaultApplicationPartFactory : Microsoft.AspNetCore.Mvc.ApplicationParts.ApplicationPartFactory
     {
@@ -1916,6 +1922,16 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         protected ActionDescriptorCollectionProvider() { }
         public abstract Microsoft.AspNetCore.Mvc.Infrastructure.ActionDescriptorCollection ActionDescriptors { get; }
         public abstract Microsoft.Extensions.Primitives.IChangeToken GetChangeToken();
+    }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Parameter | System.AttributeTargets.Property, AllowMultiple=false, Inherited=false)]
+    public sealed partial class ActionResultObjectValueAttribute : System.Attribute
+    {
+        public ActionResultObjectValueAttribute() { }
+    }
+    [System.AttributeUsageAttribute(System.AttributeTargets.Parameter, AllowMultiple=false, Inherited=false)]
+    public sealed partial class ActionResultStatusCodeAttribute : System.Attribute
+    {
+        public ActionResultStatusCodeAttribute() { }
     }
     public partial class CompatibilitySwitch<TValue> : Microsoft.AspNetCore.Mvc.Infrastructure.ICompatibilitySwitch where TValue : struct
     {

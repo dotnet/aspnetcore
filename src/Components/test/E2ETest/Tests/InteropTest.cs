@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 
             // Include the sync assertions only when running under WebAssembly
             var expectedValues = expectedAsyncValues;
-            if (!_serverFixture.UsingAspNetHost)
+            if (_serverFixture.ExecutionMode == ExecutionMode.Client)
             {
                 foreach (var kvp in expectedSyncValues)
                 {

@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.DataProtection
         [ConditionalFact]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2177", FlakyOn.AzP.Windows)]
         [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6720
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6720")]
         public void System_UsesProvidedDirectoryAndCertificate()
         {
             var filePath = Path.Combine(GetTestFilesPath(), "TestCert.pfx");
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
         [ConditionalFact]
         [X509StoreIsAvailable(StoreName.My, StoreLocation.CurrentUser)]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/6720
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6720")]
         public void System_UsesProvidedCertificateNotFromStore()
         {
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))

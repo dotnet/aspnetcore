@@ -56,9 +56,6 @@
     <ExternalAspNetCoreAppReference Include="System.Security.Cryptography.Xml"                             Version="$(SystemSecurityCryptographyXmlPackageVersion)" />
     <ExternalAspNetCoreAppReference Include="System.Threading.Channels"                                    Version="$(SystemThreadingChannelsPackageVersion)" />
 
-    <!-- Dependencies from dotnet/core-setup -->
-    <ExternalAspNetCoreAppReference Include="Microsoft.Extensions.DependencyModel"                         Version="$(MicrosoftExtensionsDependencyModelPackageVersion)" />
-
     <!--
       Transitive dependencies of other assemblies in the shared framework. These are listed separately and should not be included directly
       when setting `<Reference>`. These are listed for the purpose of tests and servicing builds only.

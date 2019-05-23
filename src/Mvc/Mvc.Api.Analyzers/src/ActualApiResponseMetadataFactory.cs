@@ -87,13 +87,13 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 .FirstOrDefault();
 
             var statusCode = GetDefaultStatusCode(defaultStatusCodeAttribute);
-            ITypeSymbol returnType = null;
+            ITypeSymbol? returnType = null;
             switch (returnExpression)
             {
                 case InvocationExpressionSyntax invocation:
                     {
                         // Covers the 'return StatusCode(200)' case.
-                        var result = InspectMethodArguments(symbolCache, semanticModel, invocation.Expression, invocation.ArgumentList, cancellationToken);
+                        var result = InspectMethodArguments(semanticModel, invocation.Expression, invocation.ArgumentList, cancellationToken);
                         statusCode = result.statusCode ?? statusCode;
                         returnType = result.returnType;
                         break;
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
                 case ObjectCreationExpressionSyntax creation:
                     {
                         // Read values from 'return new StatusCodeResult(200) case.
-                        var result = InspectMethodArguments(symbolCache, semanticModel, creation, creation.ArgumentList, cancellationToken);
+                        var result = InspectMethodArguments(semanticModel, creation, creation.ArgumentList, cancellationToken);
                         statusCode = result.statusCode ?? statusCode;
                         returnType = result.returnType;
 
@@ -123,14 +123,14 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return new ActualApiResponseMetadata(returnStatementSyntax, statusCode.Value, returnType);
         }
 
-        private static (int? statusCode, ITypeSymbol returnType) InspectInitializers(
+        private static (int? statusCode, ITypeSymbol? returnType) InspectInitializers(
             in ApiControllerSymbolCache symbolCache,
             SemanticModel semanticModel,
             InitializerExpressionSyntax initializer,
             CancellationToken cancellationToken)
         {
             int? statusCode = null;
-            ITypeSymbol typeSymbol = null;
+            ITypeSymbol? typeSymbol = null;
 
             for (var i = 0; initializer != null && i < initializer.Expressions.Count; i++)
             {
@@ -162,15 +162,14 @@ namespace Microsoft.AspNetCore.Mvc.Api.Analyzers
             return (statusCode, typeSymbol);
         }
 
-        private static (int? statusCode, ITypeSymbol returnType) InspectMethodArguments(
-            in ApiControllerSymbolCache symbolCache,
+        private static (int? statusCode, ITypeSymbol? returnType) InspectMethodArguments(
             SemanticModel semanticModel,
             ExpressionSyntax expression,
             BaseArgumentListSyntax argumentList,
             CancellationToken cancellationToken)
         {
             int? statusCode = null;
-            ITypeSymbol typeSymbol = null;
+            ITypeSymbol? typeSymbol = null;
 
             var symbolInfo = semanticModel.GetSymbolInfo(expression, cancellationToken);
 

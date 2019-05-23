@@ -1,6 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+namespace Microsoft.AspNetCore.Mvc.ApplicationParts
+{
+    public static partial class AssemblyPartExtensions
+    {
+        public static System.Collections.Generic.IEnumerable<string> GetReferencePaths(this Microsoft.AspNetCore.Mvc.ApplicationParts.AssemblyPart assemblyPart) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
 {
     public partial class FileProviderRazorProjectItem : Microsoft.AspNetCore.Razor.Language.RazorProjectItem

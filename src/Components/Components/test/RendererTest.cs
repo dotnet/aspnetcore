@@ -2577,7 +2577,7 @@ namespace Microsoft.AspNetCore.Components.Test
         }
 
         [ConditionalFact]
-        [SkipOnHelix] // https://github.com/aspnet/AspNetCore/issues/7487
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/7487")]
         public async Task CanTriggerEventHandlerDisposedInEarlierPendingBatchAsync()
         {
             // This represents the scenario where the same event handler is being triggered

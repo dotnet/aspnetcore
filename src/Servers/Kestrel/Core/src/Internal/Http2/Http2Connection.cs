@@ -1073,9 +1073,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             ValidateHeader(name, value);
             try
             {
-                // Drop trailers for now. Adding them to the request headers is not thread safe.
-                // https://github.com/aspnet/KestrelHttpServer/issues/2051
-                if (_requestHeaderParsingState != RequestHeaderParsingState.Trailers)
+                if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+                {
+                    _currentHeadersStream.OnTrailer(name, value);
+                }
+                else
                 {
                     // Throws BadRequest for header count limit breaches.
                     // Throws InvalidOperation for bad encoding.
