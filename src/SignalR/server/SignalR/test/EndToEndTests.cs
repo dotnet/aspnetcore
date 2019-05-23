@@ -610,6 +610,52 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        [LogLevel(LogLevel.Trace)]
+        public async Task AuthorizedHubConnectionCanConnect()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HttpConnection).FullName &&
+                       writeContext.EventId.Name == "ErrorWithNegotiation";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var logger = LoggerFactory.CreateLogger<EndToEndTests>();
+
+                string token;
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = new Uri(server.Url);
+
+                    var response = await client.GetAsync("generatetoken?user=bob");
+                    token = await response.Content.ReadAsStringAsync();
+                }
+
+                var url = server.Url + "/authHub";
+                var connection = new HubConnectionBuilder()
+                        .WithLoggerFactory(LoggerFactory)
+                        .WithUrl(url, HttpTransportType.LongPolling, o =>
+                        {
+                            o.AccessTokenProvider = () => Task.FromResult(token);
+                        })
+                        .Build();
+
+                try
+                {
+                    logger.LogInformation("Starting connection to {url}", url);
+                    await connection.StartAsync().OrTimeout();
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
+                }
+            }
+        }
+
         // Serves a fake transport that lets us verify fallback behavior
         private class TestTransportFactory : ITransportFactory
         {
