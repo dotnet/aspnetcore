@@ -5,6 +5,7 @@ parameters:
   HelixBuild: $(Build.BuildNumber)       # required -- the build number Helix will use to identify this -- automatically set to the AzDO build number
   HelixTargetQueues: ''                  # required -- semicolon delimited list of Helix queues to test on; see https://helix.dot.net/ for a list of queues
   HelixAccessToken: ''                   # required -- access token to make Helix API requests; should be provided by the appropriate variable group
+  HelixConfiguration: ''                 # optional -- additional property attached to a job
   HelixPreCommands: ''                   # optional -- commands to run before Helix work item execution
   HelixPostCommands: ''                  # optional -- commands to run after Helix work item execution
   WorkItemDirectory: ''                  # optional -- a payload directory to zip up and send to Helix; requires WorkItemCommand; incompatible with XUnitProjects
@@ -35,6 +36,7 @@ steps:
       HelixSource: ${{ parameters.HelixSource }}
       HelixType: ${{ parameters.HelixType }}
       HelixBuild: ${{ parameters.HelixBuild }}
+      HelixConfiguration:  ${{ parameters.HelixConfiguration }}
       HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
       HelixAccessToken: ${{ parameters.HelixAccessToken }}
       HelixPreCommands: ${{ parameters.HelixPreCommands }}
@@ -64,6 +66,7 @@ steps:
       HelixSource: ${{ parameters.HelixSource }}
       HelixType: ${{ parameters.HelixType }}
       HelixBuild: ${{ parameters.HelixBuild }}
+      HelixConfiguration:  ${{ parameters.HelixConfiguration }}
       HelixTargetQueues: ${{ parameters.HelixTargetQueues }}
       HelixAccessToken: ${{ parameters.HelixAccessToken }}
       HelixPreCommands: ${{ parameters.HelixPreCommands }}

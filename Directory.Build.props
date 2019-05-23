@@ -1,6 +1,15 @@
 ﻿<Project>
   <Import Project="version.props" />
 
+  <!--
+    These imports look funny.
+    Eventually they will be replaced by a simplified import that brings in
+    the entire Arcade SDK. For now, we're moving onto Arcade one piece at a time.
+  -->
+  <Import Project="../tools/DefaultVersions.Generated.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\Versions.props" />
+  <Import Project="../tools/Compiler.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(UsingToolMicrosoftNetCompilers)' == 'true'"/>
+
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
 
@@ -121,7 +130,6 @@
     <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
 
-  <Import Project="eng\Versions.props" />
   <Import Project="build\sources.props" />
 
   <!-- Artifacts layout -->

@@ -53,6 +53,7 @@
       <TargetStaticFeed Condition="'$(ArtifactsCategory.ToUpper())' == 'TOOLSET'">https://dotnetfeed.blob.core.windows.net/dotnet-toolset/index.json</TargetStaticFeed>
       <TargetStaticFeed Condition="'$(ArtifactsCategory.ToUpper())' == 'WINDOWSDESKTOP'">https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json</TargetStaticFeed>
       <TargetStaticFeed Condition="'$(ArtifactsCategory.ToUpper())' == 'NUGETCLIENT'">https://dotnetfeed.blob.core.windows.net/nuget-nugetclient/index.json</TargetStaticFeed>
+      <TargetStaticFeed Condition="'$(ArtifactsCategory.ToUpper())' == 'ASPNETENTITYFRAMEWORK6'">https://dotnetfeed.blob.core.windows.net/aspnet-entityframework6/index.json</TargetStaticFeed>
     </PropertyGroup>
 
     <Error 

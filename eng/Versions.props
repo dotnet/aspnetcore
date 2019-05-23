@@ -5,6 +5,10 @@
 
 -->
 <Project>
+  <PropertyGroup Label="Arcade settings">
+    <!-- Opt-in to using the version of the Roslyn compiler bundled with Arcade. -->
+    <UsingToolMicrosoftNetCompilers Condition="'$(MSBuildProjectExtension)' == '.csproj' or '$(MSBuildProjectExtension)' == '.fsproj' or '$(MSBuildProjectExtension)' == '.vbproj'">true</UsingToolMicrosoftNetCompilers>
+  </PropertyGroup>
   <!--
 
     These versions should ONLY be updated by automation.
@@ -17,7 +21,7 @@
   -->
   <PropertyGroup Label="Automated">
     <!-- Packages from dotnet/arcade -->
-    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19270.1</MicrosoftDotNetGenAPIPackageVersion>
+    <MicrosoftDotNetGenAPIPackageVersion>1.0.0-beta.19272.13</MicrosoftDotNetGenAPIPackageVersion>
     <!-- Packages from dotnet/core-setup -->
     <MicrosoftExtensionsDependencyModelPackageVersion>3.0.0-preview6-27714-15</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETCoreAppPackageVersion>3.0.0-preview6-27714-15</MicrosoftNETCoreAppPackageVersion>

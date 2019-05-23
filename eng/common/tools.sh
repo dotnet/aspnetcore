@@ -1,7 +1,19 @@
+#!/usr/bin/env bash
+
 # Initialize variables if they aren't already defined.
 
 # CI mode - set to true on CI server for PR validation build or official build.
 ci=${ci:-false}
+
+# Set to true to use the pipelines logger which will enable Azure logging output.
+# https://github.com/Microsoft/azure-pipelines-tasks/blob/master/docs/authoring/commands.md
+# This flag is meant as a temporary opt-opt for the feature while validate it across
+# our consumers. It will be deleted in the future.
+if [[ "$ci" == true ]]; then
+  pipelines_log=${pipelines_log:-true}
+else
+  pipelines_log=${pipelines_log:-false}
+fi
 
 # Build configuration. Common values include 'Debug' and 'Release', but the repository may use other names.
 configuration=${configuration:-'Debug'}
@@ -40,6 +52,78 @@ else
   use_global_nuget_cache=${use_global_nuget_cache:-true}
 fi
 
+function EmitError {
+  if [[ "$ci" != true ]]; then
+    echo "$@" >&2
+    return
+  fi
+
+  message_type="error"
+  sourcepath=''
+  linenumber=''
+  columnnumber=''
+  error_code=''
+
+  while [[ $# -gt 0 ]]; do
+    opt="$(echo "${1/#--/-}" | awk '{print tolower($0)}')"
+    case "$opt" in
+      -type|-t)
+        message_type=$2
+        shift
+        ;;
+      -sourcepath|-s)
+        sourcepath=$2
+        shift
+        ;;
+      -linenumber|-l)
+        linenumber=$2
+        shift
+        ;;
+      -columnnumber|-col)
+        columnnumber=$2
+        shift
+        ;;
+      -code|-c)
+        error_code=$2
+        shift
+        ;;
+      *)
+        break
+        ;;
+    esac
+
+    shift
+  done
+
+  message='##vso[task.logissue'
+
+  message="$message type=$message_type"
+
+  if [ -n "$sourcepath" ]; then
+    message="$message;sourcepath=$sourcepath"
+  else
+    message="$message;sourcepath=${BASH_SOURCE[1]}"
+  fi
+
+  if [ -n "$linenumber" ]; then
+    message="$message;linenumber=$linenumber"
+  else
+    message="$message;linenumber=${BASH_LINENO[0]}"
+  fi
+
+  if [ -n "$columnnumber" ]; then
+    message="$message;columnnumber=$columnnumber"
+  fi
+
+  if [ -n "$error_code" ]; then
+    message="$message;code=$error_code"
+  fi
+
+  message="$message]$*"
+
+  echo "$message"
+}
+
 # Resolve any symlinks in the given path.
 function ResolvePath {
   local path=$1
@@ -65,7 +149,7 @@ function ReadGlobalVersion {
   local pattern="\"$key\" *: *\"(.*)\""
 
   if [[ ! $line =~ $pattern ]]; then
-    echo "Error: Cannot find \"$key\" in $global_json_file" >&2
+    EmitError "Error: Cannot find \"$key\" in $global_json_file"
     ExitWithExitCode 1
   fi
 
@@ -126,7 +210,7 @@ function InitializeDotNetCli {
       if [[ "$install" == true ]]; then
         InstallDotNetSdk "$dotnet_root" "$dotnet_sdk_version"
       else
-        echo "Unable to find dotnet with SDK version '$dotnet_sdk_version'" >&2
+        EmitError "Unable to find dotnet with SDK version '$dotnet_sdk_version'"
         ExitWithExitCode 1
       fi
     fi
@@ -179,7 +263,7 @@ function InstallDotNet {
   fi
   bash "$install_script" --version $version --install-dir "$root" $archArg $runtimeArg $skipNonVersionedFilesArg || {
     local exit_code=$?
-    echo "Failed to install dotnet SDK (exit code '$exit_code')." >&2
+    EmitError "Failed to install dotnet SDK (exit code '$exit_code')."
     ExitWithExitCode $exit_code
   }
 }
@@ -216,6 +300,7 @@ function InitializeBuildTool {
   # return values
   _InitializeBuildTool="$_InitializeDotNetCli/dotnet"  
   _InitializeBuildToolCommand="msbuild"
+  _InitializeBuildToolFramework="netcoreapp2.1"
 }
 
 function GetNuGetPackageCachePath {
@@ -264,7 +349,7 @@ function InitializeToolset {
   fi
 
   if [[ "$restore" != true ]]; then
-    echo "Toolset version $toolsetVersion has not been restored." >&2
+    EmitError "Toolset version $toolsetVersion has not been restored."
     ExitWithExitCode 2
   fi
 
@@ -276,12 +361,12 @@ function InitializeToolset {
   fi
   
   echo '<Project Sdk="Microsoft.DotNet.Arcade.Sdk"/>' > "$proj"
-  MSBuild "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
+  MSBuild-Core "$proj" $bl /t:__WriteToolsetLocation /clp:ErrorsOnly\;NoSummary /p:__ToolsetLocationOutputFile="$toolset_location_file"
 
   local toolset_build_proj=`cat "$toolset_location_file"`
 
   if [[ ! -a "$toolset_build_proj" ]]; then
-    echo "Invalid toolset path: $toolset_build_proj" >&2
+    EmitError "Invalid toolset path: $toolset_build_proj"
     ExitWithExitCode 3
   fi
 
@@ -304,14 +389,26 @@ function StopProcesses {
 }
 
 function MSBuild {
+  args=$@
+  if [[ "$pipelines_log" == true ]]; then
+    InitializeBuildTool
+    InitializeToolset
+    _toolset_dir="${_InitializeToolset%/*}"
+    _loggerPath="$_toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
+    args=( "${args[@]}" "-logger:$_loggerPath" )
+  fi
+  MSBuild-Core ${args[@]}
+}
+
+function MSBuild-Core {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true ]]; then
-      echo "Binary log must be enabled in CI build." >&2
+      EmitError "Binary log must be enabled in CI build."
       ExitWithExitCode 1
     fi
 
     if [[ "$node_reuse" == true ]]; then
-      echo "Node reuse must be disabled in CI build." >&2
+      EmitError "Node reuse must be disabled in CI build."
       ExitWithExitCode 1
     fi
   fi
@@ -325,7 +422,7 @@ function MSBuild {
 
   "$_InitializeBuildTool" "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@" || {
     local exit_code=$?
-    echo "Build failed (exit code '$exit_code')." >&2
+    EmitError "Build failed (exit code '$exit_code')."
     ExitWithExitCode $exit_code
   }
 }
