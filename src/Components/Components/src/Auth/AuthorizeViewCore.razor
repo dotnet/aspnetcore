@@ -1,4 +1,8 @@
-@namespace Microsoft.AspNetCore.Components
+@*
+    Ideally, this would be an internal (and probably abstract) class. So temporarily
+    this is in an "internal" namespace and should become actually internal in the future.
+*@
+@namespace Microsoft.AspNetCore.Components.Internal
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
@@ -18,7 +22,6 @@ else
 }
 
 @functions {
-    private IAuthorizeData[] selfAsAuthorizeData;
     private AuthenticationState currentAuthenticationState;
     private bool isAuthorized;
 
@@ -46,27 +49,9 @@ else
     [Parameter] public RenderFragment Authorizing { get; private set; }
 
     /// <summary>
-    /// The policy name that determines whether the content can be displayed.
-    /// </summary>
-    [Parameter] public string Policy { get; private set; }
-
-    /// <summary>
-    /// A comma delimited list of roles that are allowed to display the content.
-    /// </summary>
-    [Parameter] public string Roles { get; private set; }
-
-    /// <summary>
     /// The resource to which access is being controlled.
     /// </summary>
     [Parameter] public object Resource { get; private set; }
-
-    protected override void OnInit()
-    {
-        selfAsAuthorizeData = new[]
-        {
-            new AuthorizeDataAdapter((AuthorizeView)(object)this)
-        };
-    }
 
     protected override async Task OnParametersSetAsync()
     {
@@ -89,10 +74,16 @@ else
         isAuthorized = await IsAuthorizedAsync(currentAuthenticationState.User);
     }
 
+    // TODO: Make abstract instead
+    protected virtual IAuthorizeData[] AuthorizeData
+    {
+        get => throw new NotImplementedException($"{nameof(AuthorizeData)} must be overridden and supplied by a derived class.");
+    }
+
     private async Task<bool> IsAuthorizedAsync(ClaimsPrincipal user)
     {
         var policy = await AuthorizationPolicy.CombineAsync(
-            AuthorizationPolicyProvider, selfAsAuthorizeData);
+            AuthorizationPolicyProvider, AuthorizeData);
         var result = await AuthorizationService.AuthorizeAsync(user, Resource, policy);
         return result.Succeeded;
     }
