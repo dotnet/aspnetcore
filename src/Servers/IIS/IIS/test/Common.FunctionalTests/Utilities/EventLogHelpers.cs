@@ -259,7 +259,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         public static string InProcessFailedToFindRequestHandler(IISDeploymentResult deploymentResult)
         {
-            return "Could not find the assembly '(.*)' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS or Microsoft.AspNetCore.App is referenced in your application.";
+            if (DeployerSelector.HasNewShim)
+            {
+                return "Could not find the assembly '(.*)' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS or Microsoft.AspNetCore.App is referenced in your application.";
+
+            }
+            else
+            {
+                return "Could not find the assembly '(.*)' referenced for the in-process application. Please confirm the Microsoft.AspNetCore.Server.IIS package is referenced in your application.";
+            }
         }
 
         public static string CouldNotStartStdoutFileRedirection(string file, IISDeploymentResult deploymentResult)
