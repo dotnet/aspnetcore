@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Internal
 {
-    internal static class LoggerExtensions
+    internal static class RequestThrottlingLog
     {
         private static readonly Action<ILogger, int, Exception> _requestEnqueued =
             LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "Request Enqueued"), "Server is busy; request queued in middleware. Current queue length: {queuedRequests}.");
@@ -14,12 +14,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
         private static readonly Action<ILogger, int, Exception> _requestDequeued =
             LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "Request Dequeued"), "Space availible on server; request has left queue. Current queue length: {queuedRequests}.");
 
-        internal static void RequestEnqueued(this ILogger logger, int queuedRequests)
+        internal static void RequestEnqueued(ILogger logger, int queuedRequests)
         {
             _requestEnqueued(logger, queuedRequests, null);
         }
 
-        internal static void RequestDequeued(this ILogger logger, int queuedRequests)
+        internal static void RequestDequeued(ILogger logger, int queuedRequests)
         {
             _requestDequeued(logger, queuedRequests, null);
         }

@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.RequestThrottling
     {
         /// <summary>
         /// Maximum number of concurrent requests. Any extras will be queued on the server. 
+        /// We do not provide a default since reasonable values can vary from 500 to 500 thousand.
+        /// Generally, highly async systems (and systems with higher backend latency) do better with more concurrent requests.
         /// </summary>
-        public int MaxConcurrentRequests { get; set; } = 10;
+        public int? MaxConcurrentRequests { get; set; } = null;
     }
 }

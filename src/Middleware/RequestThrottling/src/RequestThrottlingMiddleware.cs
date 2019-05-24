@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Globalization;
+using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling;
@@ -33,7 +36,14 @@ namespace Microsoft.Aspnetcore.RequestThrottling
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
             _options = options.Value;
-            _semaphore = new SemaphoreWrapper(_options.MaxConcurrentRequests); 
+
+            if (_options.MaxConcurrentRequests == null)
+            {
+                // TODO :: Localization
+                throw new ArgumentException(string.Format("Option must be provided {0}", nameof(_options.MaxConcurrentRequests)));
+            }
+
+            _semaphore = new SemaphoreWrapper((int)_options.MaxConcurrentRequests); 
         }
 
         /// <summary>
@@ -50,9 +60,9 @@ namespace Microsoft.Aspnetcore.RequestThrottling
                 var needsToWaitOnQueue = !waitInQueueTask.IsCompleted;
                 if (needsToWaitOnQueue)
                 {
-                    _logger.RequestEnqueued(WaitingRequests);
+                    RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
                     await waitInQueueTask;
-                    _logger.RequestDequeued(WaitingRequests);
+                    RequestThrottlingLog.RequestDequeued(_logger, WaitingRequests);
                 }
 
                 await _next(context);
@@ -69,7 +79,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// </summary>
         internal int ConcurrentRequests
         {
-            get => (_options.MaxConcurrentRequests - _semaphore.Count);
+            get => ((int)_options.MaxConcurrentRequests - _semaphore.Count);
         }
 
         /// <summary>
@@ -77,9 +87,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// </summary>
         internal int WaitingRequests
         {
-            get => _semaphore.WaitingRequests; 
+            get => _semaphore.WaitingRequests;
         }
-
-
     }
 }

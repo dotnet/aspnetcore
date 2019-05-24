@@ -4,7 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Internal;
 using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
@@ -71,6 +71,15 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             blocker.Continue();
             await t1.OrTimeout();
             await t2.OrTimeout();
+        }
+
+        [Fact]
+        public void InvalidArgumentIfMaxConcurrentRequestsIsNull()
+        {
+            Assert.Throws<ArgumentException>(() =>
+            {
+                TestUtils.CreateTestMiddleWare(maxConcurrentRequests: null);
+            });
         }
     }
 }
