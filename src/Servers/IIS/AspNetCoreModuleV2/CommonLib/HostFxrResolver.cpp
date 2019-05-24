@@ -46,29 +46,11 @@ HostFxrResolver::GetHostFxrParameters(
         throw InvalidOperationException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
     }
 
-    // C:\Users\jukotali\Downloads\nethostbits
     // call load dll and see what happens :)
+    // TODO make sure we figure out a way to load this dll sxs
+    // TODO error handling
     auto moduleHandle = LoadLibrary(L"C:\\Users\\jukotali\\Downloads\\nethostbits\\nethost.dll");
     auto getHostfxrPath = ModuleHelpers::GetKnownProcAddress<get_hostfxr_path>(moduleHandle, "get_hostfxr_path");
-    std::wstring test;
-    DWORD size = 500;
-    test.resize(500);
-    // pass in dllPath here?
-    std::wstring appDll;
-    if (expandedApplicationArguments.size() == 0)
-    {
-        // standalone
-        appDll = applicationPhysicalPath / fs::path(processPath).replace_extension(L"dll");
-    }
-    else
-    {
-        // portable
-        appDll = applicationPhysicalPath / expandedApplicationArguments;
-    }
-
-    getHostfxrPath(test.data(), &size, appDll.data());
-
-    test.resize(size);
 
     // Check if the absolute path is to dotnet or not.
     // Things to figure out:
@@ -85,11 +67,20 @@ HostFxrResolver::GetHostFxrParameters(
             throw InvalidOperationException(L"Application arguments are empty.");
         }
 
+        std::wstring test;
+        DWORD size = 500;
+        test.resize(size);
+
         AppendArguments(
             expandedApplicationArguments,
             applicationPhysicalPath,
             arguments,
             true);
+
+        getHostfxrPath(test.data(), &size, arguments[0].c_str());
+
+        test.resize(size); // todo maybe +1 for nullchar
+        hostFxrDllPath = test;
     }
     else
     {
@@ -135,12 +126,18 @@ HostFxrResolver::GetHostFxrParameters(
             else
             {
                 LOG_INFOF(L"hostfxr.dll found app local at '%ls', treating application as portable with launcher", hostFxrDllPath.c_str());
+                std::wstring test;
+                DWORD size = 500;
+                test.resize(size);
 
                 // passing "dotnet" here because we don't know where dotnet.exe should come from
                 // so trying all fallbacks is appropriate
-
                 // For portable with launcher apps we need dotnet.exe to be argv[0] and .dll be argv[1]
                 arguments.push_back(applicationDllPath);
+                getHostfxrPath(test.data(), &size, applicationDllPath.c_str());
+
+                test.resize(size); // todo maybe +1 for nullchar
+                hostFxrDllPath = test;
             }
 
             AppendArguments(
