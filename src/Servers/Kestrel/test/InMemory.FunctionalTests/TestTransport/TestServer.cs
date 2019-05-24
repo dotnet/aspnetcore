@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public InMemoryConnection CreateConnection()
         {
-            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log);
+            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log, Context.Scheduler);
             _transportFactory.AddConnection(transportConnection);
             return new InMemoryConnection(transportConnection);
         }

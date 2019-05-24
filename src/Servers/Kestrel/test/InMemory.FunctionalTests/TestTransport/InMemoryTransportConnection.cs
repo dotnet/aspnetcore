@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
         private readonly ILogger _logger;
         private bool _isClosed;
 
-        public InMemoryTransportConnection(MemoryPool<byte> memoryPool, ILogger logger)
+        public InMemoryTransportConnection(MemoryPool<byte> memoryPool, ILogger logger, PipeScheduler scheduler = null)
         {
             MemoryPool = memoryPool;
             _logger = logger;
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             LocalEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
             RemoteEndPoint = new IPEndPoint(IPAddress.Loopback, 0);
 
-            var pair = DuplexPipe.CreateConnectionPair(new PipeOptions(memoryPool), new PipeOptions(memoryPool));
+            var pair = DuplexPipe.CreateConnectionPair(new PipeOptions(memoryPool, readerScheduler: scheduler), new PipeOptions(memoryPool, writerScheduler: scheduler));
             Application = pair.Application;
             Transport = pair.Transport;
 
