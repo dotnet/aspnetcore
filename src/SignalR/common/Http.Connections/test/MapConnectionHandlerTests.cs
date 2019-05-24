@@ -88,6 +88,29 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         }
 
         [Fact]
+        public void MapConnectionHandlerFindsAttributesFromEndPointAndOptions()
+        {
+            var authCount = 0;
+            using (var host = BuildWebHost<AuthConnectionHandler>("/auth",
+                options =>
+                {
+                    authCount += options.AuthorizationData.Count;
+                    options.AuthorizationData.Add(new AuthorizeAttribute());
+                }))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(2, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(2, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+            }
+
+            Assert.Equal(0, authCount);
+        }
+
+        [Fact]
         public void MapConnectionHandlerEndPointRoutingFindsAttributesOnHub()
         {
             var authCount = 0;
@@ -112,12 +135,10 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public void MapConnectionHandlerEndPointRoutingFindsAttributesFromOptions()
         {
             var authCount = 0;
-            HttpConnectionDispatcherOptions configuredOptions = null;
             using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapConnectionHandler<AuthConnectionHandler>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
                 options.AuthorizationData.Add(new AuthorizeAttribute());
-                configuredOptions = options;
             })))
             {
                 host.Start();
