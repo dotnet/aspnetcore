@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Components
         public object Resource { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string Roles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; } }
-        protected override Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData();
+        protected override Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData() { throw null; }
     }
 
     public abstract partial class AuthorizeViewCore : Microsoft.AspNetCore.Components.ComponentBase
