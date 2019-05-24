@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Auth;
-using Microsoft.AspNetCore.Components.Internal;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -130,7 +129,7 @@ namespace Microsoft.AspNetCore.Components
         {
             [Parameter] public IAuthorizeData[] AuthorizeDataParam { get; private set; }
 
-            protected override IAuthorizeData[] AuthorizeData => AuthorizeDataParam;
+            protected override IAuthorizeData[] GetAuthorizeData() => AuthorizeDataParam;
         }
 
         // There has to be some default content. If we render blank by default, developers

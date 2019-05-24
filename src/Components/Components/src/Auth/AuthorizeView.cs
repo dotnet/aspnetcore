@@ -5,12 +5,10 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Microsoft.AspNetCore.Components
 {
-#pragma warning disable PUB0001 // Pubternal type in public API
     /// <summary>
     /// Displays differing content depending on the user's authorization status.
     /// </summary>
-    public class AuthorizeView : Internal.AuthorizeViewCore
-#pragma warning restore PUB0001 // Pubternal type in public API
+    public class AuthorizeView : AuthorizeViewCore
     {
         private readonly IAuthorizeData[] selfAsAuthorizeData;
 
@@ -35,6 +33,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Gets the data used for authorization.
         /// </summary>
-        protected override IAuthorizeData[] AuthorizeData => selfAsAuthorizeData;
+        protected override IAuthorizeData[] GetAuthorizeData()
+            => selfAsAuthorizeData;
     }
 }
