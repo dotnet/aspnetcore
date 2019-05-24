@@ -23,6 +23,7 @@ HostFxrResolver::GetHostFxrParameters(
     const fs::path     &applicationPhysicalPath,
     const std::wstring &applicationArguments,
     fs::path           &hostFxrDllPath,
+    fs::path           &dotnetExePath,
     std::vector<std::wstring> &arguments,
     ErrorContext&      errorContext
 )
@@ -35,6 +36,8 @@ HostFxrResolver::GetHostFxrParameters(
 
     fs::path expandedProcessPath = Environment::ExpandEnvironmentVariables(processPath);
     const auto expandedApplicationArguments = Environment::ExpandEnvironmentVariables(applicationArguments);
+
+    LOG_INFOF(L"Known dotnet.exe location: '%ls'", dotnetExePath.c_str());
 
     if (!expandedProcessPath.has_extension())
     {
@@ -81,8 +84,8 @@ HostFxrResolver::GetHostFxrParameters(
 
         test.resize(size); // todo maybe +1 for nullchar
         hostFxrDllPath = test;
-
-        arguments.insert(arguments.begin(), GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath));
+        dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
+        arguments.insert(arguments.begin(), dotnetExePath);
     }
     else
     {
@@ -141,7 +144,8 @@ HostFxrResolver::GetHostFxrParameters(
                 test.resize(size); // todo maybe +1 for nullchar
                 hostFxrDllPath = test;
 
-                arguments.push_back(GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath));
+                dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
+                arguments.push_back(dotnetExePath);
                 arguments.push_back(applicationDllPath);
             }
 

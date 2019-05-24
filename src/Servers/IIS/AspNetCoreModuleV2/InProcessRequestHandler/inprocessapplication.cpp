@@ -20,8 +20,8 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     IHttpServer& pHttpServer,
     IHttpApplication& pApplication,
     std::unique_ptr<InProcessOptions> pConfig,
-    APPLICATION_PARAMETER* ,
-    DWORD                  ) :
+    APPLICATION_PARAMETER* pParameters,
+    DWORD                  nParameters) :
     InProcessApplicationBase(pHttpServer, pApplication),
     m_Initialized(false),
     m_blockManagedCallbacks(true),
@@ -30,6 +30,12 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     m_requestCount(0)
 {
     DBG_ASSERT(m_pConfig);
+
+    const auto knownLocation = FindParameter<PCWSTR>(s_exeLocationParameterName, pParameters, nParameters);
+    if (knownLocation != nullptr)
+    {
+        m_dotnetExeKnownLocation = knownLocation;
+    }
 
     m_stringRedirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 }
@@ -194,6 +200,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
         if (s_fMainCallback == nullptr)
         {
             THROW_IF_FAILED(HostFxrResolutionResult::Create(
+                m_dotnetExeKnownLocation,
                 m_pConfig->QueryProcessPath(),
                 QueryApplicationPhysicalPath(),
                 m_pConfig->QueryArguments(),

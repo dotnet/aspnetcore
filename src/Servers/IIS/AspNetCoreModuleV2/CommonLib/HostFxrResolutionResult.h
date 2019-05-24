@@ -16,10 +16,12 @@ class HostFxrResolutionResult
 {
 public:
     HostFxrResolutionResult(
+        std::filesystem::path dotnetExeLocation,
         std::filesystem::path hostFxrLocation,
         std::vector<std::wstring> arguments
         ) noexcept
-        : m_hostFxrLocation(std::move(hostFxrLocation)),
+    :   m_dotnetExeLocation(std::move(dotnetExeLocation)),
+        m_hostFxrLocation(std::move(hostFxrLocation)),
         m_arguments(std::move(arguments))
     {}
 
@@ -32,8 +34,15 @@ public:
         return m_hostFxrLocation;
     }
 
+    const std::filesystem::path&
+    GetDotnetExeLocation() const noexcept
+    {
+        return m_dotnetExeLocation;
+    }
+
     static
     HRESULT Create(
+         _In_  const std::wstring& pcwzExeLocation,
          _In_  const std::wstring& pcwzProcessPath,
          _In_  const std::wstring& pcwzApplicationPhysicalPath,
          _In_  const std::wstring& pcwzArguments,
@@ -41,6 +50,7 @@ public:
          _Out_ std::unique_ptr<HostFxrResolutionResult>& ppWrapper);
 
 private:
+    const std::filesystem::path m_dotnetExeLocation;
     const std::filesystem::path m_hostFxrLocation;
     const std::vector<std::wstring> m_arguments;
 };

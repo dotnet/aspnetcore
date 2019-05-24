@@ -88,6 +88,12 @@ public:
         return s_Application;
     }
 
+    const std::wstring&
+    QueryExeLocation() const
+    {
+        return m_dotnetExeKnownLocation;
+    }
+
     const InProcessOptions&
     QueryConfig() const
     {
@@ -155,6 +161,8 @@ private:
     PFN_ASYNC_COMPLETION_HANDLER    m_AsyncCompletionHandler;
     PFN_DISCONNECT_HANDLER          m_DisconnectHandler;
     std::atomic<PFN_REQUESTS_DRAINED_HANDLER>    m_RequestsDrainedHandler;
+
+    std::wstring                    m_dotnetExeKnownLocation;
 
     std::atomic_bool                m_blockManagedCallbacks;
     bool                            m_Initialized;
