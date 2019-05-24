@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             }
         }
 
-        public EndPoint EndPoint { get; set; }
+        internal EndPoint EndPoint { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
@@ -161,13 +161,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 ? "https"
                 : "http";
 
-            switch (Type)
+            switch (EndPoint)
             {
-                case ListenType.IPEndPoint:
-                    return $"{scheme}://{IPEndPoint}";
-                case ListenType.SocketPath:
-                    return $"{scheme}://unix:{SocketPath}";
-                case ListenType.FileHandle:
+                case IPEndPoint _:
+                    return $"{scheme}://{EndPoint}";
+                case UnixDomainSocketEndPoint _:
+                    return $"{scheme}://unix:{EndPoint}";
+                case FileHandleEndPoint _:
                     return $"{scheme}://<file handle>";
                 default:
                     throw new InvalidOperationException();

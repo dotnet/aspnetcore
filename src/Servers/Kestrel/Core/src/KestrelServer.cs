@@ -138,6 +138,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                     // Update the endpoint
                     options.EndPoint = transport.EndPoint;
+
                     _transports.Add(transport);
 
                     connectionDispatcher.StartAcceptingConnections(transport);
