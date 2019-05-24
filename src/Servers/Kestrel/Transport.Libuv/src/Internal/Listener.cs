@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
         }
 
-        public UvStreamHandle ListenSocket { get; private set; }
+        protected UvStreamHandle ListenSocket { get; private set; }
 
         public ILibuvTrace Log => TransportContext.Log;
 

@@ -139,13 +139,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private UvStreamHandle AcceptHandle()
         {
-            switch (EndPoint)
+            var fileHandleEndPoint = (FileHandleEndPoint)EndPoint;
+
+            switch (fileHandleEndPoint.FileHandleType)
             {
-                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Auto:
+                case FileHandleType.Auto:
                     throw new InvalidOperationException("Cannot accept on a non-specific file handle, listen should be performed first.");
-                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Tcp:
+                case FileHandleType.Tcp:
                     return AcceptTcp();
-                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Pipe:
+                case FileHandleType.Pipe:
                     return AcceptPipe();
                 default:
                     throw new NotSupportedException();
