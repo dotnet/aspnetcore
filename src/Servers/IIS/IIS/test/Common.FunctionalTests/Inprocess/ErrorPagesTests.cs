@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             StopServer();
 
             var responseString = await response.Content.ReadAsStringAsync();
-            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", responseString);
+            Assert.Contains("HTTP Error 500.30 - ANCM In-Process Handler Load Failure", responseString);
             VerifyNoExtraTrailingBytes(responseString);
 
             await AssertLink(response);
