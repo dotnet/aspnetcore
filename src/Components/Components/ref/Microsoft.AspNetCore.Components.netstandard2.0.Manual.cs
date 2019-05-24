@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Components
         protected override Microsoft.AspNetCore.Authorization.IAuthorizeData[] GetAuthorizeData();
     }
 
-    public partial class AuthorizeViewCore : Microsoft.AspNetCore.Components.ComponentBase
+    public abstract partial class AuthorizeViewCore : Microsoft.AspNetCore.Components.ComponentBase
     {
         public AuthorizeViewCore() { }
         [Microsoft.AspNetCore.Components.ParameterAttribute]
