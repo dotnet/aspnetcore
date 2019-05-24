@@ -15,7 +15,7 @@
 
 namespace fs = std::filesystem;
 
-typedef INT(*get_hostfxr_path) (PWSTR buffer, DWORD* bufferSize, PCWSTR assemblyPath);
+typedef INT(*get_hostfxr_path) (PWSTR buffer, size_t* bufferSize, PCWSTR assemblyPath);
 
 void
 HostFxrResolver::GetHostFxrParameters(
@@ -68,7 +68,7 @@ HostFxrResolver::GetHostFxrParameters(
         }
 
         std::wstring test;
-        DWORD size = 500;
+        size_t size = 500;
         test.resize(size);
 
         AppendArguments(
@@ -81,6 +81,8 @@ HostFxrResolver::GetHostFxrParameters(
 
         test.resize(size); // todo maybe +1 for nullchar
         hostFxrDllPath = test;
+
+        arguments.insert(arguments.begin(), GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath));
     }
     else
     {
@@ -127,17 +129,20 @@ HostFxrResolver::GetHostFxrParameters(
             {
                 LOG_INFOF(L"hostfxr.dll found app local at '%ls', treating application as portable with launcher", hostFxrDllPath.c_str());
                 std::wstring test;
-                DWORD size = 500;
+                size_t size = 500;
                 test.resize(size);
 
                 // passing "dotnet" here because we don't know where dotnet.exe should come from
                 // so trying all fallbacks is appropriate
                 // For portable with launcher apps we need dotnet.exe to be argv[0] and .dll be argv[1]
-                arguments.push_back(applicationDllPath);
+
                 getHostfxrPath(test.data(), &size, applicationDllPath.c_str());
 
                 test.resize(size); // todo maybe +1 for nullchar
                 hostFxrDllPath = test;
+
+                arguments.push_back(GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath));
+                arguments.push_back(applicationDllPath);
             }
 
             AppendArguments(
@@ -321,6 +326,12 @@ HostFxrResolver::GetAbsolutePathToDotnet(
         L"Could not find dotnet.exe at '%s' or using the system PATH environment variable."
         " Check that a valid path to dotnet is on the PATH and the bitness of dotnet matches the bitness of the IIS worker process.",
         processPath.c_str()));
+}
+
+fs::path
+HostFxrResolver::GetAbsolutePathToDotnetFromHostfxr(const fs::path& hostfxrPath)
+{
+    return hostfxrPath.parent_path().parent_path().parent_path().parent_path() / "dotnet.exe";
 }
 
 fs::path

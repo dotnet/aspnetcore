@@ -68,6 +68,10 @@ private:
     );
 
     static
+    std::filesystem::path
+    GetAbsolutePathToDotnetFromHostfxr(const std::filesystem::path& hostfxrPath);
+
+    static
     std::optional<std::filesystem::path>
     InvokeWhereToFindDotnet();
 
