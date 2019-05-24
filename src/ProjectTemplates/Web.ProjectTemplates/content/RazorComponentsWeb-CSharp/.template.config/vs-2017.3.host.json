@@ -16,6 +16,38 @@
   "uiFilters": [
     "oneaspnet"
   ],
+  "usesOidc": true,
+  "supportedAuthentications": [
+    {
+      "auth": "None",
+      "authenticationType": "NoAuth",
+      "allowUnsecured": true
+    },
+    {
+      "auth": "Individual",
+      "authenticationType": "IndividualAuth",
+      "b2cAuthenticationOptions": "CloudExisting"
+    },
+    {
+      "auth": "Individual",
+      "authenticationType": "IndividualAuth",
+      "b2cAuthenticationOptions": "Local"
+    },
+    {
+      "auth": "SingleOrg",
+      "authenticationType": "OrgAuth",
+      "orgAuthenticationOptions": "SSO"
+    },
+    {
+      "auth": "MultiOrg",
+      "authenticationType": "OrgAuth",
+      "orgAuthenticationOptions": "MultiOrg"
+    },
+    {
+      "auth": "Windows",
+      "authenticationType": "WindowsAuth"
+    }
+  ],
   "ports": [
     {
       "name": "HttpPort",
@@ -27,6 +59,7 @@
     }
   ],
   "excludeLaunchSettings": false,
+  "azureReplyUrlPortName": "HttpsPort",
   "minFullFrameworkVersion": "4.6.1",
   "disableHttpsSymbol": "NoHttps"
 }
