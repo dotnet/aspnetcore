@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Components.Test.Helpers
         {
             if (!ShouldHandleExceptions)
             {
-                throw exception;
+                ExceptionDispatchInfo.Capture(exception).Throw();
             }
 
             HandledExceptions.Add(exception);
