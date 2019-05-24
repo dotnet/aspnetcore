@@ -19,7 +19,7 @@
   <PropertyGroup Condition=" '$(CI)' == 'true' ">
     <HelixType>ci</HelixType>
     <Creator>aspnetcore</Creator>
-    <HelixBuild>$(BUILD_BUILDNUMBER)</HelixBuild>
+    <HelixBuild>$(BUILD_BUILDNUMBER).$(BUILD_BUILDID)</HelixBuild>
     <WaitForWorkItemCompletion>true</WaitForWorkItemCompletion>
     <EnableAzurePipelinesReporter>true</EnableAzurePipelinesReporter>
     <FailOnMissionControlTestFailure>true</FailOnMissionControlTestFailure>
