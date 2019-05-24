@@ -67,44 +67,6 @@ TEST(ParseHostFxrArguments, ProvideNoArgs_InvalidArgs)
         InvalidOperationException);
 }
 
-TEST(GetAbsolutePathToDotnetFromProgramFiles, BackupWorks)
-{
-    STRU struAbsolutePathToDotnet;
-    BOOL fDotnetInProgramFiles;
-    BOOL is64Bit;
-    BOOL fIsWow64 = FALSE;
-    SYSTEM_INFO systemInfo;
-    IsWow64Process(GetCurrentProcess(), &fIsWow64);
-    if (fIsWow64)
-    {
-        is64Bit = FALSE;
-    }
-    else
-    {
-        GetNativeSystemInfo(&systemInfo);
-        is64Bit = systemInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64;
-    }
-
-    if (is64Bit)
-    {
-        fDotnetInProgramFiles = std::filesystem::is_regular_file(L"C:/Program Files/dotnet/dotnet.exe");
-    }
-    else
-    {
-        fDotnetInProgramFiles = std::filesystem::is_regular_file(L"C:/Program Files (x86)/dotnet/dotnet.exe");
-    }
-
-    auto dotnetPath = HostFxrResolver::GetAbsolutePathToDotnetFromProgramFiles();
-    if (fDotnetInProgramFiles)
-    {
-        EXPECT_TRUE(dotnetPath.has_value());
-    }
-    else
-    {
-        EXPECT_FALSE(dotnetPath.has_value());
-    }
-}
-
 TEST(GetHostFxrArguments, InvalidParams)
 {
     std::vector<std::wstring> bstrArray;
