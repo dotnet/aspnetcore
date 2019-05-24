@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var connection = new Mock<TransportConnection> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
 
-            _ = dispatcher.OnConnection(connection);
+            _ = dispatcher.Execute(new KestrelConnection(connection, Mock.Of<ILogger>()));
 
             // The scope should be created
             var scopeObjects = ((TestKestrelTrace)serviceContext.Log)
@@ -51,28 +52,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task OnConnectionCompletesTransportPipesAfterReturning()
-        {
-            var serviceContext = new TestServiceContext();
-            var dispatcher = new ConnectionDispatcher(serviceContext, _ => Task.CompletedTask);
-
-            var mockConnection = new Mock<TransportConnection> { CallBase = true };
-            mockConnection.Object.ConnectionClosed = new CancellationToken(canceled: true);
-            var mockPipeReader = new Mock<PipeReader>();
-            var mockPipeWriter = new Mock<PipeWriter>();
-            var mockPipe = new Mock<IDuplexPipe>();
-            mockPipe.Setup(m => m.Input).Returns(mockPipeReader.Object);
-            mockPipe.Setup(m => m.Output).Returns(mockPipeWriter.Object);
-            mockConnection.Setup(m => m.Transport).Returns(mockPipe.Object);
-            var connection = mockConnection.Object;
-
-            await dispatcher.OnConnection(connection);
-
-            mockPipeWriter.Verify(m => m.Complete(It.IsAny<Exception>()), Times.Once());
-            mockPipeReader.Verify(m => m.Complete(It.IsAny<Exception>()), Times.Once());
-        }
-
-        [Fact]
         public async Task OnConnectionFiresOnCompleted()
         {
             var serviceContext = new TestServiceContext();
@@ -80,14 +59,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var connection = new Mock<TransportConnection> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
-            var completeFeature = connection.Features.Get<IConnectionCompleteFeature>();
+            var kestrelConnection = new KestrelConnection(connection, Mock.Of<ILogger>());
+            var completeFeature = kestrelConnection.TransportConnection.Features.Get<IConnectionCompleteFeature>();
 
             Assert.NotNull(completeFeature);
             object stateObject = new object();
             object callbackState = null;
             completeFeature.OnCompleted(state => { callbackState = state; return Task.CompletedTask; }, stateObject);
 
-            await dispatcher.OnConnection(connection);
+            await dispatcher.Execute(kestrelConnection);
 
             Assert.Equal(stateObject, callbackState);
         }
@@ -100,16 +80,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             var connection = new Mock<TransportConnection> { CallBase = true }.Object;
             connection.ConnectionClosed = new CancellationToken(canceled: true);
-            var completeFeature = connection.Features.Get<IConnectionCompleteFeature>();
             var mockLogger = new Mock<ILogger>();
-            connection.Logger = mockLogger.Object;
+            var kestrelConnection = new KestrelConnection(connection, mockLogger.Object);
+            var completeFeature = kestrelConnection.TransportConnection.Features.Get<IConnectionCompleteFeature>();
 
             Assert.NotNull(completeFeature);
             object stateObject = new object();
             object callbackState = null;
             completeFeature.OnCompleted(state => { callbackState = state; throw new InvalidTimeZoneException(); }, stateObject);
 
-            await dispatcher.OnConnection(connection);
+            await dispatcher.Execute(kestrelConnection);
 
             Assert.Equal(stateObject, callbackState);
             var log = mockLogger.Invocations.First();

@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         }
 
         // Internal for testing
-        internal async Task OnConnection(ConnectionContext connection)
+        private async Task OnConnection(ConnectionContext connection)
         {
             await using (connection)
             {
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        private async Task Execute(KestrelConnection connection)
+        internal async Task Execute(KestrelConnection connection)
         {
             var id = Interlocked.Increment(ref _lastConnectionId);
             var connectionContext = connection.TransportConnection;

@@ -9,7 +9,6 @@ using System.Net;
 using System.Threading;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
@@ -28,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public override string ConnectionId { get; set; }
 
         public override IFeatureCollection Features => this;
-
-        protected internal virtual ILogger Logger { get; set; }
 
         public virtual MemoryPool<byte> MemoryPool { get; }
         
