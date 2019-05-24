@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
@@ -27,6 +26,7 @@ namespace IIS.FunctionalTests.Inprocess
         public async Task FrameworkNotFoundExceptionLogged_Pipe()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
@@ -38,23 +38,6 @@ namespace IIS.FunctionalTests.Inprocess
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult,
                 "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.", Logger);
-        }
-
-        [ConditionalFact]
-        [RequiresIIS(IISCapability.PoolEnvironmentVariables)]
-        [RequiresNewShim]
-        public async Task FrameworkNotFoundExceptionLoggedToResponse()
-        {
-            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
-            deploymentParameters.EnvironmentVariables["ASPNETCORE_ENVIRONMENT"] = "Development";
-            var deploymentResult = await DeployAsync(deploymentParameters);
-
-            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
-
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
-            Assert.False(response.IsSuccessStatusCode);
-
-            Assert.Contains("The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.", await response.Content.ReadAsStringAsync());
         }
 
         [ConditionalFact]
@@ -77,10 +60,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             var contents = Helpers.ReadAllTextFromFile(Helpers.GetExpectedLogName(deploymentResult, _logFolderPath), Logger);
             var expectedString = "The specified framework 'Microsoft.NETCore.App', version '2.9.9' was not found.";
-            if (deploymentParameters.ServerType == ServerType.IIS)
-            {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, expectedString, Logger);
-            }
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, expectedString, Logger);
             Assert.Contains(expectedString, contents);
         }
 
@@ -106,10 +86,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             var fileInDirectory = Directory.GetFiles(_logFolderPath).Single();
             var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
-            if (deploymentParameters.ServerType == ServerType.IIS)
-            {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
-            }
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
             Assert.Contains("Invoked hostfxr", contents);
         }
 
@@ -134,10 +111,7 @@ namespace IIS.FunctionalTests.Inprocess
 
             StopServer();
 
-            if (deploymentParameters.ServerType == ServerType.IIS)
-            {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
-            }
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
         }
 
         [ConditionalTheory]
@@ -166,11 +140,7 @@ namespace IIS.FunctionalTests.Inprocess
             var fileInDirectory = Directory.GetFiles(_logFolderPath).First();
             var contents = Helpers.ReadAllTextFromFile(fileInDirectory, Logger);
 
-            if (deploymentParameters.ServerType == ServerType.IIS)
-            {
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
-            }
-            
+            EventLogHelpers.VerifyEventLogEvent(deploymentResult, "Invoked hostfxr", Logger);
             Assert.Contains("Invoked hostfxr", contents);
         }
     }
