@@ -11,7 +11,6 @@
       $(RestoreSources);
       $(RuntimeAdditionalRestoreSources)
     </RestoreSources>
-
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,7 +29,11 @@
     <PackageReference Include="PackageLibraryDirectDependency" Version="1.0.0" />
   </ItemGroup>
 
-    <PropertyGroup Condition="'$(BinariesRoot)'==''">
+  <ItemGroup>
+    <ProjectReference Include="..\ClassLibrary2\ClassLibrary2.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup Condition="'$(BinariesRoot)'==''">
     <!-- In test scenarios $(BinariesRoot) is defined in a generated Directory.Build.props file -->
     <BinariesRoot>$(RepositoryRoot)artifacts\bin\Microsoft.AspNetCore.Razor.Test.MvcShim.ClassLib\$(Configuration)\netstandard2.0\</BinariesRoot>
   </PropertyGroup>

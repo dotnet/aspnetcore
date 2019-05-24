@@ -27,16 +27,32 @@ Copyright (c) .NET Foundation. All rights reserved.
     AssemblyFile="$(RazorSdkBuildTasksAssembly)"
     Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
 
+  <UsingTask
+    TaskName="Microsoft.AspNetCore.Razor.Tasks.GetDefaultStaticWebAssetsBasePath"
+    AssemblyFile="$(RazorSdkBuildTasksAssembly)"
+    Condition="'$(RazorSdkBuildTasksAssembly)' != ''" />
+
   <PropertyGroup>
     <GenerateStaticWebAssetsManifestDependsOn>
       ResolveStaticWebAssetsInputs;
-      _CreateStaticWebAssetsInputsCacheFile
+      _CreateStaticWebAssetsInputsCacheFile;
+      $(GenerateStaticWebAssetsManifestDependsOn)
     </GenerateStaticWebAssetsManifestDependsOn>
+
+    <GetCurrentProjectStaticWebAssetsDependsOn>
+      ResolveStaticWebAssetsInputs;
+      $(GetCurrentProjectStaticWebAssetsDependsOn)
+    </GetCurrentProjectStaticWebAssetsDependsOn>
 
     <AssignTargetPathsDependsOn>
       GenerateStaticWebAssetsManifest;
       $(AssignTargetPathsDependsOn)
     </AssignTargetPathsDependsOn>
+
+    <ResolveStaticWebAssetsInputsDependsOn>
+      _ResolveStaticWebAssetsProjectReferences;
+      $(ResolveStaticWebAssetsInputsDependsOn)
+    </ResolveStaticWebAssetsInputsDependsOn>
 
   </PropertyGroup>
 
@@ -119,34 +135,45 @@ Copyright (c) .NET Foundation. All rights reserved.
          restores the package and includes the package props file for the package.
   -->
   <Target 
-    Name="ResolveStaticWebAssetsInputs">
-    <PropertyGroup>
-      <!-- The _SafeBasePath is used as a path segment in the urls that we will
-           be exposing content from when the library is referenced as a package
-           or as a project by a web application. Our convention will be to expose
-           content directly on _content/<<_SafeBasePath>>
-           
-           We simply remove the dots from the package id so that a package
-           like Microsoft.AspNetCore.Identity becomes MicrosoftAspNetCoreIdentity 
-           
-           TODO: Investigate if we need to do something more sophisticated here.
-      -->
-      <_SafeBasePath>$(PackageId.Replace('.',''))</_SafeBasePath>
-    </PropertyGroup>
+    Name="ResolveStaticWebAssetsInputs"
+    DependsOnTargets="$(ResolveStaticWebAssetsInputsDependsOn)">
 
     <!-- StaticWebAssets from the current project -->
 
+    <!-- Computes a default safe base path from the $(PackageId) that will be a prefix
+         to all the resources being exported from this library by default. The convention
+         consists of removing intermediate whitespaces, dots and lower casing all letters
+         in the package id using an invariant culture.
+
+         We don't aim to handle all possible cases for this prefix, as it can get really
+         complicated (non-unicode characters for example), so for that case,
+         StaticWebAssetBasePath can be set explicitly and we won't interfere.
+    -->
+    <GetDefaultStaticWebAssetsBasePath
+      BasePath="$(PackageId)"
+      Condition="'$(StaticWebAssetBasePath)' == ''">
+      <Output TaskParameter="SafeBasePath" PropertyName="_StaticWebAssetSafeBasePath" />
+    </GetDefaultStaticWebAssetsBasePath>
+
+    <PropertyGroup>
+      <StaticWebAssetBasePath Condition="$(StaticWebAssetBasePath) == ''">_content/$(_StaticWebAssetSafeBasePath)</StaticWebAssetBasePath>
+    </PropertyGroup>
+
     <ItemGroup>
+
+      <_ThisProjectStaticWebAsset
+        Include="$(MSBuildProjectDirectory)\wwwroot\**"
+        Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)" />
       <!-- 
         Should we promote 'wwwroot\**'' to a property?
         We don't want to capture any content outside the content root, that's why we don't do
         @(Content) here.
       -->
-      <StaticWebAsset Include="wwwroot\**" Exclude="$(DefaultItemExcludes);$(DefaultExcludesInProjectFolder)">
-        <!-- (PackageReference,ProjectReference,'' (CurrentProject)) -->
+      <StaticWebAsset Include="@(_ThisProjectStaticWebAsset)">
+        <!-- (Package, Project, '' (CurrentProject)) -->
         <SourceType></SourceType>
         <!-- Identifier describing the source, the package id, the project name, empty for the current project.  -->
-        <SourceId></SourceId>
+        <SourceId>$(PackageId)</SourceId>
         <!-- 
           Full path to the content root for the item:
           * For packages it corresponds to %userprofile%/.nuget/packages/<<PackageId>>/<<PackageVersion>>/razorContent
@@ -155,7 +182,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         -->
         <ContentRoot>$(MSBuildProjectDirectory)\wwwroot\</ContentRoot>
         <!-- Subsection (folder) from the url space where content for this library will be served. -->
-        <BasePath>_content\$(_SafeBasePath)\</BasePath>
+        <BasePath>$(StaticWebAssetBasePath)</BasePath>
         <!-- Relative path from the content root for the file. At publish time, we combine the BasePath + Relative
   path to determine the final path for the file. -->
         <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
@@ -164,9 +191,57 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- StaticWebAssets from referenced projects. -->
-    <!-- TODO: Include implementation -->
+
+    <MSBuild
+      Condition="'@(_StaticWebAssetsProjectReference->Count())' != '0'"
+      Projects="@(_StaticWebAssetsProjectReference)"
+      BuildInParallel="$(BuildInParallel)"
+      ContinueOnError="!$(BuildingProject)"
+      Targets="GetCurrentProjectStaticWebAssets"
+      Properties="_StaticWebAssetsSkipDependencies=true"
+      SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="_ReferencedProjectStaticWebAssets" />
+    </MSBuild>
+
+    <ItemGroup>
+      <StaticWebAsset Include="@(_ReferencedProjectStaticWebAssets)" />
+    </ItemGroup>
 
     <!-- StaticWebAssets from packages are already available, so we don't do anything. -->
+  </Target>
+
+  <!-- This is a helper task to compute the project references we need to invoke to retrieve
+       the static assets for a given application. We do it this way so that we can
+       pass additional build properties to compute the assets from the package when referenced
+       as a project. For example, Identity uses this hook to extend the project reference and
+       pass in the bootstrap version to use. 
+  -->
+  <Target Name="_ResolveStaticWebAssetsProjectReferences"
+    DependsOnTargets="ResolveReferences"
+    Condition="'$(_StaticWebAssetsSkipDependencies)' == ''">
+
+    <ItemGroup>
+      <_StaticWebAssetsProjectReference Include="%(ReferencePath.MSBuildSourceProjectFile)" />
+    </ItemGroup>
+
+  </Target>
+
+  <!--
+    Child target to retrieve content from referenced projects
+   -->
+
+  <Target Name="GetCurrentProjectStaticWebAssets"
+    DependsOnTargets="$(GetCurrentProjectStaticWebAssetsDependsOn)"
+    Returns="@(_ThisProjectStaticWebAssets)">
+
+    <ItemGroup>
+      <_ThisProjectStaticWebAssets
+        Include="@(StaticWebAsset)"
+        Condition="'%(StaticWebAsset.SourceType)' == ''">
+        <SourceType>Project</SourceType>
+      </_ThisProjectStaticWebAssets>
+    </ItemGroup>
+
   </Target>
 
 </Project>

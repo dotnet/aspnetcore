@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
@@ -32,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         public ITestOutputHelper Output { get; private set; }
 
         [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference")]
+        [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Build_GeneratesStaticWebAssetsManifest_Success_CreatesManifest()
         {
             var result = await DotnetMSBuild("Build", "/restore");
@@ -71,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference")]
+        [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Clean_Success_RemovesManifestAndCache()
         {
             var result = await DotnetMSBuild("Build", "/restore");
@@ -92,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference")]
+        [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task Rebuild_Success_RecreatesManifestAndCache()
         {
             // Arrange
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
         }
 
         [Fact]
-        [InitializeTestProject("AppWithPackageAndP2PReference")]
+        [InitializeTestProject("AppWithPackageAndP2PReference",language: "C#", additionalProjects: new[] { "ClassLibrary", "ClassLibrary2" })]
         public async Task GenerateStaticWebAssetsManifest_IncrementalBuild_ReusesManifest()
         {
             var result = await DotnetMSBuild("GenerateStaticWebAssetsManifest", "/restore");
@@ -192,16 +193,25 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
         private string GetExpectedManifest()
         {
+            // We need to do this for Mac as apparently the temp folder in mac is prepended by /private by the os, even though the current user
+            // can refer to it without the /private prefix. We don't care a lot about the specific path in this test as we will have tests that
+            // validate the behavior at runtime.
+            var source = RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? $"/private{Project.SolutionPath}" : Project.SolutionPath;
+
             var restorePath = LocalNugetPackagesCacheTempPath;
             var projects = new[]
             {
                 Path.Combine(restorePath, "packagelibrarytransitivedependency", "1.0.0", "buildTransitive", "..", "razorContent") + Path.DirectorySeparatorChar,
-                Path.Combine(restorePath, "packagelibrarydirectdependency", "1.0.0", "build", "..", "razorContent") + Path.DirectorySeparatorChar
+                Path.Combine(restorePath, "packagelibrarydirectdependency", "1.0.0", "build", "..", "razorContent") + Path.DirectorySeparatorChar,
+                Path.GetFullPath(Path.Combine(source, "ClassLibrary", "wwwroot")) + Path.DirectorySeparatorChar,
+                Path.GetFullPath(Path.Combine(source, "ClassLibrary2", "wwwroot")) + Path.DirectorySeparatorChar
             };
 
             return $@"<StaticWebAssets Version=""1.0"">
   <ContentRoot BasePath=""_content/PackageLibraryTransitiveDependency"" Path=""{projects[0]}"" />
   <ContentRoot BasePath=""_content/PackageLibraryDirectDependency"" Path=""{projects[1]}"" />
+  <ContentRoot BasePath=""_content/classlibrary"" Path=""{projects[2]}"" />
+  <ContentRoot BasePath=""_content/classlibrary2"" Path=""{projects[3]}"" />
 </StaticWebAssets>";
         }
     }
