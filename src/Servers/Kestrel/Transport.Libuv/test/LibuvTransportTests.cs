@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var dispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build());
             dispatcher.StartAcceptingConnections(transport);
 
-            using (var socket = TestConnection.CreateConnectedLoopbackSocket(((IPEndPoint)listenOptions.EndPoint).Port))
+            using (var socket = TestConnection.CreateConnectedLoopbackSocket(listenOptions.IPEndPoint.Port))
             {
                 var data = "Hello World";
                 socket.Send(Encoding.ASCII.GetBytes($"POST / HTTP/1.0\r\nContent-Length: 11\r\n\r\n{data}"));
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var requestTasks = new List<Task<string>>();
                 for (int i = 0; i < 20; i++)
                 {
-                    var requestTask = client.GetStringAsync($"http://127.0.0.1:{((IPEndPoint)listenOptions.EndPoint).Port}/");
+                    var requestTask = client.GetStringAsync($"http://127.0.0.1:{listenOptions.IPEndPoint.Port}/");
                     requestTasks.Add(requestTask);
                 }
 
