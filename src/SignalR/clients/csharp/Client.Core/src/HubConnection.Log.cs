@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(34, "ErrorInvokingClientSideMethod"), "Invoking client side method '{MethodName}' failed.");
 
             private static readonly Action<ILogger, Exception> _errorProcessingHandshakeResponse =
-                LoggerMessage.Define(LogLevel.Error, new EventId(35, "ErrorReceivingHandshakeResponse"), "Error processing the handshake response.");
+                LoggerMessage.Define(LogLevel.Error, new EventId(35, "ErrorReceivingHandshakeResponse"), "The underlying connection closed while processing the handshake response. See exception for details.");
 
             private static readonly Action<ILogger, string, Exception> _handshakeServerError =
                 LoggerMessage.Define<string>(LogLevel.Error, new EventId(36, "HandshakeServerError"), "Server returned handshake error: {Error}");
@@ -239,6 +239,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             private static readonly Action<ILogger, HubConnectionState, HubConnectionState, Exception> _attemptingStateTransition =
                 LoggerMessage.Define<HubConnectionState, HubConnectionState>(LogLevel.Trace, new EventId(80, "AttemptingStateTransition"), "The HubConnection is attempting to transition from the {ExpectedState} state to the {NewState} state.");
+
+            private static readonly Action<ILogger, Exception> _errorInvalidHandshakeResponse =
+                LoggerMessage.Define(LogLevel.Error, new EventId(81, "ErrorInvalidHandshakeResponse"), "Received an invalid handshake response.");
+
+            private static readonly Action<ILogger, double, Exception> _errorHandshakeTimedOut =
+                LoggerMessage.Define<double>(LogLevel.Error, new EventId(82, "ErrorHandshakeTimedOut"), "The handshake timed out after {HandshakeTimeoutSeconds} seconds.");
+
+            private static readonly Action<ILogger, Exception> _errorHandshakeCanceled =
+                LoggerMessage.Define(LogLevel.Error, new EventId(83, "ErrorHandshakeCanceled"), "The handshake was canceled by the client.");
 
             public static void PreparingNonBlockingInvocation(ILogger logger, string target, int count)
             {
@@ -639,6 +648,21 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public static void AttemptingStateTransition(ILogger logger, HubConnectionState expectedState, HubConnectionState newState)
             {
                 _attemptingStateTransition(logger, expectedState, newState, null);
+            }
+
+            public static void ErrorInvalidHandshakeResponse(ILogger logger, Exception exception)
+            {
+                _errorInvalidHandshakeResponse(logger, exception);
+            }
+
+            public static void ErrorHandshakeTimedOut(ILogger logger, TimeSpan handshakeTimeout, Exception exception)
+            {
+                _errorHandshakeTimedOut(logger, handshakeTimeout.TotalSeconds, exception);
+            }
+
+            public static void ErrorHandshakeCanceled(ILogger logger, Exception exception)
+            {
+                _errorHandshakeCanceled(logger, exception);
             }
         }
     }
