@@ -22,7 +22,7 @@
     <p>Deserialized <strong id="deserialized-count">@numPeopleDeserialized</strong> people</p>
 }
 
-@functions {
+@code {
     static string[] Clearances = new[] { "Alpha", "Beta", "Gamma", "Delta", "Epsilon" };
     Person smallOrgChart = GenerateOrgChart(1, 4);
     Person largeOrgChart = GenerateOrgChart(5, 4);
