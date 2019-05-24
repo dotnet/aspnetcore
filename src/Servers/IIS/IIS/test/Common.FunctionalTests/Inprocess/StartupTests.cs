@@ -673,15 +673,25 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             VerifyDotnetRuntimeEventLog(deploymentResult);
         }
 
-
         [ConditionalFact]
         [RequiresNewHandler]
         public async Task StackOverflowIsAvoidedBySettingLargerStack()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters();
-
             var deploymentResult = await DeployAsync(deploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/StackSize");
+            Assert.True(result.IsSuccessStatusCode);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task StackOverflowCanBeSetBySettingLargerStackViaHandlerSetting()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.HandlerSettings["stackSize"] = "10000000";
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/StackSizeLarge");
             Assert.True(result.IsSuccessStatusCode);
         }
 

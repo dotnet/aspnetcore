@@ -29,6 +29,7 @@
 #define CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE        L"disableStartUpErrorPage"
 #define CS_ENABLED                                       L"enabled"
 #define CS_ASPNETCORE_HANDLER_CALL_STARTUP_HOOK          L"callStartupHook"
+#define CS_ASPNETCORE_HANDLER_STACK_SIZE                 L"stackSize"
 
 class ConfigurationSection: NonCopyable
 {

@@ -698,7 +698,15 @@ namespace TestSite
 
         private async Task StackSize(HttpContext ctx)
         {
-            RecursiveFunction(100000);
+            // This would normally stackoverflow if we didn't increase the stack size per thread.
+            RecursiveFunction(10000);
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        private async Task StackSizeLarge(HttpContext ctx)
+        {
+            // This would normally stackoverflow if we didn't increase the stack size per thread.
+            RecursiveFunction(30000);
             await ctx.Response.WriteAsync("Hello World");
         }
 
