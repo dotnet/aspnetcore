@@ -17,7 +17,7 @@ else
     @(NotAuthorized?.Invoke(currentAuthenticationState))
 }
 
-@functions {
+@code {
     private IAuthorizeData[] selfAsAuthorizeData;
     private AuthenticationState currentAuthenticationState;
     private bool isAuthorized;

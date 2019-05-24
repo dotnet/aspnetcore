@@ -4,7 +4,7 @@
 
 <CascadingValue T="Task<AuthenticationState>" Value="@_currentAuthenticationStateTask" ChildContent="@ChildContent" />
 
-@functions {
+@code {
     private Task<AuthenticationState> _currentAuthenticationStateTask;
 
     /// <summary>

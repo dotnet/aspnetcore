@@ -12,7 +12,7 @@
 </p>
 <p>
     This example also shows that you don't strictly have to use EditForm. You can manually
-    cascade an EditContext to the components that integrate with it. 
+    cascade an EditContext to the components that integrate with it.
 </p>
 
 <form onsubmit="@HandleSubmit">
@@ -34,7 +34,7 @@
 
 <div id="submission-status">@submissionStatus</div>
 
-@functions {
+@code {
     MyModel person = new MyModel();
     EditContext editContext;
     string submissionStatus;
