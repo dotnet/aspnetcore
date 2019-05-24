@@ -15,7 +15,7 @@
 <button id="run-with-double-dispatch" onclick=@RunWithDoubleDispatch>Run with double dispatch</button>
 <button id="run-async-with-dispatch" onclick=@RunAsyncWorkWithDispatch>Run async work with dispatch</button>
 
-@functions {
+@code {
     string result;
 
     async Task RunWithoutDispatch()

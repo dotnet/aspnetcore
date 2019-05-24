@@ -16,7 +16,7 @@
     <button id="decrement-count" onclick=@Ancestor.DecrementCount>Decrement</button>
 </p>
 
-@functions {
+@code {
     int numRenders = 0;
 
     [CascadingParameter] ICanDecrement Ancestor { get; set; }
