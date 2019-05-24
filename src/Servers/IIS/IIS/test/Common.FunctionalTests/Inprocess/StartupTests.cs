@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.UnableToStart(deploymentResult, subError), Logger);
 
-            Assert.Contains("HTTP Error 500.30 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
         }
 
         [ConditionalFact]
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             {
                 await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
 
-                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
             }
         }
 

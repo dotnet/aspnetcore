@@ -57,7 +57,6 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
         if (pConfiguration.QueryHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
         {
             errorContext.generalErrorType = "ANCM In-Process Handler Load Failure";
-            errorContext.subStatusCode = 30;
             std::unique_ptr<HostFxrResolutionResult> options;
 
             RETURN_IF_FAILED(HostFxrResolutionResult::Create(
