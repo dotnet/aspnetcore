@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await transport.BindAsync();
 
             var dispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build());
-            dispatcher.StartAcceptingConnections(transport);
+            _ = dispatcher.StartAcceptingConnections(transport);
 
             using (var socket = TestConnection.CreateConnectedLoopbackSocket(listenOptions.IPEndPoint.Port))
             {
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 }
             }
 
-            serviceContext.ConnectionManager.TryStartDrainingConnection();
+            
             Assert.True(await serviceContext.ConnectionManager.CloseAllConnectionsAsync(new CancellationTokenSource(TestConstants.DefaultTimeout).Token));
             await transport.UnbindAsync();
             await transport.StopAsync();
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await transport.BindAsync();
 
             var dispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build());
-            dispatcher.StartAcceptingConnections(transport);
+            var acceptTask = dispatcher.StartAcceptingConnections(transport);
 
             using (var client = new HttpClient())
             {
@@ -130,16 +130,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 }
             }
 
-            await transport.UnbindAsync();
+            await transport.UnbindAsync().ConfigureAwait(false);
 
-            serviceContext.ConnectionManager.TryStartDrainingConnection();
+            await acceptTask.ConfigureAwait(false);
 
             if (!await serviceContext.ConnectionManager.CloseAllConnectionsAsync(default).ConfigureAwait(false))
             {
                 await serviceContext.ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false);
             }
 
-            await transport.StopAsync();
+            await transport.StopAsync().ConfigureAwait(false);
         }
     }
 }

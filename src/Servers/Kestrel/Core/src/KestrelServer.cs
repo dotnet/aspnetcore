@@ -173,16 +173,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
 
-                if (ConnectionManager.TryStartDrainingConnection())
+                if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
                 {
-                    if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
-                    {
-                        Trace.NotAllConnectionsClosedGracefully();
+                    Trace.NotAllConnectionsClosedGracefully();
 
-                        if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
-                        {
-                            Trace.NotAllConnectionsAborted();
-                        }
+                    if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
+                    {
+                        Trace.NotAllConnectionsAborted();
                     }
                 }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Connections;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
@@ -54,28 +55,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             }
         }
 
-        // This method should be called when no new connections can be added
-        public bool TryStartDrainingConnection()
-        {
-            if (_connectionCount == 0)
-            {
-                return false;
-            }
-
-            _connectionDrainedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            return true;
-        }
-
-        public Task WaitForConnectionDrainAsync()
-        {
-            if (_connectionDrainedTcs == null)
-            {
-                throw new InvalidOperationException("TryStartDrainingConnection must be called before WaitForConnectionDrainAsync()");
-            }
-
-            return _connectionDrainedTcs.Task;
-        }
-
         public void Walk(Action<KestrelConnection> callback)
         {
             foreach (var kvp in _connectionReferences)
@@ -95,6 +74,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
                 // If both conditions are false, the connection was removed during the heartbeat.
             }
+        }
+
+        public async Task<bool> CloseAllConnectionsAsync(CancellationToken token)
+        {
+            if (!TryStartDrainingConnection())
+            {
+                return false;
+            }
+
+            Walk(connection =>
+            {
+                connection.RequestClose();
+            });
+
+            var allClosedTask = _connectionDrainedTcs.Task;
+            return await Task.WhenAny(allClosedTask, CancellationTokenAsTask(token)).ConfigureAwait(false) == allClosedTask;
+        }
+
+        public async Task<bool> AbortAllConnectionsAsync()
+        {
+            if (!TryStartDrainingConnection())
+            {
+                return false;
+            }
+
+            Walk(connection =>
+            {
+                connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
+            });
+
+            var allAbortedTask = _connectionDrainedTcs.Task;
+            return await Task.WhenAny(allAbortedTask, Task.Delay(1000)).ConfigureAwait(false) == allAbortedTask;
+        }
+
+        // This method should be called when no new connections can be added
+        private bool TryStartDrainingConnection()
+        {
+            if (_connectionCount == 0)
+            {
+                return false;
+            }
+
+            _connectionDrainedTcs ??= new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            return true;
+        }
+
+        private static Task CancellationTokenAsTask(CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            token.Register(() => tcs.SetResult(null));
+            return tcs.Task;
         }
 
         private static ResourceCounter GetCounter(long? number)
