@@ -6,6 +6,8 @@
     <TestGroupName>Interop.FunctionalTests</TestGroupName>
     <!-- WebDriver is not strong named, so this test assembly cannot be strong-named either. -->
     <SignAssembly>false</SignAssembly>
+    <!-- See: https://github.com/aspnet/AspNetCore/issues/7299 -->
+    <BuildHelixPayload>false</BuildHelixPayload>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,6 +15,7 @@
     <Compile Include="$(KestrelSharedSourceRoot)test\TransportTestHelpers\IWebHostPortExtensions.cs" LinkBase="shared" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestResources.cs" LinkBase="shared" />
     <Content Include="$(KestrelSharedSourceRoot)test\TestCertificates\*.pfx" LinkBase="shared\TestCertificates" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="$(SharedSourceRoot)test\SkipOnHelixAttribute.cs" />
   </ItemGroup>
 
   <ItemGroup>

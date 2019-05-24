@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace CustomPolicyProvider
 {
@@ -20,7 +21,7 @@ namespace CustomPolicyProvider
 
             services.AddMvc();
 
-            // Add cookie authentication so that it's possible to sign-in to test the 
+            // Add cookie authentication so that it's possible to sign-in to test the
             // custom authorization policy behavior of the sample
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -30,15 +31,16 @@ namespace CustomPolicyProvider
                 });
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            app.UseAuthentication();
+            app.UseRouting();
 
-            app.UseMvc(routes =>
+            app.UseAuthentication();
+            app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}");
+                endpoints.MapDefaultControllerRoute();
             });
         }
     }

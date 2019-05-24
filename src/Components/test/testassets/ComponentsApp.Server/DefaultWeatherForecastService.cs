@@ -11,9 +11,9 @@ namespace ComponentsApp.Server
 {
     public class DefaultWeatherForecastService : WeatherForecastService
     {
-        private readonly IHostingEnvironment _hostingEnvironment;
+        private readonly IWebHostEnvironment _hostingEnvironment;
 
-        public DefaultWeatherForecastService(IHostingEnvironment hostingEnvironment)
+        public DefaultWeatherForecastService(IWebHostEnvironment hostingEnvironment)
         {
             _hostingEnvironment = hostingEnvironment;
         }

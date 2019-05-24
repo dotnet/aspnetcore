@@ -10,7 +10,7 @@ using System.Buffers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
-    public class RawStream : Stream
+    internal sealed class RawStream : Stream
     {
         private readonly PipeReader _input;
         private readonly PipeWriter _output;

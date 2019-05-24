@@ -49,22 +49,6 @@ namespace Microsoft.AspNetCore.Blazor.Hosting.Test
             Assert.True(startup.ConfigureCalled);
         }
 
-        [Fact]
-        public async Task BrowserHost_StartAsync_SetsJSRuntime()
-        {
-            // Arrange
-            var builder = new WebAssemblyHostBuilder();
-            builder.UseBlazorStartup<MockStartup>();
-
-            var host = builder.Build();
-
-            // Act
-            await host.StartAsync();
-
-            // Assert
-            Assert.IsType<MonoWebAssemblyJSRuntime>(JSRuntime.Current);
-        }
-
         private class MockStartup : IBlazorStartup
         {
             public bool ConfigureCalled { get; set; }

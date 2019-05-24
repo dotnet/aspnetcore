@@ -373,8 +373,13 @@ namespace Microsoft.AspNetCore.Components.Server
         class FakeRenderer : Renderer
         {
             public FakeRenderer()
-                : base(new ServiceCollection().BuildServiceProvider())
+                : base(new ServiceCollection().BuildServiceProvider(), new RendererSynchronizationContext())
             {
+            }
+
+            protected override void HandleException(Exception exception)
+            {
+                throw new NotImplementedException();
             }
 
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)

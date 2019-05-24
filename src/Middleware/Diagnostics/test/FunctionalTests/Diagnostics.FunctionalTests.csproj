@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <SignAssembly>false</SignAssembly>
     <AssemblyName>Diagnostics.FunctionalTests</AssemblyName>
+    <TestDependsOnMssql>true</TestDependsOnMssql>
   </PropertyGroup>
 
   <ItemGroup>

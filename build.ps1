@@ -21,6 +21,9 @@ Suppress running restore on projects.
 .PARAMETER NoBuild
 Suppress re-compile projects. (Implies -NoRestore)
 
+.PARAMETER NoBuildDeps
+Do not build project-to-project references and only build the specified project.
+
 .PARAMETER Pack
 Produce packages.
 
@@ -88,6 +91,7 @@ param(
     [switch]$Restore,
     [switch]$NoRestore, # Suppress restore
     [switch]$NoBuild, # Suppress compiling
+    [switch]$NoBuildDeps, # Suppress project to project dependencies
     [switch]$Pack, # Produce packages
     [switch]$Test, # Run tests
     [switch]$Sign, # Code sign
@@ -234,12 +238,7 @@ if (Test-Path $ConfigFile) {
     }
 }
 
-$DotNetHome = if ($env:DOTNET_HOME) { $env:DOTNET_HOME } `
-    elseif ($CI) { Join-Path $PSScriptRoot '.dotnet' } `
-    elseif ($env:USERPROFILE) { Join-Path $env:USERPROFILE '.dotnet'} `
-    elseif ($env:HOME) {Join-Path $env:HOME '.dotnet'}`
-    else { Join-Path $PSScriptRoot '.dotnet'}
-
+$DotNetHome = Join-Path $PSScriptRoot '.dotnet'
 $env:DOTNET_HOME = $DotNetHome
 
 # Execute
@@ -274,6 +273,8 @@ if ($BuildNative) { $MSBuildArguments += "/p:BuildNative=true" }
 if ($BuildNodeJS) { $MSBuildArguments += "/p:BuildNodeJS=true" }
 if ($BuildJava) { $MSBuildArguments += "/p:BuildJava=true" }
 
+if ($NoBuildDeps) { $MSBuildArguments += "/p:BuildProjectReferences=false" }
+
 if ($NoBuildInstallers) { $MSBuildArguments += "/p:BuildInstallers=false" }
 if ($NoBuildManaged) { $MSBuildArguments += "/p:BuildManaged=false" }
 if ($NoBuildNative) { $MSBuildArguments += "/p:BuildNative=false" }
@@ -290,7 +291,10 @@ $RunRestore = if ($NoRestore) { $false }
     else { $true }
 
 # Target selection
-$MSBuildArguments += "/p:_RunRestore=$RunRestore"
+if ($RunRestore) {
+    $MSBuildArguments += "/restore"
+}
+
 $MSBuildArguments += "/p:_RunBuild=$RunBuild"
 $MSBuildArguments += "/p:_RunPack=$Pack"
 $MSBuildArguments += "/p:_RunTests=$Test"
@@ -299,9 +303,61 @@ $MSBuildArguments += "/p:_RunSign=$Sign"
 $MSBuildArguments += "/p:TargetArchitecture=$Architecture"
 $MSBuildArguments += "/p:TargetOsName=win"
 
+if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
+    $foundJdk = $false
+    $javac = Get-Command javac -ErrorAction Ignore -CommandType Application
+    $localJdkPath = "$PSScriptRoot\.tools\jdk\win-x64\"
+    if (Test-Path "$localJdkPath\bin\javac.exe") {
+        $foundJdk = $true
+        Write-Host -f Magenta "Detected JDK in $localJdkPath (via local repo convention)"
+        $env:JAVA_HOME = $localJdkPath
+    }
+    elseif ($env:JAVA_HOME) {
+        if (-not (Test-Path "${env:JAVA_HOME}\bin\javac.exe")) {
+            Write-Error "The environment variable JAVA_HOME was set, but ${env:JAVA_HOME}\bin\javac.exe does not exist. Remove JAVA_HOME or update it to the correct location for the JDK. See https://www.bing.com/search?q=java_home for details."
+        }
+        else {
+            Write-Host -f Magenta "Detected JDK in ${env:JAVA_HOME} (via JAVA_HOME)"
+            $foundJdk = $true
+        }
+    }
+    elseif ($javac) {
+        $foundJdk = $true
+        $javaHome = Split-Path -Parent (Split-Path -Parent $javac.Path)
+        $env:JAVA_HOME = $javaHome
+        Write-Host -f Magenta "Detected JDK in $javaHome (via PATH)"
+    }
+    else {
+        try {
+            $jdkRegistryKeys = @(
+                "HKLM:\SOFTWARE\JavaSoft\JDK",  # for JDK 10+
+                "HKLM:\SOFTWARE\JavaSoft\Java Development Kit"  # fallback for JDK 8
+            )
+            $jdkRegistryKey = $jdkRegistryKeys | Where-Object { Test-Path $_ } | Select-Object -First 1
+            if ($jdkRegistryKey) {
+                $jdkVersion = (Get-Item $jdkRegistryKey | Get-ItemProperty -name CurrentVersion).CurrentVersion
+                $javaHome = (Get-Item $jdkRegistryKey\$jdkVersion | Get-ItemProperty -Name JavaHome).JavaHome
+                if (Test-Path "${javaHome}\bin\javac.exe") {
+                    $env:JAVA_HOME = $javaHome
+                    Write-Host -f Magenta "Detected JDK $jdkVersion in $env:JAVA_HOME (via registry)"
+                    $foundJdk = $true
+                }
+            }
+        }
+        catch {
+            Write-Verbose "Failed to detect Java: $_"
+        }
+    }
+
+    if (-not $foundJdk) {
+        Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
+    }
+}
+
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
+    $env:KOREBUILD_KEEPGLOBALJSON = 1
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
     if ($ForceCoreMsbuild) {
         $global:KoreBuildSettings.MSBuildType = 'core'
@@ -310,4 +366,6 @@ try {
 }
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore
+    Remove-Item env:DOTNET_HOME
+    Remove-Item env:KOREBUILD_KEEPGLOBALJSON
 }

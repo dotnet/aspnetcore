@@ -21,11 +21,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 #endif
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 #if (RequiresHttps)
 using Microsoft.AspNetCore.HttpsPolicy;
 #endif
-using Microsoft.AspNetCore.Mvc;
 #if (OrganizationalAuth)
 using Microsoft.AspNetCore.Mvc.Authorization;
 #endif
@@ -35,6 +33,7 @@ using Company.WebApplication1.Data;
 #endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 #if(MultiOrgAuth)
 using Microsoft.IdentityModel.Tokens;
 #endif
@@ -57,7 +56,6 @@ namespace Company.WebApplication1
             {
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
 #if (IndividualLocalAuth)
@@ -70,7 +68,6 @@ namespace Company.WebApplication1
                     Configuration.GetConnectionString("DefaultConnection")));
 #endif
             services.AddDefaultIdentity<IdentityUser>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 #elif (OrganizationalAuth)
             services.AddAuthentication(AzureADDefaults.AuthenticationScheme)
@@ -104,7 +101,7 @@ namespace Company.WebApplication1
                         context.HandleResponse(); // Suppress the exception
                          return Task.CompletedTask;
                     },
-                    // If your application needs to do authenticate single users, add your user validation below.
+                    // If your application needs to authenticate single users, add your user validation below.
                     //OnTokenValidated = context =>
                     //{
                     //    return myUserValidationLogic(context.Ticket.Principal);
@@ -118,7 +115,7 @@ namespace Company.WebApplication1
 #endif
 
 #if (OrganizationalAuth)
-            services.AddMvc(options =>
+            services.AddControllersWithViews(options =>
             {
                 var policy = new AuthorizationPolicyBuilder()
                     .RequireAuthenticatedUser()
@@ -127,13 +124,14 @@ namespace Company.WebApplication1
             })
             .AddNewtonsoftJson();
 #else
-            services.AddMvc()
+            services.AddControllersWithViews()
                 .AddNewtonsoftJson();
 #endif
+            services.AddRazorPages();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -157,20 +155,22 @@ namespace Company.WebApplication1
 #endif
             app.UseStaticFiles();
 
-            app.UseRouting(routes =>
-            {
-                routes.MapApplication();
-                routes.MapControllerRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
-            });
-
             app.UseCookiePolicy();
+
+            app.UseRouting();
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

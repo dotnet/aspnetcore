@@ -70,14 +70,18 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
         }
 
         [Fact]
-        public void RegisteringMultipleHubProtocolsFails()
+        public void RegisteringMultipleHubProtocolsReplacesWithLatest()
         {
-            var exception = Assert.Throws<InvalidOperationException>(() => new DefaultHubProtocolResolver(new[] {
-                new NewtonsoftJsonHubProtocol(),
-                new NewtonsoftJsonHubProtocol()
-            }, NullLogger<DefaultHubProtocolResolver>.Instance));
+            var jsonProtocol1 = new NewtonsoftJsonHubProtocol();
+            var jsonProtocol2 = new NewtonsoftJsonHubProtocol();
+            var resolver = new DefaultHubProtocolResolver(new[] {
+                jsonProtocol1,
+                jsonProtocol2
+            }, NullLogger<DefaultHubProtocolResolver>.Instance);
 
-            Assert.Equal($"Multiple Hub Protocols with the name 'json' were registered.", exception.Message);
+            var resolvedProtocol = resolver.GetProtocol(jsonProtocol2.Name, null);
+            Assert.NotSame(jsonProtocol1, resolvedProtocol);
+            Assert.Same(jsonProtocol2, resolvedProtocol);
         }
 
         public static IEnumerable<object[]> HubProtocolNames => HubProtocolHelpers.AllProtocols.Select(p => new object[] {p.Name});

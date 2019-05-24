@@ -1,9 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Interactions;
 using Xunit;
@@ -18,6 +22,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ToggleExecutionModeServerFixture<Program> serverFixture,
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
+        {
+        }
+
+        protected override void InitializeAsyncCore()
         {
             Navigate(ServerPathBase, noReload: true);
             MountTestComponent<EventBubblingComponent>();
@@ -36,13 +44,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             // Focus the target, verify onfocusin is fired
             input.Click();
 
-            WaitAssert.Equal("onfocus,onfocusin,", () => output.Text);
+            Browser.Equal("onfocus,onfocusin,", () => output.Text);
 
             // Focus something else, verify onfocusout is also fired
             var other = Browser.FindElement(By.Id("other"));
             other.Click();
 
-            WaitAssert.Equal("onfocus,onfocusin,onblur,onfocusout,", () => output.Text);
+            Browser.Equal("onfocus,onfocusin,onblur,onfocusout,", () => output.Text);
         }
 
         [Fact]
@@ -63,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .MoveToElement(other);
 
             actions.Perform();
-            WaitAssert.Equal("onmouseover,onmouseout,", () => output.Text);
+            Browser.Equal("onmouseover,onmouseout,", () => output.Text);
         }
 
         [Fact]
@@ -82,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .MoveToElement(input, 10, 10);
 
             actions.Perform();
-            WaitAssert.Contains("onmousemove,", () => output.Text);
+            Browser.Contains("onmousemove,", () => output.Text);
         }
 
         [Fact]
@@ -101,12 +109,12 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var actions = new Actions(Browser).ClickAndHold(input);
 
             actions.Perform();
-            WaitAssert.Equal("onmousedown,", () => output.Text);
+            Browser.Equal("onmousedown,", () => output.Text);
 
             actions = new Actions(Browser).Release(input);
 
             actions.Perform();
-            WaitAssert.Equal("onmousedown,onmouseup,", () => output.Text);
+            Browser.Equal("onmousedown,onmouseup,", () => output.Text);
         }
 
         [Fact]
@@ -115,7 +123,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountTestComponent<EventPreventDefaultComponent>();
 
             appElement.FindElement(By.Id("form-1-button")).Click();
-            WaitAssert.Equal("Event was handled", () => appElement.FindElement(By.Id("event-handled")).Text);
+            Browser.Equal("Event was handled", () => appElement.FindElement(By.Id("event-handled")).Text);
         }
 
         [Fact]
@@ -127,6 +135,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1987", FlakyOn.AzP.Windows)]
         public void InputEvent_RespondsOnKeystrokes()
         {
             MountTestComponent<InputEventComponent>();
@@ -134,13 +143,13 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var input = Browser.FindElement(By.TagName("input"));
             var output = Browser.FindElement(By.Id("test-result"));
 
-            WaitAssert.Equal(string.Empty, () => output.Text);
+            Browser.Equal(string.Empty, () => output.Text);
 
             SendKeysSequentially(input, "abcdefghijklmnopqrstuvwxyz");
-            WaitAssert.Equal("abcdefghijklmnopqrstuvwxyz", () => output.Text);
+            Browser.Equal("abcdefghijklmnopqrstuvwxyz", () => output.Text);
 
             input.SendKeys(Keys.Backspace);
-            WaitAssert.Equal("abcdefghijklmnopqrstuvwxy", () => output.Text);
+            Browser.Equal("abcdefghijklmnopqrstuvwxy", () => output.Text);
         }
 
         void SendKeysSequentially(IWebElement target, string text)

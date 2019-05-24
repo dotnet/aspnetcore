@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             });
 
             http1Connection.Reset();
-            http1Connection.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);
+            http1Connection.InitializeBodyControl(MessageBody.ZeroContentLengthKeepAlive);
             serviceContext.DateHeaderValueManager.OnHeartbeat(DateTimeOffset.UtcNow);
 
             return http1Connection;

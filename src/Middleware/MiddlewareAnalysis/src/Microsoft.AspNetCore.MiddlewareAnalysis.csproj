@@ -12,7 +12,6 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
-    <Reference Include="System.Diagnostics.DiagnosticSource" />
   </ItemGroup>
 
 </Project>

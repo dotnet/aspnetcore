@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Buffers;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public Pipe Pipe { get; set; }
 
-        public Http1Connection Http1Connection { get; set; }
+        internal Http1Connection Http1Connection { get; set; }
 
         [IterationSetup]
         public void Setup()
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
                 readableBuffer = readableBuffer.Slice(consumed);
 
-                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 readableBuffer = result.Buffer;
 
-                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, trailers: false, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }

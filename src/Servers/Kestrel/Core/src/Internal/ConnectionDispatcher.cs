@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class ConnectionDispatcher : IConnectionDispatcher
+    internal class ConnectionDispatcher : IConnectionDispatcher
     {
         private static long _lastConnectionId = long.MinValue;
 
@@ -82,6 +82,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             finally
             {
+                await connectionContext.CompleteAsync();
+
                 Log.ConnectionStop(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStop(connectionContext);
 

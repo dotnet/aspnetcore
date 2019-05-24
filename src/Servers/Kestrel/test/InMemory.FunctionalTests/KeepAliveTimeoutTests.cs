@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
-            using (var server = CreateServer(testContext))
+            await using (var server = CreateServer(testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -46,7 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
-                await server.StopAsync();
             }
         }
 
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
-            using (var server = CreateServer(testContext))
+            await using (var server = CreateServer(testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -74,7 +73,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         heartbeatManager.OnHeartbeat(testContext.SystemClock.UtcNow);
                     }
                 }
-                await server.StopAsync();
             }
         }
 
@@ -84,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
-            using (var server = CreateServer(testContext))
+            await using (var server = CreateServer(testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -114,7 +112,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                             "");
                     await ReceiveResponse(connection, testContext);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -125,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
             var cts = new CancellationTokenSource();
 
-            using (var server = CreateServer(testContext, longRunningCt: cts.Token))
+            await using (var server = CreateServer(testContext, longRunningCt: cts.Token))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -154,7 +151,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await ReceiveResponse(connection, testContext);
                 }
-                await server.StopAsync();
             }
         }
 
@@ -164,7 +160,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var testContext = new TestServiceContext(LoggerFactory);
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
 
-            using (var server = CreateServer(testContext))
+            await using (var server = CreateServer(testContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -174,7 +170,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.WaitForConnectionClose();
                 }
-                await server.StopAsync();
             }
         }
 
@@ -185,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var heartbeatManager = new HeartbeatManager(testContext.ConnectionManager);
             var cts = new CancellationTokenSource();
 
-            using (var server = CreateServer(testContext, upgradeCt: cts.Token))
+            await using (var server = CreateServer(testContext, upgradeCt: cts.Token))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -212,7 +207,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await connection.Receive("hello, world");
                 }
-                await server.StopAsync();
             }
         }
 

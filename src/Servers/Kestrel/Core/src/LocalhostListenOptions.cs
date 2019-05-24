@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    internal class LocalhostListenOptions : ListenOptions
+    internal sealed class LocalhostListenOptions : ListenOptions
     {
         internal LocalhostListenOptions(int port)
             : base(new IPEndPoint(IPAddress.Loopback, port))

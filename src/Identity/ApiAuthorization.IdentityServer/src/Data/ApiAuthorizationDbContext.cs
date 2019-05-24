@@ -1,6 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using IdentityServer4.EntityFramework.Entities;
 using IdentityServer4.EntityFramework.Extensions;
@@ -49,7 +50,6 @@ namespace Microsoft.AspNetCore.ApiAuthorization.IdentityServer
         /// <inheritdoc />
         protected override void OnModelCreating(ModelBuilder builder)
         {
-
             base.OnModelCreating(builder);
             builder.ConfigurePersistedGrantContext(_operationalStoreOptions.Value);
         }

@@ -15,6 +15,20 @@ namespace Microsoft.AspNetCore.Http.Features
             Revision = collection.Revision;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Initalize(IFeatureCollection collection)
+        {
+            Revision = collection.Revision;
+            Collection = collection;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Initalize(IFeatureCollection collection, int revision)
+        {
+            Revision = revision;
+            Collection = collection;
+        }
+
         public IFeatureCollection Collection { get; private set; }
         public int Revision { get; private set; }
 

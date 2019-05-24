@@ -14,17 +14,16 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     internal sealed class SocketTransport : ITransport
     {
-        private static readonly PipeScheduler[] ThreadPoolSchedulerArray = new PipeScheduler[] { PipeScheduler.ThreadPool };
-
         private readonly MemoryPool<byte> _memoryPool;
         private readonly IEndPointInformation _endPointInformation;
         private readonly IConnectionDispatcher _dispatcher;
-        private readonly IApplicationLifetime _appLifetime;
+        private readonly IHostApplicationLifetime _appLifetime;
         private readonly int _numSchedulers;
         private readonly PipeScheduler[] _schedulers;
         private readonly ISocketsTrace _trace;
@@ -36,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         internal SocketTransport(
             IEndPointInformation endPointInformation,
             IConnectionDispatcher dispatcher,
-            IApplicationLifetime applicationLifetime,
+            IHostApplicationLifetime applicationLifetime,
             int ioQueueCount,
             ISocketsTrace trace,
             MemoryPool<byte> memoryPool)
@@ -65,8 +64,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
             else
             {
-                _numSchedulers = ThreadPoolSchedulerArray.Length;
-                _schedulers = ThreadPoolSchedulerArray;
+                var directScheduler = new PipeScheduler[] { PipeScheduler.ThreadPool };
+                _numSchedulers = directScheduler.Length;
+                _schedulers = directScheduler;
             }
         }
 

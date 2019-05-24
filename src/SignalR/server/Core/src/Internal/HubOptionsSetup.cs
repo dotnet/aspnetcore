@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         internal static TimeSpan DefaultKeepAliveInterval => TimeSpan.FromSeconds(15);
 
         internal static TimeSpan DefaultClientTimeoutInterval => TimeSpan.FromSeconds(30);
+
+        internal const int DefaultMaximumMessageSize = 32 * 1024;
+
+        internal const int DefaultStreamBufferCapacity = 10;
 
         private readonly List<string> _defaultProtocols = new List<string>();
 
@@ -40,9 +44,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 options.HandshakeTimeout = DefaultHandshakeTimeout;
             }
 
+            if (options.MaximumReceiveMessageSize == null)
+            {
+                options.MaximumReceiveMessageSize = DefaultMaximumMessageSize;
+            }
+
             if (options.SupportedProtocols == null)
             {
                 options.SupportedProtocols = new List<string>();
+            }
+
+            if (options.StreamBufferCapacity == null)
+            {
+                options.StreamBufferCapacity = DefaultStreamBufferCapacity;
             }
 
             foreach (var protocol in _defaultProtocols)

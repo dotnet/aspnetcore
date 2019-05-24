@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// Creates a new instance of the DefaultFilesMiddleware.
         /// </summary>
         /// <param name="next">The next middleware in the pipeline.</param>
-        /// <param name="hostingEnv">The <see cref="IHostingEnvironment"/> used by this middleware.</param>
+        /// <param name="hostingEnv">The <see cref="IWebHostEnvironment"/> used by this middleware.</param>
         /// <param name="options">The configuration options for this middleware.</param>
-        public DefaultFilesMiddleware(RequestDelegate next, IHostingEnvironment hostingEnv, IOptions<DefaultFilesOptions> options)
+        public DefaultFilesMiddleware(RequestDelegate next, IWebHostEnvironment hostingEnv, IOptions<DefaultFilesOptions> options)
         {
             if (next == null)
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            
+
             _next = next;
             _options = options.Value;
             _fileProvider = _options.FileProvider ?? Helpers.ResolveFileProvider(hostingEnv);
@@ -62,7 +62,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         /// <returns></returns>
         public Task Invoke(HttpContext context)
         {
-            if (Helpers.IsGetOrHeadMethod(context.Request.Method)
+            if (context.GetEndpoint() == null &&
+                Helpers.IsGetOrHeadMethod(context.Request.Method)
                 && Helpers.TryMatchPath(context, _matchUrl, forDirectory: true, subpath: out var subpath))
             {
                 var dirContents = _fileProvider.GetDirectoryContents(subpath.Value);

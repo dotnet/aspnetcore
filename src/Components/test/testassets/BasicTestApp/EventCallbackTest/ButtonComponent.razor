@@ -1,0 +1,14 @@
+
+<button onclick="@OnClick">@Text</button>
+
+@functions {
+    [Parameter] int Count { get; set; }
+    [Parameter] EventCallback<int> CountChanged { get; set; }
+    [Parameter] string Text { get; set; }
+
+    Task OnClick(UIMouseEventArgs e)
+    {
+        Count++;
+        return CountChanged.InvokeAsync(Count);
+    }
+}

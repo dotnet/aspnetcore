@@ -4,13 +4,14 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Hosting.TestSites
 {
     public class StartupShutdown
     {
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IHostApplicationLifetime lifetime)
         {
             lifetime.ApplicationStarted.Register(() =>
             {

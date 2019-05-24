@@ -22,7 +22,7 @@
         IncludeCustomRestoreSources=$(IncludeCustomRestoreSourcesValue);
         TemplateBlazorVersion=$(PackageVersion);
         TemplateComponentsVersion=$(ComponentsPackageVersion);
-        RepositoryCommit=$(RepositoryCommit);
+        RepositoryCommit=$(SourceRevisionId);
       </GeneratedContentProperties>
     </PropertyGroup>
   </Target>

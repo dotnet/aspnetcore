@@ -9,4 +9,9 @@
     to implement timers. Fixes https://github.com/aspnet/Blazor/issues/239 -->
     <type fullname="System.Threading.WasmRuntime" />
   </assembly>
+
+  <assembly fullname="System">
+    <!-- Without this, [Required(typeof(bool), "true", "true", ErrorMessage = "...")] fails -->
+    <type fullname="System.ComponentModel.BooleanConverter" />
+  </assembly>
 </linker>

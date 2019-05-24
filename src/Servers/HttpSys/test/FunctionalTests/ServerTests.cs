@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2267", FlakyOn.All)]
         public async Task Server_ShutdownDuringRequest_Success()
         {
             Task<string> responseTask;
@@ -595,7 +596,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private async Task<string> SendRequestAsync(string uri)
         {
-            using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout } )
+            using (HttpClient client = new HttpClient() { Timeout = Utilities.DefaultTimeout })
             {
                 return await client.GetStringAsync(uri);
             }

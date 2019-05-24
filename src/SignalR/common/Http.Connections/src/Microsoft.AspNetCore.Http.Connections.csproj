@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,6 +19,7 @@
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)SecurityHelper\**\*.cs" />
     <Compile Include="$(SharedSourceRoot)WebEncoders\**\*.cs" />
+    <Compile Include="$(SharedSourceRoot)ValueTaskExtensions\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,10 +29,8 @@
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.AspNetCore.Routing" />
     <Reference Include="Microsoft.AspNetCore.WebSockets" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
-    <Reference Include="Newtonsoft.Json" />
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
     <Reference Include="System.Security.Principal.Windows" />
-
   </ItemGroup>
 
 </Project>

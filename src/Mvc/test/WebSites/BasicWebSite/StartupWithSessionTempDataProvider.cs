@@ -25,7 +25,13 @@ namespace BasicWebSite
         {
             app.UseDeveloperExceptionPage();
             app.UseSession();
-            app.UseMvcWithDefaultRoute();
+
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

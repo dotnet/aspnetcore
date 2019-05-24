@@ -50,26 +50,25 @@ namespace SampleDestination
                 options.AddPolicy("AllowAll", policy => policy
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    .AllowAnyHeader());
             });
             services.AddRouting();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
-            app.UseRouting(routing =>
-            {
-                routing.Map("/allow-origin", HandleRequest).WithCorsPolicy("AllowOrigin");
-                routing.Map("/allow-header-method", HandleRequest).WithCorsPolicy("AllowHeaderMethod");
-                routing.Map("/allow-credentials", HandleRequest).WithCorsPolicy("AllowCredentials");
-                routing.Map("/exposed-header", HandleRequest).WithCorsPolicy("ExposedHeader");
-                routing.Map("/allow-all", HandleRequest).WithCorsPolicy("AllowAll");
-            });
+            app.UseRouting();
 
             app.UseCors();
 
-            app.UseEndpoint();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.Map("/allow-origin", HandleRequest).RequireCors("AllowOrigin");
+                endpoints.Map("/allow-header-method", HandleRequest).RequireCors("AllowHeaderMethod");
+                endpoints.Map("/allow-credentials", HandleRequest).RequireCors("AllowCredentials");
+                endpoints.Map("/exposed-header", HandleRequest).RequireCors("ExposedHeader");
+                endpoints.Map("/allow-all", HandleRequest).RequireCors("AllowAll");
+            });
 
             app.Run(async (context) =>
             {

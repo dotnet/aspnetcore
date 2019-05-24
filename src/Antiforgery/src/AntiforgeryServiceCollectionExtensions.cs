@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Antiforgery.Internal;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;

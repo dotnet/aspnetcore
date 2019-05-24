@@ -7,10 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
@@ -102,11 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             await setTimeoutTcs.Task.DefaultTimeout();
@@ -128,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task HEADERS_ReceivedWithoutAllCONTINUATIONs_WithinRequestHeadersTimeout_AbortsConnection()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
-            var limits = _serviceContext.ServerOptions.Limits;;
+            var limits = _serviceContext.ServerOptions.Limits; ;
 
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
@@ -154,8 +151,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Http2ErrorCode.INTERNAL_ERROR,
                 CoreStrings.BadRequest_RequestHeadersTimeout);
 
-            _mockConnectionContext.Verify(c =>c.Abort(It.Is<ConnectionAbortedException>(e => 
-                e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
+            _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
+                 e.Message == CoreStrings.BadRequest_RequestHeadersTimeout)), Times.Once);
 
             _mockTimeoutHandler.VerifyNoOtherCalls();
             _mockConnectionContext.VerifyNoOtherCalls();
@@ -175,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForConnectionStopAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
 
-            AdvanceClock(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) + 
+            AdvanceClock(TimeSpan.FromSeconds(_bytesReceived / limits.MinResponseDataRate.BytesPerSecond) +
                 limits.MinResponseDataRate.GracePeriod + Heartbeat.Interval - TimeSpan.FromSeconds(.5));
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
@@ -185,18 +182,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _mockTimeoutHandler.Verify(h => h.OnTimeout(TimeoutReason.WriteDataRate), Times.Once);
 
-            _mockConnectionContext.Verify(c =>c.Abort(It.Is<ConnectionAbortedException>(e => 
-                e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+            _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
+                 e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
 
             _mockTimeoutHandler.VerifyNoOtherCalls();
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
         [Theory]
-        [InlineData(Http2FrameType.DATA)]
-        [InlineData(Http2FrameType.CONTINUATION)]
-        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(Http2FrameType finalFrameType)
+        [Repeat(20)]
+        [InlineData((int)Http2FrameType.DATA)]
+        [InlineData((int)Http2FrameType.CONTINUATION)]
+        public async Task AbortedStream_ResetsAndDrainsRequest_RefusesFramesAfterCooldownExpires(int intFinalFrameType)
         {
+            var closeLock = new object();
+            var closed = false;
+            var finalFrameType = (Http2FrameType)intFinalFrameType;
+            // Remove callback that completes _pair.Application.Output on abort.
+            _mockConnectionContext.Reset();
+
             var mockSystemClock = _serviceContext.MockSystemClock;
 
             var headers = new[]
@@ -211,8 +215,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await WaitForStreamErrorAsync(1, Http2ErrorCode.INTERNAL_ERROR, "The connection was aborted by the application.");
 
-            var cts = new CancellationTokenSource();
-
             async Task AdvanceClockAndSendFrames()
             {
                 if (finalFrameType == Http2FrameType.CONTINUATION)
@@ -222,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
 
                 // There's a race when the appfunc is exiting about how soon it unregisters the stream, so retry until success.
-                while (!cts.Token.IsCancellationRequested)
+                while (!closed)
                 {
                     // Just past the timeout
                     mockSystemClock.UtcNow += Constants.RequestBodyDrainTimeout + TimeSpan.FromTicks(1);
@@ -242,27 +244,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                             throw new NotImplementedException(finalFrameType.ToString());
                     }
 
-                    if (!cts.Token.IsCancellationRequested)
-                    {
-                        await Task.Delay(10);
-                    }
+                    // TODO how do I force a function to go async?
+                    await Task.Delay(1);
                 }
             }
 
             var sendTask = AdvanceClockAndSendFrames();
 
-            await WaitForConnectionErrorAsync<Http2ConnectionErrorException>(
+            await WaitForConnectionErrorAsyncDoNotCloseTransport<Http2ConnectionErrorException>(
                 ignoreNonGoAwayFrames: false,
                 expectedLastStreamId: 1,
                 Http2ErrorCode.STREAM_CLOSED,
                 CoreStrings.FormatHttp2ErrorStreamClosed(finalFrameType, 1));
 
-            cts.Cancel();
+            closed = true;
 
             await sendTask.DefaultTimeout();
+
+            _pair.Application.Output.Complete();
         }
 
         [Fact]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1323", FlakyOn.All)]
         public async Task DATA_Sent_TooSlowlyDueToSocketBackPressureOnSmallWrite_AbortsConnectionAfterGracePeriod()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -277,7 +280,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
 
             await InitializeConnectionAsync(_echoApplication);
-            
+
             await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
             await SendDataAsync(1, _helloWorldBytes, endStream: true);
 
@@ -311,8 +314,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Http2ErrorCode.INTERNAL_ERROR,
                 null);
 
-            _mockConnectionContext.Verify(c =>c.Abort(It.Is<ConnectionAbortedException>(e => 
-                e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
+            _mockConnectionContext.Verify(c => c.Abort(It.Is<ConnectionAbortedException>(e =>
+                 e.Message == CoreStrings.ConnectionTimedBecauseResponseMininumDataRateNotSatisfied)), Times.Once);
 
             _mockTimeoutHandler.VerifyNoOtherCalls();
             _mockConnectionContext.VerifyNoOtherCalls();
@@ -486,7 +489,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _mockConnectionContext.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/2197")]
         public async Task DATA_Sent_TooSlowlyDueToOutputFlowControlOnMultipleStreams_AbortsConnectionAfterAdditiveRateTimeout()
         {
             var mockSystemClock = _serviceContext.MockSystemClock;
@@ -796,6 +799,60 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task DATA_Received_SlowlyWhenRateLimitDisabledPerRequest_DoesNotAbortConnection()
+        {
+            var mockSystemClock = _serviceContext.MockSystemClock;
+            var limits = _serviceContext.ServerOptions.Limits;
+
+            // Use non-default value to ensure the min request and response rates aren't mixed up.
+            limits.MinRequestBodyDataRate = new MinDataRate(480, TimeSpan.FromSeconds(2.5));
+
+            _timeoutControl.Initialize(mockSystemClock.UtcNow.Ticks);
+
+            await InitializeConnectionAsync(context =>
+            {
+                // Completely disable rate limiting for this stream.
+                context.Features.Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = null;
+                return _readRateApplication(context);
+            });
+
+            // _helloWorldBytes is 12 bytes, and 12 bytes / 240 bytes/sec = .05 secs which is far below the grace period.
+            await StartStreamAsync(1, ReadRateRequestHeaders(_helloWorldBytes.Length), endStream: false);
+            await SendDataAsync(1, _helloWorldBytes, endStream: false);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 1,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+
+            // Don't send any more data and advance just to and then past the grace period.
+            AdvanceClock(limits.MinRequestBodyDataRate.GracePeriod);
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            AdvanceClock(TimeSpan.FromTicks(1));
+
+            _mockTimeoutHandler.Verify(h => h.OnTimeout(It.IsAny<TimeoutReason>()), Times.Never);
+
+            await SendDataAsync(1, _helloWorldBytes, endStream: true);
+
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            _mockTimeoutHandler.VerifyNoOtherCalls();
+            _mockConnectionContext.VerifyNoOtherCalls();
+        }
+
+        [Fact]
         public async Task DATA_Received_SlowlyDueToConnectionFlowControl_DoesNotAbortConnection()
         {
             var initialConnectionWindowSize = _serviceContext.ServerOptions.Limits.Http2.InitialConnectionWindowSize;
@@ -854,11 +911,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await ExpectAsync(Http2FrameType.HEADERS,
                 withLength: 55,
-                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
-                withStreamId: 1);
-            await ExpectAsync(Http2FrameType.DATA,
-                withLength: 0,
-                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withFlags: (byte)(Http2HeadersFrameFlags.END_HEADERS | Http2HeadersFrameFlags.END_STREAM),
                 withStreamId: 1);
 
             var updateFrame = await ExpectAsync(Http2FrameType.WINDOW_UPDATE,

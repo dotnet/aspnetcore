@@ -19,26 +19,12 @@ namespace JwtBearerSample
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env)
+        public Startup(IConfiguration config)
         {
-            Environment = env;
-
-            var builder = new ConfigurationBuilder()
-                .SetBasePath(env.ContentRootPath);
-
-            if (env.IsDevelopment())
-            {
-                // For more details on using the user secret store see http://go.microsoft.com/fwlink/?LinkID=532709
-                builder.AddUserSecrets<Startup>();
-            }
-
-            builder.AddEnvironmentVariables();
-            Configuration = builder.Build();
+            Configuration = config;
         }
 
         public IConfiguration Configuration { get; set; }
-
-        public IHostingEnvironment Environment { get; set; }
 
         // Shared between users in memory
         public IList<Todo> Todos { get; } = new List<Todo>();
@@ -107,8 +93,9 @@ namespace JwtBearerSample
                     {
                         response.ContentType = "application/json";
                         response.Headers[HeaderNames.CacheControl] = "no-cache";
-                        Serialize(Todos, response.BodyPipe);
-                        await response.BodyPipe.FlushAsync();
+                        await response.StartAsync();
+                        Serialize(Todos, response.BodyWriter);
+                        await response.BodyWriter.FlushAsync();
                     }
                 });
             });
@@ -116,7 +103,7 @@ namespace JwtBearerSample
 
         private void Serialize(IList<Todo> todos, IBufferWriter<byte> output)
         {
-            var writer = new Utf8JsonWriter(output);
+            using var writer = new Utf8JsonWriter(output);
             writer.WriteStartArray();
             foreach (var todo in todos)
             {

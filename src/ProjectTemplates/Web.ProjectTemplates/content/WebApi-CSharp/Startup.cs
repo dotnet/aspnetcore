@@ -19,8 +19,8 @@ using Microsoft.AspNetCore.Authentication.AzureADB2C.UI;
 #endif
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Company.WebApplication1
 {
@@ -43,12 +43,12 @@ namespace Company.WebApplication1
             services.AddAuthentication(AzureADB2CDefaults.BearerAuthenticationScheme)
                 .AddAzureADB2CBearer(options => Configuration.Bind("AzureAdB2C", options));
 #endif
-            services.AddMvc()
+            services.AddControllers()
                 .AddNewtonsoftJson();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -64,15 +64,17 @@ namespace Company.WebApplication1
             app.UseHttpsRedirection();
 #endif
 
-            app.UseRouting(routes =>
-            {
-                routes.MapApplication();
-            });
+            app.UseRouting();
 
 #if (OrganizationalAuth || IndividualAuth)
             app.UseAuthentication();
 #endif
             app.UseAuthorization();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

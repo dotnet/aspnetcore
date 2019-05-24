@@ -12,7 +12,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <Reference Include="BenchmarkDotNet" />
-    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" />
     <Reference Include="Microsoft.AspNetCore.Http" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />

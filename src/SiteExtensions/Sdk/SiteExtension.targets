@@ -27,7 +27,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Remove="Internal.AspNetCore.Sdk" />
-    <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" IsImplicitlyDefined="true"/>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <PackageReference Include="%(HostingStartupPackageReference.Identity)" Version="%(HostingStartupPackageReference.Version)" />
   </ItemGroup>
 </Project>
@@ -36,8 +36,8 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'@(HostingStartupRuntimeStoreTargets->Count())' == '0'">
-      <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="win7-x64" />
-      <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="win7-x86" />
+      <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="win-x64" />
+      <HostingStartupRuntimeStoreTargets Include="netcoreapp3.0" Runtime="win-x86" />
     </ItemGroup>
 
     <ItemGroup>

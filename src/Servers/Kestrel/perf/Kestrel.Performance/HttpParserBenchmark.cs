@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    public class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
+    internal class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {
         private readonly HttpParser<Adapter> _parser = new HttpParser<Adapter>();
 
@@ -72,6 +72,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
         }
 
+        public void OnHeadersComplete()
+        {
+        }
+
         private struct Adapter : IHttpRequestLineHandler, IHttpHeadersHandler
         {
             public HttpParserBenchmark RequestHandler;
@@ -83,6 +87,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             public void OnHeader(Span<byte> name, Span<byte> value)
                 => RequestHandler.OnHeader(name, value);
+
+            public void OnHeadersComplete()
+                => RequestHandler.OnHeadersComplete();
 
             public void OnStartLine(HttpMethod method, HttpVersion version, Span<byte> target, Span<byte> path, Span<byte> query, Span<byte> customMethod, bool pathEncoded)
                 => RequestHandler.OnStartLine(method, version, target, path, query, customMethod, pathEncoded);

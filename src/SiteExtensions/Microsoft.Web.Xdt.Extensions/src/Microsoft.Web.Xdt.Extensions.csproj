@@ -4,6 +4,7 @@
     <Description>Additional functionality for Xdt transforms.</Description>
     <TargetFramework>net461</TargetFramework>
     <IsPackable>false</IsPackable>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>

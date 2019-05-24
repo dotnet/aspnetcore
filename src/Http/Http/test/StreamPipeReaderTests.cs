@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -148,7 +149,7 @@ namespace System.IO.Pipelines.Tests
             Assert.NotEqual(readResult, readResult2);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task ReadCanBeCancelledViaProvidedCancellationToken()
         {
             var pipeReader = new StreamPipeReader(new HangingStream());
@@ -157,7 +158,7 @@ namespace System.IO.Pipelines.Tests
             await Assert.ThrowsAsync<TaskCanceledException>(async () => await pipeReader.ReadAsync(cts.Token));
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task ReadCanBeCanceledViaCancelPendingReadWhenReadIsAsync()
         {
             var pipeReader = new StreamPipeReader(new HangingStream());
@@ -373,6 +374,30 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
+        public async Task ArrayPoolUsedByDefault()
+        {
+            WriteByteArray(20);
+            var reader = new StreamPipeReader(Stream);
+            var result = await reader.ReadAsync();
+
+            SequenceMarshal.TryGetReadOnlySequenceSegment(
+                result.Buffer,
+                out var startSegment,
+                out var startIndex,
+                out var endSegment,
+                out var endIndex);
+
+            var start = (BufferSegment)startSegment;
+            var end = (BufferSegment)endSegment;
+
+            Assert.Same(start, end);
+            Assert.IsType<byte[]>(start.MemoryOwner);
+
+            reader.AdvanceTo(result.Buffer.End);
+            reader.Complete();
+        }
+
+        [Fact]
         public void CancelledReadAsyncReturnsTaskWithValue()
         {
             Reader.CancelPendingRead();
@@ -431,7 +456,7 @@ namespace System.IO.Pipelines.Tests
         [Fact]
         public async Task AsyncReadWorks()
         {
-            MemoryStream = new AsyncStream();
+            Stream = new AsyncStream();
             CreateReader();
 
             WriteByteArray(2000);
@@ -455,7 +480,7 @@ namespace System.IO.Pipelines.Tests
             Write(Encoding.ASCII.GetBytes(new string('a', 8)));
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.GetPosition(4), readResult.Buffer.End);
-            MemoryStream.Position = 0;
+            Stream.Position = 0;
 
             readResult = await Reader.ReadAsync();
             var resultString = Encoding.ASCII.GetString(readResult.Buffer.ToArray());
@@ -471,11 +496,11 @@ namespace System.IO.Pipelines.Tests
             Write(Encoding.ASCII.GetBytes(new string('a', 8)));
             var readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.GetPosition(4), readResult.Buffer.End);
-            MemoryStream.Position = 0;
+            Stream.Position = 0;
 
             readResult = await Reader.ReadAsync();
             Reader.AdvanceTo(readResult.Buffer.Start, readResult.Buffer.End);
-            MemoryStream.Position = 0;
+            Stream.Position = 0;
 
             readResult = await Reader.ReadAsync();
             var resultString = Encoding.ASCII.GetString(readResult.Buffer.ToArray());
@@ -506,14 +531,14 @@ namespace System.IO.Pipelines.Tests
         [Fact]
         public void SetMinimumReadThresholdOfZeroThrows()
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new StreamPipeReader(MemoryStream,
-                new StreamPipeReaderOptions(minimumSegmentSize: 4096, minimumReadThreshold: 0, new TestMemoryPool())));
+            Assert.Throws<ArgumentOutOfRangeException>(() => new StreamPipeReader(Stream,
+                new StreamPipeReaderAdapterOptions(minimumSegmentSize: 4096, minimumReadThreshold: 0, new TestMemoryPool())));
         }
 
         [Fact]
         public void SetOptionsToNullThrows()
         {
-            Assert.Throws<ArgumentNullException>(() => new StreamPipeReader(MemoryStream, null));
+            Assert.Throws<ArgumentNullException>(() => new StreamPipeReader(Stream, null));
         }
 
         [Fact]
@@ -522,7 +547,7 @@ namespace System.IO.Pipelines.Tests
             Write(new byte[8]);
             var buffer = new byte[4];
 
-            MemoryStream.Read(buffer, 0, buffer.Length);
+            Stream.Read(buffer, 0, buffer.Length);
             var readResult = await Reader.ReadAsync();
 
             Assert.Equal(buffer, readResult.Buffer.ToArray());
@@ -593,15 +618,54 @@ namespace System.IO.Pipelines.Tests
         public async Task ReadAsyncWithEmptyDataCompletesStream()
         {
             WriteByteArray(0);
-            
+
             var readResult = await Reader.ReadAsync();
 
             Assert.True(readResult.IsCompleted);
         }
 
+        [Fact]
+        public async Task ReadAsyncAfterReceivingCompletedReadResultDoesNotThrow()
+        {
+            Stream = new ThrowAfterZeroByteReadStream();
+            Reader = new StreamPipeReader(Stream);
+            var readResult = await Reader.ReadAsync();
+
+            readResult = await Reader.ReadAsync();
+            Assert.True(readResult.Buffer.IsEmpty);
+            Assert.True(readResult.IsCompleted);
+        }
+
+        [Fact]
+        public void InnerStreamReturnsStream()
+        {
+            Assert.Equal(Stream, ((StreamPipeReader)Reader).InnerStream);
+        }
+
+        [Fact]
+        public async Task BufferingDataPastEndOfStreamCanBeReadAgain()
+        {
+            var helloBytes = Encoding.ASCII.GetBytes("Hello World");
+            Write(helloBytes);
+
+            var readResult = await Reader.ReadAsync();
+            var buffer = readResult.Buffer;
+            Reader.AdvanceTo(buffer.Start, buffer.End);
+
+            // Make sure IsCompleted is true
+            readResult = await Reader.ReadAsync();
+            buffer = readResult.Buffer;
+            Reader.AdvanceTo(buffer.Start, buffer.End);
+            Assert.True(readResult.IsCompleted);
+
+            var value = await ReadFromPipeAsString();
+            Assert.Equal("Hello World", value);
+        }
+
         private async Task<string> ReadFromPipeAsString()
         {
             var readResult = await Reader.ReadAsync();
+            
             var result = Encoding.ASCII.GetString(readResult.Buffer.ToArray());
             Reader.AdvanceTo(readResult.Buffer.End);
             return result;
@@ -609,7 +673,7 @@ namespace System.IO.Pipelines.Tests
 
         private string ReadFromStreamAsString(byte[] buffer)
         {
-            var res = MemoryStream.Read(buffer, 0, buffer.Length);
+            var res = Stream.Read(buffer, 0, buffer.Length);
             return Encoding.ASCII.GetString(buffer);
         }
 
@@ -621,8 +685,8 @@ namespace System.IO.Pipelines.Tests
 
         private void CreateReader(int minimumSegmentSize = 16, int minimumReadThreshold = 4, MemoryPool<byte> memoryPool = null)
         {
-            Reader = new StreamPipeReader(MemoryStream,
-                new StreamPipeReaderOptions(
+            Reader = new StreamPipeReader(Stream,
+                new StreamPipeReaderAdapterOptions(
                     minimumSegmentSize,
                     minimumReadThreshold,
                     memoryPool ?? new TestMemoryPool()));
@@ -660,6 +724,29 @@ namespace System.IO.Pipelines.Tests
                 return await base.ReadAsync(buffer, cancellationToken);
             }
 #endif
+        }
+
+        private class ThrowAfterZeroByteReadStream : MemoryStream
+        {
+            private bool _throwOnNextCallToRead;
+            public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                return ReadAsync(new Memory<byte>(buffer, offset, count)).AsTask();
+            }
+
+            public override async ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
+            {
+                if (_throwOnNextCallToRead)
+                {
+                    throw new Exception();
+                }
+                var bytes = await base.ReadAsync(destination, cancellationToken);
+                if (bytes == 0)
+                {
+                    _throwOnNextCallToRead = true;
+                }
+                return bytes;
+            }
         }
     }
 }

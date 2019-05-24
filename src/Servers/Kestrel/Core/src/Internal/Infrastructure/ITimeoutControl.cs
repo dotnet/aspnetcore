@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public interface ITimeoutControl
+    internal interface ITimeoutControl
     {
         TimeoutReason TimerReason { get; }
 

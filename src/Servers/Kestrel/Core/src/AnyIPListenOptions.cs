@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
-    internal class AnyIPListenOptions : ListenOptions
+    internal sealed class AnyIPListenOptions : ListenOptions
     {
         internal AnyIPListenOptions(int port)
             : base(new IPEndPoint(IPAddress.IPv6Any, port))

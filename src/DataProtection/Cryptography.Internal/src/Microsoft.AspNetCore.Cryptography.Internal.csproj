@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Infrastructure for ASP.NET Core cryptographic packages. Applications and libraries should not reference this package directly.</Description>
     <TargetFramework>netcoreapp3.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

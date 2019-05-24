@@ -173,17 +173,17 @@ namespace Microsoft.AspNetCore.Routing
             var ex = Assert.Throws<InvalidOperationException>(() => addressScheme.FindEndpoints("any name"));
 
             // Assert
-            Assert.Equal(@"The following endpoints with a duplicate endpoint name were found.
-
-Endpoints with endpoint name 'name1':
-a
-b
-c
-
-Endpoints with endpoint name 'name2':
-e
-f
-", ex.Message);
+            Assert.Equal(String.Join(Environment.NewLine, @"The following endpoints with a duplicate endpoint name were found.",
+"",
+"Endpoints with endpoint name 'name1':",
+"a",
+"b",
+"c",
+"",
+"Endpoints with endpoint name 'name2':",
+"e",
+"f",
+""), ex.Message);
         }
 
         private EndpointNameAddressScheme CreateAddressScheme(params Endpoint[] endpoints)

@@ -48,8 +48,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     RuntimeFlavor = RuntimeFlavor.CoreClr,
                     RuntimeArchitecture = RuntimeArchitecture.x64,
                     HostingModel = hostingModel,
-                    TargetFramework = Tfm.NetCoreApp30,
-                    AncmVersion = AncmVersion.AspNetCoreModuleV2
+                    TargetFramework = Tfm.NetCoreApp30
                 });
         }
 

@@ -25,27 +25,22 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Theory]
-        [InlineData(100, 1000)]
-        [InlineData(100, 8000)]
-        [InlineData(100, 10000)]
-        [InlineData(8000, 100)]
-        [InlineData(8000, 8000)]
-        public async Task CanAdvanceWithPartialConsumptionOfFirstSegment(int firstWriteLength, int secondWriteLength)
+        [InlineData(100)]
+        [InlineData(4000)]
+        public async Task CanAdvanceWithPartialConsumptionOfFirstSegment(int firstWriteLength)
         {
-            Writer = new StreamPipeWriter(MemoryStream, MinimumSegmentSize, new TestMemoryPool(maxBufferSize: 20000));
+            Writer = new StreamPipeWriter(Stream, MinimumSegmentSize, new TestMemoryPool(maxBufferSize: 20000));
             await Writer.WriteAsync(Encoding.ASCII.GetBytes("a"));
-
-            var expectedLength = firstWriteLength + secondWriteLength + 1;
 
             var memory = Writer.GetMemory(firstWriteLength);
             Writer.Advance(firstWriteLength);
 
-            memory = Writer.GetMemory(secondWriteLength);
-            Writer.Advance(secondWriteLength);
+            memory = Writer.GetMemory();
+            Writer.Advance(memory.Length);
 
             await Writer.FlushAsync();
 
-            Assert.Equal(expectedLength, Read().Length);
+            Assert.Equal(firstWriteLength + memory.Length + 1, Read().Length);
         }
 
         [Fact]
@@ -133,11 +128,11 @@ namespace System.IO.Pipelines.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task CancelPendingFlushBetweenWritesAllDataIsPreserved()
         {
-            MemoryStream = new SingleWriteStream();
-            Writer = new StreamPipeWriter(MemoryStream);
+            Stream = new SingleWriteStream();
+            Writer = new StreamPipeWriter(Stream);
             FlushResult flushResult = new FlushResult();
 
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -174,8 +169,8 @@ namespace System.IO.Pipelines.Tests
         [Fact]
         public async Task CancelPendingFlushAfterAllWritesAllDataIsPreserved()
         {
-            MemoryStream = new CannotFlushStream();
-            Writer = new StreamPipeWriter(MemoryStream);
+            Stream = new CannotFlushStream();
+            Writer = new StreamPipeWriter(Stream);
             FlushResult flushResult = new FlushResult();
 
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -206,13 +201,13 @@ namespace System.IO.Pipelines.Tests
             Assert.True(flushResult.IsCanceled);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore/issues/4621")]
+        [Fact]
         public async Task CancelPendingFlushLostOfCancellationsNoDataLost()
         {
             var writeSize = 16;
             var singleWriteStream = new SingleWriteStream();
-            MemoryStream = singleWriteStream;
-            Writer = new StreamPipeWriter(MemoryStream, minimumSegmentSize: writeSize);
+            Stream = singleWriteStream;
+            Writer = new StreamPipeWriter(Stream, minimumSegmentSize: writeSize);
 
             for (var i = 0; i < 10; i++)
             {
@@ -326,6 +321,24 @@ namespace System.IO.Pipelines.Tests
         }
 
         [Fact]
+        public void GetMemorySameAsTheMaxPoolSizeUsesThePool()
+        {
+            var memory = Writer.GetMemory(Pool.MaxBufferSize);
+
+            Assert.Equal(Pool.MaxBufferSize, memory.Length);
+            Assert.Equal(1, Pool.GetRentCount());
+        }
+
+        [Fact]
+        public void GetMemoryBiggerThanPoolSizeAllocatesUnpooledArray()
+        {
+            var memory = Writer.GetMemory(Pool.MaxBufferSize + 1);
+
+            Assert.Equal(Pool.MaxBufferSize + 1, memory.Length);
+            Assert.Equal(0, Pool.GetRentCount());
+        }
+
+        [Fact]
         public void CallComplete_GetMemoryThrows()
         {
             Writer.Complete();
@@ -337,6 +350,25 @@ namespace System.IO.Pipelines.Tests
         {
             Writer.Complete();
             Assert.Throws<InvalidOperationException>(() => Writer.GetSpan());
+        }
+
+        [Fact]
+        public void DisposeDoesNotThrowIfUnflushedData()
+        {
+            var streamPipeWriter = new StreamPipeWriter(new MemoryStream());
+            streamPipeWriter.Write(new byte[1]);
+
+            streamPipeWriter.Dispose();
+        }
+
+        [Fact]
+        public void CompleteAfterDisposeDoesNotThrowIfUnflushedData()
+        {
+            var streamPipeWriter = new StreamPipeWriter(new MemoryStream());
+            streamPipeWriter.Write(new byte[1]);
+
+            streamPipeWriter.Dispose();
+            streamPipeWriter.Complete();
         }
 
         [Fact]
@@ -389,10 +421,16 @@ namespace System.IO.Pipelines.Tests
             Assert.Equal(expectedString, ReadAsString());
         }
 
+        [Fact]
+        public void InnerStreamReturnsStream()
+        {
+            Assert.Equal(Stream, ((StreamPipeWriter)Writer).InnerStream);
+        }
+
         private void WriteStringToStream(string input)
         {
             var buffer = Encoding.ASCII.GetBytes(input);
-            MemoryStream.Write(buffer, 0, buffer.Length);
+            Stream.Write(buffer, 0, buffer.Length);
         }
 
         private async Task WriteStringToPipeWriter(string input)

@@ -72,6 +72,11 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                     throw new InvalidOperationException(Resources.FormatError_ProjectFailedToLoad(projectFile));
                 }
 
+                if (!File.Exists(outputFile))
+                {
+                    throw new InvalidOperationException(Resources.FormatError_ProjectMissingId(projectFile));
+                }
+
                 var id = File.ReadAllText(outputFile)?.Trim();
                 if (string.IsNullOrEmpty(id))
                 {

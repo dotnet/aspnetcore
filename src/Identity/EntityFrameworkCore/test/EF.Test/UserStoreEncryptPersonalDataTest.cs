@@ -75,10 +75,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [Fact]
         public async Task CanRotateKeysAndStillFind()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
             var manager = CreateManager();
             var name = Guid.NewGuid().ToString();
             var user = CreateTestUser(name);
@@ -137,10 +133,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 {
                     if (reader.Read())
                     {
+                        Assert.Equal("Default:ink", reader.GetString(0));
                         return reader.GetString(0) == "Default:ink";
                     }
                 }
             }
+            Assert.False(true, "Didn't find user");
             return false;
         }
 
@@ -157,6 +155,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 {
                     if (reader.Read())
                     {
+                        Assert.Equal("Default:ink", reader.GetString(0));
                         return reader.GetString(0) == "Default:ink";
                     }
                 }
@@ -168,16 +167,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         /// Test.
         /// </summary>
         /// <returns>Task</returns>
-        [Theory]
+        [Theory(Skip = "https://github.com/aspnet/AspNetCore/issues/7925")]
         [InlineData(true)]
         [InlineData(false)]
         public async Task CustomPersonalDataPropertiesAreProtected(bool protect)
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-
             using (var scratch = new ScratchDatabaseFixture())
             {
                 var services = new ServiceCollection().AddLogging();
@@ -188,7 +182,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                     .AddEntityFrameworkStores<IdentityDbContext<CustomUser>>()
                     .AddPersonalDataProtection<InkProtector, DefaultKeyRing>();
 
-                var dbOptions = new DbContextOptionsBuilder().UseSqlServer(scratch.ConnectionString)
+                var dbOptions = new DbContextOptionsBuilder().UseSqlite(scratch.Connection)
                     .UseApplicationServiceProvider(services.BuildServiceProvider())
                     .Options;
                 var dbContext = new IdentityDbContext<CustomUser>(dbOptions);
@@ -257,11 +251,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [Fact]
         public void ProtectedPersonalDataThrowsOnNonString()
         {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-
             using (var scratch = new ScratchDatabaseFixture())
             {
                 var services = new ServiceCollection().AddLogging();
@@ -271,7 +260,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 })
                     .AddEntityFrameworkStores<IdentityDbContext<CustomUser>>()
                     .AddPersonalDataProtection<InkProtector, DefaultKeyRing>();
-                var dbOptions = new DbContextOptionsBuilder().UseSqlServer(scratch.ConnectionString)
+                var dbOptions = new DbContextOptionsBuilder().UseSqlite(scratch.Connection)
                     .UseApplicationServiceProvider(services.BuildServiceProvider())
                     .Options;
                 var dbContext = new IdentityDbContext<InvalidUser>(dbOptions);

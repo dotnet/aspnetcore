@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class ConnectionLimitMiddleware
+    internal class ConnectionLimitMiddleware
     {
         private readonly ConnectionDelegate _next;
         private readonly ResourceCounter _concurrentConnectionCounter;

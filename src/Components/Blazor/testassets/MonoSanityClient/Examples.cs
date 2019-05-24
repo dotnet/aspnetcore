@@ -11,6 +11,14 @@ namespace MonoSanityClient
 {
     public static class Examples
     {
+        static Examples()
+        {
+            // We have to populate GetHttpMessageHandler with something (like the real
+            // Blazor web assembly host does), otherwise HttpClientHandler's constructor
+            // gets into an infinite loop.
+            FakeHttpMessageHandler.Attach();
+        }
+
         public static string AddNumbers(int a, int b)
             => (a + b).ToString();
 

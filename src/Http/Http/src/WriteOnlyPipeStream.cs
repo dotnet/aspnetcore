@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 
 namespace System.IO.Pipelines
 {
@@ -11,7 +12,6 @@ namespace System.IO.Pipelines
     /// </summary>
     public class WriteOnlyPipeStream : Stream
     {
-        private PipeWriter _pipeWriter;
         private bool _allowSynchronousIO = true;
 
         /// <summary>
@@ -30,7 +30,7 @@ namespace System.IO.Pipelines
         /// <param name="allowSynchronousIO">Whether synchronous IO is allowed.</param>
         public WriteOnlyPipeStream(PipeWriter pipeWriter, bool allowSynchronousIO)
         {
-            _pipeWriter = pipeWriter;
+            InnerPipeWriter = pipeWriter;
             _allowSynchronousIO = allowSynchronousIO;
         }
 
@@ -60,6 +60,8 @@ namespace System.IO.Pipelines
             set => throw new NotSupportedException();
         }
 
+        public PipeWriter InnerPipeWriter { get; }
+
         /// <inheritdoc />
         public override int Read(byte[] buffer, int offset, int count)
             => throw new NotSupportedException();
@@ -75,14 +77,14 @@ namespace System.IO.Pipelines
             {
                 ThrowHelper.ThrowInvalidOperationException_SynchronousFlushesDisallowed();
             }
-            
+
             FlushAsync(default).GetAwaiter().GetResult();
         }
 
         /// <inheritdoc />
-        public override async Task FlushAsync(CancellationToken cancellationToken)
+        public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            await _pipeWriter.FlushAsync(cancellationToken);
+            return InnerPipeWriter.FlushAsync(cancellationToken).GetAsTask();
         }
 
         /// <inheritdoc />
@@ -150,13 +152,18 @@ namespace System.IO.Pipelines
         /// <inheritdoc />
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            return WriteAsync(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken).AsTask();
+            return WriteAsyncInternal(new ReadOnlyMemory<byte>(buffer, offset, count), cancellationToken);
         }
 
         /// <inheritdoc />
-        public override async ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        public override ValueTask WriteAsync(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            await _pipeWriter.WriteAsync(source, cancellationToken);
+            return new ValueTask(WriteAsyncInternal(source, cancellationToken));
+        }
+
+        private Task WriteAsyncInternal(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
+        {
+            return InnerPipeWriter.WriteAsync(source, cancellationToken).GetAsTask();
         }
     }
 }

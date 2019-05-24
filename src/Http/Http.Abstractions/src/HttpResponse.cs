@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Http
             return Task.CompletedTask;
         };
 
+        private static readonly Func<object, Task> _disposeAsyncDelegate = disposable => ((IAsyncDisposable)disposable).DisposeAsync().AsTask();
+
         /// <summary>
         /// Gets the <see cref="HttpContext"/> for this response.
         /// </summary>
@@ -45,7 +47,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets the response body pipe <see cref="PipeWriter"/>
         /// </summary>
-        public abstract PipeWriter BodyPipe { get; set; }
+        public abstract PipeWriter BodyWriter { get; set; }
 
         /// <summary>
         /// Gets or sets the value for the <c>Content-Length</c> response header.
@@ -92,6 +94,12 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="disposable">The object to be disposed.</param>
         public virtual void RegisterForDispose(IDisposable disposable) => OnCompleted(_disposeDelegate, disposable);
+
+        /// <summary>
+        /// Registers an object for asynchronous disposal by the host once the request has finished processing.
+        /// </summary>
+        /// <param name="disposable">The object to be disposed asynchronously.</param>
+        public virtual void RegisterForDisposeAsync(IAsyncDisposable disposable) => OnCompleted(_disposeAsyncDelegate, disposable);
 
         /// <summary>
         /// Adds a delegate to be invoked after the response has finished being sent to the client.

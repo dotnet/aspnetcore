@@ -1,0 +1,20 @@
+<!-- Use this file to workaround issues. List the issue tracking the item to fix so we can remove the workaround when the issue is resolved. -->
+<Project>
+  <!-- Workaround https://github.com/Microsoft/msbuild/issues/4150 -->
+  <!-- Evaluate this import here so we can override WixTargetsPath before wix.targets is imported -->
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
+    <MSBuildProjectExtensionsPath>$(BaseIntermediateOutputPath)</MSBuildProjectExtensionsPath>
+    <MSBuildProjectExtensionsPath Condition="'$(MSBuildProjectExtensionsPath)' == ''">$(MSBuildProjectDir)\obj\</MSBuildProjectExtensionsPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildProjectExtensionsPath)$(MSBuildProjectFile).*.props" Condition=" '$(MSBuildProjectExtension)' == '.wixproj' " />
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
+    <!-- Suppress double-import in eng/targets/Wix.Common.props -->
+    <_ProjectExtensionsWereImported>true</_ProjectExtensionsWereImported>
+    <WixTargetsPath>$(WixInstallPath)\wix2010.targets</WixTargetsPath>
+  </PropertyGroup>
+
+  <!-- Workaround https://developercommunity.visualstudio.com/content/problem/434385/vs2019-preview-2-targetframeworkversion-or-platfor.html -->
+  <PropertyGroup>
+    <VCToolsVersion Condition = "'$(VCToolsVersion)' == ''" >14.16.27023</VCToolsVersion>
+  </PropertyGroup>
+</Project>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Tests
@@ -22,9 +23,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tests
         private KestrelServerOptions CreateServerOptions()
         {
             var serverOptions = new KestrelServerOptions();
+            var env = new HostingEnvironment { ApplicationName = "TestApplication" };
             serverOptions.ApplicationServices = new ServiceCollection()
                 .AddLogging()
-                .AddSingleton<IHostingEnvironment>(new HostingEnvironment { ApplicationName = "TestApplication" })
+                .AddSingleton<IWebHostEnvironment>(env)
+                .AddSingleton<IHostEnvironment>(env)
                 .BuildServiceProvider();
             return serverOptions;
         }

@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public class HPackDecoder
+    internal class HPackDecoder
     {
         private enum State
         {

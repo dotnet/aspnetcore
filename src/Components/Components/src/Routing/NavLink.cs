@@ -1,13 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.RenderTree;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -40,13 +38,13 @@ namespace Microsoft.AspNetCore.Components.Routing
         /// current route matches the NavLink href.
         /// </summary>
         [Parameter]
-        string ActiveClass { get; set; }
+        public string ActiveClass { get; private set; }
 
         /// <summary>
         /// Gets or sets a value representing the URL matching behavior.
         /// </summary>
         [Parameter]
-        NavLinkMatch Match { get; set; }
+        public NavLinkMatch Match { get; private set; }
 
         [Inject] private IUriHelper UriHelper { get; set; }
 
@@ -84,11 +82,11 @@ namespace Microsoft.AspNetCore.Components.Routing
             UriHelper.OnLocationChanged -= OnLocationChanged;
         }
 
-        private void OnLocationChanged(object sender, string newUriAbsolute)
+        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
         {
             // We could just re-render always, but for this component we know the
             // only relevant state change is to the _isActive property.
-            var shouldBeActiveNow = ShouldMatch(newUriAbsolute);
+            var shouldBeActiveNow = ShouldMatch(args.Location);
             if (shouldBeActiveNow != _isActive)
             {
                 _isActive = shouldBeActiveNow;

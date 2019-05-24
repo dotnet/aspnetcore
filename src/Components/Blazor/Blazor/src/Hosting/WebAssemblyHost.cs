@@ -8,7 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Http;
 using Microsoft.AspNetCore.Blazor.Rendering;
-using Microsoft.AspNetCore.Components.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 
@@ -42,6 +41,11 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             JSRuntime.SetCurrentJSRuntime(_runtime);
             SetBrowserHttpMessageHandlerAsDefault();
 
+            return StartAsyncAwaited();
+        }
+
+        private async Task StartAsyncAwaited()
+        {
             var scopeFactory = Services.GetRequiredService<IServiceScopeFactory>();
             _scope = scopeFactory.CreateScope();
 
@@ -61,7 +65,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
                 var builder = new WebAssemblyBlazorApplicationBuilder(_scope.ServiceProvider);
                 startup.Configure(builder, _scope.ServiceProvider);
 
-                _renderer = builder.CreateRenderer();
+                _renderer = await builder.CreateRendererAsync();
             }
             catch
             {
@@ -76,9 +80,6 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
 
                 throw;
             }
-
-
-            return Task.CompletedTask;
         }
 
         public Task StopAsync(CancellationToken cancellationToken = default)

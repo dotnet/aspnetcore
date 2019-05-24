@@ -8,9 +8,9 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class KestrelTrace : IKestrelTrace
+    internal class KestrelTrace : IKestrelTrace
     {
         private static readonly Action<ILogger, string, Exception> _connectionStart =
             LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, nameof(ConnectionStart)), @"Connection id ""{ConnectionId}"" started.");
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             LoggerMessage.Define(LogLevel.Debug, new EventId(21, nameof(NotAllConnectionsAborted)), "Some connections failed to abort during server shutdown.");
 
         private static readonly Action<ILogger, TimeSpan, DateTimeOffset, Exception> _heartbeatSlow =
-            LoggerMessage.Define<TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, nameof(HeartbeatSlow)), @"Heartbeat took longer than ""{interval}"" at ""{now}"".");
+            LoggerMessage.Define<TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, nameof(HeartbeatSlow)), @"Heartbeat took longer than ""{interval}"" at ""{now}"". This could be caused by thread pool starvation.");
 
         private static readonly Action<ILogger, string, Exception> _applicationNeverCompleted =
             LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, nameof(ApplicationNeverCompleted)), @"Connection id ""{ConnectionId}"" application never completed");

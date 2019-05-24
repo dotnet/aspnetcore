@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
-    public class LoggingConnectionAdapter : IConnectionAdapter
+    internal class LoggingConnectionAdapter : IConnectionAdapter
     {
         private readonly ILogger _logger;
 

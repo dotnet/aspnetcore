@@ -1,12 +1,10 @@
-
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
 
   <PropertyGroup>
-    <RestoreSources>
-      $(RestoreSources);
-      $(ArtifactsShippingPackagesDir);
-      $(ArtifactsNonShippingPackagesDir)
-    </RestoreSources>
+    <!-- Shared between targeting pack and runtime build. -->
+    <PlatformManifestFileName>PlatformManifest.txt</PlatformManifestFileName>
+    <PlatformManifestOutputPath>$(ArtifactsObjDir)$(PlatformManifestFileName)</PlatformManifestOutputPath>
   </PropertyGroup>
+
 </Project>

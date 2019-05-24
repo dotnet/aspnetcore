@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             ApplicationType = variant.ApplicationType;
             RuntimeArchitecture = variant.Architecture;
             HostingModel = variant.HostingModel;
-            AncmVersion = variant.AncmVersion;
         }
 
         /// <summary>
@@ -161,12 +160,6 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public string PublishedApplicationRootPath { get; set; }
 
         public HostingModel HostingModel { get; set; }
-
-        /// <summary>
-        /// When using the IISExpressDeployer, determines whether to use the older or newer version
-        /// of ANCM.
-        /// </summary>
-        public AncmVersion AncmVersion { get; set; } = AncmVersion.AspNetCoreModule;
 
         /// <summary>
         /// Environment variables to be set before starting the host.

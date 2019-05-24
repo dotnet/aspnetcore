@@ -1,38 +1,61 @@
-import { System_Array, MethodHandle } from '../Platform/Platform';
-import { RenderBatch, ArraySegment, ArrayRange, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
-import { platform } from '../Environment';
+import { RenderBatch, ArraySegment, RenderTreeEdit, RenderTreeFrame, EditType, FrameType, ArrayValues } from './RenderBatch/RenderBatch';
 import { EventDelegator } from './EventDelegator';
 import { EventForDotNet, UIEventArgs } from './EventForDotNet';
-import { LogicalElement, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement } from './LogicalElements';
+import { LogicalElement, PermutationListEntry, toLogicalElement, insertLogicalChild, removeLogicalChild, getLogicalParent, getLogicalChild, createAndInsertLogicalContainer, isSvgElement, getLogicalChildrenArray, getLogicalSiblingEnd, permuteLogicalChildren, getClosestDomElement } from './LogicalElements';
 import { applyCaptureIdToElement } from './ElementReferenceCapture';
 const selectValuePropname = '_blazorSelectValue';
 const sharedTemplateElemForParsing = document.createElement('template');
 const sharedSvgElemForParsing = document.createElementNS('http://www.w3.org/2000/svg', 'g');
 const preventDefaultEvents: { [eventType: string]: boolean } = { submit: true };
-let raiseEventMethod: MethodHandle;
-let renderComponentMethod: MethodHandle;
+const rootComponentsPendingFirstRender: { [componentId: number]: LogicalElement } = {};
 
 export class BrowserRenderer {
   private eventDelegator: EventDelegator;
+
   private childComponentLocations: { [componentId: number]: LogicalElement } = {};
 
-  constructor(private browserRendererId: number) {
-    this.eventDelegator = new EventDelegator((event, componentId, eventHandlerId, eventArgs) => {
-      raiseEvent(event, this.browserRendererId, componentId, eventHandlerId, eventArgs);
+  private browserRendererId: number;
+
+  public constructor(browserRendererId: number) {
+    this.browserRendererId = browserRendererId;
+    this.eventDelegator = new EventDelegator((event, eventHandlerId, eventArgs) => {
+      raiseEvent(event, this.browserRendererId, eventHandlerId, eventArgs);
     });
   }
 
-  public attachRootComponentToElement(componentId: number, element: Element) {
-    this.attachComponentToElement(componentId, toLogicalElement(element));
+  public attachRootComponentToLogicalElement(componentId: number, element: LogicalElement): void {
+    this.attachComponentToElement(componentId, element);
+    rootComponentsPendingFirstRender[componentId] = element;
   }
 
-  public updateComponent(batch: RenderBatch, componentId: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
+  public updateComponent(batch: RenderBatch, componentId: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>): void {
     const element = this.childComponentLocations[componentId];
     if (!element) {
       throw new Error(`No element is currently associated with component ${componentId}`);
     }
 
-    this.applyEdits(batch, componentId, element, 0, edits, referenceFrames);
+    // On the first render for each root component, clear any existing content (e.g., prerendered)
+    const rootElementToClear = rootComponentsPendingFirstRender[componentId];
+    if (rootElementToClear) {
+      const rootElementToClearEnd = getLogicalSiblingEnd(rootElementToClear);
+      delete rootComponentsPendingFirstRender[componentId];
+
+      if (!rootElementToClearEnd) {
+        clearElement(rootElementToClear as unknown as Element);
+      } else {
+        clearBetween(rootElementToClear as unknown as Node, rootElementToClearEnd as unknown as Comment);
+      }
+    }
+
+    const ownerDocument = getClosestDomElement(element).ownerDocument;
+    const activeElementBefore = ownerDocument && ownerDocument.activeElement;
+
+    this.applyEdits(batch, element, 0, edits, referenceFrames);
+
+    // Try to restore focus in case it was lost due to an element move
+    if ((activeElementBefore instanceof HTMLElement) && ownerDocument && ownerDocument.activeElement !== activeElementBefore) {
+      activeElementBefore.focus();
+    }
   }
 
   public disposeComponent(componentId: number) {
@@ -47,9 +70,10 @@ export class BrowserRenderer {
     this.childComponentLocations[componentId] = element;
   }
 
-  private applyEdits(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
+  private applyEdits(batch: RenderBatch, parent: LogicalElement, childIndex: number, edits: ArraySegment<RenderTreeEdit>, referenceFrames: ArrayValues<RenderTreeFrame>) {
     let currentDepth = 0;
     let childIndexAtCurrentDepth = childIndex;
+    let permutationList: PermutationListEntry[] | undefined;
 
     const arraySegmentReader = batch.arraySegmentReader;
     const editReader = batch.editReader;
@@ -67,7 +91,7 @@ export class BrowserRenderer {
           const frameIndex = editReader.newTreeIndex(edit);
           const frame = batch.referenceFramesEntry(referenceFrames, frameIndex);
           const siblingIndex = editReader.siblingIndex(edit);
-          this.insertFrame(batch, componentId, parent, childIndexAtCurrentDepth + siblingIndex, referenceFrames, frame, frameIndex);
+          this.insertFrame(batch, parent, childIndexAtCurrentDepth + siblingIndex, referenceFrames, frame, frameIndex);
           break;
         }
         case EditType.removeFrame: {
@@ -81,9 +105,9 @@ export class BrowserRenderer {
           const siblingIndex = editReader.siblingIndex(edit);
           const element = getLogicalChild(parent, childIndexAtCurrentDepth + siblingIndex);
           if (element instanceof Element) {
-            this.applyAttribute(batch, componentId, element, frame);
+            this.applyAttribute(batch, element, frame);
           } else {
-            throw new Error(`Cannot set attribute on non-element child`);
+            throw new Error('Cannot set attribute on non-element child');
           }
           break;
         }
@@ -100,7 +124,7 @@ export class BrowserRenderer {
               element.removeAttribute(attributeName);
             }
           } else {
-            throw new Error(`Cannot remove attribute from non-element child`);
+            throw new Error('Cannot remove attribute from non-element child');
           }
           break;
         }
@@ -112,7 +136,7 @@ export class BrowserRenderer {
           if (textNode instanceof Text) {
             textNode.textContent = frameReader.textContent(frame);
           } else {
-            throw new Error(`Cannot set text content on non-text child`);
+            throw new Error('Cannot set text content on non-text child');
           }
           break;
         }
@@ -137,6 +161,19 @@ export class BrowserRenderer {
           childIndexAtCurrentDepth = currentDepth === 0 ? childIndex : 0; // The childIndex is only ever nonzero at zero depth
           break;
         }
+        case EditType.permutationListEntry: {
+          permutationList = permutationList || [];
+          permutationList.push({
+            fromSiblingIndex: childIndexAtCurrentDepth + editReader.siblingIndex(edit),
+            toSiblingIndex: childIndexAtCurrentDepth + editReader.moveToSiblingIndex(edit),
+          });
+          break;
+        }
+        case EditType.permutationListEnd: {
+          permuteLogicalChildren(parent, permutationList!);
+          permutationList = undefined;
+          break;
+        }
         default: {
           const unknownType: never = editType; // Compile-time verification that the switch was exhaustive
           throw new Error(`Unknown edit type: ${unknownType}`);
@@ -145,12 +182,12 @@ export class BrowserRenderer {
     }
   }
 
-  private insertFrame(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, frame: RenderTreeFrame, frameIndex: number): number {
+  private insertFrame(batch: RenderBatch, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, frame: RenderTreeFrame, frameIndex: number): number {
     const frameReader = batch.frameReader;
     const frameType = frameReader.frameType(frame);
     switch (frameType) {
       case FrameType.element:
-        this.insertElement(batch, componentId, parent, childIndex, frames, frame, frameIndex);
+        this.insertElement(batch, parent, childIndex, frames, frame, frameIndex);
         return 1;
       case FrameType.text:
         this.insertText(batch, parent, childIndex, frame);
@@ -161,7 +198,7 @@ export class BrowserRenderer {
         this.insertComponent(batch, parent, childIndex, frame);
         return 1;
       case FrameType.region:
-        return this.insertFrameRange(batch, componentId, parent, childIndex, frames, frameIndex + 1, frameIndex + frameReader.subtreeLength(frame));
+        return this.insertFrameRange(batch, parent, childIndex, frames, frameIndex + 1, frameIndex + frameReader.subtreeLength(frame));
       case FrameType.elementReferenceCapture:
         if (parent instanceof Element) {
           applyCaptureIdToElement(parent, frameReader.elementReferenceCaptureId(frame)!);
@@ -178,7 +215,7 @@ export class BrowserRenderer {
     }
   }
 
-  private insertElement(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, frame: RenderTreeFrame, frameIndex: number) {
+  private insertElement(batch: RenderBatch, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, frame: RenderTreeFrame, frameIndex: number) {
     const frameReader = batch.frameReader;
     const tagName = frameReader.elementName(frame)!;
     const newDomElementRaw = tagName === 'svg' || isSvgElement(parent) ?
@@ -192,11 +229,11 @@ export class BrowserRenderer {
     for (let descendantIndex = frameIndex + 1; descendantIndex < descendantsEndIndexExcl; descendantIndex++) {
       const descendantFrame = batch.referenceFramesEntry(frames, descendantIndex);
       if (frameReader.frameType(descendantFrame) === FrameType.attribute) {
-        this.applyAttribute(batch, componentId, newDomElementRaw, descendantFrame);
+        this.applyAttribute(batch, newDomElementRaw, descendantFrame);
       } else {
         // As soon as we see a non-attribute child, all the subsequent child frames are
         // not attributes, so bail out and insert the remnants recursively
-        this.insertFrameRange(batch, componentId, newElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
+        this.insertFrameRange(batch, newElement, 0, frames, descendantIndex, descendantsEndIndexExcl);
         break;
       }
     }
@@ -228,7 +265,7 @@ export class BrowserRenderer {
     }
   }
 
-  private applyAttribute(batch: RenderBatch, componentId: number, toDomElement: Element, attributeFrame: RenderTreeFrame) {
+  private applyAttribute(batch: RenderBatch, toDomElement: Element, attributeFrame: RenderTreeFrame) {
     const frameReader = batch.frameReader;
     const attributeName = frameReader.attributeName(attributeFrame)!;
     const browserRendererId = this.browserRendererId;
@@ -240,7 +277,7 @@ export class BrowserRenderer {
       if (firstTwoChars !== 'on' || !eventName) {
         throw new Error(`Attribute has nonzero event handler ID, but attribute name '${attributeName}' does not start with 'on'.`);
       }
-      this.eventDelegator.setListener(toDomElement, eventName, componentId, eventHandlerId);
+      this.eventDelegator.setListener(toDomElement, eventName, eventHandlerId);
       return;
     }
 
@@ -315,11 +352,11 @@ export class BrowserRenderer {
     }
   }
 
-  private insertFrameRange(batch: RenderBatch, componentId: number, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, startIndex: number, endIndexExcl: number): number {
+  private insertFrameRange(batch: RenderBatch, parent: LogicalElement, childIndex: number, frames: ArrayValues<RenderTreeFrame>, startIndex: number, endIndexExcl: number): number {
     const origChildIndex = childIndex;
     for (let index = startIndex; index < endIndexExcl; index++) {
       const frame = batch.referenceFramesEntry(frames, index);
-      const numChildrenInserted = this.insertFrame(batch, componentId, parent, childIndex, frames, frame, index);
+      const numChildrenInserted = this.insertFrame(batch, parent, childIndex, frames, frame, index);
       childIndex += numChildrenInserted;
 
       // Skip over any descendants, since they are already dealt with recursively
@@ -328,6 +365,11 @@ export class BrowserRenderer {
 
     return (childIndex - origChildIndex); // Total number of children inserted
   }
+}
+
+export interface ComponentDescriptor {
+  start: Node;
+  end: Node;
 }
 
 function parseMarkup(markup: string, isSvg: boolean) {
@@ -355,21 +397,47 @@ function countDescendantFrames(batch: RenderBatch, frame: RenderTreeFrame): numb
   }
 }
 
-function raiseEvent(event: Event, browserRendererId: number, componentId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>) {
+function raiseEvent(event: Event, browserRendererId: number, eventHandlerId: number, eventArgs: EventForDotNet<UIEventArgs>) {
   if (preventDefaultEvents[event.type]) {
     event.preventDefault();
   }
 
   const eventDescriptor = {
     browserRendererId,
-    componentId,
     eventHandlerId,
-    eventArgsType: eventArgs.type
+    eventArgsType: eventArgs.type,
   };
 
   return DotNet.invokeMethodAsync(
     'Microsoft.AspNetCore.Components.Browser',
     'DispatchEvent',
     eventDescriptor,
-    JSON.stringify(eventArgs.data));
+    JSON.stringify(eventArgs.data)
+  );
+}
+
+function clearElement(element: Element) {
+  let childNode: Node | null;
+  while (childNode = element.firstChild) {
+    element.removeChild(childNode);
+  }
+}
+
+function clearBetween(start: Node, end: Node): void {
+  const logicalParent = getLogicalParent(start as unknown as LogicalElement);
+  if (!logicalParent){
+    throw new Error("Can't clear between nodes. The start node does not have a logical parent.");
+  }
+  const children = getLogicalChildrenArray(logicalParent);
+  const removeStart = children.indexOf(start as unknown as LogicalElement) + 1;
+  const endIndex = children.indexOf(end as unknown as LogicalElement);
+
+  // We remove the end component comment from the DOM as we don't need it after this point.
+  for (let i = removeStart; i <= endIndex; i++) {
+    removeLogicalChild(logicalParent, removeStart);
+  }
+
+  // We sanitize the start comment by removing all the information from it now that we don't need it anymore
+  // as it adds noise to the DOM.
+  start.textContent = '!';
 }

@@ -23,13 +23,13 @@ namespace Microsoft.AspNetCore.Components.Browser
         // By default the registry will be set to a default value. This means that
         // things will 'just work when running in the browser.
         //
-        // Running in Server-Side Blazor - any call into the Circuit will set this value via
+        // Running in Server-Side Components - any call into the Circuit will set this value via
         // the async local. This will ensure that the incoming call can resolve the correct
         // renderer associated with the user context.
         static RendererRegistry()
         {
             _current = new AsyncLocal<RendererRegistry>();
-            _globalRegistry = new RendererRegistry(); 
+            _globalRegistry = new RendererRegistry();
         }
 
         /// <summary>

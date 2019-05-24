@@ -23,10 +23,8 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
 
-    <KnownFrameworkReference Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
-      LatestRuntimeFrameworkVersion="$(BenchmarksAspNetCoreVersion)"
-      TargetingPackVersion="$(BenchmarksAspNetCoreVersion)" />
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
   </ItemGroup>
 
 </Project>

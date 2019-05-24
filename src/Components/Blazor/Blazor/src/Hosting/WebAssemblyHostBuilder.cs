@@ -5,10 +5,12 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using Microsoft.AspNetCore.Blazor.Services;
-using Microsoft.AspNetCore.Components.Services;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
-using Mono.WebAssembly.Interop;
 
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
@@ -88,9 +90,11 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             var services = new ServiceCollection();
             services.AddSingleton(_BrowserHostBuilderContext);
             services.AddSingleton<IWebAssemblyHost, WebAssemblyHost>();
-            services.AddSingleton<IJSRuntime, MonoWebAssemblyJSRuntime>();
-
+            services.AddSingleton<IJSRuntime>(WebAssemblyJSRuntime.Instance);
+            services.AddSingleton<IComponentContext, WebAssemblyComponentContext>();
             services.AddSingleton<IUriHelper>(WebAssemblyUriHelper.Instance);
+            services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
+            services.AddSingleton<ILoggerFactory, WebAssemblyLoggerFactory>();
             services.AddSingleton<HttpClient>(s =>
             {
                 // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
@@ -100,6 +104,10 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
                     BaseAddress = new Uri(WebAssemblyUriHelper.Instance.GetBaseUri())
                 };
             });
+
+            // Needed for authorization
+            services.AddOptions();
+            services.TryAdd(ServiceDescriptor.Singleton(typeof(ILogger<>), typeof(WebAssemblyConsoleLogger<>)));
 
             foreach (var configureServicesAction in _configureServicesActions)
             {

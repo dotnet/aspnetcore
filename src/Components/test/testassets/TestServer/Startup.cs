@@ -1,8 +1,13 @@
-using Microsoft.AspNetCore.Components.Server;
+using BasicTestApp;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace TestServer
 {
@@ -23,55 +28,71 @@ namespace TestServer
             {
                 options.AddPolicy("AllowAll", _ => { /* Controlled below */ });
             });
-            services.AddRazorComponents<BasicTestApp.Startup>();
+            services.AddServerSideBlazor();
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie();
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("NameMustStartWithB", policy =>
+                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
             }
 
-            AllowCorsForAnyLocalhostPort(app);
-            app.UseMvc();
+            // It's not enough just to return "Access-Control-Allow-Origin: *", because
+            // browsers don't allow wildcards in conjunction with credentials. So we must
+            // specify explicitly which origin we want to allow.
+            app.UseCors(policy =>
+            {
+                policy.SetIsOriginAllowed(host => host.StartsWith("http://localhost:") || host.StartsWith("http://127.0.0.1:"))
+                    .AllowAnyHeader()
+                    .WithExposedHeaders("MyCustomHeader")
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+            });
+
+            app.UseAuthentication();
 
             // Mount the server-side Blazor app on /subdir
             app.Map("/subdir", subdirApp =>
             {
-                // The following two lines are equivalent to:
-                //     subdirApp.UseServerSideBlazor<BasicTestApp.Startup>();
-                // However it's expressed using UseSignalR+UseBlazor as a way of checking that
-                // we're not relying on any extra magic inside UseServerSideBlazor, since it's
-                // important that people can set up these bits of middleware manually (e.g., to
-                // swap in UseAzureSignalR instead of UseSignalR).
-                subdirApp.UseSignalR(route => route.MapHub<ComponentsHub>(ComponentsHub.DefaultPath));
-                subdirApp.UseBlazor<BasicTestApp.Startup>();
-            });
-        }
+                subdirApp.UseClientSideBlazorFiles<BasicTestApp.Startup>();
 
-        private static void AllowCorsForAnyLocalhostPort(IApplicationBuilder app)
-        {
-            // It's not enough just to return "Access-Control-Allow-Origin: *", because
-            // browsers don't allow wildcards in conjunction with credentials. So we must
-            // specify explicitly which origin we want to allow.
-            app.Use((context, next) =>
-            {
-                if (context.Request.Headers.TryGetValue("origin", out var incomingOriginValue))
+                subdirApp.UseRouting();
+
+                subdirApp.UseEndpoints(endpoints =>
                 {
-                    var origin = incomingOriginValue.ToArray()[0];
-                    if (origin.StartsWith("http://localhost:") || origin.StartsWith("http://127.0.0.1:"))
-                    {
-                        context.Response.Headers.Add("Access-Control-Allow-Origin", origin);
-                        context.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
-                        context.Response.Headers.Add("Access-Control-Allow-Methods", "HEAD,GET,PUT,POST,DELETE,OPTIONS");
-                        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type,TestHeader,another-header");
-                        context.Response.Headers.Add("Access-Control-Expose-Headers", "MyCustomHeader,TestHeader,another-header");
-                    }
-                }
+                    endpoints.MapBlazorHub(typeof(Index), selector: "root");
+                    endpoints.MapFallbackToClientSideBlazor<BasicTestApp.Startup>("index.html");
+                });
+            });
 
-                return next();
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+                endpoints.MapRazorPages();
+            });
+
+            // Separately, mount a prerendered server-side Blazor app on /prerendered
+            app.Map("/prerendered", subdirApp =>
+            {
+                subdirApp.UsePathBase("/prerendered");
+                subdirApp.UseStaticFiles();
+                subdirApp.UseRouting();
+                subdirApp.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapFallbackToPage("/PrerenderedHost");
+                    endpoints.MapBlazorHub();
+                });
             });
         }
     }

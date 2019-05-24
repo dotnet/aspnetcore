@@ -39,7 +39,6 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent bind-Value=""ParentValue"" />
 @functions {
     public int ParentValue { get; set; } = 42;
@@ -77,7 +76,6 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <MyComponent bind-Value=""ParentValue"" />
 @functions {
     public int ParentValue { get; set; } = 42;
@@ -91,7 +89,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(Action<UIEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "ValueChanged", typeof(EventCallback<UIChangeEventArgs>), 2));
         }
 
         [Fact]
@@ -115,8 +113,7 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<MyComponent bind-Value-OnChanged=""ParentValue"" />
+<MyComponent bind-Value=""ParentValue"" bind-Value:event=""OnChanged"" />
 @functions {
     public int ParentValue { get; set; } = 42;
 }");
@@ -153,8 +150,7 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<MyComponent bind-Value-OnChanged=""ParentValue"" />
+<MyComponent bind-Value=""ParentValue"" bind-Value:event=""OnChanged"" />
 @functions {
     public int ParentValue { get; set; } = 42;
 }");
@@ -167,7 +163,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Component(frame, "Test.MyComponent", 3, 0),
                 frame => AssertFrame.Attribute(frame, "Value", 42, 1),
-                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(Action<UIEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "OnChanged", typeof(EventCallback<UIChangeEventArgs>), 2));
         }
 
         [Fact]
@@ -187,7 +183,6 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <div bind=""@ParentValue"" />
 @functions {
     public string ParentValue { get; set; } = ""hi"";
@@ -201,7 +196,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "div", 3, 0),
                 frame => AssertFrame.Attribute(frame, "myvalue", "hi", 1),
-                frame => AssertFrame.Attribute(frame, "myevent", typeof(Action<UIEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "myevent", typeof(EventCallback), 2));
         }
 
         [Fact]
@@ -221,7 +216,6 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <div bind-value=""@ParentValue"" />
 @functions {
     public string ParentValue { get; set; } = ""hi"";
@@ -235,7 +229,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "div", 3, 0),
                 frame => AssertFrame.Attribute(frame, "myvalue", "hi", 1),
-                frame => AssertFrame.Attribute(frame, "myevent", typeof(Action<UIEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "myevent", typeof(EventCallback), 2));
         }
 
         [Fact]
@@ -257,7 +251,6 @@ namespace Test
 
             // Act
             var result = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <div bind-value=""@ParentValue"" />
 @functions {
     public string ParentValue { get; set; } = ""hi"";
@@ -265,7 +258,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(result.Diagnostics);
-            Assert.Equal("BL9989", diagnostic.Id);
+            Assert.Equal("RZ9989", diagnostic.Id);
             Assert.Equal(
                 "The attribute 'bind-value' was matched by multiple bind attributes. Duplicates:" + Environment.NewLine +
                 "Test.BindAttributes" + Environment.NewLine +
@@ -278,7 +271,6 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <input bind=""@ParentValue"" />
 @functions {
     public int ParentValue { get; set; } = 42;
@@ -292,7 +284,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "value", "42", 1),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 2));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 2));
         }
 
         [Fact]
@@ -300,8 +292,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind=""@CurrentDate"" format-value=""MM/dd/yyyy""/>
+<input type=""text"" bind=""@CurrentDate"" bind:format=""MM/dd/yyyy""/>
 @functions {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
@@ -315,7 +306,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd/yyyy"), 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 3));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 3));
         }
 
         [Fact]
@@ -323,8 +314,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind=""@CurrentDate"" format-value=""@Format""/>
+<input type=""text"" bind=""@CurrentDate"" bind:format=""@Format""/>
 @functions {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 
@@ -340,7 +330,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd/yyyy"), 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 3));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 3));
         }
 
         [Fact]
@@ -348,7 +338,6 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <input type=""text"" bind=""@ParentValue"" />
 @functions {
     public int ParentValue { get; set; } = 42;
@@ -363,7 +352,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", "42", 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 3));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 3));
         }
 
         [Fact]
@@ -371,7 +360,6 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
 <input type=""checkbox"" bind=""@Enabled"" />
 @functions {
     public bool Enabled { get; set; }
@@ -385,7 +373,7 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "input", 3, 0),
                 frame => AssertFrame.Attribute(frame, "type", "checkbox", 1),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 3));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 3));
         }
 
         [Fact]
@@ -393,8 +381,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind-value-onchange=""@ParentValue"" />
+<input type=""text"" bind-value=""@ParentValue"" bind-value:event=""onchange"" />
 @functions {
     public int ParentValue { get; set; } = 42;
 }");
@@ -408,7 +395,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", "42", 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 3));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 3));
         }
 
         [Fact]
@@ -416,8 +403,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""text"" bind-value-onchange=""@CurrentDate"" format-value=""MM/dd"" />
+<input type=""text"" bind-value=""@CurrentDate"" bind-value:event=""onchange"" bind-value:format=""MM/dd"" />
 @functions {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
@@ -431,7 +417,7 @@ namespace Test
                 frame => AssertFrame.Element(frame, "input", 4, 0),
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "value", new DateTime(2018, 1, 1).ToString("MM/dd"), 2),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 3));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 3));
         }
 
         [Fact] // Additional coverage of OrphanTagHelperLoweringPass
@@ -439,8 +425,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input type=""@(""text"")"" bind-value-onchange=""@ParentValue"" visible />
+<input type=""@(""text"")"" bind-value=""@ParentValue"" bind-value:event=""onchange"" visible />
 @functions {
     public int ParentValue { get; set; } = 42;
 }");
@@ -455,7 +440,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "visible", 2),
                 frame => AssertFrame.Attribute(frame, "value", "42", 3),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 4));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 4));
         }
 
         [Fact] // See https://github.com/aspnet/Blazor/issues/703
@@ -463,8 +448,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<input bind-value-onchange=""@ParentValue"" type=""text"" visible />
+<input bind-value=""@ParentValue"" bind-value:event=""onchange"" type=""text"" visible />
 @functions {
     public int ParentValue { get; set; } = 42;
 }");
@@ -482,7 +466,7 @@ namespace Test
                 frame => AssertFrame.Attribute(frame, "type", "text", 1),
                 frame => AssertFrame.Attribute(frame, "visible", 2),
                 frame => AssertFrame.Attribute(frame, "value", "42", 3),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 4));
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 4));
         }
 
         [Fact] // Additional coverage of OrphanTagHelperLoweringPass
@@ -490,8 +474,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-@addTagHelper *, TestAssembly
-<div bind-value-onchange=""@ParentValue"">
+<div bind-value=""@ParentValue"" bind-value:event=""onchange"">
   <span>@(42.ToString())</span>
 </div>
 @functions {
@@ -506,11 +489,11 @@ namespace Test
                 frames,
                 frame => AssertFrame.Element(frame, "div", 7, 0),
                 frame => AssertFrame.Attribute(frame, "value", "42", 1),
-                frame => AssertFrame.Attribute(frame, "onchange", typeof(Action<UIEventArgs>), 2),
-                frame => AssertFrame.Whitespace(frame, 3),
+                frame => AssertFrame.Attribute(frame, "onchange", typeof(EventCallback), 2),
+                frame => AssertFrame.MarkupWhitespace(frame, 3),
                 frame => AssertFrame.Element(frame, "span", 2, 4),
                 frame => AssertFrame.Text(frame, "42", 5),
-                frame => AssertFrame.Whitespace(frame, 6));
+                frame => AssertFrame.MarkupWhitespace(frame, 6));
         }
 
         [Fact]
@@ -518,7 +501,6 @@ namespace Test
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <input type=""text"" bind-first-second-third=""Text"" />
 @functions {
     public string Text { get; set; } = ""text"";
@@ -526,7 +508,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9991", diagnostic.Id);
+            Assert.Equal("RZ9991", diagnostic.Id);
         }
 
         [Fact]
@@ -534,7 +516,6 @@ namespace Test
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
-@addTagHelper *, TestAssembly
 <input type=""text"" bind-first-=""Text"" />
 @functions {
     public string Text { get; set; } = ""text"";
@@ -542,7 +523,7 @@ namespace Test
 
             // Assert
             var diagnostic = Assert.Single(generated.Diagnostics);
-            Assert.Equal("BL9991", diagnostic.Id);
+            Assert.Equal("RZ9991", diagnostic.Id);
         }
     }
 }

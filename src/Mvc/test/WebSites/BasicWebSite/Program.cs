@@ -16,7 +16,7 @@ namespace BasicWebSite
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
             new WebHostBuilder()
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
+                .UseStartup<StartupWithoutEndpointRouting>()
                 .UseKestrel()
                 .UseIISIntegration();
     }

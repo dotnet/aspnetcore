@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace StartWithIApplicationBuilderUrlApp
 {
@@ -22,7 +23,7 @@ namespace StartWithIApplicationBuilderUrlApp
             {
                 app.Run(async context =>
                 {
-                    var env = context.RequestServices.GetRequiredService<IHostingEnvironment>();
+                    var env = context.RequestServices.GetRequiredService<IHostEnvironment>();
                     await context.Response.WriteAsync(env.ApplicationName);
                     messageSent.Set();
                 });

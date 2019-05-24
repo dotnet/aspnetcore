@@ -1,0 +1,11 @@
+<Project>
+  <PropertyGroup>
+    <ProductNameFolder>Microsoft ASP.NET Core Targeting Pack</ProductNameFolder>
+    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Targeting Pack ($(Platform))</ProductName>
+    <ProductNameShort>AspNetCore.TargetingPack</ProductNameShort>
+
+    <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
+  </PropertyGroup>
+</Project>

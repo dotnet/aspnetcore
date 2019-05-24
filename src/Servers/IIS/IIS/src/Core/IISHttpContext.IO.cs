@@ -3,24 +3,28 @@
 
 using System;
 using System.Buffers;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.IIS.Core
 {
     internal partial class IISHttpContext
     {
+        private long _consumedBytes;
+
         /// <summary>
         /// Reads data from the Input pipe to the user.
         /// </summary>
         /// <param name="memory"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal async Task<int> ReadAsync(Memory<byte> memory, CancellationToken cancellationToken)
+        internal async ValueTask<int> ReadAsync(Memory<byte> memory, CancellationToken cancellationToken)
         {
-            if (!_hasRequestReadingStarted)
+            if (!HasStartedConsumingRequestBody)
             {
                 InitializeRequestIO();
             }
@@ -103,7 +107,13 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     // Read was not canceled because of incoming write or IO stopping
                     if (read != -1)
                     {
+                        _consumedBytes += read;
                         _bodyInputPipe.Writer.Advance(read);
+                    }
+
+                    if (_consumedBytes > MaxRequestBodySize)
+                    {
+                        BadHttpRequestException.Throw(RequestRejectionReason.RequestBodyTooLarge);
                     }
 
                     var result = await _bodyInputPipe.Writer.FlushAsync();
@@ -116,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
             catch (ConnectionResetException ex)
             {
-                ConnectionReset();
+                AbortIO(clientDisconnect: true);
                 error = ex;
             }
             catch (Exception ex)
@@ -140,7 +150,6 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                     var result = await _bodyOutput.Reader.ReadAsync();
 
                     var buffer = result.Buffer;
-
                     try
                     {
                         if (!buffer.IsEmpty)
@@ -154,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
                             break;
                         }
 
-                        flush = flush | result.IsCanceled;
+                        flush |= result.IsCanceled;
 
                         if (flush)
                         {
@@ -171,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             // We want to swallow IO exception and allow app to finish writing
             catch (ConnectionResetException)
             {
-                ConnectionReset();
+                AbortIO(clientDisconnect: true);
             }
             catch (Exception ex)
             {
@@ -184,32 +193,61 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
         }
 
-        private bool AbortIO()
+        internal void AbortIO(bool clientDisconnect)
         {
-            if (Interlocked.CompareExchange(ref _requestAborted, 1, 0) != 0)
+            var shouldScheduleCancellation = false;
+
+            lock (_abortLock)
             {
-                return false;
+                if (_requestAborted)
+                {
+                    return;
+                }
+
+                shouldScheduleCancellation = _abortedCts != null;
+                _requestAborted = true;
+            }
+
+            if (clientDisconnect)
+            {
+                Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
             }
 
             _bodyOutput.Dispose();
 
-            var cts = _abortedCts;
-            if (cts != null)
+            if (shouldScheduleCancellation)
             {
-                ThreadPool.QueueUserWorkItem(t =>
+                // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
+                CancelRequestAbortedToken();
+            }
+        }
+
+        private void CancelRequestAbortedToken()
+        {
+            ThreadPool.UnsafeQueueUserWorkItem(ctx =>
                 {
                     try
                     {
-                        cts.Cancel();
+                        CancellationTokenSource localAbortCts = null;
+
+                        lock (ctx._abortLock)
+                        {
+                            if (ctx._abortedCts != null)
+                            {
+                                localAbortCts = ctx._abortedCts;
+                                ctx._abortedCts = null;
+                            }
+                        }
+
+                        // If we cancel the cts, we don't dispose as people may still be using
+                        // the cts. It also isn't necessary to dispose a canceled cts.
+                        localAbortCts?.Cancel();
                     }
                     catch (Exception ex)
                     {
                         Log.ApplicationError(_logger, ((IHttpConnectionFeature)this).ConnectionId, TraceIdentifier, ex);
                     }
-                });
-            }
-
-            return true;
+                }, this, preferLocal: false);
         }
 
         public void Abort(Exception reason)
@@ -218,15 +256,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             _streams.Abort(reason);
             NativeMethods.HttpCloseConnection(_pInProcessHandler);
 
-            AbortIO();
-        }
-
-        internal void ConnectionReset()
-        {
-            if (AbortIO())
-            {
-                Log.ConnectionDisconnect(_logger, ((IHttpConnectionFeature)this).ConnectionId);
-            }
+            AbortIO(clientDisconnect: false);
         }
     }
 }

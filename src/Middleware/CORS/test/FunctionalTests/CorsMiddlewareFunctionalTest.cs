@@ -14,6 +14,8 @@ using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerAssembly)]
+
 namespace FunctionalTests
 {
     public class CorsMiddlewareFunctionalTests : LoggedTest
@@ -66,7 +68,10 @@ namespace FunctionalTests
 
         private static async Task<SamplesDeploymentResult> CreateDeployments(ILoggerFactory loggerFactory, string startup)
         {
+            // https://github.com/aspnet/AspNetCore/issues/7990
+#pragma warning disable 0618
             var solutionPath = TestPathUtilities.GetSolutionRootDirectory("Middleware");
+#pragma warning restore 0618
 
             var configuration =
 #if RELEASE

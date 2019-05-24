@@ -12,6 +12,7 @@ open Microsoft.AspNetCore.HttpsPolicy;
 open Microsoft.AspNetCore.Mvc
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.Hosting
 
 type Startup private () =
     new (configuration: IConfiguration) as this =
@@ -21,10 +22,11 @@ type Startup private () =
     // This method gets called by the runtime. Use this method to add services to the container.
     member this.ConfigureServices(services: IServiceCollection) =
         // Add framework services.
-        services.AddMvc().AddNewtonsoftJson().AddRazorRuntimeCompilation() |> ignore
+        services.AddControllersWithViews().AddNewtonsoftJson().AddRazorRuntimeCompilation() |> ignore
+        services.AddRazorPages() |> ignore
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
+    member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
 
         if (env.IsDevelopment()) then
             app.UseDeveloperExceptionPage() |> ignore
@@ -40,13 +42,14 @@ type Startup private () =
 #endif
         app.UseStaticFiles() |> ignore
 
-        app.UseRouting(fun routes ->
-            routes.MapApplication() |> ignore
-            routes.MapControllerRoute(
-                name = "default",
-                template = "{controller=Home}/{action=Index}/{id?}") |> ignore
-            ) |> ignore
+        app.UseRouting() |> ignore
 
         app.UseAuthorization() |> ignore
+
+        app.UseEndpoints(fun endpoints ->
+            endpoints.MapControllerRoute(
+                name = "default",
+                pattern = "{controller=Home}/{action=Index}/{id?}") |> ignore
+            endpoints.MapRazorPages() |> ignore) |> ignore
 
     member val Configuration : IConfiguration = null with get, set

@@ -1,0 +1,7 @@
+
+<button onclick="@OnClick">@Text</button>
+
+@functions {
+    [Parameter] EventCallback<UIMouseEventArgs> OnClick { get; set; }
+    [Parameter] string Text { get; set; }
+}

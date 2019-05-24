@@ -15,7 +15,10 @@ bool equals_ignore_case(const std::wstring& s1, const std::wstring& s2);
 int compare_ignore_case(const std::wstring& s1, const std::wstring& s2);
 
 [[nodiscard]]
-std::wstring to_wide_string(const std::string &source, const unsigned int codePage);
+std::wstring to_wide_string(const std::string& source, const unsigned int codePage);
+
+[[nodiscard]]
+std::wstring to_wide_string(const std::string &source, const int length, const unsigned int codePage);
 
 [[nodiscard]]
 std::string to_multi_byte_string(const std::wstring& text, const unsigned int codePage);

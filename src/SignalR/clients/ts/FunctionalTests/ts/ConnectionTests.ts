@@ -17,9 +17,6 @@ const commonOptions: IHttpConnectionOptions = {
     logger: TestLogger.instance,
 };
 
-// On slower CI machines, these tests sometimes take longer than 5s
-jasmine.DEFAULT_TIMEOUT_INTERVAL = 10 * 1000;
-
 describe("connection", () => {
     it("can connect to the server without specifying transport explicitly", (done) => {
         const message = "Hello World!";

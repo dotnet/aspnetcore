@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
@@ -31,11 +32,11 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/>.</param>
         public PrerenderTagHelper(IServiceProvider serviceProvider)
         {
-            var hostEnv = (IHostingEnvironment)serviceProvider.GetService(typeof(IHostingEnvironment));
+            var hostEnv = (IWebHostEnvironment)serviceProvider.GetService(typeof(IWebHostEnvironment));
             _nodeServices = (INodeServices)serviceProvider.GetService(typeof(INodeServices)) ?? _fallbackNodeServices;
             _applicationBasePath = hostEnv.ContentRootPath;
 
-            var applicationLifetime = (IApplicationLifetime)serviceProvider.GetService(typeof(IApplicationLifetime));
+            var applicationLifetime = (IHostApplicationLifetime)serviceProvider.GetService(typeof(IHostApplicationLifetime));
             _applicationStoppingToken = applicationLifetime.ApplicationStopping;
 
             // Consider removing the following. Having it means you can get away with not putting app.AddNodeServices()

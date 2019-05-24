@@ -5,15 +5,15 @@
     <Description>ASP.NET Core API Authorization package powered by Identity Server.</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;apiauth;identity</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
-    <!-- Experimental package which is not ready for production yet -->
-    <IsShippingPackage>false</IsShippingPackage>
+    <IsShippingPackage>true</IsShippingPackage>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="IdentityServer4.AspNetIdentity" />
     <Reference Include="IdentityServer4.EntityFramework" />
+    <Reference Include="IdentityServer4.EntityFramework.Storage" />
     <Reference Include="IdentityServer4" />
+    <Reference Include="IdentityServer4.Storage" />
     <Reference Include="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />

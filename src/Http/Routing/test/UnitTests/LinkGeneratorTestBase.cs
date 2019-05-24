@@ -1,15 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
-using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -18,14 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         protected HttpContext CreateHttpContext(object ambientValues = null)
         {
             var httpContext = new DefaultHttpContext();
-
-            var context = new EndpointSelectorContext
-            {
-                RouteValues = new RouteValueDictionary(ambientValues)
-            };
-
-            httpContext.Features.Set<IEndpointFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
+            httpContext.Request.RouteValues = new RouteValueDictionary(ambientValues);
             return httpContext;
         }
 
@@ -83,8 +76,8 @@ namespace Microsoft.AspNetCore.Routing
 
             return new DefaultLinkGenerator(
                 new DefaultParameterPolicyFactory(routeOptions, serviceProvider),
+                serviceProvider.GetRequiredService<TemplateBinderFactory>(),
                 new CompositeEndpointDataSource(routeOptions.Value.EndpointDataSources),
-                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
                 routeOptions,
                 NullLogger<DefaultLinkGenerator>.Instance,
                 serviceProvider);

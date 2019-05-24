@@ -3,6 +3,7 @@
   <PropertyGroup>
     <Description>Core components of ASP.NET Core networking protocol stack.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <IsAspNetCoreApp>true</IsAspNetCoreApp>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore</PackageTags>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
@@ -11,7 +12,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Http.Features" />
-    <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.ActivatorUtilities.Sources" />
     <Reference Include="System.IO.Pipelines" />
   </ItemGroup>
 

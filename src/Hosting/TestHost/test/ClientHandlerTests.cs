@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new DummyApplication(context =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-                Assert.Equal("HTTP/2.0", context.Request.Protocol);
+                Assert.Equal("HTTP/1.1", context.Request.Protocol);
                 Assert.Equal("GET", context.Request.Method);
                 Assert.Equal("https", context.Request.Scheme);
                 Assert.Equal("/A/Path", context.Request.PathBase.Value);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.TestHost
             var handler = new ClientHandler(new PathString("/A/Path/"), new InspectingApplication(features =>
             {
                 // TODO: Assert.True(context.RequestAborted.CanBeCanceled);
-                Assert.Equal("HTTP/2.0", features.Get<IHttpRequestFeature>().Protocol);
+                Assert.Equal("HTTP/1.1", features.Get<IHttpRequestFeature>().Protocol);
                 Assert.Equal("GET", features.Get<IHttpRequestFeature>().Method);
                 Assert.Equal("https", features.Get<IHttpRequestFeature>().Scheme);
                 Assert.Equal("/A/Path", features.Get<IHttpRequestFeature>().PathBase);
@@ -86,6 +86,113 @@ namespace Microsoft.AspNetCore.TestHost
             }));
             var httpClient = new HttpClient(handler);
             return httpClient.GetAsync("https://example.com/");
+        }
+
+        [Fact]
+        public async Task ServerTrailersSetOnResponseAfterContentRead()
+        {
+            var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
+            {
+                context.Response.AppendTrailer("StartTrailer", "Value!");
+
+                await context.Response.WriteAsync("Hello World");
+                await context.Response.Body.FlushAsync();
+
+                // Pause writing response to ensure trailers are written at the end
+                await tcs.Task;
+
+                await context.Response.WriteAsync("Bye World");
+                await context.Response.Body.FlushAsync();
+
+                context.Response.AppendTrailer("EndTrailer", "Value!");
+            }));
+
+            var invoker = new HttpMessageInvoker(handler);
+            var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+            var response = await invoker.SendAsync(message, CancellationToken.None);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            var responseBody = await response.Content.ReadAsStreamAsync();
+
+            int read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(11, read);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            var readTask = responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.False(readTask.IsCompleted);
+            tcs.TrySetResult(null);
+
+            read = await readTask;
+            Assert.Equal(9, read);
+
+            Assert.Empty(response.TrailingHeaders);
+
+            // Read nothing because we're at the end of the response
+            read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(0, read);
+
+            // Ensure additional reads after end don't effect trailers
+            read = await responseBody.ReadAsync(new byte[100], 0, 100);
+            Assert.Equal(0, read);
+
+            Assert.Collection(response.TrailingHeaders,
+                kvp =>
+                {
+                    Assert.Equal("StartTrailer", kvp.Key);
+                    Assert.Equal("Value!", kvp.Value.Single());
+                },
+                kvp =>
+                {
+                    Assert.Equal("EndTrailer", kvp.Key);
+                    Assert.Equal("Value!", kvp.Value.Single());
+                });
+        }
+
+        [Fact]
+        public async Task ResponseStartAsync()
+        {
+            var hasStartedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var hasAssertedResponseTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            bool? preHasStarted = null;
+            bool? postHasStarted = null;
+            var handler = new ClientHandler(PathString.Empty, new DummyApplication(async context =>
+            {
+                preHasStarted = context.Response.HasStarted;
+
+                await context.Response.StartAsync();
+
+                postHasStarted = context.Response.HasStarted;
+
+                hasStartedTcs.TrySetResult(null);
+
+                await hasAssertedResponseTcs.Task;
+            }));
+
+            var invoker = new HttpMessageInvoker(handler);
+            var message = new HttpRequestMessage(HttpMethod.Post, "https://example.com/");
+
+            var responseTask = invoker.SendAsync(message, CancellationToken.None);
+
+            // Ensure StartAsync has been called in response
+            await hasStartedTcs.Task;
+
+            // Delay so async thread would have had time to attempt to return response
+            await Task.Delay(100);
+            Assert.False(responseTask.IsCompleted, "HttpResponse.StartAsync does not return response");
+
+            // Asserted that response return was checked, allow response to finish
+            hasAssertedResponseTcs.TrySetResult(null);
+
+            await responseTask;
+
+            Assert.False(preHasStarted);
+            Assert.True(postHasStarted);
         }
 
         [Fact]

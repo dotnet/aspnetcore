@@ -42,11 +42,11 @@ namespace TestTasks
             if (string.IsNullOrEmpty(rid))
             {
                 bitness.Add(new JProperty($"x64/{aspnetcoreV2Name}", new JObject(
-                    new JProperty("rid", "win7-x64"),
+                    new JProperty("rid", "win-x64"),
                     new JProperty("assetType", "native")
                 )));
                 bitness.Add(new JProperty($"x86/{aspnetcoreV2Name}", new JObject(
-                    new JProperty("rid", "win7-x86"),
+                    new JProperty("rid", "win-x86"),
                     new JProperty("assetType", "native")
                 )));
             }
@@ -64,7 +64,7 @@ namespace TestTasks
             targetLibrary =
                 new JProperty(libraryName, new JObject(
                     new JProperty("runtimeTargets", bitness)));
-           
+
             target.AddFirst(targetLibrary);
 
             var library = libraries.Properties().FirstOrDefault(p => p.Name == libraryName);

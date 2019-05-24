@@ -1,10 +1,12 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics.Tracing;
 using System.Reflection;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
@@ -107,6 +109,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         [Theory]
         [MemberData(nameof(RequestStartData))]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2230", FlakyOn.All)]
         public void RequestStart(DefaultHttpContext httpContext, string[] expected)
         {
             // Arrange

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     public class ResponseBodyTests
     {
         [ConditionalFact]
-        public async Task ResponseBody_SyncWriteEnabledByDefault_ThrowsWhenDisabled()
+        public async Task ResponseBody_SyncWriteDisabledByDefault_WorksWhenEnabled()
         {
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
@@ -26,19 +26,17 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout).Before(responseTask);
 
-                Assert.True(context.AllowSynchronousIO);
-
-                context.Response.Body.Flush();
-                context.Response.Body.Write(new byte[10], 0, 10);
-                context.Response.Body.Flush();
-
-                context.AllowSynchronousIO = false;
+                Assert.False(context.AllowSynchronousIO);
 
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Flush());
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[10], 0, 10));
                 Assert.Throws<InvalidOperationException>(() => context.Response.Body.Flush());
 
-                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+                context.AllowSynchronousIO = true;
+
+                context.Response.Body.Flush();
+                context.Response.Body.Write(new byte[10], 0, 10);
+                context.Response.Body.Flush();
                 context.Dispose();
 
                 var response = await responseTask;
@@ -47,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 IEnumerable<string> ignored;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
                 Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
-                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+                Assert.Equal(new byte[10], await response.Content.ReadAsByteArrayAsync());
             }
         }
 

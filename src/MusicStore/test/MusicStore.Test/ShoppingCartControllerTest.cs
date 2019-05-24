@@ -28,6 +28,8 @@ namespace MusicStore.Controllers
 
             var services = new ServiceCollection();
             services
+                .AddMemoryCache()
+                .AddLogging()
                 .AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
 
             services.AddMvc();

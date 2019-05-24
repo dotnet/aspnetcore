@@ -2,10 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Forms;
+
 namespace Microsoft.AspNetCore.Components
 {
     /// <summary>
-    /// Used by generated code produced by the Blazor code generator. Not intended or supported
+    /// Used by generated code produced by the Components code generator. Not intended or supported
     /// for use in application code.
     /// </summary>
     public static class RuntimeHelpers

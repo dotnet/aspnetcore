@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         |                   Frame Payload (0...)                      ...
         +---------------------------------------------------------------+
     */
-    public partial class Http2Frame
+    internal partial class Http2Frame
     {
         public int PayloadLength { get; set; }
 

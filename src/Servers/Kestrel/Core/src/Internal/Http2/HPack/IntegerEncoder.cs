@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public static class IntegerEncoder
+    internal static class IntegerEncoder
     {
         public static bool Encode(int i, int n, Span<byte> buffer, out int length)
         {

@@ -14,7 +14,7 @@
         projectUrl=$(PackageProjectUrl);
         repositoryUrl=$(RepositoryUrl);
         repositoryType=$(RepositoryType);
-        repositoryCommit=$(RepositoryCommit);
+        repositoryCommit=$(SourceRevisionId);
       </NuspecProperties>
     </PropertyGroup>
   </Target>

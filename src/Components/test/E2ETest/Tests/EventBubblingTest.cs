@@ -4,8 +4,10 @@
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using System;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,17 +27,22 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             ITestOutputHelper output)
             : base(browserFixture, serverFixture, output)
         {
-            Navigate(ServerPathBase, noReload: !serverFixture.UsingAspNetHost);
-            MountTestComponent<EventBubblingComponent>();
         }
-        
+
+        protected override void InitializeAsyncCore()
+        {
+            Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
+            MountTestComponent<EventBubblingComponent>();
+            WaitUntilExists(By.Id("event-bubbling"));
+        }
+
         [Fact]
         public void BubblingStandardEvent_FiredOnElementWithHandler()
         {
             Browser.FindElement(By.Id("button-with-onclick")).Click();
 
             // Triggers event on target and ancestors with handler in upwards direction
-            WaitAssert.Equal(
+            Browser.Equal(
                 new[] { "target onclick", "parent onclick" },
                 GetLogLines);
         }
@@ -46,7 +53,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("button-without-onclick")).Click();
 
             // Triggers event on ancestors with handler in upwards direction
-            WaitAssert.Equal(
+            Browser.Equal(
                 new[] { "parent onclick" },
                 GetLogLines);
         }
@@ -57,7 +64,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             TriggerCustomBubblingEvent("element-with-onsneeze", "sneeze");
 
             // Triggers event on target and ancestors with handler in upwards direction
-            WaitAssert.Equal(
+            Browser.Equal(
                 new[] { "target onsneeze", "parent onsneeze" },
                 GetLogLines);
         }
@@ -68,7 +75,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             TriggerCustomBubblingEvent("element-without-onsneeze", "sneeze");
 
             // Triggers event on ancestors with handler in upwards direction
-            WaitAssert.Equal(
+            Browser.Equal(
                 new[] { "parent onsneeze" },
                 GetLogLines);
         }
@@ -79,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("input-with-onfocus")).Click();
 
             // Triggers event only on target, not other ancestors with event handler
-            WaitAssert.Equal(
+            Browser.Equal(
                 new[] { "target onfocus" },
                 GetLogLines);
         }
@@ -90,7 +97,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.FindElement(By.Id("input-without-onfocus")).Click();
 
             // Triggers no event
-            WaitAssert.Empty(GetLogLines);
+            Browser.Empty(GetLogLines);
         }
 
         private string[] GetLogLines()

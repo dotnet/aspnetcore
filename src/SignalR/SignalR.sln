@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.28315.86
-MinimumVisualStudioVersion = 15.0.26730.03
+MinimumVisualStudioVersion = 16.0.0.0
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C4BC9889-B49F-41B6-806B-F84941B2549B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalRSamples", "samples\SignalRSamples\SignalRSamples.csproj", "{C4AEAB04-F341-4539-B6C0-52368FB4BF9E}"
@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WebSocketSample", "samples\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "JwtClientSample", "samples\JwtClientSample\JwtClientSample.csproj", "{1A953296-E869-4DE2-A693-FD5FCDE27057}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "clients\ts\FunctionalTests\FunctionalTests.csproj", "{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SignalR.Client.FunctionalTests", "clients\ts\FunctionalTests\SignalR.Client.FunctionalTests.csproj", "{D0C7B22E-B0B6-4D62-BF7D-79EE4AAF1981}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting", "..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj", "{3AC35C9A-3344-4BBB-B789-06CEE2CD093E}"
 EndProject
@@ -74,10 +74,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "perf", "perf", "{AC3CD0BA-DE19-4333-9A42-3CFCC9FF0332}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "benchmarkapps", "benchmarkapps", "{1AF35754-036E-4D19-BE71-6144CEC0E1D5}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BenchmarkServer", "perf\benchmarkapps\BenchmarkServer\BenchmarkServer.csproj", "{35C0D65F-643E-42FA-9177-2BFFDE9AFA14}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Crankier", "perf\benchmarkapps\Crankier\Crankier.csproj", "{56563C41-59EA-4B7F-94DC-ADD5923EC087}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Microbenchmarks", "perf\Microbenchmarks\Microsoft.AspNetCore.SignalR.Microbenchmarks.csproj", "{B34D6810-1A95-462F-A8DD-76E2B7FC5CEE}"
 EndProject
@@ -148,6 +144,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Client.Core", "clients\csharp\Client.Core\src\Microsoft.AspNetCore.SignalR.Client.Core.csproj", "{762A7DD1-E45E-4EA3-8109-521E844AE613}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HttpOverrides", "..\Middleware\HttpOverrides\src\Microsoft.AspNetCore.HttpOverrides.csproj", "{FD3A8F8D-2967-4635-86FC-CC49BAF651C1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Protocols.Json", "common\Protocols.Json\src\Microsoft.AspNetCore.SignalR.Protocols.Json.csproj", "{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -279,14 +277,6 @@ Global
 		{21C71457-3910-4BC1-937F-57B0172004CA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{21C71457-3910-4BC1-937F-57B0172004CA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{21C71457-3910-4BC1-937F-57B0172004CA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{35C0D65F-643E-42FA-9177-2BFFDE9AFA14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{35C0D65F-643E-42FA-9177-2BFFDE9AFA14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{35C0D65F-643E-42FA-9177-2BFFDE9AFA14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{35C0D65F-643E-42FA-9177-2BFFDE9AFA14}.Release|Any CPU.Build.0 = Release|Any CPU
-		{56563C41-59EA-4B7F-94DC-ADD5923EC087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{56563C41-59EA-4B7F-94DC-ADD5923EC087}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{56563C41-59EA-4B7F-94DC-ADD5923EC087}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{56563C41-59EA-4B7F-94DC-ADD5923EC087}.Release|Any CPU.Build.0 = Release|Any CPU
 		{B34D6810-1A95-462F-A8DD-76E2B7FC5CEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B34D6810-1A95-462F-A8DD-76E2B7FC5CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B34D6810-1A95-462F-A8DD-76E2B7FC5CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -411,6 +401,10 @@ Global
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -449,8 +443,6 @@ Global
 		{6D9DF750-BA0D-4ED7-8137-732E52894B1C} = {9FCD621E-E710-4991-B45C-1BABC977BEEC}
 		{21C71457-3910-4BC1-937F-57B0172004CA} = {6D9DF750-BA0D-4ED7-8137-732E52894B1C}
 		{1AF35754-036E-4D19-BE71-6144CEC0E1D5} = {AC3CD0BA-DE19-4333-9A42-3CFCC9FF0332}
-		{35C0D65F-643E-42FA-9177-2BFFDE9AFA14} = {1AF35754-036E-4D19-BE71-6144CEC0E1D5}
-		{56563C41-59EA-4B7F-94DC-ADD5923EC087} = {1AF35754-036E-4D19-BE71-6144CEC0E1D5}
 		{B34D6810-1A95-462F-A8DD-76E2B7FC5CEE} = {AC3CD0BA-DE19-4333-9A42-3CFCC9FF0332}
 		{F7CF971E-4FD8-4E3C-9BA1-0A0C84E2E72A} = {37DDE730-33D7-4400-9F12-84F0F2C0F319}
 		{F98DC946-BB11-444E-BD87-13CB07E5E107} = {37DDE730-33D7-4400-9F12-84F0F2C0F319}
@@ -482,6 +474,7 @@ Global
 		{3BE66897-A7E7-4AC8-B2EF-516366A6710F} = {1C8016A8-F362-45C7-9EA9-A1CCE7918F2F}
 		{762A7DD1-E45E-4EA3-8109-521E844AE613} = {1C8016A8-F362-45C7-9EA9-A1CCE7918F2F}
 		{FD3A8F8D-2967-4635-86FC-CC49BAF651C1} = {EDE8E45E-A5D0-4F0E-B72C-7CC14146C60A}
+		{BB52C0FB-19FD-485A-9EBD-3FC173ECAEA0} = {9FCD621E-E710-4991-B45C-1BABC977BEEC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7945A4E4-ACDB-4F6E-95CA-6AC6E7C2CD59}

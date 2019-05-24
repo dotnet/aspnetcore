@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -25,7 +26,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var host = new WebHostBuilder().UseServer(new FakeServer()).Configure(x => { }).Build();
             var webHostService = new WebHostService(host);
-            var applicationLifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+            var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
             applicationLifetime.StopApplication();
             webHostService.Start();
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             var host = new WebHostBuilder().UseServer( new FakeServer() ).Configure( x => { } ).Build();
             var webHostService = new WebHostService(host);
-            var applicationLifetime = host.Services.GetRequiredService<IApplicationLifetime>();
+            var applicationLifetime = host.Services.GetRequiredService<IHostApplicationLifetime>();
 
             webHostService.Start();
             applicationLifetime.StopApplication();

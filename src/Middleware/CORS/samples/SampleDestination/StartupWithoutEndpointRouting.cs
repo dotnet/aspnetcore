@@ -26,7 +26,7 @@ namespace SampleDestination
             services.AddCors();
         }
 
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app)
         {
             app.Map("/allow-origin", innerBuilder =>
             {
@@ -73,8 +73,7 @@ namespace SampleDestination
                 innerBuilder.UseCors(policy => policy
                     .AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
+                    .AllowAnyHeader());
 
                 innerBuilder.UseMiddleware<SampleMiddleware>();
             });

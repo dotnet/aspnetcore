@@ -19,6 +19,9 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR
 {
+    /// <summary>
+    /// Encapsulates all information about an individual connection to a SignalR Hub.
+    /// </summary>
     public class HubConnectionContext
     {
         private static readonly Action<object> _cancelReader = state => ((PipeReader)state).CancelPendingRead();
@@ -38,7 +41,17 @@ namespace Microsoft.AspNetCore.SignalR
         private bool _receivedMessageThisInterval = false;
         private ReadOnlyMemory<byte> _cachedPingMessage;
         private bool _clientTimeoutActive;
-        private bool _connectedAborted;
+        private bool _connectionAborted;
+        private int _streamBufferCapacity;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
+        /// </summary>
+        /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
+        /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
+            : this(connectionContext, keepAliveInterval, loggerFactory, HubOptionsSetup.DefaultClientTimeoutInterval, HubOptionsSetup.DefaultStreamBufferCapacity) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
@@ -48,12 +61,24 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="loggerFactory">The logger factory.</param>
         /// <param name="clientTimeoutInterval">Clients we haven't heard from in this interval are assumed to have disconnected.</param>
         public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval)
+            : this(connectionContext, keepAliveInterval, loggerFactory, clientTimeoutInterval, HubOptionsSetup.DefaultStreamBufferCapacity) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
+        /// </summary>
+        /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
+        /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
+        /// <param name="loggerFactory">The logger factory.</param>
+        /// <param name="clientTimeoutInterval">Clients we haven't heard from in this interval are assumed to have disconnected.</param>
+        /// <param name="streamBufferCapacity">The buffer size for client upload streams</param>
+        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory, TimeSpan clientTimeoutInterval, int streamBufferCapacity)
         {
             _connectionContext = connectionContext;
             _logger = loggerFactory.CreateLogger<HubConnectionContext>();
             ConnectionAborted = _connectionAbortedTokenSource.Token;
             _keepAliveInterval = keepAliveInterval.Ticks;
             _clientTimeoutInterval = clientTimeoutInterval.Ticks;
+            _streamBufferCapacity = streamBufferCapacity;
         }
 
         internal StreamTracker StreamTracker
@@ -63,19 +88,12 @@ namespace Microsoft.AspNetCore.SignalR
                 // lazy for performance reasons
                 if (_streamTracker == null)
                 {
-                    _streamTracker = new StreamTracker();
+                    _streamTracker = new StreamTracker(_streamBufferCapacity);
                 }
+
                 return _streamTracker;
             }
         }
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HubConnectionContext"/> class.
-        /// </summary>
-        /// <param name="connectionContext">The underlying <see cref="ConnectionContext"/>.</param>
-        /// <param name="keepAliveInterval">The keep alive interval. If no messages are sent by the server in this interval, a Ping message will be sent.</param>
-        /// <param name="loggerFactory">The logger factory.</param>
-        public HubConnectionContext(ConnectionContext connectionContext, TimeSpan keepAliveInterval, ILoggerFactory loggerFactory)
-            : this(connectionContext, keepAliveInterval, loggerFactory, HubOptionsSetup.DefaultClientTimeoutInterval) { }
 
         /// <summary>
         /// Gets a <see cref="CancellationToken"/> that notifies when the connection is aborted.
@@ -120,15 +138,16 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual ValueTask WriteAsync(HubMessage message, CancellationToken cancellationToken = default)
         {
-            if (_connectedAborted)
-            {
-                return default;
-            }
-
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
                 return new ValueTask(WriteSlowAsync(message));
+            }
+
+            if (_connectionAborted)
+            {
+                _writeLock.Release();
+                return default;
             }
 
             // This method should never throw synchronously
@@ -155,15 +174,16 @@ namespace Microsoft.AspNetCore.SignalR
         /// <returns></returns>
         public virtual ValueTask WriteAsync(SerializedHubMessage message, CancellationToken cancellationToken = default)
         {
-            if (_connectedAborted)
-            {
-                return default;
-            }
-
             // Try to grab the lock synchronously, if we fail, go to the slower path
             if (!_writeLock.Wait(0))
             {
                 return new ValueTask(WriteSlowAsync(message));
+            }
+
+            if (_connectionAborted)
+            {
+                _writeLock.Release();
+                return default;
             }
 
             // This method should never throw synchronously
@@ -241,10 +261,15 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task WriteSlowAsync(HubMessage message)
         {
+            // Failed to get the lock immediately when entering WriteAsync so await until it is available
             await _writeLock.WaitAsync();
+
             try
             {
-                // Failed to get the lock immediately when entering WriteAsync so await until it is available
+                if (_connectionAborted)
+                {
+                    return;
+                }
 
                 await WriteCore(message);
             }
@@ -261,10 +286,15 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task WriteSlowAsync(SerializedHubMessage message)
         {
+            // Failed to get the lock immediately when entering WriteAsync so await until it is available
+            await _writeLock.WaitAsync();
+
             try
             {
-                // Failed to get the lock immediately when entering WriteAsync so await until it is available
-                await _writeLock.WaitAsync();
+                if (_connectionAborted)
+                {
+                    return;
+                }
 
                 await WriteCore(message);
             }
@@ -295,6 +325,11 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
+                if (_connectionAborted)
+                {
+                    return;
+                }
+
                 await _connectionContext.Transport.Output.WriteAsync(_cachedPingMessage);
 
                 Log.SentPing(_logger);
@@ -302,6 +337,7 @@ namespace Microsoft.AspNetCore.SignalR
             catch (Exception ex)
             {
                 Log.FailedWritingMessage(_logger, ex);
+                Abort();
             }
             finally
             {
@@ -337,14 +373,14 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         public virtual void Abort()
         {
+            _connectionAborted = true;
+
             // If we already triggered the token then noop, this isn't thread safe but it's good enough
             // to avoid spawning a new task in the most common cases
             if (_connectionAbortedTokenSource.IsCancellationRequested)
             {
                 return;
             }
-
-            _connectedAborted = true;
 
             Input.CancelPendingRead();
 
@@ -360,7 +396,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var input = Input;
 
                 using (var cts = new CancellationTokenSource())
-                using (var registration = cts.Token.Register(_cancelReader, input))
+                using (var registration = cts.Token.UnsafeRegister(_cancelReader, input))
                 {
                     if (!Debugger.IsAttached)
                     {
@@ -438,7 +474,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     Log.HandshakeComplete(_logger, Protocol.Name);
 
-                                    await WriteHandshakeResponseAsync(new HandshakeResponseMessage(Protocol.MinorVersion));
+                                    await WriteHandshakeResponseAsync(HandshakeResponseMessage.Empty);
                                     return true;
                                 }
                             }
@@ -533,6 +569,7 @@ namespace Microsoft.AspNetCore.SignalR
         private static void AbortConnection(object state)
         {
             var connection = (HubConnectionContext)state;
+
             try
             {
                 connection._connectionAbortedTokenSource.Cancel();
@@ -543,8 +580,23 @@ namespace Microsoft.AspNetCore.SignalR
             }
             finally
             {
-                // Communicate the fact that we're finished triggering abort callbacks
-                connection._abortCompletedTcs.TrySetResult(null);
+                _ = InnerAbortConnection(connection);
+            }
+
+            static async Task InnerAbortConnection(HubConnectionContext connection)
+            {
+                // We lock to make sure all writes are done before triggering the completion of the pipe
+                await connection._writeLock.WaitAsync();
+                try
+                {
+                    // Communicate the fact that we're finished triggering abort callbacks
+                    // HubOnDisconnectedAsync is waiting on this to complete the Pipe
+                    connection._abortCompletedTcs.TrySetResult(null);
+                }
+                finally
+                {
+                    connection._writeLock.Release();
+                }
             }
         }
 

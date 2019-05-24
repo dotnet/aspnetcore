@@ -69,13 +69,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         [Fact]
         public void ConstructorNullChecks()
         {
-            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<PocoUser>(null, null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("userManager", () => new SignInManager<PocoUser>(null, null, null, null, null, null, null));
             var userManager = MockHelpers.MockUserManager<PocoUser>().Object;
-            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<PocoUser>(userManager, null, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("contextAccessor", () => new SignInManager<PocoUser>(userManager, null, null, null, null, null, null));
             var contextAccessor = new Mock<IHttpContextAccessor>();
             var context = new Mock<HttpContext>();
             contextAccessor.Setup(a => a.HttpContext).Returns(context.Object);
-            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<PocoUser>(userManager, contextAccessor.Object, null, null, null, null));
+            Assert.Throws<ArgumentNullException>("claimsFactory", () => new SignInManager<PocoUser>(userManager, contextAccessor.Object, null, null, null, null, null));
         }
 
         //[Fact]
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager.Object, roleManager.Object, options.Object);
             var logger = new TestLogger<SignInManager<PocoUser>>();
-            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object);
+            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
 
             // Act
             var result = await helper.PasswordSignInAsync(user.UserName, "bogus", false, false);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager.Object, roleManager.Object, options.Object);
             var logger = new TestLogger<SignInManager<PocoUser>>();
-            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object);
+            var helper = new SignInManager<PocoUser>(manager.Object, contextAccessor.Object, claimsFactory, options.Object, logger, new Mock<IAuthenticationSchemeProvider>().Object, new DefaultUserConfirmation<PocoUser>());
 
             // Act
             var result = await helper.CheckPasswordSignInAsync(user, "bogus", false);
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             options.Setup(a => a.Value).Returns(identityOptions);
             var claimsFactory = new UserClaimsPrincipalFactory<PocoUser, PocoRole>(manager, roleManager.Object, options.Object);
             schemeProvider = schemeProvider ?? new Mock<IAuthenticationSchemeProvider>().Object;
-            var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, schemeProvider);
+            var sm = new SignInManager<PocoUser>(manager, contextAccessor.Object, claimsFactory, options.Object, null, schemeProvider, new DefaultUserConfirmation<PocoUser>());
             sm.Logger = logger ?? NullLogger<SignInManager<PocoUser>>.Instance;
             return sm;
         }
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var signInManager = new Mock<SignInManager<PocoUser>>(manager.Object,
                 new HttpContextAccessor { HttpContext = context },
                 new Mock<IUserClaimsPrincipalFactory<PocoUser>>().Object,
-                null, null, new Mock<IAuthenticationSchemeProvider>().Object)
+                null, null, new Mock<IAuthenticationSchemeProvider>().Object, null)
             { CallBase = true };
             //signInManager.Setup(s => s.SignInAsync(user, It.Is<AuthenticationProperties>(p => p.IsPersistent == isPersistent),
             //externalLogin? loginProvider : null)).Returns(Task.FromResult(0)).Verifiable();

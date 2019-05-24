@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         public Uri Url { get; set; }
 
         /// <summary>
-        /// Gets or sets a bitmask comprised of one or more <see cref="HttpTransportType"/> that specify what transports the client should use to send HTTP requests.
+        /// Gets or sets a bitmask combining one or more <see cref="HttpTransportType"/> values that specify what transports the client should use to send HTTP requests.
         /// </summary>
         public HttpTransportType Transports { get; set; }
 

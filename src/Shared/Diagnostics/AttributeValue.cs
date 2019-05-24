@@ -5,8 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.DiagnosticsViewPage.Views
 {
-    [Obsolete("This type is for internal use only and will be removed in a future version.")]
-    public class AttributeValue
+    internal class AttributeValue
     {
         public AttributeValue(string prefix, object value, bool literal)
         {

@@ -1,5 +1,7 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Components
 {
@@ -11,6 +13,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// Notifies the component that it has been rendered.
         /// </summary>
-        void OnAfterRender();
+        /// <returns>A <see cref="Task"/> that represents the asynchronous event handling operation.</returns>
+        Task OnAfterRenderAsync();
     }
 }

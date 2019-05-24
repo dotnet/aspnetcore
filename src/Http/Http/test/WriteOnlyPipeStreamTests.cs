@@ -195,5 +195,12 @@ namespace System.IO.Pipelines.Tests
             Assert.Throws<InvalidOperationException>(() => writeOnlyPipeStream.Write(new byte[0], 0, 0));
             Assert.Throws<InvalidOperationException>(() => writeOnlyPipeStream.Flush());
         }
+
+        [Fact]
+        public void InnerPipeWriterReturnsPipeWriter()
+        {
+            var writeOnlyPipeStream = new WriteOnlyPipeStream(Writer, allowSynchronousIO: false);
+            Assert.Equal(Writer, writeOnlyPipeStream.InnerPipeWriter);
+        }
     }
 }

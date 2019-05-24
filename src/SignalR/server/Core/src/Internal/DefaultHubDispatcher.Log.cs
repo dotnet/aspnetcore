@@ -69,6 +69,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             private static readonly Action<ILogger, string, string, Exception> _closingStreamWithBindingError =
                 LoggerMessage.Define<string, string>(LogLevel.Warning, new EventId(19, "ClosingStreamWithBindingError"), "Stream '{StreamId}' closed with error '{Error}'.");
 
+            private static readonly Action<ILogger, Exception> _unexpectedStreamCompletion =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(20, "UnexpectedStreamCompletion"), "StreamCompletionMessage received unexpectedly.");
+
+            private static readonly Action<ILogger, Exception> _unexpectedStreamItem =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(21, "UnexpectedStreamItem"), "StreamItemMessage received unexpectedly.");
+
             public static void ReceivedHubInvocation(ILogger logger, InvocationMessage invocationMessage)
             {
                 _receivedHubInvocation(logger, invocationMessage, null);
@@ -167,6 +173,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             public static void ClosingStreamWithBindingError(ILogger logger, CompletionMessage message)
             {
                 _closingStreamWithBindingError(logger, message.InvocationId, message.Error, null);
+            }
+
+            public static void UnexpectedStreamCompletion(ILogger logger)
+            {
+                _unexpectedStreamCompletion(logger, null);
+            }
+
+            public static void UnexpectedStreamItem(ILogger logger)
+            {
+                _unexpectedStreamItem(logger, null);
             }
         }
     }

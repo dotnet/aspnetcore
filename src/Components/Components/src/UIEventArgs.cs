@@ -9,6 +9,11 @@ namespace Microsoft.AspNetCore.Components
     public class UIEventArgs
     {
         /// <summary>
+        /// An empty instance of <see cref="UIEventArgs"/>.
+        /// </summary>
+        public static readonly UIEventArgs Empty = new UIEventArgs();
+
+        /// <summary>
         /// Gets or sets the type of the event.
         /// </summary>
         public string Type { get; set; }
@@ -330,7 +335,7 @@ namespace Microsoft.AspNetCore.Components
         /// <summary>
         /// A unique identifier for the pointer causing the event.
         /// </summary>
-        public string PointerId { get; set; }
+        public long PointerId { get; set; }
 
         /// <summary>
         /// The width (magnitude on the X axis), in CSS pixels, of the contact geometry of the pointer.

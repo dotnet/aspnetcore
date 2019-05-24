@@ -23,7 +23,7 @@ namespace FormatterWebSite.Controllers
 
         public JsonFormatterController(ArrayPool<char> charPool)
         {
-            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool);
+            _indentingFormatter = new NewtonsoftJsonOutputFormatter(_indentedSettings, charPool, new MvcOptions());
         }
 
         public IActionResult ReturnsIndentedJson()
@@ -32,7 +32,7 @@ namespace FormatterWebSite.Controllers
             {
                 Id = 1,
                 Alias = "john",
-                description = "Administrator",
+                description = "This is long so we can test large objects " + new string('a', 1024 * 65),
                 Designation = "Administrator",
                 Name = "John Williams"
             };

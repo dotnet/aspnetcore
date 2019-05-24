@@ -18,11 +18,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class GlobalVersionTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public GlobalVersionTests(PublishedSitesFixture fixture)
+        public GlobalVersionTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         private const string _handlerVersion20 = "2.0.0";
@@ -184,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
         private IISDeploymentParameters GetGlobalVersionBaseDeploymentParameters()
         {
-            return _fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
+            return Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
         }
 
         private void CopyDirectory(string from, string to)

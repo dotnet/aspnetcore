@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.SpaServices.Prerendering;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Webpack.ActionResults
 {
@@ -26,8 +27,8 @@ namespace Webpack.ActionResults
         public override async Task ExecuteResultAsync(ActionContext context)
         {
             var nodeServices = context.HttpContext.RequestServices.GetRequiredService<INodeServices>();
-            var hostEnv = context.HttpContext.RequestServices.GetRequiredService<IHostingEnvironment>();
-            var applicationLifetime = context.HttpContext.RequestServices.GetRequiredService<IApplicationLifetime>();
+            var hostEnv = context.HttpContext.RequestServices.GetRequiredService<IWebHostEnvironment>();
+            var applicationLifetime = context.HttpContext.RequestServices.GetRequiredService<IHostApplicationLifetime>();
             var applicationBasePath = hostEnv.ContentRootPath;
             var request = context.HttpContext.Request;
             var response = context.HttpContext.Response;

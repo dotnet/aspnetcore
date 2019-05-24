@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e is X509KeyUsageExtension keyUsage &&
                         keyUsage.Critical == true &&
-                        keyUsage.KeyUsages == X509KeyUsageFlags.KeyEncipherment);
+                        keyUsage.KeyUsages == (X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature));
 
                 Assert.Contains(
                     httpsCertificate.Extensions.OfType<X509Extension>(),
@@ -107,7 +108,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             }
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/6721")]
         public void EnsureCreateHttpsCertificate2_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try
@@ -160,7 +162,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e is X509KeyUsageExtension keyUsage &&
                         keyUsage.Critical == true &&
-                        keyUsage.KeyUsages == X509KeyUsageFlags.KeyEncipherment);
+                        keyUsage.KeyUsages == (X509KeyUsageFlags.KeyEncipherment | X509KeyUsageFlags.DigitalSignature));
 
                 Assert.Contains(
                     httpsCertificate.Extensions.OfType<X509Extension>(),

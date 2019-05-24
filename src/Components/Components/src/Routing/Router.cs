@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Layouts;
 using Microsoft.AspNetCore.Components.RenderTree;
-using Microsoft.AspNetCore.Components.Services;
 
 namespace Microsoft.AspNetCore.Components.Routing
 {
@@ -15,26 +14,31 @@ namespace Microsoft.AspNetCore.Components.Routing
     /// A component that displays whichever other component corresponds to the
     /// current navigation location.
     /// </summary>
-    public class Router : IComponent, IDisposable
+    public class Router : IComponent, IHandleAfterRender, IDisposable
     {
         static readonly char[] _queryOrHashStartChar = new[] { '?', '#' };
 
         RenderHandle _renderHandle;
         string _baseUri;
         string _locationAbsolute;
+        bool _navigationInterceptionEnabled;
 
         [Inject] private IUriHelper UriHelper { get; set; }
+
+        [Inject] private INavigationInterception NavigationInterception { get; set; }
+
+        [Inject] private IComponentContext ComponentContext { get; set; }
 
         /// <summary>
         /// Gets or sets the assembly that should be searched, along with its referenced
         /// assemblies, for components matching the URI.
         /// </summary>
-        [Parameter] private Assembly AppAssembly { get; set; }
+        [Parameter] public Assembly AppAssembly { get; private set; }
         
         /// <summary>
         /// Gets or sets the type of the component that should be used as a fallback when no match is found for the requested route.
         /// </summary>
-        [Parameter] private Type FallbackComponent { get; set; }
+        [Parameter] public RenderFragment NotFoundContent { get; private set; }
 
         private RouteTable Routes { get; set; }
 
@@ -53,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.Routing
             parameters.SetParameterProperties(this);
             var types = ComponentResolver.ResolveComponents(AppAssembly);
             Routes = RouteTable.Create(types);
-            Refresh();
+            Refresh(isNavigationIntercepted: false);
             return Task.CompletedTask;
         }
 
@@ -80,41 +84,57 @@ namespace Microsoft.AspNetCore.Components.Routing
             builder.CloseComponent();
         }
 
-        private void Refresh()
+        private void Refresh(bool isNavigationIntercepted)
         {
             var locationPath = UriHelper.ToBaseRelativePath(_baseUri, _locationAbsolute);
             locationPath = StringUntilAny(locationPath, _queryOrHashStartChar);
             var context = new RouteContext(locationPath);
             Routes.Route(context);
 
-            if (context.Handler == null)
+            if (context.Handler != null)
             {
-                if (FallbackComponent != null)
+                if (!typeof(IComponent).IsAssignableFrom(context.Handler))
                 {
-                    context.Handler = FallbackComponent;
+                    throw new InvalidOperationException($"The type {context.Handler.FullName} " +
+                        $"does not implement {typeof(IComponent).FullName}.");
+                }
+
+                _renderHandle.Render(builder => Render(builder, context.Handler, context.Parameters));
+            }
+            else
+            {
+                if (!isNavigationIntercepted && NotFoundContent != null)
+                {
+                    // We did not find a Component that matches the route.
+                    // Only show the NotFoundContent if the application developer programatically got us here i.e we did not
+                    // intercept the navigation. In all other cases, force a browser navigation since this could be non-Blazor content.
+                    _renderHandle.Render(NotFoundContent);
                 }
                 else
                 {
-                    throw new InvalidOperationException($"'{nameof(Router)}' cannot find any component with a route for '/{locationPath}', and no fallback is defined.");
+                    UriHelper.NavigateTo(_locationAbsolute, forceLoad: true);
                 }
             }
-
-            if (!typeof(IComponent).IsAssignableFrom(context.Handler))
-            {
-                throw new InvalidOperationException($"The type {context.Handler.FullName} " +
-                    $"does not implement {typeof(IComponent).FullName}.");
-            }
-
-            _renderHandle.Render(builder => Render(builder, context.Handler, context.Parameters));
         }
 
-        private void OnLocationChanged(object sender, string newAbsoluteUri)
+        private void OnLocationChanged(object sender, LocationChangedEventArgs args)
         {
-            _locationAbsolute = newAbsoluteUri;
-            if (_renderHandle.IsInitialized)
+            _locationAbsolute = args.Location;
+            if (_renderHandle.IsInitialized && Routes != null)
             {
-                Refresh();
+                Refresh(args.IsNavigationIntercepted);
             }
+        }
+
+        Task IHandleAfterRender.OnAfterRenderAsync()
+        {
+            if (!_navigationInterceptionEnabled && ComponentContext.IsConnected)
+            {
+                _navigationInterceptionEnabled = true;
+                return NavigationInterception.EnableNavigationInterceptionAsync();
+            }
+
+            return Task.CompletedTask;
         }
     }
 }

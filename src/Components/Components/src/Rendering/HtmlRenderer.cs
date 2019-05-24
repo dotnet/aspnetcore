@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -26,7 +27,9 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// </summary>
         /// <param name="serviceProvider">The <see cref="IServiceProvider"/> to use to instantiate components.</param>
         /// <param name="htmlEncoder">A <see cref="Func{T, TResult}"/> that will HTML encode the given string.</param>
-        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder) : base(serviceProvider)
+        /// <param name="dispatcher"></param>
+        public HtmlRenderer(IServiceProvider serviceProvider, Func<string, string> htmlEncoder, IDispatcher dispatcher)
+            : base(serviceProvider, dispatcher)
         {
             _htmlEncoder = htmlEncoder;
         }
@@ -41,73 +44,34 @@ namespace Microsoft.AspNetCore.Components.Rendering
         /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
         /// of the HTML produced by the component.
         /// </summary>
-        /// <typeparam name="T">The type of the <see cref="IComponent"/>.</typeparam>
-        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
-        /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
-        public IEnumerable<string> RenderComponent<T>(ParameterCollection initialParameters) where T : IComponent
-        {
-            return RenderComponent(typeof(T), initialParameters);
-        }
-
-        /// <summary>
-        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
-        /// of the HTML produced by the component.
-        /// </summary>
         /// <param name="componentType">The type of the <see cref="IComponent"/>.</param>
         /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
-        /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
-        private IEnumerable<string> RenderComponent(Type componentType, ParameterCollection initialParameters)
+        /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
+        public async Task<ComponentRenderedText> RenderComponentAsync(Type componentType, ParameterCollection initialParameters)
         {
-            var frames = CreateInitialRender(componentType, initialParameters);
+            var (componentId, frames) = await CreateInitialRenderAsync(componentType, initialParameters);
 
-            if (frames.Count == 0)
-            {
-                return Array.Empty<string>();
-            }
-            else
-            {
-                var result = new List<string>();
-                var newPosition = RenderFrames(result, frames, 0, frames.Count);
-                Debug.Assert(newPosition == frames.Count);
-                return result;
-            }
+            var result = new List<string>();
+            var newPosition = RenderFrames(result, frames, 0, frames.Count);
+            Debug.Assert(newPosition == frames.Count);
+            return new ComponentRenderedText(componentId, result);
         }
 
         /// <summary>
         /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
         /// of the HTML produced by the component.
         /// </summary>
-        /// <param name="componentType">The type of the <see cref="IComponent"/>.</param>
+        /// <typeparam name="TComponent">The type of the <see cref="IComponent"/>.</typeparam>
         /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
-        /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
-        public async Task<IEnumerable<string>> RenderComponentAsync(Type componentType, ParameterCollection initialParameters)
+        /// <returns>A <see cref="Task"/> that on completion returns a sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
+        public Task<ComponentRenderedText> RenderComponentAsync<TComponent>(ParameterCollection initialParameters) where TComponent : IComponent
         {
-            var frames = await CreateInitialRenderAsync(componentType, initialParameters);
-
-            if (frames.Count == 0)
-            {
-                return Array.Empty<string>();
-            }
-            else
-            {
-                var result = new List<string>();
-                var newPosition = RenderFrames(result, frames, 0, frames.Count);
-                Debug.Assert(newPosition == frames.Count);
-                return result;
-            }
+            return RenderComponentAsync(typeof(TComponent), initialParameters);
         }
 
-        /// <summary>
-        /// Renders a component into a sequence of <see cref="string"/> fragments that represent the textual representation
-        /// of the HTML produced by the component.
-        /// </summary>
-        /// <typeparam name="T">The type of the <see cref="IComponent"/>.</typeparam>
-        /// <param name="initialParameters">A <see cref="ParameterCollection"/> with the initial parameters to render the component.</param>
-        /// <returns>A sequence of <see cref="string"/> fragments that represent the HTML text of the component.</returns>
-        public Task<IEnumerable<string>> RenderComponentAsync<T>(ParameterCollection initialParameters) where T : IComponent
-        {
-            return RenderComponentAsync(typeof(T), initialParameters);
-        }
+        /// <inheritdoc />
+        protected override void HandleException(Exception exception)
+            => ExceptionDispatchInfo.Capture(exception).Throw();
 
         private int RenderFrames(List<string> result, ArrayRange<RenderTreeFrame> frames, int position, int maxElements)
         {
@@ -256,24 +220,14 @@ namespace Microsoft.AspNetCore.Components.Rendering
             return position + maxElements;
         }
 
-        private ArrayRange<RenderTreeFrame> CreateInitialRender(Type componentType, ParameterCollection initialParameters)
-        {
-            var component = InstantiateComponent(componentType);
-            var componentId = AssignRootComponentId(component);
-
-            RenderRootComponent(componentId, initialParameters);
-
-            return GetCurrentRenderTreeFrames(componentId);
-        }
-
-        private async Task<ArrayRange<RenderTreeFrame>> CreateInitialRenderAsync(Type componentType, ParameterCollection initialParameters)
+        private async Task<(int, ArrayRange<RenderTreeFrame>)> CreateInitialRenderAsync(Type componentType, ParameterCollection initialParameters)
         {
             var component = InstantiateComponent(componentType);
             var componentId = AssignRootComponentId(component);
 
             await RenderRootComponentAsync(componentId, initialParameters);
 
-            return GetCurrentRenderTreeFrames(componentId);
+            return (componentId, GetCurrentRenderTreeFrames(componentId));
         }
     }
 }

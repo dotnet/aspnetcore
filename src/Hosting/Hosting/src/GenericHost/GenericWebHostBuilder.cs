@@ -57,21 +57,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
             _builder.ConfigureServices((context, services) =>
             {
-                if (_hostingStartupWebHostBuilder != null)
-                {
-                    var webhostContext = GetWebHostBuilderContext(context);
-                    _hostingStartupWebHostBuilder.ConfigureServices(webhostContext, services);
-                }
-            });
-
-            _builder.ConfigureServices((context, services) =>
-            {
                 var webhostContext = GetWebHostBuilderContext(context);
                 var webHostOptions = (WebHostOptions)context.Properties[typeof(WebHostOptions)];
 
                 // Add the IHostingEnvironment and IApplicationLifetime from Microsoft.AspNetCore.Hosting
                 services.AddSingleton(webhostContext.HostingEnvironment);
+#pragma warning disable CS0618 // Type or member is obsolete
+                services.AddSingleton((AspNetCore.Hosting.IHostingEnvironment)webhostContext.HostingEnvironment);
                 services.AddSingleton<IApplicationLifetime, GenericWebHostApplicationLifetime>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
@@ -92,6 +86,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
                 services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
+
+                // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
+                _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);
 
                 // Support UseStartup(assemblyName)
                 if (!string.IsNullOrEmpty(webHostOptions.StartupAssembly))
@@ -265,7 +262,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     // _builder.ConfigureContainer<T>(ConfigureContainer);
                     typeof(IHostBuilder).GetMethods().First(m => m.Name == nameof(IHostBuilder.ConfigureContainer))
                         .MakeGenericMethod(containerType)
-                        .Invoke(_builder, new object[] { configureCallback });
+                        .InvokeWithoutWrappingExceptions(_builder, new object[] { configureCallback });
                 }
 
                 // Resolve Configure after calling ConfigureServices and ConfigureContainer
@@ -300,13 +297,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             builder.Build(instance)(container);
         }
 
-        public IWebHostBuilder Configure(Action<IApplicationBuilder> configure)
+        public IWebHostBuilder Configure(Action<WebHostBuilderContext, IApplicationBuilder> configure)
         {
             _builder.ConfigureServices((context, services) =>
             {
                 services.Configure<GenericWebHostServiceOptions>(options =>
                 {
-                    options.ConfigureApplication = configure;
+                    var webhostBuilderContext = GetWebHostBuilderContext(context);
+                    options.ConfigureApplication = app => configure(webhostBuilderContext, app);
                 });
             });
 
@@ -318,14 +316,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (!context.Properties.TryGetValue(typeof(WebHostBuilderContext), out var contextVal))
             {
                 var options = new WebHostOptions(context.Configuration, Assembly.GetEntryAssembly()?.GetName().Name);
-                var hostingEnvironment = new HostingEnvironment();
-                hostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
-
                 var webHostBuilderContext = new WebHostBuilderContext
                 {
                     Configuration = context.Configuration,
-                    HostingEnvironment = hostingEnvironment
+                    HostingEnvironment = new HostingEnvironment(),
                 };
+                webHostBuilderContext.HostingEnvironment.Initialize(context.HostingEnvironment.ContentRootPath, options);
                 context.Properties[typeof(WebHostBuilderContext)] = webHostBuilderContext;
                 context.Properties[typeof(WebHostOptions)] = options;
                 return webHostBuilderContext;
@@ -361,7 +357,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             public object GetService(Type serviceType)
             {
                 // The implementation of the HostingEnvironment supports both interfaces
-                if (serviceType == typeof(Microsoft.AspNetCore.Hosting.IHostingEnvironment) || serviceType == typeof(IHostingEnvironment))
+#pragma warning disable CS0618 // Type or member is obsolete
+                if (serviceType == typeof(Microsoft.Extensions.Hosting.IHostingEnvironment)
+                    || serviceType == typeof(Microsoft.AspNetCore.Hosting.IHostingEnvironment)
+#pragma warning restore CS0618 // Type or member is obsolete
+                    || serviceType == typeof(IWebHostEnvironment)
+                    || serviceType == typeof(IHostEnvironment)
+                    )
                 {
                     return _context.HostingEnvironment;
                 }

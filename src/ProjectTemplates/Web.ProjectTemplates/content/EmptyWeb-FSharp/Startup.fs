@@ -5,6 +5,7 @@ open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
+open Microsoft.Extensions.Hosting
 
 type Startup() =
 
@@ -14,10 +15,12 @@ type Startup() =
         ()
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
-        if env.IsDevelopment() then 
+    member this.Configure(app: IApplicationBuilder, env: IWebHostEnvironment) =
+        if env.IsDevelopment() then
             app.UseDeveloperExceptionPage() |> ignore
 
-        app.UseRouting(fun routing ->
-            routing.MapGet("/", fun context -> context.Response.WriteAsync("Hello World!")) |> ignore
+        app.UseRouting() |> ignore
+
+        app.UseEndpoints(fun endpoints ->
+            endpoints.MapGet("/", fun context -> context.Response.WriteAsync("Hello World!")) |> ignore
             ) |> ignore

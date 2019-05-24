@@ -31,12 +31,14 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="optionsAccessor">The accessor used to access the <see cref="IdentityOptions"/>.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>
         /// <param name="schemes">The scheme provider that is used enumerate the authentication schemes.</param>
+        /// <param name="confirmation">The <see cref="IUserConfirmation{TUser}"/> used check whether a user account is confirmed.</param>
         public SignInManager(UserManager<TUser> userManager,
             IHttpContextAccessor contextAccessor,
             IUserClaimsPrincipalFactory<TUser> claimsFactory,
             IOptions<IdentityOptions> optionsAccessor,
             ILogger<SignInManager<TUser>> logger,
-            IAuthenticationSchemeProvider schemes)
+            IAuthenticationSchemeProvider schemes,
+            IUserConfirmation<TUser> confirmation)
         {
             if (userManager == null)
             {
@@ -57,11 +59,13 @@ namespace Microsoft.AspNetCore.Identity
             Options = optionsAccessor?.Value ?? new IdentityOptions();
             Logger = logger;
             _schemes = schemes;
+            _confirmation = confirmation;
         }
 
         private readonly IHttpContextAccessor _contextAccessor;
         private HttpContext _context;
         private IAuthenticationSchemeProvider _schemes;
+        private IUserConfirmation<TUser> _confirmation;
 
         /// <summary>
         /// Gets the <see cref="ILogger"/> used to log messages from the manager.
@@ -148,7 +152,11 @@ namespace Microsoft.AspNetCore.Identity
                 Logger.LogWarning(1, "User {userId} cannot sign in without a confirmed phone number.", await UserManager.GetUserIdAsync(user));
                 return false;
             }
-
+            if (Options.SignIn.RequireConfirmedAccount && !(await _confirmation.IsConfirmedAsync(UserManager, user)))
+            {
+                Logger.LogWarning(4, "User {userId} cannot sign in without a confirmed account.", await UserManager.GetUserIdAsync(user));
+                return false;
+            }
             return true;
         }
 
@@ -225,6 +233,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return user;
             }
+            Logger.LogDebug(4, "Failed to validate a security stamp.");
             return null;
         }
 
@@ -247,6 +256,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return user;
             }
+            Logger.LogDebug(5, "Failed to validate a security stamp.");
             return null;
         }
 

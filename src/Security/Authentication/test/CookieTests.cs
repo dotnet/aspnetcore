@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
@@ -140,20 +141,15 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         }
 
         [Fact]
-        public async Task CookieExpirationOptionIsIgnored()
+        public void SettingCookieExpirationOptionThrows()
         {
-            var server = CreateServerWithServices(s => s.AddAuthentication().AddCookie(o =>
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddCookie(o =>
             {
-                o.Cookie.Name = "TestCookie";
-                // this is currently ignored. Users should set o.ExpireTimeSpan instead
                 o.Cookie.Expiration = TimeSpan.FromDays(10);
-            }), SignInAsAlice);
-
-            var transaction = await SendAsync(server, "http://example.com/testpath");
-
-            var setCookie = transaction.SetCookie;
-            Assert.StartsWith("TestCookie=", setCookie);
-            Assert.DoesNotContain("; expires=", setCookie);
+            });
+            var options = services.BuildServiceProvider().GetRequiredService<IOptionsMonitor<CookieAuthenticationOptions>>();
+            Assert.Throws<OptionsValidationException>(() => options.Get(CookieAuthenticationDefaults.AuthenticationScheme));
         }
 
         [Fact]

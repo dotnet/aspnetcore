@@ -20,6 +20,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.StackTrace.Sources;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
@@ -33,11 +34,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
                                      IConfiguration configuration,
-                                     IHostingEnvironment hostingEnvironment)
+                                     IWebHostEnvironment hostingEnvironment)
         {
             Options = options.Value;
             Server = server;
-            Logger = loggerFactory.CreateLogger<GenericWebHostService>();
+            Logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             LifetimeLogger = loggerFactory.CreateLogger("Microsoft.Hosting.Lifetime");
             DiagnosticListener = diagnosticListener;
             HttpContextFactory = httpContextFactory;
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public GenericWebHostServiceOptions Options { get; }
         public IServer Server { get; }
-        public ILogger<GenericWebHostService> Logger { get; }
+        public ILogger Logger { get; }
         // Only for high level lifetime events
         public ILogger LifetimeLogger { get; }
         public DiagnosticListener DiagnosticListener { get; }
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public IApplicationBuilderFactory ApplicationBuilderFactory { get; }
         public IEnumerable<IStartupFilter> StartupFilters { get; }
         public IConfiguration Configuration { get; }
-        public IHostingEnvironment HostingEnvironment { get; }
+        public IWebHostEnvironment HostingEnvironment { get; }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
@@ -184,7 +185,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             return context =>
             {
                 context.Response.StatusCode = 500;
-                context.Response.Headers["Cache-Control"] = "no-cache";
+                context.Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                context.Response.ContentType = "text/html; charset=utf-8";
                 return errorPage.ExecuteAsync(context);
             };
         }

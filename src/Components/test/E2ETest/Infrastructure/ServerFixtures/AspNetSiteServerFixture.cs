@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
+using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
@@ -10,6 +11,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
     public class AspNetSiteServerFixture : WebHostServerFixture
     {
         public delegate IWebHost BuildWebHost(string[] args);
+
+        public Assembly ApplicationAssembly { get; set; }
 
         public BuildWebHost BuildWebHostMethod { get; set; }
 
@@ -23,8 +26,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
                     $"No value was provided for {nameof(BuildWebHostMethod)}");
             }
 
-            var sampleSitePath = FindSampleOrTestSitePath(
-                BuildWebHostMethod.Method.DeclaringType.Assembly.GetName().Name);
+            var assembly = ApplicationAssembly ?? BuildWebHostMethod.Method.DeclaringType.Assembly;
+            var sampleSitePath = FindSampleOrTestSitePath(assembly.FullName);
 
             return BuildWebHostMethod(new[]
             {

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -30,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
         private IISContextFactory _iisContextFactory;
         private readonly MemoryPool<byte> _memoryPool = new SlabMemoryPool();
         private GCHandle _httpServerHandle;
-        private readonly IApplicationLifetime _applicationLifetime;
+        private readonly IHostApplicationLifetime _applicationLifetime;
         private readonly ILogger<IISHttpServer> _logger;
         private readonly IISServerOptions _options;
         private readonly IISNativeApplication _nativeApplication;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
 
         public IISHttpServer(
             IISNativeApplication nativeApplication,
-            IApplicationLifetime applicationLifetime,
+            IHostApplicationLifetime applicationLifetime,
             IAuthenticationSchemeProvider authentication,
             IOptions<IISServerOptions> options,
             ILogger<IISHttpServer> logger
@@ -80,6 +81,11 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             }
 
             Features.Set<IServerAddressesFeature>(_serverAddressesFeature);
+
+            if (_options.MaxRequestBodySize > _options.IisMaxRequestSizeLimit)
+            {
+                _logger.LogWarning(CoreStrings.MaxRequestLimitWarning);
+            }
         }
 
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
@@ -164,7 +170,7 @@ namespace Microsoft.AspNetCore.Server.IIS.Core
             try
             {
                 context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
-                context.ConnectionReset();
+                context.AbortIO(clientDisconnect: true);
             }
             catch (Exception ex)
             {

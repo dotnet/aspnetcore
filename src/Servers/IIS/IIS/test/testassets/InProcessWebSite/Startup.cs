@@ -17,6 +17,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.IISIntegration.FunctionalTests;
 using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -283,6 +284,27 @@ namespace TestSite
             {
                 result = await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
             }
+        }
+
+        private int _requestsInFlight = 0;
+        private async Task ReadAndCountRequestBody(HttpContext ctx)
+        {
+            Interlocked.Increment(ref _requestsInFlight);
+            await ctx.Response.WriteAsync(_requestsInFlight.ToString());
+
+            var readBuffer = new byte[1];
+            await ctx.Request.Body.ReadAsync(readBuffer, 0, 1);
+
+            await ctx.Response.WriteAsync("done");
+            Interlocked.Decrement(ref _requestsInFlight);
+        }
+
+        private async Task WaitForAppToStartShuttingDown(HttpContext ctx)
+        {
+            await ctx.Response.WriteAsync("test1");
+            var lifetime = ctx.RequestServices.GetService<IHostApplicationLifetime>();
+            lifetime.ApplicationStopping.WaitHandle.WaitOne();
+            await ctx.Response.WriteAsync("test2");
         }
 
         private async Task ReadFullBody(HttpContext ctx)
@@ -655,7 +677,7 @@ namespace TestSite
         private async Task Shutdown(HttpContext ctx)
         {
             await ctx.Response.WriteAsync("Shutting down");
-            ctx.RequestServices.GetService<IApplicationLifetime>().StopApplication();
+            ctx.RequestServices.GetService<IHostApplicationLifetime>().StopApplication();
         }
 
         private async Task ShutdownStopAsync(HttpContext ctx)
@@ -672,6 +694,29 @@ namespace TestSite
             var cts = new CancellationTokenSource();
             cts.Cancel();
             await server.StopAsync(cts.Token);
+        }
+
+        private async Task StackSize(HttpContext ctx)
+        {
+            // This would normally stackoverflow if we didn't increase the stack size per thread.
+            RecursiveFunction(10000);
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        private async Task StackSizeLarge(HttpContext ctx)
+        {
+            // This would normally stackoverflow if we didn't increase the stack size per thread.
+            RecursiveFunction(30000);
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        private void RecursiveFunction(int i)
+        {
+            if (i == 0)
+            {
+                return;
+            }
+            RecursiveFunction(i - 1);
         }
 
         private async Task GetServerVariableStress(HttpContext ctx)

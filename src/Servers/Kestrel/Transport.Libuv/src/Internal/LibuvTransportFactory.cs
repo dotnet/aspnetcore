@@ -1,21 +1,21 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvTransportFactory : ITransportFactory
+    internal class LibuvTransportFactory : ITransportFactory
     {
         private readonly LibuvTransportContext _baseTransportContext;
 
         public LibuvTransportFactory(
             IOptions<LibuvTransportOptions> options,
-            IApplicationLifetime applicationLifetime,
+            IHostApplicationLifetime applicationLifetime,
             ILoggerFactory loggerFactory)
         {
             if (options == null)

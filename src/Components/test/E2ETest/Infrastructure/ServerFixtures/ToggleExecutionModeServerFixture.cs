@@ -9,7 +9,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         : ServerFixture
     {
         public string PathBase { get; set; }
-        public bool UsingAspNetHost { get; private set; }
+
+        public ExecutionMode ExecutionMode { get; set; } = ExecutionMode.Client;
 
         private AspNetSiteServerFixture.BuildWebHost _buildWebHostMethod;
         private IDisposable _serverToDispose;
@@ -18,7 +19,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
         {
             _buildWebHostMethod = buildWebHostMethod
                 ?? throw new ArgumentNullException(nameof(buildWebHostMethod));
-            UsingAspNetHost = true;
         }
 
         protected override string StartAndGetRootUri()
@@ -46,4 +46,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures
             _serverToDispose?.Dispose();
         }
     }
+
+    public enum ExecutionMode { Client, Server }
 }

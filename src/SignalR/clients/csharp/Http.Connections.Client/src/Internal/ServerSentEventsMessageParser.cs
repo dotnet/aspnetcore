@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
         private const byte ByteLF = (byte)'\n';
         private const byte ByteColon = (byte)':';
 
-        private static readonly byte[] _dataPrefix = Encoding.UTF8.GetBytes("data: ");
-        private static readonly byte[] _sseLineEnding = Encoding.UTF8.GetBytes("\r\n");
+        private static ReadOnlySpan<byte> _dataPrefix => new byte[] { (byte)'d', (byte)'a', (byte)'t', (byte)'a', (byte)':', (byte)' ' };
+        private static ReadOnlySpan<byte> _sseLineEnding => new byte[] { (byte)'\r', (byte)'\n' };
         private static readonly byte[] _newLine = Encoding.UTF8.GetBytes(Environment.NewLine);
 
         private InternalParseState _internalParserState = InternalParseState.ReadMessagePayload;

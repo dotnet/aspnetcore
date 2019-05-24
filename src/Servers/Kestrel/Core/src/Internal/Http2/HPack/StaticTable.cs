@@ -7,7 +7,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
-    public class StaticTable
+    internal class StaticTable
     {
         private static readonly StaticTable _instance = new StaticTable();
 

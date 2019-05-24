@@ -13,7 +13,7 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Client" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging" />
-    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
   </ItemGroup>
 
 </Project>

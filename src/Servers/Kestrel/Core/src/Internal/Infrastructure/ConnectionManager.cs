@@ -6,7 +6,7 @@ using System.Collections.Concurrent;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    public class ConnectionManager
+    internal class ConnectionManager
     {
         private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
         private readonly IKestrelTrace _trace;

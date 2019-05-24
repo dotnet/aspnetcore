@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // See License.txt in the project root for license information
 
 using System;
@@ -50,7 +50,10 @@ namespace MusicStore.Test
 
             var services = new ServiceCollection();
 
-            services.AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
+            services
+                .AddMemoryCache()
+                .AddLogging()
+                .AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
 
             _serviceProvider = services.BuildServiceProvider();
         }

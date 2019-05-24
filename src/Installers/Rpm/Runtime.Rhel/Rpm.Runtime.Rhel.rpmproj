@@ -1,0 +1,15 @@
+<!--
+  This project produces a RPM RHEL.7 installer for Linux x64 platforms only.
+-->
+<Project DefaultTargets="Build">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" />
+
+  <PropertyGroup>
+    <RpmPackageInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/</RpmPackageInstallRoot>
+    <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-rh.rhel.7-x64.rpm</TargetFileName>
+  </PropertyGroup>
+
+  <Import Project="..\Rpm.Runtime.Common.targets" />
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />
+</Project>

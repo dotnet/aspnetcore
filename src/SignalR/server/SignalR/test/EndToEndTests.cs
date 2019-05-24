@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
 using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -308,6 +309,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalTheory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1383", FlakyOn.All)]
         [WebSocketsSupportedCondition]
         [InlineData(5 * 4096)]
         [InlineData(1000 * 4096 + 32)]
@@ -335,7 +337,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     logger.LogInformation("Receiving message");
                     // Big timeout here because it can take a while to receive all the bytes
-                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length);
+                    var receivedData = await connection.Transport.Input.ReadAsync(bytes.Length).OrTimeout(TimeSpan.FromMinutes(2));
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
                 }
@@ -530,7 +532,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        // Serves a fake transport that lets us verify fallback behavior 
+        // Serves a fake transport that lets us verify fallback behavior
         private class TestTransportFactory : ITransportFactory
         {
             private ITransport _transport;
@@ -566,7 +568,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            public Task StartAsync(Uri url, TransferFormat transferFormat)
+            public Task StartAsync(Uri url, TransferFormat transferFormat, CancellationToken cancellationToken = default)
             {
                 var options = ClientPipeOptions.DefaultOptions;
                 var pair = DuplexPipe.CreateConnectionPair(options, options);

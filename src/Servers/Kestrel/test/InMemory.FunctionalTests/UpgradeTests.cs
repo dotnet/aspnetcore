@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ResponseThrowsAfterUpgrade()
         {
             var upgrade = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
                 var stream = await feature.UpgradeAsync();
@@ -33,6 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 {
                     await writer.WriteLineAsync("New protocol data");
                     await writer.FlushAsync();
+                    await writer.DisposeAsync();
                 }
 
                 upgrade.TrySetResult(true);
@@ -50,7 +51,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.Receive("New protocol data");
                     await upgrade.Task.DefaultTimeout();
                 }
-                await server.StopAsync();
             }
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             const string recv = "Custom protocol recv";
 
             var upgrade = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 try
                 {
@@ -79,6 +79,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         Assert.Equal(send, line);
                         await writer.WriteLineAsync(recv);
                         await writer.FlushAsync();
+                        await writer.DisposeAsync();
                     }
 
                     upgrade.TrySetResult(true);
@@ -105,7 +106,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
 
                     await upgrade.Task.DefaultTimeout();
                 }
-                await server.StopAsync();
             }
         }
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task UpgradeCannotBeCalledMultipleTimes()
         {
             var upgradeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
                 await feature.UpgradeAsync();
@@ -144,7 +144,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "");
                     await connection.WaitForConnectionClose();
                 }
-                await server.StopAsync();
             }
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.DefaultTimeout());
@@ -154,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task RejectsRequestWithContentLengthAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -173,14 +172,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
 
         [Fact]
         public async Task AcceptsRequestWithNoContentLengthAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -198,14 +196,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGetWithUpgrade();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
-                await server.StopAsync();
             }
         }
 
         [Fact]
         public async Task RejectsRequestWithChunkedEncodingAndUpgrade()
         {
-            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
+            await using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext(LoggerFactory)))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -223,7 +220,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         "",
                         "");
                 }
-                await server.StopAsync();
             }
         }
 
@@ -231,7 +227,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         public async Task ThrowsWhenUpgradingNonUpgradableRequest()
         {
             var upgradeTcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                  var feature = context.Features.Get<IHttpUpgradeFeature>();
                  Assert.False(feature.IsUpgradableRequest);
@@ -254,7 +250,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                     await connection.SendEmptyGet();
                     await connection.Receive("HTTP/1.1 200 OK");
                 }
-                await server.StopAsync();
             }
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task).DefaultTimeout();
@@ -269,7 +264,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             var serviceContext = new TestServiceContext(LoggerFactory);
             serviceContext.ConnectionManager = new ConnectionManager(serviceContext.Log, ResourceCounter.Quota(limit));
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
                 if (feature.IsUpgradableRequest)
@@ -306,7 +301,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                         await connection.Receive("HTTP/1.1 200");
                     }
                 }
-                await server.StopAsync();
             }
 
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await upgradeTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(60)));
@@ -318,7 +312,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             var appCompletedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            using (var server = new TestServer(async context =>
+            await using (var server = new TestServer(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
                 var duplexStream = await feature.UpgradeAsync();
@@ -347,7 +341,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 }
 
                 await appCompletedTcs.Task.DefaultTimeout();
-                await server.StopAsync();
             }
         }
     }

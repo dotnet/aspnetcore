@@ -1,8 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.JSInterop;
-using Mono.WebAssembly.Interop;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +8,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Blazor.Services;
+using Microsoft.JSInterop;
 
 namespace Microsoft.AspNetCore.Blazor.Http
 {
@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.Blazor.Http
         public static FetchCredentialsOption DefaultCredentials { get; set; }
             = FetchCredentialsOption.SameOrigin;
 
-        static object _idLock = new object();
-        static int _nextRequestId = 0;
-        static IDictionary<int, TaskCompletionSource<HttpResponseMessage>> _pendingRequests
+        private static readonly object _idLock = new object();
+        private static readonly IDictionary<int, TaskCompletionSource<HttpResponseMessage>> _pendingRequests
             = new Dictionary<int, TaskCompletionSource<HttpResponseMessage>>();
+        private static int _nextRequestId = 0;
 
         /// <summary>
         /// The name of a well-known property that can be added to <see cref="HttpRequestMessage.Properties"/>
@@ -64,29 +64,22 @@ namespace Microsoft.AspNetCore.Blazor.Http
             };
 
             options.RequestUri = request.RequestUri.ToString();
-
-            if (JSRuntime.Current is MonoWebAssemblyJSRuntime mono)
-            {
-                mono.InvokeUnmarshalled<int, byte[], string, object>(
-                    "Blazor._internal.http.sendAsync",
-                    id,
-                    request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
-                    Json.Serialize(options));
-            }
-            else
-            {
-                throw new NotImplementedException("WebAssemblyHttpMessageHandler only supports running under Mono WebAssembly.");
-            }
+            WebAssemblyJSRuntime.Instance.InvokeUnmarshalled<int, byte[], string, object>(
+                "Blazor._internal.http.sendAsync",
+                id,
+                request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
+                Json.Serialize(options));
 
             return await tcs.Task;
         }
 
-        private string[][] GetHeadersAsStringArray(HttpRequestMessage request)
-            => (from header in request.Headers.Concat(request.Content?.Headers ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>())
-                from headerValue in header.Value // There can be more than one value for each name
-                select new[] { header.Key, headerValue }).ToArray();
-
+        /// <remarks>
+        /// While it may be tempting to remove this method because it appears to be unused,
+        /// this method is referenced by client code and must persist.
+        /// </remarks>
+#pragma warning disable IDE0051 // Remove unused private members
         private static void ReceiveResponse(
+#pragma warning restore IDE0051 // Remove unused private members
             string id,
             string responseDescriptorJson,
             byte[] responseBodyData,
@@ -113,10 +106,18 @@ namespace Microsoft.AspNetCore.Blazor.Http
             }
         }
 
-        private static byte[] AllocateArray(string length)
-        {
-            return new byte[int.Parse(length)];
-        }
+        /// <remarks>
+        /// While it may be tempting to remove this method because it appears to be unused,
+        /// this method is referenced by client code and must persist.
+        /// </remarks>
+#pragma warning disable IDE0051 // Remove unused private members
+        private static byte[] AllocateArray(string length) => new byte[int.Parse(length)];
+#pragma warning restore IDE0051 // Remove unused private members
+
+        private string[][] GetHeadersAsStringArray(HttpRequestMessage request)
+            => (from header in request.Headers.Concat(request.Content?.Headers ?? Enumerable.Empty<KeyValuePair<string, IEnumerable<string>>>())
+                from headerValue in header.Value // There can be more than one value for each name
+                select new[] { header.Key, headerValue }).ToArray();
 
         private static string GetDefaultCredentialsString()
         {
@@ -152,11 +153,11 @@ namespace Microsoft.AspNetCore.Blazor.Http
 
         private class ResponseDescriptor
         {
-            #pragma warning disable 0649
+#pragma warning disable 0649
             public int StatusCode { get; set; }
             public string StatusText { get; set; }
             public string[][] Headers { get; set; }
-            #pragma warning restore 0649
+#pragma warning restore 0649
 
             public HttpResponseMessage ToResponseMessage(HttpContent content)
             {

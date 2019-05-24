@@ -1,8 +1,9 @@
-﻿using System.Threading;
+using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.NodeServices;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
@@ -20,8 +21,8 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
 
         public DefaultSpaPrerenderer(
             INodeServices nodeServices,
-            IApplicationLifetime applicationLifetime,
-            IHostingEnvironment hostingEnvironment,
+            IHostApplicationLifetime applicationLifetime,
+            IWebHostEnvironment hostingEnvironment,
             IHttpContextAccessor httpContextAccessor)
         {
             _applicationBasePath = hostingEnvironment.ContentRootPath;

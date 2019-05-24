@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Http
         /// <summary>
         /// Gets or sets the request body pipe <see cref="PipeReader"/>.
         /// </summary>
-        public abstract PipeReader BodyPipe { get; set; }
+        public abstract PipeReader BodyReader { get; set; }
 
         /// <summary>
         /// Checks the Content-Type header for form types.

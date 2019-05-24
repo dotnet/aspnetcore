@@ -39,8 +39,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
         public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
-            using (var scope = _serviceScopeFactory.CreateScope())
+            IServiceScope scope = null;
+
+            try
             {
+                scope = _serviceScopeFactory.CreateScope();
+
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 var hub = hubActivator.Create();
                 try
@@ -53,12 +57,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     hubActivator.Release(hub);
                 }
             }
+            finally
+            {
+                await scope.DisposeAsync();
+            }
         }
 
         public override async Task OnDisconnectedAsync(HubConnectionContext connection, Exception exception)
         {
-            using (var scope = _serviceScopeFactory.CreateScope())
+            IServiceScope scope = null;
+
+            try
             {
+                scope = _serviceScopeFactory.CreateScope();
+
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                 var hub = hubActivator.Create();
                 try
@@ -70,6 +82,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 {
                     hubActivator.Release(hub);
                 }
+            }
+            finally
+            {
+                await scope.DisposeAsync();
             }
         }
 
@@ -114,14 +130,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     break;
 
                 case StreamItemMessage streamItem:
-                    Log.ReceivedStreamItem(_logger, streamItem);
                     return ProcessStreamItem(connection, streamItem);
 
                 case CompletionMessage streamCompleteMessage:
                     // closes channels, removes from Lookup dict
                     // user's method can see the channel is complete and begin wrapping up
-                    Log.CompletingStream(_logger, streamCompleteMessage);
-                    connection.StreamTracker.Complete(streamCompleteMessage);
+                    if (connection.StreamTracker.TryComplete(streamCompleteMessage))
+                    {
+                        Log.CompletingStream(_logger, streamCompleteMessage);
+                    }
+                    else
+                    {
+                        Log.UnexpectedStreamCompletion(_logger);
+                    }
                     break;
 
                 // Other kind of message we weren't expecting
@@ -137,7 +158,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
         {
             Log.FailedInvokingHubMethod(_logger, bindingFailureMessage.Target, bindingFailureMessage.BindingFailure.SourceException);
 
-
             var errorMessage = ErrorMessageHelper.BuildErrorMessage($"Failed to invoke '{bindingFailureMessage.Target}' due to an error on the server.",
                 bindingFailureMessage.BindingFailure.SourceException, _enableDetailedErrors);
             return SendInvocationError(bindingFailureMessage.InvocationId, connection, errorMessage);
@@ -151,15 +171,25 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             var message = CompletionMessage.WithError(bindingFailureMessage.Id, errorString);
             Log.ClosingStreamWithBindingError(_logger, message);
-            connection.StreamTracker.Complete(message);
+
+            // ignore failure, it means the client already completed the stream or the stream never existed on the server
+            connection.StreamTracker.TryComplete(message);
+
+            // TODO: Send stream completion message to client when we add it
 
             return Task.CompletedTask;
         }
 
         private Task ProcessStreamItem(HubConnectionContext connection, StreamItemMessage message)
         {
+            if (!connection.StreamTracker.TryProcessItem(message, out var processTask))
+            {
+                Log.UnexpectedStreamItem(_logger);
+                return Task.CompletedTask;
+            }
+
             Log.ReceivedStreamItem(_logger, message);
-            return connection.StreamTracker.ProcessItem(message);
+            return processTask;
         }
 
         private Task ProcessInvocation(HubConnectionContext connection,
@@ -247,7 +277,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 {
                                     Log.StartingParameterStream(_logger, hubMethodInvocationMessage.StreamIds[streamPointer]);
                                     var itemType = descriptor.StreamingParameters[streamPointer];
-                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer], itemType);
+                                    arguments[parameterPointer] = connection.StreamTracker.AddStream(hubMethodInvocationMessage.StreamIds[streamPointer],
+                                        itemType, descriptor.OriginalParameterTypes[parameterPointer]);
+
                                     streamPointer++;
                                 }
                                 else
@@ -263,16 +295,20 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                     {
                         var result = await ExecuteHubMethod(methodExecutor, hub, arguments);
 
-                        if (!TryGetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, descriptor, result, out var enumerator, ref cts))
+                        if (result == null)
                         {
                             Log.InvalidReturnValueFromStreamingMethod(_logger, methodExecutor.MethodInfo.Name);
                             await SendInvocationError(hubMethodInvocationMessage.InvocationId, connection,
-                                $"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is not a ChannelReader<>.");
+                                $"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is not a ChannelReader<> or IAsyncEnumerable<>.");
                             return;
                         }
 
+                        cts = cts ?? CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
+                        connection.ActiveRequestCancellationSources.TryAdd(hubMethodInvocationMessage.InvocationId, cts);
+                        var enumerable = descriptor.FromReturnedStream(result, cts.Token);
+
                         Log.StreamingResult(_logger, hubMethodInvocationMessage.InvocationId, methodExecutor);
-                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
+                        _ = StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerable, scope, hubActivator, hub, cts, hubMethodInvocationMessage);
                     }
 
                     else if (string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
@@ -304,7 +340,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                                 // And normal invocations handle cleanup below in the finally
                                 if (isStreamCall)
                                 {
-                                    CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                                 }
                             }
 
@@ -342,42 +378,38 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             {
                 if (disposeScope)
                 {
-                    CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                    await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
                 }
             }
         }
 
-        private void CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
+        private ValueTask CleanupInvocation(HubConnectionContext connection, HubMethodInvocationMessage hubMessage, IHubActivator<THub> hubActivator,
             THub hub, IServiceScope scope)
         {
-            hubActivator?.Release(hub);
-            scope.Dispose();
-
             if (hubMessage.StreamIds != null)
             {
                 foreach (var stream in hubMessage.StreamIds)
                 {
-                    try
-                    {
-                        connection.StreamTracker.Complete(CompletionMessage.Empty(stream));
-                    }
-                    // ignore failures, it means the client already completed the streams
-                    catch (KeyNotFoundException) { }
+                    connection.StreamTracker.TryComplete(CompletionMessage.Empty(stream));
                 }
             }
+
+            hubActivator?.Release(hub);
+
+            return scope.DisposeAsync();
         }
 
-        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator, IServiceScope scope,
+        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerable<object> enumerable, IServiceScope scope,
             IHubActivator<THub> hubActivator, THub hub, CancellationTokenSource streamCts, HubMethodInvocationMessage hubMethodInvocationMessage)
         {
             string error = null;
 
             try
             {
-                while (await enumerator.MoveNextAsync())
+                await foreach (var streamItem in enumerable)
                 {
                     // Send the stream item
-                    await connection.WriteAsync(new StreamItemMessage(invocationId, enumerator.Current));
+                    await connection.WriteAsync(new StreamItemMessage(invocationId, streamItem));
                 }
             }
             catch (ChannelClosedException ex)
@@ -396,9 +428,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
             finally
             {
-                (enumerator as IDisposable)?.Dispose();
-
-                CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
+                await CleanupInvocation(connection, hubMethodInvocationMessage, hubActivator, hub, scope);
 
                 // Dispose the linked CTS for the stream.
                 streamCts.Dispose();
@@ -476,10 +506,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return authorizationResult.Succeeded;
         }
 
-        private async Task<bool> ValidateInvocationMode(HubMethodDescriptor hubMethodDescriptor, bool isStreamedInvocation,
+        private async Task<bool> ValidateInvocationMode(HubMethodDescriptor hubMethodDescriptor, bool isStreamResponse,
             HubMethodInvocationMessage hubMethodInvocationMessage, HubConnectionContext connection)
         {
-            if (hubMethodDescriptor.IsStreamable && !isStreamedInvocation)
+            if (hubMethodDescriptor.IsStreamResponse && !isStreamResponse)
             {
                 // Non-null/empty InvocationId? Blocking
                 if (!string.IsNullOrEmpty(hubMethodInvocationMessage.InvocationId))
@@ -492,7 +522,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return false;
             }
 
-            if (!hubMethodDescriptor.IsStreamable && isStreamedInvocation)
+            if (!hubMethodDescriptor.IsStreamResponse && isStreamResponse)
             {
                 Log.NonStreamingMethodCalledWithStream(_logger, hubMethodInvocationMessage);
                 await connection.WriteAsync(CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId,
@@ -502,26 +532,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             }
 
             return true;
-        }
-
-        private bool TryGetStreamingEnumerator(HubConnectionContext connection, string invocationId, HubMethodDescriptor hubMethodDescriptor, object result, out IAsyncEnumerator<object> enumerator, ref CancellationTokenSource streamCts)
-        {
-            if (result != null)
-            {
-                if (hubMethodDescriptor.IsChannel)
-                {
-                    if (streamCts == null)
-                    {
-                        streamCts = CancellationTokenSource.CreateLinkedTokenSource(connection.ConnectionAborted);
-                    }
-                    connection.ActiveRequestCancellationSources.TryAdd(invocationId, streamCts);
-                    enumerator = hubMethodDescriptor.FromChannel(result, streamCts.Token);
-                    return true;
-                }
-            }
-
-            enumerator = null;
-            return false;
         }
 
         private void DiscoverHubMethods()

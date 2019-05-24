@@ -9,31 +9,34 @@
 class ServerErrorHandler : public REQUEST_HANDLER
 {
 public:
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page) noexcept
+        : ServerErrorHandler(pContext, statusCode, subStatusCode, statusText, hr, module, disableStartupPage, page, std::vector<byte>()) 
+    {
+    }
 
-    ServerErrorHandler(IHttpContext &pContext, USHORT statusCode, USHORT subStatusCode, std::string statusText, HRESULT hr, HINSTANCE moduleInstance, bool disableStartupPage, int page) noexcept
+    ServerErrorHandler(IHttpContext& pContext, USHORT statusCode, USHORT subStatusCode, const std::string& statusText, HRESULT hr, HINSTANCE module, bool disableStartupPage, int page, const std::vector<byte>& content) noexcept
         : REQUEST_HANDLER(pContext),
-          m_pContext(pContext),
-          m_HR(hr),
-          m_disableStartupPage(disableStartupPage),
-          m_page(page),
-          m_moduleInstance(moduleInstance),
-          m_statusCode(statusCode),
-          m_subStatusCode(subStatusCode),
-          m_statusText(std::move(statusText))
+        m_pContext(pContext),
+        m_HR(hr),
+        m_disableStartupPage(disableStartupPage),
+        m_statusCode(statusCode),
+        m_subStatusCode(subStatusCode),
+        m_statusText(std::move(statusText)),
+        m_page(page),
+        m_ExceptionInfoContent(content),
+        m_moduleInstance(module)
     {
     }
 
     REQUEST_NOTIFICATION_STATUS ExecuteRequestHandler() override
     {
-        static std::string s_html500Page = GetHtml(m_moduleInstance, m_page);
-
-        WriteStaticResponse(m_pContext, s_html500Page, m_HR, m_disableStartupPage);
+        WriteStaticResponse(m_pContext, m_HR, m_disableStartupPage);
 
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
 
 private:
-    void WriteStaticResponse(IHttpContext& pContext, std::string &page, HRESULT hr, bool disableStartupErrorPage) const
+    void WriteStaticResponse(IHttpContext& pContext, HRESULT hr, bool disableStartupErrorPage) 
     {
         if (disableStartupErrorPage)
         {
@@ -49,14 +52,23 @@ private:
             (USHORT)strlen("text/html"),
             FALSE
         );
-        dataChunk.DataChunkType = HttpDataChunkFromMemory;
 
-        dataChunk.FromMemory.pBuffer = page.data();
-        dataChunk.FromMemory.BufferLength = static_cast<ULONG>(page.size());
+        dataChunk.DataChunkType = HttpDataChunkFromMemory;
+        if (m_ExceptionInfoContent.size() > 0)
+        {
+            dataChunk.FromMemory.pBuffer = &m_ExceptionInfoContent[0];
+            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(m_ExceptionInfoContent.size());
+        }
+        else
+        {
+            static std::string s_html500Page = GetHtml(m_moduleInstance, m_page);
+            dataChunk.FromMemory.pBuffer = s_html500Page.data();
+            dataChunk.FromMemory.BufferLength = static_cast<ULONG>(s_html500Page.size());
+        }
+      
         pResponse->WriteEntityChunkByReference(&dataChunk);
     }
 
-    static
     std::string
     GetHtml(HMODULE module, int page)
     {
@@ -91,7 +103,7 @@ private:
         }
     }
 
-    IHttpContext &m_pContext;
+    IHttpContext& m_pContext;
     HRESULT m_HR;
     bool m_disableStartupPage;
     int m_page;
@@ -99,4 +111,5 @@ private:
     USHORT m_statusCode;
     USHORT m_subStatusCode;
     std::string m_statusText;
+    std::vector<byte> m_ExceptionInfoContent;
 };

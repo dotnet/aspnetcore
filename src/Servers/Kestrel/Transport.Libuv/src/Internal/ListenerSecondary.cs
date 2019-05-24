@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     /// A secondary listener is delegated requests from a primary listener via a named pipe or
     /// UNIX domain socket.
     /// </summary>
-    public class ListenerSecondary : ListenerContext, IAsyncDisposable
+    internal class ListenerSecondary : ListenerContext, IAsyncDisposable
     {
         private string _pipeName;
         private byte[] _pipeMessage;

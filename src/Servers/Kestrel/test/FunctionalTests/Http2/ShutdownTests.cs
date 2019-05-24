@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
@@ -11,8 +12,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Moq;
@@ -21,8 +22,8 @@ using Xunit;
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 {
     [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Missing SslStream ALPN support: https://github.com/dotnet/corefx/issues/30492")]
-    [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Curl requires a custom install to support HTTP/2, see https://askubuntu.com/questions/884899/how-do-i-install-curl-with-http2-support")]
     [MinimumOSVersion(OperatingSystems.Windows, WindowsVersions.Win10)]
+    [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10428", Queues = "Debian.8.Amd64.Open")] // Debian 8 uses OpenSSL 1.0.1 which does not support HTTP/2
     public class ShutdownTests : TestApplicationErrorLoggerLoggedTest
     {
         private static X509Certificate2 _x509Certificate2 = TestResources.GetTestCertificate();
@@ -32,17 +33,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.Http2
 
         public ShutdownTests()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            Client = new HttpClient(new HttpClientHandler
             {
-                // We don't want the default SocketsHttpHandler, it doesn't support HTTP/2 yet.
-                Client = new HttpClient(new WinHttpHandler
-                {
-                    ServerCertificateValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
-                });
-            }
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            })
+            {
+                DefaultRequestVersion = new Version(2, 0),
+            };
         }
 
         [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/9985", Queues = "Fedora.28.Amd64.Open")] // https://github.com/aspnet/AspNetCore/issues/9985
+        [Flaky("https://github.com/aspnet/AspNetCore/issues/9985", FlakyOn.All)]
         public async Task GracefulShutdownWaitsForRequestsToFinish()
         {
             var requestStarted = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);

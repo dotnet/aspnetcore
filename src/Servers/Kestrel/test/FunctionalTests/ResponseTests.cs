@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                         for (int i = 0; i < 1024; i++)
                         {
-                            await context.Response.Body.WriteAsync(bytes, 0, bytes.Length);
+                            await context.Response.BodyWriter.WriteAsync(new Memory<byte>(bytes, 0, bytes.Length));
                         }
                     });
                 });
@@ -208,7 +209,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 try
                 {
-                    await response.WriteAsync(largeString, lifetime.RequestAborted);
+                    await response.WriteAsync(largeString, cancellationToken: lifetime.RequestAborted);
                 }
                 catch (Exception ex)
                 {
@@ -257,7 +258,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var clientClosedConnection = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
             var writeTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            TestSink.MessageLogged += context => {
+            TestSink.MessageLogged += context =>
+            {
                 if (context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" &&
                     context.LoggerName != "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets")
                 {
@@ -297,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     for (var i = 0; i < 1000; i++)
                     {
-                        await context.Response.Body.WriteAsync(scratchBuffer, 0, scratchBuffer.Length, context.RequestAborted);
+                        await context.Response.BodyWriter.WriteAsync(new Memory<byte>(scratchBuffer, 0, scratchBuffer.Length), context.RequestAborted);
                         await Task.Delay(10);
                     }
                 }
@@ -340,6 +342,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1972", FlakyOn.All)]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidResponse(ListenOptions listenOptions)
         {
@@ -499,7 +502,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     for (; i < chunks; i++)
                     {
-                        await context.Response.Body.WriteAsync(chunkData, 0, chunkData.Length, context.RequestAborted);
+                        await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
                         await Task.Yield();
                     }
 
@@ -606,7 +609,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     for (var i = 0; i < chunks; i++)
                     {
-                        await context.Response.Body.WriteAsync(chunkData, 0, chunkData.Length, context.RequestAborted);
+                        await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
                     }
                 }
                 catch (OperationCanceledException)
@@ -770,7 +773,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 for (var i = 0; i < chunkCount; i++)
                 {
-                    await context.Response.Body.WriteAsync(chunkData, 0, chunkData.Length, context.RequestAborted);
+                    await context.Response.BodyWriter.WriteAsync(new Memory<byte>(chunkData, 0, chunkData.Length), context.RequestAborted);
                 }
 
                 appFuncCompleted.SetResult(null);
@@ -807,10 +810,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             => e is IOException && e.Message.Contains("Unable to read data from the transport connection: The I/O operation has been aborted because of either a thread exit or an application request");
 
         [Fact]
-        [RetryTest(nameof(ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeadersRetryPredicate),
-            "Active investigation into potential corefx sockets bug: https://github.com/dotnet/corefx/issues/30691",
-            OperatingSystems.Windows,
-            5)]
+        [Flaky("https://github.com/dotnet/corefx/issues/30691", FlakyOn.AzP.Windows)]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
         {
             var headerSize = 1024 * 1024; // 1 MB for each header value
@@ -847,7 +847,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 context.Response.Headers[$"X-Custom-Header"] = headerStringValues;
                 context.Response.ContentLength = 0;
 
-                await context.Response.Body.FlushAsync();
+                await context.Response.BodyWriter.FlushAsync();
             }
 
             using (var server = new TestServer(App, testContext, listenOptions))

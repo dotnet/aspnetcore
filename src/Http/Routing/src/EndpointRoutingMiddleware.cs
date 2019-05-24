@@ -1,14 +1,13 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -23,8 +22,8 @@ namespace Microsoft.AspNetCore.Routing
 
         public EndpointRoutingMiddleware(
             MatcherFactory matcherFactory,
-            EndpointDataSource endpointDataSource,
             ILogger<EndpointRoutingMiddleware> logger,
+            IEndpointRouteBuilder endpointRouteBuilder,
             RequestDelegate next)
         {
             if (matcherFactory == null)
@@ -32,14 +31,14 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(matcherFactory));
             }
 
-            if (endpointDataSource == null)
-            {
-                throw new ArgumentNullException(nameof(endpointDataSource));
-            }
-
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (endpointRouteBuilder == null)
+            {
+                throw new ArgumentNullException(nameof(endpointRouteBuilder));
             }
 
             if (next == null)
@@ -48,50 +47,76 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             _matcherFactory = matcherFactory;
-            _endpointDataSource = endpointDataSource;
             _logger = logger;
             _next = next;
+
+            _endpointDataSource = new CompositeEndpointDataSource(endpointRouteBuilder.DataSources);
         }
 
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
-            var feature = new EndpointSelectorContext();
+            // There's already an endpoint, skip maching completely
+            var endpoint = httpContext.GetEndpoint();
+            if (endpoint != null)
+            {
+                Log.MatchSkipped(_logger, endpoint);
+                return _next(httpContext);
+            }
 
             // There's an inherent race condition between waiting for init and accessing the matcher
             // this is OK because once `_matcher` is initialized, it will not be set to null again.
-            var matcher = await InitializeAsync();
-
-            await matcher.MatchAsync(httpContext, feature);
-            if (feature.Endpoint != null)
+            var matcherTask = InitializeAsync();
+            if (!matcherTask.IsCompletedSuccessfully)
             {
-                // Set the endpoint feature only on success. This means we won't overwrite any
-                // existing state for related features unless we did something.
-                SetFeatures(httpContext, feature);
-
-                Log.MatchSuccess(_logger, feature);
+                return AwaitMatcher(this, httpContext, matcherTask);
             }
-            else
+
+            var matchTask = matcherTask.Result.MatchAsync(httpContext);
+            if (!matchTask.IsCompletedSuccessfully)
+            {
+                return AwaitMatch(this, httpContext, matchTask);
+            }
+
+            return SetRoutingAndContinue(httpContext);
+
+            // Awaited fallbacks for when the Tasks do not synchronously complete
+            static async Task AwaitMatcher(EndpointRoutingMiddleware middleware, HttpContext httpContext, Task<Matcher> matcherTask)
+            {
+                var matcher = await matcherTask;
+                await matcher.MatchAsync(httpContext);
+                await middleware.SetRoutingAndContinue(httpContext);
+            }
+
+            static async Task AwaitMatch(EndpointRoutingMiddleware middleware, HttpContext httpContext, Task matchTask)
+            {
+                await matchTask;
+                await middleware.SetRoutingAndContinue(httpContext);
+            }
+
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private Task SetRoutingAndContinue(HttpContext httpContext)
+        {
+            // If there was no mutation of the endpoint then log failure
+            var endpoint = httpContext.GetEndpoint();
+            if (endpoint == null)
             {
                 Log.MatchFailure(_logger);
             }
+            else
+            {
+                Log.MatchSuccess(_logger, endpoint);
+            }
 
-            await _next(httpContext);
-        }
-
-        private static void SetFeatures(HttpContext httpContext, EndpointSelectorContext context)
-        {
-            // For back-compat EndpointSelectorContext implements IEndpointFeature,
-            // IRouteValuesFeature and IRoutingFeature
-            httpContext.Features.Set<IRoutingFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
-            httpContext.Features.Set<IEndpointFeature>(context);
+            return _next(httpContext);
         }
 
         // Initialization is async to avoid blocking threads while reflection and things
         // of that nature take place.
         //
-        // We've seen cases where startup is very slow if we  allow multiple threads to race 
-        // while initializing the set of endpoints/routes. Doing CPU intensive work is a 
+        // We've seen cases where startup is very slow if we  allow multiple threads to race
+        // while initializing the set of endpoints/routes. Doing CPU intensive work is a
         // blocking operation if you have a low core count and enough work to do.
         private Task<Matcher> InitializeAsync()
         {
@@ -154,14 +179,24 @@ namespace Microsoft.AspNetCore.Routing
                 new EventId(2, "MatchFailure"),
                 "Request did not match any endpoints");
 
-            public static void MatchSuccess(ILogger logger, EndpointSelectorContext context)
+            private static readonly Action<ILogger, string, Exception> _matchingSkipped = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                new EventId(3, "MatchingSkipped"),
+                "Endpoint '{EndpointName}' already set, skipping route matching.");
+
+            public static void MatchSuccess(ILogger logger, Endpoint endpoint)
             {
-                _matchSuccess(logger, context.Endpoint.DisplayName, null);
+                _matchSuccess(logger, endpoint.DisplayName, null);
             }
 
             public static void MatchFailure(ILogger logger)
             {
                 _matchFailure(logger, null);
+            }
+
+            public static void MatchSkipped(ILogger logger, Endpoint endpoint)
+            {
+                _matchingSkipped(logger, endpoint.DisplayName, null);
             }
         }
     }

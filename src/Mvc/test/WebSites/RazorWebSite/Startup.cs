@@ -45,6 +45,9 @@ namespace RazorWebSite
         public void Configure(IApplicationBuilder app)
         {
             app.UseDeveloperExceptionPage();
+
+            app.UseRouting();
+
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("en-GB", "en-US"),
@@ -62,7 +65,11 @@ namespace RazorWebSite
                 }
             });
 
-            app.UseMvcWithDefaultRoute();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
+            });
         }
     }
 }

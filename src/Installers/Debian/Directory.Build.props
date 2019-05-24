@@ -1,0 +1,18 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
+
+  <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.GenerateFileFromTemplate" AssemblyFile="$(BuildToolsTaskAssembly)" />
+
+  <PropertyGroup>
+    <DisablePubternalApiCheck>true</DisablePubternalApiCheck>
+    <OutputPath>$(InstallersOutputPath)</OutputPath>
+    <IntermediateOutputPath>$(IntermediateOutputPath)$(TargetRuntimeIdentifier)\</IntermediateOutputPath>
+
+    <!-- Installer settings -->
+    <DebianPackageInstallRoot>/usr/share/dotnet</DebianPackageInstallRoot>
+
+    <DebianPackageArch Condition=" '$(TargetArchitecture)' == 'x64' ">amd64</DebianPackageArch>
+
+    <DebianBuildScript>$(MSBuildThisFileDirectory)tools/build.sh</DebianBuildScript>
+  </PropertyGroup>
+</Project>

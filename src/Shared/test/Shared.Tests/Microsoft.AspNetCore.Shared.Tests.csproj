@@ -20,7 +20,7 @@
     <Reference Include="FSharp.Core" />
     <Reference Include="System.Reflection.Metadata" />
     <Reference Include="System.Threading.Tasks.Extensions" />
-    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.TypeNameHelper.Sources" />
   </ItemGroup>
 
   <ItemGroup>

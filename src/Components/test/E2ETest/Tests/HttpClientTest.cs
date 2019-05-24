@@ -4,6 +4,7 @@
 using BasicTestApp.HttpClientTest;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
+using Microsoft.AspNetCore.E2ETesting;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
     public class HttpClientTest : BasicTestAppTestBase, IClassFixture<AspNetSiteServerFixture>
     {
         readonly ServerFixture _apiServerFixture;
-        readonly IWebElement _appElement;
+        IWebElement _appElement;
         IWebElement _responseStatus;
         IWebElement _responseBody;
         IWebElement _responseHeaders;
@@ -31,7 +32,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             apiServerFixture.BuildWebHostMethod = TestServer.Program.BuildWebHost;
             _apiServerFixture = apiServerFixture;
+        }
 
+        protected override void InitializeAsyncCore()
+        {
             Navigate(ServerPathBase, noReload: true);
             _appElement = MountTestComponent<HttpRequestsComponent>();
         }

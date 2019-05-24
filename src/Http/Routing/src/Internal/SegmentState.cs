@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Routing.Internal
 {
     // Segments are treated as all-or-none. We should never output a partial segment.
@@ -9,6 +11,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
     // used a value for {p1}, we have to output the entire segment up to the next "/".
     // Otherwise we could end up with the partial segment "v1" instead of the entire
     // segment "v1-v2.xml".
+    [Obsolete("This type will be marked as internal in a future release.")]
     public enum SegmentState
     {
         Beginning,

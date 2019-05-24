@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     /// <summary>
     /// In-memory TestServer
     /// </summary
-    public class TestServer : IDisposable, IStartup
+    internal class TestServer : IAsyncDisposable, IDisposable, IStartup
     {
         private readonly MemoryPool<byte> _memoryPool;
         private readonly RequestDelegate _app;
@@ -157,6 +156,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             var tcs = new TaskCompletionSource<object>();
             token.Register(() => tcs.SetResult(null));
             return tcs.Task;
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            // The concrete WebHost implements IAsyncDisposable
+            await ((IAsyncDisposable)_host).ConfigureAwait(false).DisposeAsync();
+            _memoryPool.Dispose();
         }
     }
 }

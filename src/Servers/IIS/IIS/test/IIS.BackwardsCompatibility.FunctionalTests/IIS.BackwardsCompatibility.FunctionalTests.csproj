@@ -7,8 +7,9 @@
     <SkipTests Condition=" '$(SkipIISBackwardsCompatibilityTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
 
+  <Import Project="../FunctionalTest.props" />
+
   <ItemGroup>
-    <Content Include="..\Common.FunctionalTests\AppHostConfig\*.config" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="..\Common.FunctionalTests\**\*.cs" />
     <Compile Include="..\IIS.Shared.FunctionalTests\**\*.cs" />
   </ItemGroup>
@@ -18,15 +19,16 @@
     <ProjectReference Include="..\testassets\**\*.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\testassets\OutOfProcessWebSite\OutOfProcessWebSite.csproj">
+      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>
     <!-- The versions on these references are hard-coded because we want to ensure we maintain backwards compatibility with ANCM 2.2.0 -->
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="2.2.0">
-      <AllowExplicitReference>true</AllowExplicitReference>
-    </PackageReference>
     <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModuleV2" Version="2.2.0">
       <AllowExplicitReference>true</AllowExplicitReference>
     </PackageReference>

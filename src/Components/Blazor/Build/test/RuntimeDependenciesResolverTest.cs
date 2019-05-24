@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -19,7 +20,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             _output = output;
         }
 
-        [Fact]
+        [ConditionalFact]
+        [SkipOnHelix("https://github.com/aspnet/AspNetCore/issues/10426")]
         public void FindsReferenceAssemblyGraph_ForStandaloneApp()
         {
             // Arrange
@@ -82,11 +84,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 "System.Collections.dll",
                 "System.ComponentModel.Composition.dll",
                 "System.ComponentModel.dll",
+                "System.ComponentModel.Annotations.dll",
+                "System.ComponentModel.DataAnnotations.dll",
                 "System.Core.dll",
                 "System.Data.dll",
                 "System.Diagnostics.Debug.dll",
                 "System.Diagnostics.Tracing.dll",
-                "System.Drawing.dll",
+                "System.Drawing.Common.dll",
                 "System.IO.Compression.dll",
                 "System.IO.Compression.FileSystem.dll",
                 "System.Linq.dll",

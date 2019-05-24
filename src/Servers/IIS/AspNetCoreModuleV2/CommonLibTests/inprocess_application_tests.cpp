@@ -13,6 +13,7 @@ using ::testing::NiceMock;
 // Externals defined in inprocess
 BOOL       g_fProcessDetach;
 HANDLE     g_hEventLog;
+std::wstring g_exceptionEventLog;
 
 namespace InprocessTests
 {

@@ -4,9 +4,11 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
+using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -93,19 +95,22 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
         private readonly UserManager<TUser> _userManager;
         private readonly IUserStore<TUser> _userStore;
         private readonly IUserEmailStore<TUser> _emailStore;
+        private readonly IEmailSender _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
             SignInManager<TUser> signInManager,
             UserManager<TUser> userManager,
             IUserStore<TUser> userStore,
-            ILogger<ExternalLoginModel> logger)
+            ILogger<ExternalLoginModel> logger,
+            IEmailSender emailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _logger = logger;
+            _emailSender = emailSender;
         }
 
         public override IActionResult OnGet()
@@ -189,6 +194,18 @@ namespace Microsoft.AspNetCore.Identity.UI.V4.Pages.Account.Internal
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
                         _logger.LogInformation("User created an account using {Name} provider.", info.LoginProvider);
+
+                        var userId = await _userManager.GetUserIdAsync(user);
+                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        var callbackUrl = Url.Page(
+                            "/Account/ConfirmEmail",
+                            pageHandler: null,
+                            values: new { userId = userId, code = code },
+                            protocol: Request.Scheme);
+
+                        await _emailSender.SendEmailAsync(Input.Email, "Confirm your email",
+                            $"Please confirm your account by <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clicking here</a>.");
+
                         return LocalRedirect(returnUrl);
                     }
                 }

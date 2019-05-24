@@ -15,10 +15,9 @@ namespace E2ETests
     public class PublishAndRunTests : LoggedTest
     {
         public static TestMatrix TestVariants
-            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.Kestrel, ServerType.HttpSys)
+            => TestMatrix.ForServers(ServerType.IISExpress, ServerType.HttpSys)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithAllApplicationTypes()
-                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels()
                 .WithAllArchitectures();
 

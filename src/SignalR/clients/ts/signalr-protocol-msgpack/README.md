@@ -5,6 +5,10 @@ MsgPack support for SignalR for ASP.NET Core
 ```bash
 npm install @aspnet/signalr-protocol-msgpack
 ```
+or
+```bash
+yarn add @aspnet/signalr-protocol-msgpack
+```
 
 ## Usage
 

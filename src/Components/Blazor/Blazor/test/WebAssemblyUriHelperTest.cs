@@ -29,6 +29,9 @@ namespace Microsoft.AspNetCore.Blazor.Services.Test
         [InlineData("scheme://host/path/", "scheme://host/path/", "")]
         [InlineData("scheme://host/path/", "scheme://host/path/more", "more")]
         [InlineData("scheme://host/path/", "scheme://host/path", "")]
+        [InlineData("scheme://host/path/", "scheme://host/path#hash", "#hash")]
+        [InlineData("scheme://host/path/", "scheme://host/path/#hash", "#hash")]
+        [InlineData("scheme://host/path/", "scheme://host/path/more#hash", "more#hash")]
         public void ComputesCorrectValidBaseRelativePaths(string baseUri, string absoluteUri, string expectedResult)
         {
             var actualResult = _uriHelper.ToBaseRelativePath(baseUri, absoluteUri);

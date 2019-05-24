@@ -103,8 +103,8 @@ function parseDragEvent(event: any) {
     ctrlKey: event.ctrlKey,
     shiftKey: event.shiftKey,
     altKey: event.altKey,
-    metaKey: event.metaKey
-  }
+    metaKey: event.metaKey,
+  };
 }
 
 function parseWheelEvent(event: WheelEvent) {
@@ -113,7 +113,7 @@ function parseWheelEvent(event: WheelEvent) {
     deltaX: event.deltaX,
     deltaY: event.deltaY,
     deltaZ: event.deltaZ,
-    deltaMode: event.deltaMode
+    deltaMode: event.deltaMode,
   };
 }
 
@@ -123,8 +123,8 @@ function parseErrorEvent(event: ErrorEvent) {
     message: event.message,
     filename: event.filename,
     lineno: event.lineno,
-    colno: event.colno
-  }
+    colno: event.colno,
+  };
 }
 
 function parseProgressEvent(event: ProgressEvent) {
@@ -132,7 +132,7 @@ function parseProgressEvent(event: ProgressEvent) {
     type: event.type,
     lengthComputable: event.lengthComputable,
     loaded: event.loaded,
-    total: event.total
+    total: event.total,
   };
 }
 
@@ -140,7 +140,7 @@ function parseTouchEvent(event: TouchEvent) {
 
   function parseTouch(touchList: TouchList) {
     const touches: UITouchPoint[] = [];
-    
+
     for (let i = 0; i < touchList.length; i++) {
       const touch = touchList[i];
       touches.push({
@@ -150,7 +150,7 @@ function parseTouchEvent(event: TouchEvent) {
         screenX: touch.screenX,
         screenY: touch.screenY,
         pageX: touch.pageX,
-        pageY: touch.pageY
+        pageY: touch.pageY,
       });
     }
     return touches;
@@ -165,7 +165,7 @@ function parseTouchEvent(event: TouchEvent) {
     ctrlKey: event.ctrlKey,
     shiftKey: event.shiftKey,
     altKey: event.altKey,
-    metaKey: event.metaKey
+    metaKey: event.metaKey,
   };
 }
 
@@ -179,7 +179,7 @@ function parseKeyboardEvent(event: KeyboardEvent) {
     ctrlKey: event.ctrlKey,
     shiftKey: event.shiftKey,
     altKey: event.altKey,
-    metaKey: event.metaKey
+    metaKey: event.metaKey,
   };
 }
 
@@ -193,7 +193,7 @@ function parsePointerEvent(event: PointerEvent) {
     tiltX: event.tiltX,
     tiltY: event.tiltY,
     pointerType: event.pointerType,
-    isPrimary: event.isPrimary
+    isPrimary: event.isPrimary,
   };
 }
 
@@ -210,7 +210,7 @@ function parseMouseEvent(event: MouseEvent) {
     ctrlKey: event.ctrlKey,
     shiftKey: event.shiftKey,
     altKey: event.altKey,
-    metaKey: event.metaKey
+    metaKey: event.metaKey,
   };
 }
 

@@ -4,11 +4,11 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <ReferenceBlazorBuildLocally>true</ReferenceBlazorBuildLocally>
+    <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Blazor" />
-    <Reference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

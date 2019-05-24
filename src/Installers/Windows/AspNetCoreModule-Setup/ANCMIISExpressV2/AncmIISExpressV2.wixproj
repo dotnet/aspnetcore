@@ -11,6 +11,8 @@
     <SuppressIces>ICE03</SuppressIces>
     <DisableGuidGeneration>true</DisableGuidGeneration>
     <SchemaVersion>2.0</SchemaVersion>
+    <TempPlatform Condition="'$(Platform)' == 'x64'">x64</TempPlatform>
+    <TempPlatform Condition="'$(Platform)' == 'x86'">Win32</TempPlatform>
   </PropertyGroup>
 
   <ItemGroup>
@@ -50,6 +52,17 @@
       <DoNotHarvest>True</DoNotHarvest>
     </ProjectReference>
   </ItemGroup>
+
+  <Target Name="CopyBuildOutputToArtifactDirectory"
+          Condition=" '$(IsProductInstaller)' == 'true' "
+          AfterTargets="Build">
+    <ItemGroup>
+      <BuildContentForAncm Include="$(ArtifactsBinDir)AspNetCore\$(TempPlatform)\$(Configuration)\*" />
+      <BuildContentForAncmHandler Include="$(ArtifactsBinDir)OutOfProcessRequestHandler\$(TempPlatform)\$(Configuration)\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(BuildContentForAncm)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
+    <Copy SourceFiles="@(BuildContentForAncmHandler)" DestinationFolder="$(InstallersOutputPath)\IISExpressSymbols\$(TempPlatform)" />
+  </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
   <Import Project="..\build\settings.props" />

@@ -23,7 +23,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class HttpConnection : ITimeoutHandler
+    internal class HttpConnection : ITimeoutHandler
     {
         private static readonly ReadOnlyMemory<byte> Http2Id = new[] { (byte)'h', (byte)'2' };
 

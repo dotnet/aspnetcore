@@ -159,8 +159,7 @@ namespace Microsoft.AspNetCore.Tests
             var deploymentParameters = new DeploymentParameters(Path.Combine(GetTestSitesPath(), applicationName), ServerType.IISExpress, RuntimeFlavor.CoreClr, RuntimeArchitecture.x64)
             {
                 TargetFramework = "netcoreapp3.0",
-                HostingModel =  HostingModel.InProcess,
-                AncmVersion = AncmVersion.AspNetCoreModuleV2
+                HostingModel =  HostingModel.InProcess
             };
 
             SetEnvironmentVariables(deploymentParameters, "Development");

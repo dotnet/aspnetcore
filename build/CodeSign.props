@@ -23,7 +23,7 @@
     <FileNamesToSign Include="aspnetcorev2_inprocess.dll" CertificateName="Microsoft400" />
     <FileNamesToSign Include="aspnetcorev2_outofprocess.dll" CertificateName="Microsoft400" />
     <FileNamesToSign Include="aspnetcorev2.dll" CertificateName="Microsoft400" />
-    <FileNamesToSign Include="dotnet-blazor.exe" CertificateName="Microsoft400" />
+    <FileNamesToSign Include="blazor-devserver.exe" CertificateName="Microsoft400" />
     <FileNamesToSign Include="dotnet-dev-certs.exe" CertificateName="Microsoft400" />
     <FileNamesToSign Include="dotnet-sql-cache.exe" CertificateName="Microsoft400" />
     <FileNamesToSign Include="dotnet-user-secrets.exe" CertificateName="Microsoft400" />

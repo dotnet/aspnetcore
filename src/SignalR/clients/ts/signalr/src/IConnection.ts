@@ -6,6 +6,7 @@ import { TransferFormat } from "./ITransport";
 /** @private */
 export interface IConnection {
     readonly features: any;
+    readonly connectionId?: string;
 
     start(transferFormat: TransferFormat): Promise<void>;
     send(data: string | ArrayBuffer): Promise<void>;

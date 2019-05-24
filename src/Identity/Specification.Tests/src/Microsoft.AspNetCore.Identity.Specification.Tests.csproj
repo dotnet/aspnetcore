@@ -7,10 +7,12 @@
     <PackageTags>aspnetcore;identity;membership</PackageTags>
     <IsTestProject>false</IsTestProject>
     <IsShippingPackage>true</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Identity" />
+    <Reference Include="Microsoft.AspNetCore.Testing" />
     <Reference Include="Microsoft.Extensions.Configuration" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
     <Reference Include="Microsoft.Extensions.Logging" />

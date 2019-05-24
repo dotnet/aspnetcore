@@ -136,6 +136,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [ConditionalFact]
         [IPv6SupportedCondition]
+#if LIBUV
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1977", FlakyOn.Helix.All)] // https://github.com/aspnet/AspNetCore/issues/8109
+#endif
         public Task RemoteIPv6Address()
         {
             return TestRemoteIPAddress("[::1]", "[::1]", "::1");
@@ -539,6 +542,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2181", FlakyOn.Helix.All)]
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task ConnectionClosedTokenFiresOnServerFIN(ListenOptions listenOptions)
         {
@@ -621,6 +625,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task RequestsCanBeAbortedMidRead(ListenOptions listenOptions)
         {
+            // This needs a timeout.
             const int applicationAbortedConnectionId = 34;
 
             var testContext = new TestServiceContext(LoggerFactory);
@@ -790,6 +795,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
+#if LIBUV
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1971", FlakyOn.Helix.All)]
+#endif
         [MemberData(nameof(ConnectionAdapterData))]
         public async Task AppCanHandleClientAbortingConnectionMidRequest(ListenOptions listenOptions)
         {

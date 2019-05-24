@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 
+#pragma warning disable CS0618 // Type or member is obsolete
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
@@ -78,3 +78,4 @@ namespace Microsoft.AspNetCore.Hosting
         }
     }
 }
+#pragma warning restore CS0618 // Type or member is obsolete

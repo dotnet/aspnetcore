@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <Description>Identity sample MVC application on ASP.NET Core using the default UI</Description>
@@ -18,6 +18,7 @@
     <Reference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
     <Reference Include="Microsoft.AspNetCore.Identity.UI" />
     <Reference Include="Microsoft.AspNetCore.Mvc" />
+    <Reference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" />
     <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
@@ -27,6 +28,10 @@
     <Reference Include="Microsoft.Extensions.Configuration.UserSecrets" />
     <Reference Include="Microsoft.Extensions.Logging.Console" />
     <Reference Include="Microsoft.Extensions.Logging.Debug" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Properties\" />
   </ItemGroup>
 
 </Project>

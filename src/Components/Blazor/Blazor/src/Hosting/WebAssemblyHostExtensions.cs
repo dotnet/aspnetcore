@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace Microsoft.AspNetCore.Blazor.Hosting
 {
     /// <summary>
@@ -19,7 +21,16 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
         /// </remarks>
         public static void Run(this IWebAssemblyHost host)
         {
-            host.StartAsync().GetAwaiter().GetResult();
+            // Behave like async void, because we don't yet support async-main properly on WebAssembly.
+            // However, don't actualy make this method async, because we rely on startup being synchronous
+            // for things like attaching navigation event handlers.
+            host.StartAsync().ContinueWith(task =>
+            {
+                if (task.Exception != null)
+                {
+                    Console.WriteLine(task.Exception);
+                }
+            });
         }
     }
 }

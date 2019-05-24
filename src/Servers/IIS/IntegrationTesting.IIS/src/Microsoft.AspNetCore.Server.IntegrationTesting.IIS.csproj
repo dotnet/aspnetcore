@@ -13,6 +13,7 @@
     <!-- This is used as a package by aspnet benchmarking infrastructure. It is meant for internal-use only. -->
     <IsPackable>true</IsPackable>
     <IsShippingPackage>false</IsShippingPackage>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
   </PropertyGroup>
 
   <Import Project="..\..\build\assets.props" />
@@ -36,7 +37,7 @@
 
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(BuildIisNativeProjects)' == 'true'">
     <ItemGroup>
-      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
+      <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
     </ItemGroup>
   </Target>
 
@@ -47,8 +48,8 @@
   </Target>
 
   <ItemGroup>
-    <ProjectReference Include="$(RepositoryRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj" ReferenceOutputAssembly="false" />
-    <ProjectReference Include="$(RepositoryRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IIS\test\testassets\TestTasks\TestTasks.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
 
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />

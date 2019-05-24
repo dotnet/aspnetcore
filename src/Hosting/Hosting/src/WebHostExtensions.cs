@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting.Internal;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -48,6 +49,7 @@ namespace Microsoft.AspNetCore.Hosting
                     try
                     {
                         await host.WaitForTokenShutdownAsync(cts.Token);
+                        lifetime.SetExitedGracefully();
                     }
                     finally
                     {
@@ -76,7 +78,7 @@ namespace Microsoft.AspNetCore.Hosting
             // Wait for token shutdown if it can be canceled
             if (token.CanBeCanceled)
             {
-                await host.RunAsync(token, shutdownMessage: null);
+                await host.RunAsync(token, startupMessage: null);
                 return;
             }
 
@@ -90,6 +92,7 @@ namespace Microsoft.AspNetCore.Hosting
                     try
                     {
                         await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
+                        lifetime.SetExitedGracefully();
                     }
                     finally
                     {
@@ -99,13 +102,13 @@ namespace Microsoft.AspNetCore.Hosting
             }
         }
 
-        private static async Task RunAsync(this IWebHost host, CancellationToken token, string shutdownMessage)
+        private static async Task RunAsync(this IWebHost host, CancellationToken token, string startupMessage)
         {
-            using (host)
+            try
             {
                 await host.StartAsync(token);
 
-                var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
+                var hostingEnvironment = host.Services.GetService<IHostEnvironment>();
                 var options = host.Services.GetRequiredService<WebHostOptions>();
 
                 if (!options.SuppressStatusMessages)
@@ -123,23 +126,34 @@ namespace Microsoft.AspNetCore.Hosting
                         }
                     }
 
-                    if (!string.IsNullOrEmpty(shutdownMessage))
+                    if (!string.IsNullOrEmpty(startupMessage))
                     {
-                        Console.WriteLine(shutdownMessage);
+                        Console.WriteLine(startupMessage);
                     }
                 }
 
                 await host.WaitForTokenShutdownAsync(token);
             }
+            finally
+            {
+                if (host is IAsyncDisposable asyncDisposable)
+                {
+                    await asyncDisposable.DisposeAsync().ConfigureAwait(false);
+                }
+                else
+                {
+                    host.Dispose();
+                }
+            }
         }
 
         private static async Task WaitForTokenShutdownAsync(this IWebHost host, CancellationToken token)
         {
-            var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+            var applicationLifetime = host.Services.GetService<IHostApplicationLifetime>();
 
             token.Register(state =>
             {
-                ((IApplicationLifetime)state).StopApplication();
+                ((IHostApplicationLifetime)state).StopApplication();
             },
             applicationLifetime);
 

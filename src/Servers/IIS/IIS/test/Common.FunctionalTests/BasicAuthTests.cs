@@ -17,18 +17,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
     [Collection(PublishedSitesCollection.Name)]
     public class BasicAuthTests : IISFunctionalTestBase
     {
-        private readonly PublishedSitesFixture _fixture;
-
-        public BasicAuthTests(PublishedSitesFixture fixture)
+        public BasicAuthTests(PublishedSitesFixture fixture) : base(fixture)
         {
-            _fixture = fixture;
         }
 
         public static TestMatrix TestVariants
             => TestMatrix.ForServers(DeployerSelector.ServerType)
                 .WithTfms(Tfm.NetCoreApp30)
                 .WithApplicationTypes(ApplicationType.Portable)
-                .WithAncmVersions(AncmVersion.AspNetCoreModuleV2)
                 .WithAllHostingModels();
 
         [ConditionalTheory]
@@ -40,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var username = Environment.GetEnvironmentVariable("ASPNETCORE_MODULE_TEST_USER");
             var password = Environment.GetEnvironmentVariable("ASPNETCORE_MODULE_TEST_PASSWORD");
 
-            var deploymentParameters = _fixture.GetBaseDeploymentParameters(variant);
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.SetAnonymousAuth(enabled: false);
             deploymentParameters.SetWindowsAuth(enabled: false);
             deploymentParameters.SetBasicAuth(enabled: true);

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
@@ -62,7 +63,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 if (string.IsNullOrEmpty(token))
                 {
-                    string authorization = Request.Headers["Authorization"];
+                    string authorization = Request.Headers[HeaderNames.Authorization];
 
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
@@ -225,7 +226,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 // https://tools.ietf.org/html/rfc6750#section-3.1
                 // WWW-Authenticate: Bearer realm="example", error="invalid_token", error_description="The access token expired"
                 var builder = new StringBuilder(Options.Challenge);
-                if (Options.Challenge.IndexOf(" ", StringComparison.Ordinal) > 0)
+                if (Options.Challenge.IndexOf(' ') > 0)
                 {
                     // Only add a comma after the first param, if any
                     builder.Append(',');
@@ -284,23 +285,25 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 // and we want to display the most specific message possible.
                 switch (ex)
                 {
-                    case SecurityTokenInvalidAudienceException _:
-                        messages.Add("The audience is invalid");
+                    case SecurityTokenInvalidAudienceException stia:
+                        messages.Add($"The audience '{stia.InvalidAudience ?? "(null)"}' is invalid");
                         break;
-                    case SecurityTokenInvalidIssuerException _:
-                        messages.Add("The issuer is invalid");
+                    case SecurityTokenInvalidIssuerException stii:
+                        messages.Add($"The issuer '{stii.InvalidIssuer ?? "(null)"}' is invalid");
                         break;
                     case SecurityTokenNoExpirationException _:
                         messages.Add("The token has no expiration");
                         break;
-                    case SecurityTokenInvalidLifetimeException _:
-                        messages.Add("The token lifetime is invalid");
+                    case SecurityTokenInvalidLifetimeException stil:
+                        messages.Add("The token lifetime is invalid; NotBefore: "
+                            + $"'{stil.NotBefore?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}'"
+                            + $", Expires: '{stil.Expires?.ToString(CultureInfo.InvariantCulture) ?? "(null)"}'");
                         break;
-                    case SecurityTokenNotYetValidException _:
-                        messages.Add("The token is not valid yet");
+                    case SecurityTokenNotYetValidException stnyv:
+                        messages.Add($"The token is not valid before '{stnyv.NotBefore.ToString(CultureInfo.InvariantCulture)}'");
                         break;
-                    case SecurityTokenExpiredException _:
-                        messages.Add("The token is expired");
+                    case SecurityTokenExpiredException ste:
+                        messages.Add($"The token expired at '{ste.Expires.ToString(CultureInfo.InvariantCulture)}'");
                         break;
                     case SecurityTokenSignatureKeyNotFoundException _:
                         messages.Add("The signature key was not found");

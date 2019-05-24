@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.ServiceProcess;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.AspNetCore.Hosting.WindowsServices
 {
@@ -44,7 +45,7 @@ namespace Microsoft.AspNetCore.Hosting.WindowsServices
             // race conditions.
             _host
                 .Services
-                .GetRequiredService<IApplicationLifetime>()
+                .GetRequiredService<IHostApplicationLifetime>()
                 .ApplicationStopping
                 .Register(() =>
                 {

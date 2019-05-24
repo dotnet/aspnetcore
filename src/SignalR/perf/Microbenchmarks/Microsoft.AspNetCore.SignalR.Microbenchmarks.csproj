@@ -26,9 +26,10 @@
     <Reference Include="Microsoft.AspNetCore.SignalR.Common" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Core" />
     <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" />
+    <Reference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <Reference Include="Microsoft.AspNetCore.SignalR.StackExchangeRedis" />
     <Reference Include="Microsoft.Extensions.DependencyInjection" />
-    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" PrivateAssets="All" />
+    <Reference Include="Microsoft.Extensions.ValueStopwatch.Sources" />
     <Reference Include="Moq" />
     <Reference Include="System.Reactive.Linq" />
     <Reference Include="System.Threading.Channels" />

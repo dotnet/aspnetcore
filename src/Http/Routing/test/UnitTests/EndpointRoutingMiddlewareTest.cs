@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Matching;
@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
-using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
@@ -33,6 +32,24 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
             Assert.NotNull(endpointFeature);
+        }
+
+        [Fact]
+        public async Task Invoke_SkipsRouting_IfEndpointSet()
+        {
+            // Arrange
+            var httpContext = CreateHttpContext();
+            httpContext.SetEndpoint(new Endpoint(c => Task.CompletedTask, new EndpointMetadataCollection(), "myapp"));
+
+            var middleware = CreateMiddleware();
+
+            // Act
+            await middleware.Invoke(httpContext);
+
+            // Assert
+            var endpoint = httpContext.GetEndpoint();
+            Assert.NotNull(endpoint);
+            Assert.Equal("myapp", endpoint.DisplayName);
         }
 
         [Fact]
@@ -131,30 +148,27 @@ namespace Microsoft.AspNetCore.Routing
 
         private HttpContext CreateHttpContext()
         {
-            var context = new EndpointSelectorContext();
-
-            var httpContext = new DefaultHttpContext();
-            httpContext.Features.Set<IEndpointFeature>(context);
-            httpContext.Features.Set<IRouteValuesFeature>(context);
-
-            httpContext.RequestServices = new TestServiceProvider();
+            var httpContext = new DefaultHttpContext
+            {
+                RequestServices = new TestServiceProvider()
+            };
 
             return httpContext;
         }
 
         private EndpointRoutingMiddleware CreateMiddleware(
             Logger<EndpointRoutingMiddleware> logger = null,
-            MatcherFactory matcherFactory = null)
+            MatcherFactory matcherFactory = null,
+            RequestDelegate next = null)
         {
-            RequestDelegate next = (c) => Task.FromResult<object>(null);
-
-            logger = logger ?? new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
-            matcherFactory = matcherFactory ?? new TestMatcherFactory(true);
+            next ??= c => Task.CompletedTask;
+            logger ??= new Logger<EndpointRoutingMiddleware>(NullLoggerFactory.Instance);
+            matcherFactory ??= new TestMatcherFactory(true);
 
             var middleware = new EndpointRoutingMiddleware(
                 matcherFactory,
-                new DefaultEndpointDataSource(),
                 logger,
+                new DefaultEndpointRouteBuilder(Mock.Of<IApplicationBuilder>()),
                 next);
 
             return middleware;

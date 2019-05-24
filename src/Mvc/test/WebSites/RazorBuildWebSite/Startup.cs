@@ -23,7 +23,12 @@ namespace RazorBuildWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseMvcWithDefaultRoute();
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapDefaultControllerRoute();
+                endpoints.MapRazorPages();
+            });
         }
 
         public static void Main(string[] args)

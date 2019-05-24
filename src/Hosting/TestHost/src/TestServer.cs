@@ -78,12 +78,14 @@ namespace Microsoft.AspNetCore.TestHost
         public IFeatureCollection Features { get; }
 
         /// <summary>
-        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>
+        /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>. The default value is <see langword="false" />.
         /// </summary>
-        /// <remarks>
-        /// Defaults to true.
-        /// </remarks>
-        public bool AllowSynchronousIO { get; set; } = true;
+        public bool AllowSynchronousIO { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that controls if <see cref="ExecutionContext"/> and <see cref="AsyncLocal{T}"/> values are preserved from the client to the server. The default value is <see langword="false" />.
+        /// </summary>
+        public bool PreserveExecutionContext { get; set; }
 
         private IHttpApplication<Context> Application
         {
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.TestHost
         public HttpMessageHandler CreateHandler()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO };
+            return new ClientHandler(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
         }
 
         public HttpClient CreateClient()
@@ -104,7 +106,7 @@ namespace Microsoft.AspNetCore.TestHost
         public WebSocketClient CreateWebSocketClient()
         {
             var pathBase = BaseAddress == null ? PathString.Empty : PathString.FromUriComponent(BaseAddress);
-            return new WebSocketClient(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO };
+            return new WebSocketClient(pathBase, Application) { AllowSynchronousIO = AllowSynchronousIO, PreserveExecutionContext = PreserveExecutionContext };
         }
 
         /// <summary>
@@ -128,7 +130,7 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(configureContext));
             }
 
-            var builder = new HttpContextBuilder(Application, AllowSynchronousIO);
+            var builder = new HttpContextBuilder(Application, AllowSynchronousIO, PreserveExecutionContext);
             builder.Configure(context =>
             {
                 var request = context.Request;

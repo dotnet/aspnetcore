@@ -1,4 +1,4 @@
-param($RootDirectory = (Get-Location), $Framework = "netcoreapp3.0", $Runtime = "win7-x64", $CommitHash, $BranchName, $BuildNumber)
+param($RootDirectory = (Get-Location), $Framework = "netcoreapp3.0", $Runtime = "win-x64", $CommitHash, $BranchName, $BuildNumber)
 
 # De-Powershell the path
 $RootDirectory = (Convert-Path $RootDirectory)
@@ -20,7 +20,7 @@ $ClientsTsDir = Join-Path $ClientsDir "ts"
 # The list of apps to publish
 $Apps = @{
     "SignalRSamples"= (Join-Path $SamplesDir "SignalRSamples")
-    "FunctionalTests"= (Join-Path $ClientsTsDir "FunctionalTests")
+    "FunctionalTests"= (Join-Path $ClientsTsDir "FunctionalTests/SignalR.Client.FunctionalTests.csproj")
 }
 
 $BuildMetadataContent = @"

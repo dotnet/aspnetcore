@@ -61,7 +61,7 @@
     <ClInclude Include="wuerror.h" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="$(IIS-Common)lib\CommonLib.vcxproj">
+    <ProjectReference Include="$(IIS-Common)lib\IISSetup.CommonLib.vcxproj">
       <Project>{b54a8f61-60de-4ad9-87ca-d102f230678e}</Project>
     </ProjectReference>
   </ItemGroup>
@@ -77,6 +77,9 @@
     <PlatformToolset>v141</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <PropertyGroup Label="Configuration">
+    <VCToolsVersion />
+  </PropertyGroup>
   <PropertyGroup>
     <AdditionalIncludeDirectories>$(IIS-Common)version;$(IIS-Common)Include;$(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     <PrecompiledHeader>Create</PrecompiledHeader>

@@ -1,7 +1,19 @@
+#!/usr/bin/env pwsh
+#requires -version 4
+
+Set-StrictMode -Version 2
+$ErrorActionPreference = 'Stop'
+
 function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
     $tmpDir = "$PSScriptRoot/$templateName"
     Remove-Item -Path $tmpDir -Recurse -ErrorAction Ignore
-    dotnet pack
+    Push-Location ..
+    try {
+        dotnet pack
+    }
+    finally {
+        Pop-Location
+    }
 
     Run-DotnetNew "--install", "$PSScriptRoot/../../../artifacts/packages/Debug/Shipping/$templateNupkg"
 
@@ -20,14 +32,17 @@ function Test-Template($templateName, $templateArgs, $templateNupkg, $isSPA) {
         $proj = "$tmpDir/$templateName.$extension"
         $projContent = Get-Content -Path $proj -Raw
         $projContent = $projContent -replace ('<Project Sdk="Microsoft.NET.Sdk.Web">', "<Project Sdk=""Microsoft.NET.Sdk.Web"">
-  <Import Project=""$PSScriptRoot/../test/bin/Debug/netcoreapp3.0/TemplateTests.props"" />
+  <Import Project=""$PSScriptRoot/../test/bin/Debug/netcoreapp3.0/TestTemplates/TemplateTests.props"" />
   <ItemGroup>
     <PackageReference Include=""Microsoft.NET.Sdk.Razor"" Version=""`$(MicrosoftNETSdkRazorPackageVersion)"" />
-  </ItemGroup>")
+  </ItemGroup>
+  <PropertyGroup>
+    <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
+  </PropertyGroup>")
         $projContent | Set-Content $proj
-        dotnet ef migrations add mvc
-        dotnet publish --configuration Release
-        dotnet bin\Release\netcoreapp3.0\publish\$templateName.dll
+        dotnet.exe ef migrations add mvc
+        dotnet.exe publish --configuration Release
+        dotnet.exe bin\Release\netcoreapp3.0\publish\$templateName.dll
     }
     finally {
         Pop-Location

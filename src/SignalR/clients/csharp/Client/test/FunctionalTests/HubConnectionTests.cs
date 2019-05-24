@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,11 +37,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             string path = null,
             HttpTransportType? transportType = null,
             IHubProtocol protocol = null,
-            ILoggerFactory loggerFactory = null)
+            ILoggerFactory loggerFactory = null,
+            bool withAutomaticReconnect = false)
         {
             var hubConnectionBuilder = new HubConnectionBuilder();
-            hubConnectionBuilder.Services.AddSingleton(protocol);
-            hubConnectionBuilder.WithLoggerFactory(loggerFactory);
+
+            if (protocol != null)
+            {
+                hubConnectionBuilder.Services.AddSingleton(protocol);
+            }
+
+            if (loggerFactory != null)
+            {
+                hubConnectionBuilder.WithLoggerFactory(loggerFactory);
+            }
+
+            if (withAutomaticReconnect)
+            {
+                hubConnectionBuilder.WithAutomaticReconnect();
+            }
 
             var delegateConnectionFactory = new DelegateConnectionFactory(
                 GetHttpConnectionFactory(url, loggerFactory, path, transportType ?? HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents),
@@ -158,6 +173,41 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
+        public async Task CanAccessConnectionIdFromHubConnection(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    Assert.Null(connection.ConnectionId);
+                    await connection.StartAsync().OrTimeout();
+                    var originalClientConnectionId = connection.ConnectionId;
+                    var connectionIdFromServer = await connection.InvokeAsync<string>(nameof(TestHub.GetCallerConnectionId)).OrTimeout();
+                    Assert.Equal(connection.ConnectionId, connectionIdFromServer);
+                    await connection.StopAsync().OrTimeout();
+                    Assert.Null(connection.ConnectionId);
+                    await connection.StartAsync().OrTimeout();
+                    connectionIdFromServer = await connection.InvokeAsync<string>(nameof(TestHub.GetCallerConnectionId)).OrTimeout();
+                    Assert.NotEqual(originalClientConnectionId, connectionIdFromServer);
+                    Assert.Equal(connection.ConnectionId, connectionIdFromServer);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
         public async Task CanStartConnectionFromClosedEvent(string protocolName, HttpTransportType transportType, string path)
         {
             var protocol = HubProtocols[protocolName];
@@ -234,6 +284,288 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo).ToLowerInvariant(), originalMessage).OrTimeout();
 
                     Assert.Equal(originalMessage, result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task CanInvokeFromOnHandler(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                const string originalMessage = "SignalR";
+
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+
+                    var helloWorldTcs = new TaskCompletionSource<string>();
+                    var echoTcs = new TaskCompletionSource<string>();
+                    connection.On<string>("Echo", async (message) =>
+                    {
+                        echoTcs.SetResult(message);
+                        helloWorldTcs.SetResult(await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld)).OrTimeout());
+                    });
+
+                    await connection.InvokeAsync("CallEcho", originalMessage).OrTimeout();
+
+                    Assert.Equal(originalMessage, await echoTcs.Task.OrTimeout());
+                    Assert.Equal("Hello World!", await helloWorldTcs.Task.OrTimeout());
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncCoreTest(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var expectedValue = 0;
+                    var streamTo = 5;
+                    var asyncEnumerable = connection.StreamAsyncCore<int>("Stream", new object[] { streamTo });
+                    await foreach (var streamValue in asyncEnumerable)
+                    {
+                        Assert.Equal(expectedValue, streamValue);
+                        expectedValue++;
+                    }
+
+                    Assert.Equal(streamTo, expectedValue);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("json")]
+        [InlineData("messagepack")]
+        public async Task CanStreamToHubWithIAsyncEnumerableMethodArg(string protocolName)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, "/default", HttpTransportType.WebSockets, protocol, LoggerFactory);
+                try
+                {
+                    async IAsyncEnumerable<int> ClientStreamData(int value)
+                    {
+                        for (var i = 0; i < value; i++)
+                        {
+                            yield return i;
+                            await Task.Delay(10);
+                        }
+                    }
+
+                    var streamTo = 5;
+                    var stream = ClientStreamData(streamTo);
+
+                    await connection.StartAsync().OrTimeout();
+                    var expectedValue = 0;
+                    var asyncEnumerable = connection.StreamAsync<int>("StreamIAsyncConsumer", stream);
+                    await foreach (var streamValue in asyncEnumerable)
+                    {
+                        Assert.Equal(expectedValue, streamValue);
+                        expectedValue++;
+                    }
+
+                    Assert.Equal(streamTo, expectedValue);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncTest(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var expectedValue = 0;
+                    var streamTo = 5;
+                    var asyncEnumerable = connection.StreamAsync<int>("Stream", streamTo);
+                    await foreach (var streamValue in asyncEnumerable)
+                    {
+                        Assert.Equal(expectedValue, streamValue);
+                        expectedValue++;
+                    }
+
+                    Assert.Equal(streamTo, expectedValue);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncDoesNotStartIfTokenAlreadyCanceled(string protocolName, HttpTransportType transportType, string path)
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+
+                    var cts = new CancellationTokenSource();
+                    cts.Cancel();
+
+                    var ex = Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                    {
+                        var stream = connection.StreamAsync<int>("Stream", 5, cts.Token);
+                        await foreach (var streamValue in stream)
+                        {
+                            Assert.True(false, "Expected an exception from the streaming invocation.");
+                        }
+                    });
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncCanBeCanceled(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+
+                    var cts = new CancellationTokenSource();
+
+                    var stream = connection.StreamAsync<int>("Stream", 1000, cts.Token);
+                    var results = new List<int>();
+
+                    var enumerator = stream.GetAsyncEnumerator();
+                    await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                    {
+                        while (await enumerator.MoveNextAsync())
+                        {
+                            results.Add(enumerator.Current);
+                            cts.Cancel();
+                        }
+                    });
+
+                    Assert.True(results.Count > 0 && results.Count < 1000);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncWithException(string protocolName, HttpTransportType transportType, string path)
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == DefaultHubDispatcherLoggerName &&
+                       writeContext.EventId.Name == "FailedInvokingHubMethod";
+            }
+
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var asyncEnumerable = connection.StreamAsync<int>("StreamException");
+                    var ex = await Assert.ThrowsAsync<HubException>(async () =>
+                    {
+                        await foreach (var streamValue in asyncEnumerable)
+                        {
+                            Assert.True(false, "Expected an exception from the streaming invocation.");
+                        }
+                    });
+
+                    Assert.Equal("An unexpected error occurred invoking 'StreamException' on the server. InvalidOperationException: Error occurred while streaming.", ex.Message);
+
                 }
                 catch (Exception ex)
                 {
@@ -393,6 +725,148 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         [Theory]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         [LogLevel(LogLevel.Trace)]
+        public async Task CanStreamToServerWithIAsyncEnumerable(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    async IAsyncEnumerable<string> clientStreamData()
+                    {
+                        var items = new string[] { "A", "B", "C", "D" };
+                        foreach (var item in items)
+                        {
+                            await Task.Delay(10);
+                            yield return item;
+                        }
+                    }
+
+                    await connection.StartAsync().OrTimeout();
+
+                    var stream = clientStreamData();
+
+                    var channel = await connection.StreamAsChannelAsync<string>("StreamEcho", stream).OrTimeout();
+
+                    Assert.Equal("A", await channel.ReadAsync().AsTask().OrTimeout());
+                    Assert.Equal("B", await channel.ReadAsync().AsTask().OrTimeout());
+                    Assert.Equal("C", await channel.ReadAsync().AsTask().OrTimeout());
+                    Assert.Equal("D", await channel.ReadAsync().AsTask().OrTimeout());
+
+                    var results = await channel.ReadAndCollectAllAsync().OrTimeout();
+                    Assert.Empty(results);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2465", FlakyOn.All)]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task CanCancelIAsyncEnumerableClientToServerUpload(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    async IAsyncEnumerable<int> clientStreamData()
+                    {
+                        for (var i = 0; i < 1000; i++)
+                        {
+                            yield return i;
+                            await Task.Delay(10);
+                        }
+                    }
+
+                    await connection.StartAsync().OrTimeout();
+                    var results = new List<int>();
+                    var stream = clientStreamData();
+                    var cts = new CancellationTokenSource();
+                    var ex = await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                    {
+                        var channel = await connection.StreamAsChannelAsync<int>("StreamEchoInt", stream, cts.Token).OrTimeout();
+
+                        while (await channel.WaitToReadAsync())
+                        {
+                            while (channel.TryRead(out var item))
+                            {
+                                results.Add(item);
+                                cts.Cancel();
+                            }
+                        }
+                    });
+
+                    Assert.True(results.Count > 0 && results.Count < 1000);
+                    Assert.True(cts.IsCancellationRequested);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
+        public async Task StreamAsyncCanBeCanceledThroughGetAsyncEnumerator(string protocolName, HttpTransportType transportType, string path)
+        {
+            var protocol = HubProtocols[protocolName];
+            using (StartServer<Startup>(out var server))
+            {
+                var connection = CreateHubConnection(server.Url, path, transportType, protocol, LoggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var stream = connection.StreamAsync<int>("Stream", 1000);
+                    var results = new List<int>();
+
+                    var cts = new CancellationTokenSource();
+
+                    var enumerator = stream.GetAsyncEnumerator(cts.Token);
+                    await Assert.ThrowsAsync<TaskCanceledException>(async () =>
+                    {
+                        while (await enumerator.MoveNextAsync())
+                        {
+                            results.Add(enumerator.Current);
+                            cts.Cancel();
+                        }
+                    });
+
+                    Assert.True(results.Count > 0 && results.Count < 1000);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        [LogLevel(LogLevel.Trace)]
         public async Task CanCloseStreamMethodEarly(string protocolName, HttpTransportType transportType, string path)
         {
             bool ExpectedErrors(WriteContext writeContext)
@@ -455,7 +929,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     var cts = new CancellationTokenSource();
                     cts.Cancel();
 
-                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>connection.StreamAsChannelAsync<int>("Stream", 5, cts.Token).OrTimeout());
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() => connection.StreamAsChannelAsync<int>("Stream", 5, cts.Token).OrTimeout());
                 }
                 catch (Exception ex)
                 {
@@ -602,7 +1076,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Theory]
+        [Theory(Skip = "Will be fixed by https://github.com/dotnet/corefx/issues/36901")]
         [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerThrowsHubExceptionOnHubMethodArgumentTypeMismatch(string hubProtocolName, HttpTransportType transportType, string hubPath)
         {
@@ -822,7 +1296,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                     await connection.StartAsync().OrTimeout();
                     var channel = await connection.StreamAsChannelAsync<int>("StreamBroken").OrTimeout();
                     var ex = await Assert.ThrowsAsync<HubException>(() => channel.ReadAndCollectAllAsync()).OrTimeout();
-                    Assert.Equal("The value returned by the streaming method 'StreamBroken' is not a ChannelReader<>.", ex.Message);
+                    Assert.Equal("The value returned by the streaming method 'StreamBroken' is not a ChannelReader<> or IAsyncEnumerable<>.", ex.Message);
                 }
                 catch (Exception ex)
                 {
@@ -891,6 +1365,33 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
                     throw;
+                }
+                finally
+                {
+                    await hubConnection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TransportTypesWithAuth))]
+        public async Task ClientWillFailAuthEndPointIfNotAuthorized(HttpTransportType transportType, string hubPath)
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.Exception is HttpRequestException;
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var hubConnection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + hubPath, transportType)
+                    .Build();
+                try
+                {
+                    var ex = await Assert.ThrowsAnyAsync<HttpRequestException>(() => hubConnection.StartAsync().OrTimeout());
+                    Assert.Equal("Response status code does not indicate success: 401 (Unauthorized).", ex.Message);
                 }
                 finally
                 {
@@ -994,7 +1495,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "Returning object from Hub method not support by System.Text.Json yet")]
         public async Task CheckHttpConnectionFeatures()
         {
             using (StartServer<Startup>(out var server))
@@ -1132,6 +1633,195 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        [Theory]
+        [MemberData(nameof(TransportTypes))]
+        public async Task CanAutomaticallyReconnect(HttpTransportType transportType)
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "ReconnectingWithError";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connection = CreateHubConnection(
+                    server.Url,
+                    path: HubPaths.First(),
+                    transportType: transportType,
+                    loggerFactory: LoggerFactory,
+                    withAutomaticReconnect: true);
+
+                try
+                {
+                    var echoMessage = "test";
+                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    connection.Reconnecting += _ =>
+                    {
+                        reconnectingTcs.SetResult(null);
+                        return Task.CompletedTask;
+                    };
+
+                    connection.Reconnected += connectionId =>
+                    {
+                        reconnectedTcs.SetResult(connectionId);
+                        return Task.CompletedTask;
+                    };
+
+
+                    await connection.StartAsync().OrTimeout();
+                    var initialConnectionId = connection.ConnectionId;
+
+                    connection.OnServerTimeout();
+
+                    await reconnectingTcs.Task.OrTimeout();
+                    var newConnectionId = await reconnectedTcs.Task.OrTimeout();
+                    Assert.NotEqual(initialConnectionId, newConnectionId);
+                    Assert.Equal(connection.ConnectionId, newConnectionId);
+
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), echoMessage).OrTimeout();
+                    Assert.Equal(echoMessage, result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanAutomaticallyReconnectAfterRedirect()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "ReconnectingWithError";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connection = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + "/redirect")
+                    .WithAutomaticReconnect()
+                    .Build();
+
+                try
+                {
+                    var echoMessage = "test";
+                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    connection.Reconnecting += _ =>
+                    {
+                        reconnectingTcs.SetResult(null);
+                        return Task.CompletedTask;
+                    };
+
+                    connection.Reconnected += connectionId =>
+                    {
+                        reconnectedTcs.SetResult(connectionId);
+                        return Task.CompletedTask;
+                    };
+
+                    await connection.StartAsync().OrTimeout();
+                    var initialConnectionId = connection.ConnectionId;
+
+                    connection.OnServerTimeout();
+
+                    await reconnectingTcs.Task.OrTimeout();
+                    var newConnectionId = await reconnectedTcs.Task.OrTimeout();
+                    Assert.NotEqual(initialConnectionId, newConnectionId);
+                    Assert.Equal(connection.ConnectionId, newConnectionId);
+
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), echoMessage).OrTimeout();
+                    Assert.Equal(echoMessage, result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanAutomaticallyReconnectAfterSkippingNegotiation()
+        {
+            bool ExpectedErrors(WriteContext writeContext)
+            {
+                return writeContext.LoggerName == typeof(HubConnection).FullName &&
+                       writeContext.EventId.Name == "ReconnectingWithError";
+            }
+
+            using (StartServer<Startup>(out var server, ExpectedErrors))
+            {
+                var connectionBuilder = new HubConnectionBuilder()
+                    .WithLoggerFactory(LoggerFactory)
+                    .WithUrl(server.Url + HubPaths.First(), HttpTransportType.WebSockets)
+                    .WithAutomaticReconnect();
+
+                connectionBuilder.Services.Configure<HttpConnectionOptions>(o =>
+                {
+                    o.SkipNegotiation = true;
+                });
+
+                var connection = connectionBuilder.Build();
+
+                try
+                {
+                    var echoMessage = "test";
+                    var reconnectingTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+                    var reconnectedTcs = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    connection.Reconnecting += _ =>
+                    {
+                        reconnectingTcs.SetResult(null);
+                        return Task.CompletedTask;
+                    };
+
+                    connection.Reconnected += connectionId =>
+                    {
+                        reconnectedTcs.SetResult(connectionId);
+                        return Task.CompletedTask;
+                    };
+
+                    await connection.StartAsync().OrTimeout();
+                    Assert.Null(connection.ConnectionId);
+
+                    connection.OnServerTimeout();
+
+                    await reconnectingTcs.Task.OrTimeout();
+                    var newConnectionId = await reconnectedTcs.Task.OrTimeout();
+                    Assert.Null(newConnectionId);
+                    Assert.Null(connection.ConnectionId);
+
+                    var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), echoMessage).OrTimeout();
+                    Assert.Equal(echoMessage, result);
+                }
+                catch (Exception ex)
+                {
+                    LoggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "{ExceptionType} from test", ex.GetType().FullName);
+                    throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
         private class PollTrackingMessageHandler : DelegatingHandler
         {
             public Task<HttpResponseMessage> ActivePoll { get; private set; }
@@ -1172,13 +1862,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
+        public static IEnumerable<object[]> TransportTypesWithAuth()
+        {
+            foreach (var transport in TransportTypes().SelectMany(t => t).Cast<HttpTransportType>())
+            {
+                foreach (var path in new[] { "/authorizedhub", "/authorizedhub2" })
+                {
+                    yield return new object[] { transport, path };
+                }
+            }
+        }
+
         // This list excludes "special" hub paths like "default-nowebsockets" which exist for specific tests.
         public static string[] HubPaths = new[] { "/default", "/dynamic", "/hubT" };
 
         public static Dictionary<string, IHubProtocol> HubProtocols =>
             new Dictionary<string, IHubProtocol>
             {
-                { "json", new NewtonsoftJsonHubProtocol() },
+                { "json", new JsonHubProtocol() },
+                { "newtonsoft-json", new NewtonsoftJsonHubProtocol() },
                 { "messagepack", new MessagePackHubProtocol() },
             };
 

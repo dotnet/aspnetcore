@@ -18,7 +18,7 @@
     <PackageReference Include="MySqlConnector" Version="0.43.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.1.1.1" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.1" />
-    <!-- This suppresses errors about using PackageReference instead of Reference. For unclear reasons, this project has pinned dependencies. -->
+
     <PackageReference Update="@(PackageReference)" AllowExplicitReference="true" />
   </ItemGroup>
 
@@ -34,14 +34,12 @@
 
   <!-- These references are used when building on the Benchmarks Server. -->
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
-    <KnownFrameworkReference
-      Update="Microsoft.AspNetCore.App"
-      DefaultRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      LatestRuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)"
-      TargetingPackVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+
+    <FrameworkReference Update="Microsoft.AspNetCore.App" RuntimeFrameworkVersion="$(MicrosoftAspNetCoreAppPackageVersion)" />
+    <FrameworkReference Update="Microsoft.NETCore.App" RuntimeFrameworkVersion="$(MicrosoftNETCoreAppPackageVersion)" />
 
     <!-- Special-case the JwtBearer package because assembly no longer ships in Microsoft.AspNetCore.App. -->
     <!-- Cannot use <Reference> because it's unsupported when building an isolated project. -->
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(BenchmarksAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
   </ItemGroup>
 </Project>

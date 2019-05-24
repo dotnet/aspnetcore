@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
                 referenceAssemblies,
                 new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
 
-            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.CSharp7_3);
+            CSharpParseOptions = new CSharpParseOptions(LanguageVersion.Preview);
         }
 
         public RazorIntegrationTestBase(ITestOutputHelper output)
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             LineEnding = "\n";
             NormalizeSourceLineEndings = true;
 
-            DefaultBaseNamespace = "Test"; // Matches the default working directory
+            DefaultRootNamespace = "Test"; // Matches the default working directory
             DefaultFileName = "TestComponent.cshtml";
         }
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
 
         internal virtual RazorConfiguration Configuration { get; }
 
-        internal virtual string DefaultBaseNamespace { get; }
+        internal virtual string DefaultRootNamespace { get; }
 
         internal virtual string DefaultFileName { get; }
 
@@ -119,6 +119,8 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             return RazorProjectEngine.Create(Configuration, FileSystem, b =>
             {
+                b.SetRootNamespace(DefaultRootNamespace);
+
                 // Turn off checksums, we're testing code generation.
                 b.Features.Add(new SuppressChecksum());
 
@@ -344,7 +346,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             var assemblyResult = CompileToAssembly(DefaultFileName, cshtmlSource);
 
-            var componentFullTypeName = $"{DefaultBaseNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
+            var componentFullTypeName = $"{DefaultRootNamespace}.{Path.GetFileNameWithoutExtension(DefaultFileName)}";
             return CompileToComponent(assemblyResult, componentFullTypeName);
         }
 
@@ -376,8 +378,13 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         protected RenderTreeFrame[] GetRenderTree(IComponent component)
         {
             var renderer = new TestRenderer();
+            return GetRenderTree(renderer, component);
+        }
+
+        protected private RenderTreeFrame[] GetRenderTree(TestRenderer renderer, IComponent component)
+        {
             renderer.AttachComponent(component);
-            var task = component.SetParametersAsync(ParameterCollection.Empty);
+            var task = renderer.InvokeAsync(() => component.SetParametersAsync(ParameterCollection.Empty));
             // we will have to change this method if we add a test that does actual async work.
             Assert.True(task.Status.HasFlag(TaskStatus.RanToCompletion) || task.Status.HasFlag(TaskStatus.Faulted));
             if (task.IsFaulted)
@@ -432,9 +439,9 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public IEnumerable<Diagnostic> Diagnostics { get; set; }
         }
 
-        private class TestRenderer : Renderer
+        protected class TestRenderer : Renderer
         {
-            public TestRenderer() : base(new TestServiceProvider())
+            public TestRenderer() : base(new TestServiceProvider(), CreateDefaultDispatcher())
             {
             }
 
@@ -443,9 +450,14 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             public void AttachComponent(IComponent component)
                 => AssignRootComponentId(component);
 
+            protected override void HandleException(Exception exception)
+            {
+                ExceptionDispatchInfo.Capture(exception).Throw();
+            }
+
             protected override Task UpdateDisplayAsync(in RenderBatch renderBatch)
             {
-                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.ToArray();
+                LatestBatchReferenceFrames = renderBatch.ReferenceFrames.AsEnumerable().ToArray();
                 return Task.CompletedTask;
             }
         }

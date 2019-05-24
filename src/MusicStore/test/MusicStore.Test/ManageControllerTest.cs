@@ -27,6 +27,7 @@ namespace MusicStore.Controllers
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
             services.AddOptions();
             services
+                .AddMemoryCache()
                 .AddDbContext<MusicStoreContext>(b => b.UseInMemoryDatabase("Scratch").UseInternalServiceProvider(efServiceProvider));
 
             services.AddIdentity<ApplicationUser, IdentityRole>()

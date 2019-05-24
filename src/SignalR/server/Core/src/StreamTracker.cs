@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -15,59 +16,76 @@ namespace Microsoft.AspNetCore.SignalR
     internal class StreamTracker
     {
         private static readonly MethodInfo _buildConverterMethod = typeof(StreamTracker).GetMethods(BindingFlags.NonPublic | BindingFlags.Static).Single(m => m.Name.Equals("BuildStream"));
+        private readonly object[] _streamConverterArgs;
         private ConcurrentDictionary<string, IStreamConverter> _lookup = new ConcurrentDictionary<string, IStreamConverter>();
+
+        public StreamTracker(int streamBufferCapacity)
+        {
+            _streamConverterArgs = new object[] { streamBufferCapacity };
+        }
 
         /// <summary>
         /// Creates a new stream and returns the ChannelReader for it as an object.
         /// </summary>
-        public object AddStream(string streamId, Type itemType)
+        public object AddStream(string streamId, Type itemType, Type targetType)
         {
-            var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, Array.Empty<object>());
+            var newConverter = (IStreamConverter)_buildConverterMethod.MakeGenericMethod(itemType).Invoke(null, _streamConverterArgs);
             _lookup[streamId] = newConverter;
-            return newConverter.GetReaderAsObject();
+            return newConverter.GetReaderAsObject(targetType);
         }
 
-        private IStreamConverter TryGetConverter(string streamId)
+        private bool TryGetConverter(string streamId, out IStreamConverter converter)
         {
-            if (_lookup.TryGetValue(streamId, out var converter))
+            if (_lookup.TryGetValue(streamId, out converter))
             {
-                return converter;
+                return true;
             }
-            else
-            {
-                throw new KeyNotFoundException($"No stream with id '{streamId}' could be found.");
-            }
+
+            return false;
         }
 
-        public Task ProcessItem(StreamItemMessage message)
+        public bool TryProcessItem(StreamItemMessage message, out Task task)
         {
-            return TryGetConverter(message.InvocationId).WriteToStream(message.Item);
+            if (TryGetConverter(message.InvocationId, out var converter))
+            {
+                task = converter.WriteToStream(message.Item);
+                return true;
+            }
+
+            task = default;
+            return false;
         }
 
         public Type GetStreamItemType(string streamId)
         {
-            return TryGetConverter(streamId).GetItemType();
+            if (TryGetConverter(streamId, out var converter))
+            {
+                return converter.GetItemType();
+            }
+
+            throw new KeyNotFoundException($"No stream with id '{streamId}' could be found.");
         }
 
-        public void Complete(CompletionMessage message)
+        public bool TryComplete(CompletionMessage message)
         {
             _lookup.TryRemove(message.InvocationId, out var converter);
             if (converter == null)
             {
-                throw new KeyNotFoundException($"No stream with id '{message.InvocationId}' could be found.");
+                return false;
             }
             converter.TryComplete(message.HasResult || message.Error == null ? null : new Exception(message.Error));
+            return true;
         }
 
-        private static IStreamConverter BuildStream<T>()
+        private static IStreamConverter BuildStream<T>(int streamBufferCapacity)
         {
-            return new ChannelConverter<T>();
+            return new ChannelConverter<T>(streamBufferCapacity);
         }
 
         private interface IStreamConverter
         {
             Type GetItemType();
-            object GetReaderAsObject();
+            object GetReaderAsObject(Type type);
             Task WriteToStream(object item);
             void TryComplete(Exception ex);
         }
@@ -76,11 +94,9 @@ namespace Microsoft.AspNetCore.SignalR
         {
             private Channel<T> _channel;
 
-            public ChannelConverter()
+            public ChannelConverter(int streamBufferCapacity)
             {
-                // TODO: Make this configurable or figure out a good limit
-                // https://github.com/aspnet/AspNetCore/issues/4399
-                _channel = Channel.CreateBounded<T>(10);
+                _channel = Channel.CreateBounded<T>(streamBufferCapacity);
             }
 
             public Type GetItemType()
@@ -88,9 +104,16 @@ namespace Microsoft.AspNetCore.SignalR
                 return typeof(T);
             }
 
-            public object GetReaderAsObject()
+            public object GetReaderAsObject(Type type)
             {
-                return _channel.Reader;
+                if (ReflectionHelper.IsIAsyncEnumerable(type))
+                {
+                    return _channel.Reader.ReadAllAsync();
+                }
+                else
+                {
+                    return _channel.Reader;
+                }
             }
 
             public Task WriteToStream(object o)

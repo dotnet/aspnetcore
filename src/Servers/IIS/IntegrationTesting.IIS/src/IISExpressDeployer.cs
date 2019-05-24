@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
                 .RequiredElement("location")
                 .RequiredElement("system.webServer")
                 .RequiredElement("modules")
-                .GetOrAdd("add", "name", DeploymentParameters.AncmVersion.ToString());
+                .GetOrAdd("add", "name", AspNetCoreModuleV2ModuleName);
 
             ConfigureModuleAndBinding(config.Root, contentRoot, port);
 
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
             aspNetCoreHandler.SetAttributeValue("path", "*");
             aspNetCoreHandler.SetAttributeValue("verb", "*");
-            aspNetCoreHandler.SetAttributeValue("modules", DeploymentParameters.AncmVersion.ToString());
+            aspNetCoreHandler.SetAttributeValue("modules", AspNetCoreModuleV2ModuleName);
             aspNetCoreHandler.SetAttributeValue("resourceType", "Unspecified");
             // Make aspNetCore handler first
             aspNetCoreHandler.Remove();
@@ -351,7 +351,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting.IIS
 
                 yield return WebConfigHelpers.AddOrModifyHandlerSection(
                     key: "modules",
-                    value: DeploymentParameters.AncmVersion.ToString());
+                    value: AspNetCoreModuleV2ModuleName);
 
                 // We assume the x64 dotnet.exe is on the path so we need to provide an absolute path for x86 scenarios.
                 // Only do it for scenarios that rely on dotnet.exe (Core, portable, etc.).

@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
 {
-    public class UvTcpHandle : UvStreamHandle
+    internal class UvTcpHandle : UvStreamHandle
     {
         public UvTcpHandle(ILibuvTrace logger) : base(logger)
         {

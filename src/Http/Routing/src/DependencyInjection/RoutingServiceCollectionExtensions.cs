@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
@@ -34,6 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddTransient<ObjectPoolProvider, DefaultObjectPoolProvider>();
+#pragma warning disable CS0618 // Type or member is obsolete
             services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
             {
                 var provider = s.GetRequiredService<ObjectPoolProvider>();
@@ -49,6 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var constraintResolver = s.GetRequiredService<IInlineConstraintResolver>();
                 return new TreeRouteBuilder(loggerFactory, objectPool, constraintResolver);
             }));
+#pragma warning restore CS0618 // Type or member is obsolete
 
             services.TryAddSingleton(typeof(RoutingMarkerService));
 
@@ -65,11 +68,6 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             //
-            // Endpoint Infrastructure
-            //
-            services.TryAddTransient<IEndpointRouteBuilder, DefaultEndpointRouteBuilder>();
-
-            //
             // Default matcher implementation
             //
             services.TryAddSingleton<ParameterPolicyFactory, DefaultParameterPolicyFactory>();
@@ -77,11 +75,17 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddTransient<DfaMatcherBuilder>();
             services.TryAddSingleton<DfaGraphWriter>();
             services.TryAddTransient<DataSourceDependentMatcher.Lifetime>();
+            services.TryAddSingleton<EndpointMetadataComparer>(services =>
+            {
+                // This has no public constructor. 
+                return new EndpointMetadataComparer(services);
+            });
 
             // Link generation related services
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
             services.TryAddSingleton<IEndpointAddressScheme<string>, EndpointNameAddressScheme>();
             services.TryAddSingleton<IEndpointAddressScheme<RouteValuesAddress>, RouteValuesAddressScheme>();
+            services.TryAddSingleton<LinkParser, DefaultLinkParser>();
 
             //
             // Endpoint Selection
@@ -93,6 +97,7 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Misc infrastructure
             //
+            services.TryAddSingleton<TemplateBinderFactory, DefaultTemplateBinderFactory>();
             services.TryAddSingleton<RoutePatternTransformer, DefaultRoutePatternTransformer>();
             return services;
         }
