@@ -31,7 +31,9 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
                 {
                     WaitingRequests++;
                 }
+
                 await waitInQueueTask;
+
                 lock (_waitingRequestsLock)
                 {
                     WaitingRequests--;

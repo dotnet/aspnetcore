@@ -4,16 +4,14 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RequestThrottling;
 using Microsoft.AspNetCore.RequestThrottling.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.Aspnetcore.RequestThrottling
+namespace Microsoft.AspNetCore.RequestThrottling
 {
     /// <summary>
-    /// Limits the flow of requests through your application,
-    /// hopefully decreasing congestion by preventing threadpool starvation.
+    /// Limits the number of concurrent requests allowed in the application.
     /// </summary>
     public class RequestThrottlingMiddleware
     {
@@ -49,7 +47,13 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         public async Task Invoke(HttpContext context)
         {
             var waitInQueueTask = _requestQueue.EnterQueue();
-            if (!waitInQueueTask.IsCompletedSuccessfully)
+
+
+            if (waitInQueueTask.IsCompletedSuccessfully)
+            {
+                RequestThrottlingLog.RequestRunImmediately(_logger);
+            }
+            else
             {
                 RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
                 await waitInQueueTask;
@@ -81,6 +85,33 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         internal int WaitingRequests
         {
             get => _requestQueue.WaitingRequests;
+        }
+
+        private static class RequestThrottlingLog
+        {
+            private static readonly Action<ILogger, int, Exception> _requestEnqueued =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "Request Enqueued"), "Concurrent request limit reached, queuing request. Current queue length: {queuedRequests}.");
+
+            private static readonly Action<ILogger, int, Exception> _requestDequeued =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "Request Dequeued"), "Request dequeued. Current queue length: {queuedRequests}.");
+
+            private static readonly Action<ILogger, Exception> _requestRunImmediately =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(3, "Request Run Immediately"), "Concurrent request limit has not been reached, running request immediately.");
+
+            internal static void RequestEnqueued(ILogger logger, int queuedRequests)
+            {
+                _requestEnqueued(logger, queuedRequests, null);
+            }
+
+            internal static void RequestDequeued(ILogger logger, int queuedRequests)
+            {
+                _requestDequeued(logger, queuedRequests, null);
+            }
+
+            internal static void RequestRunImmediately(ILogger logger)
+            {
+                _requestRunImmediately(logger, null);
+            }
         }
     }
 }

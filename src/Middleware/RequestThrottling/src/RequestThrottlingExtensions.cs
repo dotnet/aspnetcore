@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Aspnetcore.RequestThrottling;
+using Microsoft.AspNetCore.RequestThrottling;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -12,8 +12,7 @@ namespace Microsoft.AspNetCore.Builder
     public static class RequestThrottlingExtensions
     {
         /// <summary>
-        /// Adds the <see cref="RequestThrottlingMiddleware"/> to limit the number of active requests within
-        /// your server.
+        /// Adds the <see cref="RequestThrottlingMiddleware"/> to limit the number of concurrently-executing requests.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
