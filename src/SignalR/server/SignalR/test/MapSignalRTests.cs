@@ -106,6 +106,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             })))
             {
                 host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(1, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
             Assert.Equal(1, authCount);
@@ -121,6 +127,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             })))
             {
                 host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(1, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
             Assert.Equal(1, authCount);
@@ -136,6 +148,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             })))
             {
                 host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(2, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(2, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
             Assert.Equal(2, authCount);
@@ -226,6 +244,31 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal(2, dataSource.Endpoints.Count);
                 Assert.Equal(typeof(AuthHub), dataSource.Endpoints[0].Metadata.GetMetadata<HubMetadata>()?.HubType);
                 Assert.Equal(typeof(AuthHub), dataSource.Endpoints[1].Metadata.GetMetadata<HubMetadata>()?.HubType);
+                Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<NegotiateMetadata>());
+                Assert.Null(dataSource.Endpoints[1].Metadata.GetMetadata<NegotiateMetadata>());
+            }
+        }
+
+        [Fact]
+        public void MapHubAppliesHubMetadata()
+        {
+            void ConfigureRoutes(HubRouteBuilder routes)
+            {
+                // This "Foo" policy should override the default auth attribute
+                routes.MapHub<AuthHub>("/path");
+            }
+
+            using (var host = BuildWebHost(ConfigureRoutes))
+            {
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+
+                // TODO
+                //Assert.Equal(typeof(AuthHub), dataSource.Endpoints[0].Metadata.GetMetadata<HubMetadata>()?.HubType);
+                //Assert.Equal(typeof(AuthHub), dataSource.Endpoints[1].Metadata.GetMetadata<HubMetadata>()?.HubType);
                 Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<NegotiateMetadata>());
                 Assert.Null(dataSource.Endpoints[1].Metadata.GetMetadata<NegotiateMetadata>());
             }

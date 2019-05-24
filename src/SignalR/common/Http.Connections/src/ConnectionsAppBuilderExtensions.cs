@@ -3,9 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Http.Connections;
-using Microsoft.AspNetCore.Http.Connections.Internal;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -27,14 +24,13 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var dispatcher = app.ApplicationServices.GetRequiredService<HttpConnectionDispatcher>();
-
-            var routes = new RouteBuilder(app);
-
-            configure(new ConnectionsRouteBuilder(routes, dispatcher));
-
             app.UseWebSockets();
-            app.UseRouter(routes.Build());
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
+            {
+                configure(new ConnectionsRouteBuilder(endpoints));
+            });
             return app;
         }
     }

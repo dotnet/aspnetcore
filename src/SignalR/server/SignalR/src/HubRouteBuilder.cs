@@ -52,6 +52,8 @@ namespace Microsoft.AspNetCore.SignalR
             }
             configureOptions?.Invoke(options);
 
+            // TODO: Figure out how to add the HubMetadata to endpoints
+
             _routes.MapConnections(path, options, builder =>
             {
                 builder.UseHub<THub>();

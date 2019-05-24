@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Builder
             var connectionDelegate = connectionBuilder.Build();
 
             // REVIEW: Consider expanding the internals of the dispatcher as endpoint routes instead of
-            // using if statemants we can let the matcher handle
+            // using if statements we can let the matcher handle
 
             var conventionBuilders = new List<IEndpointConventionBuilder>();
 

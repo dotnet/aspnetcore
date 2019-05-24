@@ -34,39 +34,57 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
         public void MapConnectionHandlerFindsAuthAttributeOnEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<AuthConnectionHandler>("/auth",
+            using (var host = BuildWebHost<AuthConnectionHandler>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
-                builder.Start();
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(1, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
-            Assert.Equal(1, authCount);
+            Assert.Equal(0, authCount);
         }
 
         [Fact]
         public void MapConnectionHandlerFindsAuthAttributeOnInheritedEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<InheritedAuthConnectionHandler>("/auth",
+            using (var host = BuildWebHost<InheritedAuthConnectionHandler>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
-                builder.Start();
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(1, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
-            Assert.Equal(1, authCount);
+            Assert.Equal(0, authCount);
         }
 
         [Fact]
         public void MapConnectionHandlerFindsAuthAttributesOnDoubleAuthEndPoint()
         {
             var authCount = 0;
-            using (var builder = BuildWebHost<DoubleAuthConnectionHandler>("/auth",
+            using (var host = BuildWebHost<DoubleAuthConnectionHandler>("/auth",
                 options => authCount += options.AuthorizationData.Count))
             {
-                builder.Start();
+                host.Start();
+
+                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                // We register 2 endpoints (/negotiate and /)
+                Assert.Equal(2, dataSource.Endpoints.Count);
+                Assert.Equal(2, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(2, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
-            Assert.Equal(2, authCount);
+            Assert.Equal(0, authCount);
         }
 
         [Fact]
