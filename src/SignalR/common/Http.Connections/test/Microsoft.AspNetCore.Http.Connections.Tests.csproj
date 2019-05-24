@@ -6,7 +6,7 @@
 
   <ItemGroup>
     <Compile Include="$(SharedSourceRoot)Buffers.Testing\**\*.cs" />
-    <Compile Include="$(SharedSourceRoot)test\SyncPoint.cs" />
+    <Compile Include="$(SharedSourceRoot)SyncPoint\SyncPoint.cs" />
   </ItemGroup>
 
   <ItemGroup>

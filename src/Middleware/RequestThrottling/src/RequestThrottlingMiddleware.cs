@@ -38,7 +38,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
             _options = options.Value;
-            _requestQueue = new RequestQueue(_options.MaxConcurrentRequests.Value); 
+            _requestQueue = new RequestQueue(_options.MaxConcurrentRequests.Value);
         }
 
         /// <summary>
@@ -49,17 +49,15 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         public async Task Invoke(HttpContext context)
         {
             var waitInQueueTask = _requestQueue.EnterQueue();
+            if (!waitInQueueTask.IsCompletedSuccessfully)
+            {
+                RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
+                await waitInQueueTask;
+                RequestThrottlingLog.RequestDequeued(_logger, WaitingRequests);
+            }
 
             try
             {
-                var needsToWaitOnQueue = !waitInQueueTask.IsCompletedSuccessfully;
-                if (needsToWaitOnQueue)
-                {
-                    RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
-                    await waitInQueueTask;
-                    RequestThrottlingLog.RequestDequeued(_logger, WaitingRequests);
-                }
-
                 await _next(context);
             }
             finally
@@ -74,7 +72,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// </summary>
         internal int ConcurrentRequests
         {
-            get => _requestQueue.ConcurrentRequests; 
+            get => _requestQueue.ConcurrentRequests;
         }
 
         /// <summary>
