@@ -245,7 +245,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                         .Returns(new ValueTask<ConnectionContext>((ConnectionContext)null));
                     mockTransport
                         .Setup(transport => transport.StopAsync(It.IsAny<CancellationToken>()))
-                        .Returns(async () => await stop.WaitAsync());
+                        .Returns(() => new ValueTask(unbind.WaitAsync()));
+                    mockTransport
+                        .Setup(transport => transport.DisposeAsync())
+                        .Returns(() => new ValueTask(stop.WaitAsync()));
                     mockTransport
                         .Setup(transport => transport.EndPoint).Returns(e);
 
