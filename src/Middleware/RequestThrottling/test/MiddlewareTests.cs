@@ -76,10 +76,11 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public void InvalidArgumentIfMaxConcurrentRequestsIsNull()
         {
-            Assert.Throws<ArgumentException>(() =>
+            var ex = Assert.Throws<ArgumentException>(() =>
             {
                 TestUtils.CreateTestMiddleWare(maxConcurrentRequests: null);
             });
+            Assert.Equal("options", ex.ParamName);
         }
     }
 }

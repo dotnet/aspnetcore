@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.Resources;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling;
@@ -19,8 +17,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
     /// </summary>
     public class RequestThrottlingMiddleware
     {
-        private readonly SemaphoreWrapper _semaphore;
-
+        private readonly RequestQueue _requestQueue;
         private readonly RequestThrottlingOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
@@ -33,17 +30,15 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// <param name="options">The <see cref="RequestThrottlingOptions"/> containing the initialization parameters.</param>
         public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<RequestThrottlingOptions> options)
         {
+            if (options.Value.MaxConcurrentRequests == null)
+            {
+                throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be specified.", nameof(options));
+            }
+
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
             _options = options.Value;
-
-            if (_options.MaxConcurrentRequests == null)
-            {
-                // TODO :: Localization
-                throw new ArgumentException(string.Format("Option must be provided {0}", nameof(_options.MaxConcurrentRequests)));
-            }
-
-            _semaphore = new SemaphoreWrapper((int)_options.MaxConcurrentRequests); 
+            _requestQueue = new RequestQueue(_options.MaxConcurrentRequests.Value); 
         }
 
         /// <summary>
@@ -53,11 +48,11 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
-            var waitInQueueTask = _semaphore.EnterQueue();
+            var waitInQueueTask = _requestQueue.EnterQueue();
 
             try
             {
-                var needsToWaitOnQueue = !waitInQueueTask.IsCompleted;
+                var needsToWaitOnQueue = !waitInQueueTask.IsCompletedSuccessfully;
                 if (needsToWaitOnQueue)
                 {
                     RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
@@ -69,7 +64,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
             }
             finally
             {
-                _semaphore.Release();
+                _requestQueue.Release();
             }
         }
 
@@ -79,7 +74,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// </summary>
         internal int ConcurrentRequests
         {
-            get => ((int)_options.MaxConcurrentRequests - _semaphore.Count);
+            get => _requestQueue.ConcurrentRequests; 
         }
 
         /// <summary>
@@ -87,7 +82,7 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         /// </summary>
         internal int WaitingRequests
         {
-            get => _semaphore.WaitingRequests;
+            get => _requestQueue.WaitingRequests;
         }
     }
 }

@@ -7,12 +7,12 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
-    public class SemaphoreWrapperTests
+    public class RequestQueueTests
     {
         [Fact]
         public async Task LimitsIncomingRequests()
         {
-            using var s = new SemaphoreWrapper(1);
+            using var s = new RequestQueue(1);
             Assert.Equal(1, s.Count);
 
             await s.EnterQueue().OrTimeout();
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task TracksQueueLength()
         {
-            using var s = new SemaphoreWrapper(1);
+            using var s = new RequestQueue(1);
             Assert.Equal(0, s.WaitingRequests);
 
             await s.EnterQueue();
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public void DoesNotWaitIfSpaceAvailible()
         {
-            using var s = new SemaphoreWrapper(2);
+            using var s = new RequestQueue(2);
 
             var t1 = s.EnterQueue();
             Assert.True(t1.IsCompleted);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task WaitsIfNoSpaceAvailible()
         {
-            using var s = new SemaphoreWrapper(1);
+            using var s = new RequestQueue(1);
             await s.EnterQueue().OrTimeout();
 
             var waitingTask = s.EnterQueue();
@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task IsEncapsulated()
         {
-            using var s1 = new SemaphoreWrapper(1);
-            using var s2 = new SemaphoreWrapper(1);
+            using var s1 = new RequestQueue(1);
+            using var s2 = new RequestQueue(1);
 
             await s1.EnterQueue().OrTimeout();
             await s2.EnterQueue().OrTimeout();

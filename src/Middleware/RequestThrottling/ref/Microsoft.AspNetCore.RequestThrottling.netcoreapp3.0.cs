@@ -22,6 +22,6 @@ namespace Microsoft.AspNetCore.RequestThrottling
     public partial class RequestThrottlingOptions
     {
         public RequestThrottlingOptions() { }
-        public int MaxConcurrentRequests { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public int? MaxConcurrentRequests { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
