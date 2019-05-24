@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private readonly ServiceContext _serviceContext;
         private readonly ConnectionDelegate _connectionDelegate;
+        private readonly TaskCompletionSource<object> _acceptLoopTcs = new TaskCompletionSource<object>();
 
         public ConnectionDispatcher(ServiceContext serviceContext, ConnectionDelegate connectionDelegate)
         {
@@ -25,9 +26,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _serviceContext.Log;
 
-        public void StartAcceptingConnections(IConnectionListener listener)
+        public Task StartAcceptingConnections(IConnectionListener listener)
         {
             ThreadPool.UnsafeQueueUserWorkItem(StartAcceptingConnectionsCore, listener, preferLocal: false);
+            return _acceptLoopTcs.Task;
         }
 
         private void StartAcceptingConnectionsCore(IConnectionListener listener)
@@ -58,6 +60,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 catch (Exception)
                 {
                     // REVIEW: Today the only way to end the accept loop is an exception
+                }
+                finally
+                {
+                    _acceptLoopTcs.TrySetResult(null);
                 }
             }
         }

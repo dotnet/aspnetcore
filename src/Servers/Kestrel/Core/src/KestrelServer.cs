@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
     public class KestrelServer : IServer
     {
-        private readonly List<IConnectionListener> _transports = new List<IConnectionListener>();
+        private readonly List<(IConnectionListener, Task)> _transports = new List<(IConnectionListener, Task)>();
         private readonly IServerAddressesFeature _serverAddresses;
         private readonly IConnectionListenerFactory _transportFactory;
 
@@ -138,10 +138,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                     // Update the endpoint
                     options.EndPoint = transport.EndPoint;
+                    var acceptLoopTask = connectionDispatcher.StartAcceptingConnections(transport);
 
-                    _transports.Add(transport);
-
-                    connectionDispatcher.StartAcceptingConnections(transport);
+                    _transports.Add((transport, acceptLoopTask));
                 }
 
                 await AddressBinder.BindAsync(_serverAddresses, Options, Trace, OnBind).ConfigureAwait(false);
@@ -168,7 +167,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 var tasks = new Task[_transports.Count];
                 for (int i = 0; i < _transports.Count; i++)
                 {
-                    tasks[i] = _transports[i].StopAsync(cancellationToken).AsTask();
+                    (IConnectionListener listener, Task acceptLoop) = _transports[i];
+                    tasks[i] = Task.WhenAll(listener.StopAsync(cancellationToken).AsTask(), acceptLoop);
                 }
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
@@ -188,7 +188,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 for (int i = 0; i < _transports.Count; i++)
                 {
-                    tasks[i] = _transports[i].DisposeAsync().AsTask();
+                    (IConnectionListener listener, Task acceptLoop) = _transports[i];
+                    tasks[i] = listener.DisposeAsync().AsTask();
                 }
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);
