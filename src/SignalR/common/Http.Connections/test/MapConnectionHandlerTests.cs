@@ -83,8 +83,8 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Equal(2, dataSource.Endpoints.Count);
-                Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<IAuthorizeData>());
-                Assert.NotNull(dataSource.Endpoints[1].Metadata.GetMetadata<IAuthorizeData>());
+                Assert.Equal(1, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
             Assert.Equal(0, authCount);
@@ -109,8 +109,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 Assert.Equal(2, dataSource.Endpoints.Count);
                 Assert.Equal(2, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
                 Assert.Equal(2, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
-
-                Assert.Empty(configuredOptions.AuthorizationData);
             }
 
             Assert.Equal(0, authCount);

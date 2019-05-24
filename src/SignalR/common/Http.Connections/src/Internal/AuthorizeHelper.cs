@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Internal
     {
         public static Task<bool> AuthorizeAsync(HttpContext context, IList<IAuthorizeData> policies)
         {
-            if (policies.Count == 0)
+            if (policies.Count == 0 || context.GetEndpoint() != null)
             {
                 return TaskCache.True;
             }

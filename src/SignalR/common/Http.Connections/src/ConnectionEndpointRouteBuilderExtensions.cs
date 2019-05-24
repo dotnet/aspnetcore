@@ -80,19 +80,6 @@ namespace Microsoft.AspNetCore.Builder
         /// <returns>An <see cref="IEndpointConventionBuilder"/> for endpoints associated with the connections.</returns>
         public static IEndpointConventionBuilder MapConnections(this IEndpointRouteBuilder endpoints, string pattern, HttpConnectionDispatcherOptions options, Action<IConnectionBuilder> configure)
         {
-            IList<IAuthorizeData> authorizationData = options.AuthorizationData;
-            // Copy the list if there are items, we're going to clear the list on the options
-            // so that EndPoints is the only one running Auth and we don't run it again in HttpConnectionDispatcher
-            if (options.AuthorizationData.Count > 0)
-            {
-                authorizationData = new List<IAuthorizeData>(options.AuthorizationData.Count);
-                for (var i = 0; i < options.AuthorizationData.Count; i++)
-                {
-                    authorizationData.Add(options.AuthorizationData[i]);
-                }
-                options.AuthorizationData.Clear();
-            }
-
             var dispatcher = endpoints.ServiceProvider.GetRequiredService<HttpConnectionDispatcher>();
 
             var connectionBuilder = new ConnectionBuilder(endpoints.ServiceProvider);
@@ -130,7 +117,7 @@ namespace Microsoft.AspNetCore.Builder
             compositeConventionBuilder.Add(e =>
             {
                 // Add the authorization data as metadata
-                foreach (var data in authorizationData)
+                foreach (var data in options.AuthorizationData)
                 {
                     e.Metadata.Add(data);
                 }
