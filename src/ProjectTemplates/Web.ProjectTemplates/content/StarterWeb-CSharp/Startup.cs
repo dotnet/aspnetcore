@@ -121,11 +121,9 @@ namespace Company.WebApplication1
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            })
-            .AddNewtonsoftJson();
+            });
 #else
-            services.AddControllersWithViews()
-                .AddNewtonsoftJson();
+            services.AddControllersWithViews();
 #endif
             services.AddRazorPages();
         }
