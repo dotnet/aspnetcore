@@ -47,7 +47,7 @@
     <SystemThreadingChannelsPackageVersion>4.6.0-preview6.19270.12</SystemThreadingChannelsPackageVersion>
     <!-- Only listed explicitly to workaround https://github.com/dotnet/cli/issues/10528 -->
     <MicrosoftNETCorePlatformsPackageVersion>3.0.0-preview6.19270.12</MicrosoftNETCorePlatformsPackageVersion>
-    <!-- Dependencies from aspnet/Blazor -->
+    <!-- Packages from aspnet/Blazor -->
     <MicrosoftAspNetCoreBlazorMonoPackageVersion>0.10.0-preview6.19273.9</MicrosoftAspNetCoreBlazorMonoPackageVersion>
     <!-- Packages from aspnet/Extensions -->
     <InternalAspNetCoreAnalyzersPackageVersion>3.0.0-preview6.19271.2</InternalAspNetCoreAnalyzersPackageVersion>
