@@ -47,4 +47,5 @@ else {
 
 Write-Host "Expanded NodeJs"
 mkdir $output_dir -Force
-copy $temp_dir/$nodeFile/node.exe $output_dir
+Write-Host "Copying $temp_dir\$nodeFile\node.exe to $output_dir"
+copy "$temp_dir\$nodeFile\node.exe" "$output_dir"
