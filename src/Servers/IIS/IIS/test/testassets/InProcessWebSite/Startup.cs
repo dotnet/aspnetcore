@@ -696,6 +696,29 @@ namespace TestSite
             await server.StopAsync(cts.Token);
         }
 
+        private async Task StackSize(HttpContext ctx)
+        {
+            // This would normally stackoverflow if we didn't increase the stack size per thread.
+            RecursiveFunction(10000);
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        private async Task StackSizeLarge(HttpContext ctx)
+        {
+            // This would normally stackoverflow if we didn't increase the stack size per thread.
+            RecursiveFunction(30000);
+            await ctx.Response.WriteAsync("Hello World");
+        }
+
+        private void RecursiveFunction(int i)
+        {
+            if (i == 0)
+            {
+                return;
+            }
+            RecursiveFunction(i - 1);
+        }
+
         private async Task GetServerVariableStress(HttpContext ctx)
         {
             // This test simulates the scenario where native Flush call is being
