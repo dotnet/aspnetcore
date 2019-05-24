@@ -429,8 +429,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             // Always dispatch test code back to the ThreadPool. This prevents deadlocks caused by continuing
             // Http2Connection.ProcessRequestsAsync() loop with writer locks acquired. Run product code inline to make
             // it easier to verify request frames are processed correctly immediately after sending the them.
-            var inputPipeOptions = new PipeOptions(_memoryPool, PipeScheduler.ThreadPool);
-            var outputPipeOptions = new PipeOptions(_memoryPool, PipeScheduler.ThreadPool);
+            var inputPipeOptions = GetInputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
+            var outputPipeOptions = GetOutputPipeOptions(_serviceContext, _memoryPool, PipeScheduler.ThreadPool);
 
             _pair = DuplexPipe.CreateConnectionPair(inputPipeOptions, outputPipeOptions);
 
@@ -1246,6 +1246,41 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             clock.UtcNow = endTime;
             _timeoutControl.Tick(clock.UtcNow);
+        }
+
+        private static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler writerScheduler) => new PipeOptions
+        (
+            pool: memoryPool,
+            readerScheduler: serviceContext.Scheduler,
+            writerScheduler: writerScheduler,
+            pauseWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            resumeWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            useSynchronizationContext: false,
+            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+        );
+
+        private static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler readerScheduler) => new PipeOptions
+        (
+            pool: memoryPool,
+            readerScheduler: readerScheduler,
+            writerScheduler: serviceContext.Scheduler,
+            pauseWriterThreshold: GetOutputResponseBufferSize(serviceContext),
+            resumeWriterThreshold: GetOutputResponseBufferSize(serviceContext),
+            useSynchronizationContext: false,
+            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+        );
+
+        private static long GetOutputResponseBufferSize(ServiceContext serviceContext)
+        {
+            var bufferSize = serviceContext.ServerOptions.Limits.MaxResponseBufferSize;
+            if (bufferSize == 0)
+            {
+                // 0 = no buffering so we need to configure the pipe so the writer waits on the reader directly
+                return 1;
+            }
+
+            // null means that we have no back pressure
+            return bufferSize ?? 0;
         }
 
         internal class Http2FrameWithPayload : Http2Frame
