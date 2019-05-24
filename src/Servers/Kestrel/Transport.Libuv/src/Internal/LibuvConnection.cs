@@ -41,7 +41,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             RemoteEndPoint = remoteEndPoint;
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
-            Logger = log;
             Log = log;
             Thread = thread;
 

@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class ListenOptions : IConnectionBuilder
     {
-        private FileHandleType _handleType;
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
 
         internal ListenOptions(IPEndPoint endPoint)
@@ -33,7 +32,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal ListenOptions(string socketPath)
         {
             Type = ListenType.SocketPath;
-            SocketPath = socketPath;
             EndPoint = new UnixDomainSocketEndPoint(socketPath);
         }
 
@@ -45,19 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal ListenOptions(ulong fileHandle, FileHandleType handleType)
         {
             EndPoint = new FileHandleEndPoint(fileHandle, handleType);
-
             Type = ListenType.FileHandle;
-            FileHandle = fileHandle;
-            switch (handleType)
-            {
-                case FileHandleType.Auto:
-                case FileHandleType.Tcp:
-                case FileHandleType.Pipe:
-                    _handleType = handleType;
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
         }
 
         /// <summary>
@@ -68,32 +54,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 #pragma warning restore PUB0001 // Pubternal type in public API
 
 #pragma warning disable PUB0001 // Pubternal type in public API
-        public FileHandleType HandleType
+        public FileHandleType HandleType => (EndPoint as FileHandleEndPoint)?.FileHandleType ?? FileHandleType.Auto;
 #pragma warning restore PUB0001 // Pubternal type in public API
-        {
-            get => _handleType;
-            set
-            {
-                if (value == _handleType)
-                {
-                    return;
-                }
-                if (Type != ListenType.FileHandle || _handleType != FileHandleType.Auto)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                switch (value)
-                {
-                    case FileHandleType.Tcp:
-                    case FileHandleType.Pipe:
-                        _handleType = value;
-                        break;
-                    default:
-                        throw new ArgumentException(nameof(HandleType));
-                }
-            }
-        }
 
         internal EndPoint EndPoint { get; set; }
 
@@ -108,13 +70,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// The absolute path to a Unix domain socket to bind to.
         /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="ListenType.SocketPath"/>.
         /// </summary>
-        public string SocketPath { get; }
+        public string SocketPath => (EndPoint as UnixDomainSocketEndPoint)?.ToString();
 
         /// <summary>
         /// A file descriptor for the socket to open.
         /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="ListenType.FileHandle"/>.
         /// </summary>
-        public ulong FileHandle { get; }
+        public ulong FileHandle => (EndPoint as FileHandleEndPoint)?.FileHandle ?? 0;
 
         /// <summary>
         /// Enables an <see cref="IConnectionAdapter"/> to resolve and use services registered by the application during startup.

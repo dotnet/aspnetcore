@@ -117,13 +117,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private UvStreamHandle ListenHandle()
         {
-            switch (EndPoint)
+            var handleEndPoint = (FileHandleEndPoint)EndPoint;
+
+            switch (handleEndPoint.FileHandleType)
             {
-                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Auto:
+                case FileHandleType.Auto:
                     break;
-                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Tcp:
+                case FileHandleType.Tcp:
                     return ListenTcp(useFileHandle: true);
-                case FileHandleEndPoint ep when ep.FileHandleType == FileHandleType.Pipe:
+                case FileHandleType.Pipe:
                     return ListenPipe(useFileHandle: true);
                 default:
                     throw new NotSupportedException();
@@ -133,6 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             try
             {
                 handle = ListenTcp(useFileHandle: true);
+                EndPoint = new FileHandleEndPoint(handleEndPoint.FileHandle, FileHandleType.Tcp);
                 return handle;
             }
             catch (UvException exception) when (exception.StatusCode == LibuvConstants.ENOTSUP)
@@ -141,6 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
 
             handle = ListenPipe(useFileHandle: true);
+            EndPoint = new FileHandleEndPoint(handleEndPoint.FileHandle, FileHandleType.Pipe);
             return handle;
         }
 

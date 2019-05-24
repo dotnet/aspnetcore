@@ -1,3 +1,4 @@
+using System;
 using System.Net;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
@@ -8,6 +9,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
         {
             FileHandle = fileHandle;
             FileHandleType = fileHandleType;
+
+            switch (fileHandleType)
+            {
+                case FileHandleType.Auto:
+                case FileHandleType.Tcp:
+                case FileHandleType.Pipe:
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
         public ulong FileHandle { get; }
