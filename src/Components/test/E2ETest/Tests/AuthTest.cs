@@ -16,6 +16,10 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         // These strings correspond to the links in BasicTestApp\AuthTest\Links.razor
         const string CascadingAuthenticationStateLink = "Cascading authentication state";
         const string AuthorizeViewCases = "AuthorizeView cases";
+        const string PageAllowingAnonymous = "Page allowing anonymous";
+        const string PageRequiringAuthorization = "Page requiring any authentication";
+        const string PageRequiringPolicy = "Page requiring policy";
+        const string PageRequiringRole = "Page requiring role";
 
         public AuthTest(
             BrowserFixture browserFixture,
@@ -54,7 +58,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void AuthorizeViewCases_NoAuthorizationRule_Unauthenticated()
+        public void AuthorizeViewCases_NoAuthorizationRule_NotAuthorized()
         {
             SignInAs(null, null);
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
@@ -64,7 +68,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void AuthorizeViewCases_NoAuthorizationRule_Authenticated()
+        public void AuthorizeViewCases_NoAuthorizationRule_Authorized()
         {
             SignInAs("Some User", null);
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
@@ -73,7 +77,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void AuthorizeViewCases_RequireRole_Authenticated()
+        public void AuthorizeViewCases_RequireRole_Authorized()
         {
             SignInAs("Some User", "IrrelevantRole,TestRole");
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
@@ -82,7 +86,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void AuthorizeViewCases_RequireRole_Unauthenticated()
+        public void AuthorizeViewCases_RequireRole_NotAuthorized()
         {
             SignInAs("Some User", "IrrelevantRole");
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
@@ -91,7 +95,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void AuthorizeViewCases_RequirePolicy_Authenticated()
+        public void AuthorizeViewCases_RequirePolicy_Authorized()
         {
             SignInAs("Bert", null);
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
@@ -100,12 +104,84 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         }
 
         [Fact]
-        public void AuthorizeViewCases_RequirePolicy_Unauthenticated()
+        public void AuthorizeViewCases_RequirePolicy_NotAuthorized()
         {
             SignInAs("Mallory", null);
             var appElement = MountAndNavigateToAuthTest(AuthorizeViewCases);
             Browser.Equal("You're not authorized, Mallory", () =>
                 appElement.FindElement(By.CssSelector("#authorize-policy .not-authorized")).Text);
+        }
+
+        [Fact]
+        public void Router_AllowAnonymous_Anonymous()
+        {
+            SignInAs(null, null);
+            var appElement = MountAndNavigateToAuthTest(PageAllowingAnonymous);
+            Browser.Equal("Welcome to PageAllowingAnonymous!", () =>
+                appElement.FindElement(By.CssSelector("#auth-success")).Text);
+        }
+
+        [Fact]
+        public void Router_AllowAnonymous_Authenticated()
+        {
+            SignInAs("Bert", null);
+            var appElement = MountAndNavigateToAuthTest(PageAllowingAnonymous);
+            Browser.Equal("Welcome to PageAllowingAnonymous!", () =>
+                appElement.FindElement(By.CssSelector("#auth-success")).Text);
+        }
+
+        [Fact]
+        public void Router_RequireAuthorization_Authorized()
+        {
+            SignInAs("Bert", null);
+            var appElement = MountAndNavigateToAuthTest(PageRequiringAuthorization);
+            Browser.Equal("Welcome to PageRequiringAuthorization!", () =>
+                appElement.FindElement(By.CssSelector("#auth-success")).Text);
+        }
+
+        [Fact]
+        public void Router_RequireAuthorization_NotAuthorized()
+        {
+            SignInAs(null, null);
+            var appElement = MountAndNavigateToAuthTest(PageRequiringAuthorization);
+            Browser.Equal("Sorry, anonymous, you're not authorized.", () =>
+                appElement.FindElement(By.CssSelector("#auth-failure")).Text);
+        }
+
+        [Fact]
+        public void Router_RequirePolicy_Authorized()
+        {
+            SignInAs("Bert", null);
+            var appElement = MountAndNavigateToAuthTest(PageRequiringPolicy);
+            Browser.Equal("Welcome to PageRequiringPolicy!", () =>
+                appElement.FindElement(By.CssSelector("#auth-success")).Text);
+        }
+
+        [Fact]
+        public void Router_RequirePolicy_NotAuthorized()
+        {
+            SignInAs("Mallory", null);
+            var appElement = MountAndNavigateToAuthTest(PageRequiringPolicy);
+            Browser.Equal("Sorry, Mallory, you're not authorized.", () =>
+                appElement.FindElement(By.CssSelector("#auth-failure")).Text);
+        }
+
+        [Fact]
+        public void Router_RequireRole_Authorized()
+        {
+            SignInAs("Bert", "IrrelevantRole,TestRole");
+            var appElement = MountAndNavigateToAuthTest(PageRequiringRole);
+            Browser.Equal("Welcome to PageRequiringRole!", () =>
+                appElement.FindElement(By.CssSelector("#auth-success")).Text);
+        }
+
+        [Fact]
+        public void Router_RequireRole_NotAuthorized()
+        {
+            SignInAs("Bert", "IrrelevantRole");
+            var appElement = MountAndNavigateToAuthTest(PageRequiringRole);
+            Browser.Equal("Sorry, Bert, you're not authorized.", () =>
+                appElement.FindElement(By.CssSelector("#auth-failure")).Text);
         }
 
         IWebElement MountAndNavigateToAuthTest(string authLinkText)
