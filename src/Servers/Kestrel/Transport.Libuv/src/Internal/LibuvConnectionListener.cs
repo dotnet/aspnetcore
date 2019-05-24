@@ -92,12 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     var listener = new Listener(TransportContext);
                     _listeners.Add(listener);
                     await listener.StartAsync(EndPoint, Threads[0]).ConfigureAwait(false);
-
-                    if (listener.ListenSocket is UvTcpHandle handle)
-                    {
-                        // If requested port was "0", replace with assigned dynamic port.
-                        EndPoint = handle.GetSockIPEndPoint();
-                    }
+                    EndPoint = listener.EndPoint;
                 }
                 else
                 {
@@ -107,6 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     var listenerPrimary = new ListenerPrimary(TransportContext);
                     _listeners.Add(listenerPrimary);
                     await listenerPrimary.StartAsync(pipeName, pipeMessage, EndPoint, Threads[0]).ConfigureAwait(false);
+                    EndPoint = listenerPrimary.EndPoint;
 
                     foreach (var thread in Threads.Skip(1))
                     {
@@ -131,23 +127,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private async IAsyncEnumerator<LibuvConnection> AcceptConnections()
         {
-            var slots = new Task<(LibuvConnection Connection, int Slot)>[_listeners.Count];
+            var slots = new Task<(LibuvConnection, int)>[_listeners.Count];
+            // This is the task we'll put in the slot when each listening completes. It'll prevent
+            // us from having to shrink the array. We'll just loop while there are active slots.
+            var incompleteTask = new TaskCompletionSource<(LibuvConnection, int)>().Task;
+
+            var remainingSlots = slots.Length;
 
             // Issue parallel accepts on all listeners
-            for (int i = 0; i < slots.Length; i++)
+            for (int i = 0; i < remainingSlots; i++)
             {
                 slots[i] = AcceptAsync(_listeners[i], i);
             }
 
-            while (true)
+            while (remainingSlots > 0)
             {
                 // Calling GetAwaiter().GetResult() is safe because we know the task is completed
                 (LibuvConnection connection, int slot) = (await Task.WhenAny(slots)).GetAwaiter().GetResult();
 
-                // Fill that slot with another accept and yield the connection
-                slots[slot] = AcceptAsync(_listeners[slot], slot);
+                // If the connection is null then the listener was closed
+                if (connection == null)
+                {
+                    remainingSlots--;
+                    slots[slot] = incompleteTask;
+                }
+                else
+                {
+                    // Fill that slot with another accept and yield the connection
+                    slots[slot] = AcceptAsync(_listeners[slot], slot);
 
-                yield return connection;
+                    yield return connection;
+                }
             }
 
             static async Task<(LibuvConnection, int)> AcceptAsync(ListenerContext listener, int slot)
@@ -187,16 +197,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public async ValueTask StopAsync(CancellationToken cancellationToken)
         {
             await UnbindAsync().ConfigureAwait(false);
-
-            if (_acceptEnumerator != null)
-            {
-                await _acceptEnumerator.DisposeAsync();
-            }
         }
 
-        public ValueTask DisposeAsync()
+        public async ValueTask DisposeAsync()
         {
-            return StopAsync(default);
+            await UnbindAsync();
+
+            await StopAsync();
         }
     }
 }

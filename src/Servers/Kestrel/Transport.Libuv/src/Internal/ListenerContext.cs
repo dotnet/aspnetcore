@@ -33,9 +33,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public LibuvThread Thread { get; set; }
 
-        public ValueTask<LibuvConnection> AcceptAsync(CancellationToken cancellationToken = default)
+        public async ValueTask<LibuvConnection> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            return _acceptQueue.Reader.ReadAsync(cancellationToken);
+            while (await _acceptQueue.Reader.WaitToReadAsync())
+            {
+                while (_acceptQueue.Reader.TryRead(out var item))
+                {
+                    return item;
+                }
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -126,7 +134,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected void StopAcceptingConnections()
         {
-            _acceptQueue.Writer.Complete();
+            _acceptQueue.Writer.TryComplete();
         }
 
         private UvStreamHandle AcceptHandle()

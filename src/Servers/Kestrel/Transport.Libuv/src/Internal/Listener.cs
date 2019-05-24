@@ -70,6 +70,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 if (!useFileHandle)
                 {
                     socket.Bind((IPEndPoint)EndPoint);
+
+                    // If requested port was "0", replace with assigned dynamic port.
+                    EndPoint = socket.GetSockIPEndPoint();
                 }
                 else
                 {
