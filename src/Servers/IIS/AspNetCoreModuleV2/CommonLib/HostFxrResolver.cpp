@@ -11,8 +11,11 @@
 #include "Environment.h"
 #include "StringHelpers.h"
 #include "RegistryKey.h"
+#include "ModuleHelpers.h"
 
 namespace fs = std::filesystem;
+
+typedef INT(*get_hostfxr_path) (PWSTR buffer, DWORD* bufferSize, PCWSTR assemblyPath);
 
 void
 HostFxrResolver::GetHostFxrParameters(
@@ -46,7 +49,36 @@ HostFxrResolver::GetHostFxrParameters(
         throw InvalidOperationException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
     }
 
+    // C:\Users\jukotali\Downloads\nethostbits
+    // call load dll and see what happens :)
+    auto moduleHandle = LoadLibrary(L"C:\\Users\\jukotali\\Downloads\\nethostbits\\nethost.dll");
+    auto getHostfxrPath = ModuleHelpers::GetKnownProcAddress<get_hostfxr_path>(moduleHandle, "get_hostfxr_path");
+    std::wstring test;
+    DWORD size = 500;
+    test.resize(500);
+    // pass in dllPath here?
+    std::wstring appDll;
+    if (expandedApplicationArguments.size() == 0)
+    {
+        // standalone
+        appDll = applicationPhysicalPath / fs::path(processPath).replace_extension(L"dll");
+    }
+    else
+    {
+        // portable
+        appDll = applicationPhysicalPath / expandedApplicationArguments;
+    }
+
+    getHostfxrPath(test.data(), &size, appDll.data());
+
+    test.resize(size);
+
     // Check if the absolute path is to dotnet or not.
+    // Things to figure out:
+    // 1. what do we do with the dotnet path? Any reason for us to care?
+    //  need to care to make sure a newer shim still has fast load times with old handler
+    //  just create a reverse function?
+    // 2. Does this work with registry keys?
     if (IsDotnetExecutable(expandedProcessPath))
     {
         LOG_INFOF(L"Process path '%ls' is dotnet, treating application as portable", expandedProcessPath.c_str());
