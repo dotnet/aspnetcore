@@ -23,7 +23,6 @@ HostFxrResolver::GetHostFxrParameters(
     const fs::path     &applicationPhysicalPath,
     const std::wstring &applicationArguments,
     fs::path           &hostFxrDllPath,
-    fs::path           &dotnetExePath,
     std::vector<std::wstring> &arguments,
     ErrorContext&      errorContext
 )
@@ -36,8 +35,6 @@ HostFxrResolver::GetHostFxrParameters(
 
     fs::path expandedProcessPath = Environment::ExpandEnvironmentVariables(processPath);
     const auto expandedApplicationArguments = Environment::ExpandEnvironmentVariables(applicationArguments);
-
-    LOG_INFOF(L"Known dotnet.exe location: '%ls'", dotnetExePath.c_str());
 
     if (!expandedProcessPath.has_extension())
     {
@@ -88,14 +85,6 @@ HostFxrResolver::GetHostFxrParameters(
             throw InvalidOperationException(L"Application arguments are empty.");
         }
 
-        if (dotnetExePath.empty())
-        {
-            dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, expandedProcessPath);
-        }
-
-        hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
-
-        arguments.push_back(dotnetExePath);
         AppendArguments(
             expandedApplicationArguments,
             applicationPhysicalPath,
@@ -149,14 +138,8 @@ HostFxrResolver::GetHostFxrParameters(
 
                 // passing "dotnet" here because we don't know where dotnet.exe should come from
                 // so trying all fallbacks is appropriate
-                if (dotnetExePath.empty())
-                {
-                    dotnetExePath = GetAbsolutePathToDotnet(applicationPhysicalPath, L"dotnet");
-                }
-                hostFxrDllPath = GetAbsolutePathToHostFxr(dotnetExePath);
 
                 // For portable with launcher apps we need dotnet.exe to be argv[0] and .dll be argv[1]
-                arguments.push_back(dotnetExePath);
                 arguments.push_back(applicationDllPath);
             }
 

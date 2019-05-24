@@ -22,9 +22,8 @@ HRESULT
 class ApplicationFactory
 {
 public:
-    ApplicationFactory(HMODULE hRequestHandlerDll, std::wstring location, PFN_ASPNETCORE_CREATE_APPLICATION pfnAspNetCoreCreateApplication) noexcept:
+    ApplicationFactory(HMODULE hRequestHandlerDll, PFN_ASPNETCORE_CREATE_APPLICATION pfnAspNetCoreCreateApplication) noexcept:
         m_pfnAspNetCoreCreateApplication(pfnAspNetCoreCreateApplication),
-        m_location(std::move(location)),
         m_hRequestHandlerDll(hRequestHandlerDll)
     {
     }
@@ -34,11 +33,8 @@ public:
         _In_  IHttpContext          *pHttpContext,
         _Outptr_ IAPPLICATION       **pApplication) const
     {
-        // m_location.data() is const ptr copy to local to get mutable pointer
-        auto location = m_location;
         std::array<APPLICATION_PARAMETER, 3> parameters {
             {
-                {"InProcessExeLocation", location.data()},
                 {"TraceContext", pHttpContext->GetTraceContext()},
                 {"Site", pHttpContext->GetSite()}
             }
@@ -49,6 +45,5 @@ public:
 
 private:
     PFN_ASPNETCORE_CREATE_APPLICATION m_pfnAspNetCoreCreateApplication;
-    std::wstring m_location;
     HandleWrapper<ModuleHandleTraits> m_hRequestHandlerDll;
 };

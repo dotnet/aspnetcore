@@ -49,7 +49,6 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
         pstrHandlerDllName = s_pwzAspnetcoreOutOfProcessRequestHandlerName;
     }
     HandleWrapper<ModuleHandleTraits> hRequestHandlerDll;
-    std::wstring location;
     std::wstring handlerDllPath;
     // Try to see if RH is already loaded, use GetModuleHandleEx to increment ref count
     if (!GetModuleHandleEx(0, pstrHandlerDllName, &hRequestHandlerDll))
@@ -60,14 +59,11 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
             std::unique_ptr<HostFxrResolutionResult> options;
 
             RETURN_IF_FAILED(HostFxrResolutionResult::Create(
-                L"",
                 pConfiguration.QueryProcessPath(),
                 pApplication.GetApplicationPhysicalPath(),
                 pConfiguration.QueryArguments(),
                 errorContext,
                 options));
-
-            location = options->GetDotnetExeLocation();
 
             auto redirectionOutput = std::make_shared<StringStreamRedirectionOutput>();
 
@@ -120,7 +116,7 @@ HandlerResolver::LoadRequestHandlerAssembly(const IHttpApplication &pApplication
     auto pfnAspNetCoreCreateApplication = ModuleHelpers::GetKnownProcAddress<PFN_ASPNETCORE_CREATE_APPLICATION>(hRequestHandlerDll, "CreateApplication");
     RETURN_LAST_ERROR_IF_NULL(pfnAspNetCoreCreateApplication);
 
-    pApplicationFactory = std::make_unique<ApplicationFactory>(hRequestHandlerDll.release(), location, pfnAspNetCoreCreateApplication);
+    pApplicationFactory = std::make_unique<ApplicationFactory>(hRequestHandlerDll.release(), pfnAspNetCoreCreateApplication);
     return S_OK;
 }
 
