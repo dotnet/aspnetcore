@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Blazor.Services
 {
-    internal class WebAssemblyConsoleLogger<T> : ILogger<T>
+    internal class WebAssemblyConsoleLogger<T> : ILogger<T>, ILogger
     {
         public IDisposable BeginScope<TState>(TState state)
         {

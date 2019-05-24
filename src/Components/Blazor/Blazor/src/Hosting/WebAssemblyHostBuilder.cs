@@ -94,6 +94,7 @@ namespace Microsoft.AspNetCore.Blazor.Hosting
             services.AddSingleton<IComponentContext, WebAssemblyComponentContext>();
             services.AddSingleton<IUriHelper>(WebAssemblyUriHelper.Instance);
             services.AddSingleton<INavigationInterception>(WebAssemblyNavigationInterception.Instance);
+            services.AddSingleton<ILoggerFactory, WebAssemblyLoggerFactory>();
             services.AddSingleton<HttpClient>(s =>
             {
                 // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
