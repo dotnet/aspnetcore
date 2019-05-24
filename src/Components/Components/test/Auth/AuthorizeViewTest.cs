@@ -256,12 +256,9 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var @event = new ManualResetEventSlim();
-            var renderer = new TestRenderer()
-            {
-                OnUpdateDisplayComplete = () => { @event.Set(); },
-            };
             var authorizationService = new TestAuthorizationService();
             var renderer = CreateTestRenderer(authorizationService);
+            renderer.OnUpdateDisplayComplete = () => { @event.Set(); };
             var rootComponent = WrapInAuthorizeView(
                 notAuthorizedContent:
                     context => builder => builder.AddContent(0, "You are not authorized"));
@@ -300,14 +297,10 @@ namespace Microsoft.AspNetCore.Components
         {
             // Arrange
             var @event = new ManualResetEventSlim();
-            var renderer = new TestRenderer()
-            {
-                OnUpdateDisplayComplete = () => { @event.Set(); },
-            };
-
             var authorizationService = new TestAuthorizationService();
             authorizationService.NextResult = AuthorizationResult.Success();
             var renderer = CreateTestRenderer(authorizationService);
+            renderer.OnUpdateDisplayComplete = () => { @event.Set(); };
             var rootComponent = WrapInAuthorizeView(
                 authorizingContent: builder => builder.AddContent(0, "Auth pending..."),
                 authorizedContent: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
