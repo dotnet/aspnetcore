@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
     // True-internal because this is a weird and tricky class to use :)
     internal static class AsyncEnumerableAdapters
     {
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0
         public static IAsyncEnumerable<object> MakeCancelableAsyncEnumerable<T>(IAsyncEnumerable<T> asyncEnumerable, CancellationToken cancellationToken = default)
         {
             return new CancelableAsyncEnumerable<T>(asyncEnumerable, cancellationToken);
@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             return new CancelableTypedAsyncEnumerable<T>(asyncEnumerable, cts);
         }
 
+#if NETCOREAPP3_0
         public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             await foreach (var item in channel.ReadAllAsync(cancellationToken))
@@ -31,6 +32,18 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 yield return item;
             }
         }
+#else
+        public static async IAsyncEnumerable<object> MakeAsyncEnumerableFromChannel<T>(ChannelReader<T> channel, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            while (await channel.WaitToReadAsync(cancellationToken))
+            {
+                while (channel.TryRead(out var item))
+                {
+                    yield return item;
+                }
+            }
+        }
+#endif
 
         private class CancelableTypedAsyncEnumerable<TResult> : IAsyncEnumerable<TResult>
         {

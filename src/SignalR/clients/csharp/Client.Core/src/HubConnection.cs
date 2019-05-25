@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         };
 
         private static readonly MethodInfo _sendStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendStreamItems)));
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
         private static readonly MethodInfo _sendIAsyncStreamItemsMethod = typeof(HubConnection).GetMethods(BindingFlags.NonPublic | BindingFlags.Instance).Single(m => m.Name.Equals(nameof(SendIAsyncEnumerableStreamItems)));
 #endif
         // Persistent across all connections
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
         /// <summary>
         /// Invokes a streaming hub method on the server using the specified method name, return type and arguments.
         /// </summary>
@@ -674,7 +674,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 // For each stream that needs to be sent, run a "send items" task in the background.
                 // This reads from the channel, attaches streamId, and sends to server.
                 // A single background thread here quickly gets messy.
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
                 if (ReflectionHelper.IsIAsyncEnumerable(reader.GetType()))
                 {
                     _ = _sendIAsyncStreamItemsMethod
@@ -707,7 +707,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return CommonStreaming(connectionState, streamId, token, ReadChannelStream);
         }
 
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
         // this is called via reflection using the `_sendIAsyncStreamItemsMethod` field
         private Task SendIAsyncEnumerableStreamItems<T>(ConnectionState connectionState, string streamId, IAsyncEnumerable<T> stream, CancellationToken token)
         {
@@ -1445,7 +1445,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private OperationCanceledException GetOperationCanceledException(string message, Exception innerException, CancellationToken cancellationToken)
         {
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
             return new OperationCanceledException(message, innerException, _state.StopCts.Token);
 #else
             return new OperationCanceledException(message, innerException);

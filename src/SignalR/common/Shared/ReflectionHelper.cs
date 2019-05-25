@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             // TODO #2594 - add Streams here, to make sending files easy
 
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0
             if (IsIAsyncEnumerable(type))
             {
                 return true;
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR
             return false;
         }
 
-#if NETCOREAPP3_0
+#if !NETSTANDARD2_0
         public static bool IsIAsyncEnumerable(Type type)
         {
             if (type.IsGenericType)

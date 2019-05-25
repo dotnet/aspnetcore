@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
             {
                 while (true)
                 {
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
                     var result = await socket.ReceiveAsync(Memory<byte>.Empty, CancellationToken.None);
 
                     if (result.MessageType == WebSocketMessageType.Close)
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client.Internal
                     }
 #endif
                     var memory = _application.Output.GetMemory();
-#if NETCOREAPP3_0
+#if NETSTANDARD2_1
                     // Because we checked the CloseStatus from the 0 byte read above, we don't need to check again after reading
                     var receiveResult = await socket.ReceiveAsync(memory, CancellationToken.None);
 #else
