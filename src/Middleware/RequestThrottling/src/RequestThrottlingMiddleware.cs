@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.RequestThrottling
     public class RequestThrottlingMiddleware
     {
         private readonly RequestQueue _requestQueue;
-        private readonly RequestThrottlingOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
 
@@ -53,10 +52,8 @@ namespace Microsoft.AspNetCore.RequestThrottling
                 context.Abort();
                 return;
             }
-            var waitInQueueTask = _requestQueue.EnterQueue();
 
             var waitInQueueTask = _requestQueue.EnterQueue();
-
             if (waitInQueueTask.IsCompletedSuccessfully)
             {
                 RequestThrottlingLog.RequestRunImmediately(_logger);

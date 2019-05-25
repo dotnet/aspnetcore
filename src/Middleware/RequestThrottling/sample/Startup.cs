@@ -32,7 +32,7 @@ namespace RequestThrottlingSample
 
             app.Run(async context =>
             {
-                await context.Response.WriteAsync("Hello Request Throttling! <p></p>");
+                await context.Response.WriteAsync("Hello Request Throttling!");
                 await Task.Delay(1000);
             });
         }

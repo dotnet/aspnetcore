@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task LimitsIncomingRequests()
         {
-            using var s = new RequestQueue(maxConcurrentRequests: 2, requestQueueLimit: 999);
+            using var s = new RequestQueue(maxConcurrentRequests: 1, requestQueueLimit: 999);
             Assert.Equal(1, s.Count);
 
             await s.EnterQueue().OrTimeout();

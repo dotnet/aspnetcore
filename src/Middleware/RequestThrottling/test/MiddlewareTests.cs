@@ -82,5 +82,20 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             });
             Assert.Equal("options", ex.ParamName);
         }
+
+        [Fact]
+        public async void RequestsBlockedIfQueueFull()
+        {
+            var middleware = TestUtils.CreateTestMiddleWare(
+                maxConcurrentRequests: 10,
+                requestQueueLimit: -1,
+                next: httpContext =>
+                {
+                    // throttle should bounce the request, if it gets later in pipeline something is wrong 
+                    throw new NotImplementedException();
+                });
+
+            await middleware.Invoke(new DefaultHttpContext());
+        }
     }
 }
