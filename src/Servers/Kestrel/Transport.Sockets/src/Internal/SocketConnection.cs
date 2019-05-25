@@ -89,13 +89,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
                 _receiver.Dispose();
                 _sender.Dispose();
-                ThreadPool.UnsafeQueueUserWorkItem(state => ((SocketConnection)state).CancelConnectionClosedToken(), this);
+
+                // Fire the connection closed token and wait for it to complete
+                var waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                ThreadPool.UnsafeQueueUserWorkItem(state =>
+                {
+                    (var connection, var tcs) = state;
+
+                    connection.CancelConnectionClosedToken();
+
+                    tcs.TrySetResult(null);
+                },
+                (this, waitForConnectionClosedTcs),
+                preferLocal: false);
+
+                await waitForConnectionClosedTcs.Task;
             }
             catch (Exception ex)
             {
                 _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(StartAsync)}.");
-
-                // REVIEW: Should this dispose the socket?
             }
         }
 

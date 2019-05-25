@@ -263,128 +263,62 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         //}
 
 
-        //[Fact]
-        //public async Task PipeConnectionsWithWrongMessageAreLoggedAndIgnored()
-        //{
-        //    var libuv = new LibuvFunctions();
-        //    var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
-
-        //    var logger = new TestApplicationErrorLogger();
-
-        //    var serviceContextPrimary = new TestServiceContext();
-        //    var builderPrimary = new ConnectionBuilder();
-        //    builderPrimary.UseHttpServer(serviceContextPrimary, new DummyApplication(c => c.Response.WriteAsync("Primary")), HttpProtocols.Http1);
-        //    var transportContextPrimary = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
-        //    transportContextPrimary.ConnectionDispatcher = new ConnectionDispatcher(serviceContextPrimary, builderPrimary.Build());
-
-        //    var serviceContextSecondary = new TestServiceContext
-        //    {
-        //        DateHeaderValueManager = serviceContextPrimary.DateHeaderValueManager,
-        //        ServerOptions = serviceContextPrimary.ServerOptions,
-        //        Scheduler = serviceContextPrimary.Scheduler,
-        //        HttpParser = serviceContextPrimary.HttpParser,
-        //    };
-        //    var builderSecondary = new ConnectionBuilder();
-        //    builderSecondary.UseHttpServer(serviceContextSecondary, new DummyApplication(c => c.Response.WriteAsync("Secondary")), HttpProtocols.Http1);
-        //    var transportContextSecondary = new TestLibuvTransportContext();
-        //    transportContextSecondary.ConnectionDispatcher = new ConnectionDispatcher(serviceContextSecondary, builderSecondary.Build());
-
-        //    var libuvTransport = new LibuvConnectionListener(libuv, transportContextPrimary, listenOptions);
-
-        //    var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
-        //    var pipeMessage = Guid.NewGuid().ToByteArray();
-
-        //    // Start primary listener
-        //    var libuvThreadPrimary = new LibuvThread(libuvTransport);
-        //    await libuvThreadPrimary.StartAsync();
-        //    var listenerPrimary = new ListenerPrimary(transportContextPrimary);
-        //    await listenerPrimary.StartAsync(pipeName, pipeMessage, listenOptions, libuvThreadPrimary);
-        //    var address = GetUri(listenOptions);
-
-        //    // Add secondary listener with wrong pipe message
-        //    var libuvThreadSecondary = new LibuvThread(libuvTransport);
-        //    await libuvThreadSecondary.StartAsync();
-        //    var listenerSecondary = new ListenerSecondary(transportContextSecondary);
-        //    await listenerSecondary.StartAsync(pipeName, Guid.NewGuid().ToByteArray(), listenOptions, libuvThreadSecondary);
-
-        //    // Wait up to 10 seconds for error to be logged
-        //    for (var i = 0; i < 10 && logger.TotalErrorsLogged == 0; i++)
-        //    {
-        //        await Task.Delay(100);
-        //    }
-
-        //    // TCP Connections don't get round-robined
-        //    Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
-        //    Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
-        //    Assert.Equal("Primary", await HttpClientSlim.GetStringAsync(address));
-
-        //    await listenerSecondary.DisposeAsync();
-        //    await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(5));
-
-        //    await listenerPrimary.DisposeAsync();
-        //    await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
-
-        //    Assert.Equal(1, logger.TotalErrorsLogged);
-        //    var errorMessage = logger.Messages.First(m => m.LogLevel == LogLevel.Error);
-        //    Assert.IsType<IOException>(errorMessage.Exception);
-        //    Assert.Contains("Bad data", errorMessage.Exception.ToString());
-        //}
-
-        private static async Task AssertResponseEventually(
-            Uri address,
-            string expected,
-            string[] allowed = null,
-            int maxRetries = 100,
-            int retryDelay = 100)
+        [Fact]
+        public async Task PipeConnectionsWithWrongMessageAreLoggedAndIgnored()
         {
-            for (var i = 0; i < maxRetries; i++)
+            var libuv = new LibuvFunctions();
+            var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
+
+            var logger = new TestApplicationErrorLogger();
+
+            var transportContextPrimary = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
+            var transportContextSecondary = new TestLibuvTransportContext();
+            
+            var pipeName = (libuv.IsWindows ? @"\\.\pipe\kestrel_" : "/tmp/kestrel_") + Guid.NewGuid().ToString("n");
+            var pipeMessage = Guid.NewGuid().ToByteArray();
+
+            // Start primary listener
+            var libuvThreadPrimary = new LibuvThread(libuv, transportContextPrimary);
+            await libuvThreadPrimary.StartAsync();
+            var listenerPrimary = new ListenerPrimary(transportContextPrimary);
+            await listenerPrimary.StartAsync(pipeName, pipeMessage, endpoint, libuvThreadPrimary);
+            var address = GetUri(listenerPrimary.EndPoint);
+
+            // Add secondary listener with wrong pipe message
+            var libuvThreadSecondary = new LibuvThread(libuv, transportContextSecondary);
+            await libuvThreadSecondary.StartAsync();
+            var listenerSecondary = new ListenerSecondary(transportContextSecondary);
+            await listenerSecondary.StartAsync(pipeName, Guid.NewGuid().ToByteArray(), endpoint, libuvThreadSecondary);
+
+            // Wait up to 10 seconds for error to be logged
+            for (var i = 0; i < 10 && logger.TotalErrorsLogged == 0; i++)
             {
-                var response = await HttpClientSlim.GetStringAsync(address);
-                if (response == expected)
-                {
-                    return;
-                }
-
-                if (allowed != null)
-                {
-                    Assert.Contains(response, allowed);
-                }
-
-                await Task.Delay(retryDelay);
+                await Task.Delay(100);
             }
 
-            Assert.True(false, $"'{address}' failed to respond with '{expected}' in {maxRetries} retries.");
+            // TCP Connections don't get round-robined. This should time out if the request goes to the secondary listener
+            for (int i = 0; i < 3; i++)
+            {
+                using var socket = await HttpClientSlim.GetSocket(address);
+
+                await using var connection = await listenerPrimary.AcceptAsync().AsTask().DefaultTimeout();
+            }
+
+            await listenerSecondary.DisposeAsync();
+            await libuvThreadSecondary.StopAsync(TimeSpan.FromSeconds(5));
+
+            await listenerPrimary.DisposeAsync();
+            await libuvThreadPrimary.StopAsync(TimeSpan.FromSeconds(5));
+
+            Assert.Equal(1, logger.TotalErrorsLogged);
+            var errorMessage = logger.Messages.First(m => m.LogLevel == LogLevel.Error);
+            Assert.IsType<IOException>(errorMessage.Exception);
+            Assert.Contains("Bad data", errorMessage.Exception.ToString());
         }
 
         private static Uri GetUri(EndPoint endpoint)
         {
             return new Uri($"http://{endpoint}");
-        }
-
-        private class LibuvConnectionListener : IConnectionListener
-        {
-            private readonly Listener _listener;
-
-            public LibuvConnectionListener(Listener listener)
-            {
-                _listener = listener;
-            }
-            public EndPoint EndPoint => _listener.EndPoint;
-
-            public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
-            {
-                return await _listener.AcceptAsync();
-            }
-
-            public ValueTask DisposeAsync()
-            {
-                return StopAsync(default);
-            }
-
-            public ValueTask StopAsync(CancellationToken cancellationToken = default)
-            {
-                return new ValueTask(_listener.DisposeAsync());
-            }
         }
 
         private class ConnectionBuilder : IConnectionBuilder

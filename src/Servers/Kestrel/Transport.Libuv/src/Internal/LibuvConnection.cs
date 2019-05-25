@@ -125,7 +125,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                     // We're done with the socket now
                     _socket.Dispose();
-                    ThreadPool.UnsafeQueueUserWorkItem(state => ((LibuvConnection)state).CancelConnectionClosedToken(), this);
+
+                    // Fire the connection closed token and wait for it to complete
+                    var waitForConnectionClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    ThreadPool.UnsafeQueueUserWorkItem(state =>
+                    {
+                        (var connection, var tcs) = state;
+
+                        connection.CancelConnectionClosedToken();
+
+                        tcs.TrySetResult(null);
+                    },
+                    (this, waitForConnectionClosedTcs),
+                    preferLocal: false);
+
+                    await waitForConnectionClosedTcs.Task;
                 }
             }
             catch (Exception e)
