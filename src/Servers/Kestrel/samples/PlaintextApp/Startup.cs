@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -18,13 +20,14 @@ namespace PlaintextApp
         {
             app.Run((httpContext) =>
             {
+                var payload = _helloWorldBytes;
                 var response = httpContext.Response;
+
                 response.StatusCode = 200;
                 response.ContentType = "text/plain";
+                response.ContentLength = payload.Length;
 
-                var helloWorld = _helloWorldBytes;
-                response.ContentLength = helloWorld.Length;
-                return response.Body.WriteAsync(helloWorld, 0, helloWorld.Length);
+                return response.BodyPipe.WriteAsync(payload).GetAsTask();
             });
         }
 
@@ -40,6 +43,24 @@ namespace PlaintextApp
                 .Build();
 
             return host.RunAsync();
+        }
+    }
+
+    internal static class ValueTaskExtensions
+    {
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static Task GetAsTask(this in ValueTask<FlushResult> valueTask)
+        {
+            if (valueTask.IsCompletedSuccessfully)
+            {
+                // Signal consumption to the IValueTaskSource
+                valueTask.GetAwaiter().GetResult();
+                return Task.CompletedTask;
+            }
+            else
+            {
+                return valueTask.AsTask();
+            }
         }
     }
 }
