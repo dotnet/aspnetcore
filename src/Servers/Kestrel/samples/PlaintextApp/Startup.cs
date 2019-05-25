@@ -27,7 +27,7 @@ namespace PlaintextApp
                 response.ContentType = "text/plain";
                 response.ContentLength = payload.Length;
 
-                return response.BodyPipe.WriteAsync(payload).GetAsTask();
+                return response.BodyWriter.WriteAsync(payload).GetAsTask();
             });
         }
 
