@@ -4,8 +4,10 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
@@ -54,24 +56,14 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public async Task Invoke(HttpContext httpContext)
         {
             var clientCertificate = await httpContext.Connection.GetClientCertificateAsync();
-
             if (clientCertificate == null)
             {
-                // Check for forwarding header
-                string certificateHeader = httpContext.Request.Headers[_options.CertificateHeader];
-                if (!string.IsNullOrEmpty(certificateHeader))
+                var header = httpContext.Request.Headers[_options.CertificateHeader];
+                if (!StringValues.IsNullOrEmpty(header))
                 {
-                    try
-                    {
-                        httpContext.Connection.ClientCertificate = _options.HeaderConverter(certificateHeader);
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.LogError(e, "Could not read certificate from header.");
-                    }
+                    httpContext.Features.Set<ITlsConnectionFeature>(new CertificateForwarderFeature(_logger, header, _options));
                 }
             }
-
             await _next(httpContext);
         }
     }
