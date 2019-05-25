@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
@@ -89,7 +90,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, InputOptions, OutputOptions);
                 connection.Start();
 
-                _acceptQueue.Writer.TryWrite(connection);
+                bool accepted = _acceptQueue.Writer.TryWrite(connection);
+                Debug.Assert(accepted, "The connection was not written to the channel!");
             }
             catch (Exception ex)
             {

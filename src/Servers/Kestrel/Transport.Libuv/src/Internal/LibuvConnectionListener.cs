@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -19,6 +18,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     {
         private readonly List<ListenerContext> _listeners = new List<ListenerContext>();
         private IAsyncEnumerator<LibuvConnection> _acceptEnumerator;
+        private bool _stopped;
+        private bool _disposed;
 
         public LibuvConnectionListener(LibuvTransportContext context, EndPoint endPoint)
             : this(new LibuvFunctions(), context, endPoint)
@@ -43,7 +44,54 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public EndPoint EndPoint { get; set; }
 
-        public async Task StopThreadsAsync()
+        public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+        {
+            if (_disposed)
+            {
+                throw new ObjectDisposedException(GetType().FullName);
+            }
+
+            if (await _acceptEnumerator.MoveNextAsync())
+            {
+                return _acceptEnumerator.Current;
+            }
+
+            // null means we're done...
+            return null;
+        }
+
+        public async ValueTask StopAsync(CancellationToken cancellationToken = default)
+        {
+            await UnbindAsync().ConfigureAwait(false);
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            if (_disposed)
+            {
+                return;
+            }
+
+            _disposed = true;
+
+            await UnbindAsync().ConfigureAwait(false);
+
+            if (_acceptEnumerator != null)
+            {
+                while (await _acceptEnumerator.MoveNextAsync())
+                {
+                    _acceptEnumerator.Current.Abort();
+                }
+
+                await _acceptEnumerator.DisposeAsync();
+            }
+
+            _listeners.Clear();
+
+            await StopThreadsAsync().ConfigureAwait(false);
+        }
+
+        internal async Task StopThreadsAsync()
         {
             try
             {
@@ -71,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 #endif
         }
 
-        public async Task BindAsync()
+        internal async Task BindAsync()
         {
             // TODO: Move thread management to LibuvTransportFactory
             // TODO: Split endpoint management from thread management
@@ -143,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             while (remainingSlots > 0)
             {
                 // Calling GetAwaiter().GetResult() is safe because we know the task is completed
-                (LibuvConnection connection, int slot) = (await Task.WhenAny(slots)).GetAwaiter().GetResult();
+                (var connection, var slot) = (await Task.WhenAny(slots)).GetAwaiter().GetResult();
 
                 // If the connection is null then the listener was closed
                 if (connection == null)
@@ -166,58 +214,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
-        public async Task UnbindAsync()
+        internal async Task UnbindAsync()
         {
+            if (_stopped)
+            {
+                return;
+            }
+
+            _stopped = true;
+
             var disposeTasks = _listeners.Select(listener => ((IAsyncDisposable)listener).DisposeAsync()).ToArray();
 
             if (!await WaitAsync(Task.WhenAll(disposeTasks), TimeSpan.FromSeconds(5)).ConfigureAwait(false))
             {
                 Log.LogError(0, null, "Disposing listeners failed");
             }
-
-            _listeners.Clear();
         }
 
         private static async Task<bool> WaitAsync(Task task, TimeSpan timeout)
         {
             return await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false) == task;
-        }
-
-        public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
-        {
-            if (await _acceptEnumerator.MoveNextAsync())
-            {
-                return _acceptEnumerator.Current;
-            }
-
-            // null means we're done...
-            return null;
-        }
-
-        public async ValueTask StopAsync(CancellationToken cancellationToken)
-        {
-            await UnbindAsync().ConfigureAwait(false);
-        }
-
-        public async ValueTask DisposeAsync()
-        {
-            // TODO: ConfigureAwait
-            await UnbindAsync().ConfigureAwait(false);
-
-            if (_acceptEnumerator != null)
-            {
-                // TODO: Log how many connections were unaccepted
-                if (await _acceptEnumerator.MoveNextAsync().ConfigureAwait(false))
-                {
-                    // Abort the connection
-                    _acceptEnumerator.Current.Abort();
-                }
-
-                // Dispose the enumerator
-                await _acceptEnumerator.DisposeAsync().ConfigureAwait(false);
-            }
-
-            await StopThreadsAsync().ConfigureAwait(false);
         }
     }
 }

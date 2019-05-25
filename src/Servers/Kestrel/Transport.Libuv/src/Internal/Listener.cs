@@ -197,7 +197,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public virtual async Task DisposeAsync()
         {
-            StopAcceptingConnections();
             // Ensure the event loop is still running.
             // If the event loop isn't running and we try to wait on this Post
             // to complete, then LibuvTransport will never be disposed and
@@ -209,6 +208,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     listener.ListenSocket.Dispose();
 
                     listener._closed = true;
+
+                    listener.StopAcceptingConnections();
 
                 }, this).ConfigureAwait(false);
             }
