@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         private readonly ILogger _logger;
         private bool _isClosed;
+        private readonly TaskCompletionSource<object> _waitForCloseTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public InMemoryTransportConnection(MemoryPool<byte> memoryPool, ILogger logger, PipeScheduler scheduler = null)
         {
@@ -65,9 +66,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
             ThreadPool.UnsafeQueueUserWorkItem(state =>
             {
-                var self = (InMemoryTransportConnection)state;
-                self._connectionClosedTokenSource.Cancel();
-            }, this);
+                state._connectionClosedTokenSource.Cancel();
+
+                state._waitForCloseTcs.TrySetResult(null);
+            },
+            this,
+            preferLocal: false);
         }
 
         public override async ValueTask DisposeAsync()
@@ -75,26 +79,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             Transport.Input.Complete();
             Transport.Output.Complete();
 
-            if (_isClosed)
-            {
-                await CancellationTokenAsTask(_connectionClosedTokenSource.Token);
-            }
+            await _waitForCloseTcs.Task;
 
             _connectionClosedTokenSource.Dispose();
-
-            await base.DisposeAsync();
-        }
-
-        private static Task CancellationTokenAsTask(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return Task.CompletedTask;
-            }
-
-            var tcs = new TaskCompletionSource<object>();
-            token.Register(() => tcs.SetResult(null));
-            return tcs.Task;
         }
 
         // This piece of code allows us to wait until the PipeReader has been awaited on.

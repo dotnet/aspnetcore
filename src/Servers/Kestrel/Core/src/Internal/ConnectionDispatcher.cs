@@ -51,10 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             break;
                         }
 
-                        // Set a connection id if the transport didn't set one
-                        connection.ConnectionId ??= CorrelationIdGenerator.GetNextId();
-
-                        _ = OnConnection(connection);
+                        _ = Execute(new KestrelConnection(connection, _serviceContext.Log));
                     }
                 }
                 catch (Exception)
@@ -65,15 +62,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     _acceptLoopTcs.TrySetResult(null);
                 }
-            }
-        }
-
-        // Internal for testing
-        private async Task OnConnection(ConnectionContext connection)
-        {
-            await using (connection)
-            {
-                await Execute(new KestrelConnection(connection, _serviceContext.Log));
             }
         }
 
@@ -99,18 +87,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     {
                         Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
                     }
-
-                    // TODO: Move this into the transport and have it wait for all connections to be disposed
-                    // Wait for the transport to close
-                    await CancellationTokenAsTask(connectionContext.ConnectionClosed);
                 }
             }
             finally
             {
-                await connection.CompleteAsync();
+                await connection.FireOnCompletedAsync();
 
                 Log.ConnectionStop(connectionContext.ConnectionId);
                 KestrelEventSource.Log.ConnectionStop(connectionContext);
+
+                // Dispose the transport connection, this needs to happen before removing it from the
+                // connection manager so that we only signal completion of this connection after the transport
+                // is properly torn down.
+                await connection.TransportConnection.DisposeAsync();
 
                 _serviceContext.ConnectionManager.RemoveConnection(id);
             }
@@ -124,20 +113,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
 
             return null;
-        }
-
-        private static Task CancellationTokenAsTask(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return Task.CompletedTask;
-            }
-
-            // Transports already dispatch prior to tripping ConnectionClosed
-            // since application code can register to this token.
-            var tcs = new TaskCompletionSource<object>();
-            token.Register(state => ((TaskCompletionSource<object>)state).SetResult(null), tcs);
-            return tcs.Task;
         }
     }
 }

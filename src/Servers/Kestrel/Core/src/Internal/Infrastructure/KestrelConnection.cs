@@ -26,6 +26,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         {
             Logger = logger;
             TransportConnection = connectionContext;
+
+            // Set a connection id if the transport didn't set one
+            TransportConnection.ConnectionId ??= CorrelationIdGenerator.GetNextId();
             connectionContext.Features.Set<IConnectionHeartbeatFeature>(this);
             connectionContext.Features.Set<IConnectionCompleteFeature>(this);
             connectionContext.Features.Set<IConnectionLifetimeNotificationFeature>(this);
@@ -37,11 +40,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public ConnectionContext TransportConnection { get; set; }
         public CancellationToken ConnectionClosedRequested { get; set; }
         public Task ExecutionTask => _completionTcs.Task;
-
-        public void Complete()
-        {
-            _completionTcs.TrySetResult(null);
-        }
 
         public void TickHeartbeat()
         {
@@ -86,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
             _onCompleted.Push(new KeyValuePair<Func<object, Task>, object>(callback, state));
         }
 
-        public Task CompleteAsync()
+        public Task FireOnCompletedAsync()
         {
             if (_completed)
             {
@@ -160,6 +158,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
                 // There's a race where the token could be disposed
                 // swallow the exception and no-op
             }
+        }
+
+        public void Complete()
+        {
+            _completionTcs.TrySetResult(null);
         }
     }
 }
