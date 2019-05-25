@@ -22,6 +22,7 @@ namespace RequestThrottlingSample
             services.Configure<RequestThrottlingOptions>(options =>
             {
                 options.MaxConcurrentRequests = 2;
+                options.RequestQueueLimit = 0;
             });
         }
 

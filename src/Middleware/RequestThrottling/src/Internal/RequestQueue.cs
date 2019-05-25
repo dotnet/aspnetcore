@@ -11,12 +11,15 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
     {
         private SemaphoreSlim _semaphore;
         private object _waitingRequestsLock = new object();
+
         public readonly int MaxConcurrentRequests;
+        public readonly int RequestQueueLimit;
         public int WaitingRequests { get; private set; }
 
-        public RequestQueue(int maxConcurrentRequests)
+        public RequestQueue(int maxConcurrentRequests, int requestQueueLimit)
         {
             MaxConcurrentRequests = maxConcurrentRequests;
+            RequestQueueLimit = requestQueueLimit;
             _semaphore = new SemaphoreSlim(maxConcurrentRequests);
         }
 
@@ -37,6 +40,17 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
                 lock (_waitingRequestsLock)
                 {
                     WaitingRequests--;
+                }
+            }
+        }
+
+        public bool QueueLengthExceeded
+        {
+            get
+            {
+                lock (_waitingRequestsLock)
+                {
+                    return WaitingRequests > RequestQueueLimit;
                 }
             }
         }
