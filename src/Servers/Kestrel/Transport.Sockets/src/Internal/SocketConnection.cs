@@ -111,13 +111,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         // Only called after connection middleware is complete which means the ConnectionClosed token has fired.
         public override async ValueTask DisposeAsync()
         {
+            Transport.Input.Complete();
+            Transport.Output.Complete();
+
             if (_task != null)
             {
                 await _task;
             }
-
-            Transport.Input.Complete();
-            Transport.Output.Complete();
 
             _connectionClosedTokenSource.Dispose();
         }

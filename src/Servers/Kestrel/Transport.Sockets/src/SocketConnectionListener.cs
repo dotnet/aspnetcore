@@ -66,6 +66,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new InvalidOperationException(SocketsStrings.TransportAlreadyBound);
             }
 
+            // TODO: Add support for UnixDomainSocket
+
             var listenSocket = new Socket(EndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
 
             // Kestrel expects IPv6Any to bind to both IPv6 and IPv4
@@ -92,6 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
+            // TODO: throw for overlapping accepts
             try
             {
                 var acceptSocket = await _listenSocket.AcceptAsync();

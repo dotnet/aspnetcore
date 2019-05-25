@@ -13,6 +13,7 @@ namespace Microsoft.AspNetCore.Connections
 
         ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default);
 
+        // Rename to UnbindAsync maybe... or StopListeningAsync?
         ValueTask StopAsync(CancellationToken cancellationToken = default);
 
         ValueTask DisposeAsync();

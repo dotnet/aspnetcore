@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 }
                 finally
                 {
-                    inputError = inputError ?? _abortReason ?? new ConnectionAbortedException("The libuv transport's send loop completed gracefully.");
+                    inputError ??= _abortReason ?? new ConnectionAbortedException("The libuv transport's send loop completed gracefully.");
 
                     // Now, complete the input so that no more reads can happen
                     Input.Complete(inputError);
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public override void Abort(ConnectionAbortedException abortReason)
         {
             _abortReason = abortReason;
-            
+
             // Cancel WriteOutputAsync loop after setting _abortReason.
             Output.CancelPendingRead();
 
@@ -141,15 +141,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public override async ValueTask DisposeAsync()
         {
+            Transport.Input.Complete();
+            Transport.Output.Complete();
+
             if (_task != null)
             {
                 await _task;
             }
 
             _connectionClosedTokenSource.Dispose();
-
-            Transport.Input.Complete();
-            Transport.Output.Complete();
         }
 
         // Called on Libuv thread

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -13,8 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
     {
         private readonly ConcurrentDictionary<long, ConnectionReference> _connectionReferences = new ConcurrentDictionary<long, ConnectionReference>();
         private readonly IKestrelTrace _trace;
-        private TaskCompletionSource<object> _connectionDrainedTcs;
-        private int _connectionCount;
 
         public ConnectionManager(IKestrelTrace trace, long? upgradedConnectionLimit)
             : this(trace, GetCounter(upgradedConnectionLimit))
@@ -34,7 +33,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void AddConnection(long id, KestrelConnection connection)
         {
-            Interlocked.Increment(ref _connectionCount);
             if (!_connectionReferences.TryAdd(id, new ConnectionReference(connection)))
             {
                 throw new ArgumentException(nameof(id));
@@ -43,15 +41,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public void RemoveConnection(long id)
         {
-            if (!_connectionReferences.TryRemove(id, out _))
+            if (!_connectionReferences.TryRemove(id, out var reference))
             {
                 throw new ArgumentException(nameof(id));
             }
-            var count = Interlocked.Decrement(ref _connectionCount);
 
-            if (count == 0 && _connectionDrainedTcs != null)
+            if (reference.TryGetConnection(out var connection))
             {
-                _connectionDrainedTcs.TrySetResult(null);
+                connection.Complete();
             }
         }
 
@@ -78,46 +75,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public async Task<bool> CloseAllConnectionsAsync(CancellationToken token)
         {
-            if (!TryStartDrainingConnection())
-            {
-                return false;
-            }
+            var closeTasks = new List<Task>();
 
             Walk(connection =>
             {
                 connection.RequestClose();
+                closeTasks.Add(connection.ExecutionTask);
             });
 
-            var allClosedTask = _connectionDrainedTcs.Task;
+            var allClosedTask = Task.WhenAll(closeTasks.ToArray());
             return await Task.WhenAny(allClosedTask, CancellationTokenAsTask(token)).ConfigureAwait(false) == allClosedTask;
         }
 
         public async Task<bool> AbortAllConnectionsAsync()
         {
-            if (!TryStartDrainingConnection())
-            {
-                return false;
-            }
+            var abortTasks = new List<Task>();
 
             Walk(connection =>
             {
                 connection.TransportConnection.Abort(new ConnectionAbortedException(CoreStrings.ConnectionAbortedDuringServerShutdown));
+                abortTasks.Add(connection.ExecutionTask);
             });
 
-            var allAbortedTask = _connectionDrainedTcs.Task;
+            var allAbortedTask = Task.WhenAll(abortTasks.ToArray());
             return await Task.WhenAny(allAbortedTask, Task.Delay(1000)).ConfigureAwait(false) == allAbortedTask;
-        }
-
-        // This method should be called when no new connections can be added
-        private bool TryStartDrainingConnection()
-        {
-            if (_connectionCount == 0)
-            {
-                return false;
-            }
-
-            _connectionDrainedTcs ??= new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
-            return true;
         }
 
         private static Task CancellationTokenAsTask(CancellationToken token)

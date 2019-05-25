@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -25,13 +24,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal ListenOptions(IPEndPoint endPoint)
         {
-            Type = ListenType.IPEndPoint;
             EndPoint = endPoint;
         }
 
         internal ListenOptions(string socketPath)
         {
-            Type = ListenType.SocketPath;
             EndPoint = new UnixDomainSocketEndPoint(socketPath);
         }
 
@@ -43,38 +40,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal ListenOptions(ulong fileHandle, FileHandleType handleType)
         {
             EndPoint = new FileHandleEndPoint(fileHandle, handleType);
-            Type = ListenType.FileHandle;
         }
-
-        /// <summary>
-        /// The type of interface being described: either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor.
-        /// </summary>
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public ListenType Type { get; }
-#pragma warning restore PUB0001 // Pubternal type in public API
-
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public FileHandleType HandleType => (EndPoint as FileHandleEndPoint)?.FileHandleType ?? FileHandleType.Auto;
-#pragma warning restore PUB0001 // Pubternal type in public API
 
         internal EndPoint EndPoint { get; set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
         /// The <see cref="IPEndPoint"/> to bind to.
-        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="ListenType.IPEndPoint"/>.
+        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="IPEndPoint"/>.
         /// </summary>
         public IPEndPoint IPEndPoint => EndPoint as IPEndPoint;
 
         /// <summary>
         /// The absolute path to a Unix domain socket to bind to.
-        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="ListenType.SocketPath"/>.
+        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="UnixDomainSocketEndPoint"/>.
         /// </summary>
         public string SocketPath => (EndPoint as UnixDomainSocketEndPoint)?.ToString();
 
         /// <summary>
         /// A file descriptor for the socket to open.
-        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="ListenType.FileHandle"/>.
+        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="FileHandleEndPoint"/>.
         /// </summary>
         public ulong FileHandle => (EndPoint as FileHandleEndPoint)?.FileHandle ?? 0;
 

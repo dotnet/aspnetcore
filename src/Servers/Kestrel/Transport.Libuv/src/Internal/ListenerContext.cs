@@ -15,12 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal class ListenerContext
     {
-        // REVIEW: This needs to be bounded and we need a strategy for what to do when the queue is full
-        private readonly Channel<LibuvConnection> _acceptQueue = Channel.CreateBounded<LibuvConnection>(new BoundedChannelOptions(512)
-        {
-            // REVIEW: Not sure if this is right as nothing is stopping the libuv callback today
-            FullMode = BoundedChannelFullMode.Wait
-        });
+        private readonly Channel<LibuvConnection> _acceptQueue = Channel.CreateUnbounded<LibuvConnection>();
 
         public ListenerContext(LibuvTransportContext transportContext)
         {
@@ -37,9 +32,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             while (await _acceptQueue.Reader.WaitToReadAsync())
             {
-                while (_acceptQueue.Reader.TryRead(out var item))
+                while (_acceptQueue.Reader.TryRead(out var connection))
                 {
-                    return item;
+                    return connection;
                 }
             }
 
@@ -64,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
-        protected internal async Task HandleConnectionAsync(UvStreamHandle socket)
+        protected internal void HandleConnectionAsync(UvStreamHandle socket)
         {
             try
             {
@@ -89,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint);
                 connection.Start();
 
-                await _acceptQueue.Writer.WriteAsync(connection);
+                _acceptQueue.Writer.TryWrite(connection);
             }
             catch (Exception ex)
             {

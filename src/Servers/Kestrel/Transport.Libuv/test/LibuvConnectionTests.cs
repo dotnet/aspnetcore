@@ -23,24 +23,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transportContext = new TestLibuvTransportContext();
             await using var transport = new LibuvConnectionListener(mockLibuv, transportContext, null);
             var thread = new LibuvThread(transport);
+            var listenerContext = new ListenerContext(transportContext)
+            {
+                Thread = thread
+            };
 
             try
             {
                 await thread.StartAsync();
                 await thread.PostAsync(_ =>
-                {
-                    var listenerContext = new ListenerContext(transportContext)
-                    {
-                        Thread = thread
-                    };
+                {      
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    _ = listenerContext.HandleConnectionAsync(socket);
+                    listenerContext.HandleConnectionAsync(socket);
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), 0, ref ignored);
                 }, (object)null);
 
-                await using var connection = await transport.AcceptAsync();
+                await using var connection = await listenerContext.AcceptAsync();
 
                 var readAwaitable = connection.Transport.Input.ReadAsync();
                 Assert.False(readAwaitable.IsCompleted);

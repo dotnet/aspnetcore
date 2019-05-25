@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
     /// </summary>
     internal class Listener : ListenerContext, IAsyncDisposable
     {
+        // REVIEW: This needs to be bounded and we need a strategy for what to do when the queue is full
         private bool _closed;
 
         public Listener(LibuvTransportContext transportContext) : base(transportContext)
@@ -191,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected virtual void DispatchConnection(UvStreamHandle socket)
         {
-            _ = HandleConnectionAsync(socket);
+            HandleConnectionAsync(socket);
         }
 
         public virtual async Task DisposeAsync()

@@ -4,11 +4,11 @@
 using System;
 using System.IO;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
@@ -53,10 +53,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("contoso.com")]
         public void ParseAddressDefaultsToAnyIPOnInvalidIPAddress(string host)
         {
-            var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress($"http://{host}", out var https);
             Assert.IsType<AnyIPListenOptions>(listenOptions);
-            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
             Assert.Equal(IPAddress.IPv6Any, listenOptions.IPEndPoint.Address);
             Assert.Equal(80, listenOptions.IPEndPoint.Port);
             Assert.False(https);
@@ -65,10 +64,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ParseAddressLocalhost()
         {
-            var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress("http://localhost", out var https);
             Assert.IsType<LocalhostListenOptions>(listenOptions);
-            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
             Assert.Equal(IPAddress.Loopback, listenOptions.IPEndPoint.Address);
             Assert.Equal(80, listenOptions.IPEndPoint.Port);
             Assert.False(https);
@@ -77,9 +75,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ParseAddressUnixPipe()
         {
-            var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress("http://unix:/tmp/kestrel-test.sock", out var https);
-            Assert.Equal(ListenType.SocketPath, listenOptions.Type);
+            Assert.IsType<UnixDomainSocketEndPoint>(listenOptions.EndPoint);
             Assert.Equal("/tmp/kestrel-test.sock", listenOptions.SocketPath);
             Assert.False(https);
         }
@@ -94,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress(address, out var https);
-            Assert.Equal(ListenType.IPEndPoint, listenOptions.Type);
+            Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
             Assert.Equal(IPAddress.Parse(ip), listenOptions.IPEndPoint.Address);
             Assert.Equal(port, listenOptions.IPEndPoint.Port);
             Assert.Equal(isHttps, https);

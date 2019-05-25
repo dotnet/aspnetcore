@@ -100,6 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         Log.LogCritical(0, ex, $"{nameof(ConnectionDispatcher)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
                     }
 
+                    // TODO: Move this into the transport and have it wait for all connections to be disposed
                     // Wait for the transport to close
                     await CancellationTokenAsTask(connectionContext.ConnectionClosed);
                 }

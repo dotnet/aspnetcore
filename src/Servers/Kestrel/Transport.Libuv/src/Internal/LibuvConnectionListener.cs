@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public EndPoint EndPoint { get; set; }
 
-        public async Task StopAsync()
+        public async Task StopThreadsAsync()
         {
             try
             {
@@ -201,9 +201,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public async ValueTask DisposeAsync()
         {
-            await UnbindAsync();
+            // TODO: ConfigureAwait
+            await UnbindAsync().ConfigureAwait(false);
 
-            await StopAsync();
+            if (_acceptEnumerator != null)
+            {
+                // TODO: Log how many connections were unaccepted
+                if (await _acceptEnumerator.MoveNextAsync().ConfigureAwait(false))
+                {
+                    // Abort the connection
+                    _acceptEnumerator.Current.Abort();
+                }
+
+                // Dispose the enumerator
+                await _acceptEnumerator.DisposeAsync().ConfigureAwait(false);
+            }
+
+            await StopThreadsAsync().ConfigureAwait(false);
         }
     }
 }

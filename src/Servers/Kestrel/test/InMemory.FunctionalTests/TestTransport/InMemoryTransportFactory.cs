@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
     {
         private Channel<ConnectionContext> _acceptQueue = Channel.CreateUnbounded<ConnectionContext>();
 
-        public EndPoint EndPoint { get; }
+        public EndPoint EndPoint { get; set; }
 
         public void AddConnection(ConnectionContext connection)
         {
@@ -37,6 +37,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
         {
+            EndPoint = endpoint;
+
             // The endpoint isn't important
             return new ValueTask<IConnectionListener>(this);
         }

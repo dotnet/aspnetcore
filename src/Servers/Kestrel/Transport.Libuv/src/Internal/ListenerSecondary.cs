@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 DispatchPipe.Accept(acceptSocket);
 
-                _ = HandleConnectionAsync(acceptSocket);
+                HandleConnectionAsync(acceptSocket);
             }
             catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
             {

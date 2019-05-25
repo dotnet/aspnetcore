@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private bool _completed;
 
         private readonly CancellationTokenSource _connectionClosingCts = new CancellationTokenSource();
+        private readonly TaskCompletionSource<object> _completionTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public KestrelConnection(ConnectionContext connectionContext, ILogger logger)
         {
@@ -35,6 +36,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
         public ConnectionContext TransportConnection { get; set; }
         public CancellationToken ConnectionClosedRequested { get; set; }
+        public Task ExecutionTask => _completionTcs.Task;
+
+        public void Complete()
+        {
+            _completionTcs.TrySetResult(null);
+        }
 
         public void TickHeartbeat()
         {

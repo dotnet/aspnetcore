@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             // The transport can no longer start threads without binding to an endpoint.
             await transport.BindAsync();
-            await transport.StopAsync();
+            await transport.StopThreadsAsync();
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             await transport.BindAsync();
             await transport.UnbindAsync();
-            await transport.StopAsync();
+            await transport.StopThreadsAsync();
         }
 
         [Theory]
@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);
 
             await transport.BindAsync();
+            listenOptions.EndPoint = transport.EndPoint;
 
             var dispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build());
             _ = dispatcher.StartAcceptingConnections(transport);
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             
             Assert.True(await serviceContext.ConnectionManager.CloseAllConnectionsAsync(new CancellationTokenSource(TestConstants.DefaultTimeout).Token));
             await transport.UnbindAsync();
-            await transport.StopAsync();
+            await transport.StopThreadsAsync();
         }
 
         [ConditionalTheory]
@@ -110,6 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);
             await transport.BindAsync();
+            listenOptions.EndPoint = transport.EndPoint;
 
             var dispatcher = new ConnectionDispatcher(serviceContext, listenOptions.Build());
             var acceptTask = dispatcher.StartAcceptingConnections(transport);
@@ -139,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 await serviceContext.ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false);
             }
 
-            await transport.StopAsync().ConfigureAwait(false);
+            await transport.StopThreadsAsync().ConfigureAwait(false);
         }
     }
 }
