@@ -9,16 +9,13 @@
 class ServerErrorApplication : public PollingAppOfflineApplication
 {
 public:
-    ServerErrorApplication(const IHttpApplication& pApplication, HRESULT hr, HINSTANCE moduleInstance)
-        : ServerErrorApplication(pApplication, hr, moduleInstance, true /* disableStartupPage*/, 0 /* page */)
-    {
-    }
-
-    ServerErrorApplication(const IHttpApplication& pApplication, HRESULT hr, HINSTANCE moduleInstance, bool disableStartupPage, int page)
+    ServerErrorApplication(const IHttpApplication& pApplication, HRESULT hr, bool disableStartupPage, const std::string& responseContent, USHORT status, USHORT substatus, const std::string& statusText)
         : m_HR(hr),
         m_disableStartupPage(disableStartupPage),
-        m_page(page),
-        m_moduleInstance(moduleInstance),
+        m_responseContent(responseContent),
+        m_statusCode(status),
+        m_subStatusCode(substatus),
+        m_statusText(statusText),
         PollingAppOfflineApplication(pApplication, PollingAppOfflineApplicationMode::StopWhenAdded)
     {
     }
@@ -27,8 +24,8 @@ public:
 
     HRESULT CreateHandler(IHttpContext *pHttpContext, IREQUEST_HANDLER ** pRequestHandler) override
     {
-        auto handler = std::make_unique<ServerErrorHandler>(*pHttpContext, 500ui16, 0ui16, "Internal Server Error", m_HR, m_moduleInstance, m_disableStartupPage, m_page);
-        *pRequestHandler = handler.release();
+        *pRequestHandler = std::make_unique<ServerErrorHandler>(*pHttpContext, m_statusCode, m_subStatusCode, m_statusText, m_HR, m_disableStartupPage, m_responseContent).release();
+
         return S_OK;
     }
 
@@ -36,6 +33,8 @@ public:
 private:
     HRESULT m_HR;
     bool m_disableStartupPage;
-    int m_page;
-    HINSTANCE m_moduleInstance;
+    std::string m_responseContent;
+    USHORT m_statusCode;
+    USHORT m_subStatusCode;
+    std::string m_statusText;
 };

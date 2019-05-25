@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -268,9 +269,58 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll"),
                 Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"),
                 true);
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            if (DeployerSelector.HasNewShim)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrInvalid(deploymentResult), Logger);
+        }
+
+        [ConditionalFact]
+        public async Task PublishWithWrongBitness()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+
+            if (deploymentParameters.ServerType == ServerType.IISExpress)
+            {
+                // TODO skip conditions for IISExpress
+                return;
+            }
+
+            deploymentParameters.ApplicationType = ApplicationType.Standalone;
+            deploymentParameters.AddServerConfigAction(element =>
+            {
+                element.RequiredElement("system.applicationHost").RequiredElement("applicationPools").RequiredElement("add").SetAttributeValue("enable32BitAppOnWin64", "true");
+            });
+
+            // Change ANCM dll to 32 bit
+            deploymentParameters.AddServerConfigAction(
+                           element =>
+                           {
+                               var ancmElement = element
+                                   .RequiredElement("system.webServer")
+                                   .RequiredElement("globalModules")
+                                   .Elements("add")
+                                   .FirstOrDefault(e => e.Attribute("name").Value == "AspNetCoreModuleV2");
+
+                               ancmElement.SetAttributeValue("image", ancmElement.Attribute("image").Value.Replace("x64", "x86"));
+                           });
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            if (DeployerSelector.HasNewShim)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.32 - ANCM Failed to Load dll");
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "500.0 - ANCM In-Process Handler Load Failure");
+            }
         }
 
         [ConditionalFact]
@@ -283,7 +333,15 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             // We don't distinguish between load failure types so making dll empty should be enough
             File.WriteAllText(Path.Combine(deploymentResult.ContentRoot, "hostfxr.dll"), "");
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
+            if (DeployerSelector.HasNewShim)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.32 - ANCM Failed to Load dll");
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessHostfxrUnableToLoad(deploymentResult), Logger);
         }
@@ -295,7 +353,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            if (DeployerSelector.HasNewShim)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            }
 
             EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
         }
@@ -309,14 +374,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
 
             File.Delete(Path.Combine(deploymentResult.ContentRoot, "aspnetcorev2_inprocess.dll"));
 
-            await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
-
-            if (DeployerSelector.IsForwardsCompatibilityTest)
+            if (DeployerSelector.HasNewShim && DeployerSelector.HasNewHandler)
             {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.33 - ANCM Request Handler Load Failure ");
+
+                EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
+            }
+            else if (DeployerSelector.HasNewShim)
+            {
+                // Forwards compat tests fail earlier due to a error with the M.AspNetCore.Server.IIS package.
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
+
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindNativeDependencies(deploymentResult), Logger);
             }
             else
             {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+
                 EventLogHelpers.VerifyEventLogEvent(deploymentResult, EventLogHelpers.InProcessFailedToFindRequestHandler(deploymentResult), Logger);
             }
         }
@@ -750,11 +824,23 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
             });
         }
 
-        private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult)
+        private Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult)
         {
-            var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            return AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.0 - ANCM In-Process Handler Load Failure");
+        }
+
+        private async Task AssertSiteFailsToStartWithInProcessStaticContent(IISDeploymentResult deploymentResult, string error)
+        {
+            HttpResponseMessage response = null;
+
+            // Make sure strings aren't freed.
+            for (var i = 0; i < 2; i++)
+            {
+                response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+            }
+
             Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-            Assert.Contains("HTTP Error 500.0 - ANCM In-Process Handler Load Failure", await response.Content.ReadAsStringAsync());
+            Assert.Contains(error, await response.Content.ReadAsStringAsync());
             StopServer();
         }
     }

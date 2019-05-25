@@ -17,6 +17,7 @@
 #include "WebConfigConfigurationSource.h"
 #include "ConfigurationLoadException.h"
 #include "StartupExceptionApplication.h"
+#include "file_utility.h"
 
 DECLARE_DEBUG_PRINT_OBJECT("aspnetcorev2_inprocess.dll");
 
@@ -28,7 +29,7 @@ HINSTANCE           g_hWinHttpModule;
 HINSTANCE           g_hAspNetCoreModule;
 HANDLE              g_hEventLog = NULL;
 bool                g_fInProcessApplicationCreated = false;
-std::vector<byte>   g_errorPageContent;
+std::string         g_errorPageContent;
 HINSTANCE           g_hServerModule;
 
 HRESULT
@@ -120,6 +121,10 @@ CreateApplication(
         g_fInProcessApplicationCreated = true;
 
         std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> inProcessApplication;
+
+        // TODO not sure how easy it will be to untangle errors here
+        // ErrorContext errorContext;
+
         if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, pSite, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
         {
             *ppApplication = inProcessApplication.release();
@@ -129,7 +134,20 @@ CreateApplication(
             std::unique_ptr<InProcessOptions> options;
             THROW_IF_FAILED(InProcessOptions::Create(*pServer, pSite, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
-            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer, *pHttpApplication, g_hServerModule, options->QueryDisableStartUpErrorPage(), hr, std::move(g_errorPageContent));
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer,
+                *pHttpApplication,
+                options->QueryDisableStartUpErrorPage(),
+                hr,
+                FILE_UTILITY::GetHtml(g_hServerModule,
+                    IN_PROCESS_RH_STATIC_HTML,
+                    500i16,
+                    30i16,
+                    "ANCM In-Process Start Failure",
+                    "<ul><li>The application failed to start</li><li>The application started but then stopped</li><li>The application started but threw an exception during startup</li></ul>",
+                    g_errorPageContent),
+                500i16,
+                30i16,
+                "Internal Server Error");
 
             RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
             *ppApplication = pErrorApplication.release();
