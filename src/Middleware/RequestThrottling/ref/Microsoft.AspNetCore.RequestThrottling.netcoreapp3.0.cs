@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Builder
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseRequestThrottling(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
     }
 }
-namespace Microsoft.Aspnetcore.RequestThrottling
+namespace Microsoft.AspNetCore.RequestThrottling
 {
     public partial class RequestThrottlingMiddleware
     {
@@ -16,9 +16,6 @@ namespace Microsoft.Aspnetcore.RequestThrottling
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext context) { throw null; }
     }
-}
-namespace Microsoft.AspNetCore.RequestThrottling
-{
     public partial class RequestThrottlingOptions
     {
         public RequestThrottlingOptions() { }
