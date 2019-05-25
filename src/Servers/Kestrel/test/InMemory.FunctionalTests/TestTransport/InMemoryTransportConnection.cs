@@ -70,14 +70,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
             }, this);
         }
 
-        public override ValueTask DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
-            _connectionClosedTokenSource.Dispose();
-
             Transport.Input.Complete();
             Transport.Output.Complete();
 
-            return base.DisposeAsync();
+            if (_isClosed)
+            {
+                await CancellationTokenAsTask(_connectionClosedTokenSource.Token);
+            }
+
+            _connectionClosedTokenSource.Dispose();
+
+            await base.DisposeAsync();
+        }
+
+        private static Task CancellationTokenAsTask(CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+            {
+                return Task.CompletedTask;
+            }
+
+            var tcs = new TaskCompletionSource<object>();
+            token.Register(() => tcs.SetResult(null));
+            return tcs.Task;
         }
 
         // This piece of code allows us to wait until the PipeReader has been awaited on.
