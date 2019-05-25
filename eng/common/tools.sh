@@ -389,14 +389,15 @@ function StopProcesses {
 }
 
 function MSBuild {
-  args=$@
+  local args=$@
   if [[ "$pipelines_log" == true ]]; then
     InitializeBuildTool
     InitializeToolset
-    _toolset_dir="${_InitializeToolset%/*}"
-    _loggerPath="$_toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
-    args=( "${args[@]}" "-logger:$_loggerPath" )
+    local toolset_dir="${_InitializeToolset%/*}"
+    local logger_path="$toolset_dir/$_InitializeBuildToolFramework/Microsoft.DotNet.Arcade.Sdk.dll"
+    args=( "${args[@]}" "-logger:$logger_path" )
   fi
+
   MSBuild-Core ${args[@]}
 }
 
