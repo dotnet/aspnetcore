@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             EndPoint = new FileHandleEndPoint(fileHandle, handleType);
         }
 
-        internal EndPoint EndPoint { get; set; }
+        public EndPoint EndPoint { get; internal set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>

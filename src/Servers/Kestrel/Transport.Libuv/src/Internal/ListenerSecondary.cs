@@ -6,7 +6,6 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
@@ -153,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 DispatchPipe.Accept(acceptSocket);
 
-                HandleConnectionAsync(acceptSocket);
+                HandleConnection(acceptSocket);
             }
             catch (UvException ex) when (LibuvConstants.IsConnectionReset(ex.StatusCode))
             {

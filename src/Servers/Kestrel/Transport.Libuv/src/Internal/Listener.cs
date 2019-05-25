@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         protected virtual void DispatchConnection(UvStreamHandle socket)
         {
-            HandleConnectionAsync(socket);
+            HandleConnection(socket);
         }
 
         public virtual async Task DisposeAsync()

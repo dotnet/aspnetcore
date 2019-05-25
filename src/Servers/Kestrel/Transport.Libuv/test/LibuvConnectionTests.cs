@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 await thread.PostAsync(_ =>
                 {      
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    listenerContext.HandleConnectionAsync(socket);
+                    listenerContext.HandleConnection(socket);
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), 0, ref ignored);
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 await thread.PostAsync<object>(_ =>
                 {
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    listenerContext.HandleConnectionAsync(socket);
+                    listenerContext.HandleConnection(socket);
 
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 await thread.PostAsync<object>(_ =>
                 {
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    listenerContext.HandleConnectionAsync(socket);
+                    listenerContext.HandleConnection(socket);
                     
                     mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 await thread.PostAsync(_ =>
                 {
                     var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-                    listenerContext.HandleConnectionAsync(socket);
+                    listenerContext.HandleConnection(socket);
                     
                     var ignored = new LibuvFunctions.uv_buf_t();
                     mockLibuv.ReadCallback(socket.InternalGetHandle(), TestConstants.EOF, ref ignored);
