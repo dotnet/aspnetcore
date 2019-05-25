@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             // TODO: Split endpoint management from thread management
             for (var index = 0; index < TransportOptions.ThreadCount; index++)
             {
-                Threads.Add(new LibuvThread(this));
+                Threads.Add(new LibuvThread(Libuv, TransportContext));
             }
 
             foreach (var thread in Threads)

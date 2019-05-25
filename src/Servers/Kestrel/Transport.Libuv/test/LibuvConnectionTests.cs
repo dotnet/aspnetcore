@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         {
             var mockLibuv = new MockLibuv();
             var transportContext = new TestLibuvTransportContext();
-            await using var transport = new LibuvConnectionListener(mockLibuv, transportContext, null);
-            var thread = new LibuvThread(transport);
+            var thread = new LibuvThread(mockLibuv, transportContext);
             var listenerContext = new ListenerContext(transportContext)
             {
                 Thread = thread
@@ -51,197 +50,175 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             }
         }
 
-        // TODO: Make it work
+        [Fact]
+        public async Task ConnectionDoesNotResumeAfterSocketCloseIfBackpressureIsApplied()
+        {
+            var mockLibuv = new MockLibuv();
+            var transportContext = new TestLibuvTransportContext();
+            var thread = new LibuvThread(mockLibuv, transportContext);
+            var listenerContext = new ListenerContext(transportContext)
+            {
+                Thread = thread,
+                InputOptions = new PipeOptions(
+                    pool: thread.MemoryPool,
+                    pauseWriterThreshold: 3,
+                    readerScheduler: PipeScheduler.Inline,
+                    writerScheduler: PipeScheduler.Inline,
+                    useSynchronizationContext: false),
 
-        //[Fact]
-        //public async Task ConnectionDoesNotResumeAfterSocketCloseIfBackpressureIsApplied()
-        //{
-        //    var mockConnectionDispatcher = new MockConnectionDispatcher();
-        //    var mockLibuv = new MockLibuv();
-        //    var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
-        //    var transport = new LibuvConnectionListener(mockLibuv, transportContext, null);
-        //    var thread = new LibuvThread(transport);
-        //    mockConnectionDispatcher.InputOptions = pool =>
-        //        new PipeOptions(
-        //            pool: pool,
-        //            pauseWriterThreshold: 3,
-        //            readerScheduler: PipeScheduler.Inline,
-        //            writerScheduler: PipeScheduler.Inline,
-        //            useSynchronizationContext: false);
+                // We don't set the output writer scheduler here since we want to run the callback inline
+                OutputOptions = new PipeOptions(
+                    pool: thread.MemoryPool,
+                    readerScheduler: thread,
+                    writerScheduler: PipeScheduler.Inline,
+                    useSynchronizationContext: false)
+            };
 
-        //    // We don't set the output writer scheduler here since we want to run the callback inline
+            try
+            {
+                await thread.StartAsync();
 
-        //    mockConnectionDispatcher.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler: thread, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+                // Write enough to make sure back pressure will be applied
+                await thread.PostAsync<object>(_ =>
+                {
+                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
+                    listenerContext.HandleConnectionAsync(socket);
 
+                    mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
+                    mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
 
-        //    Task connectionTask = null;
-        //    try
-        //    {
-        //        await thread.StartAsync();
+                }, null);
 
-        //        // Write enough to make sure back pressure will be applied
-        //        await thread.PostAsync<object>(_ =>
-        //        {
-        //            var listenerContext = new ListenerContext(transportContext)
-        //            {
-        //                Thread = thread
-        //            };
-        //            var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-        //            var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread, null, null);
-        //            listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
-        //            connectionTask = connection.Start();
+                var connection = await listenerContext.AcceptAsync();
 
-        //            mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
-        //            mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
+                // Now assert that we removed the callback from libuv to stop reading
+                Assert.Null(mockLibuv.AllocCallback);
+                Assert.Null(mockLibuv.ReadCallback);
 
-        //        }, null);
+                // Now complete the output writer so that the connection closes
+                await connection.DisposeAsync();
 
-        //        // Now assert that we removed the callback from libuv to stop reading
-        //        Assert.Null(mockLibuv.AllocCallback);
-        //        Assert.Null(mockLibuv.ReadCallback);
+                // Assert that we don't try to start reading
+                Assert.Null(mockLibuv.AllocCallback);
+                Assert.Null(mockLibuv.ReadCallback);
+            }
+            finally
+            {
+                await thread.StopAsync(TimeSpan.FromSeconds(5));
+            }
+        }
 
-        //        // Now complete the output writer so that the connection closes
-        //        mockConnectionDispatcher.Output.Writer.Complete();
+        [Fact]
+        public async Task ConnectionDoesNotResumeAfterReadCallbackScheduledAndSocketCloseIfBackpressureIsApplied()
+        {
+            var mockLibuv = new MockLibuv();
+            var transportContext = new TestLibuvTransportContext();
+            var thread = new LibuvThread(mockLibuv, transportContext);
+            var mockScheduler = new Mock<PipeScheduler>();
+            Action backPressure = null;
+            mockScheduler.Setup(m => m.Schedule(It.IsAny<Action<object>>(), It.IsAny<object>())).Callback<Action<object>, object>((a, o) =>
+            {
+                backPressure = () => a(o);
+            });
+            var listenerContext = new ListenerContext(transportContext)
+            {
+                Thread = thread,
+                InputOptions = new PipeOptions(
+                    pool: thread.MemoryPool,
+                    pauseWriterThreshold: 3,
+                    resumeWriterThreshold: 3,
+                    writerScheduler: mockScheduler.Object,
+                    readerScheduler: PipeScheduler.Inline,
+                    useSynchronizationContext: false),
+                OutputOptions = new PipeOptions(
+                    pool: thread.MemoryPool,
+                    readerScheduler: thread,
+                    writerScheduler: PipeScheduler.Inline,
+                    useSynchronizationContext: false)
+            };
 
-        //        await connectionTask.DefaultTimeout();
+            try
+            {
+                await thread.StartAsync();
 
-        //        // Assert that we don't try to start reading
-        //        Assert.Null(mockLibuv.AllocCallback);
-        //        Assert.Null(mockLibuv.ReadCallback);
-        //    }
-        //    finally
-        //    {
-        //        mockConnectionDispatcher.Input.Reader.Complete();
-        //        mockConnectionDispatcher.Output.Writer.Complete();
+                // Write enough to make sure back pressure will be applied
+                await thread.PostAsync<object>(_ =>
+                {
+                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
+                    listenerContext.HandleConnectionAsync(socket);
+                    
+                    mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
+                    mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
 
-        //        await thread.StopAsync(TimeSpan.FromSeconds(5));
-        //    }
-        //}
+                }, null);
 
-        //[Fact]
-        //public async Task ConnectionDoesNotResumeAfterReadCallbackScheduledAndSocketCloseIfBackpressureIsApplied()
-        //{
-        //    var mockConnectionDispatcher = new MockConnectionDispatcher();
-        //    var mockLibuv = new MockLibuv();
-        //    var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
-        //    var transport = new LibuvConnectionListener(mockLibuv, transportContext, null);
-        //    var thread = new LibuvThread(transport);
-        //    var mockScheduler = new Mock<PipeScheduler>();
-        //    Action backPressure = null;
-        //    mockScheduler.Setup(m => m.Schedule(It.IsAny<Action<object>>(), It.IsAny<object>())).Callback<Action<object>, object>((a, o) =>
-        //    {
-        //        backPressure = () => a(o);
-        //    });
-        //    mockConnectionDispatcher.InputOptions = pool =>
-        //        new PipeOptions(
-        //            pool: pool,
-        //            pauseWriterThreshold: 3,
-        //            resumeWriterThreshold: 3,
-        //            writerScheduler: mockScheduler.Object,
-        //            readerScheduler: PipeScheduler.Inline,
-        //            useSynchronizationContext: false);
+                var connection = await listenerContext.AcceptAsync();
 
-        //    mockConnectionDispatcher.OutputOptions = pool => new PipeOptions(pool: pool, readerScheduler: thread, writerScheduler: PipeScheduler.Inline, useSynchronizationContext: false);
+                // Now assert that we removed the callback from libuv to stop reading
+                Assert.Null(mockLibuv.AllocCallback);
+                Assert.Null(mockLibuv.ReadCallback);
 
-        //    Task connectionTask = null;
-        //    try
-        //    {
-        //        await thread.StartAsync();
+                // Now release backpressure by reading the input
+                var result = await connection.Transport.Input.ReadAsync();
+                // Calling advance will call into our custom scheduler that captures the back pressure
+                // callback
+                connection.Transport.Input.AdvanceTo(result.Buffer.End);
 
-        //        // Write enough to make sure back pressure will be applied
-        //        await thread.PostAsync<object>(_ =>
-        //        {
-        //            var listenerContext = new ListenerContext(transportContext)
-        //            {
-        //                Thread = thread
-        //            };
-        //            var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-        //            var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread, null, null);
-        //            listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
-        //            connectionTask = connection.Start();
+                // Cancel the current pending flush
+                connection.Application.Output.CancelPendingFlush();
 
-        //            mockLibuv.AllocCallback(socket.InternalGetHandle(), 2048, out var ignored);
-        //            mockLibuv.ReadCallback(socket.InternalGetHandle(), 5, ref ignored);
+                // Now release the back pressure
+                await thread.PostAsync(a => a(), backPressure);
 
-        //        }, null);
+                // Assert that we don't try to start reading since the write was cancelled
+                Assert.Null(mockLibuv.AllocCallback);
+                Assert.Null(mockLibuv.ReadCallback);
 
-        //        // Now assert that we removed the callback from libuv to stop reading
-        //        Assert.Null(mockLibuv.AllocCallback);
-        //        Assert.Null(mockLibuv.ReadCallback);
+                // Now complete the output writer and wait for the connection to close
+                await connection.DisposeAsync();
+                
+                // Assert that we don't try to start reading
+                Assert.Null(mockLibuv.AllocCallback);
+                Assert.Null(mockLibuv.ReadCallback);
+            }
+            finally
+            {
+                await thread.StopAsync(TimeSpan.FromSeconds(5));
+            }
+        }
 
-        //        // Now release backpressure by reading the input
-        //        var result = await mockConnectionDispatcher.Input.Reader.ReadAsync();
-        //        // Calling advance will call into our custom scheduler that captures the back pressure
-        //        // callback
-        //        mockConnectionDispatcher.Input.Reader.AdvanceTo(result.Buffer.End);
+        [Fact]
+        public async Task DoesNotThrowIfOnReadCallbackCalledWithEOFButAllocCallbackNotCalled()
+        {
+            var mockLibuv = new MockLibuv();
+            var transportContext = new TestLibuvTransportContext();
+            var thread = new LibuvThread(mockLibuv, transportContext);
+            var listenerContext = new ListenerContext(transportContext)
+            {
+                Thread = thread
+            };
 
-        //        // Cancel the current pending flush
-        //        mockConnectionDispatcher.Input.Writer.CancelPendingFlush();
+            try
+            {
+                await thread.StartAsync();
+                await thread.PostAsync(_ =>
+                {
+                    var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
+                    listenerContext.HandleConnectionAsync(socket);
+                    
+                    var ignored = new LibuvFunctions.uv_buf_t();
+                    mockLibuv.ReadCallback(socket.InternalGetHandle(), TestConstants.EOF, ref ignored);
+                }, (object)null);
 
-        //        // Now release the back pressure
-        //        await thread.PostAsync(a => a(), backPressure);
+                await using var connection = await listenerContext.AcceptAsync();
 
-        //        // Assert that we don't try to start reading since the write was cancelled
-        //        Assert.Null(mockLibuv.AllocCallback);
-        //        Assert.Null(mockLibuv.ReadCallback);
-
-        //        // Now complete the output writer and wait for the connection to close
-        //        mockConnectionDispatcher.Output.Writer.Complete();
-
-        //        await connectionTask.DefaultTimeout();
-
-        //        // Assert that we don't try to start reading
-        //        Assert.Null(mockLibuv.AllocCallback);
-        //        Assert.Null(mockLibuv.ReadCallback);
-        //    }
-        //    finally
-        //    {
-        //        mockConnectionDispatcher.Input.Reader.Complete();
-        //        mockConnectionDispatcher.Output.Writer.Complete();
-
-        //        await thread.StopAsync(TimeSpan.FromSeconds(5));
-        //    }
-        //}
-
-        //[Fact]
-        //public async Task DoesNotThrowIfOnReadCallbackCalledWithEOFButAllocCallbackNotCalled()
-        //{
-        //    var mockConnectionDispatcher = new MockConnectionDispatcher();
-        //    var mockLibuv = new MockLibuv();
-        //    var transportContext = new TestLibuvTransportContext { ConnectionDispatcher = mockConnectionDispatcher };
-        //    var transport = new LibuvConnectionListener(mockLibuv, transportContext, null);
-        //    var thread = new LibuvThread(transport);
-
-        //    Task connectionTask = null;
-        //    try
-        //    {
-        //        await thread.StartAsync();
-        //        await thread.PostAsync(_ =>
-        //        {
-        //            var listenerContext = new ListenerContext(transportContext)
-        //            {
-        //                Thread = thread
-        //            };
-        //            var socket = new MockSocket(mockLibuv, Thread.CurrentThread.ManagedThreadId, transportContext.Log);
-        //            var connection = new LibuvConnection(socket, listenerContext.TransportContext.Log, thread, null, null);
-        //            listenerContext.TransportContext.ConnectionDispatcher.OnConnection(connection);
-        //            connectionTask = connection.Start();
-
-        //            var ignored = new LibuvFunctions.uv_buf_t();
-        //            mockLibuv.ReadCallback(socket.InternalGetHandle(), TestConstants.EOF, ref ignored);
-        //        }, (object)null);
-
-        //        var readAwaitable = await mockConnectionDispatcher.Input.Reader.ReadAsync();
-        //        Assert.True(readAwaitable.IsCompleted);
-        //    }
-        //    finally
-        //    {
-        //        mockConnectionDispatcher.Input.Reader.Complete();
-        //        mockConnectionDispatcher.Output.Writer.Complete();
-        //        await connectionTask;
-
-        //        await thread.StopAsync(TimeSpan.FromSeconds(5));
-        //    }
-        //}
+                var readAwaitable = await connection.Transport.Input.ReadAsync();
+                Assert.True(readAwaitable.IsCompleted);
+            }
+            finally
+            {
+                await thread.StopAsync(TimeSpan.FromSeconds(5));
+            }
+        }
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -27,6 +28,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public EndPoint EndPoint { get; set; }
 
         public LibuvThread Thread { get; set; }
+
+        public PipeOptions InputOptions { get; set; }
+
+        public PipeOptions OutputOptions { get; set; }
 
         public async ValueTask<LibuvConnection> AcceptAsync(CancellationToken cancellationToken = default)
         {
@@ -81,7 +86,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                 }
 
-                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint);
+                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, InputOptions, OutputOptions);
                 connection.Start();
 
                 _acceptQueue.Writer.TryWrite(connection);

@@ -16,8 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         {
             var mockLibuv = new MockLibuv();
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvConnectionListener(mockLibuv, transportContext, null);
-            var thread = new LibuvThread(transport);
+            var thread = new LibuvThread(mockLibuv, transportContext);
             var ranOne = false;
             var ranTwo = false;
             var ranThree = false;

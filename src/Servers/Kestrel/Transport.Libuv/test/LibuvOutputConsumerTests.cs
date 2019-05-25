@@ -45,8 +45,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             _memoryPool = KestrelMemoryPool.Create();
             _mockLibuv = new MockLibuv();
 
-            var libuvTransport = new LibuvConnectionListener(_mockLibuv, new TestLibuvTransportContext(), new ListenOptions((ulong)0).EndPoint);
-            _libuvThread = new LibuvThread(libuvTransport, maxLoops: 1);
+            var context = new TestLibuvTransportContext();
+            _libuvThread = new LibuvThread(_mockLibuv, context, maxLoops: 1);
             _libuvThread.StartAsync().Wait();
         }
 

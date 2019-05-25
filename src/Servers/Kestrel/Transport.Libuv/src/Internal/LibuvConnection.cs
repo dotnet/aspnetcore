@@ -33,7 +33,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private MemoryHandle _bufferHandle;
         private Task _task;
 
-        public LibuvConnection(UvStreamHandle socket, ILibuvTrace log, LibuvThread thread, IPEndPoint remoteEndPoint, IPEndPoint localEndPoint)
+        public LibuvConnection(UvStreamHandle socket,
+                               ILibuvTrace log,
+                               LibuvThread thread,
+                               IPEndPoint remoteEndPoint,
+                               IPEndPoint localEndPoint,
+                               PipeOptions inputOptions = null,
+                               PipeOptions outputOptions = null)
         {
             _socket = socket;
 
@@ -44,8 +50,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             Log = log;
             Thread = thread;
 
-            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, Thread, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, Thread, PipeScheduler.ThreadPool, useSynchronizationContext: false);
+            inputOptions ??= new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, Thread, useSynchronizationContext: false);
+            outputOptions ??= new PipeOptions(MemoryPool, Thread, PipeScheduler.ThreadPool, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 
