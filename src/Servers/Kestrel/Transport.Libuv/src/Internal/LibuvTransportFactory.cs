@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.Hosting;
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             };
         }
 
-        public async ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
+        public async ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
             var transportContext = new LibuvTransportContext
             {

@@ -9,7 +9,6 @@ namespace Microsoft.AspNetCore.Connections
 {
     public interface IConnectionListenerFactory
     {
-        // Add CancellationToken cancellationToken = default
-        ValueTask<IConnectionListener> BindAsync(EndPoint endpoint);
+        ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default);
     }
 }

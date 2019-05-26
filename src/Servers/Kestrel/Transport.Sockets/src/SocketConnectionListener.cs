@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
         }
 
-        public ValueTask StopAsync(CancellationToken cancellationToken)
+        public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
         {
             _listenSocket?.Dispose();
             _listenSocket = null;

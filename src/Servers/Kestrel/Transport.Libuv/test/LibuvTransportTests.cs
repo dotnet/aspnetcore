@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             await transport.BindAsync();
-            await transport.StopAsync();
+            await transport.UnbindAsync();
             await transport.DisposeAsync();
         }
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             await serverTask.DefaultTimeout();
 
-            await transport.StopAsync();
+            await transport.UnbindAsync();
             await transport.DisposeAsync();
         }
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             var connectTask = ConnectAsync();
 
-            await transport.StopAsync();
+            await transport.UnbindAsync();
             await transport.DisposeAsync();
 
             // The connection was accepted because libuv eagerly accepts connections
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 }
             }
 
-            await transport.StopAsync().ConfigureAwait(false);
+            await transport.UnbindAsync().ConfigureAwait(false);
 
             await acceptTask.ConfigureAwait(false);
 

@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 for (int i = 0; i < _transports.Count; i++)
                 {
                     (IConnectionListener listener, Task acceptLoop) = _transports[i];
-                    tasks[i] = Task.WhenAll(listener.StopAsync(cancellationToken).AsTask(), acceptLoop);
+                    tasks[i] = Task.WhenAll(listener.UnbindAsync(cancellationToken).AsTask(), acceptLoop);
                 }
 
                 await Task.WhenAll(tasks).ConfigureAwait(false);

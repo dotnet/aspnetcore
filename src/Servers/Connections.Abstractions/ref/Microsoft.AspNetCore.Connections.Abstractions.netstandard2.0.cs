@@ -103,11 +103,11 @@ namespace Microsoft.AspNetCore.Connections
         System.Net.EndPoint EndPoint { get; }
         System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.ConnectionContext> AcceptAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
         System.Threading.Tasks.ValueTask DisposeAsync();
-        System.Threading.Tasks.ValueTask StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
+        System.Threading.Tasks.ValueTask UnbindAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     public partial interface IConnectionListenerFactory
     {
-        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint);
+        System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken));
     }
     [System.FlagsAttribute]
     public enum TransferFormat

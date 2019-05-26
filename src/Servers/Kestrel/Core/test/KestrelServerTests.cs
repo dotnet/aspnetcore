@@ -237,14 +237,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockTransport = new Mock<IConnectionListener>();
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
-                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>()))
-                .Returns<EndPoint>(e =>
+                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
+                .Returns<EndPoint, CancellationToken>((e, token) =>
                 {
                     mockTransport
                         .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<ConnectionContext>((ConnectionContext)null));
                     mockTransport
-                        .Setup(transport => transport.StopAsync(It.IsAny<CancellationToken>()))
+                        .Setup(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()))
                         .Returns(() => new ValueTask(unbind.WaitAsync()));
                     mockTransport
                         .Setup(transport => transport.DisposeAsync())
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).DefaultTimeout();
 
-            mockTransport.Verify(transport => transport.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockTransport.Verify(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -294,14 +294,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockTransport = new Mock<IConnectionListener>();
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
-                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>()))
-                .Returns<EndPoint>(e =>
+                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
+                .Returns<EndPoint, CancellationToken>((e, token) =>
                 {
                     mockTransport
                         .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<ConnectionContext>((ConnectionContext)null));
                     mockTransport
-                        .Setup(transport => transport.StopAsync(It.IsAny<CancellationToken>()))
+                        .Setup(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()))
                         .Returns(async () =>
                         {
                             await unbind.WaitAsync();
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask2.TimeoutAfter(timeout)));
             Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask3.TimeoutAfter(timeout)));
 
-            mockTransport.Verify(transport => transport.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockTransport.Verify(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -353,15 +353,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockTransport = new Mock<IConnectionListener>();
             var mockTransportFactory = new Mock<IConnectionListenerFactory>();
             mockTransportFactory
-                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>()))
-                .Returns<EndPoint>(e =>
+                .Setup(transportFactory => transportFactory.BindAsync(It.IsAny<EndPoint>(), It.IsAny<CancellationToken>()))
+                .Returns<EndPoint, CancellationToken>((e, token) =>
                 {
                     mockTransport
                         .Setup(transport => transport.AcceptAsync(It.IsAny<CancellationToken>()))
                         .Returns(new ValueTask<ConnectionContext>((ConnectionContext)null));
                     mockTransport
-                        .Setup(transport => transport.StopAsync(It.IsAny<CancellationToken>()))
-                        .Returns( new ValueTask(unbindTcs.Task));
+                        .Setup(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()))
+                        .Returns(new ValueTask(unbindTcs.Task));
                     mockTransport
                         .Setup(transport => transport.EndPoint).Returns(e);
 
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await stopTask2.DefaultTimeout();
             await continuationTask.DefaultTimeout();
 
-            mockTransport.Verify(transport => transport.StopAsync(It.IsAny<CancellationToken>()), Times.Once);
+            mockTransport.Verify(transport => transport.UnbindAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private class MockTransportFactory : IConnectionListenerFactory
         {
-            public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
+            public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
             {
                 var mock = new Mock<IConnectionListener>();
                 mock.Setup(m => m.EndPoint).Returns(endpoint);

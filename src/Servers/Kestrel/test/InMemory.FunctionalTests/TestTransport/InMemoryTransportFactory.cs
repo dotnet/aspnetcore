@@ -35,24 +35,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         }
 
-        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
+        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
             EndPoint = endpoint;
 
-            // The endpoint isn't important
             return new ValueTask<IConnectionListener>(this);
         }
 
         public ValueTask DisposeAsync()
         {
-            return StopAsync(default);
+            return UnbindAsync(default);
         }
 
-        public ValueTask StopAsync(CancellationToken cancellationToken = default)
+        public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
         {
             _acceptQueue.Writer.TryComplete();
 
-            // TODO: Graceful shutdown
             return default;
         }
     }

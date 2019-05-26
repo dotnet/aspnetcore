@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 _connectionsPerEndPoint = connectionsPerEndPoint;
             }
 
-            public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
+            public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
             {
                 var connections = new InMemoryConnection[_connectionsPerEndPoint];
                 for (var i = 0; i < _connectionsPerEndPoint; i++)
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 return default;
             }
 
-            public ValueTask StopAsync(CancellationToken cancellationToken = default)
+            public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
             {
                 _tcs.TrySetResult(null);
                 return default;

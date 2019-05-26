@@ -3,6 +3,7 @@
 
 using System;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _trace = new SocketsTrace(logger);
         }
 
-        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint)
+        public ValueTask<IConnectionListener> BindAsync(EndPoint endpoint, CancellationToken cancellationToken = default)
         {
             var transport = new SocketConnectionListener(endpoint, _options, _trace);
             transport.Bind();

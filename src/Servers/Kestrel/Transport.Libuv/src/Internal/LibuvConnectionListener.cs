@@ -60,10 +60,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             return null;
         }
 
-        public async ValueTask StopAsync(CancellationToken cancellationToken = default)
+        public async ValueTask UnbindAsync(CancellationToken cancellationToken = default)
         {
-            await UnbindAsync().ConfigureAwait(false);
+            if (_stopped)
+            {
+                return;
+            }
+
+            _stopped = true;
+
+            var disposeTasks = _listeners.Select(listener => ((IAsyncDisposable)listener).DisposeAsync()).ToArray();
+
+            if (!await WaitAsync(Task.WhenAll(disposeTasks), TimeSpan.FromSeconds(5)).ConfigureAwait(false))
+            {
+                Log.LogError(0, null, "Disposing listeners failed");
+            }
         }
+
 
         public async ValueTask DisposeAsync()
         {
@@ -211,23 +224,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             static async Task<(LibuvConnection, int)> AcceptAsync(ListenerContext listener, int slot)
             {
                 return (await listener.AcceptAsync(), slot);
-            }
-        }
-
-        internal async Task UnbindAsync()
-        {
-            if (_stopped)
-            {
-                return;
-            }
-
-            _stopped = true;
-
-            var disposeTasks = _listeners.Select(listener => ((IAsyncDisposable)listener).DisposeAsync()).ToArray();
-
-            if (!await WaitAsync(Task.WhenAll(disposeTasks), TimeSpan.FromSeconds(5)).ConfigureAwait(false))
-            {
-                Log.LogError(0, null, "Disposing listeners failed");
             }
         }
 

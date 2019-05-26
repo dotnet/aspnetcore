@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
     public sealed partial class SocketTransportFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory
     {
         public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint) { throw null; }
+        public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
     public partial class SocketTransportOptions
     {
