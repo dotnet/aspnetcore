@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         bool Microsoft.AspNetCore.Connections.Features.IConnectionInherentKeepAliveFeature.HasInherentKeepAlive { get { throw null; } }
         public override System.IO.Pipelines.IDuplexPipe Transport { get { throw null; } set { } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public System.Threading.Tasks.Task DisposeAsync() { throw null; }
+        public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task StartAsync(Microsoft.AspNetCore.Connections.TransferFormat transferFormat, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
         public System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
