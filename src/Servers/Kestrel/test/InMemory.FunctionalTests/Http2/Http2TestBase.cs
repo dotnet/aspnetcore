@@ -23,7 +23,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.FlowControl;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
@@ -115,7 +114,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         protected static readonly byte[] _noData = new byte[0];
         protected static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2PeerSettings.MinAllowedMaxFrameSize));
 
-        private readonly MemoryPool<byte> _memoryPool = KestrelMemoryPool.Create();
+        private readonly MemoryPool<byte> _memoryPool = MemoryPoolFactory.Create();
 
         internal readonly Http2PeerSettings _clientSettings = new Http2PeerSettings();
         internal readonly HPackEncoder _hpackEncoder = new HPackEncoder();
@@ -1256,7 +1255,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             pauseWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             resumeWriterThreshold: serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+            minimumSegmentSize: memoryPool.GetMinimumSegmentSize()
         );
 
         private static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, MemoryPool<byte> memoryPool, PipeScheduler readerScheduler) => new PipeOptions
@@ -1267,7 +1266,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             pauseWriterThreshold: GetOutputResponseBufferSize(serviceContext),
             resumeWriterThreshold: GetOutputResponseBufferSize(serviceContext),
             useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+            minimumSegmentSize: memoryPool.GetMinimumSegmentSize()
         );
 
         private static long GetOutputResponseBufferSize(ServiceContext serviceContext)

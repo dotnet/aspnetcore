@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
@@ -107,8 +106,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 RequestBody = value;
                 var requestPipeReader = new StreamPipeReader(RequestBody, new StreamPipeReaderAdapterOptions(
-                    minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize,
-                    minimumReadThreshold: KestrelMemoryPool.MinimumSegmentSize / 4,
+                    minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize(),
+                    minimumReadThreshold: _context.MemoryPool.GetMinimumAllocSize(),
                     _context.MemoryPool));
                 RequestBodyPipeReader = requestPipeReader;
 
@@ -264,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set
             {
                 ResponseBody = value;
-                var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize, _context.MemoryPool);
+                var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool);
                 ResponsePipeWriter = responsePipeWriter;
 
                 // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
