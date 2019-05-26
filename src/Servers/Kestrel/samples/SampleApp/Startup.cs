@@ -95,9 +95,6 @@ namespace SampleApp
                         httpsOptions.SslProtocols = SslProtocols.Tls12;
                     });
 
-                    // Run callbacks on the transport thread
-                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
-
                     options.Listen(IPAddress.Loopback, basePort, listenOptions =>
                     {
                         // Uncomment the following to enable Nagle's algorithm for this endpoint.

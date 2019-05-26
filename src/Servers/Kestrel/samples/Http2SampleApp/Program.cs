@@ -29,9 +29,6 @@ namespace Http2SampleApp
                 {
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
-                    // Run callbacks on the transport thread
-                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
-
                     // Http/1.1 endpoint for comparison
                     options.Listen(IPAddress.Any, basePort, listenOptions =>
                     {

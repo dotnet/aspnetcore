@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 
 namespace PlaintextApp
 {
@@ -40,52 +39,11 @@ namespace PlaintextApp
                 {
                     options.Listen(IPAddress.Loopback, 5001);
                 })
-                // .UseLibuv()
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>()
                 .Build();
 
-            var hostTask = host.RunAsync();
-            var serverTask = ServerAsync(new SocketTransportFactory(), 5002);
-
-            await hostTask;;
-        }
-
-        private static async Task ServerAsync(IConnectionListenerFactory factory, int port)
-        {
-            await using var listener = await factory.BindAsync(new IPEndPoint(IPAddress.Loopback, port));
-
-            while (true)
-            {
-                var connection = await listener.AcceptAsync();
-
-                // Fire and forget so we can handle more than a single connection at a time
-                _ = HandleConnectionAsync(connection);
-
-                static async Task HandleConnectionAsync(ConnectionContext connection)
-                {
-                    await using (connection)
-                    {
-                        while (true)
-                        {
-                            var result = await connection.Transport.Input.ReadAsync();
-                            var buffer = result.Buffer;
-
-                            foreach (var segment in buffer)
-                            {
-                                await connection.Transport.Output.WriteAsync(segment);
-                            }
-
-                            if (result.IsCompleted)
-                            {
-                                break;
-                            }
-
-                            connection.Transport.Input.AdvanceTo(buffer.End);
-                        }
-                    }
-                }
-            }
+            await host.RunAsync();
         }
     }
 

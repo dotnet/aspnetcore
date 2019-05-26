@@ -51,9 +51,6 @@ namespace SystemdTestApp
                 {
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
-                    // Run callbacks on the transport thread
-                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
-
                     options.Listen(IPAddress.Loopback, basePort, listenOptions =>
                     {
                         // Uncomment the following to enable Nagle's algorithm for this endpoint.
