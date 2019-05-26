@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
@@ -21,6 +22,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv
         public int ThreadCount { get; set; } = ProcessorThreadCount;
 
         public bool NoDelay { get; set; }
+
+        public long? MaxReadBufferSize { get; set; } = PipeOptions.Default.PauseWriterThreshold;
+
+        public long? MaxWriteBufferSize { get; set; } = PipeOptions.Default.PauseWriterThreshold;
 
         internal Func<MemoryPool<byte>> MemoryPoolFactory { get; set; } = () => KestrelMemoryPool.Create();
 

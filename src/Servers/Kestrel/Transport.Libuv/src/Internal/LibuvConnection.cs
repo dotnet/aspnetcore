@@ -39,7 +39,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                                IPEndPoint remoteEndPoint,
                                IPEndPoint localEndPoint,
                                PipeOptions inputOptions = null,
-                               PipeOptions outputOptions = null)
+                               PipeOptions outputOptions = null,
+                               long? maxReadBufferSize = null,
+                               long? maxWriteBufferSize = null)
         {
             _socket = socket;
 
@@ -50,8 +52,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             Log = log;
             Thread = thread;
 
-            inputOptions ??= new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, Thread, useSynchronizationContext: false);
-            outputOptions ??= new PipeOptions(MemoryPool, Thread, PipeScheduler.ThreadPool, useSynchronizationContext: false);
+            maxReadBufferSize ??= 0;
+            maxWriteBufferSize ??= 0;
+
+            inputOptions ??= new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, Thread, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
+            outputOptions ??= new PipeOptions(MemoryPool, Thread, PipeScheduler.ThreadPool, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 

@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             _app = app;
             Context = context;
 
-            _host = TransportSelector.GetWebHostBuilder(context.MemoryPoolFactory)
+            _host = TransportSelector.GetWebHostBuilder(context.MemoryPoolFactory, context.ServerOptions.Limits.MaxRequestBufferSize)
                 .UseKestrel(options =>
                 {
                     configureKestrel(options);

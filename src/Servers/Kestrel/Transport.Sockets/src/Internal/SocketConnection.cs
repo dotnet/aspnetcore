@@ -34,7 +34,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private volatile Exception _shutdownReason;
         private Task _task;
 
-        internal SocketConnection(Socket socket, MemoryPool<byte> memoryPool, PipeScheduler scheduler, ISocketsTrace trace)
+        internal SocketConnection(Socket socket,
+                                  MemoryPool<byte> memoryPool,
+                                  PipeScheduler scheduler,
+                                  ISocketsTrace trace,
+                                  long? maxReadBufferSize = null,
+                                  long? maxWriteBufferSize = null)
         {
             Debug.Assert(socket != null);
             Debug.Assert(memoryPool != null);
@@ -58,8 +63,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             _receiver = new SocketReceiver(_socket, awaiterScheduler);
             _sender = new SocketSender(_socket, awaiterScheduler);
 
-            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, awaiterScheduler, useSynchronizationContext: false);
-            var outputOptions = new PipeOptions(MemoryPool, awaiterScheduler, PipeScheduler.ThreadPool, useSynchronizationContext: false);
+            maxReadBufferSize ??= 0;
+            maxWriteBufferSize ??= 0;
+
+            var inputOptions = new PipeOptions(MemoryPool, PipeScheduler.ThreadPool, awaiterScheduler, maxReadBufferSize.Value, maxReadBufferSize.Value / 2, useSynchronizationContext: false);
+            var outputOptions = new PipeOptions(MemoryPool, awaiterScheduler, PipeScheduler.ThreadPool, maxWriteBufferSize.Value, maxWriteBufferSize.Value / 2, useSynchronizationContext: false);
 
             var pair = DuplexPipe.CreateConnectionPair(inputOptions, outputOptions);
 

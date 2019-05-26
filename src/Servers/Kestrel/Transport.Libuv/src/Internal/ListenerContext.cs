@@ -87,7 +87,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                 }
 
-                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, InputOptions, OutputOptions);
+                var options = TransportContext.Options;
+                var connection = new LibuvConnection(socket, TransportContext.Log, Thread, remoteEndPoint, localEndPoint, InputOptions, OutputOptions, options.MaxReadBufferSize, options.MaxWriteBufferSize);
                 connection.Start();
 
                 bool accepted = _acceptQueue.Writer.TryWrite(connection);
