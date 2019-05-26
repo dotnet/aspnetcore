@@ -76,6 +76,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             Application = pair.Application;
         }
 
+        public PipeWriter Input => Application.Output;
+
+        public PipeReader Output => Application.Input;
+
         public override MemoryPool<byte> MemoryPool { get; }
 
         public void Start()

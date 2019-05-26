@@ -175,6 +175,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 Application = pair.Application;
             }
 
+            public PipeWriter Input => Application.Output;
+
+            public PipeReader Output => Application.Input;
+
             public ValueTask<FlushResult> SendRequestAsync(byte[] request)
             {
                 return Input.WriteAsync(request);

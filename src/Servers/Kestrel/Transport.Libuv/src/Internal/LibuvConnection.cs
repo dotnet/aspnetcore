@@ -65,6 +65,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             Application = pair.Application;
         }
 
+        public PipeWriter Input => Application.Output;
+
+        public PipeReader Output => Application.Input;
+
         public LibuvOutputConsumer OutputConsumer { get; set; }
         private ILibuvTrace Log { get; }
         private LibuvThread Thread { get; }

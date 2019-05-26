@@ -3,14 +3,12 @@
 
 using System;
 using System.Buffers;
-using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Sources;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTransport
@@ -39,6 +37,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
             ConnectionClosed = _connectionClosedTokenSource.Token;
         }
+
+        public PipeWriter Input => Application.Output;
+
+        public PipeReader Output => Application.Input;
 
         public Task WaitForReadTask { get; }
 

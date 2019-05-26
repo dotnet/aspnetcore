@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Connections
 {
     public partial class TransportConnection : IFeatureCollection
     {

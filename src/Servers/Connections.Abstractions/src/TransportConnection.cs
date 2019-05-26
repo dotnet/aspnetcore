@@ -7,10 +7,9 @@ using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Features;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
+namespace Microsoft.AspNetCore.Connections
 {
     public abstract partial class TransportConnection : ConnectionContext
     {
@@ -31,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public virtual MemoryPool<byte> MemoryPool { get; }
         
         public override IDuplexPipe Transport { get; set; }
+
         public IDuplexPipe Application { get; set; }
 
         public override IDictionary<object, object> Items
@@ -46,9 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             }
         }
 
-        public PipeWriter Input => Application.Output;
-        public PipeReader Output => Application.Input;
-
         public override CancellationToken ConnectionClosed { get; set; }
 
         // DO NOT remove this override to ConnectionContext.Abort. Doing so would cause
@@ -59,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         // sufficient to abort the connection if there is backpressure.
         public override void Abort(ConnectionAbortedException abortReason)
         {
-            Output.CancelPendingRead();
+            Application.Input.CancelPendingRead();
         }
     }
 }
