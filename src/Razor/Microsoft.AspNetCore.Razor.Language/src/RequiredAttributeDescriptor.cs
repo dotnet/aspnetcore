@@ -21,6 +21,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IReadOnlyList<RazorDiagnostic> Diagnostics { get; protected set; }
 
+        public IReadOnlyDictionary<string, string> Metadata { get; protected set; }
+
         public bool HasErrors
         {
             get

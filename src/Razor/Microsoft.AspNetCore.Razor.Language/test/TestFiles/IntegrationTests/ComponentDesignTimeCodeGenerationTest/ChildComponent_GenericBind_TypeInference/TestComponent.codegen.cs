@@ -23,7 +23,7 @@ namespace Test
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, -1, -1, Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                       Value
+                        Value
 
 #line default
 #line hidden
@@ -40,7 +40,7 @@ __o = typeof(MyComponent<>);
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(builder, -1, -1, Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                       Value
+                        Value
 
 #line default
 #line hidden

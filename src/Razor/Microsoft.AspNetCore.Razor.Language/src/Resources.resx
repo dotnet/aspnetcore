@@ -550,4 +550,13 @@
   <data name="DirectiveExpectsCSharpAttribute" xml:space="preserve">
     <value>The '{0}' directive expects a C# attribute.</value>
   </data>
+  <data name="TagHelper_InvalidBoundDirectiveAttributeName" xml:space="preserve">
+    <value>Invalid tag helper bound directive attribute '{1}' on tag helper '{0}'. The directive attribute '{2}' should start with a '@' character.</value>
+  </data>
+  <data name="TagHelper_InvalidBoundDirectiveAttributePrefix" xml:space="preserve">
+    <value>Invalid tag helper bound directive attribute '{1}' on tag helper '{0}'. Tag helpers cannot bind to directive attributes with prefix '{2}' because the prefix doesn't start with a '@' character.</value>
+  </data>
+  <data name="TagHelper_InvalidRequiredDirectiveAttributeName" xml:space="preserve">
+    <value>Invalid tag helper required directive attribute '{0}'. The directive attribute '{1}' should start with a '@' character.</value>
+  </data>
 </root>

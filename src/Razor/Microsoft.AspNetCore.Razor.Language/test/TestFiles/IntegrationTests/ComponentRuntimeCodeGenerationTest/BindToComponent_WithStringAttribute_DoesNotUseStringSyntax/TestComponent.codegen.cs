@@ -17,7 +17,7 @@ namespace Test
             builder.AddAttribute(1, "Value", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                       person.Name
+                        person.Name
 
 #line default
 #line hidden

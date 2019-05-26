@@ -26,7 +26,7 @@ namespace Test
             ));
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                  myInstance = default(Test.MyComponent);
+                   myInstance = default(Test.MyComponent);
 
 #line default
 #line hidden

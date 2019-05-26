@@ -7,9 +7,9 @@ Document -
         UsingDirective - (1:0,1 [30] x:\dir\subdir\Test\TestComponent.cshtml) - System.Threading.Tasks
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (31:1,0 [56] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (47:1,16 [36] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                MarkupElement - (31:1,0 [57] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (48:1,17 [36] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-                            IntermediateToken - (49:1,18 [33] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - async (e) => await Task.Delay(10)
+                            IntermediateToken - (50:1,19 [33] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - async (e) => await Task.Delay(10)
                             IntermediateToken -  - CSharp - )

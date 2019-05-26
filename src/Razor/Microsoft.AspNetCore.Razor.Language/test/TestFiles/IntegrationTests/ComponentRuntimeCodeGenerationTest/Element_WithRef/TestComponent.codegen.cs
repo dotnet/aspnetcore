@@ -19,7 +19,7 @@ namespace Test
             builder.AddElementReferenceCapture(3, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                    myElem = __value;
+                                     myElem = __value;
 
 #line default
 #line hidden

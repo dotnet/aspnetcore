@@ -1,5 +1,5 @@
-Source Location: (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (19:0,19 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 |123 + 456|
-Generated Location: (1029:27,18 [9] )
+Generated Location: (1030:27,19 [9] )
 |123 + 456|
 

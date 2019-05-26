@@ -29,7 +29,7 @@ using System.Threading.Tasks;
             __o = Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                  async () => await Task.Delay(10)
+                   async () => await Task.Delay(10)
 
 #line default
 #line hidden

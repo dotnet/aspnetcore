@@ -32,7 +32,7 @@ namespace Test
             builder.SetKey(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                someObject
+                                                 someObject
 
 #line default
 #line hidden

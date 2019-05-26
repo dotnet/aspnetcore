@@ -18,7 +18,7 @@ namespace Test
             builder.AddAttribute(2, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                          CurrentDate
+                           CurrentDate
 
 #line default
 #line hidden
@@ -26,7 +26,7 @@ namespace Test
             , 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                     Format
+                                                       Format
 
 #line default
 #line hidden

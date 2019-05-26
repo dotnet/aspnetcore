@@ -14,19 +14,19 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [79] x:\dir\subdir\Test\TestComponent.cshtml) - elem
-                    HtmlContent - (67:0,67 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (67:0,67 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                MarkupElement - (0:0,0 [80] x:\dir\subdir\Test\TestComponent.cshtml) - elem
+                    HtmlContent - (68:0,68 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (68:0,68 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
                     HtmlAttribute -  - attributebefore=" - "
                         HtmlAttributeValue - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
-                    ReferenceCapture - (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml) - myElem
+                    ReferenceCapture - (37:0,37 [6] x:\dir\subdir\Test\TestComponent.cshtml) - myElem
                     HtmlAttribute -  - attributeafter=" - "
-                        HtmlAttributeValue - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (60:0,60 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-                HtmlContent - (79:0,79 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (79:0,79 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (213:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (213:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (90:2,7 [122] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (90:2,7 [122] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Microsoft.AspNetCore.Components.ElementRef myElem;\n    public void Foo() { System.GC.KeepAlive(myElem); }\n
+                        HtmlAttributeValue - (61:0,61 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (61:0,61 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+                HtmlContent - (80:0,80 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (80:0,80 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                HtmlContent - (214:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (214:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (91:2,7 [122] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (91:2,7 [122] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private Microsoft.AspNetCore.Components.ElementRef myElem;\n    public void Foo() { System.GC.KeepAlive(myElem); }\n

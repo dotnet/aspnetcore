@@ -7,12 +7,12 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [95] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                Component - (0:0,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent -  - ChildContent - context
-                        HtmlContent - (44:0,44 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (44:0,44 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
+                        HtmlContent - (45:0,45 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (45:0,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
                         MarkupBlock -  - <el>further</el> content\n
-                    SetKey - (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml) - 123 + 456
+                    SetKey - (19:0,19 [9] x:\dir\subdir\Test\TestComponent.cshtml) - 123 + 456
                     ComponentAttribute -  - SomeProp - AttributeStructure.DoubleQuotes
-                        HtmlContent - (39:0,39 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (39:0,39 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
+                        HtmlContent - (40:0,40 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (40:0,40 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val

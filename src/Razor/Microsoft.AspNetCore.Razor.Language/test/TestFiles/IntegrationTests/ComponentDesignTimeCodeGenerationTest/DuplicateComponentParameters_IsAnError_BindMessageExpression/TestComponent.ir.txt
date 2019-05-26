@@ -14,24 +14,24 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [72] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (56:0,56 [12] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - AttributeStructure.DoubleQuotes
-                        CSharpExpression - (57:0,57 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (58:0,58 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - (s) => {}
-                    ComponentAttribute - (27:0,27 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Message - AttributeStructure.DoubleQuotes
+                Component - (0:0,0 [73] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (57:0,57 [12] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - AttributeStructure.DoubleQuotes
+                        CSharpExpression - (58:0,58 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (59:0,59 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - (s) => {}
+                    ComponentAttribute - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Message - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (28:0,28 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
+                            IntermediateToken - (29:0,29 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (27:0,27 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateInferred(this, __value => message = __value, message)
-                    ComponentAttribute - (27:0,27 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (28:0,28 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => message
-                HtmlContent - (72:0,72 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (72:0,72 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - (117:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (117:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (86:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (86:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string message = "hi";\n
+                HtmlContent - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (73:0,73 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (118:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (118:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (87:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (87:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string message = "hi";\n

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            // For each bind *usage* we need to rewrite the tag helper node to map to basic constructs.
+            // For each @bind *usage* we need to rewrite the tag helper node to map to basic constructs.
             var references = documentNode.FindDescendantReferences<TagHelperPropertyIntermediateNode>();
             var parameterReferences = documentNode.FindDescendantReferences<TagHelperAttributeParameterIntermediateNode>();
 
@@ -47,10 +47,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 ProcessDuplicates(parent);
             }
 
-            // First, collect all the non-parameterized bind or bind-* attributes.
+            // First, collect all the non-parameterized @bind or @bind-* attributes.
             // The dict key is a tuple of (parent, attributeName) to differentiate attributes with the same name in two different elements.
             // We don't have to worry about duplicate bound attributes in the same element
-            // like, <Foo bind="bar" bind="bar" />, because IR lowering takes care of that.
+            // like, <Foo @bind="bar" @bind="bar" />, because IR lowering takes care of that.
             var bindEntries = new Dictionary<(IntermediateNode, string), BindEntry>();
             for (var i = 0; i < references.Count; i++)
             {
@@ -64,13 +64,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     continue;
                 }
 
-                if (node.TagHelper.IsBindTagHelper() && node.AttributeName.StartsWith("bind"))
+                if (node.TagHelper.IsBindTagHelper() && node.IsDirectiveAttribute)
                 {
                     bindEntries[(parent, node.AttributeName)] = new BindEntry(reference);
                 }
             }
 
-            // Now collect all the parameterized attributes and store them along with their corresponding bind or bind-* attributes.
+            // Now collect all the parameterized attributes and store them along with their corresponding @bind or @bind-* attributes.
             for (var i = 0; i < parameterReferences.Count; i++)
             {
                 var parameterReference = parameterReferences[i];
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     continue;
                 }
 
-                if (node.TagHelper.IsBindTagHelper() && node.AttributeName.StartsWith("bind"))
+                if (node.TagHelper.IsBindTagHelper() && node.IsDirectiveAttribute)
                 {
                     // Check if this tag contains a corresponding non-parameterized bind node.
                     if (!bindEntries.TryGetValue((parent, node.AttributeNameWithoutParameter), out var entry))
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     }
                 }
 
-                // Also treat the general <input bind="..." /> as a 'fallback' for that case and remove it.
+                // Also treat the general <input @bind="..." /> as a 'fallback' for that case and remove it.
                 // This is a workaround for a limitation where you can't write a tag helper that binds only
                 // when a specific attribute is **not** present.
                 if (attribute != null &&
@@ -246,10 +246,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // For the nodes that are related to the bind-attribute rewrite them to look like a set of
             // 'normal' HTML attributes similar to the following transformation.
             //
-            // Input:   <MyComponent bind-Value="@currentCount" />
+            // Input:   <MyComponent @bind-Value="@currentCount" />
             // Output:  <MyComponent Value ="...<get the value>..." ValueChanged ="... <set the value>..." ValueExpression ="() => ...<get the value>..." />
             //
-            // This means that the expression that appears inside of 'bind' must be an LValue or else
+            // This means that the expression that appears inside of '@bind' must be an LValue or else
             // there will be errors. In general the errors that come from C# in this case are good enough
             // to understand the problem.
             //
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             valueAttributeName = null;
             changeAttributeName = null;
 
-            if (!attributeName.StartsWith("bind"))
+            if (!attributeName.StartsWith("@bind"))
             {
                 return false;
             }
@@ -473,7 +473,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 changeAttributeName = GetAttributeContent(bindEntry.BindEventNode)?.Content?.Trim('"');
             }
 
-            if (attributeName == "bind")
+            if (attributeName == "@bind")
             {
                 return true;
             }

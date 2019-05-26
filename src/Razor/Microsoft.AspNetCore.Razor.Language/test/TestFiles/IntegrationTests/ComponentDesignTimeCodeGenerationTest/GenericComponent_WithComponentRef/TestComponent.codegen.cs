@@ -43,7 +43,7 @@ namespace Test
             ));
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                     _my = default(Test.MyComponent<int>);
+                                      _my = default(Test.MyComponent<int>);
 
 #line default
 #line hidden

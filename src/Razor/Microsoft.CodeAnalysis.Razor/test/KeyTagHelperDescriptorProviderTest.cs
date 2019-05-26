@@ -55,8 +55,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var requiredAttribute = Assert.Single(rule.Attributes);
             Assert.Empty(requiredAttribute.Diagnostics);
-            Assert.Equal("key", requiredAttribute.DisplayName);
-            Assert.Equal("key", requiredAttribute.Name);
+            Assert.Equal("@key", requiredAttribute.DisplayName);
+            Assert.Equal("@key", requiredAttribute.Name);
             Assert.Equal(RequiredAttributeDescriptor.NameComparisonMode.FullMatch, requiredAttribute.NameComparison);
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 "Ensures that the component or element will be preserved across renders if (and only if) the supplied key value matches.",
                 attribute.Documentation);
 
-            Assert.Equal("key", attribute.Name);
+            Assert.Equal("@key", attribute.Name);
             Assert.Equal("Key", attribute.GetPropertyName());
             Assert.Equal("object Microsoft.AspNetCore.Components.Key.Key", attribute.DisplayName);
             Assert.Equal("System.Object", attribute.TypeName);

@@ -14,18 +14,18 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [22] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
-                    ComponentAttribute - (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - AttributeStructure.DoubleQuotes
+                Component - (0:0,0 [23] x:\dir\subdir\Test\TestComponent.cshtml) - Counter
+                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - v - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - y
+                            IntermediateToken - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - y
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (17:0,17 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (18:0,18 [1] x:\dir\subdir\Test\TestComponent.cshtml) - vChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => y = __value, y)
-                HtmlContent - (22:0,22 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (22:0,22 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - (56:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (56:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (31:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (31:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n
+                HtmlContent - (23:0,23 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (23:0,23 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (57:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (57:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (32:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (32:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string y = null;\n

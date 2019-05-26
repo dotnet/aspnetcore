@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 var reference = references[i];
                 var node = (TagHelperPropertyIntermediateNode)reference.Node;
 
-                if (node.TagHelper.IsRefTagHelper())
+                if (node.TagHelper.IsRefTagHelper() && node.IsDirectiveAttribute)
                 {
                     reference.Replace(RewriteUsage(@class, reference.Parent, node));
                 }

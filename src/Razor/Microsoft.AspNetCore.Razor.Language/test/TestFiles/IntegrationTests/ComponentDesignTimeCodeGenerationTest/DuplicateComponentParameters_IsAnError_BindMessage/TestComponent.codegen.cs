@@ -32,7 +32,7 @@ namespace Test
             __o = Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                               message
+                                                message
 
 #line default
 #line hidden

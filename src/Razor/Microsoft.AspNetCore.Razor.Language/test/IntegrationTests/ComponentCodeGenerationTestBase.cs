@@ -424,7 +424,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -469,7 +469,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<InputText bind-Value=""person.Name"" />
+<InputText @bind-Value=""person.Name"" />
 
 @functions 
 {
@@ -504,7 +504,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""42"";
 }");
@@ -543,7 +543,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -576,7 +576,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""42"";
 }");
@@ -613,7 +613,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -645,7 +645,7 @@ namespace Test
 }"));
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" bind-Value:event=""OnChanged"" />
+<MyComponent @bind-Value=""ParentValue"" @bind-Value:event=""OnChanged"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -675,7 +675,7 @@ namespace Test
 }"));
 
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" bind-Value:event=""OnChanged"" />
+<MyComponent @bind-Value=""ParentValue"" @bind-Value:event=""OnChanged"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -712,7 +712,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -749,7 +749,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -786,7 +786,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -825,7 +825,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-SomeParam=""ParentValue"" />
+<MyComponent @bind-SomeParam=""ParentValue"" />
 @code {
     public DateTime ParentValue { get; set; } = DateTime.Now;
 }");
@@ -862,7 +862,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-SomeParam=""ParentValue"" />
+<MyComponent @bind-SomeParam=""ParentValue"" />
 @code {
     public DateTime ParentValue { get; set; } = DateTime.Now;
 }");
@@ -891,7 +891,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<div bind=""@ParentValue"" />
+<div @bind=""@ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
@@ -919,7 +919,7 @@ namespace Test
 }"));
             // Act
             var generated = CompileToCSharp(@"
-<div bind-value=""ParentValue"" />
+<div @bind-value=""ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
@@ -947,7 +947,7 @@ namespace Test
 }"));
             // Act
             var generated = CompileToCSharp(@"
-<div bind-value=""@ParentValue"" />
+<div @bind-value=""@ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
@@ -965,7 +965,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input bind=""@ParentValue"" />
+<input @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -983,7 +983,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind=""@CurrentDate"" bind:format=""MM/dd/yyyy""/>
+<input type=""text"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
@@ -1001,7 +1001,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind=""@CurrentDate"" bind:format=""@Format""/>
+<input type=""text"" @bind=""@CurrentDate"" @bind:format=""@Format""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 
@@ -1021,7 +1021,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind=""@ParentValue"" />
+<input type=""text"" @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -1039,7 +1039,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""checkbox"" bind=""@Enabled"" />
+<input type=""checkbox"" @bind=""@Enabled"" />
 @code {
     public bool Enabled { get; set; }
 }");
@@ -1057,7 +1057,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind-value=""@ParentValue"" bind-value:event=""onchange"" />
+<input type=""text"" @bind-value=""@ParentValue"" @bind-value:event=""onchange"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -1075,7 +1075,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind-value=""@CurrentDate"" bind-value:event=""onchange"" bind-value:format=""MM/dd"" />
+<input type=""text"" @bind-value=""@CurrentDate"" @bind-value:event=""onchange"" @bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
@@ -2118,7 +2118,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<DynamicElement onclick=""@OnClick"" />
+<DynamicElement @onclick=""@OnClick"" />
 
 @code {
     private Action<UIMouseEventArgs> OnClick { get; set; }
@@ -2172,7 +2172,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input onclick=""foo"" />");
+<input @onclick=""foo"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2187,7 +2187,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input onclick=""@(() => { })"" />");
+<input @onclick=""@(() => { })"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2202,7 +2202,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input onclick=""@(x => { })"" />");
+<input @onclick=""@(x => { })"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2217,7 +2217,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input onclick=""@OnClick"" />
+<input @onclick=""@OnClick"" />
 @code {
     void OnClick() {
     }
@@ -2236,7 +2236,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input onclick=""@OnClick"" />
+<input @onclick=""@OnClick"" />
 @code {
     void OnClick(UIMouseEventArgs e) {
     }
@@ -2255,7 +2255,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input onclick=""@OnClick"" />
+<input @onclick=""@OnClick"" />
 @code {
     void OnClick(UIEventArgs e) {
     }
@@ -2275,7 +2275,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input onclick=""@OnClick"" />
+<input @onclick=""@OnClick"" />
 @code {
     Task OnClick() 
     {
@@ -2297,7 +2297,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input onclick=""@OnClick"" />
+<input @onclick=""@OnClick"" />
 @code {
     Task OnClick(UIMouseEventArgs e) 
     {
@@ -2319,7 +2319,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input onclick=""@(async () => await Task.Delay(10))"" />
+<input @onclick=""@(async () => await Task.Delay(10))"" />
 ");
 
             // Assert
@@ -2336,7 +2336,7 @@ namespace Test
             // Act
             var generated = CompileToCSharp(@"
 @using System.Threading.Tasks
-<input onclick=""@(async (e) => await Task.Delay(10))"" />
+<input @onclick=""@(async (e) => await Task.Delay(10))"" />
 ");
 
             // Assert
@@ -2352,7 +2352,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input onclick=""@(x => { })"" />");
+<input @onclick=""@(x => { })"" />");
 
             // Assert
             AssertDocumentNodeMatchesBaseline(generated.CodeDocument);
@@ -2367,7 +2367,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<input onclick=""@OnClick"" />
+<input @onclick=""@OnClick"" />
 @code {
     void OnClick(UIMouseEventArgs e) {
     }
@@ -2538,7 +2538,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent TItem=string bind-Item=Value/>
+<MyComponent TItem=string @bind-Item=Value/>
 @code {
     string Value;
 }");
@@ -2572,8 +2572,8 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Item=Value/>
-<MyComponent bind-Item=Value/>
+<MyComponent @bind-Item=Value/>
+<MyComponent @bind-Item=Value/>
 @code {
     string Value;
 }");
@@ -2602,7 +2602,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent TItem=string bind-Item=Value/>
+<MyComponent TItem=string @bind-Item=Value/>
 @code {
     string Value;
 }");
@@ -2632,7 +2632,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Item=Value Value=@(18)/>
+<MyComponent @bind-Item=Value Value=@(18)/>
 @code {
     string Value;
 }");
@@ -2867,7 +2867,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent TItem=int Item=""3"" key=""_someKey"" />
+<MyComponent TItem=int Item=""3"" @key=""_someKey"" />
 
 @code {
     private object _someKey = new object();
@@ -2898,7 +2898,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent Item=""3"" key=""_someKey"" />
+<MyComponent Item=""3"" @key=""_someKey"" />
 
 @code {
     private object _someKey = new object();
@@ -2929,7 +2929,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent TItem=int Item=""3"" ref=""_my"" />
+<MyComponent TItem=int Item=""3"" @ref=""_my"" />
 
 @code {
     private MyComponent<int> _my;
@@ -2961,7 +2961,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent Item=""3"" ref=""_my"" />
+<MyComponent Item=""3"" @ref=""_my"" />
 
 @code {
     private MyComponent<int> _my;
@@ -3025,7 +3025,7 @@ namespace Test.Shared
         {
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<elem attributebefore=""before"" key=""someObject"" attributeafter=""after"">Hello</elem>
+<elem attributebefore=""before"" @key=""someObject"" attributeafter=""after"">Hello</elem>
 
 @code {
     private object someObject = new object();
@@ -3043,7 +3043,7 @@ namespace Test.Shared
         {
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<input type=""text"" data-slider-min=""@Min"" key=""@someObject"" />
+<input type=""text"" data-slider-min=""@Min"" @key=""@someObject"" />
 
 @code {
         private object someObject = new object();
@@ -3075,7 +3075,7 @@ namespace Test
 
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<MyComponent ParamBefore=""before"" key=""someDate.Day"" ParamAfter=""after"" />
+<MyComponent ParamBefore=""before"" @key=""someDate.Day"" ParamAfter=""after"" />
 
 @code {
     private DateTime someDate = DateTime.Now;
@@ -3105,7 +3105,7 @@ namespace Test
 
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<MyComponent key=""123 + 456"" SomeProp=""val"">
+<MyComponent @key=""123 + 456"" SomeProp=""val"">
     Some <el>further</el> content
 </MyComponent>
 ");
@@ -3125,7 +3125,7 @@ namespace Test
         {
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<elem attributebefore=""before"" ref=""myElem"" attributeafter=""after"">Hello</elem>
+<elem attributebefore=""before"" @ref=""myElem"" attributeafter=""after"">Hello</elem>
 
 @code {
     private Microsoft.AspNetCore.Components.ElementRef myElem;
@@ -3144,7 +3144,7 @@ namespace Test
         {
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<input type=""text"" data-slider-min=""@Min"" ref=""@_element"" />
+<input type=""text"" data-slider-min=""@Min"" @ref=""@_element"" />
 
 @code {
         private ElementRef _element;
@@ -3177,7 +3177,7 @@ namespace Test
 
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<MyComponent ParamBefore=""before"" ref=""myInstance"" ParamAfter=""after"" />
+<MyComponent ParamBefore=""before"" @ref=""myInstance"" ParamAfter=""after"" />
 
 @code {
     private Test.MyComponent myInstance;
@@ -3208,7 +3208,7 @@ namespace Test
 
             // Arrange/Act
             var generated = CompileToCSharp(@"
-<MyComponent ref=""myInstance"" SomeProp=""val"">
+<MyComponent @ref=""myInstance"" SomeProp=""val"">
     Some <el>further</el> content
 </MyComponent>
 
@@ -3816,8 +3816,6 @@ namespace New.Test
             Assert.Same(ComponentDiagnosticFactory.DuplicateMarkupAttribute.Id, diagnostic.Id);
         }
 
-        // Right now this is almost indistinguishable from the previous case, but when we add the @ for directive attributes
-        // it won't be. This is a placeholder to be updated when that change goes in.
         [Fact]
         public void DuplicateMarkupAttributes_IsAnError_EventHandler()
         {
@@ -3826,7 +3824,7 @@ namespace New.Test
             // Act
             var generated = CompileToCSharp(@"
 <div>
-  <a onclick=""test()"" onclick=""@(() => {})"">Learn the ten cool tricks your compiler author will hate!</a>
+  <a @onclick=""test()"" onclick=""@(() => {})"">Learn the ten cool tricks your compiler author will hate!</a>
 </div>");
 
             // Assert
@@ -3866,7 +3864,7 @@ namespace New.Test
             // Act
             var generated = CompileToCSharp(@"
 <div>
-  <input type=""text"" value=""17"" bind=""@text""></input>
+  <input type=""text"" value=""17"" @bind=""@text""></input>
 </div>
 @functions {
     private string text = ""hi"";
@@ -3890,7 +3888,7 @@ namespace New.Test
             // Act
             var generated = CompileToCSharp(@"
 <div>
-  <input type=""text"" bind-value=""@text"" bind-value:event=""oninput"" oninput=""@(() => {})""></input>
+  <input type=""text"" @bind-value=""@text"" @bind-value:event=""oninput"" @oninput=""@(() => {})""></input>
 </div>
 @functions {
     private string text = ""hi"";
@@ -4015,7 +4013,7 @@ namespace Test
 "));
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent Message=""@message"" bind-Message=""@message"" />
+<MyComponent Message=""@message"" @bind-Message=""@message"" />
 @functions {
     string message = ""hi"";
 }
@@ -4050,7 +4048,7 @@ namespace Test
 "));
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent MessageChanged=""@((s) => {})"" bind-Message=""@message"" />
+<MyComponent MessageChanged=""@((s) => {})"" @bind-Message=""@message"" />
 @functions {
     string message = ""hi"";
 }
@@ -4085,7 +4083,7 @@ namespace Test
 "));
             // Act
             var generated = CompileToCSharp(@"
-<MyComponent bind-Message=""@message"" MessageExpression=""@((s) => {})"" />
+<MyComponent @bind-Message=""@message"" MessageExpression=""@((s) => {})"" />
 @functions {
     string message = ""hi"";
 }
@@ -4136,7 +4134,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<Counter bind-v=""y"" />
+<Counter @bind-v=""y"" />
 @code {
     string y = null;
 }
@@ -4170,7 +4168,7 @@ namespace Test
 
             // Act
             var generated = CompileToCSharp(@"
-<User bind-Name=""@UserName"" bind-IsActive=""@UserIsActive"" />
+<User @bind-Name=""@UserName"" @bind-IsActive=""@UserIsActive"" />
 
 @code {
     public string UserName { get; set; }
@@ -4262,7 +4260,7 @@ Welcome to your new app.
 
             // Act
             var generated = CompileToCSharp(@"
-<p onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
+<p @onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
 @code {
     public string ParentBgColor { get; set; } = ""#FFFFFF"";
 
@@ -4283,7 +4281,7 @@ Welcome to your new app.
         {
             // Act
             var generated = CompileToCSharp(@"
-<input onfocus='alert(""Test"");' />
+<input @onfocus='alert(""Test"");' />
 ");
 
             // Assert

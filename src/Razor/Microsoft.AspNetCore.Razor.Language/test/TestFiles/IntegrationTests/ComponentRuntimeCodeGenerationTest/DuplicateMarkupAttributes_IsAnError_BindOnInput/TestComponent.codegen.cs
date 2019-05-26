@@ -20,7 +20,7 @@ namespace Test
             builder.AddAttribute(4, "oninput", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIChangeEventArgs>(this, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                                              () => {}
+                                                                                 () => {}
 
 #line default
 #line hidden
@@ -29,7 +29,7 @@ namespace Test
             builder.AddAttribute(5, "value", Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                  text
+                                   text
 
 #line default
 #line hidden

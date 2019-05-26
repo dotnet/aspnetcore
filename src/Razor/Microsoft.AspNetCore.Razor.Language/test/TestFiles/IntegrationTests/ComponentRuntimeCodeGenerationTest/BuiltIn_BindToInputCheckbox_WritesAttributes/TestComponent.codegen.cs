@@ -18,7 +18,7 @@ namespace Test
             builder.AddAttribute(2, "checked", Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                              Enabled
+                               Enabled
 
 #line default
 #line hidden

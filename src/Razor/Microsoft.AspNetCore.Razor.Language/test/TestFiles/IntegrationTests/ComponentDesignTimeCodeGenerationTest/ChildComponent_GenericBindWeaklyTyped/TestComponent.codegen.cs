@@ -32,7 +32,7 @@ namespace Test
             __o = Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                    Value
+                                     Value
 
 #line default
 #line hidden

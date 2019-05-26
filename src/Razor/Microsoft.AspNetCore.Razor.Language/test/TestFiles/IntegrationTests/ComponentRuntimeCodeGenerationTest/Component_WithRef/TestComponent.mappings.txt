@@ -1,14 +1,14 @@
-Source Location: (39:0,39 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (40:0,40 [10] x:\dir\subdir\Test\TestComponent.cshtml)
 |myInstance|
-Generated Location: (863:21,39 [10] )
+Generated Location: (864:21,40 [10] )
 |myInstance|
 
-Source Location: (83:2,7 [104] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (84:2,7 [104] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }
 |
-Generated Location: (1150:33,7 [104] )
+Generated Location: (1151:33,7 [104] )
 |
     private Test.MyComponent myInstance;
     public void Foo() { System.GC.KeepAlive(myInstance); }

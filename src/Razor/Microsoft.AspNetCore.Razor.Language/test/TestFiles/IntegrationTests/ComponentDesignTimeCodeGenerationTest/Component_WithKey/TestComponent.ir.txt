@@ -14,17 +14,17 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [74] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                Component - (0:0,0 [75] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute -  - ParamBefore - AttributeStructure.DoubleQuotes
                         HtmlContent - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (26:0,26 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
-                    SetKey - (39:0,39 [12] x:\dir\subdir\Test\TestComponent.cshtml) - someDate.Day
+                    SetKey - (40:0,40 [12] x:\dir\subdir\Test\TestComponent.cshtml) - someDate.Day
                     ComponentAttribute -  - ParamAfter - AttributeStructure.DoubleQuotes
-                        HtmlContent - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-                HtmlContent - (74:0,74 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (74:0,74 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (135:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (135:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (85:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (85:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private DateTime someDate = DateTime.Now;\n
+                        HtmlContent - (66:0,66 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (66:0,66 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+                HtmlContent - (75:0,75 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (75:0,75 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                HtmlContent - (136:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (136:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (86:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (86:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private DateTime someDate = DateTime.Now;\n

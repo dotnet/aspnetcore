@@ -96,8 +96,8 @@ namespace Test
 
             var requiredAttribute = Assert.Single(rule.Attributes);
             Assert.Empty(requiredAttribute.Diagnostics);
-            Assert.Equal("bind-MyProperty", requiredAttribute.DisplayName);
-            Assert.Equal("bind-MyProperty", requiredAttribute.Name);
+            Assert.Equal("@bind-MyProperty", requiredAttribute.DisplayName);
+            Assert.Equal("@bind-MyProperty", requiredAttribute.Name);
             Assert.Equal(RequiredAttributeDescriptor.NameComparisonMode.FullMatch, requiredAttribute.NameComparison);
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
@@ -120,7 +120,7 @@ namespace Test
                     "delegate to the 'MyPropertyChanged' property of the component.",
                 attribute.Documentation);
 
-            Assert.Equal("bind-MyProperty", attribute.Name);
+            Assert.Equal("@bind-MyProperty", attribute.Name);
             Assert.Equal("MyProperty", attribute.GetPropertyName());
             Assert.Equal("System.Action<System.String> Test.MyComponent.MyProperty", attribute.DisplayName);
 
@@ -211,8 +211,8 @@ namespace Test
 
             var requiredAttribute = Assert.Single(rule.Attributes);
             Assert.Empty(requiredAttribute.Diagnostics);
-            Assert.Equal("bind-MyProperty", requiredAttribute.DisplayName);
-            Assert.Equal("bind-MyProperty", requiredAttribute.Name);
+            Assert.Equal("@bind-MyProperty", requiredAttribute.DisplayName);
+            Assert.Equal("@bind-MyProperty", requiredAttribute.Name);
             Assert.Equal(RequiredAttributeDescriptor.NameComparisonMode.FullMatch, requiredAttribute.NameComparison);
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
@@ -235,7 +235,7 @@ namespace Test
                     "delegate to the 'MyPropertyChanged' property of the component.",
                 attribute.Documentation);
 
-            Assert.Equal("bind-MyProperty", attribute.Name);
+            Assert.Equal("@bind-MyProperty", attribute.Name);
             Assert.Equal("MyProperty", attribute.GetPropertyName());
             Assert.Equal("Microsoft.AspNetCore.Components.EventCallback<System.String> Test.MyComponent.MyProperty", attribute.DisplayName);
 
@@ -361,13 +361,13 @@ namespace Test
 
             var requiredAttribute = Assert.Single(rule.Attributes);
             Assert.Empty(requiredAttribute.Diagnostics);
-            Assert.Equal("bind", requiredAttribute.DisplayName);
-            Assert.Equal("bind", requiredAttribute.Name);
+            Assert.Equal("@bind", requiredAttribute.DisplayName);
+            Assert.Equal("@bind", requiredAttribute.Name);
             Assert.Equal(RequiredAttributeDescriptor.NameComparisonMode.FullMatch, requiredAttribute.NameComparison);
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("bind"));
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
 
             // Invariants
             Assert.Empty(attribute.Diagnostics);
@@ -385,7 +385,7 @@ namespace Test
                     "delegate to the 'myevent' attribute.",
                 attribute.Documentation);
 
-            Assert.Equal("bind", attribute.Name);
+            Assert.Equal("@bind", attribute.Name);
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind", attribute.DisplayName);
 
@@ -404,7 +404,7 @@ namespace Test
             Assert.False(parameter.IsDefaultKind());
 
             Assert.Equal(
-                "Specifies a format to convert the value specified by the 'bind' attribute. " + 
+                "Specifies a format to convert the value specified by the '@bind' attribute. " + 
                 "The format string can currently only be used with expressions of type <code>DateTime</code>.",
                 parameter.Documentation);
 
@@ -460,11 +460,11 @@ namespace Test
             Assert.Equal(TagStructure.Unspecified, rule.TagStructure);
 
             var requiredAttribute = Assert.Single(rule.Attributes);
-            Assert.Equal("bind-myprop", requiredAttribute.DisplayName);
-            Assert.Equal("bind-myprop", requiredAttribute.Name);
+            Assert.Equal("@bind-myprop", requiredAttribute.DisplayName);
+            Assert.Equal("@bind-myprop", requiredAttribute.Name);
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("bind"));
-            Assert.Equal("bind-myprop", attribute.Name);
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            Assert.Equal("@bind-myprop", attribute.Name);
             Assert.Equal("Bind_myprop", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind_myprop", attribute.DisplayName);
 
@@ -516,11 +516,11 @@ namespace Test
             Assert.Equal(TagStructure.Unspecified, rule.TagStructure);
 
             var requiredAttribute = Assert.Single(rule.Attributes);
-            Assert.Equal("bind", requiredAttribute.DisplayName);
-            Assert.Equal("bind", requiredAttribute.Name);
+            Assert.Equal("@bind", requiredAttribute.DisplayName);
+            Assert.Equal("@bind", requiredAttribute.Name);
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("bind"));
-            Assert.Equal("bind", attribute.Name);
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            Assert.Equal("@bind", attribute.Name);
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind", attribute.DisplayName);
 
@@ -583,12 +583,12 @@ namespace Test
                 },
                 a =>
                 {
-                    Assert.Equal("bind", a.DisplayName);
-                    Assert.Equal("bind", a.Name);
+                    Assert.Equal("@bind", a.DisplayName);
+                    Assert.Equal("@bind", a.Name);
                 });
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("bind"));
-            Assert.Equal("bind", attribute.Name);
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            Assert.Equal("@bind", attribute.Name);
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind", attribute.DisplayName);
 
@@ -651,12 +651,12 @@ namespace Test
                 },
                 a =>
                 {
-                    Assert.Equal("bind-somevalue", a.DisplayName);
-                    Assert.Equal("bind-somevalue", a.Name);
+                    Assert.Equal("@bind-somevalue", a.DisplayName);
+                    Assert.Equal("@bind-somevalue", a.Name);
                 });
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("bind"));
-            Assert.Equal("bind-somevalue", attribute.Name);
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
+            Assert.Equal("@bind-somevalue", attribute.Name);
             Assert.Equal("Bind_somevalue", attribute.GetPropertyName());
             Assert.Equal("object Test.BindAttributes.Bind_somevalue", attribute.DisplayName);
 
@@ -705,7 +705,7 @@ namespace Test
 
             Assert.Equal(
                 "Binds the provided expression to an attribute and a change event, based on the naming of " +
-                    "the bind attribute. For example: <code>bind-value=\"...\"</code> and <code>bind-value:event=\"onchange\"</code> will assign the " +
+                    "the bind attribute. For example: <code>@bind-value=\"...\"</code> and <code>@bind-value:event=\"onchange\"</code> will assign the " +
                     "current value of the expression to the 'value' attribute, and assign a delegate that attempts " +
                     "to set the value to the 'onchange' attribute.",
                 bind.Documentation);
@@ -726,13 +726,13 @@ namespace Test
 
             var requiredAttribute = Assert.Single(rule.Attributes);
             Assert.Empty(requiredAttribute.Diagnostics);
-            Assert.Equal("bind-...", requiredAttribute.DisplayName);
-            Assert.Equal("bind-", requiredAttribute.Name);
+            Assert.Equal("@bind-...", requiredAttribute.DisplayName);
+            Assert.Equal("@bind-", requiredAttribute.Name);
             Assert.Equal(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch, requiredAttribute.NameComparison);
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
 
-            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("bind"));
+            var attribute = Assert.Single(bind.BoundAttributes, a => a.Name.StartsWith("@bind"));
 
             // Invariants
             Assert.Empty(attribute.Diagnostics);
@@ -743,17 +743,17 @@ namespace Test
             Assert.False(attribute.IsIndexerStringProperty);
 
             Assert.True(attribute.HasIndexer);
-            Assert.Equal("bind-", attribute.IndexerNamePrefix);
+            Assert.Equal("@bind-", attribute.IndexerNamePrefix);
             Assert.Equal("System.Object", attribute.IndexerTypeName);
 
             Assert.Equal(
                 "Binds the provided expression to an attribute and a change event, based on the naming of " +
-                    "the bind attribute. For example: <code>bind-value=\"...\"</code> and <code>bind-value:event=\"onchange\"</code> will assign the " +
+                    "the bind attribute. For example: <code>@bind-value=\"...\"</code> and <code>@bind-value:event=\"onchange\"</code> will assign the " +
                     "current value of the expression to the 'value' attribute, and assign a delegate that attempts " +
                     "to set the value to the 'onchange' attribute.",
                 attribute.Documentation);
 
-            Assert.Equal("bind-...", attribute.Name);
+            Assert.Equal("@bind-...", attribute.Name);
             Assert.Equal("Bind", attribute.GetPropertyName());
             Assert.Equal(
                 "System.Collections.Generic.Dictionary<string, object> Microsoft.AspNetCore.Components.Bind.Bind",
@@ -775,8 +775,8 @@ namespace Test
 
             Assert.Equal(
                 "Specifies a format to convert the value specified by the corresponding bind attribute. " +
-                    "For example: <code>bind-value:format=\"...\"</code> will apply a format string to the value " +
-                    "specified in <code>bind-value=\"...\"</code>. The format string can currently only be used with " +
+                    "For example: <code>@bind-value:format=\"...\"</code> will apply a format string to the value " +
+                    "specified in <code>@bind-value=\"...\"</code>. The format string can currently only be used with " +
                     "expressions of type <code>DateTime</code>.",
                 parameter.Documentation);
 

@@ -8,17 +8,17 @@ Source Location: (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1141:34,29 [1] )
 |3|
 
-Source Location: (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (38:0,38 [3] x:\dir\subdir\Test\TestComponent.cshtml)
 |_my|
-Generated Location: (1468:45,37 [3] )
+Generated Location: (1469:45,38 [3] )
 |_my|
 
-Source Location: (55:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (56:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private MyComponent<int> _my;
     public void Foo() { System.GC.KeepAlive(_my); }
 |
-Generated Location: (1833:61,7 [90] )
+Generated Location: (1834:61,7 [90] )
 |
     private MyComponent<int> _my;
     public void Foo() { System.GC.KeepAlive(_my); }

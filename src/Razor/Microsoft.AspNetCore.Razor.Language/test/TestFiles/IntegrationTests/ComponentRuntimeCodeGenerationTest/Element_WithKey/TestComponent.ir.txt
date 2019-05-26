@@ -7,15 +7,15 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [83] x:\dir\subdir\Test\TestComponent.cshtml) - elem
-                    HtmlContent - (71:0,71 [5] x:\dir\subdir\Test\TestComponent.cshtml)
-                        IntermediateToken - (71:0,71 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
+                MarkupElement - (0:0,0 [84] x:\dir\subdir\Test\TestComponent.cshtml) - elem
+                    HtmlContent - (72:0,72 [5] x:\dir\subdir\Test\TestComponent.cshtml)
+                        IntermediateToken - (72:0,72 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - Hello
                     HtmlAttribute -  - attributebefore=" - "
                         HtmlAttributeValue - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (23:0,23 [6] x:\dir\subdir\Test\TestComponent.cshtml) - Html - before
-                    SetKey - (36:0,36 [10] x:\dir\subdir\Test\TestComponent.cshtml) - someObject
+                    SetKey - (37:0,37 [10] x:\dir\subdir\Test\TestComponent.cshtml) - someObject
                     HtmlAttribute -  - attributeafter=" - "
-                        HtmlAttributeValue - (64:0,64 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
-                            IntermediateToken - (64:0,64 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
-            CSharpCode - (94:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (94:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object someObject = new object();\n
+                        HtmlAttributeValue - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml) - 
+                            IntermediateToken - (65:0,65 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Html - after
+            CSharpCode - (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (95:2,7 [49] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object someObject = new object();\n

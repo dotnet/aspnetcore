@@ -17,7 +17,7 @@ namespace Test
             builder.AddAttribute(1, "v", Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                 y
+                  y
 
 #line default
 #line hidden

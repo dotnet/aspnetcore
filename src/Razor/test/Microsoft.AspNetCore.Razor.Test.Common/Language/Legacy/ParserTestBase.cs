@@ -181,18 +181,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             AssertSyntaxTreeNodeMatchesBaseline(syntaxTree);
         }
 
-        internal RazorSyntaxTree ParseDocument(string document, bool designTime = false, IEnumerable<DirectiveDescriptor> directives = null, RazorParserFeatureFlags featureFlags = null)
+        internal RazorSyntaxTree ParseDocument(string document, bool designTime = false, IEnumerable<DirectiveDescriptor> directives = null, RazorParserFeatureFlags featureFlags = null, string fileKind = null)
         {
-            return ParseDocument(RazorLanguageVersion.Latest, document, directives, designTime, featureFlags);
+            return ParseDocument(RazorLanguageVersion.Latest, document, directives, designTime, featureFlags, fileKind);
         }
 
-        internal virtual RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false, RazorParserFeatureFlags featureFlags = null)
+        internal virtual RazorSyntaxTree ParseDocument(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false, RazorParserFeatureFlags featureFlags = null, string fileKind = null)
         {
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
             var source = TestRazorSourceDocument.Create(document, filePath: null, relativePath: null, normalizeNewLines: true);
 
-            var options = CreateParserOptions(version, directives, designTime, featureFlags);
+            var options = CreateParserOptions(version, directives, designTime, featureFlags, fileKind);
             var context = new ParserContext(source, options);
 
             var codeParser = new CSharpCodeParser(directives, context);
@@ -221,6 +221,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, null, false);
         }
 
+        internal virtual void ParseDocumentTest(string document, string fileKind)
+        {
+            ParseDocumentTest(document, null, false, fileKind);
+        }
+
         internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives)
         {
             ParseDocumentTest(document, directives, false);
@@ -231,14 +236,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, null, designTime);
         }
 
-        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, string fileKind = null)
         {
-            ParseDocumentTest(RazorLanguageVersion.Latest, document, directives, designTime);
+            ParseDocumentTest(RazorLanguageVersion.Latest, document, directives, designTime, fileKind);
         }
 
-        internal virtual void ParseDocumentTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
+        internal virtual void ParseDocumentTest(RazorLanguageVersion version, string document, IEnumerable<DirectiveDescriptor> directives, bool designTime, string fileKind = null)
         {
-            var result = ParseDocument(version, document, directives, designTime);
+            var result = ParseDocument(version, document, directives, designTime, fileKind: fileKind);
 
             BaselineTest(result);
         }
@@ -247,14 +252,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             RazorLanguageVersion version, 
             IEnumerable<DirectiveDescriptor> directives, 
             bool designTime,
-            RazorParserFeatureFlags featureFlags = null)
+            RazorParserFeatureFlags featureFlags = null,
+            string fileKind = null)
         {
             return new TestRazorParserOptions(
                 directives.ToArray(),
                 designTime,
                 parseLeadingDirectives: false,
                 version: version,
-                fileKind: FileKinds.Legacy,
+                fileKind: fileKind ?? FileKinds.Legacy,
                 featureFlags: featureFlags);
         }
 

@@ -28,7 +28,7 @@ namespace Microsoft.CodeAnalysis.Razor
             // both a 'value' attribute and a 'value changed' attribute.
             //
             // User types: 
-            //      <input type="text" bind="@FirstName"/>
+            //      <input type="text" @bind="@FirstName"/>
             //
             // We generate:
             //      <input type="text" 
@@ -36,7 +36,7 @@ namespace Microsoft.CodeAnalysis.Razor
             //          onchange="@EventCallbackFactory.CreateBinder(this, __value => FirstName = __value, FirstName)"/>
             //
             // This isn't very different from code the user could write themselves - thus the pronouncement
-            // that bind is very much like a macro.
+            // that @bind is very much like a macro.
             //
             // A lot of the value that provide in this case is that the associations between the
             // elements, and the attributes aren't straightforward.
@@ -46,23 +46,23 @@ namespace Microsoft.CodeAnalysis.Razor
             //
             // We handle a few different cases here:
             //
-            //  1.  When given an attribute like **anywhere**'bind-value="@FirstName"' and 'bind-value:event="onchange"' we will
+            //  1.  When given an attribute like **anywhere**'@bind-value="@FirstName"' and '@bind-value:event="onchange"' we will
             //      generate the 'value' attribute and 'onchange' attribute. 
             //
             //      We don't do any transformation or inference for this case, because the developer has
-            //      told us exactly what to do. This is the *full* form of bind, and should support any
+            //      told us exactly what to do. This is the *full* form of @bind, and should support any
             //      combination of element, component, and attributes.
             //
             //      This is the most general case, and is implemented with a built-in tag helper that applies
-            //      to everything, and binds to a dictionary of attributes that start with bind-.
+            //      to everything, and binds to a dictionary of attributes that start with @bind-.
             //
-            //  2.  We also support cases like 'bind-value="@FirstName"' where we will generate the 'value'
+            //  2.  We also support cases like '@bind-value="@FirstName"' where we will generate the 'value'
             //      attribute and another attribute based for a changed handler based on the metadata.
             //
             //     These mappings are provided by attributes that tell us what attributes, suffixes, and
             //      elements to map.
             //
-            //  3.  When given an attribute like 'bind="@FirstName"' we will generate a value and change
+            //  3.  When given an attribute like '@bind="@FirstName"' we will generate a value and change
             //      attribute solely based on the context. We need the context of an HTML tag to know
             //      what attributes to generate.
             //
@@ -134,18 +134,20 @@ namespace Microsoft.CodeAnalysis.Razor
                 rule.TagName = "*";
                 rule.Attribute(attribute =>
                 {
-                    attribute.Name = "bind-";
+                    attribute.Name = "@bind-";
                     attribute.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch;
+                    attribute.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                 });
             });
 
             builder.BindAttribute(attribute =>
             {
+                attribute.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                 attribute.Documentation = ComponentResources.BindTagHelper_Fallback_Documentation;
 
-                var attributeName = "bind-...";
+                var attributeName = "@bind-...";
                 attribute.Name = attributeName;
-                attribute.AsDictionary("bind-", typeof(object).FullName);
+                attribute.AsDictionary("@bind-", typeof(object).FullName);
 
                 // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                 // a C# property will crash trying to create the toolips.
@@ -267,7 +269,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 var entry = data[i];
 
                 var name = entry.Suffix == null ? "Bind" : "Bind_" + entry.Suffix;
-                var attributeName = entry.Suffix == null ? "bind" : "bind-" + entry.Suffix;
+                var attributeName = entry.Suffix == null ? "@bind" : "@bind-" + entry.Suffix;
 
                 var formatName = entry.Suffix == null ? "Format_" + entry.ValueAttribute : "Format_" + entry.Suffix;
                 var formatAttributeName = entry.Suffix == null ? "format-" + entry.ValueAttribute : "format-" + entry.Suffix;
@@ -322,11 +324,13 @@ namespace Microsoft.CodeAnalysis.Razor
                     {
                         a.Name = attributeName;
                         a.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.FullMatch;
+                        a.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                     });
                 });
 
                 builder.BindAttribute(a =>
                 {
+                    a.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                     a.Documentation = string.Format(
                         ComponentResources.BindTagHelper_Element_Documentation,
                         entry.ValueAttribute,
@@ -464,19 +468,21 @@ namespace Microsoft.CodeAnalysis.Razor
                         rule.TagName = tagHelper.TagMatchingRules.Single().TagName;
                         rule.Attribute(attribute =>
                         {
-                            attribute.Name = "bind-" + valueAttribute.Name;
+                            attribute.Name = "@bind-" + valueAttribute.Name;
                             attribute.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.FullMatch;
+                            attribute.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                         });
                     });
 
                     builder.BindAttribute(attribute =>
                     {
+                        attribute.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                         attribute.Documentation = string.Format(
                             ComponentResources.BindTagHelper_Component_Documentation,
                             valueAttribute.Name,
                             changeAttribute.Name);
 
-                        attribute.Name = "bind-" + valueAttribute.Name;
+                        attribute.Name = "@bind-" + valueAttribute.Name;
                         attribute.TypeName = changeAttribute.TypeName;
                         attribute.IsEnum = valueAttribute.IsEnum;
 

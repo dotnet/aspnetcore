@@ -16,7 +16,7 @@ namespace Test
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, 0, 1, Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                       Value
+                        Value
 
 #line default
 #line hidden
@@ -26,7 +26,7 @@ namespace Test
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_1(builder, 4, 5, Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                       Value
+                        Value
 
 #line default
 #line hidden

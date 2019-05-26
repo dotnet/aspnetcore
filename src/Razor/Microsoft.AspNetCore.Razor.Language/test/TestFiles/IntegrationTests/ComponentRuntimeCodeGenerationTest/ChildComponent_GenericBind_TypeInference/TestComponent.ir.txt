@@ -7,28 +7,28 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (23:0,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
+                Component - (0:0,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (23:0,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
+                            IntermediateToken - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (23:0,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (24:0,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
-                HtmlContent - (30:0,30 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (30:0,30 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                Component - (32:1,0 [30] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
-                    ComponentAttribute - (55:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
+                HtmlContent - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (31:0,31 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                Component - (33:1,0 [31] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (55:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
+                            IntermediateToken - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Value
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (55:1,23 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (57:1,24 [5] x:\dir\subdir\Test\TestComponent.cshtml) - ItemChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => Value = __value
-            CSharpCode - (71:2,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (71:2,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
+            CSharpCode - (73:2,7 [21] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (73:2,7 [21] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string Value;\n
     NamespaceDeclaration -  - __Blazor.Test.TestComponent
         ClassDeclaration -  - internal static - TypeInference -  - 
             ComponentTypeInferenceMethod -  - __Blazor.Test.TestComponent.TypeInference - CreateMyComponent_0

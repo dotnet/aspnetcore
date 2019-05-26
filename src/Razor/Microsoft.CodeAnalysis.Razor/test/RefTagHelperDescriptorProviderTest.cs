@@ -55,8 +55,8 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var requiredAttribute = Assert.Single(rule.Attributes);
             Assert.Empty(requiredAttribute.Diagnostics);
-            Assert.Equal("ref", requiredAttribute.DisplayName);
-            Assert.Equal("ref", requiredAttribute.Name);
+            Assert.Equal("@ref", requiredAttribute.DisplayName);
+            Assert.Equal("@ref", requiredAttribute.Name);
             Assert.Equal(RequiredAttributeDescriptor.NameComparisonMode.FullMatch, requiredAttribute.NameComparison);
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
@@ -76,7 +76,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 "Populates the specified field or property with a reference to the element or component.",
                 attribute.Documentation);
 
-            Assert.Equal("ref", attribute.Name);
+            Assert.Equal("@ref", attribute.Name);
             Assert.Equal("Ref", attribute.GetPropertyName());
             Assert.Equal("object Microsoft.AspNetCore.Components.Ref.Ref", attribute.DisplayName);
             Assert.Equal("System.Object", attribute.TypeName);

@@ -58,7 +58,7 @@ namespace Test
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
 
             Assert.Equal(
-                "Sets the 'onclick' attribute to the provided string or delegate value. " +
+                "Sets the '@onclick' attribute to the provided string or delegate value. " +
                 "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>'.",
                 item.Documentation);
 
@@ -78,8 +78,8 @@ namespace Test
 
             var requiredAttribute = Assert.Single(rule.Attributes);
             Assert.Empty(requiredAttribute.Diagnostics);
-            Assert.Equal("onclick", requiredAttribute.DisplayName);
-            Assert.Equal("onclick", requiredAttribute.Name);
+            Assert.Equal("@onclick", requiredAttribute.DisplayName);
+            Assert.Equal("@onclick", requiredAttribute.Name);
             Assert.Equal(RequiredAttributeDescriptor.NameComparisonMode.FullMatch, requiredAttribute.NameComparison);
             Assert.Null(requiredAttribute.Value);
             Assert.Equal(RequiredAttributeDescriptor.ValueComparisonMode.None, requiredAttribute.ValueComparison);
@@ -99,15 +99,16 @@ namespace Test
 
             Assert.Collection(
                 attribute.Metadata.OrderBy(kvp => kvp.Key),
+                kvp => Assert.Equal(kvp, new KeyValuePair<string, string>(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString)),
                 kvp => Assert.Equal(kvp, new KeyValuePair<string, string>("Common.PropertyName", "onclick")),
                 kvp => Assert.Equal(kvp, new KeyValuePair<string, string>(ComponentMetadata.Component.WeaklyTypedKey, bool.TrueString)));
 
             Assert.Equal(
-                "Sets the 'onclick' attribute to the provided string or delegate value. " +
+                "Sets the '@onclick' attribute to the provided string or delegate value. " +
                 "A delegate value should be of type 'System.Action<Microsoft.AspNetCore.Components.UIMouseEventArgs>'.",
                 attribute.Documentation);
 
-            Assert.Equal("onclick", attribute.Name);
+            Assert.Equal("@onclick", attribute.Name);
             Assert.Equal("onclick", attribute.GetPropertyName());
             Assert.Equal("string Test.EventHandlers.onclick", attribute.DisplayName);
 

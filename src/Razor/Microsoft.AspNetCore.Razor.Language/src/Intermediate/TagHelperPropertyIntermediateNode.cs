@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public bool IsIndexerNameMatch { get; set; }
 
+        public bool IsDirectiveAttribute => BoundAttribute?.IsDirectiveAttribute() ?? false;
+
         public override void Accept(IntermediateNodeVisitor visitor)
         {
             if (visitor == null)
@@ -36,6 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             formatter.WriteProperty(nameof(AttributeName), AttributeName);
             formatter.WriteProperty(nameof(AttributeStructure), AttributeStructure.ToString());
             formatter.WriteProperty(nameof(BoundAttribute), BoundAttribute?.DisplayName);
+            formatter.WriteProperty(nameof(IsDirectiveAttribute), IsDirectiveAttribute.ToString());
             formatter.WriteProperty(nameof(IsIndexerNameMatch), IsIndexerNameMatch.ToString());
             formatter.WriteProperty(nameof(TagHelper), TagHelper?.DisplayName);
         }

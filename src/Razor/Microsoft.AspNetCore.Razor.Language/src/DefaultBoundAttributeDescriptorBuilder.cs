@@ -158,6 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // data-* attributes are explicitly not implemented by user agents and are not intended for use on
             // the server; therefore it's invalid for TagHelpers to bind to them.
             const string DataDashPrefix = "data-";
+            var isDirectiveAttribute = this.IsDirectiveAttribute();
 
             if (string.IsNullOrWhiteSpace(Name))
             {
@@ -182,14 +183,29 @@ namespace Microsoft.AspNetCore.Razor.Language
                     yield return diagnostic;
                 }
 
-                foreach (var character in Name)
+                var name = Name;
+                if (isDirectiveAttribute && name.StartsWith("@"))
+                {
+                    name = name.Substring(1);
+                }
+                else if (isDirectiveAttribute)
+                {
+                    var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundDirectiveAttributeName(
+                            _parent.GetDisplayName(),
+                            GetDisplayName(),
+                            Name);
+
+                    yield return diagnostic;
+                }
+
+                foreach (var character in name)
                 {
                     if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeName(
                             _parent.GetDisplayName(),
                             GetDisplayName(),
-                            Name,
+                            name,
                             character);
 
                         yield return diagnostic;
@@ -218,14 +234,29 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
                 else
                 {
-                    foreach (var character in IndexerAttributeNamePrefix)
+                    var indexerPrefix = IndexerAttributeNamePrefix;
+                    if (isDirectiveAttribute && indexerPrefix.StartsWith("@"))
+                    {
+                        indexerPrefix = indexerPrefix.Substring(1);
+                    }
+                    else if (isDirectiveAttribute)
+                    {
+                        var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundDirectiveAttributePrefix(
+                            _parent.GetDisplayName(),
+                            GetDisplayName(),
+                            indexerPrefix);
+
+                        yield return diagnostic;
+                    }
+
+                    foreach (var character in indexerPrefix)
                     {
                         if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributePrefix(
                                 _parent.GetDisplayName(),
                                 GetDisplayName(),
-                                IndexerAttributeNamePrefix,
+                                indexerPrefix,
                                 character);
 
                             yield return diagnostic;

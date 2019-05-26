@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -49,6 +49,18 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var isIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, attribute);
             return isIndexerNameMatch && attribute.IsIndexerBooleanProperty;
+        }
+
+        internal static bool IsDirectiveAttribute(this BoundAttributeDescriptor attribute)
+        {
+            if (attribute == null)
+            {
+                throw new ArgumentNullException(nameof(attribute));
+            }
+
+            return
+                attribute.Metadata.TryGetValue(ComponentMetadata.Common.DirectiveAttribute, out var value) &&
+                string.Equals(bool.TrueString, value);
         }
 
         public static bool IsDefaultKind(this BoundAttributeParameterDescriptor parameter)

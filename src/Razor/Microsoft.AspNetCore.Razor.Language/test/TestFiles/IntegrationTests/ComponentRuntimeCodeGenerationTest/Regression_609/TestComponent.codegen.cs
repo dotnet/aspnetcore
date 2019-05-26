@@ -17,7 +17,7 @@ namespace Test
             builder.AddAttribute(1, "Name", Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                  UserName
+                   UserName
 
 #line default
 #line hidden
@@ -27,7 +27,7 @@ namespace Test
             builder.AddAttribute(3, "IsActive", Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                            UserIsActive
+                                              UserIsActive
 
 #line default
 #line hidden

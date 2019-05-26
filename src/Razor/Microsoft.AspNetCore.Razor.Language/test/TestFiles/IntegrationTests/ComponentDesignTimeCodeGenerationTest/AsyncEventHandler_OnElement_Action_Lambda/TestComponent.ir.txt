@@ -16,11 +16,11 @@ Document -
             MethodDeclaration -  - protected override - void - BuildRenderTree
                 HtmlContent - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml)
                     IntermediateToken - (29:0,29 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                MarkupElement - (31:1,0 [55] x:\dir\subdir\Test\TestComponent.cshtml) - input
-                    HtmlAttribute - (47:1,16 [35] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
+                MarkupElement - (31:1,0 [56] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                    HtmlAttribute - (48:1,17 [35] x:\dir\subdir\Test\TestComponent.cshtml) - onclick=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
-                            IntermediateToken - (49:1,18 [32] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - async () => await Task.Delay(10)
+                            IntermediateToken - (50:1,19 [32] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - async () => await Task.Delay(10)
                             IntermediateToken -  - CSharp - )
-                HtmlContent - (86:1,55 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (86:1,55 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (87:1,56 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (87:1,56 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

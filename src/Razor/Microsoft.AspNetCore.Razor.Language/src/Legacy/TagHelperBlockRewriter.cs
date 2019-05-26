@@ -176,16 +176,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var result = CreateTryParseResult(attributeBlock.Name.GetContent(), descriptors, processedBoundAttributeNames);
 
             result.AttributeStructure = AttributeStructure.Minimized;
-            var rewritten = SyntaxFactory.MarkupMinimizedTagHelperAttribute(
-                attributeBlock.NamePrefix,
-                attributeBlock.Name);
 
-            rewritten = rewritten.WithTagHelperAttributeInfo(
-                new TagHelperAttributeInfo(result.AttributeName, result.AttributeStructure, result.IsBoundAttribute));
+            if (result.IsDirectiveAttribute)
+            {
+                // Directive attributes have a different syntax.
+                result.RewrittenAttribute = RewriteToMinimizedDirectiveAttribute(attributeBlock, result);
 
-            result.RewrittenAttribute = rewritten;
+                return result;
+            }
+            else
+            {
+                var rewritten = SyntaxFactory.MarkupMinimizedTagHelperAttribute(
+                    attributeBlock.NamePrefix,
+                    attributeBlock.Name);
 
-            return result;
+                rewritten = rewritten.WithTagHelperAttributeInfo(
+                        new TagHelperAttributeInfo(result.AttributeName, parameterName: null, result.AttributeStructure, result.IsBoundAttribute, isDirectiveAttribute: false));
+
+                result.RewrittenAttribute = rewritten;
+
+                return result;
+            }
         }
 
         private static TryParseResult TryParseAttribute(
@@ -238,9 +249,84 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             var rewrittenValue = RewriteAttributeValue(result, attributeValue);
 
-            var rewritten = SyntaxFactory.MarkupTagHelperAttribute(
+            if (result.IsDirectiveAttribute)
+            {
+                // Directive attributes have a different syntax.
+                result.RewrittenAttribute = RewriteToDirectiveAttribute(attributeBlock, result, rewrittenValue);
+
+                return result;
+            }
+            else
+            {
+                var rewritten = SyntaxFactory.MarkupTagHelperAttribute(
+                    attributeBlock.NamePrefix,
+                    attributeBlock.Name,
+                    attributeBlock.NameSuffix,
+                    attributeBlock.EqualsToken,
+                    attributeBlock.ValuePrefix,
+                    rewrittenValue,
+                    attributeBlock.ValueSuffix);
+
+                rewritten = rewritten.WithTagHelperAttributeInfo(
+                    new TagHelperAttributeInfo(result.AttributeName, parameterName: null, result.AttributeStructure, result.IsBoundAttribute, isDirectiveAttribute: false));
+
+
+                result.RewrittenAttribute = rewritten;
+
+                return result;
+            }
+        }
+
+        private static MarkupTagHelperDirectiveAttributeSyntax RewriteToDirectiveAttribute(
+            MarkupAttributeBlockSyntax attributeBlock,
+            TryParseResult result,
+            MarkupTagHelperAttributeValueSyntax rewrittenValue)
+        {
+            // 
+            // Consider, <Foo @bind:param="..." />
+            // We're now going to rewrite @bind:param from a regular MarkupAttributeBlock to a MarkupTagHelperDirectiveAttribute.
+            // We need to split the name "@bind:param" into four parts,
+            // @ - Transition (MetaCode)
+            // bind - Name (Text)
+            // : - Colon (MetaCode)
+            // param - ParameterName (Text)
+            //
+            var attributeName = result.AttributeName;
+            var attributeNameSyntax = attributeBlock.Name;
+            var transition = SyntaxFactory.RazorMetaCode(
+                new SyntaxList<SyntaxToken>(SyntaxFactory.MissingToken(SyntaxKind.Transition)));
+            RazorMetaCodeSyntax colon = null;
+            MarkupTextLiteralSyntax parameterName = null;
+            if (attributeName.StartsWith("@"))
+            {
+                attributeName = attributeName.Substring(1);
+                var attributeNameToken = SyntaxFactory.Token(SyntaxKind.Text, attributeName);
+                attributeNameSyntax = SyntaxFactory.MarkupTextLiteral().AddLiteralTokens(attributeNameToken);
+
+                var transitionToken = SyntaxFactory.Token(SyntaxKind.Transition, "@");
+                transition = SyntaxFactory.RazorMetaCode(new SyntaxList<SyntaxToken>(transitionToken));
+            }
+
+            if (attributeName.IndexOf(':') != -1)
+            {
+                var segments = attributeName.Split(new[] { ':' }, 2);
+
+                var attributeNameToken = SyntaxFactory.Token(SyntaxKind.Text, segments[0]);
+                attributeNameSyntax = SyntaxFactory.MarkupTextLiteral().AddLiteralTokens(attributeNameToken);
+
+                var colonToken = SyntaxFactory.Token(SyntaxKind.Colon, ":");
+                colon = SyntaxFactory.RazorMetaCode(new SyntaxList<SyntaxToken>(colonToken));
+
+                var parameterNameToken = SyntaxFactory.Token(SyntaxKind.Text, segments[1]);
+                parameterName = SyntaxFactory.MarkupTextLiteral().AddLiteralTokens(parameterNameToken);
+            }
+
+            var rewritten = SyntaxFactory.MarkupTagHelperDirectiveAttribute(
                 attributeBlock.NamePrefix,
-                attributeBlock.Name,
+                transition,
+                attributeNameSyntax,
+                colon,
+                parameterName,
                 attributeBlock.NameSuffix,
                 attributeBlock.EqualsToken,
                 attributeBlock.ValuePrefix,
@@ -248,11 +334,65 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 attributeBlock.ValueSuffix);
 
             rewritten = rewritten.WithTagHelperAttributeInfo(
-                new TagHelperAttributeInfo(result.AttributeName, result.AttributeStructure, result.IsBoundAttribute));
+                new TagHelperAttributeInfo(result.AttributeName, parameterName?.GetContent(), result.AttributeStructure, result.IsBoundAttribute, isDirectiveAttribute: true));
 
-            result.RewrittenAttribute = rewritten;
+            return rewritten;
+        }
 
-            return result;
+        private static MarkupMinimizedTagHelperDirectiveAttributeSyntax RewriteToMinimizedDirectiveAttribute(
+            MarkupMinimizedAttributeBlockSyntax attributeBlock,
+            TryParseResult result)
+        {
+            // 
+            // Consider, <Foo @bind:param />
+            // We're now going to rewrite @bind:param from a regular MarkupAttributeBlock to a MarkupTagHelperDirectiveAttribute.
+            // We need to split the name "@bind:param" into four parts,
+            // @ - Transition (MetaCode)
+            // bind - Name (Text)
+            // : - Colon (MetaCode)
+            // param - ParameterName (Text)
+            //
+            var attributeName = result.AttributeName;
+            var attributeNameSyntax = attributeBlock.Name;
+            var transition = SyntaxFactory.RazorMetaCode(
+                new SyntaxList<SyntaxToken>(SyntaxFactory.MissingToken(SyntaxKind.Transition)));
+            RazorMetaCodeSyntax colon = null;
+            MarkupTextLiteralSyntax parameterName = null;
+            if (attributeName.StartsWith("@"))
+            {
+                attributeName = attributeName.Substring(1);
+                var attributeNameToken = SyntaxFactory.Token(SyntaxKind.Text, attributeName);
+                attributeNameSyntax = SyntaxFactory.MarkupTextLiteral().AddLiteralTokens(attributeNameToken);
+
+                var transitionToken = SyntaxFactory.Token(SyntaxKind.Transition, "@");
+                transition = SyntaxFactory.RazorMetaCode(new SyntaxList<SyntaxToken>(transitionToken));
+            }
+
+            if (attributeName.IndexOf(':') != -1)
+            {
+                var segments = attributeName.Split(new[] { ':' }, 2);
+
+                var attributeNameToken = SyntaxFactory.Token(SyntaxKind.Text, segments[0]);
+                attributeNameSyntax = SyntaxFactory.MarkupTextLiteral().AddLiteralTokens(attributeNameToken);
+
+                var colonToken = SyntaxFactory.Token(SyntaxKind.Colon, ":");
+                colon = SyntaxFactory.RazorMetaCode(new SyntaxList<SyntaxToken>(colonToken));
+
+                var parameterNameToken = SyntaxFactory.Token(SyntaxKind.Text, segments[1]);
+                parameterName = SyntaxFactory.MarkupTextLiteral().AddLiteralTokens(parameterNameToken);
+            }
+
+            var rewritten = SyntaxFactory.MarkupMinimizedTagHelperDirectiveAttribute(
+                attributeBlock.NamePrefix,
+                transition,
+                attributeNameSyntax,
+                colon,
+                parameterName);
+
+            rewritten = rewritten.WithTagHelperAttributeInfo(
+                new TagHelperAttributeInfo(result.AttributeName, parameterName?.GetContent(), result.AttributeStructure, result.IsBoundAttribute, isDirectiveAttribute: true));
+
+            return rewritten;
         }
 
         private static MarkupTagHelperAttributeValueSyntax RewriteAttributeValue(TryParseResult result, RazorBlockSyntax attributeValue)
@@ -301,6 +441,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var isBoundNonStringAttribute = false;
             var isBoundBooleanAttribute = false;
             var isMissingDictionaryKey = false;
+            var isDirectiveAttribute = false;
 
             foreach (var descriptor in descriptors)
             {
@@ -327,6 +468,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             name.Length == firstBoundAttribute.IndexerNamePrefix.Length;
                     }
 
+                    isDirectiveAttribute = firstBoundAttribute.IsDirectiveAttribute();
+
                     break;
                 }
             }
@@ -345,7 +488,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 IsBoundNonStringAttribute = isBoundNonStringAttribute,
                 IsBoundBooleanAttribute = isBoundBooleanAttribute,
                 IsMissingDictionaryKey = isMissingDictionaryKey,
-                IsDuplicateAttribute = isDuplicateAttribute
+                IsDuplicateAttribute = isDuplicateAttribute,
+                IsDirectiveAttribute = isDirectiveAttribute
             };
         }
 
@@ -354,6 +498,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             if (attributeBlock is MarkupTagHelperAttributeSyntax tagHelperAttribute)
             {
                 return tagHelperAttribute.Value?.GetContent();
+            }
+            else if (attributeBlock is MarkupTagHelperDirectiveAttributeSyntax directiveAttribute)
+            {
+                return directiveAttribute.Value?.GetContent();
             }
             else if (attributeBlock is MarkupAttributeBlockSyntax attribute)
             {
@@ -666,6 +814,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             public bool IsMissingDictionaryKey { get; set; }
 
             public bool IsDuplicateAttribute { get; set; }
+
+            public bool IsDirectiveAttribute { get; set; }
         }
     }
 }

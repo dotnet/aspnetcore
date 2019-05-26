@@ -14,16 +14,16 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [38] x:\dir\subdir\Test\TestComponent.cshtml) - InputText
-                    ComponentAttribute - (23:0,23 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
+                Component - (0:0,0 [39] x:\dir\subdir\Test\TestComponent.cshtml) - InputText
+                    ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Value - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (23:0,23 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
+                            IntermediateToken - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - person.Name
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (23:0,23 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (24:0,24 [11] x:\dir\subdir\Test\TestComponent.cshtml) - ValueChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - __value => person.Name = __value
-                HtmlContent - (38:0,38 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (38:0,38 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-            CSharpCode - (56:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (56:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Person person = new Person();\n
+                HtmlContent - (39:0,39 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (39:0,39 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+            CSharpCode - (57:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (57:3,1 [37] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    Person person = new Person();\n

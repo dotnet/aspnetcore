@@ -35,6 +35,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         MarkupTagHelperEndTag,
         MarkupTagHelperAttribute,
         MarkupMinimizedTagHelperAttribute,
+        MarkupTagHelperDirectiveAttribute,
+        MarkupMinimizedTagHelperDirectiveAttribute,
         MarkupTagHelperAttributeValue,
 
         // CSharp

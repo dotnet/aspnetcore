@@ -1,14 +1,14 @@
-Source Location: (36:0,36 [6] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (37:0,37 [6] x:\dir\subdir\Test\TestComponent.cshtml)
 |myElem|
-Generated Location: (879:24,36 [6] )
+Generated Location: (880:24,37 [6] )
 |myElem|
 
-Source Location: (90:2,7 [122] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (91:2,7 [122] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     private Microsoft.AspNetCore.Components.ElementRef myElem;
     public void Foo() { System.GC.KeepAlive(myElem); }
 |
-Generated Location: (1118:33,7 [122] )
+Generated Location: (1119:33,7 [122] )
 |
     private Microsoft.AspNetCore.Components.ElementRef myElem;
     public void Foo() { System.GC.KeepAlive(myElem); }

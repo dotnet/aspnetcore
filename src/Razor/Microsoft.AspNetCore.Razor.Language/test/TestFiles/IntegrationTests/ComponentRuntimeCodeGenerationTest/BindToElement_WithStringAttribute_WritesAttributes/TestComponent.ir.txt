@@ -7,14 +7,14 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [32] x:\dir\subdir\Test\TestComponent.cshtml) - div
-                    HtmlAttribute - (17:0,17 [11] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
+                MarkupElement - (0:0,0 [33] x:\dir\subdir\Test\TestComponent.cshtml) - div
+                    HtmlAttribute - (18:0,18 [11] x:\dir\subdir\Test\TestComponent.cshtml) - myvalue=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (17:0,17 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
+                            IntermediateToken - (18:0,18 [11] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - ParentValue
                             IntermediateToken -  - CSharp - )
-                    HtmlAttribute - (17:0,17 [11] x:\dir\subdir\Test\TestComponent.cshtml) - myevent=" - "
+                    HtmlAttribute - (18:0,18 [11] x:\dir\subdir\Test\TestComponent.cshtml) - myevent=" - "
                         CSharpExpressionAttributeValue -  - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => ParentValue = __value, ParentValue)
-            CSharpCode - (41:1,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (41:1,7 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n
+            CSharpCode - (42:1,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (42:1,7 [55] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string ParentValue { get; set; } = "hi";\n

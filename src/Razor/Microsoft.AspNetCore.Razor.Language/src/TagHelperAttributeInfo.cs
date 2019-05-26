@@ -7,18 +7,26 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public TagHelperAttributeInfo(
             string name,
+            string parameterName,
             AttributeStructure attributeStructure,
-            bool bound)
+            bool bound,
+            bool isDirectiveAttribute)
         {
             Name = name;
+            ParameterName = parameterName;
             AttributeStructure = attributeStructure;
             Bound = bound;
+            IsDirectiveAttribute = isDirectiveAttribute;
         }
 
         public string Name { get; }
 
+        public string ParameterName { get; }
+
         public AttributeStructure AttributeStructure { get; }
 
         public bool Bound { get; }
+
+        public bool IsDirectiveAttribute { get; }
     }
 }

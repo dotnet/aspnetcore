@@ -102,11 +102,12 @@ namespace Microsoft.CodeAnalysis.Razor
             for (var i = 0; i < data.Count; i++)
             {
                 var entry = data[i];
+                var attributeName = "@" + entry.Attribute;
 
                 var builder = TagHelperDescriptorBuilder.Create(ComponentMetadata.EventHandler.TagHelperKind, entry.Attribute, ComponentsApi.AssemblyName);
                 builder.Documentation = string.Format(
                     ComponentResources.EventHandlerTagHelper_Documentation,
-                    entry.Attribute,
+                    attributeName,
                     entry.EventArgsType.ToDisplayString());
 
                 builder.Metadata.Add(ComponentMetadata.SpecialKindKey, ComponentMetadata.EventHandler.TagHelperKind);
@@ -124,8 +125,9 @@ namespace Microsoft.CodeAnalysis.Razor
 
                     rule.Attribute(a =>
                     {
-                        a.Name = entry.Attribute;
+                        a.Name = attributeName;
                         a.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.FullMatch;
+                        a.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
                     });
                 });
 
@@ -133,10 +135,10 @@ namespace Microsoft.CodeAnalysis.Razor
                 {
                     a.Documentation = string.Format(
                         ComponentResources.EventHandlerTagHelper_Documentation,
-                        entry.Attribute,
+                        attributeName,
                         entry.EventArgsType.ToDisplayString());
 
-                    a.Name = entry.Attribute;
+                    a.Name = attributeName;
 
                     // Use a string here so that we get HTML context by default.
                     a.TypeName = typeof(string).FullName;
@@ -144,6 +146,8 @@ namespace Microsoft.CodeAnalysis.Razor
                     // But make this weakly typed (don't type check) - delegates have their own type-checking
                     // logic that we don't want to interfere with.
                     a.Metadata.Add(ComponentMetadata.Component.WeaklyTypedKey, bool.TrueString);
+
+                    a.Metadata[ComponentMetadata.Common.DirectiveAttribute] = bool.TrueString;
 
                     // WTE has a bug 15.7p1 where a Tag Helper without a display-name that looks like
                     // a C# property will crash trying to create the tooltips.

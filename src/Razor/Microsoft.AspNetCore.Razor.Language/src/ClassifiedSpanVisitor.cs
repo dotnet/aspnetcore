@@ -140,9 +140,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             foreach (var child in node.Attributes)
             {
-                if (child is MarkupTagHelperAttributeSyntax attribute)
+                if (child is MarkupTagHelperAttributeSyntax ||
+                    child is MarkupTagHelperDirectiveAttributeSyntax ||
+                    child is MarkupMinimizedTagHelperDirectiveAttributeSyntax)
                 {
-                    Visit(attribute);
+                    Visit(child);
                 }
             }
         }
@@ -167,6 +169,19 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override void VisitMarkupTagHelperAttribute(MarkupTagHelperAttributeSyntax node)
         {
             Visit(node.Value);
+        }
+
+        public override void VisitMarkupTagHelperDirectiveAttribute(MarkupTagHelperDirectiveAttributeSyntax node)
+        {
+            Visit(node.Transition);
+            Visit(node.Colon);
+            Visit(node.Value);
+        }
+
+        public override void VisitMarkupMinimizedTagHelperDirectiveAttribute(MarkupMinimizedTagHelperDirectiveAttributeSyntax node)
+        {
+            Visit(node.Transition);
+            Visit(node.Colon);
         }
 
         public override void VisitMarkupMinimizedAttributeBlock(MarkupMinimizedAttributeBlockSyntax node)

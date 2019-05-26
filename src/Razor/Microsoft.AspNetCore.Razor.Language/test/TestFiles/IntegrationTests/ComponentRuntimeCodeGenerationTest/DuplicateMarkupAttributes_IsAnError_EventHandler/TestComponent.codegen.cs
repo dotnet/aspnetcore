@@ -17,19 +17,18 @@ namespace Test
             builder.AddMarkupContent(1, "\r\n  ");
             builder.OpenElement(2, "a");
             builder.AddAttribute(3, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, "test()"));
-            builder.AddContent(4, 
+            builder.AddAttribute(4, "onclick", 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                 () => {}
+                                  () => {}
 
 #line default
 #line hidden
 #nullable disable
             );
-            builder.AddAttribute(5, "onclick", true);
-            builder.AddContent(6, "Learn the ten cool tricks your compiler author will hate!");
+            builder.AddContent(5, "Learn the ten cool tricks your compiler author will hate!");
             builder.CloseElement();
-            builder.AddMarkupContent(7, "\r\n");
+            builder.AddMarkupContent(6, "\r\n");
             builder.CloseElement();
         }
         #pragma warning restore 1998

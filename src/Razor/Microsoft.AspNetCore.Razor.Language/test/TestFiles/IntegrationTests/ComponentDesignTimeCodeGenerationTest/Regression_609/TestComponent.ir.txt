@@ -14,26 +14,26 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [60] x:\dir\subdir\Test\TestComponent.cshtml) - User
-                    ComponentAttribute - (17:0,17 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Name - AttributeStructure.DoubleQuotes
+                Component - (0:0,0 [62] x:\dir\subdir\Test\TestComponent.cshtml) - User
+                    ComponentAttribute - (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml) - Name - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (18:0,18 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserName
+                            IntermediateToken - (19:0,19 [8] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserName
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (17:0,17 [9] x:\dir\subdir\Test\TestComponent.cshtml) - NameChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml) - NameChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserName = __value, UserName)
-                    ComponentAttribute - (43:0,43 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActive - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (45:0,45 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActive - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (44:0,44 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserIsActive
+                            IntermediateToken - (46:0,46 [12] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - UserIsActive
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (43:0,43 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActiveChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (45:0,45 [13] x:\dir\subdir\Test\TestComponent.cshtml) - IsActiveChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateBinder(this, __value => UserIsActive = __value, UserIsActive)
-                HtmlContent - (60:0,60 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (60:0,60 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (160:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (160:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (71:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (71:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string UserName { get; set; }\n    public bool UserIsActive { get; set; }\n
+                HtmlContent - (62:0,62 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (62:0,62 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                HtmlContent - (162:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (162:5,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (73:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (73:2,7 [88] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    public string UserName { get; set; }\n    public bool UserIsActive { get; set; }\n

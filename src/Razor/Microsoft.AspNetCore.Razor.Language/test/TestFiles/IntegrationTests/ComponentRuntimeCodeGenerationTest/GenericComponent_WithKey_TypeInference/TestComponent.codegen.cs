@@ -24,7 +24,7 @@ namespace Test
             , 2, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                           _someKey
+                            _someKey
 
 #line default
 #line hidden

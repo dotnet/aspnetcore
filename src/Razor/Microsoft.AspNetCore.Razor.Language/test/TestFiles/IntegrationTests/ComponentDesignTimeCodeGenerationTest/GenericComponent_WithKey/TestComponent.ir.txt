@@ -14,15 +14,15 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [49] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                Component - (0:0,0 [50] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentTypeArgument - (19:0,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
                         IntermediateToken - (19:0,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - int
                     ComponentAttribute - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         IntermediateToken - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
-                    SetKey - (37:0,37 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _someKey
-                HtmlContent - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (49:0,49 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (108:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (108:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (60:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (60:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n
+                    SetKey - (38:0,38 [8] x:\dir\subdir\Test\TestComponent.cshtml) - _someKey
+                HtmlContent - (50:0,50 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (50:0,50 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                HtmlContent - (109:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (109:4,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (61:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (61:2,7 [47] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private object _someKey = new object();\n

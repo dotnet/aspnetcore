@@ -23,7 +23,7 @@ namespace Test
             __Blazor.Test.TestComponent.TypeInference.CreateMyComponent_0(builder, -1, -1, 
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                     18
+                                      18
 
 #line default
 #line hidden
@@ -31,7 +31,7 @@ namespace Test
             , -1, Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                       Value
+                        Value
 
 #line default
 #line hidden

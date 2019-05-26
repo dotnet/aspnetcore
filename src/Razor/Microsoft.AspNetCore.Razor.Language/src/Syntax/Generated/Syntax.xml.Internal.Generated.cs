@@ -2376,6 +2376,301 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
   }
 
+  internal sealed partial class MarkupTagHelperDirectiveAttributeSyntax : MarkupSyntaxNode
+  {
+    private readonly MarkupTextLiteralSyntax _namePrefix;
+    private readonly RazorMetaCodeSyntax _transition;
+    private readonly MarkupTextLiteralSyntax _name;
+    private readonly RazorMetaCodeSyntax _colon;
+    private readonly MarkupTextLiteralSyntax _parameterName;
+    private readonly MarkupTextLiteralSyntax _nameSuffix;
+    private readonly SyntaxToken _equalsToken;
+    private readonly MarkupTextLiteralSyntax _valuePrefix;
+    private readonly MarkupTagHelperAttributeValueSyntax _value;
+    private readonly MarkupTextLiteralSyntax _valueSuffix;
+
+    internal MarkupTagHelperDirectiveAttributeSyntax(SyntaxKind kind, MarkupTextLiteralSyntax namePrefix, RazorMetaCodeSyntax transition, MarkupTextLiteralSyntax name, RazorMetaCodeSyntax colon, MarkupTextLiteralSyntax parameterName, MarkupTextLiteralSyntax nameSuffix, SyntaxToken equalsToken, MarkupTextLiteralSyntax valuePrefix, MarkupTagHelperAttributeValueSyntax value, MarkupTextLiteralSyntax valueSuffix, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+        : base(kind, diagnostics, annotations)
+    {
+        SlotCount = 10;
+        if (namePrefix != null)
+        {
+            AdjustFlagsAndWidth(namePrefix);
+            _namePrefix = namePrefix;
+        }
+        AdjustFlagsAndWidth(transition);
+        _transition = transition;
+        AdjustFlagsAndWidth(name);
+        _name = name;
+        if (colon != null)
+        {
+            AdjustFlagsAndWidth(colon);
+            _colon = colon;
+        }
+        if (parameterName != null)
+        {
+            AdjustFlagsAndWidth(parameterName);
+            _parameterName = parameterName;
+        }
+        if (nameSuffix != null)
+        {
+            AdjustFlagsAndWidth(nameSuffix);
+            _nameSuffix = nameSuffix;
+        }
+        AdjustFlagsAndWidth(equalsToken);
+        _equalsToken = equalsToken;
+        if (valuePrefix != null)
+        {
+            AdjustFlagsAndWidth(valuePrefix);
+            _valuePrefix = valuePrefix;
+        }
+        AdjustFlagsAndWidth(value);
+        _value = value;
+        if (valueSuffix != null)
+        {
+            AdjustFlagsAndWidth(valueSuffix);
+            _valueSuffix = valueSuffix;
+        }
+    }
+
+
+    internal MarkupTagHelperDirectiveAttributeSyntax(SyntaxKind kind, MarkupTextLiteralSyntax namePrefix, RazorMetaCodeSyntax transition, MarkupTextLiteralSyntax name, RazorMetaCodeSyntax colon, MarkupTextLiteralSyntax parameterName, MarkupTextLiteralSyntax nameSuffix, SyntaxToken equalsToken, MarkupTextLiteralSyntax valuePrefix, MarkupTagHelperAttributeValueSyntax value, MarkupTextLiteralSyntax valueSuffix)
+        : base(kind)
+    {
+        SlotCount = 10;
+        if (namePrefix != null)
+        {
+            AdjustFlagsAndWidth(namePrefix);
+            _namePrefix = namePrefix;
+        }
+        AdjustFlagsAndWidth(transition);
+        _transition = transition;
+        AdjustFlagsAndWidth(name);
+        _name = name;
+        if (colon != null)
+        {
+            AdjustFlagsAndWidth(colon);
+            _colon = colon;
+        }
+        if (parameterName != null)
+        {
+            AdjustFlagsAndWidth(parameterName);
+            _parameterName = parameterName;
+        }
+        if (nameSuffix != null)
+        {
+            AdjustFlagsAndWidth(nameSuffix);
+            _nameSuffix = nameSuffix;
+        }
+        AdjustFlagsAndWidth(equalsToken);
+        _equalsToken = equalsToken;
+        if (valuePrefix != null)
+        {
+            AdjustFlagsAndWidth(valuePrefix);
+            _valuePrefix = valuePrefix;
+        }
+        AdjustFlagsAndWidth(value);
+        _value = value;
+        if (valueSuffix != null)
+        {
+            AdjustFlagsAndWidth(valueSuffix);
+            _valueSuffix = valueSuffix;
+        }
+    }
+
+    public MarkupTextLiteralSyntax NamePrefix { get { return _namePrefix; } }
+    public RazorMetaCodeSyntax Transition { get { return _transition; } }
+    public MarkupTextLiteralSyntax Name { get { return _name; } }
+    public RazorMetaCodeSyntax Colon { get { return _colon; } }
+    public MarkupTextLiteralSyntax ParameterName { get { return _parameterName; } }
+    public MarkupTextLiteralSyntax NameSuffix { get { return _nameSuffix; } }
+    public SyntaxToken EqualsToken { get { return _equalsToken; } }
+    public MarkupTextLiteralSyntax ValuePrefix { get { return _valuePrefix; } }
+    public MarkupTagHelperAttributeValueSyntax Value { get { return _value; } }
+    public MarkupTextLiteralSyntax ValueSuffix { get { return _valueSuffix; } }
+
+    internal override GreenNode GetSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return _namePrefix;
+            case 1: return _transition;
+            case 2: return _name;
+            case 3: return _colon;
+            case 4: return _parameterName;
+            case 5: return _nameSuffix;
+            case 6: return _equalsToken;
+            case 7: return _valuePrefix;
+            case 8: return _value;
+            case 9: return _valueSuffix;
+            default: return null;
+        }
+    }
+
+    internal override SyntaxNode CreateRed(SyntaxNode parent, int position)
+    {
+      return new Syntax.MarkupTagHelperDirectiveAttributeSyntax(this, parent, position);
+    }
+
+    public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+    {
+        return visitor.VisitMarkupTagHelperDirectiveAttribute(this);
+    }
+
+    public override void Accept(SyntaxVisitor visitor)
+    {
+        visitor.VisitMarkupTagHelperDirectiveAttribute(this);
+    }
+
+    public MarkupTagHelperDirectiveAttributeSyntax Update(MarkupTextLiteralSyntax namePrefix, RazorMetaCodeSyntax transition, MarkupTextLiteralSyntax name, RazorMetaCodeSyntax colon, MarkupTextLiteralSyntax parameterName, MarkupTextLiteralSyntax nameSuffix, SyntaxToken equalsToken, MarkupTextLiteralSyntax valuePrefix, MarkupTagHelperAttributeValueSyntax value, MarkupTextLiteralSyntax valueSuffix)
+    {
+        if (namePrefix != NamePrefix || transition != Transition || name != Name || colon != Colon || parameterName != ParameterName || nameSuffix != NameSuffix || equalsToken != EqualsToken || valuePrefix != ValuePrefix || value != Value || valueSuffix != ValueSuffix)
+        {
+            var newNode = SyntaxFactory.MarkupTagHelperDirectiveAttribute(namePrefix, transition, name, colon, parameterName, nameSuffix, equalsToken, valuePrefix, value, valueSuffix);
+            var diags = GetDiagnostics();
+            if (diags != null && diags.Length > 0)
+               newNode = newNode.WithDiagnosticsGreen(diags);
+            var annotations = GetAnnotations();
+            if (annotations != null && annotations.Length > 0)
+               newNode = newNode.WithAnnotationsGreen(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
+    {
+         return new MarkupTagHelperDirectiveAttributeSyntax(Kind, _namePrefix, _transition, _name, _colon, _parameterName, _nameSuffix, _equalsToken, _valuePrefix, _value, _valueSuffix, diagnostics, GetAnnotations());
+    }
+
+    internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
+    {
+         return new MarkupTagHelperDirectiveAttributeSyntax(Kind, _namePrefix, _transition, _name, _colon, _parameterName, _nameSuffix, _equalsToken, _valuePrefix, _value, _valueSuffix, GetDiagnostics(), annotations);
+    }
+  }
+
+  internal sealed partial class MarkupMinimizedTagHelperDirectiveAttributeSyntax : MarkupSyntaxNode
+  {
+    private readonly MarkupTextLiteralSyntax _namePrefix;
+    private readonly RazorMetaCodeSyntax _transition;
+    private readonly MarkupTextLiteralSyntax _name;
+    private readonly RazorMetaCodeSyntax _colon;
+    private readonly MarkupTextLiteralSyntax _parameterName;
+
+    internal MarkupMinimizedTagHelperDirectiveAttributeSyntax(SyntaxKind kind, MarkupTextLiteralSyntax namePrefix, RazorMetaCodeSyntax transition, MarkupTextLiteralSyntax name, RazorMetaCodeSyntax colon, MarkupTextLiteralSyntax parameterName, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
+        : base(kind, diagnostics, annotations)
+    {
+        SlotCount = 5;
+        if (namePrefix != null)
+        {
+            AdjustFlagsAndWidth(namePrefix);
+            _namePrefix = namePrefix;
+        }
+        AdjustFlagsAndWidth(transition);
+        _transition = transition;
+        AdjustFlagsAndWidth(name);
+        _name = name;
+        if (colon != null)
+        {
+            AdjustFlagsAndWidth(colon);
+            _colon = colon;
+        }
+        if (parameterName != null)
+        {
+            AdjustFlagsAndWidth(parameterName);
+            _parameterName = parameterName;
+        }
+    }
+
+
+    internal MarkupMinimizedTagHelperDirectiveAttributeSyntax(SyntaxKind kind, MarkupTextLiteralSyntax namePrefix, RazorMetaCodeSyntax transition, MarkupTextLiteralSyntax name, RazorMetaCodeSyntax colon, MarkupTextLiteralSyntax parameterName)
+        : base(kind)
+    {
+        SlotCount = 5;
+        if (namePrefix != null)
+        {
+            AdjustFlagsAndWidth(namePrefix);
+            _namePrefix = namePrefix;
+        }
+        AdjustFlagsAndWidth(transition);
+        _transition = transition;
+        AdjustFlagsAndWidth(name);
+        _name = name;
+        if (colon != null)
+        {
+            AdjustFlagsAndWidth(colon);
+            _colon = colon;
+        }
+        if (parameterName != null)
+        {
+            AdjustFlagsAndWidth(parameterName);
+            _parameterName = parameterName;
+        }
+    }
+
+    public MarkupTextLiteralSyntax NamePrefix { get { return _namePrefix; } }
+    public RazorMetaCodeSyntax Transition { get { return _transition; } }
+    public MarkupTextLiteralSyntax Name { get { return _name; } }
+    public RazorMetaCodeSyntax Colon { get { return _colon; } }
+    public MarkupTextLiteralSyntax ParameterName { get { return _parameterName; } }
+
+    internal override GreenNode GetSlot(int index)
+    {
+        switch (index)
+        {
+            case 0: return _namePrefix;
+            case 1: return _transition;
+            case 2: return _name;
+            case 3: return _colon;
+            case 4: return _parameterName;
+            default: return null;
+        }
+    }
+
+    internal override SyntaxNode CreateRed(SyntaxNode parent, int position)
+    {
+      return new Syntax.MarkupMinimizedTagHelperDirectiveAttributeSyntax(this, parent, position);
+    }
+
+    public override TResult Accept<TResult>(SyntaxVisitor<TResult> visitor)
+    {
+        return visitor.VisitMarkupMinimizedTagHelperDirectiveAttribute(this);
+    }
+
+    public override void Accept(SyntaxVisitor visitor)
+    {
+        visitor.VisitMarkupMinimizedTagHelperDirectiveAttribute(this);
+    }
+
+    public MarkupMinimizedTagHelperDirectiveAttributeSyntax Update(MarkupTextLiteralSyntax namePrefix, RazorMetaCodeSyntax transition, MarkupTextLiteralSyntax name, RazorMetaCodeSyntax colon, MarkupTextLiteralSyntax parameterName)
+    {
+        if (namePrefix != NamePrefix || transition != Transition || name != Name || colon != Colon || parameterName != ParameterName)
+        {
+            var newNode = SyntaxFactory.MarkupMinimizedTagHelperDirectiveAttribute(namePrefix, transition, name, colon, parameterName);
+            var diags = GetDiagnostics();
+            if (diags != null && diags.Length > 0)
+               newNode = newNode.WithDiagnosticsGreen(diags);
+            var annotations = GetAnnotations();
+            if (annotations != null && annotations.Length > 0)
+               newNode = newNode.WithAnnotationsGreen(annotations);
+            return newNode;
+        }
+
+        return this;
+    }
+
+    internal override GreenNode SetDiagnostics(RazorDiagnostic[] diagnostics)
+    {
+         return new MarkupMinimizedTagHelperDirectiveAttributeSyntax(Kind, _namePrefix, _transition, _name, _colon, _parameterName, diagnostics, GetAnnotations());
+    }
+
+    internal override GreenNode SetAnnotations(SyntaxAnnotation[] annotations)
+    {
+         return new MarkupMinimizedTagHelperDirectiveAttributeSyntax(Kind, _namePrefix, _transition, _name, _colon, _parameterName, GetDiagnostics(), annotations);
+    }
+  }
+
   internal abstract partial class CSharpSyntaxNode : RazorSyntaxNode
   {
     internal CSharpSyntaxNode(SyntaxKind kind, RazorDiagnostic[] diagnostics, SyntaxAnnotation[] annotations)
@@ -3675,6 +3970,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return DefaultVisit(node);
     }
 
+    public virtual TResult VisitMarkupTagHelperDirectiveAttribute(MarkupTagHelperDirectiveAttributeSyntax node)
+    {
+      return DefaultVisit(node);
+    }
+
+    public virtual TResult VisitMarkupMinimizedTagHelperDirectiveAttribute(MarkupMinimizedTagHelperDirectiveAttributeSyntax node)
+    {
+      return DefaultVisit(node);
+    }
+
     public virtual TResult VisitCSharpCodeBlock(CSharpCodeBlockSyntax node)
     {
       return DefaultVisit(node);
@@ -3865,6 +4170,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     }
 
     public virtual void VisitMarkupTagHelperAttributeValue(MarkupTagHelperAttributeValueSyntax node)
+    {
+      DefaultVisit(node);
+    }
+
+    public virtual void VisitMarkupTagHelperDirectiveAttribute(MarkupTagHelperDirectiveAttributeSyntax node)
+    {
+      DefaultVisit(node);
+    }
+
+    public virtual void VisitMarkupMinimizedTagHelperDirectiveAttribute(MarkupMinimizedTagHelperDirectiveAttributeSyntax node)
     {
       DefaultVisit(node);
     }
@@ -4128,6 +4443,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
     {
       var children = VisitList(node.Children);
       return node.Update(children);
+    }
+
+    public override GreenNode VisitMarkupTagHelperDirectiveAttribute(MarkupTagHelperDirectiveAttributeSyntax node)
+    {
+      var namePrefix = (MarkupTextLiteralSyntax)Visit(node.NamePrefix);
+      var transition = (RazorMetaCodeSyntax)Visit(node.Transition);
+      var name = (MarkupTextLiteralSyntax)Visit(node.Name);
+      var colon = (RazorMetaCodeSyntax)Visit(node.Colon);
+      var parameterName = (MarkupTextLiteralSyntax)Visit(node.ParameterName);
+      var nameSuffix = (MarkupTextLiteralSyntax)Visit(node.NameSuffix);
+      var equalsToken = (SyntaxToken)Visit(node.EqualsToken);
+      var valuePrefix = (MarkupTextLiteralSyntax)Visit(node.ValuePrefix);
+      var value = (MarkupTagHelperAttributeValueSyntax)Visit(node.Value);
+      var valueSuffix = (MarkupTextLiteralSyntax)Visit(node.ValueSuffix);
+      return node.Update(namePrefix, transition, name, colon, parameterName, nameSuffix, equalsToken, valuePrefix, value, valueSuffix);
+    }
+
+    public override GreenNode VisitMarkupMinimizedTagHelperDirectiveAttribute(MarkupMinimizedTagHelperDirectiveAttributeSyntax node)
+    {
+      var namePrefix = (MarkupTextLiteralSyntax)Visit(node.NamePrefix);
+      var transition = (RazorMetaCodeSyntax)Visit(node.Transition);
+      var name = (MarkupTextLiteralSyntax)Visit(node.Name);
+      var colon = (RazorMetaCodeSyntax)Visit(node.Colon);
+      var parameterName = (MarkupTextLiteralSyntax)Visit(node.ParameterName);
+      return node.Update(namePrefix, transition, name, colon, parameterName);
     }
 
     public override GreenNode VisitCSharpCodeBlock(CSharpCodeBlockSyntax node)
@@ -4663,6 +5003,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
       return result;
     }
 
+    public static MarkupTagHelperDirectiveAttributeSyntax MarkupTagHelperDirectiveAttribute(MarkupTextLiteralSyntax namePrefix, RazorMetaCodeSyntax transition, MarkupTextLiteralSyntax name, RazorMetaCodeSyntax colon, MarkupTextLiteralSyntax parameterName, MarkupTextLiteralSyntax nameSuffix, SyntaxToken equalsToken, MarkupTextLiteralSyntax valuePrefix, MarkupTagHelperAttributeValueSyntax value, MarkupTextLiteralSyntax valueSuffix)
+    {
+      if (transition == null)
+        throw new ArgumentNullException(nameof(transition));
+      if (name == null)
+        throw new ArgumentNullException(nameof(name));
+      if (equalsToken == null)
+        throw new ArgumentNullException(nameof(equalsToken));
+      switch (equalsToken.Kind)
+      {
+        case SyntaxKind.Equals:
+          break;
+        default:
+          throw new ArgumentException("equalsToken");
+      }
+      if (value == null)
+        throw new ArgumentNullException(nameof(value));
+
+      return new MarkupTagHelperDirectiveAttributeSyntax(SyntaxKind.MarkupTagHelperDirectiveAttribute, namePrefix, transition, name, colon, parameterName, nameSuffix, equalsToken, valuePrefix, value, valueSuffix);
+    }
+
+    public static MarkupMinimizedTagHelperDirectiveAttributeSyntax MarkupMinimizedTagHelperDirectiveAttribute(MarkupTextLiteralSyntax namePrefix, RazorMetaCodeSyntax transition, MarkupTextLiteralSyntax name, RazorMetaCodeSyntax colon, MarkupTextLiteralSyntax parameterName)
+    {
+      if (transition == null)
+        throw new ArgumentNullException(nameof(transition));
+      if (name == null)
+        throw new ArgumentNullException(nameof(name));
+
+      return new MarkupMinimizedTagHelperDirectiveAttributeSyntax(SyntaxKind.MarkupMinimizedTagHelperDirectiveAttribute, namePrefix, transition, name, colon, parameterName);
+    }
+
     public static CSharpCodeBlockSyntax CSharpCodeBlock(Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax.SyntaxList<RazorSyntaxNode> children)
     {
       var result = new CSharpCodeBlockSyntax(SyntaxKind.CSharpCodeBlock, children.Node);
@@ -4838,6 +5209,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Syntax.InternalSyntax
            typeof(MarkupTagHelperAttributeSyntax),
            typeof(MarkupMinimizedTagHelperAttributeSyntax),
            typeof(MarkupTagHelperAttributeValueSyntax),
+           typeof(MarkupTagHelperDirectiveAttributeSyntax),
+           typeof(MarkupMinimizedTagHelperDirectiveAttributeSyntax),
            typeof(CSharpCodeBlockSyntax),
            typeof(CSharpTransitionSyntax),
            typeof(CSharpStatementLiteralSyntax),

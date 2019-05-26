@@ -19,7 +19,7 @@ namespace Test
             builder.AddComponentReferenceCapture(3, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                       myInstance = (Test.MyComponent)__value;
+                                        myInstance = (Test.MyComponent)__value;
 
 #line default
 #line hidden

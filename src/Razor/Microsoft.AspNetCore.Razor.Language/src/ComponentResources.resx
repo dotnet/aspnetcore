@@ -139,13 +139,13 @@
     <value>Specifies a format to convert the value specified by the '{0}' attribute. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;.</value>
   </data>
   <data name="BindTagHelper_Fallback_Documentation" xml:space="preserve">
-    <value>Binds the provided expression to an attribute and a change event, based on the naming of the bind attribute. For example: &lt;code&gt;bind-value="..."&lt;/code&gt; and &lt;code&gt;bind-value:event="onchange"&lt;/code&gt; will assign the current value of the expression to the 'value' attribute, and assign a delegate that attempts to set the value to the 'onchange' attribute.</value>
+    <value>Binds the provided expression to an attribute and a change event, based on the naming of the bind attribute. For example: &lt;code&gt;@bind-value="..."&lt;/code&gt; and &lt;code&gt;@bind-value:event="onchange"&lt;/code&gt; will assign the current value of the expression to the 'value' attribute, and assign a delegate that attempts to set the value to the 'onchange' attribute.</value>
   </data>
   <data name="BindTagHelper_Fallback_Event_Documentation" xml:space="preserve">
     <value>Specifies the event handler name to attach for change notifications for the value provided by the '{0}' attribute.</value>
   </data>
   <data name="BindTagHelper_Fallback_Format_Documentation" xml:space="preserve">
-    <value>Specifies a format to convert the value specified by the corresponding bind attribute. For example: &lt;code&gt;bind-value:format="..."&lt;/code&gt; will apply a format string to the value specified in &lt;code&gt;bind-value="..."&lt;/code&gt;. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;.</value>
+    <value>Specifies a format to convert the value specified by the corresponding bind attribute. For example: &lt;code&gt;@bind-value:format="..."&lt;/code&gt; will apply a format string to the value specified in &lt;code&gt;@bind-value="..."&lt;/code&gt;. The format string can currently only be used with expressions of type &lt;code&gt;DateTime&lt;/code&gt;.</value>
   </data>
   <data name="ChildContentParameterName_Documentation" xml:space="preserve">
     <value>Specifies the parameter name for the '{0}' child content expression.</value>

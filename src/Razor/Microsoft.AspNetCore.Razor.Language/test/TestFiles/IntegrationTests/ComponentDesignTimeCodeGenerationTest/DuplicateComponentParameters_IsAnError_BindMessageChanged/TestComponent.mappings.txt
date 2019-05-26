@@ -3,16 +3,16 @@ Source Location: (31:0,31 [9] x:\dir\subdir\Test\TestComponent.cshtml)
 Generated Location: (1095:25,31 [9] )
 |(s) => {}|
 
-Source Location: (58:0,58 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (59:0,59 [7] x:\dir\subdir\Test\TestComponent.cshtml)
 |message|
-Generated Location: (1446:34,58 [7] )
+Generated Location: (1447:34,59 [7] )
 |message|
 
-Source Location: (83:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (84:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     string message = "hi";
 |
-Generated Location: (2461:57,12 [30] )
+Generated Location: (2462:57,12 [30] )
 |
     string message = "hi";
 |

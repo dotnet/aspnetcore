@@ -28,7 +28,7 @@ namespace Test
             builder.SetKey(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                       someDate.Day
+                                        someDate.Day
 
 #line default
 #line hidden

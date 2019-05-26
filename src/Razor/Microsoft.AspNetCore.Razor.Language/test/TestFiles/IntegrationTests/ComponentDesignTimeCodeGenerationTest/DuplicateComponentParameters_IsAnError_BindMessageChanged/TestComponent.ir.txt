@@ -14,24 +14,24 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [69] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                Component - (0:0,0 [70] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentAttribute - (29:0,29 [12] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - (30:0,30 [11] x:\dir\subdir\Test\TestComponent.cshtml)
                             IntermediateToken - (31:0,31 [9] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - (s) => {}
-                    ComponentAttribute - (57:0,57 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Message - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (58:0,58 [8] x:\dir\subdir\Test\TestComponent.cshtml) - Message - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.BindMethods.GetValue(
-                            IntermediateToken - (58:0,58 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
+                            IntermediateToken - (59:0,59 [7] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - message
                             IntermediateToken -  - CSharp - )
-                    ComponentAttribute - (57:0,57 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (58:0,58 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageChanged - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - Microsoft.AspNetCore.Components.EventCallback.Factory.CreateInferred(this, __value => message = __value, message)
-                    ComponentAttribute - (57:0,57 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - AttributeStructure.DoubleQuotes
+                    ComponentAttribute - (58:0,58 [8] x:\dir\subdir\Test\TestComponent.cshtml) - MessageExpression - AttributeStructure.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - () => message
-                HtmlContent - (69:0,69 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (69:0,69 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-                HtmlContent - (114:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (114:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (83:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (83:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string message = "hi";\n
+                HtmlContent - (70:0,70 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (70:0,70 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                HtmlContent - (115:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (115:3,1 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (84:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (84:1,12 [30] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    string message = "hi";\n

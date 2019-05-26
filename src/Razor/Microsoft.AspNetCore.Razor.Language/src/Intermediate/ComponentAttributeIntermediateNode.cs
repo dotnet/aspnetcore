@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Components;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
@@ -42,7 +41,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(propertyNode));
             }
 
-            AttributeName = propertyNode.AttributeName;
+            var attributeName = propertyNode.AttributeName;
+            if (propertyNode.IsDirectiveAttribute && attributeName.StartsWith("@"))
+            {
+                // Directive attributes start with a "@" but we don't want that to be included in the output attribute name.
+                // E.g, <input @onclick="..." /> should result in the creation of 'onclick' attribute.
+                attributeName = attributeName.Substring(1);
+            }
+
+            AttributeName = attributeName;
             AttributeStructure = propertyNode.AttributeStructure;
             BoundAttribute = propertyNode.BoundAttribute;
             PropertyName = propertyNode.BoundAttribute.GetPropertyName();

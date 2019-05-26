@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     continue;
                 }
 
-                if (node.TagHelper.IsEventHandlerTagHelper())
+                if (node.TagHelper.IsEventHandlerTagHelper() && node.IsDirectiveAttribute)
                 {
                     reference.Replace(RewriteUsage(reference.Parent, node));
                 }
@@ -147,6 +147,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 tokens.Insert(i + 1, original[i]);
             }
 
+            var attributeName = node.AttributeName;
+            if (node.IsDirectiveAttribute && attributeName.StartsWith("@"))
+            {
+                // Directive attributes start with a "@" but we don't want that to be included in the output attribute name.
+                // E.g, <input @onclick="..." /> should result in the creation of 'onclick' attribute.
+                attributeName = attributeName.Substring(1);
+            }
             if (parent is MarkupElementIntermediateNode)
             {
                 var result = new HtmlAttributeIntermediateNode()
@@ -155,10 +162,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     {
                         [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
                     },
-                    AttributeName = node.AttributeName,
+                    AttributeName = attributeName,
                     Source = node.Source,
 
-                    Prefix = node.AttributeName + "=\"",
+                    Prefix = attributeName + "=\"",
                     Suffix = "\"",
                 };
 

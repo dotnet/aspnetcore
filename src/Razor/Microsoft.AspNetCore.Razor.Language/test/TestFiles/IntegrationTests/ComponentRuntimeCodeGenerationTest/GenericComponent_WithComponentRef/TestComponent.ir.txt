@@ -7,11 +7,11 @@ Document -
         UsingDirective - (104:5,1 [39] ) - Microsoft.AspNetCore.Components
         ClassDeclaration -  - public - TestComponent - Microsoft.AspNetCore.Components.ComponentBase - 
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [44] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                Component - (0:0,0 [45] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentTypeArgument - (19:0,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - TItem
                         IntermediateToken - (19:0,19 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - int
                     ComponentAttribute - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - Item - AttributeStructure.DoubleQuotes
                         IntermediateToken - (29:0,29 [1] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - 3
-                    ReferenceCapture - (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - _my
-            CSharpCode - (55:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (55:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private MyComponent<int> _my;\n    public void Foo() { System.GC.KeepAlive(_my); }\n
+                    ReferenceCapture - (38:0,38 [3] x:\dir\subdir\Test\TestComponent.cshtml) - _my
+            CSharpCode - (56:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (56:2,7 [90] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n    private MyComponent<int> _my;\n    public void Foo() { System.GC.KeepAlive(_my); }\n

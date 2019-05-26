@@ -1,8 +1,8 @@
-Source Location: (49:1,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (50:1,7 [55] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     public string ParentValue { get; set; } = "42";
 |
-Generated Location: (1452:31,7 [55] )
+Generated Location: (1453:31,7 [55] )
 |
     public string ParentValue { get; set; } = "42";
 |

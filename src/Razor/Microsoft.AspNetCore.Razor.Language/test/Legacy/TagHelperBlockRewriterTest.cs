@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -2153,6 +2154,94 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             EvaluateData(descriptors, document, featureFlags: featureFlags);
         }
 
+        [Fact]
+        public void Rewrites_ComponentDirectiveAttributes()
+        {
+            // Arrange
+            var document = @"<input @bind-value=""Message"" @bind-value:event=""onchange"" />";
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, "Bind", ComponentsApi.AssemblyName)
+                    .AddMetadata(ComponentMetadata.SpecialKindKey, ComponentMetadata.Bind.TagHelperKind)
+                    .AddMetadata(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString)
+                    .AddMetadata(TagHelperMetadata.Runtime.Name, ComponentMetadata.Bind.RuntimeName)
+                    .TypeName("Microsoft.AspNetCore.Components.Bind")
+                    .AddMetadata(ComponentMetadata.Bind.FallbackKey, bool.TrueString)
+                    .TagMatchingRuleDescriptor(rule =>
+                        rule
+                            .RequireTagName("*")
+                            .RequireAttributeDescriptor(r =>
+                            {
+                                r.Name = "@bind-";
+                                r.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch;
+                                r.Metadata.Add(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString);
+                            }))
+                    .BoundAttributeDescriptor(attribute =>
+                        attribute
+                        .Name("@bind-...")
+                        .PropertyName("Bind")
+                        .AsDictionaryAttribute("@bind-", typeof(object).FullName)
+                        .TypeName("System.Collections.Generic.Dictionary<string, object>")
+                        .AddMetadata(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString)
+                        .BindAttributeParameter(p =>
+                        {
+                            p.Name = "event";
+                            p.TypeName = typeof(string).FullName;
+                            p.SetPropertyName("Event");
+                        }))
+                    .Build(),
+            };
+
+            var featureFlags = new TestRazorParserFeatureFlags(allowCSharpInMarkupAttributeArea: false);
+
+            // Act & Assert
+            EvaluateData(descriptors, document, featureFlags: featureFlags);
+        }
+
+        [Fact]
+        public void Rewrites_MinimizedComponentDirectiveAttributes()
+        {
+            // Arrange
+            var document = @"<input @bind-foo @bind-foo:param />";
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create(ComponentMetadata.Bind.TagHelperKind, "Bind", ComponentsApi.AssemblyName)
+                    .AddMetadata(ComponentMetadata.SpecialKindKey, ComponentMetadata.Bind.TagHelperKind)
+                    .AddMetadata(TagHelperMetadata.Common.ClassifyAttributesOnly, bool.TrueString)
+                    .AddMetadata(TagHelperMetadata.Runtime.Name, ComponentMetadata.Bind.RuntimeName)
+                    .TypeName("Microsoft.AspNetCore.Components.Bind")
+                    .AddMetadata(ComponentMetadata.Bind.FallbackKey, bool.TrueString)
+                    .TagMatchingRuleDescriptor(rule =>
+                        rule
+                            .RequireTagName("*")
+                            .RequireAttributeDescriptor(r =>
+                            {
+                                r.Name = "@bind-";
+                                r.NameComparisonMode = RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch;
+                                r.Metadata.Add(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString);
+                            }))
+                    .BoundAttributeDescriptor(attribute =>
+                        attribute
+                        .Name("@bind-...")
+                        .PropertyName("Bind")
+                        .AsDictionaryAttribute("@bind-", typeof(object).FullName)
+                        .TypeName("System.Collections.Generic.Dictionary<string, object>")
+                        .AddMetadata(ComponentMetadata.Common.DirectiveAttribute, bool.TrueString)
+                        .BindAttributeParameter(p =>
+                        {
+                            p.Name = "param";
+                            p.TypeName = typeof(string).FullName;
+                            p.SetPropertyName("Param");
+                        }))
+                    .Build(),
+            };
+
+            var featureFlags = new TestRazorParserFeatureFlags(allowCSharpInMarkupAttributeArea: false);
+
+            // Act & Assert
+            EvaluateData(descriptors, document, featureFlags: featureFlags);
+        }
+
         private class TestRazorParserFeatureFlags : RazorParserFeatureFlags
         {
             public TestRazorParserFeatureFlags(
@@ -2161,7 +2250,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 bool allowComponentFileKind = false,
                 bool allowRazorInCodeBlockDirectives = false,
                 bool allowUsingVariableDeclarations = false,
-                bool allowConditionalDataDashAttributesInComponents = false)
+                bool allowConditionalDataDashAttributesInComponents = false,
+                bool allowCSharpInMarkupAttributeArea = true)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
                 AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelper;
@@ -2169,6 +2259,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 AllowRazorInAllCodeBlocks = allowRazorInCodeBlockDirectives;
                 AllowUsingVariableDeclarations = allowUsingVariableDeclarations;
                 AllowConditionalDataDashAttributes = allowConditionalDataDashAttributesInComponents;
+                AllowCSharpInMarkupAttributeArea = allowCSharpInMarkupAttributeArea;
             }
 
             public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
@@ -2182,6 +2273,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             public override bool AllowUsingVariableDeclarations { get; }
 
             public override bool AllowConditionalDataDashAttributes { get; }
+
+            public override bool AllowCSharpInMarkupAttributeArea { get; }
         }
     }
 }

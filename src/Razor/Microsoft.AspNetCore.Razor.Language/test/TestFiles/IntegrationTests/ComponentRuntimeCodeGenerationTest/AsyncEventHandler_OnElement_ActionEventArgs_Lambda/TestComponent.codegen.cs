@@ -23,7 +23,7 @@ using System.Threading.Tasks;
             builder.AddAttribute(1, "onclick", Microsoft.AspNetCore.Components.EventCallback.Factory.Create<Microsoft.AspNetCore.Components.UIMouseEventArgs>(this, 
 #nullable restore
 #line 2 "x:\dir\subdir\Test\TestComponent.cshtml"
-                  async (e) => await Task.Delay(10)
+                   async (e) => await Task.Delay(10)
 
 #line default
 #line hidden

@@ -31,7 +31,7 @@ namespace Test
             ;
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                _element = default(Microsoft.AspNetCore.Components.ElementRef);
+                                                 _element = default(Microsoft.AspNetCore.Components.ElementRef);
 
 #line default
 #line hidden

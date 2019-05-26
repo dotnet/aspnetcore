@@ -1088,8 +1088,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private bool TryParseAttributeName(out IEnumerable<SyntaxToken> nameTokens)
         {
             nameTokens = Enumerable.Empty<SyntaxToken>();
-            if (At(SyntaxKind.Transition) || At(SyntaxKind.RazorCommentTransition))
+            //
+            // We are currently here <input |name="..." />
+            // If we encounter a transition (@) here, it can be parsed as CSharp or Markup depending on the feature flag.
+            // For example, in Components, we want to parse it as Markup so we can support directive attributes.
+            //
+            if (Context.FeatureFlags.AllowCSharpInMarkupAttributeArea &&
+                (At(SyntaxKind.Transition) || At(SyntaxKind.RazorCommentTransition)))
             {
+                // If we get here, there is CSharp in the attribute area. Don't try to parse the name.
                 return false;
             }
 

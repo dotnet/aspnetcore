@@ -14,18 +14,18 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                Component - (0:0,0 [95] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
+                Component - (0:0,0 [96] x:\dir\subdir\Test\TestComponent.cshtml) - MyComponent
                     ComponentChildContent -  - ChildContent - context
-                        HtmlContent - (44:0,44 [11] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (44:0,44 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
-                        MarkupElement - (55:1,9 [16] x:\dir\subdir\Test\TestComponent.cshtml) - el
-                            HtmlContent - (59:1,13 [7] x:\dir\subdir\Test\TestComponent.cshtml)
-                                IntermediateToken - (59:1,13 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - further
-                        HtmlContent - (71:1,25 [10] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (71:1,25 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  content\n
-                    SetKey - (18:0,18 [9] x:\dir\subdir\Test\TestComponent.cshtml) - 123 + 456
+                        HtmlContent - (45:0,45 [11] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (45:0,45 [11] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n    Some 
+                        MarkupElement - (56:1,9 [16] x:\dir\subdir\Test\TestComponent.cshtml) - el
+                            HtmlContent - (60:1,13 [7] x:\dir\subdir\Test\TestComponent.cshtml)
+                                IntermediateToken - (60:1,13 [7] x:\dir\subdir\Test\TestComponent.cshtml) - Html - further
+                        HtmlContent - (72:1,25 [10] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (72:1,25 [10] x:\dir\subdir\Test\TestComponent.cshtml) - Html -  content\n
+                    SetKey - (19:0,19 [9] x:\dir\subdir\Test\TestComponent.cshtml) - 123 + 456
                     ComponentAttribute -  - SomeProp - AttributeStructure.DoubleQuotes
-                        HtmlContent - (39:0,39 [3] x:\dir\subdir\Test\TestComponent.cshtml)
-                            IntermediateToken - (39:0,39 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
-                HtmlContent - (95:2,14 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (95:2,14 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+                        HtmlContent - (40:0,40 [3] x:\dir\subdir\Test\TestComponent.cshtml)
+                            IntermediateToken - (40:0,40 [3] x:\dir\subdir\Test\TestComponent.cshtml) - Html - val
+                HtmlContent - (96:2,14 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (96:2,14 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n

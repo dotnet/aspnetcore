@@ -20,6 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var allowRazorInAllCodeBlocks = false;
             var allowUsingVariableDeclarations = false;
             var allowConditionalDataDashAttributes = false;
+            var allowCSharpInMarkupAttributeArea = true;
 
             if (version.CompareTo(RazorLanguageVersion.Version_2_1) >= 0)
             {
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (FileKinds.IsComponent(fileKind))
             {
                 allowConditionalDataDashAttributes = true;
+                allowCSharpInMarkupAttributeArea = false;
             }
 
             if (version.CompareTo(RazorLanguageVersion.Experimental) >= 0)
@@ -52,7 +54,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 allowComponentFileKind,
                 allowRazorInAllCodeBlocks,
                 allowUsingVariableDeclarations,
-                allowConditionalDataDashAttributes);
+                allowConditionalDataDashAttributes,
+                allowCSharpInMarkupAttributeArea);
         }
 
         public abstract bool AllowMinimizedBooleanTagHelperAttributes { get; }
@@ -67,6 +70,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool AllowConditionalDataDashAttributes { get; }
 
+        public abstract bool AllowCSharpInMarkupAttributeArea { get; }
+
         private class DefaultRazorParserFeatureFlags : RazorParserFeatureFlags
         {
             public DefaultRazorParserFeatureFlags(
@@ -75,7 +80,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 bool allowComponentFileKind,
                 bool allowRazorInAllCodeBlocks,
                 bool allowUsingVariableDeclarations,
-                bool allowConditionalDataDashAttributesInComponents)
+                bool allowConditionalDataDashAttributesInComponents,
+                bool allowCSharpInMarkupAttributeArea)
             {
                 AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
                 AllowHtmlCommentsInTagHelpers = allowHtmlCommentsInTagHelpers;
@@ -83,6 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 AllowRazorInAllCodeBlocks = allowRazorInAllCodeBlocks;
                 AllowUsingVariableDeclarations = allowUsingVariableDeclarations;
                 AllowConditionalDataDashAttributes = allowConditionalDataDashAttributesInComponents;
+                AllowCSharpInMarkupAttributeArea = allowCSharpInMarkupAttributeArea;
             }
 
             public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
@@ -96,6 +103,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             public override bool AllowUsingVariableDeclarations { get; }
 
             public override bool AllowConditionalDataDashAttributes { get; }
+
+            public override bool AllowCSharpInMarkupAttributeArea { get; }
         }
     }
 }

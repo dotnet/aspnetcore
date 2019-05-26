@@ -1,8 +1,8 @@
-Source Location: (31:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml)
+Source Location: (32:1,7 [24] x:\dir\subdir\Test\TestComponent.cshtml)
 |
     string y = null;
 |
-Generated Location: (1127:31,7 [24] )
+Generated Location: (1128:31,7 [24] )
 |
     string y = null;
 |

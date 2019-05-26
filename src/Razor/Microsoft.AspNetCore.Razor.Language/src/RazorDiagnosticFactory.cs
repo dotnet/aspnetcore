@@ -824,6 +824,64 @@ namespace Microsoft.AspNetCore.Razor.Language
             return diagnostic;
         }
 
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundDirectiveAttributeName =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}3015",
+                () => Resources.TagHelper_InvalidBoundDirectiveAttributeName,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_InvalidBoundDirectiveAttributeName(
+            string tagHelperDisplayName,
+            string propertyDisplayName,
+            string invalidName)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                TagHelper_InvalidBoundDirectiveAttributeName,
+                new SourceSpan(SourceLocation.Undefined, contentLength: 0),
+                tagHelperDisplayName,
+                propertyDisplayName,
+                invalidName);
+
+            return diagnostic;
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundDirectiveAttributePrefix =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}3015",
+                () => Resources.TagHelper_InvalidBoundDirectiveAttributePrefix,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_InvalidBoundDirectiveAttributePrefix(
+            string tagHelperDisplayName,
+            string propertyDisplayName,
+            string invalidName)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                TagHelper_InvalidBoundDirectiveAttributePrefix,
+                new SourceSpan(SourceLocation.Undefined, contentLength: 0),
+                tagHelperDisplayName,
+                propertyDisplayName,
+                invalidName);
+
+            return diagnostic;
+        }
+
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidRequiredDirectiveAttributeName =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}3016",
+                () => Resources.TagHelper_InvalidRequiredDirectiveAttributeName,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateTagHelper_InvalidRequiredDirectiveAttributeName(
+            string propertyDisplayName,
+            string invalidName)
+        {
+            var diagnostic = RazorDiagnostic.Create(
+                TagHelper_InvalidRequiredDirectiveAttributeName,
+                new SourceSpan(SourceLocation.Undefined, contentLength: 0),
+                propertyDisplayName,
+                invalidName);
+
+            return diagnostic;
+        }
+
         #endregion
 
         #region Rewriter Errors

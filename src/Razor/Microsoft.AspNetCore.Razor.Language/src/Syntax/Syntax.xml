@@ -205,6 +205,29 @@
     <Kind Name="MarkupTagHelperAttributeValue" />
     <Field Name="Children" Type="SyntaxList&lt;RazorSyntaxNode&gt;" Override="true" />
   </Node>
+  <Node Name="MarkupTagHelperDirectiveAttributeSyntax" Base="MarkupSyntaxNode">
+    <Kind Name="MarkupTagHelperDirectiveAttribute" />
+    <Field Name="NamePrefix" Type="MarkupTextLiteralSyntax" Optional="true" />
+    <Field Name="Transition" Type="RazorMetaCodeSyntax" />
+    <Field Name="Name" Type="MarkupTextLiteralSyntax" />
+    <Field Name="Colon" Type="RazorMetaCodeSyntax" Optional="true" />
+    <Field Name="ParameterName" Type="MarkupTextLiteralSyntax" Optional="true" />
+    <Field Name="NameSuffix" Type="MarkupTextLiteralSyntax" Optional="true" />
+    <Field Name="EqualsToken" Type="SyntaxToken">
+      <Kind Name="Equals" />
+    </Field>
+    <Field Name="ValuePrefix" Type="MarkupTextLiteralSyntax" Optional="true" />
+    <Field Name="Value" Type="MarkupTagHelperAttributeValueSyntax" />
+    <Field Name="ValueSuffix" Type="MarkupTextLiteralSyntax" Optional="true" />
+  </Node>
+  <Node Name="MarkupMinimizedTagHelperDirectiveAttributeSyntax" Base="MarkupSyntaxNode">
+    <Kind Name="MarkupMinimizedTagHelperDirectiveAttribute" />
+    <Field Name="NamePrefix" Type="MarkupTextLiteralSyntax" Optional="true" />
+    <Field Name="Transition" Type="RazorMetaCodeSyntax" />
+    <Field Name="Name" Type="MarkupTextLiteralSyntax" />
+    <Field Name="Colon" Type="RazorMetaCodeSyntax" Optional="true" />
+    <Field Name="ParameterName" Type="MarkupTextLiteralSyntax" Optional="true" />
+  </Node>
   
   <!-- CSharp -->
   <AbstractNode Name="CSharpSyntaxNode" Base="RazorSyntaxNode" />

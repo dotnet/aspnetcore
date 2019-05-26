@@ -17,7 +17,7 @@ namespace Test
             builder.AddAttribute(1, "MessageExpression", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.Linq.Expressions.Expression<System.Action<System.String>>>(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                                                          (s) => {}
+                                                           (s) => {}
 
 #line default
 #line hidden
@@ -26,7 +26,7 @@ namespace Test
             builder.AddAttribute(2, "Message", Microsoft.AspNetCore.Components.RuntimeHelpers.TypeCheck<System.String>(Microsoft.AspNetCore.Components.BindMethods.GetValue(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                            message
+                             message
 
 #line default
 #line hidden

@@ -248,5 +248,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             ParseDocumentTest("@{<span data-foo=@foo ></span>}");
         }
+
+        [Fact]
+        public void ComponentFileKind_ParsesDirectiveAttributesAsMarkup()
+        {
+            ParseDocumentTest("<span @class='@foo'></span>", fileKind: FileKinds.Component);
+        }
+
+        [Fact]
+        public void ComponentFileKind_ParsesDirectiveAttributesWithParameterAsMarkup()
+        {
+            ParseDocumentTest("<span @class:param='@foo'></span>", fileKind: FileKinds.Component);
+        }
     }
 }

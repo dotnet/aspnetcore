@@ -31,7 +31,7 @@ namespace Test
             , -1, (__value) => {
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                           _my = __value;
+                            _my = __value;
 
 #line default
 #line hidden

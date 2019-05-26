@@ -14,17 +14,17 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - protected override - void - BuildRenderTree
-                MarkupElement - (0:0,0 [62] x:\dir\subdir\Test\TestComponent.cshtml) - input
+                MarkupElement - (0:0,0 [63] x:\dir\subdir\Test\TestComponent.cshtml) - input
                     HtmlAttribute -  - type=" - "
                         HtmlAttributeValue - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (13:0,13 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - text
                     HtmlAttribute -  - data-slider-min=" - "
                         CSharpExpressionAttributeValue - (36:0,36 [4] x:\dir\subdir\Test\TestComponent.cshtml) - 
                             IntermediateToken - (37:0,37 [3] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - Min
-                    SetKey - (48:0,48 [10] x:\dir\subdir\Test\TestComponent.cshtml) - someObject
-                HtmlContent - (62:0,62 [4] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (62:0,62 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
-                HtmlContent - (186:6,5 [2] x:\dir\subdir\Test\TestComponent.cshtml)
-                    IntermediateToken - (186:6,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
-            CSharpCode - (73:2,7 [112] x:\dir\subdir\Test\TestComponent.cshtml)
-                IntermediateToken - (73:2,7 [112] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private object someObject = new object();\n\n        [Parameter] protected int Min { get; set; }\n    
+                    SetKey - (49:0,49 [10] x:\dir\subdir\Test\TestComponent.cshtml) - someObject
+                HtmlContent - (63:0,63 [4] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (63:0,63 [4] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n\n
+                HtmlContent - (187:6,5 [2] x:\dir\subdir\Test\TestComponent.cshtml)
+                    IntermediateToken - (187:6,5 [2] x:\dir\subdir\Test\TestComponent.cshtml) - Html - \n
+            CSharpCode - (74:2,7 [112] x:\dir\subdir\Test\TestComponent.cshtml)
+                IntermediateToken - (74:2,7 [112] x:\dir\subdir\Test\TestComponent.cshtml) - CSharp - \n        private object someObject = new object();\n\n        [Parameter] protected int Min { get; set; }\n    

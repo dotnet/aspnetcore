@@ -23,7 +23,7 @@ namespace Test
             builder.SetKey(
 #nullable restore
 #line 1 "x:\dir\subdir\Test\TestComponent.cshtml"
-                  123 + 456
+                   123 + 456
 
 #line default
 #line hidden
