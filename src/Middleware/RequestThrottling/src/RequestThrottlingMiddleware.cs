@@ -48,7 +48,6 @@ namespace Microsoft.AspNetCore.RequestThrottling
         {
             var waitInQueueTask = _requestQueue.EnterQueue();
 
-
             if (waitInQueueTask.IsCompletedSuccessfully)
             {
                 RequestThrottlingLog.RequestRunImmediately(_logger);
@@ -90,13 +89,13 @@ namespace Microsoft.AspNetCore.RequestThrottling
         private static class RequestThrottlingLog
         {
             private static readonly Action<ILogger, int, Exception> _requestEnqueued =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "Request Enqueued"), "Concurrent request limit reached, queuing request. Current queue length: {queuedRequests}.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "RequestEnqueued"), "Concurrent request limit reached, queuing request. Current queue length: {QueuedRequests}.");
 
             private static readonly Action<ILogger, int, Exception> _requestDequeued =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "Request Dequeued"), "Request dequeued. Current queue length: {queuedRequests}.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "RequestDequeued"), "Request dequeued. Current queue length: {QueuedRequests}.");
 
             private static readonly Action<ILogger, Exception> _requestRunImmediately =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(3, "Request Run Immediately"), "Concurrent request limit has not been reached, running request immediately.");
+                LoggerMessage.Define(LogLevel.Debug, new EventId(3, "RequestRunImmediately"), "Concurrent request limit has not been reached, running request immediately.");
 
             internal static void RequestEnqueued(ILogger logger, int queuedRequests)
             {
