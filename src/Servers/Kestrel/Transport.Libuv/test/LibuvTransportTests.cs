@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,13 +50,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         [Fact]
         public async Task ConnectionCanReadAndWrite()
         {
-            var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
-
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvConnectionListener(transportContext, endpoint);
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             await transport.BindAsync();
-            endpoint = (IPEndPoint)transport.EndPoint;
+            var endpoint = (IPEndPoint)transport.EndPoint;
 
             async Task EchoServerAsync()
             {
@@ -101,13 +100,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         [Fact]
         public async Task UnacceptedConnectionsAreAborted()
         {
-            var endpoint = new IPEndPoint(IPAddress.Loopback, 0);
-
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvConnectionListener(transportContext, endpoint);
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             await transport.BindAsync();
-            endpoint = (IPEndPoint)transport.EndPoint;
+            var endpoint = (IPEndPoint)transport.EndPoint;
 
             async Task ConnectAsync()
             {
@@ -128,6 +125,53 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             // are cleaned up if they are never accepted by the caller
 
             await connectTask.DefaultTimeout();
+        }
+
+        [Fact]
+        public async Task CallingAcceptAfterDisposeAsyncThrows()
+        {
+            var transportContext = new TestLibuvTransportContext();
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
+
+            await transport.BindAsync();
+            var endpoint = (IPEndPoint)transport.EndPoint;
+
+            async Task ConnectAsync()
+            {
+                using (var socket = TestConnection.CreateConnectedLoopbackSocket(endpoint.Port))
+                {
+                    var read = await socket.ReceiveAsync(new byte[10], SocketFlags.None);
+                    Assert.Equal(0, read);
+                }
+            }
+
+            var connectTask = ConnectAsync();
+
+            await transport.UnbindAsync();
+            await transport.DisposeAsync();
+
+            await Assert.ThrowsAsync<ObjectDisposedException>(() => transport.AcceptAsync().AsTask());
+            
+            await connectTask.DefaultTimeout();
+        }
+
+        [Fact]
+        public async Task CallingDisposeAsyncWillYieldPendingAccepts()
+        {
+            var transportContext = new TestLibuvTransportContext();
+            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
+
+            await transport.BindAsync();
+
+            var acceptTask = transport.AcceptAsync();
+
+            await transport.UnbindAsync();
+
+            var connection = await acceptTask.DefaultTimeout();
+
+            Assert.Null(connection);
+
+            await transport.DisposeAsync();
         }
 
         [ConditionalTheory]
