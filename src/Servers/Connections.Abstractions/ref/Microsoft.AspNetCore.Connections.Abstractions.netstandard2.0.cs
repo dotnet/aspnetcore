@@ -92,6 +92,18 @@ namespace Microsoft.AspNetCore.Connections
         public void Dispose() { }
         public override System.Threading.Tasks.ValueTask DisposeAsync() { throw null; }
     }
+    public partial class FileHandleEndPoint : System.Net.EndPoint
+    {
+        public FileHandleEndPoint(ulong fileHandle, Microsoft.AspNetCore.Connections.FileHandleType fileHandleType) { }
+        public ulong FileHandle { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Connections.FileHandleType FileHandleType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
+    public enum FileHandleType
+    {
+        Auto = 0,
+        Tcp = 1,
+        Pipe = 2,
+    }
     public partial interface IConnectionBuilder
     {
         System.IServiceProvider ApplicationServices { get; }

@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
+namespace Microsoft.AspNetCore.Connections
 {
     public class FileHandleEndPoint : EndPoint
     {
