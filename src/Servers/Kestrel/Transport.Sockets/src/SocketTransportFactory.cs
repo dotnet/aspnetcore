@@ -17,11 +17,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly SocketTransportOptions _options;
         private readonly SocketsTrace _trace;
 
-        public SocketTransportFactory(): this(Options.Create(new SocketTransportOptions()), NullLoggerFactory.Instance)
-        {
-
-        }
-
         public SocketTransportFactory(
             IOptions<SocketTransportOptions> options,
             ILoggerFactory loggerFactory)

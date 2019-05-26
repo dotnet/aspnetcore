@@ -11,15 +11,18 @@ namespace Microsoft.AspNetCore.Hosting
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
-    public sealed partial class SocketTransportFactory : Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransportFactory
+    public sealed partial class SocketTransportFactory : Microsoft.AspNetCore.Connections.IConnectionListenerFactory
     {
-        public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Hosting.IHostApplicationLifetime applicationLifetime, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
-        public Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.ITransport Create(Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IEndPointInformation endPointInformation, Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal.IConnectionDispatcher dispatcher) { throw null; }
+        public SocketTransportFactory(Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions> options, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory) { }
+        public System.Threading.Tasks.ValueTask<Microsoft.AspNetCore.Connections.IConnectionListener> BindAsync(System.Net.EndPoint endpoint) { throw null; }
     }
     public partial class SocketTransportOptions
     {
         public SocketTransportOptions() { }
         public int IOQueueCount { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public long? MaxReadBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public long? MaxWriteBufferSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool NoDelay { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
