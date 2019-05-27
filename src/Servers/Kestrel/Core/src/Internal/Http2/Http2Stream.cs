@@ -493,7 +493,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 pauseWriterThreshold: windowSize + 1,
                 resumeWriterThreshold: windowSize + 1,
                 useSynchronizationContext: false,
-                minimumSegmentSize: _context.MemoryPool.GetMinimumAllocSize()
+                minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize()
             ));
 
         private (StreamCompletionFlags OldState, StreamCompletionFlags NewState) ApplyCompletionFlag(StreamCompletionFlags completionState)

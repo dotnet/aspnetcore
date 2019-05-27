@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 pauseWriterThreshold: 1,
                 resumeWriterThreshold: 1,
                 useSynchronizationContext: false,
-                minimumSegmentSize: pool.GetMinimumAllocSize()
+                minimumSegmentSize: pool.GetMinimumSegmentSize()
             ));
     }
 }
