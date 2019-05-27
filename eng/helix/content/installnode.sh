@@ -13,7 +13,8 @@ else
    platformarch='linux-x64'
 fi
 platformarch=$2
-output_dir=$HELIX_CORRELATION_PAYLOAD/node
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+output_dir=$DIR/node
 url="http://nodejs.org/dist/v$node_version/node-v$node_version-$platformarch.tar.gz"
 tmp="$(mktemp -d -t install-node.XXXXXX)"
 trap "rm -rf $tmp" EXIT
