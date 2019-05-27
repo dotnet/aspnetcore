@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -295,7 +296,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             {
                 throw new ArgumentNullException(nameof(socketPath));
             }
-            if (socketPath.Length == 0 || socketPath[0] != '/')
+
+            if (!Path.IsPathRooted(socketPath))
             {
                 throw new ArgumentException(CoreStrings.UnixSocketPathMustBeAbsolute, nameof(socketPath));
             }
