@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
@@ -72,7 +73,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.False(https);
         }
 
-        [Fact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "UnixDomainSocketEndPoint is not supported on Windows 7")]
+        [ConditionalFact]
         public void ParseAddressUnixPipe()
         {
             var listenOptions = AddressBinder.ParseAddress("http://unix:/tmp/kestrel-test.sock", out var https);
@@ -89,7 +91,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [InlineData("https://127.0.0.1", "127.0.0.1", 443, true)]
         public void ParseAddressIP(string address, string ip, int port, bool isHttps)
         {
-            var options = new KestrelServerOptions();
             var listenOptions = AddressBinder.ParseAddress(address, out var https);
             Assert.IsType<IPEndPoint>(listenOptions.EndPoint);
             Assert.Equal(IPAddress.Parse(ip), listenOptions.IPEndPoint.Address);
