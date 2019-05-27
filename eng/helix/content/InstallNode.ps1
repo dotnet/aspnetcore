@@ -32,7 +32,7 @@ Write-Host "Done downloading NodeJS ${Version}"
 
 $temppath = [System.IO.Path]::GetTempPath()
 $temp_dir = Join-Path $temppath nodejs
-mkdir $temp_dir -Force
+New-Item -Path "$temp_dir" -Item-Type "directory" -Force
 Write-Host "Extracting to $temp_dir"
 
 if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
@@ -46,9 +46,9 @@ else {
 }
 
 Write-Host "Expanded NodeJs"
-mkdir $output_dir -Force
+New-Item -Path "$output_dir" -Item-Type "directory" -Force
 Write-Host "Copying $temp_dir\$nodeFile\node.exe to $output_dir"
-copy "$temp_dir\$nodeFile\node.exe" "$output_dir"
+Copy-Item "$temp_dir\$nodeFile\node.exe" "$output_dir\node.exe"
 
 if (Test-Path "$output_dir\node.exe")
 {
