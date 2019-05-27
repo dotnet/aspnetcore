@@ -49,3 +49,12 @@ Write-Host "Expanded NodeJs"
 mkdir $output_dir -Force
 Write-Host "Copying $temp_dir\$nodeFile\node.exe to $output_dir"
 copy "$temp_dir\$nodeFile\node.exe" "$output_dir"
+
+if (Test-Path "$output_dir\node.exe")
+{
+    Write-Host "Node.exe copied to $output_dir"
+}
+else
+{
+    Write-Host "Node.exe not found at $output_dir"
+}
