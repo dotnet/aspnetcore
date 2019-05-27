@@ -14,6 +14,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         /// <returns></returns>
         public static int GetMinimumSegmentSize(this MemoryPool<byte> pool)
         {
+            if (pool == null)
+            {
+                return 4096;
+            }
+
             return Math.Min(4096, pool.MaxBufferSize);
         }
 
