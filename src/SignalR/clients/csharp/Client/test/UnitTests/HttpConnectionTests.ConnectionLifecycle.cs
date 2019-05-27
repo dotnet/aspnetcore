@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Client;
 using Microsoft.AspNetCore.Http.Connections.Client.Internal;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.SignalR.Tests;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -90,8 +91,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     var startCounter = 0;
                     var expected = new Exception("Transport failed to start");
 
-                    // We have 4 cases here. Falling back once, falling back twice and each of these 
-                    // with WebSockets available and not. If Websockets aren't available and 
+                    // We have 4 cases here. Falling back once, falling back twice and each of these
+                    // with WebSockets available and not. If Websockets aren't available and
                     // we can't to test the fallback once scenario we don't decrement the passthreshold
                     // because we still try to start twice (SSE and LP).
                     if (!TestHelpers.IsWebSocketsSupported() && passThreshold > 2)
