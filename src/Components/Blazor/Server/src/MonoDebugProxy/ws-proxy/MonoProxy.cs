@@ -247,7 +247,6 @@ namespace WsProxy {
 			}
 
 			//step one, figure out where did we hit
-			//lol no, fuck it, let's use fake data
 			var res_value = res.Value? ["result"]? ["value"];
 			if (res_value == null || res_value is JValue) {
 				//Give up and send the original call stack
