@@ -880,6 +880,7 @@ function createEmscriptenModuleInstance(loadAssemblyUrls, onReady, onError) {
         });
     });
     module.postRun.push(function () {
+        MONO.mono_wasm_setenv("MONO_URI_DOTNETRELATIVEORABSOLUTE", "true");
         var load_runtime = Module.cwrap('mono_wasm_load_runtime', null, ['string', 'number']);
         load_runtime(appBinDirName, MonoDebugger_1.hasDebuggingEnabled() ? 1 : 0);
         MONO.mono_wasm_runtime_is_ready = true;
