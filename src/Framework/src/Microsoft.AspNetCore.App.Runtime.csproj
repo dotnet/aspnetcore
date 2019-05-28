@@ -202,12 +202,6 @@ This package is an internal implementation of the .NET Core SDK and is not meant
     <Warning Text="This project has native dependencies which were not built. Without this, tests may not function correctly. Run `build.cmd -BuildNative -BuildManaged` to build both C# and C++." />
   </Target>
 
-    <Target Name="_ErrorAboutUnbuiltNativeDependenciesOnCI"
-          BeforeTargets="Build"
-          Condition=" '$(BuildIisNativeProjects)' != 'true' AND '$(CI)' == 'true' AND '$(TargetOsName)' == 'win' ">
-    <Error Text="IIS native assets are not being built on CI. Native assets must be included in the shared framework." />
-  </Target>
-
   <Target Name="_ResolveCopyLocalNativeReference" DependsOnTargets="ResolveProjectReferences">
     <ItemGroup>
       <ReferenceCopyLocalPaths Include="@(_ResolvedNativeProjectReferencePaths)" />
