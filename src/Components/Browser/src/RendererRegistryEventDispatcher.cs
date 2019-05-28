@@ -72,7 +72,6 @@ namespace Microsoft.AspNetCore.Components.Browser
             switch (jsonElement.Type)
             {
                 case JsonValueType.Null:
-                case JsonValueType.Undefined:
                     changeArgs.Value = null;
                     break;
                 case JsonValueType.String:
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Browser
                     changeArgs.Value = jsonElement.GetBoolean();
                     break;
                 default:
-                    throw new ArgumentException($"Unsupported {nameof(UIChangeEventArgs)} value {jsonElement.ToString()}");
+                    throw new ArgumentException($"Unsupported {nameof(UIChangeEventArgs)} value {jsonElement}.");
             }
             return changeArgs;
         }
