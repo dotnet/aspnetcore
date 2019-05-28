@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task RequestsCanEnterIfSpaceAvailible()
         {
-            var middleware = TestUtils.CreateTestMiddleWare(maxConcurrentRequests: 1);
+            var middleware = TestUtils.CreateTestMiddleware(maxConcurrentRequests: 1);
             var context = new DefaultHttpContext();
 
             // a request should go through with no problems
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task SemaphoreStatePreservedIfRequestsError()
         {
-            var middleware = TestUtils.CreateTestMiddleWare(
+            var middleware = TestUtils.CreateTestMiddleware(
                 maxConcurrentRequests: 1,
                 next: httpContext =>
                 {
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             var blocker = new SyncPoint();
             var firstRequest = true;
 
-            var middleware = TestUtils.CreateTestMiddleWare(
+            var middleware = TestUtils.CreateTestMiddleware(
                 maxConcurrentRequests: 1,
                 next: httpContext =>
                 {
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             var ex = Assert.Throws<ArgumentException>(() =>
             {
-                TestUtils.CreateTestMiddleWare(maxConcurrentRequests: null);
+                TestUtils.CreateTestMiddleware(maxConcurrentRequests: null);
             });
             Assert.Equal("options", ex.ParamName);
         }
@@ -86,12 +86,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async void RequestsBlockedIfQueueFull()
         {
-            var middleware = TestUtils.CreateTestMiddleWare(
+            var middleware = TestUtils.CreateTestMiddleware(
                 maxConcurrentRequests: 10,
                 requestQueueLimit: -1,
                 next: httpContext =>
                 {
-                    // throttle should bounce the request, if it gets later in pipeline something is wrong 
+                    // throttle should bounce the request; it should never get here
                     throw new NotImplementedException();
                 });
 

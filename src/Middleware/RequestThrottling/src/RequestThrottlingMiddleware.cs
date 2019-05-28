@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Http.Abstractions;
 
 namespace Microsoft.AspNetCore.RequestThrottling
 {
@@ -46,17 +47,21 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
-            if (_requestQueue.QueueLengthExceeded)
-            {
-                context.Response.StatusCode = 503;
-                context.Abort();
-                return;
-            }
+            var waitInQueueTask = _requestQueue.TryEnterQueueAsync();
 
-            var waitInQueueTask = _requestQueue.EnterQueue();
             if (waitInQueueTask.IsCompletedSuccessfully)
             {
-                RequestThrottlingLog.RequestRunImmediately(_logger);
+                var requestPassedThrough = await waitInQueueTask;
+                if (requestPassedThrough)
+                {
+                    RequestThrottlingLog.RequestRunImmediately(_logger);
+                }
+                else
+                {
+                    // the queue is full
+                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                    return;
+                }
             }
             else
             {

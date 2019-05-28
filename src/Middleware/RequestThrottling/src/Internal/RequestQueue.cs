@@ -10,49 +10,37 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
     internal class RequestQueue : IDisposable
     {
         private SemaphoreSlim _semaphore;
-        private object _waitingRequestsLock = new object();
+        private int _waitingRequests;
 
-        public readonly int MaxConcurrentRequests;
-        public readonly int RequestQueueLimit;
-        public int WaitingRequests { get; private set; }
+        private readonly int _maxConcurrentRequests;
+        private readonly int _requestQueueLimit;
 
         public RequestQueue(int maxConcurrentRequests, int requestQueueLimit)
         {
-            MaxConcurrentRequests = maxConcurrentRequests;
-            RequestQueueLimit = requestQueueLimit;
+            _maxConcurrentRequests = maxConcurrentRequests;
+            _requestQueueLimit = requestQueueLimit;
             _semaphore = new SemaphoreSlim(maxConcurrentRequests);
         }
 
-        public async Task EnterQueue()
+        public RequestQueue(int maxConcurrentRequests) : this(maxConcurrentRequests, 5000) { }
+
+        public async Task<bool> TryEnterQueueAsync()
         {
+            // first, check the queue limits
+            if (WaitingRequests > _requestQueueLimit)
+            {
+                return false;
+            }
+
             var waitInQueueTask = _semaphore.WaitAsync();
-
-            var needsToWaitOnQueue = !waitInQueueTask.IsCompletedSuccessfully;
-            if (needsToWaitOnQueue)
+            if (!waitInQueueTask.IsCompletedSuccessfully)
             {
-                lock (_waitingRequestsLock)
-                {
-                    WaitingRequests++;
-                }
-
+                Interlocked.Increment(ref _waitingRequests);
                 await waitInQueueTask;
-
-                lock (_waitingRequestsLock)
-                {
-                    WaitingRequests--;
-                }
+                Interlocked.Decrement(ref _waitingRequests);
             }
-        }
 
-        public bool QueueLengthExceeded
-        {
-            get
-            {
-                lock (_waitingRequestsLock)
-                {
-                    return WaitingRequests > RequestQueueLimit;
-                }
-            }
+            return true;
         }
 
         public void Release()
@@ -67,7 +55,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
 
         public int ConcurrentRequests
         {
-            get => MaxConcurrentRequests - _semaphore.CurrentCount;
+            get => _maxConcurrentRequests - _semaphore.CurrentCount;
+        }
+
+        public int WaitingRequests
+        {
+            get => _waitingRequests;
         }
 
         public void Dispose()
