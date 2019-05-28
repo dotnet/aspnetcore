@@ -104,11 +104,12 @@ namespace Microsoft.AspNetCore.Components
         public Microsoft.AspNetCore.Components.UIDataTransferItem[] Items { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string[] Types { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
-    public sealed partial class ElementRef
+    [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
+    public readonly partial struct ElementRef
     {
-        internal ElementRef() { }
-        [System.Text.Json.Serialization.JsonPropertyNameAttribute("_blazorElementRef")]
-        public string Id { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        private readonly object _dummy;
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+        public string __internalId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback
@@ -310,7 +311,7 @@ namespace Microsoft.AspNetCore.Components
     public static partial class HttpClientJsonExtensions
     {
         [System.Diagnostics.DebuggerStepThroughAttribute]
-        public static System.Threading.Tasks.ValueTask<T> GetJsonAsync<T>(this System.Net.Http.HttpClient httpClient, string requestUri) { throw null; }
+        public static System.Threading.Tasks.Task<T> GetJsonAsync<T>(this System.Net.Http.HttpClient httpClient, string requestUri) { throw null; }
         public static System.Threading.Tasks.Task PostJsonAsync(this System.Net.Http.HttpClient httpClient, string requestUri, object content) { throw null; }
         public static System.Threading.Tasks.Task<T> PostJsonAsync<T>(this System.Net.Http.HttpClient httpClient, string requestUri, object content) { throw null; }
         public static System.Threading.Tasks.Task PutJsonAsync(this System.Net.Http.HttpClient httpClient, string requestUri, object content) { throw null; }
