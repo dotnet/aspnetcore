@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// <param name="headerName">The header name to be propagated.</param>
         /// <param name="valueFilter">
         /// A filter delegate that can be used to transform the header value.
-        /// <see cref="HeaderPropagationEntry.ValueFilter"/>.
+        /// See <see cref="HeaderPropagationEntry.ValueFilter"/>.
         /// </param>
         public void Add(string headerName, Func<HeaderPropagationContext, StringValues> valueFilter)
         {
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.HeaderPropagation
         /// </param>
         /// <param name="valueFilter">
         /// A filter delegate that can be used to transform the header value.
-        /// <see cref="HeaderPropagationEntry.ValueFilter"/>.
+        /// See <see cref="HeaderPropagationEntry.ValueFilter"/>.
         /// </param>
         public void Add(
             string inboundHeaderName,
