@@ -18,11 +18,8 @@
     <Compile Include="..\shared\**\*.cs" />
     <Compile Include="..\InProcessWebSite\*.cs" />
     <Compile Include="..\InProcessWebSite\Properties\*.cs" />
+    <None Include="..\InProcessWebSite\wwwroot\**" CopyToOutputDirectory="Always" LinkBase="wwwroot/"/>
     <None Include="..\InProcessWebSite\web.config" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="wwwroot\**" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
   <ItemGroup>
