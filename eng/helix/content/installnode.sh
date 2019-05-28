@@ -6,6 +6,7 @@ if type -P "node" &>/dev/null; then
 fi
 
 node_version=$1
+uname -s
 echo $uname
 if [ "$uname" = "Darwin" ]; then
    platformarch='darwin-x64'
