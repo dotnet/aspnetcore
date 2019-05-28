@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public static class Helpers
     {
@@ -27,8 +27,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
             return DeployerSelector.IsForwardsCompatibilityTest ? "InProcessForwardsCompatWebSite" : "InProcessWebSite";
         }
-
-        public static string GetOutOfProcessTestSitesName() => "OutOfProcessWebSite";
 
         public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
         {

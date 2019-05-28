@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public static class DeployerSelector
     {

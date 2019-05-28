@@ -10,7 +10,6 @@
   <ItemGroup Condition="'$(OS)' == 'Windows_NT'">
     <TestAssetPublishProfile Include="Portable" Properties="TargetFramework=netcoreapp3.0" />
     <TestAssetPublishProfile Include="Standalone-x64" Properties="RuntimeIdentifier=win-x64;" />
-    <TestAssetPublishProfile Include="Standalone-x86" Properties="RuntimeIdentifier=win-x86;" />
   </ItemGroup>
 
   <ItemGroup>
@@ -22,6 +21,8 @@
     <Reference Include="Microsoft.AspNetCore.Hosting" />
     <Reference Include="Microsoft.AspNetCore.ResponseCompression" />
     <Reference Include="Microsoft.AspNetCore.Server.IIS" />
+    <Reference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <Reference Include="Microsoft.AspNetCore.Server.Kestrel" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
     <Reference Include="Microsoft.Extensions.Configuration.Json" />
