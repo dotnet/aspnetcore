@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -55,7 +54,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             // This should never be the case, as cert authentication happens long before ASP.NET kicks in.
             if (clientCertificate == null)
             {
-                Logger.LogDebug("No client certificate found.");
+                Logger.NoCertificate();
                 return AuthenticateResult.NoResult();
             }
 
@@ -64,8 +63,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             if (clientCertificate.IsSelfSigned() &&
                 !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.SelfSigned))
             {
-                Logger.LogWarning("Self signed certificate rejected, subject was {0}", clientCertificate.Subject);
-
+                Logger.CertificateRejected("Self signed", clientCertificate.Subject);
                 return AuthenticateResult.Fail("Options do not allow self signed certificates.");
             }
 
@@ -74,7 +72,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             if (!clientCertificate.IsSelfSigned() &&
                 !Options.AllowedCertificateTypes.HasFlag(CertificateTypes.Chained))
             {
-                Logger.LogWarning("Chained certificate rejected, subject was {0}", clientCertificate.Subject);
+                Logger.CertificateRejected("Chained", clientCertificate.Subject);
 
                 return AuthenticateResult.Fail("Options do not allow chained certificates.");
             }
@@ -92,14 +90,12 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 if (!certificateIsValid)
                 {
-                    using (Logger.BeginScope(clientCertificate.GetCertHashString(HashAlgorithmName.SHA256)))
+                    var chainErrors = new List<string>();
+                    foreach (var validationFailure in chain.ChainStatus)
                     {
-                        Logger.LogWarning("Client certificate failed validation, subject was {0}", clientCertificate.Subject);
-                        foreach (var validationFailure in chain.ChainStatus)
-                        {
-                            Logger.LogWarning("{0} {1}", validationFailure.Status, validationFailure.StatusInformation);
-                        }
+                        chainErrors.Add($"{validationFailure.Status} {validationFailure.StatusInformation}");
                     }
+                    Logger.CertificateFailedValidation(clientCertificate.Subject, chainErrors);
                     return AuthenticateResult.Fail("Client certificate failed validation.");
                 }
 
