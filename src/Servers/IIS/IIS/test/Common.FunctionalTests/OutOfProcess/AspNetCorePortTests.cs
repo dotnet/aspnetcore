@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Server.IIS.FunctionalTests.Utilities;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.OutOfProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class AspNetCorePortTests : IISFunctionalTestBase

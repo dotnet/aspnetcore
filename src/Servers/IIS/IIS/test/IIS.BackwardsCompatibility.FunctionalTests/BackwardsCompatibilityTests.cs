@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
     public class BackwardsCompatibilityTests : FixtureLoggedTest

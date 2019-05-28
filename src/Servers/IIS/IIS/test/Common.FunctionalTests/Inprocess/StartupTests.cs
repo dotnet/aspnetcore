@@ -20,7 +20,7 @@ using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Win32;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 {
     [Collection(PublishedSitesCollection.Name)]
     public class StartupTests : IISFunctionalTestBase

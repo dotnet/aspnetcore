@@ -85,6 +85,13 @@ namespace TestSite
                     Console.BackgroundColor = ConsoleColor.Blue;
                     Console.WriteLine("彡⾔");
                     break;
+                case "ConsoleWriteSingle":
+                    Console.WriteLine("Wow!");
+                    return 0;
+                case "ConsoleWrite30Kb":
+                    // Write over 30kb to make sure logs are truncated.
+                    Console.WriteLine(new string('a', 40000));
+                    return 0;
                 case "OverriddenServer":
                     {
                         var host = new WebHostBuilder()
@@ -172,7 +179,9 @@ namespace TestSite
                     factory.AddConsole();
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                 })
+                .UseKestrel()
                 .UseIIS()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 
