@@ -13,11 +13,6 @@ namespace Microsoft.AspNetCore.Components
     /// </summary>
     public static class HttpClientJsonExtensions
     {
-        private static readonly JsonSerializerOptions HttpClientSerializationOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-
         /// <summary>
         /// Sends a GET request to the specified URI, and parses the JSON response body
         /// to create an object of the generic type.
@@ -26,10 +21,10 @@ namespace Microsoft.AspNetCore.Components
         /// <param name="httpClient">The <see cref="HttpClient"/>.</param>
         /// <param name="requestUri">The URI that the request will be sent to.</param>
         /// <returns>The response parsed as an object of the generic type.</returns>
-        public static async ValueTask<T> GetJsonAsync<T>(this HttpClient httpClient, string requestUri)
+        public static async Task<T> GetJsonAsync<T>(this HttpClient httpClient, string requestUri)
         {
-            var responseStream = await httpClient.GetStreamAsync(requestUri);
-            return await JsonSerializer.ReadAsync<T>(responseStream, HttpClientSerializationOptions);
+            var stringContent = await httpClient.GetStringAsync(requestUri);
+            return JsonSerializer.Parse<T>(stringContent, JsonSerializerOptionsProvider.Options);
         }
 
         /// <summary>
@@ -100,7 +95,7 @@ namespace Microsoft.AspNetCore.Components
         /// <returns>The response parsed as an object of the generic type.</returns>
         public static async Task<T> SendJsonAsync<T>(this HttpClient httpClient, HttpMethod method, string requestUri, object content)
         {
-            var requestJson = JsonSerializer.ToString(content, HttpClientSerializationOptions);
+            var requestJson = JsonSerializer.ToString(content, JsonSerializerOptionsProvider.Options);
             var response = await httpClient.SendAsync(new HttpRequestMessage(method, requestUri)
             {
                 Content = new StringContent(requestJson, Encoding.UTF8, "application/json")
@@ -116,8 +111,8 @@ namespace Microsoft.AspNetCore.Components
             }
             else
             {
-                var responseStream = await response.Content.ReadAsStreamAsync();
-                return await JsonSerializer.ReadAsync<T>(responseStream, HttpClientSerializationOptions);
+                var stringContent = await response.Content.ReadAsStringAsync();
+                return JsonSerializer.Parse<T>(stringContent, JsonSerializerOptionsProvider.Options);
             }
         }
 

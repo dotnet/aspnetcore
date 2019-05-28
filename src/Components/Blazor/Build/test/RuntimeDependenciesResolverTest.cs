@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -126,17 +127,44 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             var additionalContentFound = actual.Except(expected);
 
             // Assert
-            if (contentNotFound.Any())
+            if (contentNotFound.Any() || additionalContentFound.Any())
             {
-                Assert.False(true, $"Expected content not found: {string.Join(", ", contentNotFound)}");
-            }
-
-            if (additionalContentFound.Any())
-            {
-                Assert.False(true, $"Unexpected content found: {string.Join(", ", additionalContentFound)}");
+                throw new ContentMisMatchException
+                {
+                    ContentNotFound = contentNotFound,
+                    AdditionalContentFound = additionalContentFound,
+                };
             }
 
             Assert.Equal(expectedContents, contents);
+        }
+
+        private class ContentMisMatchException : Xunit.Sdk.XunitException
+        {
+            public IEnumerable<string> ContentNotFound { get; set; }
+
+            public IEnumerable<string> AdditionalContentFound { get; set; }
+
+            public override string Message
+            {
+                get
+                {
+                    var error = new StringBuilder();
+                    if (ContentNotFound.Any())
+                    {
+                        error.Append($"Expected content not found: ")
+                            .AppendJoin(", ", ContentNotFound);
+                    }
+
+                    if (AdditionalContentFound.Any())
+                    {
+                        error.Append("Unexpected content found: ")
+                            .AppendJoin(", ", AdditionalContentFound);
+                    }
+
+                    return error.ToString();
+                }
+            }
         }
     }
 }

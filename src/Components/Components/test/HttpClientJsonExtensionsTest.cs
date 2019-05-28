@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Components.Test
 
             // Act/Assert
             var ex = await Assert.ThrowsAsync<HttpRequestException>(
-                () => httpClient.GetJsonAsync<Person>(TestUri).AsTask());
+                () => httpClient.GetJsonAsync<Person>(TestUri));
             Assert.Contains("404 (Not Found)", ex.Message);
         }
 

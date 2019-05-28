@@ -15,11 +15,6 @@ namespace Microsoft.AspNetCore.Components.Browser
     /// </summary>
     public static class RendererRegistryEventDispatcher
     {
-        private static readonly JsonSerializerOptions SerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-
         /// <summary>
         /// For framework use only.
         /// </summary>
@@ -67,7 +62,7 @@ namespace Microsoft.AspNetCore.Components.Browser
 
         private static T Deserialize<T>(string eventArgsJson)
         {
-            return JsonSerializer.Parse<T>(eventArgsJson, SerializerOptions);
+            return JsonSerializer.Parse<T>(eventArgsJson, JsonSerializerOptionsProvider.Options);
         }
 
         private static UIChangeEventArgs DeserializeUIEventChangeArgs(string eventArgsJson)
@@ -77,6 +72,7 @@ namespace Microsoft.AspNetCore.Components.Browser
             switch (jsonElement.Type)
             {
                 case JsonValueType.Null:
+                case JsonValueType.Undefined:
                     changeArgs.Value = null;
                     break;
                 case JsonValueType.String:

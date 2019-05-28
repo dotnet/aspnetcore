@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Json.Serialization;
+using System.ComponentModel;
 using System.Threading;
 
 namespace Microsoft.AspNetCore.Components
@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components
     /// <summary>
     /// Represents a reference to a rendered element.
     /// </summary>
-    public sealed class ElementRef
+    public readonly struct ElementRef
     {
         static long _nextIdForWebAssemblyOnly = 1;
 
@@ -18,14 +18,17 @@ namespace Microsoft.AspNetCore.Components
         /// Gets a unique identifier for <see cref="ElementRef" />.
         /// </summary>
         /// <remarks>
-        /// The Id is unique at least within the scope of a given user/circuit
+        /// The Id is unique at least within the scope of a given user/circuit.
+        /// This property is public to support Json serialization and should not be used by user code.
         /// </remarks>
-        [JsonPropertyName("_blazorElementRef")]
-        public string Id { get; }
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        public string __internalId { get; }
+
+        internal string Id => __internalId;
 
         private ElementRef(string id)
         {
-            Id = id;
+            __internalId = id;
         }
 
         internal static ElementRef CreateWithUniqueId()

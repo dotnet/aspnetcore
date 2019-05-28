@@ -3472,6 +3472,7 @@ var DotNet;
         if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
             return new DotNetObject(value.__dotNetObject);
         }
+        // Unrecognized - let another reviver handle it
         return value;
     });
     function argReplacer(key, value) {
@@ -13641,7 +13642,7 @@ function getCaptureIdAttributeName(referenceCaptureId) {
     return "_bl_" + referenceCaptureId;
 }
 // Support receiving ElementRef instances as args in interop calls
-var elementRefKey = '_blazorElementRef'; // Keep in sync with ElementRef.cs
+var elementRefKey = '__internalId'; // Keep in sync with ElementRef.cs
 DotNet.attachReviver(function (key, value) {
     if (value && typeof value === 'object' && value.hasOwnProperty(elementRefKey) && typeof value[elementRefKey] === 'string') {
         return getElementByCaptureId(value[elementRefKey]);

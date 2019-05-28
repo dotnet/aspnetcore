@@ -53,10 +53,6 @@
 }
 
 @functions {
-    private static readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
     public IDictionary<string, string> ReturnValues { get; set; } = new Dictionary<string, string>();
     public IDictionary<string, string> Invocations { get; set; } = new Dictionary<string, string>();
 
@@ -95,7 +91,7 @@
         var invocations = new Dictionary<string, string>();
         foreach (var interopResult in JavaScriptInterop.Invocations)
         {
-            var interopResultValue = JsonSerializer.ToString(interopResult.Value, serializerOptions);
+            var interopResultValue = JsonSerializer.ToString(interopResult.Value, TestJsonSerializerOptionsProvider.Options);
             invocations[interopResult.Key] = interopResultValue;
         }
 

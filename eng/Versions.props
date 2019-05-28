@@ -109,8 +109,8 @@
     <MicrosoftExtensionsValueStopwatchSourcesPackageVersion>3.0.0-preview6.19274.1</MicrosoftExtensionsValueStopwatchSourcesPackageVersion>
     <MicrosoftExtensionsWebEncodersPackageVersion>3.0.0-preview6.19274.1</MicrosoftExtensionsWebEncodersPackageVersion>
     <MicrosoftInternalExtensionsRefsPackageVersion>3.0.0-preview6.19274.1</MicrosoftInternalExtensionsRefsPackageVersion>
-    <MicrosoftJSInteropPackageVersion>3.0.0-preview6.19274.1</MicrosoftJSInteropPackageVersion>
-    <MonoWebAssemblyInteropPackageVersion>3.0.0-preview6.19274.1</MonoWebAssemblyInteropPackageVersion>
+    <MicrosoftJSInteropPackageVersion>3.0.0-dev</MicrosoftJSInteropPackageVersion>
+    <MonoWebAssemblyInteropPackageVersion>3.0.0-dev</MonoWebAssemblyInteropPackageVersion>
     <!-- Packages from aspnet/EntityFrameworkCore -->
     <dotnetefPackageVersion>3.0.0-preview6.19252.4</dotnetefPackageVersion>
     <MicrosoftEntityFrameworkCoreInMemoryPackageVersion>3.0.0-preview6.19252.4</MicrosoftEntityFrameworkCoreInMemoryPackageVersion>

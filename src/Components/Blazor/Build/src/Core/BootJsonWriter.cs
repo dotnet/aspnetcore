@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Components;
 using Mono.Cecil;
 
 namespace Microsoft.AspNetCore.Blazor.Build
@@ -40,7 +41,7 @@ namespace Microsoft.AspNetCore.Blazor.Build
                 assemblyReferences,
                 embeddedContent,
                 linkerEnabled);
-            return JsonSerializer.ToString(data, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+            return JsonSerializer.ToString(data, JsonSerializerOptionsProvider.Options);
         }
 
         private static string GetAssemblyEntryPoint(string assemblyPath)

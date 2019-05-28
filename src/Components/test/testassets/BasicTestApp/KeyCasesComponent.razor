@@ -61,7 +61,7 @@
     void Update()
     {
         renderContext.UpdateCount++;
-        parsedRootNode = JsonSerializer.Parse<KeyCasesTreeNode.Node>(modelJson, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        parsedRootNode = JsonSerializer.Parse<KeyCasesTreeNode.Node>(modelJson, TestJsonSerializerOptionsProvider.Options);
     }
 
     public class RenderContext

@@ -10,6 +10,7 @@ using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Blazor.Services;
+using Microsoft.AspNetCore.Components;
 
 namespace Microsoft.AspNetCore.Blazor.Http
 {
@@ -18,11 +19,6 @@ namespace Microsoft.AspNetCore.Blazor.Http
     /// </summary>
     public class WebAssemblyHttpMessageHandler : HttpMessageHandler
     {
-        private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-
         /// <summary>
         /// Gets or sets the default value of the 'credentials' option on outbound HTTP requests.
         /// Defaults to <see cref="FetchCredentialsOption.SameOrigin"/>.
@@ -73,7 +69,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
                 "Blazor._internal.http.sendAsync",
                 id,
                 request.Content == null ? null : await request.Content.ReadAsByteArrayAsync(),
-                JsonSerializer.ToString(options, _jsonSerializerOptions));
+                JsonSerializer.ToString(options, JsonSerializerOptionsProvider.Options));
 
             return await tcs.Task;
         }
@@ -104,7 +100,7 @@ namespace Microsoft.AspNetCore.Blazor.Http
             }
             else
             {
-                var responseDescriptor = JsonSerializer.Parse<ResponseDescriptor>(responseDescriptorJson, _jsonSerializerOptions);
+                var responseDescriptor = JsonSerializer.Parse<ResponseDescriptor>(responseDescriptorJson, JsonSerializerOptionsProvider.Options);
                 var responseContent = responseBodyData == null ? null : new ByteArrayContent(responseBodyData);
                 var responseMessage = responseDescriptor.ToResponseMessage(responseContent);
                 tcs.SetResult(responseMessage);

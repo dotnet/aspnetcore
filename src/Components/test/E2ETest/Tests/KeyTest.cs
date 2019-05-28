@@ -19,11 +19,6 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
 {
     public class KeyTest : BasicTestAppTestBase
     {
-        private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-
         public KeyTest(
             BrowserFixture browserFixture,
             ToggleExecutionModeServerFixture<Program> serverFixture,
@@ -38,7 +33,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Navigate(ServerPathBase, noReload: _serverFixture.ExecutionMode == ExecutionMode.Client);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
+        [Fact]
         public void CanInsert()
         {
             PerformTest(
@@ -57,7 +52,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
+        [Fact]
         public void CanDelete()
         {
             PerformTest(
@@ -76,7 +71,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
+        [Fact]
         public void CanInsertUnkeyed()
         {
             PerformTest(
@@ -95,7 +90,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
+        [Fact]
         public void CanDeleteUnkeyed()
         {
             PerformTest(
@@ -114,7 +109,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
+        [Fact]
         public void CanReorder()
         {
             PerformTest(
@@ -155,7 +150,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
+        [Fact]
         public void CanReorderInsertDeleteAndEdit_WithAndWithoutKeys()
         {
             // This test is a complex bundle of many types of changes happening simultaneously
@@ -211,7 +206,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
+        [Fact]
         public async Task CanRetainFocusWhileMovingTextBox()
         {
             var appElem = MountTestComponent<ReorderingFocusComponent>();
@@ -248,7 +243,7 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
                 .GetAttribute("value"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/corefx/issues/37313")]
+        [Fact]
         public void CanUpdateCheckboxStateWhileMovingIt()
         {
             var appElem = MountTestComponent<ReorderingFocusComponent>();
@@ -281,8 +276,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         {
             var rootBefore = new Node(null, "root", before);
             var rootAfter = new Node(null, "root", after);
-            var jsonBefore = JsonSerializer.ToString(rootBefore);
-            var jsonAfter = JsonSerializer.ToString(rootAfter);
+            var jsonBefore = JsonSerializer.ToString(rootBefore, TestJsonSerializerOptionsProvider.Options);
+            var jsonAfter = JsonSerializer.ToString(rootAfter, TestJsonSerializerOptionsProvider.Options);
 
             var appElem = MountTestComponent<KeyCasesComponent>();
             var textbox = appElem.FindElement(By.TagName("textarea"));
@@ -333,7 +328,8 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         private void SetTextAreaValueFast(IWebElement textAreaElementWithId, string value)
         {
             var javascript = (IJavaScriptExecutor)Browser;
-            javascript.ExecuteScript($"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {JsonSerializer.ToString(value, _jsonSerializerOptions)}");
+            javascript.ExecuteScript(
+                $"document.getElementById('{textAreaElementWithId.GetAttribute("id")}').value = {JsonSerializer.ToString(value, TestJsonSerializerOptionsProvider.Options)}");
             textAreaElementWithId.SendKeys(" "); // So it fires the change event
         }
 
