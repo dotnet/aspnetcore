@@ -34,7 +34,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
         [MemberData(nameof(TestVariants))]
         public async Task NtlmAuthentication(TestVariant variant)
         {
-            // Not sure why this is failing...
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(variant);
             deploymentParameters.ApplicationBaseUriHint = $"https://localhost:0/";
 
