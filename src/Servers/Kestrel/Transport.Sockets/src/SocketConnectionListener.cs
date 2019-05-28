@@ -108,8 +108,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
                 return connection;
             }
+            catch (ObjectDisposedException)
+            {
+                // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                return null;
+            }
             catch (SocketException)
             {
+                // REVIEW: Should we catch all exceptions here? or log them?
                 return null;
             }
         }
@@ -117,8 +123,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
         {
             _listenSocket?.Dispose();
-            _listenSocket = null;
-
             return default;
         }
 

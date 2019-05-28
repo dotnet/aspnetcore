@@ -136,23 +136,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await transport.BindAsync();
             var endpoint = (IPEndPoint)transport.EndPoint;
 
-            async Task ConnectAsync()
-            {
-                using (var socket = TestConnection.CreateConnectedLoopbackSocket(endpoint.Port))
-                {
-                    var read = await socket.ReceiveAsync(new byte[10], SocketFlags.None);
-                    Assert.Equal(0, read);
-                }
-            }
-
-            var connectTask = ConnectAsync();
-
             await transport.UnbindAsync();
             await transport.DisposeAsync();
 
             await Assert.ThrowsAsync<ObjectDisposedException>(() => transport.AcceptAsync().AsTask());
-            
-            await connectTask.DefaultTimeout();
         }
 
         [Fact]

@@ -72,6 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private ILibuvTrace Log { get; }
         private LibuvThread Thread { get; }
         public override MemoryPool<byte> MemoryPool => Thread.MemoryPool;
+
         public void Start()
         {
             _task = StartCore();

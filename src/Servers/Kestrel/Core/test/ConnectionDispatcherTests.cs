@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
@@ -51,6 +52,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task StartAcceptingConnectionsAsyncLogsIfAcceptAsyncThrows()
+        {
+            var serviceContext = new TestServiceContext();
+            var logger = ((TestKestrelTrace)serviceContext.Log).Logger;
+            logger.ThrowOnCriticalErrors = false;
+
+            var dispatcher = new ConnectionDispatcher(serviceContext, _ => Task.CompletedTask);
+
+            await dispatcher.StartAcceptingConnections(new ThrowingListener());
+
+            Assert.Equal(1, logger.CriticalErrorsLogged);
+            var critical = logger.Messages.SingleOrDefault(m => m.LogLevel == LogLevel.Critical);
+            Assert.NotNull(critical);
+            Assert.IsType<InvalidOperationException>(critical.Exception);
+            Assert.Equal("Unexpected error listening", critical.Exception.Message);
+        }
+
+        [Fact]
         public async Task OnConnectionFiresOnCompleted()
         {
             var serviceContext = new TestServiceContext();
@@ -94,6 +113,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var log = mockLogger.Invocations.First();
             Assert.Equal("An error occured running an IConnectionCompleteFeature.OnCompleted callback.", log.Arguments[2].ToString());
             Assert.IsType<InvalidTimeZoneException>(log.Arguments[3]);
+        }
+
+        private class ThrowingListener : IConnectionListener
+        {
+            public EndPoint EndPoint { get; set; }
+
+            public ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
+            {
+                throw new InvalidOperationException("Unexpected error listening");
+            }
+
+            public ValueTask DisposeAsync()
+            {
+                return default;
+            }
+
+            public ValueTask UnbindAsync(CancellationToken cancellationToken = default)
+            {
+                return default;
+            }
         }
     }
 }

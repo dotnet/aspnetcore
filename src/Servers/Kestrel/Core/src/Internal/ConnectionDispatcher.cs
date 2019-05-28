@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private readonly ServiceContext _serviceContext;
         private readonly ConnectionDelegate _connectionDelegate;
-        private readonly TaskCompletionSource<object> _acceptLoopTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _acceptLoopTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
         public ConnectionDispatcher(ServiceContext serviceContext, ConnectionDelegate connectionDelegate)
         {
@@ -54,9 +54,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         _ = Execute(new KestrelConnection(connection, _serviceContext.Log));
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // REVIEW: Today the only way to end the accept loop is an exception
+                    // REVIEW: If the accept loop ends should this trigger a server shutdown? It will manifest as a hang
+                    Log.LogCritical(0, ex, "The connection listener failed to accept any new connections.");
                 }
                 finally
                 {
