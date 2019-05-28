@@ -18,16 +18,17 @@ namespace Certificate.Sample
             BuildWebHost(args).Run();
         }
 
-        public static IWebHost BuildWebHost(string[] args) => null;
-/*            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>()
-                .ConfigureKestrel(options =>
+        public static IWebHost BuildWebHost(string[] args)
+            => WebHost.CreateDefaultBuilder(args)
+            .UseStartup<Startup>()
+            .ConfigureKestrel(options =>
+            {
+                options.ConfigureHttpsDefaults(opt =>
                 {
-                    options.ConfigureHttpsDefaults(opt =>
-                    {
-                        opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                    });
-                })
-                .Build();*/
+                    opt.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
+                    //opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                });
+            })
+            .Build();
     }
 }

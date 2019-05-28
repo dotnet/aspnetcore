@@ -37,13 +37,9 @@ namespace Certificate.Sample
                     };
                 });
 
-            services.AddMvc(config =>
-            {
-                var policy = new AuthorizationPolicyBuilder()
-                                 .RequireAuthenticatedUser()
-                                 .Build();
-                config.Filters.Add(new AuthorizeFilter(policy));
-            });
+            services.AddAuthorization();
+
+            services.AddMvc(config => { });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -51,14 +47,10 @@ namespace Certificate.Sample
         {
             app.UseRouting();
 
-            if (((IHostEnvironment)env).IsDevelopment())
-            {
-                app.UseDeveloperExceptionPage();
-            }
-
             app.UseStatusCodePages();
 
             app.UseAuthentication();
+            app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {
