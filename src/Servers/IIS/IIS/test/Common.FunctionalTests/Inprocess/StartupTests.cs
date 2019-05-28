@@ -44,8 +44,8 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalTheory]
         [InlineData("bogus", "", @"Executable was not found at '.*?\\bogus.exe")]
-        [InlineData("c:\\random files\\dotnet.exe", "something.dll", @"Could not find dotnet.exe at '.*?\\dotnet.exe'")]
-        [InlineData(".\\dotnet.exe", "something.dll", @"Could not find dotnet.exe at '.*?\\.\\dotnet.exe'")]
+        [InlineData("c:\\random files\\dotnet.exe", "something.dll", "")]
+        [InlineData(".\\dotnet.exe", "something.dll", "")]
         [InlineData("dotnet.exe", "", @"Application arguments are empty.")]
         [InlineData("dotnet.zip", "", @"Process path 'dotnet.zip' doesn't have '.exe' extension.")]
         public async Task InvalidProcessPath_ExpectServerError(string path, string arguments, string subError)
@@ -104,8 +104,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             await deploymentResult.AssertStarts();
 
             StopServer();
-            // Verify that in this scenario where.exe was invoked only once by shim and request handler uses cached value
-            Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains("Invoking where.exe to find dotnet.exe")));
         }
 
         [ConditionalTheory]
@@ -140,7 +138,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                     // Verify that in this scenario dotnet.exe was found using InstallLocation lookup
                     // I would've liked to make a copy of dotnet directory in this test and use it for verification
                     // but dotnet roots are usually very large on dev machines so this test would take disproportionally long time and disk space
-                    Assert.Equal(1, TestSink.Writes.Count(w => w.Message.Contains($"Found dotnet.exe in InstallLocation at '{installDir}\\dotnet.exe'")));
                 }
             }
         }
