@@ -204,7 +204,7 @@ This package is an internal implementation of the .NET Core SDK and is not meant
 
     <Target Name="_ErrorAboutUnbuiltNativeDependenciesOnCI"
           BeforeTargets="Build"
-          Condition=" '$(BuildIisNativeProjects)' != 'true' AND $(CI) == 'true' AND '$(TargetOsName)' == 'win' ">
+          Condition=" '$(BuildIisNativeProjects)' != 'true' AND '$(CI)' == 'true' AND '$(TargetOsName)' == 'win' ">
     <Error Text="IIS native assets are not being built on CI. Native assets must be included in the shared framework." />
   </Target>
 
