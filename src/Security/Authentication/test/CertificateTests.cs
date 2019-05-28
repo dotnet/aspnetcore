@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                     AllowedCertificateTypes = CertificateTypes.SelfSigned,
                     Events = new CertificateAuthenticationEvents
                     {
-                        OnValidateCertificate = context =>
+                        OnCertificateValidated = context =>
                         {
                             var claims = new[]
                             {
@@ -564,7 +564,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
         private CertificateAuthenticationEvents sucessfulValidationEvents = new CertificateAuthenticationEvents()
         {
-            OnValidateCertificate = context =>
+            OnCertificateValidated = context =>
             {
                 var claims = new[]
                 {
@@ -580,7 +580,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
         private CertificateAuthenticationEvents failedValidationEvents = new CertificateAuthenticationEvents()
         {
-            OnValidateCertificate = context =>
+            OnCertificateValidated = context =>
             {
                 context.Fail("Not validated");
                 return Task.CompletedTask;
@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
         private CertificateAuthenticationEvents unprocessedValidationEvents = new CertificateAuthenticationEvents()
         {
-            OnValidateCertificate = context =>
+            OnCertificateValidated = context =>
             {
                 return Task.CompletedTask;
             }

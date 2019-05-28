@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         /// In your delegate you should construct an authentication principal from the user details,
         /// attach it to the context.Principal property and finally call context.Success();
         /// </remarks>
-        public Func<ValidateCertificateContext, Task> OnValidateCertificate { get; set; } = context => Task.CompletedTask;
+        public Func<CertificateValidatedContext, Task> OnCertificateValidated { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
         /// Invoked when a certificate fails authentication.
@@ -36,10 +36,10 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         public virtual Task AuthenticationFailed(CertificateAuthenticationFailedContext context) => OnAuthenticationFailed(context);
 
         /// <summary>
-        /// Invoked when a certificate fails authentication.
+        /// Invoked after a certificate has been validated
         /// </summary>
         /// <param name="context"></param>
         /// <returns></returns>
-        public virtual Task ValidateCertificate(ValidateCertificateContext context) => OnValidateCertificate(context);
+        public virtual Task CertificateValidated(CertificateValidatedContext context) => OnCertificateValidated(context);
     }
 }

@@ -9,15 +9,15 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     /// <summary>
     /// Context used when certificates are being validated.
     /// </summary>
-    public class ValidateCertificateContext : ResultContext<CertificateAuthenticationOptions>
+    public class CertificateValidatedContext : ResultContext<CertificateAuthenticationOptions>
     {
         /// <summary>
-        /// Creates a new instance of <see cref="ValidateCertificateContext"/>.
+        /// Creates a new instance of <see cref="CertificateValidatedContext"/>.
         /// </summary>
         /// <param name="context">The HttpContext the validate context applies too.</param>
         /// <param name="scheme">The scheme used when the Certificate Authentication handler was registered.</param>
         /// <param name="options">The <see cref="CertificateAuthenticationOptions"/>.</param>
-        public ValidateCertificateContext(
+        public CertificateValidatedContext(
             HttpContext context,
             AuthenticationScheme scheme,
             CertificateAuthenticationOptions options)

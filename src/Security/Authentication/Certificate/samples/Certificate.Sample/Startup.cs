@@ -21,7 +21,7 @@ namespace Certificate.Sample
                 {
                     options.Events = new CertificateAuthenticationEvents
                     {
-                        OnValidateCertificate = context =>
+                        OnCertificateValidated = context =>
                         {
                             var claims = new[]
                             {
