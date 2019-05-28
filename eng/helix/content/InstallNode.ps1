@@ -12,8 +12,8 @@ $ProgressPreference = 'SilentlyContinue' # Workaround PowerShell/PowerShell#2138
 
 Set-StrictMode -Version 1
 
-if ((Get-Command "node.exe" -ErrorAction SilentlyContinue)) 
-{ 
+if (Get-Command "node.exe" -ErrorAction SilentlyContinue)
+{
     Write-Host "Found node.exe in PATH"
     exit
 }
