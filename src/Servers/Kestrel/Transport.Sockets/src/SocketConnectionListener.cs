@@ -94,29 +94,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
         public async ValueTask<ConnectionContext> AcceptAsync(CancellationToken cancellationToken = default)
         {
-            // TODO: throw for overlapping accepts
-            try
+            while (true)
             {
-                var acceptSocket = await _listenSocket.AcceptAsync();
-                acceptSocket.NoDelay = _options.NoDelay;
+                try
+                {
+                    var acceptSocket = await _listenSocket.AcceptAsync();
+                    acceptSocket.NoDelay = _options.NoDelay;
 
-                var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace, _options.MaxReadBufferSize, _options.MaxWriteBufferSize);
+                    var connection = new SocketConnection(acceptSocket, _memoryPool, _schedulers[_schedulerIndex], _trace, _options.MaxReadBufferSize, _options.MaxWriteBufferSize);
 
-                connection.Start();
+                    connection.Start();
 
-                _schedulerIndex = (_schedulerIndex + 1) % _numSchedulers;
+                    _schedulerIndex = (_schedulerIndex + 1) % _numSchedulers;
 
-                return connection;
-            }
-            catch (ObjectDisposedException)
-            {
-                // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
-                return null;
-            }
-            catch (SocketException)
-            {
-                // REVIEW: Should we catch all exceptions here? or log them?
-                return null;
+                    return connection;
+                }
+                catch (ObjectDisposedException)
+                {
+                    // A call was made to UnbindAsync/DisposeAsync just return null which signals we're done
+                    return null;
+                }
+                catch (SocketException)
+                {
+                    // The connection got reset while it was in the backlog, so we try again.
+                    _trace.ConnectionReset(connectionId: "(null)");
+                }
             }
         }
 
