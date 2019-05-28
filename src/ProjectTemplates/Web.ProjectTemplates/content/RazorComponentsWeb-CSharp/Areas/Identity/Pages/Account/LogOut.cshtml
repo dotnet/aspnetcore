@@ -1,7 +1,7 @@
 @page
 @using Microsoft.AspNetCore.Identity
 @inject SignInManager<IdentityUser> SignInManager
-@functions {
+@code {
     public async Task<IActionResult> OnGet()
     {
         if (SignInManager.IsSignedIn(User))
