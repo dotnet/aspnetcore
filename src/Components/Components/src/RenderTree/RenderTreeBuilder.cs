@@ -719,7 +719,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             var buffer = _entries.Buffer;
             var last = _entries.Count - 1;
 
-            for (var i = first; i <= last; i++ )
+            for (var i = first; i <= last; i++)
             {
                 if (buffer[i].FrameType != RenderTreeFrameType.Attribute)
                 {
