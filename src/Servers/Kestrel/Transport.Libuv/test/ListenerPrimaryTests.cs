@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var primary = await WaitForSecondaryListener(address, listenerPrimary, listenerSecondary);
 
             // Make sure the pending accept get yields
-            using (var socket = HttpClientSlim.GetSocket(address))
+            using (var socket = await HttpClientSlim.GetSocket(address))
             {
                 await (await primary.DefaultTimeout()).DisposeAsync();
             }
