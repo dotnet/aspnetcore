@@ -5,6 +5,7 @@ T:Microsoft.AspNetCore.Mvc.ApplicationModels.PageParameterModel
 T:Microsoft.AspNetCore.Mvc.ApplicationModels.PagePropertyModel
 # Manually implemented - https://github.com/aspnet/AspNetCore/issues/8825
 T:Microsoft.AspNetCore.Components.AuthorizeView
+T:Microsoft.AspNetCore.Components.AuthorizeViewCore
 T:Microsoft.AspNetCore.Components.CascadingAuthenticationState
 T:Microsoft.AspNetCore.Components.CascadingValue`1
 T:Microsoft.AspNetCore.Components.Forms.DataAnnotationsValidator
@@ -18,6 +19,6 @@ T:Microsoft.AspNetCore.Components.Forms.InputText
 T:Microsoft.AspNetCore.Components.Forms.InputTextArea
 T:Microsoft.AspNetCore.Components.Forms.ValidationMessage`1
 T:Microsoft.AspNetCore.Components.Forms.ValidationSummary
-T:Microsoft.AspNetCore.Components.Layouts.LayoutDisplay
+T:Microsoft.AspNetCore.Components.PageDisplay
 T:Microsoft.AspNetCore.Components.Routing.NavLink
 T:Microsoft.AspNetCore.Components.Routing.Router

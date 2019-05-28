@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Components
             renderer.AssignRootComponentId(rootComponent);
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 rootComponent.TriggerRender());
-            Assert.Equal("When using AuthorizeView, do not specify both 'Authorized' and 'ChildContent'.", ex.Message);
+            Assert.Equal("Do not specify both 'Authorized' and 'ChildContent'.", ex.Message);
         }
 
         [Fact]

@@ -9,7 +9,14 @@
 *@
 
 <CascadingAuthenticationState>
-    <Router AppAssembly=typeof(BasicTestApp.Program).Assembly />
+    <Router AppAssembly=typeof(BasicTestApp.Program).Assembly>
+        <AuthorizingContent>Authorizing...</AuthorizingContent>
+        <NotAuthorizedContent>
+            <div id="auth-failure">
+                Sorry, @(context.User.Identity.Name ?? "anonymous"), you're not authorized.
+            </div>
+        </NotAuthorizedContent>
+    </Router>
 </CascadingAuthenticationState>
 
 <hr />
