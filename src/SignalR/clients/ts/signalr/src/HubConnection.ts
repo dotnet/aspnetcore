@@ -5,7 +5,7 @@ import { HandshakeProtocol, HandshakeRequestMessage, HandshakeResponseMessage } 
 import { IConnection } from "./IConnection";
 import { CancelInvocationMessage, CompletionMessage, IHubProtocol, InvocationMessage, MessageType, StreamInvocationMessage, StreamItemMessage } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
-import { IReconnectPolicy } from "./IReconnectPolicy";
+import { IRetryPolicy } from "./IRetryPolicy";
 import { IStreamResult } from "./Stream";
 import { Subject } from "./Subject";
 import { Arg } from "./Utils";
@@ -32,7 +32,7 @@ export class HubConnection {
     private readonly cachedPingMessage: string | ArrayBuffer;
     private readonly connection: IConnection;
     private readonly logger: ILogger;
-    private readonly reconnectPolicy?: IReconnectPolicy;
+    private readonly reconnectPolicy?: IRetryPolicy;
     private protocol: IHubProtocol;
     private handshakeProtocol: HandshakeProtocol;
     private callbacks: { [invocationId: string]: (invocationEvent: StreamItemMessage | CompletionMessage | null, error?: Error) => void };
@@ -81,11 +81,11 @@ export class HubConnection {
     // create method that can be used by HubConnectionBuilder. An "internal" constructor would just
     // be stripped away and the '.d.ts' file would have no constructor, which is interpreted as a
     // public parameter-less constructor.
-    public static create(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IReconnectPolicy): HubConnection {
+    public static create(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IRetryPolicy): HubConnection {
         return new HubConnection(connection, logger, protocol, reconnectPolicy);
     }
 
-    private constructor(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IReconnectPolicy) {
+    private constructor(connection: IConnection, logger: ILogger, protocol: IHubProtocol, reconnectPolicy?: IRetryPolicy) {
         Arg.isRequired(connection, "connection");
         Arg.isRequired(logger, "logger");
         Arg.isRequired(protocol, "protocol");
@@ -666,11 +666,12 @@ export class HubConnection {
     private async reconnect(error?: Error) {
         const reconnectStartTime = Date.now();
         let previousReconnectAttempts = 0;
+        let retryError = error !== undefined ? error : new Error("Attempting to reconnect due to a unknown error.");
 
-        let nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, 0);
+        let nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, 0, retryError);
 
         if (nextRetryDelay === null) {
-            this.logger.log(LogLevel.Debug, "Connection not reconnecting because the IReconnectPolicy returned null on the first reconnect attempt.");
+            this.logger.log(LogLevel.Debug, "Connection not reconnecting because the IRetryPolicy returned null on the first reconnect attempt.");
             this.completeClose(error);
             return;
         }
@@ -732,9 +733,10 @@ export class HubConnection {
                     this.logger.log(LogLevel.Debug, "Connection left the reconnecting state during reconnect attempt. Done reconnecting.");
                     return;
                 }
-            }
 
-            nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime);
+                retryError = e instanceof Error ? e : new Error(e.toString());
+                nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime, retryError);
+            }
         }
 
         this.logger.log(LogLevel.Information, `Reconnect retries have been exhausted after ${Date.now() - reconnectStartTime} ms and ${previousReconnectAttempts} failed attempts. Connection disconnecting.`);
@@ -742,11 +744,15 @@ export class HubConnection {
         this.completeClose();
     }
 
-    private getNextRetryDelay(previousRetryCount: number, elapsedMilliseconds: number) {
+    private getNextRetryDelay(previousRetryCount: number, elapsedMilliseconds: number, retryReason: Error) {
         try {
-            return this.reconnectPolicy!.nextRetryDelayInMilliseconds(previousRetryCount, elapsedMilliseconds);
+            return this.reconnectPolicy!.nextRetryDelayInMilliseconds({
+                elapsedMilliseconds,
+                previousRetryCount,
+                retryReason,
+            });
         } catch (e) {
-            this.logger.log(LogLevel.Error, `IReconnectPolicy.nextRetryDelayInMilliseconds(${previousRetryCount}, ${elapsedMilliseconds}) threw error '${e}'.`);
+            this.logger.log(LogLevel.Error, `IRetryPolicy.nextRetryDelayInMilliseconds(${previousRetryCount}, ${elapsedMilliseconds}) threw error '${e}'.`);
             return null;
         }
     }
