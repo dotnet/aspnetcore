@@ -10,4 +10,3 @@
     <Reference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect"  />
   </ItemGroup>
 </Project>
-
