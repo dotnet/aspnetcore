@@ -45,7 +45,7 @@ namespace Microsoft.Extensions.ObjectPool
         {
             // Arrange
             var pool = new DefaultObjectPool<List<int>>(new ListPolicy());
-            
+
             // Act
             var list = pool.Get();
 

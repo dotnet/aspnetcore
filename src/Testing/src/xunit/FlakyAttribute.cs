@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Testing.xunit
     /// </para>
     /// </example>
     [TraitDiscoverer("Microsoft.AspNetCore.Testing.xunit.FlakyTestDiscoverer", "Microsoft.AspNetCore.Testing")]
-    [AttributeUsage(AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Assembly)]
     public sealed class FlakyAttribute : Attribute, ITraitAttribute
     {
         /// <summary>
