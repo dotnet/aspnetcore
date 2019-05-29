@@ -39,7 +39,7 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -76,7 +76,7 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-<MyComponent bind-Value=""ParentValue"" />
+<MyComponent @bind-Value=""ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -113,7 +113,7 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-<MyComponent bind-Value=""ParentValue"" bind-Value:event=""OnChanged"" />
+<MyComponent @bind-Value=""ParentValue"" @bind-Value:event=""OnChanged"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -150,7 +150,7 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-<MyComponent bind-Value=""ParentValue"" bind-Value:event=""OnChanged"" />
+<MyComponent @bind-Value=""ParentValue"" @bind-Value:event=""OnChanged"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -183,7 +183,7 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-<div bind=""@ParentValue"" />
+<div @bind=""@ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
@@ -216,7 +216,7 @@ namespace Test
 }"));
 
             var component = CompileToComponent(@"
-<div bind-value=""@ParentValue"" />
+<div @bind-value=""@ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
@@ -251,7 +251,7 @@ namespace Test
 
             // Act
             var result = CompileToCSharp(@"
-<div bind-value=""@ParentValue"" />
+<div @bind-value=""@ParentValue"" />
 @code {
     public string ParentValue { get; set; } = ""hi"";
 }");
@@ -271,7 +271,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input bind=""@ParentValue"" />
+<input @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -292,7 +292,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input type=""text"" bind=""@CurrentDate"" bind:format=""MM/dd/yyyy""/>
+<input type=""text"" @bind=""@CurrentDate"" @bind:format=""MM/dd/yyyy""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
@@ -314,7 +314,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input type=""text"" bind=""@CurrentDate"" bind:format=""@Format""/>
+<input type=""text"" @bind=""@CurrentDate"" @bind:format=""@Format""/>
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 
@@ -338,7 +338,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input type=""text"" bind=""@ParentValue"" />
+<input type=""text"" @bind=""@ParentValue"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -360,7 +360,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input type=""checkbox"" bind=""@Enabled"" />
+<input type=""checkbox"" @bind=""@Enabled"" />
 @code {
     public bool Enabled { get; set; }
 }");
@@ -381,7 +381,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input type=""text"" bind-value=""@ParentValue"" bind-value:event=""onchange"" />
+<input type=""text"" @bind-value=""@ParentValue"" @bind-value:event=""onchange"" />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -403,7 +403,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input type=""text"" bind-value=""@CurrentDate"" bind-value:event=""onchange"" bind-value:format=""MM/dd"" />
+<input type=""text"" @bind-value=""@CurrentDate"" @bind-value:event=""onchange"" @bind-value:format=""MM/dd"" />
 @code {
     public DateTime CurrentDate { get; set; } = new DateTime(2018, 1, 1);
 }");
@@ -425,7 +425,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input type=""@(""text"")"" bind-value=""@ParentValue"" bind-value:event=""onchange"" visible />
+<input type=""@(""text"")"" @bind-value=""@ParentValue"" @bind-value:event=""onchange"" visible />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -448,7 +448,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<input bind-value=""@ParentValue"" bind-value:event=""onchange"" type=""text"" visible />
+<input @bind-value=""@ParentValue"" @bind-value:event=""onchange"" type=""text"" visible />
 @code {
     public int ParentValue { get; set; } = 42;
 }");
@@ -474,7 +474,7 @@ namespace Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<div bind-value=""@ParentValue"" bind-value:event=""onchange"">
+<div @bind-value=""@ParentValue"" @bind-value:event=""onchange"">
   <span>@(42.ToString())</span>
 </div>
 @code {
@@ -501,7 +501,7 @@ namespace Test
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind-first-second-third=""Text"" />
+<input type=""text"" @bind-first-second-third=""Text"" />
 @code {
     public string Text { get; set; } = ""text"";
 }");
@@ -516,7 +516,7 @@ namespace Test
         {
             // Arrange & Act
             var generated = CompileToCSharp(@"
-<input type=""text"" bind-first-=""Text"" />
+<input type=""text"" @bind-first-=""Text"" />
 @code {
     public string Text { get; set; } = ""text"";
 }");

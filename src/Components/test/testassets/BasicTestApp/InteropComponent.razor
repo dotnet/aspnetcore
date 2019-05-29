@@ -3,7 +3,7 @@
 @using System.Runtime.InteropServices
 @inject IJSRuntime JSRuntime
 
-<button id="btn-interop" onclick="@InvokeInteropAsync">Invoke interop!</button>
+<button id="btn-interop" @onclick="@InvokeInteropAsync">Invoke interop!</button>
 
 <div>
     <h1>Invocations</h1>
