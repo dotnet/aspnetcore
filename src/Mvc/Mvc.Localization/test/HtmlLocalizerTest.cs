@@ -60,21 +60,21 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
                 yield return new object[] { "Bonjour {0} {{{{ }}", new object[] { "test" }, "Bonjour HtmlEncode[[test]] {{ }" };
                 yield return new object[] { "Bonjour {{0}}", new object[] { "{0}" }, "Bonjour {0}" };
                 yield return new object[] { "Bonjour {0:x}", new object[] { 10 }, "Bonjour HtmlEncode[[a]]" };
-                yield return new object[] { "Bonjour {0:x}}}", new object[] { 10 }, "Bonjour HtmlEncode[[x}]]" };
+                yield return new object[] { "Bonjour {0:x}}}", new object[] { 10 }, "Bonjour HtmlEncode[[a]]}" };
                 yield return new object[] { "Bonjour {{0:x}}", new object[] { 10 }, "Bonjour {0:x}" };
-                yield return new object[] { "{{ Bonjour {{{0:x}}}", new object[] { 10 }, "{ Bonjour {HtmlEncode[[x}]]" };
-                yield return new object[] { "}} Bonjour {{{0:x}}}", new object[] { 10 }, "} Bonjour {HtmlEncode[[x}]]" };
+                yield return new object[] { "{{ Bonjour {{{0:x}}}", new object[] { 10 }, "{ Bonjour {HtmlEncode[[a]]}" };
+                yield return new object[] { "}} Bonjour {{{0:x}}}", new object[] { 10 }, "} Bonjour {HtmlEncode[[a]]}" };
                 yield return new object[] { "}} Bonjour", new object[] { }, "} Bonjour" };
                 yield return new object[] { "{{ {0} }}", new object[] { 10 }, "{ HtmlEncode[[10]] }" };
                 yield return new object[] {
                     "Bonjour {{{0:x}}} {1:yyyy}",
                     new object[] { 10, new DateTime(2015, 10, 10) },
-                    "Bonjour {HtmlEncode[[x}]] HtmlEncode[[2015]]"
+                    "Bonjour {HtmlEncode[[a]]} HtmlEncode[[2015]]"
                 };
                 yield return new object[] {
                     "Bonjour {{{0:x}}} Bienvenue {{1:yyyy}}",
                     new object[] { 10, new DateTime(2015, 10, 10) },
-                    "Bonjour {HtmlEncode[[x}]] Bienvenue {1:yyyy}"
+                    "Bonjour {HtmlEncode[[a]]} Bienvenue {1:yyyy}"
                 };
                 yield return new object[] { // padding happens after encoding
                     "Bonjour {0,6} Bienvenue {{1:yyyy}}",
@@ -86,18 +86,18 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
                     new object[] { 10, new DateTime(2015, 10, 10) },
                     "Bonjour     HtmlEncode[[10]] Bienvenue {1:yyyy}"
                 };
-                yield return new object[] { "{0:{{000}}}", new object[] { 10 }, "HtmlEncode[[{010}]]" };
+                yield return new object[] { "{0:000}", new object[] { 10 }, "HtmlEncode[[010]]" };
                 yield return new object[] {
-                    "Bonjour {0:'{{characters that should be escaped}}b'###'b'}",
+                    "Bonjour {0:'characters that should be escaped b'###'b'}",
                     new object[] { 10 },
-                    "Bonjour HtmlEncode[[{characters that should be escaped}b10b]]"
+                    "Bonjour HtmlEncode[[characters that should be escaped b10b]]"
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(HtmlData))]
-        public void HtmlLocalizer_HtmlWithArguments_ReturnsLocalizedHtml(
+        public void HtmlLocalizer_HtmlWithArguments_ReturnsLocalizedHtml2(
             string format,
             object[] arguments,
             string expectedText)
@@ -105,10 +105,11 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             // Arrange
             var localizedString = new LocalizedString("Hello", format);
 
-            var stringLocalizer = new Mock<IStringLocalizer>();
-            stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
+            //var stringLocalizer = new Mock<IStringLocalizer>();
+            //stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
 
-            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object);
+            //var asdf = stringLocalizer.Object;
+            var htmlLocalizer = new HtmlLocalizer(new TestStringLocalizer2(localizedString));
 
             // Act
             var localizedHtmlString = htmlLocalizer.GetHtml("Hello", arguments);
@@ -120,6 +121,30 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             {
                 localizedHtmlString.WriteTo(writer, new HtmlTestEncoder());
                 Assert.Equal(expectedText, writer.ToString());
+            }
+        }
+
+        private class TestStringLocalizer2 : IStringLocalizer
+        {
+            private LocalizedString _ls;
+
+            public TestStringLocalizer2(LocalizedString ls)
+            {
+                _ls = ls;
+            }
+
+            public LocalizedString this[string name] => _ls;
+
+            public LocalizedString this[string name, params object[] arguments] => throw new NotImplementedException();
+
+            public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
+            {
+                throw new NotImplementedException();
+            }
+
+            public IStringLocalizer WithCulture(CultureInfo culture)
+            {
+                throw new NotImplementedException();
             }
         }
 
