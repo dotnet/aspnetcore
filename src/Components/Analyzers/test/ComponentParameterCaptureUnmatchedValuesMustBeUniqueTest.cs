@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using TestHelper;
@@ -43,9 +44,9 @@ namespace Microsoft.AspNetCore.Components.Analyzers.Test
         }}
     }}" + ComponentsTestDeclarations.Source;
 
-            var message = @"Component type 'ConsoleApplication1.TypeName' defines properties multiple parameters with CaptureUnmatchedValues. Properties: 
-ConsoleApplication1.TypeName.MyOtherProperty
-ConsoleApplication1.TypeName.MyProperty";
+            var message = @"Component type 'ConsoleApplication1.TypeName' defines properties multiple parameters with CaptureUnmatchedValues. Properties: " + Environment.NewLine +
+"ConsoleApplication1.TypeName.MyOtherProperty" + Environment.NewLine +
+"ConsoleApplication1.TypeName.MyProperty";
 
             VerifyCSharpDiagnostic(test,
                     new DiagnosticResult
