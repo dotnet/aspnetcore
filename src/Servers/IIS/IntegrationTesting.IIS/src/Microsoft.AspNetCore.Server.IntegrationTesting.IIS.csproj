@@ -63,6 +63,7 @@
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />
     <Reference Include="System.ServiceProcess.ServiceController" />
+    <Reference Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" GeneratePackagePath="true" />
   </ItemGroup>
 
 </Project>
