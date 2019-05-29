@@ -28,7 +28,6 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1687", FlakyOn.AzP.Linux)]
         public async Task ShutdownTestRun()
         {
             await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
