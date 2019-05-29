@@ -1,9 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
-  <Target Name="GenerateServiceFileReferenceCode" BeforeTargets="BeforeCompile">
-    <MsBuild Projects="$(MSBuildProjectFile)"
-        Targets="GenerateServiceFileReferenceCode"
+  <Target Name="GenerateOpenApiReferenceCode">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+        Targets="GenerateOpenApiReferenceCode"
         Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
-        RemoveProperties="TargetFrameworks;RuntimeIdentifier" />
+        RemoveProperties="RuntimeIdentifier" />
   </Target>
+
+  <Target Name="_TieInGenerateOpenApiReferenceCode"
+      BeforeTargets="BeforeCompile"
+      Condition=" ''$(OpenApiGenerateBeforeCompile)' == 'true' "
+      DependsOnTargets="GenerateOpenApiReferenceCode" />
 </Project>

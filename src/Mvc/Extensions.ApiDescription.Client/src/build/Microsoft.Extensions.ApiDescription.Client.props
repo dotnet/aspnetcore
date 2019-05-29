@@ -1,35 +1,58 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
   <PropertyGroup>
-    <_ApiDescriptionTasksAssemblyTarget
-        Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_ApiDescriptionTasksAssemblyTarget>
-    <_ApiDescriptionTasksAssemblyTarget
-        Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_ApiDescriptionTasksAssemblyTarget>
-    <_ApiDescriptionTasksAssemblyPath>$(MSBuildThisFileDirectory)/../tasks/$(_ApiDescriptionTasksAssemblyTarget)/Microsoft.Extensions.ApiDescription.Tasks.dll</_ApiDescriptionTasksAssemblyPath>
-    <_ApiDescriptionTasksAssemblyTarget />
+    <_ApiDescriptionClientAssemblyTarget
+        Condition="'$(MSBuildRuntimeType)' == 'Core'">netstandard2.0</_ApiDescriptionClientAssemblyTarget>
+    <_ApiDescriptionClientAssemblyTarget
+        Condition="'$(MSBuildRuntimeType)' != 'Core'">net461</_ApiDescriptionClientAssemblyTarget>
+    <_ApiDescriptionClientAssemblyPath>$(MSBuildThisFileDirectory)/../tasks/$(_ApiDescriptionClientAssemblyTarget)/Microsoft.Extensions.ApiDescription.Client.dll</_ApiDescriptionClientAssemblyPath>
+    <_ApiDescriptionClientAssemblyTarget />
   </PropertyGroup>
-  <UsingTask TaskName="GetCurrentItems" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
-  <UsingTask TaskName="GetFileReferenceMetadata" AssemblyFile="$(_ApiDescriptionTasksAssemblyPath)" />
+  <UsingTask TaskName="GetCurrentItems" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
+  <UsingTask TaskName="GetFileReferenceMetadata" AssemblyFile="$(_ApiDescriptionClientAssemblyPath)" />
 
   <!--
     Settings users may update as they see fit.
   -->
   <PropertyGroup>
+    <!--
+      Options added to the code generator command line by default. Provides the default %(Options) metadata of
+      @(OpenApiReference) and @(OpenApiProjectReference) items.
+    -->
     <OpenApiDefaultGeneratorOptions Condition="'$(OpenApiDefaultGeneratorOptions)' == ''"></OpenApiDefaultGeneratorOptions>
 
     <!--
-      If 'true', will generate code for OpenApiReference items during design-time builds. Otherwise, generate code only
-      for output files that do not yet exist during design-time builds.
+      If 'true' (the default), generate code for @(OpenApiReference) and @(OpenApiProjectReference) items before the
+      BeforeCompile target.
+
+      If 'false', the GenerateOpenApiReferenceCode target is not part of the build (by default) but can run when
+      explicitly referenced. That is, the target may be invoked from the command line or tied in through another target.
+    -->
+    <OpenApiGenerateBeforeCompile Condition="'$(OpenApiGenerateBeforeCompile)' == ''">true</OpenApiGenerateBeforeCompile>
+
+    <!--
+      If 'true' (the default), generate code for @(OpenApiReference) and @(OpenApiProjectReference) items during
+      design-time builds. Otherwise, generate code only during a full build.
     -->
     <OpenApiGenerateAtDesignTime Condition="'$(OpenApiGenerateAtDesignTime)' == ''">true</OpenApiGenerateAtDesignTime>
 
     <!--
-      $(OpenApiDefaultOutputDirectory) value is interpreted relative to the project folder, unless already an
-      absolute path.
+      If 'true' (the default), build projects referenced in @(OpenApiProjectReference) items before retrieving that
+      project's Open API documents list (or generating code). Recommend setting this to 'false' when the referenced
+      projects do not share target framework values (avoiding build errors and / or warnings).
+
+      If 'false', ensure the referenced projects build before this one in the solution or through other means. IDEs may
+      be confused about the project dependency graph in this case.
+    -->
+    <OpenApiBuildReferencedProjects Condition="'$(OpenApiBuildReferencedProjects)' == ''">true</OpenApiBuildReferencedProjects>
+
+    <!--
+      Default folder to place code generated from Open API documents. Value is interpreted relative to the project
+      folder, unless already an absolute path. Part of the default %(OutputPath) metadata of @(OpenApiReference) and
+      @(OpenApiProjectReference) items.
     -->
     <OpenApiDefaultOutputDirectory
         Condition="'$(OpenApiDefaultOutputDirectory)' == ''">$(BaseIntermediateOutputPath)</OpenApiDefaultOutputDirectory>
-    <OpenApiDefaultOutputDirectory>$([MSBuild]::EnsureTrailingSlash('$(OpenApiDefaultOutputDirectory)'))</OpenApiDefaultOutputDirectory>
   </PropertyGroup>
 
   <!--
