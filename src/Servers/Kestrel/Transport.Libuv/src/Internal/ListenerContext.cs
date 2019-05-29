@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal class ListenerContext
     {
-        private readonly Channel<LibuvConnection> _acceptQueue = Channel.CreateUnbounded<LibuvConnection>();
+        private readonly Channel<LibuvConnection> _acceptQueue = Channel.CreateUnbounded<LibuvConnection>(new UnboundedChannelOptions { SingleReader = true });
 
         public ListenerContext(LibuvTransportContext transportContext)
         {

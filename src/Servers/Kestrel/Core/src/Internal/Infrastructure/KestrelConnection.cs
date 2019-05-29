@@ -163,6 +163,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         public void Complete()
         {
             _completionTcs.TrySetResult(null);
+
+            _connectionClosingCts.Dispose();
         }
     }
 }

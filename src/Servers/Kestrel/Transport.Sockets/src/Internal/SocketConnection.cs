@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
         private readonly object _shutdownLock = new object();
         private volatile bool _socketDisposed;
         private volatile Exception _shutdownReason;
-        private Task _task;
+        private Task _processingTask;
 
         internal SocketConnection(Socket socket,
                                   MemoryPool<byte> memoryPool,
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
 
         public void Start()
         {
-            _task = StartAsync();
+            _processingTask = StartAsync();
         }
 
         private async Task StartAsync()
@@ -136,9 +136,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal
             Transport.Input.Complete();
             Transport.Output.Complete();
 
-            if (_task != null)
+            if (_processingTask != null)
             {
-                await _task;
+                await _processingTask;
             }
 
             _connectionClosedTokenSource.Dispose();
