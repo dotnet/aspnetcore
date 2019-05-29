@@ -7,8 +7,8 @@
 
 <h3>Bubbling custom event</h3>
 
-<div @onsneeze="@(new Action(() => LogEvent("parent onsneeze")))">
-    <div id="element-with-onsneeze" @onsneeze="@(new Action(() => LogEvent("target onsneeze")))">Element with onsneeze handler</div>
+<div onsneeze="@(new Action(() => LogEvent("parent onsneeze")))">
+    <div id="element-with-onsneeze" onsneeze="@(new Action(() => LogEvent("target onsneeze")))">Element with onsneeze handler</div>
     <div id="element-without-onsneeze" >Element without onsneeze handler</div>
 </div>
 

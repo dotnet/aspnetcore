@@ -260,7 +260,7 @@ namespace Test
             var diagnostic = Assert.Single(result.Diagnostics);
             Assert.Equal("RZ9989", diagnostic.Id);
             Assert.Equal(
-                "The attribute 'bind-value' was matched by multiple bind attributes. Duplicates:" + Environment.NewLine +
+                "The attribute '@bind-value' was matched by multiple bind attributes. Duplicates:" + Environment.NewLine +
                 "Test.BindAttributes" + Environment.NewLine +
                 "Test.BindAttributes",
                 diagnostic.GetMessage());
