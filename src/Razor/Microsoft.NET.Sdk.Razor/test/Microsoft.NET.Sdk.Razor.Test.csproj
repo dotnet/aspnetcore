@@ -63,7 +63,7 @@
     <MSBuildLocationFileOutput>$(IntermediateOutputPath)BuildVariables.generated.cs</MSBuildLocationFileOutput>
   </PropertyGroup>
 
-  <Target 
+  <Target
     Name="GenerateMSBuildLocationFile"
     Condition="'$(TargetFramework)'!=''"
     AfterTargets="BeforeBuild"
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
   </Target>
 
-  <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build">
+  <Target Name="RestoreTestProjects" BeforeTargets="Restore;Build" Condition="'$(DotNetBuildFromSource)' != 'true'">
     <MSBuild Projects="..\testapps\RestoreTestProjects\RestoreTestProjects.csproj" Targets="Restore" />
   </Target>
 
