@@ -10,7 +10,6 @@
 
 namespace Microsoft.AspNetCore.Components.Analyzers {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNetCore.Components.Analyzers.Resources", typeof(Resources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Microsoft.AspNetCore.Components.Analyzers.Resources", typeof(Resources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -58,6 +57,60 @@ namespace Microsoft.AspNetCore.Components.Analyzers {
             }
             set {
                 resourceCulture = value;
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameters with CaptureUnmatchedValuess must be a correct type..
+        /// </summary>
+        internal static string ComponentParameterCaptureUnmatchedValuesHasWrongType_Description {
+            get {
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesHasWrongType_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameter &apos;{0}&apos; defines CaptureUnmatchedValuess but has an unsupported type &apos;{1}&apos;. Use a type assignable from &apos;{2}&apos;..
+        /// </summary>
+        internal static string ComponentParameterCaptureUnmatchedValuesHasWrongType_Format {
+            get {
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesHasWrongType_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component parameter with CaptureUnmatchedValues has the wrong type.
+        /// </summary>
+        internal static string ComponentParameterCaptureUnmatchedValuesHasWrongType_Title {
+            get {
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesHasWrongType_Title", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Components may only define a single parameter with CaptureUnmatchedValues..
+        /// </summary>
+        internal static string ComponentParameterCaptureUnmatchedValuesMustBeUnique_Description {
+            get {
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesMustBeUnique_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component type &apos;{0}&apos; defines properties multiple parameters with CaptureUnmatchedValues. Properties: {1}{2}.
+        /// </summary>
+        internal static string ComponentParameterCaptureUnmatchedValuesMustBeUnique_Format {
+            get {
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesMustBeUnique_Format", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Component has multiple CaptureUnmatchedValues parameters.
+        /// </summary>
+        internal static string ComponentParameterCaptureUnmatchedValuesMustBeUnique_Title {
+            get {
+                return ResourceManager.GetString("ComponentParameterCaptureUnmatchedValuesMustBeUnique_Title", resourceCulture);
             }
         }
         

@@ -373,6 +373,7 @@ namespace Microsoft.AspNetCore.Components
     public sealed partial class ParameterAttribute : System.Attribute
     {
         public ParameterAttribute() { }
+        public bool CaptureUnmatchedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ParameterCollection
@@ -769,6 +770,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
         public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementRef> elementReferenceCaptureAction) { }
         public void AddMarkupContent(int sequence, string markupContent) { }
+        public void AddMultipleAttributes<T>(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> attributes) { }
         public void Clear() { }
         public void CloseComponent() { }
         public void CloseElement() { }
@@ -813,6 +815,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     }
     public enum RenderTreeFrameType
     {
+        None = 0,
         Element = 1,
         Text = 2,
         Attribute = 3,
