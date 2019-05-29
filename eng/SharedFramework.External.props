@@ -83,7 +83,7 @@
     These compilation references are necessary to compile netstandard2.0 assemblies which are in the shared framework.
     This references are part of Microsoft.NETCore.App, so are listed here as references to be used during compilation only.
   -->
-  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
     <_CompilationOnlyReference Include="System.Buffers" />
     <_CompilationOnlyReference Include="System.ComponentModel.Annotations" />
     <_CompilationOnlyReference Include="System.Runtime.CompilerServices.Unsafe" />

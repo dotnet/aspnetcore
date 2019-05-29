@@ -81,9 +81,12 @@
 
   <ItemGroup>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
-      <LatestRuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</LatestRuntimeFrameworkVersion>
-      <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</DefaultRuntimeFrameworkVersion>
-      <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</TargetingPackVersion>
+      <!-- Always update the 'latest version', whether the repo is servicing or not. -->
+      <LatestRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)'">$(MicrosoftNETCoreAppPackageVersion)</LatestRuntimeFrameworkVersion>
+      <!-- Only update the default runtime version for preview builds. -->
+      <DefaultRuntimeFrameworkVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</DefaultRuntimeFrameworkVersion>
+      <!-- Only update the targeting pack version for preview builds. -->
+      <TargetingPackVersion Condition="'%(TargetFramework)' == '$(DefaultNetCoreTargetFramework)' and '$(IsServicingBuild)' != 'true'">$(MicrosoftNETCoreAppPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
     <KnownFrameworkReference Condition="'$(UseAspNetCoreSharedRuntime)' != 'true'" Remove="Microsoft.AspNetCore.App" />
@@ -93,6 +96,10 @@
       <LatestRuntimeFrameworkVersion>$(SharedFxVersion)</LatestRuntimeFrameworkVersion>
       <DefaultRuntimeFrameworkVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</DefaultRuntimeFrameworkVersion>
       <TargetingPackVersion Condition="'$(IsServicingBuild)' != 'true'">$(SharedFxVersion)</TargetingPackVersion>
+    </KnownFrameworkReference>
+
+    <KnownFrameworkReference Update="NETStandard.Library">
+      <TargetingPackVersion Condition="'%(TargetFramework)' == 'netstandard2.1' and '$(IsServicingBuild)' != 'true'">$(NETStandardLibraryRefPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
 
   </ItemGroup>
