@@ -266,6 +266,7 @@
     <ProjectReference Include="..\IISLib\IISLib.vcxproj">
       <Project>{09d9d1d6-2951-4e14-bc35-76a23cf9391a}</Project>
     </ProjectReference>
+    <PackageReference Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNetCoreDotNetAppHostPackageVersion)" GeneratePackagePath="true" />
   </ItemGroup>
   <ItemGroup>
     <None Include="ancm.mof" />

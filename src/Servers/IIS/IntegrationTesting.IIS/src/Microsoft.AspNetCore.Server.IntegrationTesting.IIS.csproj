@@ -45,12 +45,14 @@
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(BuildIisNativeProjects)' == 'true'">
     <ItemGroup>
       <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
+      <None Include="$(Pkg_Microsoft_NETCore_DotNetAppHost)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="x64/nethost.dll" />
     </ItemGroup>
   </Target>
 
   <Target Name="AddPackNativeComponents" BeforeTargets="_GetPackageFiles" Condition="'$(BuildIisNativeProjects)' == 'true'">
     <ItemGroup>
       <Content Include="%(ShimComponents.DllLocation)" PackageCopyToOutput="true" PackagePath="contentFiles/any/any/%(ShimComponents.Platform)/%(ShimComponents.PackageSubPath)" />
+      <!-- <None Include="runtimes/win-x64/native/nethost.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="x64/nethost.dll" /> -->
     </ItemGroup>
   </Target>
 
