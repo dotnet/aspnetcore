@@ -12,12 +12,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/aspnet/AspNetCore.git"
+    "url": "git+https://github.com/aspnet/Extensions.git"
   },
   "author": "Microsoft",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/aspnet/AspNetCore/issues"
+    "url": "https://github.com/aspnet/Extensions/issues"
   },
   "homepage": "https://github.com/aspnet/Extensions/tree/master/src/JSInterop#readme",
   "files": [
