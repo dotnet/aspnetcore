@@ -10,15 +10,15 @@ namespace Microsoft.JSInterop.Tests
 {
     public class JSInProcessRuntimeBaseTest
     {
-        [Fact(Skip = "https://github.com/aspnet/AspNetCore-Internal/issues/1807#issuecomment-470756811")]
+        [Fact]
         public void DispatchesSyncCallsAndDeserializesResults()
         {
             // Arrange
             var runtime = new TestJSInProcessRuntime
             {
-                NextResultJson = Json.Serialize(
-                    new TestDTO { IntValue = 123, StringValue = "Hello" })
+                NextResultJson = "{\"intValue\":123,\"stringValue\":\"Hello\"}"
             };
+            JSRuntime.SetCurrentJSRuntime(runtime);
 
             // Act
             var syncResult = runtime.Invoke<TestDTO>("test identifier 1", "arg1", 123, true);
@@ -36,18 +36,19 @@ namespace Microsoft.JSInterop.Tests
         {
             // Arrange
             var runtime = new TestJSInProcessRuntime { NextResultJson = null };
+            JSRuntime.SetCurrentJSRuntime(runtime);
             var obj1 = new object();
             var obj2 = new object();
             var obj3 = new object();
 
             // Act
             // Showing we can pass the DotNetObject either as top-level args or nested
-            var syncResult = runtime.Invoke<object>("test identifier",
-                new DotNetObjectRef(obj1),
+            var syncResult = runtime.Invoke<DotNetObjectRef<object>>("test identifier",
+                DotNetObjectRef.Create(obj1),
                 new Dictionary<string, object>
                 {
-                    { "obj2", new DotNetObjectRef(obj2) },
-                    { "obj3", new DotNetObjectRef(obj3) }
+                    { "obj2",  DotNetObjectRef.Create(obj2) },
+                    { "obj3",  DotNetObjectRef.Create(obj3) },
                 });
 
             // Assert: Handles null result string
@@ -56,12 +57,12 @@ namespace Microsoft.JSInterop.Tests
             // Assert: Serialized as expected
             var call = runtime.InvokeCalls.Single();
             Assert.Equal("test identifier", call.Identifier);
-            Assert.Equal("[\"__dotNetObject:1\",{\"obj2\":\"__dotNetObject:2\",\"obj3\":\"__dotNetObject:3\"}]", call.ArgsJson);
+            Assert.Equal("[{\"__dotNetObject\":1},{\"obj2\":{\"__dotNetObject\":2},\"obj3\":{\"__dotNetObject\":3}}]", call.ArgsJson);
 
             // Assert: Objects were tracked
-            Assert.Same(obj1, runtime.ArgSerializerStrategy.FindDotNetObject(1));
-            Assert.Same(obj2, runtime.ArgSerializerStrategy.FindDotNetObject(2));
-            Assert.Same(obj3, runtime.ArgSerializerStrategy.FindDotNetObject(3));
+            Assert.Same(obj1, runtime.ObjectRefManager.FindDotNetObject(1));
+            Assert.Same(obj2, runtime.ObjectRefManager.FindDotNetObject(2));
+            Assert.Same(obj3, runtime.ObjectRefManager.FindDotNetObject(3));
         }
 
         [Fact]
@@ -70,20 +71,22 @@ namespace Microsoft.JSInterop.Tests
             // Arrange
             var runtime = new TestJSInProcessRuntime
             {
-                NextResultJson = "[\"__dotNetObject:2\",\"__dotNetObject:1\"]"
+                NextResultJson = "[{\"__dotNetObject\":2},{\"__dotNetObject\":1}]"
             };
+            JSRuntime.SetCurrentJSRuntime(runtime);
             var obj1 = new object();
             var obj2 = new object();
 
             // Act
-            var syncResult = runtime.Invoke<object[]>("test identifier",
-                new DotNetObjectRef(obj1),
+            var syncResult = runtime.Invoke<DotNetObjectRef<object>[]>(
+                "test identifier",
+                DotNetObjectRef.Create(obj1),
                 "some other arg",
-                new DotNetObjectRef(obj2));
+                DotNetObjectRef.Create(obj2));
             var call = runtime.InvokeCalls.Single();
 
             // Assert
-            Assert.Equal(new[] { obj2, obj1 }, syncResult);
+            Assert.Equal(new[] { obj2, obj1 }, syncResult.Select(r => r.Value));
         }
 
         class TestDTO

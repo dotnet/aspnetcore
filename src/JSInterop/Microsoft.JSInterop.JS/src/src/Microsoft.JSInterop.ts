@@ -264,17 +264,14 @@ module DotNet {
     }
 
     public serializeAsArg() {
-      return `__dotNetObject:${this._id}`;
+      return {__dotNetObject: this._id};
     }
   }
 
-  const dotNetObjectValueFormat = /^__dotNetObject\:(\d+)$/;
+  const dotNetObjectRefKey = '__dotNetObject';
   attachReviver(function reviveDotNetObject(key: any, value: any) {
-    if (typeof value === 'string') {
-      const match = value.match(dotNetObjectValueFormat);
-      if (match) {
-        return new DotNetObject(parseInt(match[1]));
-      }
+    if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
+        return new DotNetObject(value.__dotNetObject);
     }
 
     // Unrecognized - let another reviver handle it

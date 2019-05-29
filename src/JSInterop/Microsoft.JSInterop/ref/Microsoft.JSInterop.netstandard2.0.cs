@@ -12,12 +12,19 @@ namespace Microsoft.JSInterop
         [Microsoft.JSInterop.JSInvokableAttribute("DotNetDispatcher.ReleaseDotNetObject")]
         public static void ReleaseDotNetObject(long dotNetObjectId) { }
     }
-    public partial class DotNetObjectRef : System.IDisposable
+    public static partial class DotNetObjectRef
     {
-        public DotNetObjectRef(object value) { }
-        public object Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public static Microsoft.JSInterop.DotNetObjectRef<TValue> Create<TValue>(TValue value) where TValue : class { throw null; }
+    }
+    public sealed partial class DotNetObjectRef<TValue> : System.IDisposable where TValue : class
+    {
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+        public DotNetObjectRef() { }
+        [System.Text.Json.Serialization.JsonIgnoreAttribute]
+        public TValue Value { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+        public long __dotNetObject { get { throw null; } set { } }
         public void Dispose() { }
-        public void EnsureAttachedToJsRuntime(Microsoft.JSInterop.IJSRuntime runtime) { }
     }
     public partial interface IJSInProcessRuntime : Microsoft.JSInterop.IJSRuntime
     {
@@ -25,8 +32,7 @@ namespace Microsoft.JSInterop
     }
     public partial interface IJSRuntime
     {
-        System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, params object[] args);
-        void UntrackObjectRef(Microsoft.JSInterop.DotNetObjectRef dotNetObjectRef);
+        System.Threading.Tasks.Task<TValue> InvokeAsync<TValue>(string identifier, params object[] args);
     }
     public partial class JSException : System.Exception
     {
@@ -36,7 +42,7 @@ namespace Microsoft.JSInterop
     {
         protected JSInProcessRuntimeBase() { }
         protected abstract string InvokeJS(string identifier, string argsJson);
-        public T Invoke<T>(string identifier, params object[] args) { throw null; }
+        public TValue Invoke<TValue>(string identifier, params object[] args) { throw null; }
     }
     [System.AttributeUsageAttribute(System.AttributeTargets.Method, AllowMultiple=true)]
     public partial class JSInvokableAttribute : System.Attribute
@@ -45,30 +51,21 @@ namespace Microsoft.JSInterop
         public JSInvokableAttribute(string identifier) { }
         public string Identifier { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
-    public static partial class Json
-    {
-        public static T Deserialize<T>(string json) { throw null; }
-        public static string Serialize(object value) { throw null; }
-    }
     public static partial class JSRuntime
     {
         public static void SetCurrentJSRuntime(Microsoft.JSInterop.IJSRuntime instance) { }
     }
     public abstract partial class JSRuntimeBase : Microsoft.JSInterop.IJSRuntime
     {
-        public JSRuntimeBase() { }
+        protected JSRuntimeBase() { }
         protected abstract void BeginInvokeJS(long asyncHandle, string identifier, string argsJson);
         public System.Threading.Tasks.Task<T> InvokeAsync<T>(string identifier, params object[] args) { throw null; }
-        public void UntrackObjectRef(Microsoft.JSInterop.DotNetObjectRef dotNetObjectRef) { }
     }
 }
 namespace Microsoft.JSInterop.Internal
 {
-    public partial interface ICustomArgSerializer
-    {
-        object ToJsonPrimitive();
-    }
-    public partial class JSAsyncCallResult
+    [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+    public sealed partial class JSAsyncCallResult
     {
         internal JSAsyncCallResult() { }
     }

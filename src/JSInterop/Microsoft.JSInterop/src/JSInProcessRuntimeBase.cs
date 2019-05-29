@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text.Json.Serialization;
+
 namespace Microsoft.JSInterop
 {
     /// <summary>
@@ -11,14 +13,19 @@ namespace Microsoft.JSInterop
         /// <summary>
         /// Invokes the specified JavaScript function synchronously.
         /// </summary>
-        /// <typeparam name="T">The JSON-serializable return type.</typeparam>
+        /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
         /// <param name="identifier">An identifier for the function to invoke. For example, the value <code>"someScope.someFunction"</code> will invoke the function <code>window.someScope.someFunction</code>.</param>
         /// <param name="args">JSON-serializable arguments.</param>
-        /// <returns>An instance of <typeparamref name="T"/> obtained by JSON-deserializing the return value.</returns>
-        public T Invoke<T>(string identifier, params object[] args)
+        /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+        public TValue Invoke<TValue>(string identifier, params object[] args)
         {
-            var resultJson = InvokeJS(identifier, Json.Serialize(args, ArgSerializerStrategy));
-            return Json.Deserialize<T>(resultJson, ArgSerializerStrategy);
+            var resultJson = InvokeJS(identifier, JsonSerializer.ToString(args, JsonSerializerOptionsProvider.Options));
+            if (resultJson is null)
+            {
+                return default;
+            }
+
+            return JsonSerializer.Parse<TValue>(resultJson, JsonSerializerOptionsProvider.Options);
         }
 
         /// <summary>

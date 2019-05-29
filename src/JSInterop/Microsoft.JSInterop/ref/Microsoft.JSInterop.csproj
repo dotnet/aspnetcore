@@ -5,6 +5,6 @@
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <Compile Include="Microsoft.JSInterop.netstandard2.0.cs" />
-    
+    <Reference Include="System.Text.Json"  />
   </ItemGroup>
 </Project>

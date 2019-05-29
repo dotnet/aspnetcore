@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.ExceptionServices;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Internal;
 
 namespace Microsoft.JSInterop
 {
@@ -18,19 +20,7 @@ namespace Microsoft.JSInterop
         private readonly ConcurrentDictionary<long, object> _pendingTasks
             = new ConcurrentDictionary<long, object>();
 
-        internal InteropArgSerializerStrategy ArgSerializerStrategy { get; }
-
-        /// <summary>
-        /// Constructs an instance of <see cref="JSRuntimeBase"/>.
-        /// </summary>
-        public JSRuntimeBase()
-        {
-            ArgSerializerStrategy = new InteropArgSerializerStrategy(this);
-        }
-
-        /// <inheritdoc />
-        public void UntrackObjectRef(DotNetObjectRef dotNetObjectRef)
-            => ArgSerializerStrategy.ReleaseDotNetObject(dotNetObjectRef);
+        internal DotNetObjectRefManager ObjectRefManager { get; } = new DotNetObjectRefManager();
 
         /// <summary>
         /// Invokes the specified JavaScript function asynchronously.
@@ -51,9 +41,9 @@ namespace Microsoft.JSInterop
 
             try
             {
-                var argsJson = args?.Length > 0
-                    ? Json.Serialize(args, ArgSerializerStrategy)
-                    : null;
+                var argsJson = args?.Length > 0 ?
+                    JsonSerializer.ToString(args, JsonSerializerOptionsProvider.Options) :
+                    null;
                 BeginInvokeJS(taskId, identifier, argsJson);
                 return tcs.Task;
             }
@@ -88,33 +78,32 @@ namespace Microsoft.JSInterop
 
             // We pass 0 as the async handle because we don't want the JS-side code to
             // send back any notification (we're just providing a result for an existing async call)
-            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", Json.Serialize(new[] {
-                callId,
-                success,
-                resultOrException
-            }, ArgSerializerStrategy));
+            var args = JsonSerializer.ToString(new[] { callId, success, resultOrException }, JsonSerializerOptionsProvider.Options);
+            BeginInvokeJS(0, "DotNet.jsCallDispatcher.endInvokeDotNetFromJS", args);
         }
 
-        internal void EndInvokeJS(long asyncHandle, bool succeeded, object resultOrException)
+        internal void EndInvokeJS(long asyncHandle, bool succeeded, JSAsyncCallResult asyncCallResult)
         {
-            if (!_pendingTasks.TryRemove(asyncHandle, out var tcs))
+            using (asyncCallResult?.JsonDocument)
             {
-                throw new ArgumentException($"There is no pending task with handle '{asyncHandle}'.");
-            }
-
-            if (succeeded)
-            {
-                var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
-                if (resultOrException is SimpleJson.JsonObject || resultOrException is SimpleJson.JsonArray)
+                if (!_pendingTasks.TryRemove(asyncHandle, out var tcs))
                 {
-                    resultOrException = ArgSerializerStrategy.DeserializeObject(resultOrException, resultType);
+                    throw new ArgumentException($"There is no pending task with handle '{asyncHandle}'.");
                 }
 
-                TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, resultOrException);
-            }
-            else
-            {
-                TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(resultOrException.ToString()));
+                if (succeeded)
+                {
+                    var resultType = TaskGenericsUtil.GetTaskCompletionSourceResultType(tcs);
+                    var result = asyncCallResult != null ?
+                        JsonSerializer.Parse(asyncCallResult.JsonElement.GetRawText(), resultType, JsonSerializerOptionsProvider.Options) :
+                        null;
+                    TaskGenericsUtil.SetTaskCompletionSourceResult(tcs, result);
+                }
+                else
+                {
+                    var exceptionText = asyncCallResult?.JsonElement.ToString() ?? string.Empty;
+                    TaskGenericsUtil.SetTaskCompletionSourceException(tcs, new JSException(exceptionText));
+                }
             }
         }
     }

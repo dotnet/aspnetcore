@@ -1,14 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.JSInterop.Internal;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using Microsoft.JSInterop.Internal;
 
 namespace Microsoft.JSInterop
 {
@@ -17,8 +19,10 @@ namespace Microsoft.JSInterop
     /// </summary>
     public static class DotNetDispatcher
     {
-        private static ConcurrentDictionary<string, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
-            = new ConcurrentDictionary<string, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
+        internal const string DotNetObjectRefKey = nameof(DotNetObjectRef<object>.__dotNetObject);
+
+        private static readonly ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>> _cachedMethodsByAssembly
+            = new ConcurrentDictionary<AssemblyKey, IReadOnlyDictionary<string, (MethodInfo, Type[])>>();
 
         /// <summary>
         /// Receives a call from JS to .NET, locating and invoking the specified method.
@@ -35,17 +39,19 @@ namespace Microsoft.JSInterop
             // the targeted method has [JSInvokable]. It is not itself subject to that restriction,
             // because there would be nobody to police that. This method *is* the police.
 
-            // DotNetDispatcher only works with JSRuntimeBase instances.
-            var jsRuntime = (JSRuntimeBase)JSRuntime.Current;
-
             var targetInstance = (object)null;
             if (dotNetObjectId != default)
             {
-                targetInstance = jsRuntime.ArgSerializerStrategy.FindDotNetObject(dotNetObjectId);
+                targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
             }
 
             var syncResult = InvokeSynchronously(assemblyName, methodIdentifier, targetInstance, argsJson);
-            return syncResult == null ? null : Json.Serialize(syncResult, jsRuntime.ArgSerializerStrategy);
+            if (syncResult == null)
+            {
+                return null;
+            }
+
+            return JsonSerializer.ToString(syncResult, JsonSerializerOptionsProvider.Options);
         }
 
         /// <summary>
@@ -69,9 +75,11 @@ namespace Microsoft.JSInterop
             // code has to implement its own way of returning async results.
             var jsRuntimeBaseInstance = (JSRuntimeBase)JSRuntime.Current;
 
-            var targetInstance = dotNetObjectId == default
-                ? null
-                : jsRuntimeBaseInstance.ArgSerializerStrategy.FindDotNetObject(dotNetObjectId);
+            var targetInstance = (object)null;
+            if (dotNetObjectId != default)
+            {
+                targetInstance = DotNetObjectRefManager.Current.FindDotNetObject(dotNetObjectId);
+            }
 
             // Using ExceptionDispatchInfo here throughout because we want to always preserve
             // original stack traces.
@@ -121,6 +129,7 @@ namespace Microsoft.JSInterop
 
         private static object InvokeSynchronously(string assemblyName, string methodIdentifier, object targetInstance, string argsJson)
         {
+            AssemblyKey assemblyKey;
             if (targetInstance != null)
             {
                 if (assemblyName != null)
@@ -128,44 +137,16 @@ namespace Microsoft.JSInterop
                     throw new ArgumentException($"For instance method calls, '{nameof(assemblyName)}' should be null. Value received: '{assemblyName}'.");
                 }
 
-                assemblyName = targetInstance.GetType().Assembly.GetName().Name;
+                assemblyKey = new AssemblyKey(targetInstance.GetType().Assembly);
+            }
+            else
+            {
+                assemblyKey = new AssemblyKey(assemblyName);
             }
 
-            var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyName, methodIdentifier);
+            var (methodInfo, parameterTypes) = GetCachedMethodInfo(assemblyKey, methodIdentifier);
 
-            // There's no direct way to say we want to deserialize as an array with heterogenous
-            // entry types (e.g., [string, int, bool]), so we need to deserialize in two phases.
-            // First we deserialize as object[], for which SimpleJson will supply JsonObject
-            // instances for nonprimitive values.
-            var suppliedArgs = (object[])null;
-            var suppliedArgsLength = 0;
-            if (argsJson != null)
-            {
-                suppliedArgs = Json.Deserialize<SimpleJson.JsonArray>(argsJson).ToArray<object>();
-                suppliedArgsLength = suppliedArgs.Length;
-            }
-            if (suppliedArgsLength != parameterTypes.Length)
-            {
-                throw new ArgumentException($"In call to '{methodIdentifier}', expected {parameterTypes.Length} parameters but received {suppliedArgsLength}.");
-            }
-
-            // Second, convert each supplied value to the type expected by the method
-            var runtime = (JSRuntimeBase)JSRuntime.Current;
-            var serializerStrategy = runtime.ArgSerializerStrategy;
-            for (var i = 0; i < suppliedArgsLength; i++)
-            {
-                if (parameterTypes[i] == typeof(JSAsyncCallResult))
-                {
-                    // For JS async call results, we have to defer the deserialization until
-                    // later when we know what type it's meant to be deserialized as
-                    suppliedArgs[i] = new JSAsyncCallResult(suppliedArgs[i]);
-                }
-                else
-                {
-                    suppliedArgs[i] = serializerStrategy.DeserializeObject(
-                        suppliedArgs[i], parameterTypes[i]);
-                }
-            }
+            var suppliedArgs = ParseArguments(methodIdentifier, argsJson, parameterTypes);
 
             try
             {
@@ -183,6 +164,85 @@ namespace Microsoft.JSInterop
             }
         }
 
+        private static object[] ParseArguments(string methodIdentifier, string argsJson, Type[] parameterTypes)
+        {
+            if (parameterTypes.Length == 0)
+            {
+                return Array.Empty<object>();
+            }
+
+            // There's no direct way to say we want to deserialize as an array with heterogenous
+            // entry types (e.g., [string, int, bool]), so we need to deserialize in two phases.
+            var jsonDocument = JsonDocument.Parse(argsJson);
+            var shouldDisposeJsonDocument = true;
+            try
+            {
+                if (jsonDocument.RootElement.Type != JsonValueType.Array)
+                {
+                    throw new ArgumentException($"Expected a JSON array but got {jsonDocument.RootElement.Type}.");
+                }
+
+                var suppliedArgsLength = jsonDocument.RootElement.GetArrayLength();
+
+                if (suppliedArgsLength != parameterTypes.Length)
+                {
+                    throw new ArgumentException($"In call to '{methodIdentifier}', expected {parameterTypes.Length} parameters but received {suppliedArgsLength}.");
+                }
+
+                // Second, convert each supplied value to the type expected by the method
+                var suppliedArgs = new object[parameterTypes.Length];
+                var index = 0;
+                foreach (var item in jsonDocument.RootElement.EnumerateArray())
+                {
+                    var parameterType = parameterTypes[index];
+
+                    if (parameterType == typeof(JSAsyncCallResult))
+                    {
+                        // We will pass the JsonDocument instance to JAsyncCallResult and make JSRuntimeBase
+                        // responsible for disposing it.
+                        shouldDisposeJsonDocument = false;
+                        // For JS async call results, we have to defer the deserialization until
+                        // later when we know what type it's meant to be deserialized as
+                        suppliedArgs[index] = new JSAsyncCallResult(jsonDocument, item);
+                    }
+                    else if (IsIncorrectDotNetObjectRefUse(item, parameterType))
+                    {
+                        throw new InvalidOperationException($"In call to '{methodIdentifier}', parameter of type '{parameterType.Name}' at index {(index + 1)} must be declared as type 'DotNetObjectRef<{parameterType.Name}>' to receive the incoming value.");
+                    }
+                    else
+                    {
+                        suppliedArgs[index] = JsonSerializer.Parse(item.GetRawText(), parameterType, JsonSerializerOptionsProvider.Options);
+                    }
+
+                    index++;
+                }
+
+                if (shouldDisposeJsonDocument)
+                {
+                    jsonDocument.Dispose();
+                }
+
+                return suppliedArgs;
+            }
+            catch
+            {
+                // Always dispose the JsonDocument in case of an error.
+                jsonDocument.Dispose();
+                throw;
+            }
+
+
+            static bool IsIncorrectDotNetObjectRefUse(JsonElement item, Type parameterType)
+            {
+                // Check for incorrect use of DotNetObjectRef<T> at the top level. We know it's
+                // an incorrect use if there's a object that looks like { '__dotNetObject': <some number> },
+                // but we aren't assigning to DotNetObjectRef{T}.
+                return item.Type == JsonValueType.Object &&
+                    item.TryGetProperty(DotNetObjectRefKey, out _) &&
+                     !typeof(IDotNetObjectRef).IsAssignableFrom(parameterType);
+            }
+        }
+
         /// <summary>
         /// Receives notification that a call from .NET to JS has finished, marking the
         /// associated <see cref="Task"/> as completed.
@@ -192,7 +252,7 @@ namespace Microsoft.JSInterop
         /// <param name="result">If <paramref name="succeeded"/> is <c>true</c>, specifies the invocation result. If <paramref name="succeeded"/> is <c>false</c>, gives the <see cref="Exception"/> corresponding to the invocation failure.</param>
         [JSInvokable(nameof(DotNetDispatcher) + "." + nameof(EndInvoke))]
         public static void EndInvoke(long asyncHandle, bool succeeded, JSAsyncCallResult result)
-            => ((JSRuntimeBase)JSRuntime.Current).EndInvokeJS(asyncHandle, succeeded, result.ResultOrException);
+            => ((JSRuntimeBase)JSRuntime.Current).EndInvokeJS(asyncHandle, succeeded, result);
 
         /// <summary>
         /// Releases the reference to the specified .NET object. This allows the .NET runtime
@@ -207,16 +267,14 @@ namespace Microsoft.JSInterop
         [JSInvokable(nameof(DotNetDispatcher) + "." + nameof(ReleaseDotNetObject))]
         public static void ReleaseDotNetObject(long dotNetObjectId)
         {
-            // DotNetDispatcher only works with JSRuntimeBase instances.
-            var jsRuntime = (JSRuntimeBase)JSRuntime.Current;
-            jsRuntime.ArgSerializerStrategy.ReleaseDotNetObject(dotNetObjectId);
+            DotNetObjectRefManager.Current.ReleaseDotNetObject(dotNetObjectId);
         }
 
-        private static (MethodInfo, Type[]) GetCachedMethodInfo(string assemblyName, string methodIdentifier)
+        private static (MethodInfo, Type[]) GetCachedMethodInfo(AssemblyKey assemblyKey, string methodIdentifier)
         {
-            if (string.IsNullOrWhiteSpace(assemblyName))
+            if (string.IsNullOrWhiteSpace(assemblyKey.AssemblyName))
             {
-                throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(assemblyName));
+                throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(assemblyKey.AssemblyName));
             }
 
             if (string.IsNullOrWhiteSpace(methodIdentifier))
@@ -224,23 +282,23 @@ namespace Microsoft.JSInterop
                 throw new ArgumentException("Cannot be null, empty, or whitespace.", nameof(methodIdentifier));
             }
 
-            var assemblyMethods = _cachedMethodsByAssembly.GetOrAdd(assemblyName, ScanAssemblyForCallableMethods);
+            var assemblyMethods = _cachedMethodsByAssembly.GetOrAdd(assemblyKey, ScanAssemblyForCallableMethods);
             if (assemblyMethods.TryGetValue(methodIdentifier, out var result))
             {
                 return result;
             }
             else
             {
-                throw new ArgumentException($"The assembly '{assemblyName}' does not contain a public method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
+                throw new ArgumentException($"The assembly '{assemblyKey.AssemblyName}' does not contain a public method with [{nameof(JSInvokableAttribute)}(\"{methodIdentifier}\")].");
             }
         }
 
-        private static IReadOnlyDictionary<string, (MethodInfo, Type[])> ScanAssemblyForCallableMethods(string assemblyName)
+        private static Dictionary<string, (MethodInfo, Type[])> ScanAssemblyForCallableMethods(AssemblyKey assemblyKey)
         {
             // TODO: Consider looking first for assembly-level attributes (i.e., if there are any,
             // only use those) to avoid scanning, especially for framework assemblies.
-            var result = new Dictionary<string, (MethodInfo, Type[])>();
-            var invokableMethods = GetRequiredLoadedAssembly(assemblyName)
+            var result = new Dictionary<string, (MethodInfo, Type[])>(StringComparer.Ordinal);
+            var invokableMethods = GetRequiredLoadedAssembly(assemblyKey)
                 .GetExportedTypes()
                 .SelectMany(type => type.GetMethods(
                     BindingFlags.Public |
@@ -261,7 +319,7 @@ namespace Microsoft.JSInterop
                 {
                     if (result.ContainsKey(identifier))
                     {
-                        throw new InvalidOperationException($"The assembly '{assemblyName}' contains more than one " +
+                        throw new InvalidOperationException($"The assembly '{assemblyKey.AssemblyName}' contains more than one " +
                             $"[JSInvokable] method with identifier '{identifier}'. All [JSInvokable] methods within the same " +
                             $"assembly must have different identifiers. You can pass a custom identifier as a parameter to " +
                             $"the [JSInvokable] attribute.");
@@ -276,7 +334,7 @@ namespace Microsoft.JSInterop
             return result;
         }
 
-        private static Assembly GetRequiredLoadedAssembly(string assemblyName)
+        private static Assembly GetRequiredLoadedAssembly(AssemblyKey assemblyKey)
         {
             // We don't want to load assemblies on demand here, because we don't necessarily trust
             // "assemblyName" to be something the developer intended to load. So only pick from the
@@ -284,8 +342,40 @@ namespace Microsoft.JSInterop
             // In some edge cases this might force developers to explicitly call something on the
             // target assembly (from .NET) before they can invoke its allowed methods from JS.
             var loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            return loadedAssemblies.FirstOrDefault(a => a.GetName().Name.Equals(assemblyName, StringComparison.Ordinal))
-                ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyName}'.");
+            return loadedAssemblies.FirstOrDefault(a => new AssemblyKey(a).Equals(assemblyKey))
+                ?? throw new ArgumentException($"There is no loaded assembly with the name '{assemblyKey.AssemblyName}'.");
         }
+
+        private readonly struct AssemblyKey : IEquatable<AssemblyKey>
+        {
+            public AssemblyKey(Assembly assembly)
+            {
+                Assembly = assembly;
+                AssemblyName = assembly.GetName().Name;
+            }
+
+            public AssemblyKey(string assemblyName)
+            {
+                Assembly = null;
+                AssemblyName = assemblyName;
+            }
+
+            public Assembly Assembly { get; }
+
+            public string AssemblyName { get; }
+
+            public bool Equals(AssemblyKey other)
+            {
+                if (Assembly != null && other.Assembly != null)
+                {
+                    return Assembly == other.Assembly;
+                }
+
+                return AssemblyName.Equals(other.AssemblyName, StringComparison.Ordinal);
+            }
+
+            public override int GetHashCode() => StringComparer.Ordinal.GetHashCode(AssemblyName);
+        }
+
     }
 }

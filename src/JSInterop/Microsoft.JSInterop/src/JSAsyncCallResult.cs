@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.ComponentModel;
+using System.Text.Json;
+
 namespace Microsoft.JSInterop.Internal
 {
     // This type takes care of a special case in handling the result of an async call from
@@ -20,17 +23,16 @@ namespace Microsoft.JSInterop.Internal
     /// <summary>
     /// Intended for framework use only.
     /// </summary>
-    public class JSAsyncCallResult
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public sealed class JSAsyncCallResult
     {
-        internal object ResultOrException { get; }
-
-        /// <summary>
-        /// Constructs an instance of <see cref="JSAsyncCallResult"/>.
-        /// </summary>
-        /// <param name="resultOrException">The result of the call.</param>
-        internal JSAsyncCallResult(object resultOrException)
+        internal JSAsyncCallResult(JsonDocument document, JsonElement jsonElement)
         {
-            ResultOrException = resultOrException;
+            JsonDocument = document;
+            JsonElement = jsonElement;
         }
+
+        internal JsonElement JsonElement { get; }
+        internal JsonDocument JsonDocument { get; }
     }
 }
