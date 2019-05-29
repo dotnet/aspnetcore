@@ -110,8 +110,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             {
                 using (var socket = TestConnection.CreateConnectedLoopbackSocket(endpoint.Port))
                 {
-                    var read = await socket.ReceiveAsync(new byte[10], SocketFlags.None);
-                    Assert.Equal(0, read);
+                    try
+                    {
+                        var read = await socket.ReceiveAsync(new byte[10], SocketFlags.None);
+                        Assert.Equal(0, read);
+                    }
+                    catch (SocketException)
+                    {
+                        // The connection can be reset sometimes
+                    }
                 }
             }
 
