@@ -27,9 +27,12 @@ namespace Microsoft.AspNetCore.Builder
                                                     "'IServiceCollection.AddSignalR' inside the call to 'ConfigureServices(...)' in the application startup code.");
             }
 
-            app.UseConnections(routes =>
+            app.UseWebSockets();
+            app.UseRouting();
+            app.UseAuthorization();
+            app.UseEndpoints(endpoints =>
             {
-                configure(new HubRouteBuilder(routes));
+                configure(new HubRouteBuilder(endpoints));
             });
 
             return app;

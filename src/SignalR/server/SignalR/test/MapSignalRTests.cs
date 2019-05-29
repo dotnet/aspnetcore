@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
-            Assert.Equal(1, authCount);
+            Assert.Equal(0, authCount);
         }
 
         [Fact]
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
-            Assert.Equal(1, authCount);
+            Assert.Equal(0, authCount);
         }
 
         [Fact]
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 Assert.Equal(2, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
             }
 
-            Assert.Equal(2, authCount);
+            Assert.Equal(0, authCount);
         }
 
         [Fact]
@@ -266,9 +266,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Equal(2, dataSource.Endpoints.Count);
 
-                // TODO
-                //Assert.Equal(typeof(AuthHub), dataSource.Endpoints[0].Metadata.GetMetadata<HubMetadata>()?.HubType);
-                //Assert.Equal(typeof(AuthHub), dataSource.Endpoints[1].Metadata.GetMetadata<HubMetadata>()?.HubType);
+                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[0].Metadata.GetMetadata<HubMetadata>()?.HubType);
+                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[1].Metadata.GetMetadata<HubMetadata>()?.HubType);
                 Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<NegotiateMetadata>());
                 Assert.Null(dataSource.Endpoints[1].Metadata.GetMetadata<NegotiateMetadata>());
             }

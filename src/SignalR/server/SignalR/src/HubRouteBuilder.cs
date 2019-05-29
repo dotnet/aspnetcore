@@ -4,8 +4,10 @@
 using System;
 using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -15,6 +17,7 @@ namespace Microsoft.AspNetCore.SignalR
     public class HubRouteBuilder
     {
         private readonly ConnectionsRouteBuilder _routes;
+        private readonly IEndpointRouteBuilder _endpoints;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HubRouteBuilder"/> class.
@@ -23,6 +26,11 @@ namespace Microsoft.AspNetCore.SignalR
         public HubRouteBuilder(ConnectionsRouteBuilder routes)
         {
             _routes = routes;
+        }
+
+        internal HubRouteBuilder(IEndpointRouteBuilder endpoints)
+        {
+            _endpoints = endpoints;
         }
 
         /// <summary>
@@ -43,6 +51,12 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
         public void MapHub<THub>(PathString path, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
         {
+            if (_endpoints != null)
+            {
+                _endpoints.MapHub<THub>(path, configureOptions);
+                return;
+            }
+
             // find auth attributes
             var authorizeAttributes = typeof(THub).GetCustomAttributes<AuthorizeAttribute>(inherit: true);
             var options = new HttpConnectionDispatcherOptions();
@@ -51,8 +65,6 @@ namespace Microsoft.AspNetCore.SignalR
                 options.AuthorizationData.Add(attribute);
             }
             configureOptions?.Invoke(options);
-
-            // TODO: Figure out how to add the HubMetadata to endpoints
 
             _routes.MapConnections(path, options, builder =>
             {
