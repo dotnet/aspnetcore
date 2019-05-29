@@ -69,14 +69,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public KestrelServerOptions KestrelServerOptions { get; internal set; }
 
         /// <summary>
-        /// Set to false to enable Nagle's algorithm for all connections.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to true.
-        /// </remarks>
-        public bool NoDelay { get; set; } = true;
-
-        /// <summary>
         /// The protocols enabled on this endpoint.
         /// </summary>
         /// <remarks>Defaults to HTTP/1.x and HTTP/2.</remarks>

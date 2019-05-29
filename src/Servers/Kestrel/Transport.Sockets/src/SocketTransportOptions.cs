@@ -17,7 +17,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         /// </remarks>
         public int IOQueueCount { get; set; } = Math.Min(Environment.ProcessorCount, 16);
 
-        public bool NoDelay { get; set; }
+        /// <summary>
+        /// Set to false to enable Nagle's algorithm for all connections.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to true.
+        /// </remarks>
+        public bool NoDelay { get; set; } = true;
 
         public long? MaxReadBufferSize { get; set; } = PipeOptions.Default.PauseWriterThreshold;
 

@@ -84,11 +84,6 @@ namespace SampleApp
 
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
 
-                    options.ConfigureEndpointDefaults(opt =>
-                    {
-                        opt.NoDelay = true;
-                    });
-
                     options.ConfigureHttpsDefaults(httpsOptions =>
                     {
                         httpsOptions.SslProtocols = SslProtocols.Tls12;
@@ -144,7 +139,7 @@ namespace SampleApp
                         .Configure(context.Configuration.GetSection("Kestrel"))
                         .Endpoint("NamedEndpoint", opt =>
                         {
-                            opt.ListenOptions.NoDelay = true;
+
                         })
                         .Endpoint("NamedHttpsEndpoint", opt =>
                         {

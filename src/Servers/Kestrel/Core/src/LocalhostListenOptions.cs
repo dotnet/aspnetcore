@@ -77,7 +77,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var options = new ListenOptions(new IPEndPoint(address, IPEndPoint.Port))
             {
                 KestrelServerOptions = KestrelServerOptions,
-                NoDelay = NoDelay,
                 Protocols = Protocols,
             };
 
