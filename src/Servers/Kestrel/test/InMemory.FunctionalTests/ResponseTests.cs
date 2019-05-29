@@ -3856,11 +3856,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         {
             await using (var server = new TestServer(async httpContext =>
             {
-                var memoryStream = new MemoryStream();
-                httpContext.Response.Body = memoryStream;
+                httpContext.Response.Body = new MemoryStream();
                 var BodyWriter1 = httpContext.Response.BodyWriter;
 
-                httpContext.Response.Body = memoryStream;
+                httpContext.Response.Body = new MemoryStream();
                 var BodyWriter2 = httpContext.Response.BodyWriter;
 
                 Assert.NotEqual(BodyWriter1, BodyWriter2);

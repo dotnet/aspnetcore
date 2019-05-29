@@ -42,8 +42,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set => throw new NotSupportedException();
         }
 
-        public PipeWriter InnerPipeWriter { get; }
-
         public override int Read(byte[] buffer, int offset, int count)
             => throw new NotSupportedException();
 
@@ -62,7 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            return InnerPipeWriter.FlushAsync(cancellationToken).GetAsTask();
+            return _pipeWriter.FlushAsync(cancellationToken).GetAsTask();
         }
         
         public override long Seek(long offset, SeekOrigin origin)
@@ -137,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private Task WriteAsyncInternal(ReadOnlyMemory<byte> source, CancellationToken cancellationToken = default)
         {
-            return InnerPipeWriter.WriteAsync(source, cancellationToken).GetAsTask();
+            return _pipeWriter.WriteAsync(source, cancellationToken).GetAsTask();
         }
     }
 }

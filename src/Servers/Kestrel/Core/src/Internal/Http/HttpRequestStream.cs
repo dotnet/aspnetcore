@@ -43,14 +43,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             set => throw new NotSupportedException();
         }
 
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return ReadAsyncInternal(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
-        }
-
         public override ValueTask<int> ReadAsync(Memory<byte> destination, CancellationToken cancellationToken = default)
         {
-            return ReadAsyncInternal(destination, cancellationToken);
+            return ReadAsyncWrapper(destination, cancellationToken);
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            return ReadAsyncWrapper(new Memory<byte>(buffer, offset, count), cancellationToken).AsTask();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
@@ -128,52 +128,58 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             return tcs.Task;
         }
 
-        private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
+        private ValueTask<int> ReadAsyncWrapper(Memory<byte> destination, CancellationToken cancellationToken)
         {
             try
             {
-                while (true)
-                {
-                    var result = await _pipeReader.ReadAsync(cancellationToken);
-
-                    if (result.IsCanceled)
-                    {
-                        throw new OperationCanceledException("The read was canceled");
-                    }
-
-                    var readableBuffer = result.Buffer;
-                    var readableBufferLength = readableBuffer.Length;
-
-                    var consumed = readableBuffer.End;
-                    var actual = 0;
-                    try
-                    {
-                        if (readableBufferLength != 0)
-                        {
-                            actual = (int)Math.Min(readableBufferLength, buffer.Length);
-
-                            var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
-                            consumed = slice.End;
-                            slice.CopyTo(buffer.Span);
-
-                            return actual;
-                        }
-
-                        if (result.IsCompleted)
-                        {
-                            return 0;
-                        }
-                    }
-                    finally
-                    {
-                        _pipeReader.AdvanceTo(consumed);
-                    }
-                }
+                return ReadAsyncInternal(destination, cancellationToken);
             }
             catch (ConnectionAbortedException ex)
             {
                 throw new TaskCanceledException("The request was aborted", ex);
             }
+        }
+
+        private async ValueTask<int> ReadAsyncInternal(Memory<byte> buffer, CancellationToken cancellationToken)
+        {
+            while (true)
+            {
+                var result = await _pipeReader.ReadAsync(cancellationToken);
+
+                if (result.IsCanceled)
+                {
+                    throw new OperationCanceledException("The read was canceled");
+                }
+
+                var readableBuffer = result.Buffer;
+                var readableBufferLength = readableBuffer.Length;
+
+                var consumed = readableBuffer.End;
+                var actual = 0;
+                try
+                {
+                    if (readableBufferLength != 0)
+                    {
+                        actual = (int)Math.Min(readableBufferLength, buffer.Length);
+
+                        var slice = actual == readableBufferLength ? readableBuffer : readableBuffer.Slice(0, actual);
+                        consumed = slice.End;
+                        slice.CopyTo(buffer.Span);
+
+                        return actual;
+                    }
+
+                    if (result.IsCompleted)
+                    {
+                        return 0;
+                    }
+                }
+                finally
+                {
+                    _pipeReader.AdvanceTo(consumed);
+                }
+            }
+         
         }
 
         /// <inheritdoc />
