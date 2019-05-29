@@ -123,7 +123,7 @@ namespace Test
             var component = CompileToComponent(@"
 <GenericContext TItem=int Items=""@(new List<int>() { 1, 2, })"" ref=""_my"" />
 
-@functions {
+@code {
     GenericContext<int> _my;
     void Foo() { GC.KeepAlive(_my); }
 }");
@@ -190,7 +190,7 @@ namespace Test
             var component = CompileToComponent(@"
 <GenericContext Items=""@(new List<int>() { 1, 2, })"" ref=""_my"" />
 
-@functions {
+@code {
     GenericContext<int> _my;
     void Foo() { GC.KeepAlive(_my); }
 }");
@@ -223,7 +223,7 @@ namespace Test
 @typeparam TItem
 <GenericContext Items=""@MyItems"" ref=""_my"" />
 
-@functions {
+@code {
     [Parameter] List<TItem> MyItems { get; set; }
     GenericContext<TItem> _my;
     void Foo() { GC.KeepAlive(_my); }
