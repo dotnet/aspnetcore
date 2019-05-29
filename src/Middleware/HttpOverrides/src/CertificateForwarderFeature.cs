@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     }
                     catch (Exception e)
                     {
-                        _logger.LogWarning(0, e, "Could not read certificate from header.");
+                        _logger.NoCertificate(e);
                     }
                 }
                 return _certificate;
