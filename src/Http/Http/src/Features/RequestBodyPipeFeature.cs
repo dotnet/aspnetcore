@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Http.Features
     {
         private PipeReader _internalPipeReader;
         private Stream _streamInstanceWhenWrapped;
-        private PipeReader _userSetPipeReader;
         private HttpContext _context;
 
         public RequestBodyPipeFeature(HttpContext context)
@@ -28,37 +27,21 @@ namespace Microsoft.AspNetCore.Http.Features
         {
             get
             {
-                if (_userSetPipeReader != null)
-                {
-                    return _userSetPipeReader;
-                }
-
                 if (_internalPipeReader == null ||
                     !ReferenceEquals(_streamInstanceWhenWrapped, _context.Request.Body))
                 {
                     _streamInstanceWhenWrapped = _context.Request.Body;
                     _internalPipeReader = PipeReader.Create(_context.Request.Body);
 
-                    _context.Response.OnCompleted((self) => ((RequestBodyPipeFeature)self).Complete(), this);
+                    _context.Response.OnCompleted((self) =>
+                    {
+                        ((PipeReader)self).Complete();
+                        return Task.CompletedTask;
+                    }, _internalPipeReader);
                 }
 
                 return _internalPipeReader;
             }
-            set
-            {
-                _userSetPipeReader = value ?? throw new ArgumentNullException(nameof(value));
-                // REVIEW: Should we do this (vvvv) or just get rid of the setter?
-                // TODO set the request body Stream to an adapted pipe https://github.com/aspnet/AspNetCore/issues/3971
-            }
-        }
-
-        private Task Complete()
-        {
-            if(_internalPipeReader != null && ReferenceEquals(_context.Request.Body, _streamInstanceWhenWrapped))
-            {
-                _internalPipeReader.Complete();
-            }
-            return Task.CompletedTask;
         }
     }
 }
