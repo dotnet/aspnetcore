@@ -98,7 +98,8 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 var certificateValidatedContext = new CertificateValidatedContext(Context, Scheme, Options)
                 {
-                    ClientCertificate = clientCertificate
+                    ClientCertificate = clientCertificate,
+                    Principal = CreatePrincipal(clientCertificate)
                 };
 
                 await Events.CertificateValidated(certificateValidatedContext);
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
                     return AuthenticateResult.Fail(certificateValidatedContext.Result.Failure);
                 }
 
-                return Success(CreatePrincipal(clientCertificate), clientCertificate);
+                return Success(certificateValidatedContext.Principal, clientCertificate);
             }
             catch (Exception ex)
             {
