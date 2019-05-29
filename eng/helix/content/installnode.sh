@@ -6,14 +6,13 @@ if type -P "node" &>/dev/null; then
 fi
 
 node_version=$1
-uname -s
-echo $uname
-if [ "$uname" = "Darwin" ]; then
+osname=`uname -s`
+echo $osname
+if [ "$osname" = "Darwin" ]; then
    platformarch='darwin-x64'
 else
    platformarch='linux-x64'
 fi
-platformarch=$2
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 output_dir=$DIR/node
 url="http://nodejs.org/dist/v$node_version/node-v$node_version-$platformarch.tar.gz"
