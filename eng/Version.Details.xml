@@ -377,9 +377,9 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>b2f8fc281df93b0ecb148224369b938d753d1616</Sha>
     </Dependency>
-    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview6-27723-08" CoherentParentDependency="Microsoft.Extensions.Logging">
+    <Dependency Name="NETStandard.Library.Ref" Version="2.1.0-preview6-27728-04" CoherentParentDependency="Microsoft.Extensions.Logging">
       <Uri>https://github.com/dotnet/core-setup</Uri>
-      <Sha>20426e8c486d8715337cb6438ec70bc3619a514d</Sha>
+      <Sha>b2f8fc281df93b0ecb148224369b938d753d1616</Sha>
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
