@@ -104,17 +104,13 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 await Events.CertificateValidated(certificateValidatedContext);
 
-                if (certificateValidatedContext?.Result?.Succeeded == true)
+                if (certificateValidatedContext?.Result != null)
                 {
-                    return Success(certificateValidatedContext.Principal, clientCertificate);
+                    return certificateValidatedContext.Result;
                 }
 
-                if (certificateValidatedContext?.Result?.Failure != null)
-                {
-                    return AuthenticateResult.Fail(certificateValidatedContext.Result.Failure);
-                }
-
-                return Success(certificateValidatedContext.Principal, clientCertificate);
+                certificateValidatedContext.Success();
+                return certificateValidatedContext.Result;
             }
             catch (Exception ex)
             {

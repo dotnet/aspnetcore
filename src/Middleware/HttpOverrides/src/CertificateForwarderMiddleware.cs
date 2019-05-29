@@ -53,18 +53,14 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
         /// <returns>A <see cref="Task"/>.</returns>
-        public async Task Invoke(HttpContext httpContext)
+        public Task Invoke(HttpContext httpContext)
         {
-            var clientCertificate = await httpContext.Connection.GetClientCertificateAsync();
-            if (clientCertificate == null)
+            var header = httpContext.Request.Headers[_options.CertificateHeader];
+            if (!StringValues.IsNullOrEmpty(header))
             {
-                var header = httpContext.Request.Headers[_options.CertificateHeader];
-                if (!StringValues.IsNullOrEmpty(header))
-                {
-                    httpContext.Features.Set<ITlsConnectionFeature>(new CertificateForwarderFeature(_logger, header, _options));
-                }
+                httpContext.Features.Set<ITlsConnectionFeature>(new CertificateForwarderFeature(_logger, header, _options));
             }
-            await _next(httpContext);
+            return _next(httpContext);
         }
     }
 }

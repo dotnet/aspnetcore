@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             get
             {
-                if (_certificate == null && _header != StringValues.Empty)
+                if (_certificate == null)
                 {
                     try
                     {
