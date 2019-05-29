@@ -9,11 +9,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
 {
     internal class RequestQueue : IDisposable
     {
-        private SemaphoreSlim _semaphore;
-        private int _waitingRequests;
-
         private readonly int _maxConcurrentRequests;
         private readonly int _requestQueueLimit;
+        private readonly SemaphoreSlim _semaphore;
+
+        private object _waitingRequestsLock = new object();
+        private int _waitingRequests;
 
         public RequestQueue(int maxConcurrentRequests, int requestQueueLimit)
         {
@@ -22,22 +23,23 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
             _semaphore = new SemaphoreSlim(maxConcurrentRequests);
         }
 
-        public RequestQueue(int maxConcurrentRequests) : this(maxConcurrentRequests, 5000) { }
-
         public async Task<bool> TryEnterQueueAsync()
         {
-            // first, check the queue limits
-            if (WaitingRequests > _requestQueueLimit)
+            lock (_waitingRequestsLock)
             {
-                return false;
+                if (_waitingRequests >= _requestQueueLimit)
+                {
+                    return false;
+                }
+
+                _waitingRequests++;
             }
 
-            var waitInQueueTask = _semaphore.WaitAsync();
-            if (!waitInQueueTask.IsCompletedSuccessfully)
+            await _semaphore.WaitAsync();
+
+            lock (_waitingRequestsLock)
             {
-                Interlocked.Increment(ref _waitingRequests);
-                await waitInQueueTask;
-                Interlocked.Decrement(ref _waitingRequests);
+                _waitingRequests--;
             }
 
             return true;

@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.Http.Abstractions;
 
 namespace Microsoft.AspNetCore.RequestThrottling
 {
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
                 }
                 else
                 {
-                    // the queue is full
+                    RequestThrottlingLog.RequestRejectedQueueFull(_logger);
                     context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                     return;
                 }
@@ -66,8 +66,10 @@ namespace Microsoft.AspNetCore.RequestThrottling
             else
             {
                 RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
-                await waitInQueueTask;
+                var result = await waitInQueueTask;
                 RequestThrottlingLog.RequestDequeued(_logger, WaitingRequests);
+
+                Debug.Assert(result);
             }
 
             try
@@ -108,6 +110,9 @@ namespace Microsoft.AspNetCore.RequestThrottling
             private static readonly Action<ILogger, Exception> _requestRunImmediately =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(3, "RequestRunImmediately"), "Concurrent request limit has not been reached, running request immediately.");
 
+            private static readonly Action<ILogger, Exception> _requestRejectedQueueFull =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "RequestRejectedQueueFull"), "Currently at the 'RequestQueueLimit', rejecting this request with a '503 server not availible' error");
+
             internal static void RequestEnqueued(ILogger logger, int queuedRequests)
             {
                 _requestEnqueued(logger, queuedRequests, null);
@@ -121,6 +126,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
             internal static void RequestRunImmediately(ILogger logger)
             {
                 _requestRunImmediately(logger, null);
+            }
+
+            internal static void RequestRejectedQueueFull(ILogger logger)
+            {
+                _requestRejectedQueueFull(logger, null);
             }
         }
     }

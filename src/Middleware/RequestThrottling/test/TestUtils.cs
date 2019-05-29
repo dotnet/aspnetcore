@@ -26,5 +26,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     options: Options.Create(options)
                 );
         }
+
+        internal static RequestQueue CreateRequestQueue(int maxConcurrentRequests) => new RequestQueue(maxConcurrentRequests, 5000);
     }
 }

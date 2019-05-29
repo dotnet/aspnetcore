@@ -97,5 +97,37 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             await middleware.Invoke(new DefaultHttpContext());
         }
+
+        [Fact]
+        public async void FullQueueResultsIn503Error()
+        {
+            var middleware = TestUtils.CreateTestMiddleware(
+                maxConcurrentRequests: 0,
+                requestQueueLimit: -1);
+
+            var context = new DefaultHttpContext();
+            await middleware.Invoke(context);
+            Assert.Equal(503, context.Response.StatusCode);
+        }
+
+        [Fact]
+        public void MultipleRequestsFillUpQueue()
+        {
+            var middleware = TestUtils.CreateTestMiddleware(
+                maxConcurrentRequests: 0,
+                requestQueueLimit: 10,
+                next: httpContext =>
+                {
+                    return Task.Delay(TimeSpan.FromSeconds(30));
+                });
+
+            Assert.Equal(0, middleware.WaitingRequests);
+
+            var _ = middleware.Invoke(new DefaultHttpContext());
+            Assert.Equal(1, middleware.WaitingRequests);
+
+            _ = middleware.Invoke(new DefaultHttpContext());
+            Assert.Equal(2, middleware.WaitingRequests);
+        }
     }
 }

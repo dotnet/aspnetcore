@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <summary>
         /// Maximum number of queued requests before the server starts rejecting connections.
         /// The server will respond with a 503 if this limit is exceeeded.
+        /// Defaults to 5000 queued requests.
         /// </summary>
         public int RequestQueueLimit { get; set; } = 5000;
     }
