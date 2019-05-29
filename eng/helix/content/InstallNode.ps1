@@ -58,8 +58,8 @@ else {
 
 Write-Host "Expanded NodeJs"
 New-Item -Path "$InstallDir" -ItemType "directory" -Force
-Write-Host "Copying $temp_dir\$nodeFile\node.exe to $InstallDir"
-Copy-Item "$temp_dir\$nodeFile\node.exe" "$InstallDir\node.exe"
+Write-Host "Copying $tempDir\$nodeFile\node.exe to $InstallDir"
+Copy-Item "$tempDir\$nodeFile\node.exe" "$InstallDir\node.exe"
 
 if (Test-Path "$InstallDir\node.exe")
 {
