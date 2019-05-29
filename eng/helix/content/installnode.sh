@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Cause the script to fail if any subcommand fails
+set -e
+
 if type -P "node" &>/dev/null; then
     echo "node is in \$PATH"
     exit
@@ -14,7 +17,7 @@ else
    platformarch='linux-x64'
 fi
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-output_dir=$DIR/node
+output_dir="$DIR/node"
 url="http://nodejs.org/dist/v$node_version/node-v$node_version-$platformarch.tar.gz"
 tmp="$(mktemp -d -t install-node.XXXXXX)"
 trap "rm -rf $tmp" EXIT
