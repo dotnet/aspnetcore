@@ -1727,7 +1727,7 @@ class HubConnectionTest {
         beforeRedirectToken.set("");
         token.set("");
 
-        // Restart the connection to make sure that the orignal accessTokenProvider that we registered is still registered before the redirect.
+        // Restart the connection to make sure that the original accessTokenProvider that we registered is still registered before the redirect.
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
@@ -1818,12 +1818,58 @@ class HubConnectionTest {
         beforeRedirectToken.set("");
         token.set("");
 
-        // Restart the connection to make sure that the orignal accessTokenProvider that we registered is still registered before the redirect.
+        // Restart the connection to make sure that the original accessTokenProvider that we registered is still registered before the redirect.
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
         assertNull(beforeRedirectToken.get());
         assertEquals("Bearer newToken", token.get());
+    }
+
+    @Test
+    public void authorizationHeaderFromNegotiateGetsSetToNewValue() {
+        AtomicReference<String> token = new AtomicReference<>();
+        AtomicReference<String> redirectToken = new AtomicReference<>();
+        AtomicInteger redirectCount = new AtomicInteger();
+
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate", (req) -> {
+                    if(redirectCount.get() == 0){
+                        redirectCount.incrementAndGet();
+                        redirectToken.set(req.getHeaders().get("Authorization"));
+                        return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"firstRedirectToken\"}"));
+                    } else {
+                        redirectToken.set(req.getHeaders().get("Authorization"));
+                        return Single.just(new HttpResponse(200, "", "{\"url\":\"http://testexample.com/\",\"accessToken\":\"secondRedirectToken\"}"));
+                    }
+                })
+                .on("POST", "http://testexample.com/negotiate", (req) -> {
+                    token.set(req.getHeaders().get("Authorization"));
+                    return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                            + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                });
+
+        MockTransport transport = new MockTransport(true);
+        HubConnection hubConnection = HubConnectionBuilder
+                .create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals("Bearer firstRedirectToken", token.get());
+
+        // Clear the tokens to see if they get reset to the proper values
+        redirectToken.set("");
+        token.set("");
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop();
+        assertNull(redirectToken.get());
+        assertEquals("Bearer secondRedirectToken", token.get());
     }
 
     @Test
@@ -1882,6 +1928,34 @@ class HubConnectionTest {
         hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
         assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         hubConnection.stop();
+        assertEquals("ExampleValue", header.get());
+    }
+
+    @Test
+    public void headersAreNotClearedWhenConnectionIsRestarted() {
+        AtomicReference<String> header = new AtomicReference<>();
+        TestHttpClient client = new TestHttpClient()
+                .on("POST", "http://example.com/negotiate",
+                        (req) -> {
+                            header.set(req.getHeaders().get("Authorization"));
+                            return Single.just(new HttpResponse(200, "", "{\"connectionId\":\"bVOiRPG8-6YiJ6d7ZcTOVQ\",\""
+                                    + "availableTransports\":[{\"transport\":\"WebSockets\",\"transferFormats\":[\"Text\",\"Binary\"]}]}"));
+                        });
+
+        MockTransport transport = new MockTransport();
+        HubConnection hubConnection = HubConnectionBuilder.create("http://example.com")
+                .withTransportImplementation(transport)
+                .withHttpClient(client)
+                .withHeader("Authorization", "ExampleValue")
+                .build();
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
+        hubConnection.stop();
+        assertEquals("ExampleValue", header.get());
+
+        hubConnection.start().timeout(1, TimeUnit.SECONDS).blockingAwait();
+        assertEquals(HubConnectionState.CONNECTED, hubConnection.getConnectionState());
         assertEquals("ExampleValue", header.get());
     }
 

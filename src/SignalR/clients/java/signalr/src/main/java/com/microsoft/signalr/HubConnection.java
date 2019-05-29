@@ -56,6 +56,7 @@ public class HubConnection {
     private Map<String, Observable> streamMap = new ConcurrentHashMap<>();
     private TransportEnum transportEnum = TransportEnum.ALL;
     private String connectionId;
+    private boolean tokenSetByNegotiate;
     private final Logger logger = LoggerFactory.getLogger(HubConnection.class);
 
     /**
@@ -273,6 +274,7 @@ public class HubConnection {
                 this.redirectAccessTokenProvider = Single.just(negotiateResponse.getAccessToken());
                 // We know the Single is non blocking in this case
                 // It's fine to call blockingGet() on it.
+                this.tokenSetByNegotiate = true;
                 String token = this.redirectAccessTokenProvider.blockingGet();
                 this.headers.put("Authorization", "Bearer " + token);
             }
@@ -493,7 +495,9 @@ public class HubConnection {
             redirectAccessTokenProvider = null;
             connectionId = null;
             transportEnum = TransportEnum.ALL;
-            this.headers.remove("Authorization");
+            if (tokenSetByNegotiate) {
+                this.headers.remove("Authorization");
+            }
         } finally {
             hubConnectionStateLock.unlock();
         }
