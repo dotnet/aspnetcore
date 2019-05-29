@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
         }
 
         [Fact]
-        public async Task VerifyArrHeaderIsUsedIfCertIsNotPresent()
+        public async Task VerifyHeaderIsUsedIfCertIsNotPresent()
         {
             var server = CreateServer(
                 new CertificateAuthenticationOptions
@@ -267,13 +267,13 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 wireUpHeaderMiddleware : true);
 
             var client = server.CreateClient();
-            client.DefaultRequestHeaders.Add("X-ARR-ClientCert", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
+            client.DefaultRequestHeaders.Add("X-Client-Cert", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
-        public async Task VerifyArrHeaderEncodedCertFailsOnBadEncoding()
+        public async Task VerifyHeaderEncodedCertFailsOnBadEncoding()
         {
             var server = CreateServer(
                 new CertificateAuthenticationOptions
@@ -283,13 +283,13 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                 wireUpHeaderMiddleware: true);
 
             var client = server.CreateClient();
-            client.DefaultRequestHeaders.Add("X-ARR-ClientCert", "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
+            client.DefaultRequestHeaders.Add("X-Client-Cert", "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         }
 
         [Fact]
-        public async Task VerifySettingTheHeaderOnTheForwarderOptionsWorks()
+        public async Task VerifySettingTheAzureHeaderOnTheForwarderOptionsWorks()
         {
             var server = CreateServer(
                 new CertificateAuthenticationOptions
@@ -298,10 +298,10 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                     Events = sucessfulValidationEvents
                 },
                 wireUpHeaderMiddleware: true,
-                headerName: "random-Weird-header");
+                headerName: "X-ARR-ClientCert");
 
             var client = server.CreateClient();
-            client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
+            client.DefaultRequestHeaders.Add("X-ARR-ClientCert", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));
             var response = await client.GetAsync("https://example.com/");
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
@@ -315,7 +315,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
                     Events = sucessfulValidationEvents
                 },
                 wireUpHeaderMiddleware: true,
-                headerName: "another-random-Weird-header");
+                headerName: "X-ARR-ClientCert");
 
             var client = server.CreateClient();
             client.DefaultRequestHeaders.Add("random-Weird-header", Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData));

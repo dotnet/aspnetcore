@@ -15,9 +15,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// The name of the header containing the client certificate.
         /// </summary>
         /// <remarks>
-        /// This defaults to X-ARR-ClientCert, which is the header Azure Web Apps uses.
+        /// This defaults to X-Client-Cert
         /// </remarks>
-        public string CertificateHeader { get; set; } = "X-ARR-ClientCert";
+        public string CertificateHeader { get; set; } = "X-Client-Cert";
 
         /// <summary>
         /// The function used to convert the header to an instance of <see cref="X509Certificate2"/>.
