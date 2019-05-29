@@ -498,7 +498,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
                     if (wireUpHeaderMiddleware)
                     {
-                        app.UseCertificateHeaderForwarding();
+                        app.UseCertificateForwarding();
                     }
 
                     app.UseAuthentication();
@@ -549,7 +549,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate.Test
 
                 if (wireUpHeaderMiddleware && !string.IsNullOrEmpty(headerName))
                 {
-                    services.AddCertificateHeaderForwarding(options =>
+                    services.AddCertificateForwarding(options =>
                     {
                         options.CertificateHeader = headerName;
                     });

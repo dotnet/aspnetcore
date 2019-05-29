@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </summary>
         /// <param name="app"></param>
         /// <returns></returns>
-        public static IApplicationBuilder UseCertificateHeaderForwarding(this IApplicationBuilder app)
+        public static IApplicationBuilder UseCertificateForwarding(this IApplicationBuilder app)
         {
             if (app == null)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="services">The <see cref="IServiceCollection"/>.</param>
         /// <param name="configure">An action delegate to configure the provided <see cref="CertificateForwarderOptions"/>.</param>
         /// <returns>The <see cref="IServiceCollection"/> so that additional calls can be chained.</returns>
-        public static IServiceCollection AddCertificateHeaderForwarding(
+        public static IServiceCollection AddCertificateForwarding(
             this IServiceCollection services,
             Action<CertificateForwarderOptions> configure)
         {

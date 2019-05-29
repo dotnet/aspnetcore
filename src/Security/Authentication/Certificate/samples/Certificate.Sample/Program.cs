@@ -18,8 +18,7 @@ namespace Certificate.Sample
             {
                 options.ConfigureHttpsDefaults(opt =>
                 {
-                    opt.ClientCertificateMode = ClientCertificateMode.AllowCertificate;
-                    //opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+                    opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
                 });
             })
             .Build();

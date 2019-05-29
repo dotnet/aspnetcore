@@ -126,7 +126,7 @@ services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationSchem
         {
             options.Events = new CertificateAuthenticationEvents
             {
-                OnValidateCertificate = context =>
+                OnCertificateValidated = context =>
                 {
                     var validationService =
                         context.HttpContext.RequestServices.GetService<ICertificateValidationService>();
@@ -149,7 +149,7 @@ services.AddAuthentication(CertificateAuthenticationDefaults.AuthenticationSchem
         });
 ```
 Note that conceptually the validation of the certification is an authorization concern, and putting a check on, for example, an issuer or thumbprint in an authorization policy rather 
-than inside OnValidateCertificate() is perfectly acceptable.
+than inside OnCertificateValidated() is perfectly acceptable.
 
 ## <a name="hostConfiguration"></a>Configuring your host to require certificates
 
@@ -158,22 +158,17 @@ than inside OnValidateCertificate() is perfectly acceptable.
 In program.cs configure `UseKestrel()` as follows.
 
 ```c#
-public static IWebHost BuildWebHost(string[] args) =>
-    WebHost.CreateDefaultBuilder(args)
-           .UseStartup<Startup>()
-           .UseKestrel(options =>
-           {
-               options.Listen(IPAddress.Loopback, 5001, listenOptions =>
-               {
-                   listenOptions.UseHttps(new HttpsConnectionAdapterOptions
-                   {
-                       ServerCertificate = /* Your HTTPS Certificate */,
-                       ClientCertificateMode = ClientCertificateMode.RequireCertificate,
-                       ClientCertificateValidation = CertificateValidator.DisableChannelValidation
-                   });
-               });
-           })
-           .Build();
+public static IWebHost BuildWebHost(string[] args)
+    => WebHost.CreateDefaultBuilder(args)
+    .UseStartup<Startup>()
+    .ConfigureKestrel(options =>
+    {
+        options.ConfigureHttpsDefaults(opt =>
+        {
+            opt.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
+        });
+    })
+    .Build();
 ```
 You must set the `ClientCertificateValidation` delegate to `CertificateValidator.DisableChannelValidation` in order to stop Kestrel using the default OS certificate validation routine and, 
 instead, letting the authentication handler perform the validation.
@@ -206,15 +201,15 @@ In your application startup method, `Configure(IApplicationBuilder app)`, add th
 following line before the call to `app.UseAuthentication();`
 
 ```c#
-app.UseCertificateHeaderForwarding();
+app.UseCertificateForwarding();
 ```
 
-You will also need to configure the Certificate Forwarding handler to specify the header name.
+You will also need to configure the Certificate Forwarding middleware to specify the header name.
 In your service configuration method, `ConfigureServices(IServiceCollection services)` add 
-the following code to configure the header the forwarding handler will build a certificate from;
+the following code to configure the header the forwarding middleware will build a certificate from;
 
 ```c#
-services.AddCertificateHeaderForwarding(options =>
+services.AddCertificateForwarding(options =>
 {
     options.CertificateHeader = "YOUR_CUSTOM_HEADER_NAME";
 });
@@ -225,7 +220,7 @@ Finally, if your proxy is doing something weird to pass the header on, rather th
 perform the optional conversion, for example 
 
 ```c#
-services.AddCertificateHeaderForwarding(options =>
+services.AddCertificateForwarding(options =>
 {
     options.CertificateHeader = "YOUR_CUSTOM_HEADER_NAME";
     options.HeaderConverter = (headerValue) => 
