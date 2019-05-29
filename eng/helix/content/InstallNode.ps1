@@ -1,10 +1,21 @@
-
+ <# 
+ .SYNOPSIS 
+     Installs NodeJs from http://nodejs.org/dist on a machine
+ .DESCRIPTION 
+     This script installs NodeJs from http://nodejs.org/dist on a machine. 
+ .PARAMETER Version
+     The version of NodeJS to install.
+ .PARAMETER InstallDir
+     The directory to install NodeJS to.
+ .LINK 
+     https://nodejs.org/en/
+ #> 
 param(
     [Parameter(Mandatory = $true)]
     $Version,
     
     [Parameter(Mandatory = $true)]
-    $output_dir
+    $InstallDir
 )
 
 $ErrorActionPreference = 'Stop'
@@ -30,31 +41,31 @@ Write-Host "Starting download of NodeJs ${Version} from $url"
 Invoke-WebRequest -UseBasicParsing -Uri "$url" -OutFile "nodejs.zip"
 Write-Host "Done downloading NodeJS ${Version}"
 
-$temppath = [System.IO.Path]::GetTempPath()
-$temp_dir = Join-Path $temppath nodejs
-New-Item -Path "$temp_dir" -ItemType "directory" -Force
-Write-Host "Extracting to $temp_dir"
+$tempPath = [System.IO.Path]::GetTempPath()
+$tempDir = Join-Path $tempPath nodejs
+New-Item -Path "$tempDir" -ItemType "directory" -Force
+Write-Host "Extracting to $tempDir"
 
 if (Get-Command -Name 'Microsoft.PowerShell.Archive\Expand-Archive' -ErrorAction Ignore) {
     # Use built-in commands where possible as they are cross-plat compatible
-    Microsoft.PowerShell.Archive\Expand-Archive -Path "nodejs.zip" -DestinationPath $temp_dir
+    Microsoft.PowerShell.Archive\Expand-Archive -Path "nodejs.zip" -DestinationPath $tempDir
 }
 else {
     # Fallback to old approach for old installations of PowerShell
     Add-Type -AssemblyName System.IO.Compression.FileSystem
-    [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $temp_dir)
+    [System.IO.Compression.ZipFile]::ExtractToDirectory("nodejs.zip", $tempDir)
 }
 
 Write-Host "Expanded NodeJs"
-New-Item -Path "$output_dir" -ItemType "directory" -Force
-Write-Host "Copying $temp_dir\$nodeFile\node.exe to $output_dir"
-Copy-Item "$temp_dir\$nodeFile\node.exe" "$output_dir\node.exe"
+New-Item -Path "$InstallDir" -ItemType "directory" -Force
+Write-Host "Copying $temp_dir\$nodeFile\node.exe to $InstallDir"
+Copy-Item "$temp_dir\$nodeFile\node.exe" "$InstallDir\node.exe"
 
-if (Test-Path "$output_dir\node.exe")
+if (Test-Path "$InstallDir\node.exe")
 {
-    Write-Host "Node.exe copied to $output_dir"
+    Write-Host "Node.exe copied to $InstallDir"
 }
 else
 {
-    Write-Host "Node.exe not found at $output_dir"
+    Write-Host "Node.exe not copied to $InstallDir"
 }
