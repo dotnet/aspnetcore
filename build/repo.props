@@ -3,6 +3,13 @@
     <TargetRuntimeIdentifier Condition="'$(TargetRuntimeIdentifier)' == ''">$(TargetOsName)-$(TargetArchitecture)</TargetRuntimeIdentifier>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
+    <BuildNative>true</BuildNative>
+    <BuildManaged>true</BuildManaged>
+    <BuildNodeJS>true</BuildNodeJS>
+    <BuildJava>true</BuildJava>
+  </PropertyGroup>
+
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
@@ -27,13 +34,6 @@
     <DisableSignCheckStrongName>true</DisableSignCheckStrongName>
 
     <SharedSourcesFolder>$(RepoRoot)src\Shared\</SharedSourcesFolder>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(BuildAllProjects)' == 'true' ">
-    <BuildNative>true</BuildNative>
-    <BuildManaged>true</BuildManaged>
-    <BuildNodeJS>true</BuildNodeJS>
-    <BuildJava>true</BuildJava>
     <BuildIisNativeProjects Condition="'$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
   </PropertyGroup>
 
