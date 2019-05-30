@@ -48,12 +48,12 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     // Indexing into environment variable map will add a default entry if none is present
     // This is okay here as we throw away the map shortly after.
     // Process set environment variables are prioritized over web config variables.
-    const auto detailedErrors = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_DETAILEDERRORS")
-        .value_or(environmentVariables[L"ASPNETCORE_DETAILEDERRORS"]);
-    const auto aspnetCoreEnvironment = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_ENVIRONMENT")
-        .value_or(environmentVariables[L"ASPNETCORE_ENVIRONMENT"]);
-    const auto dotnetEnvironment = Environment::GetEnvironmentVariableValue(L"DOTNET_ENVIRONMENT")
-        .value_or(environmentVariables[L"DOTNET_ENVIRONMENT"]);
+    const auto detailedErrors = Environment::GetEnvironmentVariableValue(CS_ASPNETCORE_DETAILEDERRORS)
+        .value_or(environmentVariables[CS_ASPNETCORE_DETAILEDERRORS]);
+    const auto aspnetCoreEnvironment = Environment::GetEnvironmentVariableValue(CS_ASPNETCORE_ENVIRONMENT)
+        .value_or(environmentVariables[CS_ASPNETCORE_ENVIRONMENT]);
+    const auto dotnetEnvironment = Environment::GetEnvironmentVariableValue(CS_DOTNET_ENVIRONMENT)
+        .value_or(environmentVariables[CS_DOTNET_ENVIRONMENT]);
 
     auto detailedErrorsEnabled = equals_ignore_case(L"1", detailedErrors) || equals_ignore_case(L"true", detailedErrors);
     auto aspnetCoreEnvironmentEnabled = equals_ignore_case(L"Development", aspnetCoreEnvironment);
