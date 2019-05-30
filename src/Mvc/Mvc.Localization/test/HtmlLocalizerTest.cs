@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
 
         [Theory]
         [MemberData(nameof(HtmlData))]
-        public void HtmlLocalizer_HtmlWithArguments_ReturnsLocalizedHtml2(
+        public void HtmlLocalizer_HtmlWithArguments_ReturnsLocalizedHtml(
             string format,
             object[] arguments,
             string expectedText)
