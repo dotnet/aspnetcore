@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             var middleware = TestUtils.CreateTestMiddleware(
                 maxConcurrentRequests: 10,
-                requestQueueLimit: -1,
+                requestQueueLimit: 0,
                 next: httpContext =>
                 {
                     // throttle should bounce the request; it should never get here
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         {
             var middleware = TestUtils.CreateTestMiddleware(
                 maxConcurrentRequests: 0,
-                requestQueueLimit: -1);
+                requestQueueLimit: 0);
 
             var context = new DefaultHttpContext();
             await middleware.Invoke(context);
