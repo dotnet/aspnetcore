@@ -19,8 +19,6 @@
 
     <OverridePackageOutputPath>false</OverridePackageOutputPath>
 
-    <IsFinalBuild Condition="'$(IsFinalBuild)' == ''">false</IsFinalBuild>
-
     <ArtifactsPackagesDir>$(ArtifactsDir)packages\$(Configuration)\</ArtifactsPackagesDir>
     <ArtifactsShippingPackagesDir>$(ArtifactsPackagesDir)Shipping\</ArtifactsShippingPackagesDir>
     <ArtifactsNonShippingPackagesDir>$(ArtifactsPackagesDir)NonShipping\</ArtifactsNonShippingPackagesDir>

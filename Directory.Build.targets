@@ -1,5 +1,4 @@
 <Project>
-  <!-- Properties which should be set after the project has been evaluated -->
 
   <PropertyGroup>
     <!--
@@ -12,10 +11,24 @@
       By default, assemblies which are only in the Microsoft.AspNetCore.App shared framework are not available as NuGet packages.
     -->
     <IsPackable Condition="'$(IsAspNetCoreApp)' == 'true' AND '$(IsShippingPackage)' != 'true'">false</IsPackable>
+  </PropertyGroup>
 
-    <PackageOutputPath Condition=" '$(IsShippingPackage)' == 'true' ">$(ArtifactsShippingPackagesDir)</PackageOutputPath>
-    <PackageOutputPath Condition=" '$(IsShippingPackage)' != 'true' ">$(ArtifactsNonShippingPackagesDir)</PackageOutputPath>
+  <Import Project="Sdk.targets" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <!-- Properties which should be set after the project has been evaluated -->
 
+  <PropertyGroup Label="Versioning settings">
+    <!-- The 'human friendly' version to display in installers. In pre-release builds, this might be "2.0.7 Preview 2 Build 12356". In final builds, it should be "2.0.7" -->
+    <BrandingVersionSuffix>$(PreReleaseBrandingLabel) Build $(VersionSuffix)</BrandingVersionSuffix>
+    <PackageBrandingVersion>$(VersionPrefix)</PackageBrandingVersion>
+    <PackageBrandingVersion Condition=" '$(VersionSuffix)' != '' ">$(PackageBrandingVersion) $(BrandingVersionSuffix.Trim())</PackageBrandingVersion>
+
+    <SharedFxVersion>$(PackageVersion)</SharedFxVersion>
+
+    <TargetingPackVersion>$(TargetingPackVersionPrefix)</TargetingPackVersion>
+    <TargetingPackVersion Condition=" '$(VersionSuffix)' != '' ">$(TargetingPackVersionPrefix)-$(VersionSuffix)</TargetingPackVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <!-- Analyzers package are special. In general, they should not have dependencies in the nuspec. Analyzer assemblies are not meant to be used for compilation or runtime. -->
     <SuppressDependenciesWhenPacking Condition="'$(SuppressDependenciesWhenPacking)' == '' AND '$(IsAnalyzersProject)' == 'true'">true</SuppressDependenciesWhenPacking>
   </PropertyGroup>
@@ -68,9 +81,6 @@
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == '' AND '$(IsProjectReferenceProvider)' == 'true'">true</HasReferenceAssembly>
     <HasReferenceAssembly Condition="'$(HasReferenceAssembly)' == ''">false</HasReferenceAssembly>
 
-    <!-- Suppress KoreBuild warnings about the mismatch of repo version and local project version. The versioning in this mega repo is sufficiently complicated that KoreBuild's validation isn't helpful. -->
-    <VerifyVersion>false</VerifyVersion>
-
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
@@ -101,35 +111,6 @@
     </KnownFrameworkReference>
 
   </ItemGroup>
-
-  <!-- Copied from https://github.com/dotnet/arcade/blob/9d0fd805448082c8d55e2434607b481bca70a146/src/Microsoft.DotNet.Arcade.Sdk/tools/RepositoryInfo.targets#L12-L38 -->
-  <Target Name="_TranslateAzureDevOpsUrlToGitHubUrl"
-          DependsOnTargets="$(SourceControlManagerUrlTranslationTargets)"
-          BeforeTargets="SourceControlManagerPublishTranslatedUrls">
-
-    <!-- The convention for names of Azure DevOps repositories mirrored from GitHub is "{GitHub org name}-{GitHub repository name}" -->
-    <PropertyGroup>
-      <!-- There are quite a few git repo forms:
-        https://dnceng@dev.azure.com/dnceng/internal/_git/dotnet-arcade-services
-        https://dev.azure.com/dnceng/internal/_git/dotnet-arcade-services
-        https://dnceng.visualstudio.com/internal/_git/dotnet-arcade-services
-        dnceng@vs-ssh.visualstudio.com:v3/dnceng/internal/dotnet-arcade-services
-        git@ssh.dev.azure.com:v3/dnceng/internal/dotnet-arcade-services
-      -->
-      <_Pattern>(https://dnceng%40dev\.azure\.com/dnceng/internal/_git|https://dev\.azure\.com/dnceng/internal/_git|https://dnceng\.visualstudio\.com/internal/_git|dnceng%40vs-ssh\.visualstudio\.com:v3/dnceng/internal|git%40ssh\.dev\.azure\.com:v3/dnceng/internal)/([^/-]+)-(.+)</_Pattern>
-      <_Replacement>https://github.com/$2/$3</_Replacement>
-    </PropertyGroup>
-
-    <PropertyGroup>
-      <ScmRepositoryUrl>$([System.Text.RegularExpressions.Regex]::Replace($(ScmRepositoryUrl), $(_Pattern), $(_Replacement)))</ScmRepositoryUrl>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <SourceRoot Update="@(SourceRoot)">
-        <ScmRepositoryUrl>$([System.Text.RegularExpressions.Regex]::Replace(%(SourceRoot.ScmRepositoryUrl), $(_Pattern), $(_Replacement)))</ScmRepositoryUrl>
-      </SourceRoot>
-    </ItemGroup>
-  </Target>
 
   <Import Project="eng\Workarounds.targets" />
   <Import Project="eng\targets\ResolveIisReferences.targets" Condition=" '$(MSBuildProjectExtension)' != '.vcxproj' " />

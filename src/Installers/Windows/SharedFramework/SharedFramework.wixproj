@@ -2,11 +2,11 @@
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.props))\Directory.Build.props" />
 
-  <Import Project="Product.props" />
-
   <PropertyGroup>
+    <ProductNameFolder>Microsoft ASP.NET Core Shared Framework</ProductNameFolder>
+    <ProductNameShort>AspNetCore.SharedFramework</ProductNameShort>
+    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
     <Name>AspNetCoreSharedFramework</Name>
-    <OutputName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
     <OutputType>Package</OutputType>
     <EmbedCab>no</EmbedCab>
     <Cabinet>sfx_$(Platform).cab</Cabinet>
@@ -16,6 +16,8 @@
     <HarvestDirectorySuppressRegistry>true</HarvestDirectorySuppressRegistry>
     <HarvestSource>$(IntermediateOutputPath)fx\</HarvestSource>
     <IsProductInstaller>true</IsProductInstaller>
+    <DefineConstants>$(DefineConstants);ProductNameFolder=$(ProductNameFolder)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductNameShort=$(ProductNameShort)</DefineConstants>
     <DefineConstants>$(DefineConstants);AspNetCoreSharedFrameworkSource=$(HarvestSource)</DefineConstants>
     <NamespaceGuid>$(SharedFrameworkNamespaceGuid)</NamespaceGuid>
     <SchemaVersion>2.0</SchemaVersion>
@@ -71,4 +73,11 @@
   </Target>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <OutputName>$(RuntimeInstallerBaseName)-$(PackageVersion)-win-$(Platform)</OutputName>
+
+    <ProductName>Microsoft ASP.NET Core $(PackageBrandingVersion) Shared Framework ($(Platform))</ProductName>
+    <DefineConstants>$(DefineConstants);ProductName=$(ProductName)</DefineConstants>
+  </PropertyGroup>
 </Project>

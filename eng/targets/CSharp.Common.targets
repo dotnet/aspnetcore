@@ -28,12 +28,6 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GetCustomFileVersion" BeforeTargets="GetAssemblyVersion">
-    <PropertyGroup Condition="'$(FileVerison)' == '' AND '$(FileRevisionVersion)' != ''">
-      <FileVersion>$(VersionPrefix).$(FileRevisionVersion)</FileVersion>
-    </PropertyGroup>
-  </Target>
-
   <Import Project="Packaging.targets" />
   <Import Project="ResolveReferences.targets" />
   <Import Project="Helix.targets" Condition="'$(IsTestProject)' == 'true'" />

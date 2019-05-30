@@ -2,11 +2,6 @@
 
   <PropertyGroup>
     <LangVersion>8.0</LangVersion>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)..\AspNetCore.snk</AssemblyOriginatorKeyFile>
-    <SignAssembly>true</SignAssembly>
-
-     <!-- Instructs the compiler to use SHA256 instead of SHA1 when adding file hashes to PDBs. -->
-    <ChecksumAlgorithm>SHA256</ChecksumAlgorithm>
 
     <!-- Enables Strict mode for Roslyn compiler -->
     <Features>strict</Features>
@@ -32,10 +27,6 @@
       several versions older than latest. To avoid a cyclical dependency, this package reference is added to override the bundled version.
     -->
     <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="$(MicrosoftNETSdkRazorPackageVersion)" AllowExplicitReference="true" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(OS)' != 'Windows_NT' ">
-    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
