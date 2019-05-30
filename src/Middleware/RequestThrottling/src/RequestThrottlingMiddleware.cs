@@ -55,8 +55,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
             if (waitInQueueTask.IsCompletedSuccessfully)
             {
-                var requestPassedThrough = await waitInQueueTask;
-                if (requestPassedThrough)
+                if (waitInQueueTask.Result)
                 {
                     RequestThrottlingLog.RequestRunImmediately(_logger);
                 }
@@ -69,9 +68,9 @@ namespace Microsoft.AspNetCore.RequestThrottling
             }
             else
             {
-                RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
+                RequestThrottlingLog.RequestEnqueued(_logger, ActiveRequestCount);
                 var result = await waitInQueueTask;
-                RequestThrottlingLog.RequestDequeued(_logger, WaitingRequests);
+                RequestThrottlingLog.RequestDequeued(_logger, ActiveRequestCount);
 
                 Debug.Assert(result);
             }
@@ -87,21 +86,15 @@ namespace Microsoft.AspNetCore.RequestThrottling
         }
 
         /// <summary>
-        /// The number of live requests that are downstream from this middleware.
-        /// Cannot exceeed <see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
+        /// The number of requests currently on the server.
+        /// Cannot exceeed the sum of <see cref="RequestThrottlingOptions.RequestQueueLimit"> and </see>/><see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
         /// </summary>
-        internal int ConcurrentRequests
+        internal int ActiveRequestCount
         {
-            get => _requestQueue.ConcurrentRequests;
+            get => _requestQueue.TotalRequests;
         }
 
-        /// <summary>
-        /// Number of requests currently enqueued and waiting to be processed.
-        /// </summary>
-        internal int WaitingRequests
-        {
-            get => _requestQueue.WaitingRequests;
-        }
+        // TODO :: update log wording to reflect the changes
 
         private static class RequestThrottlingLog
         {

@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     throw new DivideByZeroException();
                 });
 
-            Assert.Equal(0, middleware.ConcurrentRequests);
+            Assert.Equal(0, middleware.ActiveRequestCount);
 
             await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext()));
 
-            Assert.Equal(0, middleware.ConcurrentRequests);
+            Assert.Equal(0, middleware.ActiveRequestCount);
         }
 
         [Fact]
@@ -58,14 +58,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             // t1 (as the first request) is blocked by the tcs blocker
             var t1 = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(1, middleware.ConcurrentRequests);
-            Assert.Equal(0, middleware.WaitingRequests);
+            Assert.Equal(1, middleware.ActiveRequestCount);
 
             // t2 is blocked from entering the server since t1 already exists there
             // note: increasing MaxConcurrentRequests would allow t2 through while t1 is blocked
             var t2 = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(1, middleware.ConcurrentRequests);
-            Assert.Equal(1, middleware.WaitingRequests);
+            Assert.Equal(2, middleware.ActiveRequestCount);
 
             // unblock the first task, and the second should follow
             blocker.Continue();
@@ -87,7 +85,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         public async void RequestsBlockedIfQueueFull()
         {
             var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 10,
+                maxConcurrentRequests: 0,
                 requestQueueLimit: 0,
                 next: httpContext =>
                 {
@@ -121,13 +119,13 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     return Task.Delay(TimeSpan.FromSeconds(30));
                 });
 
-            Assert.Equal(0, middleware.WaitingRequests);
+            Assert.Equal(0, middleware.ActiveRequestCount);
 
             var _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(1, middleware.WaitingRequests);
+            Assert.Equal(1, middleware.ActiveRequestCount);
 
             _ = middleware.Invoke(new DefaultHttpContext());
-            Assert.Equal(2, middleware.WaitingRequests);
+            Assert.Equal(2, middleware.ActiveRequestCount);
         }
     }
 }

@@ -13,30 +13,13 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         public async Task LimitsIncomingRequests()
         {
             using var s = TestUtils.CreateRequestQueue(1);
-            Assert.Equal(0, s.ConcurrentRequests);
+            Assert.Equal(0, s.TotalRequests);
 
             Assert.True(await s.TryEnterQueueAsync().OrTimeout());
-            Assert.Equal(1, s.ConcurrentRequests);
+            Assert.Equal(1, s.TotalRequests);
 
             s.Release();
-            Assert.Equal(0, s.ConcurrentRequests);
-        }
-
-        [Fact]
-        public async Task TracksQueueLength()
-        {
-            using var s = TestUtils.CreateRequestQueue(1);
-            Assert.Equal(0, s.WaitingRequests);
-
-            Assert.True(await s.TryEnterQueueAsync());
-            Assert.Equal(0, s.WaitingRequests);
-
-            var enterQueueTask = s.TryEnterQueueAsync();
-            Assert.Equal(1, s.WaitingRequests);
-
-            s.Release();
-            Assert.True(await enterQueueTask);
-            Assert.Equal(0, s.WaitingRequests);
+            Assert.Equal(0, s.TotalRequests);
         }
 
         [Fact]
