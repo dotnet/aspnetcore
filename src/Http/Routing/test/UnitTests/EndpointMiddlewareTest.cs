@@ -183,16 +183,24 @@ namespace Microsoft.AspNetCore.Routing
                 RequestServices = new ServiceProvider()
             };
 
-            httpContext.SetEndpoint(new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<ICorsMetadata>()), "Test"));
+            var invoked = false;
+            RequestDelegate endpointFunc = (c) =>
+            {
+                invoked = true;
+                return Task.CompletedTask;
+            };
+
+            httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(Mock.Of<ICorsMetadata>()), "Test"));
 
             httpContext.Items[EndpointMiddleware.CorsMiddlewareInvokedKey] = true;
 
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, RouteOptions);
 
-            // Act & Assert
+            // Act
             await middleware.Invoke(httpContext);
 
-            // If we got this far, we can sound the everything's OK alarm.
+            // Assert
+            Assert.True(invoked);
         }
 
         [Fact]
@@ -204,13 +212,23 @@ namespace Microsoft.AspNetCore.Routing
                 RequestServices = new ServiceProvider()
             };
 
-            httpContext.SetEndpoint(new Endpoint(_ => Task.CompletedTask, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"));
+            var invoked = false;
+            RequestDelegate endpointFunc = (c) =>
+            {
+                invoked = true;
+                return Task.CompletedTask;
+            };
+
+            httpContext.SetEndpoint(new Endpoint(endpointFunc, new EndpointMetadataCollection(Mock.Of<IAuthorizeData>()), "Test"));
 
             var routeOptions = Options.Create(new RouteOptions { SuppressCheckForUnhandledSecurityMetadata = true });
             var middleware = new EndpointMiddleware(NullLogger<EndpointMiddleware>.Instance, _ => Task.CompletedTask, routeOptions);
 
-            // Act & Assert
+            // Act
             await middleware.Invoke(httpContext);
+
+            // Assert
+            Assert.True(invoked);
         }
 
         private class ServiceProvider : IServiceProvider
