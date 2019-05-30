@@ -5,11 +5,6 @@
     <!-- Use the same experimental hive as Roslyn and Razor. This makes it easy to mix private builds. -->
     <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
 
-    <!-- Required to run the project localy -->
-    <StartAction>Program</StartAction>
-    <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
-    <StartArguments>/rootsuffix $(VSSDKTargetPlatformRegRootSuffix) /log</StartArguments>
-
     <!--
       Mark the VSIX as a per-computer install (not-per-user). Putting a component "in the box"
       requires this, and trying to change it after doing a release has lot of problems.
@@ -19,6 +14,9 @@
 
     <!-- This should be set as true if we're ever building the VSIX for inclusion by the VS installer. -->
     <IsProductComponent Condition="'$(IsProductComponent)'==''">false</IsProductComponent>
+
+    <!-- This VSIX does not insert into VS directly. -->
+    <VisualStudioInsertionComponent>false</VisualStudioInsertionComponent>
 
     <!-- Update the VSToolsPath to ensure VSIX builds -->
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
@@ -47,23 +45,8 @@
       VS needs this build number to be parsable by System.Version, so it can't have any letters or a - which
       is used by our build system.
     -->
-    <VsixVersionPrefix>16.0</VsixVersionPrefix>
-    <VsixVersionSuffix Condition="'$(OfficialBuild)'!='true'">424242.424242</VsixVersionSuffix>
-    <VsixVersionSuffix Condition="'$(VsixVersionSuffix)'==''">$(BuildNumberSuffix.Replace('-', '.'))</VsixVersionSuffix>
-    <VsixVersion>$(VsixVersionPrefix).$(VsixVersionSuffix)</VsixVersion>
-
-    <InformationalVersion>$(VsixVersion)</InformationalVersion>
+    <VsixVersionPrefix>16.0.0</VsixVersionPrefix>
   </PropertyGroup>
-
-  <PropertyGroup>
-    <!-- Output the VSIX to the artifacts directory. This will allow it to be picked up for code-sign -->
-    <TargetVSIXContainer>$(VisualStudioSetupOutputPath)$(MSBuildProjectName).vsix</TargetVSIXContainer>
-  </PropertyGroup>
-
-  <!--
-    Used by the .vsixmanifest to insert the the VSIX version based on $(VsixVersion)
-  -->
-  <Target Name="GetBuildVersion" Outputs="$(VsixVersion)" />
 
   <PropertyGroup>
     <!--
@@ -130,7 +113,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.7.27703" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.9.3032" />
     <PackageReference Include="StreamJsonRpc" Version="1.5.43" />
   </ItemGroup>
 

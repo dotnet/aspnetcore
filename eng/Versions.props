@@ -6,6 +6,8 @@
 -->
 <Project>
   <PropertyGroup Label="Arcade settings">
+    <!-- Opt-in to Arcade tools for building VSIX projects. -->
+    <UsingToolVSSDK>true</UsingToolVSSDK>
     <!-- Opt-in to using the version of the Roslyn compiler bundled with Arcade. -->
     <UsingToolMicrosoftNetCompilers Condition="'$(MSBuildProjectExtension)' == '.csproj' or '$(MSBuildProjectExtension)' == '.fsproj' or '$(MSBuildProjectExtension)' == '.vbproj'">true</UsingToolMicrosoftNetCompilers>
   </PropertyGroup>
