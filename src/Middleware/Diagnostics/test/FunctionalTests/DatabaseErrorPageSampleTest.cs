@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Net;
@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "TODO: EF query interception for opening connection. Issue #10672")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DatabaseErrorPage_ShowsError()

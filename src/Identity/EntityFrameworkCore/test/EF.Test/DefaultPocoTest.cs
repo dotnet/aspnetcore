@@ -36,9 +36,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             _builder = new ApplicationBuilder(provider);
 
             using(var scoped = provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            using (var db = scoped.ServiceProvider.GetRequiredService<IdentityDbContext>())
             {
-                db.Database.EnsureCreated();
+                scoped.ServiceProvider.GetRequiredService<IdentityDbContext>().Database.EnsureCreated();
             }
         }
 
