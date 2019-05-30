@@ -134,17 +134,21 @@ CreateApplication(
             std::unique_ptr<InProcessOptions> options;
             THROW_IF_FAILED(InProcessOptions::Create(*pServer, pSite, *pHttpApplication, options));
             // Set the currently running application to a fake application that returns startup exceptions.
-            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer,
-                *pHttpApplication,
-                options->QueryDisableStartUpErrorPage(),
-                hr,
+            auto content = !g_errorPageContent.empty() ?
+                g_errorPageContent :
                 FILE_UTILITY::GetHtml(g_hServerModule,
                     IN_PROCESS_RH_STATIC_HTML,
                     500i16,
                     30i16,
                     "ANCM In-Process Start Failure",
                     "<ul><li>The application failed to start</li><li>The application started but then stopped</li><li>The application started but threw an exception during startup</li></ul>",
-                    g_errorPageContent),
+                    "");
+
+            auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer,
+                *pHttpApplication,
+                options->QueryDisableStartUpErrorPage(),
+                hr,
+                content,
                 500i16,
                 30i16,
                 "Internal Server Error");

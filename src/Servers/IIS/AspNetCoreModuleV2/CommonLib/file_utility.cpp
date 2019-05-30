@@ -168,9 +168,9 @@ Finished:
     return hr;
 }
 
-std::string FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& speicificReasonPhrase, const std::string& solution)
+std::string FILE_UTILITY::GetHtml(HMODULE module, int page, USHORT statusCode, USHORT subStatusCode, const std::string& specificReasonPhrase, const std::string& solution)
 {
-    return GetHtml(module, page, statusCode, subStatusCode, speicificReasonPhrase, solution, std::string());
+    return GetHtml(module, page, statusCode, subStatusCode, specificReasonPhrase, solution, std::string());
 }
 
 std::string

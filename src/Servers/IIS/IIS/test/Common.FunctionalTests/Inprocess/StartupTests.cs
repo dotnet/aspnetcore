@@ -740,6 +740,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Assert.Contains("InvalidOperationException", content);
             Assert.Contains("TestSite.Program.Main", content);
             Assert.Contains("From Configure", content);
+            Assert.DoesNotContain("ANCM In-Process Start Failure", content);
 
             StopServer();
 
