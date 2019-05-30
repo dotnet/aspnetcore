@@ -63,7 +63,7 @@ export class HttpConnection implements IConnection {
     private stopPromiseResolver!: (value?: PromiseLike<void>) => void;
     private stopError?: Error;
     private accessTokenFactory?: () => string | Promise<string>;
-    private sendQueue: Promise<void> = Promise.resolve();
+    private sendQueue: TransportSendQueue = new TransportSendQueue();
 
     public readonly features: any = {};
     public connectionId?: string;
@@ -148,13 +148,7 @@ export class HttpConnection implements IConnection {
         }
 
         // Transport will not be null if state is connected
-        const send = () => this.transport!.send(data);
-        if (this.options.ensureMessageSendOrder) {
-            this.sendQueue = this.sendQueue.then(send, send);
-            return this.sendQueue;
-        }
-
-        return send();
+        return this.sendQueue.send(this.transport!, data);
     }
 
     public async stop(error?: Error): Promise<void> {
@@ -507,4 +501,67 @@ export class HttpConnection implements IConnection {
 
 function transportMatches(requestedTransport: HttpTransportType | undefined, actualTransport: HttpTransportType) {
     return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
+}
+
+export class TransportSendQueue {
+    private sending: boolean = false;
+    private data: any[] = [];
+    private promiseQueue?: Promise<void>;
+
+    public async send(transport: ITransport, data: string | ArrayBuffer): Promise<void> {
+        if (this.sending) {
+            this.bufferData(data);
+            return this.promiseQueue!
+                .then(() => this.sendBufferedData(transport));
+        }
+
+        return this.sendCore(transport, data);
+    }
+
+    private async sendCore(transport: ITransport, data: string | ArrayBuffer) {
+        this.sending = true;
+
+        let resolve: () => void;
+        this.promiseQueue = new Promise((r) => resolve = r);
+
+        try {
+            await transport.send(data);
+        } finally {
+            this.sending = false;
+            resolve!();
+        }
+    }
+
+    private bufferData(data: string | ArrayBuffer) {
+        if (this.data.length && typeof(this.data[0]) !== typeof(data)) {
+            throw new Error(`Expected data to be of type ${typeof(this.data)} but was of type ${typeof(data)}`);
+        }
+
+        this.data.push(data);
+    }
+
+    private sendBufferedData(transport: ITransport): Promise<void> {
+        if (!this.data.length) {
+            return Promise.resolve();
+        }
+
+        const data = typeof(this.data[0]) === "string" ?
+            this.data.join("") :
+            TransportSendQueue.concatBuffers(this.data);
+
+        this.data.length = 0;
+        return this.sendCore(transport, data);
+    }
+
+    private static concatBuffers(buffers: ArrayBuffer[]): ArrayBuffer {
+        const totalLength = buffers.map((b) => b.byteLength).reduce((a, b) => a + b);
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const item of buffers) {
+            result.set(new Uint8Array(item), offset);
+            offset += item.byteLength;
+        }
+
+        return result;
+    }
 }

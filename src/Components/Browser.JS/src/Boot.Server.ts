@@ -110,10 +110,8 @@ async function initializeConnection(options: Required<BlazorOptions>, circuitHan
   (hubProtocol as unknown as { name: string }).name = 'blazorpack';
 
   const connectionBuilder = new signalR.HubConnectionBuilder()
-    .withUrl('_blazor', {
-      ensureMessageSendOrder: true
-    })
-    .withHubProtocol(hubProtocol)
+    .withUrl('_blazor')
+    .withHubProtocol(hubProtocol);
 
   options.configureSignalR(connectionBuilder);
 

@@ -40,12 +40,6 @@ export interface IHttpConnectionOptions {
      */
     skipNegotiation?: boolean;
 
-    /** A boolean indicating if messages should be sent in order.
-     *
-     * When set, ensures that all HTTP-based transports will guarantee messages are received by the server in the order in which they are sent.
-     */
-    ensureMessageSendOrder?: boolean;
-
     // Used for unit testing and code spelunkers
     /** A constructor that can be used to create a WebSocket.
      *

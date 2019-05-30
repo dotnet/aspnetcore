@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 import { HttpResponse } from "../src/HttpClient";
-import { HttpConnection, INegotiateResponse } from "../src/HttpConnection";
+import { HttpConnection, INegotiateResponse, TransportSendQueue } from "../src/HttpConnection";
 import { IHttpConnectionOptions } from "../src/IHttpConnectionOptions";
 import { HttpTransportType, ITransport, TransferFormat } from "../src/ITransport";
 
@@ -12,6 +12,7 @@ import { EventSourceConstructor, WebSocketConstructor } from "../src/Polyfills";
 
 import { eachEndpointUrl, eachTransport, VerifyLogger } from "./Common";
 import { TestHttpClient } from "./TestHttpClient";
+import { TestTransport } from "./TestTransport";
 import { PromiseSource, registerUnhandledRejectionHandler, SyncPoint } from "./Utils";
 
 const commonOptions: IHttpConnectionOptions = {
@@ -842,5 +843,155 @@ describe("HttpConnection", () => {
             },
             "Failed to start the connection: Error: Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
         });
+    });
+});
+
+describe("TransportSendQueue", () => {
+    it("sends data when not currently sending", async () => {
+        const queue = new TransportSendQueue();
+        const sendMock = jest.fn(() => Promise.resolve());
+        const transport = new TestTransport();
+        transport.send = sendMock;
+
+        await queue.send(transport, "Hello");
+
+        expect(sendMock.mock.calls.length).toBe(1);
+    });
+
+    it("buffers data when sending", async () => {
+        const queue = new TransportSendQueue();
+        const firstSendPromiseSource = new PromiseSource();
+        const secondSendPromiseSource = new PromiseSource();
+        const sendMock = jest.fn()
+            .mockReturnValueOnce(firstSendPromiseSource)
+            .mockReturnValueOnce(secondSendPromiseSource);
+
+        const transport = new TestTransport();
+        transport.send = sendMock;
+
+        let firstDone = false;
+        let secondDone = false;
+
+        const first = queue.send(transport, "Hello").then(() => firstDone = true);
+        expect(firstDone).toBe(false);
+        const second = queue.send(transport, "World").then(() => secondDone = true);
+
+        firstSendPromiseSource.resolve();
+        await first;
+        expect(firstDone).toBe(true);
+        expect(secondDone).toBe(false);
+
+        secondSendPromiseSource.resolve();
+        await second;
+        expect(secondDone).toBe(true);
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toBe("Hello");
+        expect(sendMock.mock.calls[1][0]).toBe("World");
+    });
+
+    it("sends buffered data on fail", async () => {
+        const queue = new TransportSendQueue();
+        const firstSendPromiseSource = new PromiseSource();
+        const secondSendPromiseSource = new PromiseSource();
+        const sendMock = jest.fn()
+            .mockReturnValueOnce(firstSendPromiseSource)
+            .mockReturnValueOnce(secondSendPromiseSource);
+
+        const transport = new TestTransport();
+        transport.send = sendMock;
+
+        let secondDone = false;
+
+        const first = queue.send(transport, "Hello");
+        const second = queue.send(transport, "World").then(() => secondDone = true);
+
+        firstSendPromiseSource.reject();
+        let hasError = false;
+        try {
+            await first;
+        } catch (e) {
+            hasError = true;
+        }
+
+        expect(hasError).toBe(true);
+
+        expect(secondDone).toBe(false);
+        secondSendPromiseSource.resolve();
+        await second;
+        expect(secondDone).toBe(true);
+    });
+
+    it("rejects promise for buffered sends if transport errors", async () => {
+        const queue = new TransportSendQueue();
+        const firstSendPromiseSource = new PromiseSource();
+        const secondSendPromiseSource = new PromiseSource();
+        const sendMock = jest.fn()
+            .mockReturnValueOnce(firstSendPromiseSource)
+            .mockReturnValueOnce(secondSendPromiseSource);
+
+        const transport = new TestTransport();
+        transport.send = sendMock;
+
+        const first = queue.send(transport, "Hello");
+        const second = queue.send(transport, "World");
+
+        firstSendPromiseSource.resolve();
+        await first;
+
+        secondSendPromiseSource.reject();
+        let hasError = false;
+        try {
+            await second;
+        } catch (e) {
+            hasError = true;
+        }
+        expect(hasError).toBe(true);
+    });
+
+    it("concatenates string data", async () => {
+        const queue = new TransportSendQueue();
+        const promiseSource = new PromiseSource();
+        const sendMock = jest.fn(() => promiseSource);
+        const transport = new TestTransport();
+        transport.send = sendMock;
+
+        let firstDone = false;
+        let secondDone = false;
+
+        const first = queue.send(transport, "Hello").then(() => firstDone = true);
+        expect(firstDone).toBe(false);
+        const second = queue.send(transport, "World").then(() => secondDone = true);
+        const third = queue.send(transport, "!");
+
+        promiseSource.resolve();
+        expect(firstDone).toBe(false);
+        expect(secondDone).toBe(false);
+
+        await Promise.all([first, second, third]);
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toBe("Hello");
+        expect(sendMock.mock.calls[1][0]).toBe("World!");
+    });
+
+    it ("concatenates buffered ArrayBuffer", async () => {
+        const queue = new TransportSendQueue();
+        const promiseSource = new PromiseSource();
+        const sendMock = jest.fn(() => promiseSource);
+        const transport = new TestTransport();
+        transport.send = sendMock;
+
+        const first = queue.send(transport, new Uint8Array([4, 5, 6]));
+        const second = queue.send(transport, new Uint8Array([7, 8, 10]));
+        const third = queue.send(transport, new Uint8Array([12, 14]));
+
+        promiseSource.resolve();
+
+        await Promise.all([first, second, third]);
+
+        expect(sendMock.mock.calls.length).toBe(2);
+        expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]));
+        expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]));
     });
 });
