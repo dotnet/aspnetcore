@@ -22,5 +22,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 Assert.Equal("HtmlEncode[[Hello World]]", writer.ToString());
             }
         }
+
+        [Fact]
+        public void Emoji_EncodedCorrectly()
+        {
+            // Arrange & Act
+            var tearsOfJoy = new StringHtmlContent("😂2");
+
+            // Assert
+            using (var stringWritter = new StringWriter())
+            {
+                tearsOfJoy.WriteTo((TextWriter)stringWritter, HtmlEncoder.Default);
+                Asssert.Equal("&#x1f602;2", stringWritter.ToString());
+            }
+        }
     }
 }
