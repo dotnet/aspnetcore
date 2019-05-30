@@ -14,7 +14,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Arcade sets this to false by default. This undoes that default. -->
+    <!-- Reset this to the Microsoft.NET.Sdk default to workaround Arcade's defaults, which sets IsPackable=false by default. -->
     <IsPackable />
+
+    <!-- Ensure symbols type is 'portable'. Arcade attempts to embed symbols in local and CI builds. -->
+    <DebugType>portable</DebugType>
   </PropertyGroup>
 </Project>
