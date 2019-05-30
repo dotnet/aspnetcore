@@ -105,11 +105,10 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             // Arrange
             var localizedString = new LocalizedString("Hello", format);
 
-            //var stringLocalizer = new Mock<IStringLocalizer>();
-            //stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
+            var stringLocalizer = new Mock<IStringLocalizer>();
+            stringLocalizer.Setup(s => s["Hello"]).Returns(localizedString);
 
-            //var asdf = stringLocalizer.Object;
-            var htmlLocalizer = new HtmlLocalizer(new TestStringLocalizer2(localizedString));
+            var htmlLocalizer = new HtmlLocalizer(stringLocalizer.Object);
 
             // Act
             var localizedHtmlString = htmlLocalizer.GetHtml("Hello", arguments);
@@ -121,30 +120,6 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             {
                 localizedHtmlString.WriteTo(writer, new HtmlTestEncoder());
                 Assert.Equal(expectedText, writer.ToString());
-            }
-        }
-
-        private class TestStringLocalizer2 : IStringLocalizer
-        {
-            private LocalizedString _ls;
-
-            public TestStringLocalizer2(LocalizedString ls)
-            {
-                _ls = ls;
-            }
-
-            public LocalizedString this[string name] => _ls;
-
-            public LocalizedString this[string name, params object[] arguments] => throw new NotImplementedException();
-
-            public IEnumerable<LocalizedString> GetAllStrings(bool includeParentCultures)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IStringLocalizer WithCulture(CultureInfo culture)
-            {
-                throw new NotImplementedException();
             }
         }
 
