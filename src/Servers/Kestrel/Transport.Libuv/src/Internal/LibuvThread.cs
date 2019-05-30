@@ -112,9 +112,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 Post(t => t.AllowStop());
                 if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                 {
+                    _log.LogWarning($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread, {nameof(AllowStop)}");
+
                     Post(t => t.OnStopRude());
                     if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                     {
+                        _log.LogWarning($"{nameof(LibuvThread)}.{nameof(StopAsync)} failed to terminate libuv thread, {nameof(OnStopRude)}.");
+
                         Post(t => t.OnStopImmediate());
                         if (!await WaitAsync(_threadTcs.Task, stepTimeout).ConfigureAwait(false))
                         {
