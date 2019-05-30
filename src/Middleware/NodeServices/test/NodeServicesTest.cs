@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.NodeServices.HostingModels;
 using Microsoft.Extensions.DependencyInjection;
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -115,7 +116,7 @@ namespace Microsoft.AspNetCore.NodeServices
         }
 
         private static string ModulePath(string testModuleName)
-            => $"../../../js/{testModuleName}";
+            => Path.Combine(AppContext.BaseDirectory, "js", testModuleName);
 
         public void Dispose()
         {

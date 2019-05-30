@@ -2,19 +2,14 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-
-    <!-- Tests do not work on Helix or when bin/ directory is not in project directory due to undeclared dependency on test content. -->
-    <!-- https://github.com/aspnet/AspNetCore/issues/8044 -->
-    <BuildHelixPayload>false</BuildHelixPayload>
-    <BaseOutputPath />
-    <OutputPath />
-
+    <TestDependsOnNode>true</TestDependsOnNode>
   </PropertyGroup>
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.NodeServices" />
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Content Include="js\**\*" />   
   </ItemGroup>
 
 </Project>
