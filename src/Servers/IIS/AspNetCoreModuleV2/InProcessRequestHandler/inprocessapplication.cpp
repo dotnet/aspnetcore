@@ -130,7 +130,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
 }
 
 HRESULT
-IN_PROCESS_APPLICATION::LoadManagedApplication()
+IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
 {
     THROW_LAST_ERROR_IF_NULL(m_pInitializeEvent = CreateEvent(
         nullptr,  // default security attributes
@@ -157,11 +157,17 @@ IN_PROCESS_APPLICATION::LoadManagedApplication()
 
     // Wait for shutdown request
     const auto waitResult = WaitForMultipleObjects(2, waitHandles, FALSE, m_pConfig->QueryStartupTimeLimitInMS());
+
     THROW_LAST_ERROR_IF(waitResult == WAIT_FAILED);
 
     if (waitResult == WAIT_TIMEOUT)
     {
         // If server wasn't initialized in time shut application down without waiting for CLR thread to exit
+        errorContext.statusCode = 500;
+        errorContext.subStatusCode = 37;
+        errorContext.generalErrorType = "ANCM Failed to Start Within Startup Time Limit";
+        errorContext.errorReason = format("ANCM failed to start after %d milliseconds", m_pConfig->QueryStartupTimeLimitInMS());
+
         m_waitForShutdown = false;
         StopClr();
         throw InvalidOperationException(format(L"Managed server didn't initialize after %u ms.", m_pConfig->QueryStartupTimeLimitInMS()));
@@ -267,7 +273,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             StandardStreamRedirection redirection(*redirectionOutput.get(), m_pHttpServer.IsCommandLineLaunch());
 
             context->m_redirectionOutput = redirectionOutput.get();
-
+            
             //Start CLR thread
             m_clrThread = std::thread(ClrThreadEntryPoint, context);
 
@@ -380,7 +386,8 @@ HRESULT IN_PROCESS_APPLICATION::Start(
     IHttpApplication& pHttpApplication,
     APPLICATION_PARAMETER* pParameters,
     DWORD nParameters,
-    std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application)
+    std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>& application,
+    ErrorContext& errorContext)
 {
     try
     {
@@ -388,7 +395,7 @@ HRESULT IN_PROCESS_APPLICATION::Start(
         THROW_IF_FAILED(InProcessOptions::Create(pServer, pSite, pHttpApplication, options));
         application = std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER>(
             new IN_PROCESS_APPLICATION(pServer, pHttpApplication, std::move(options), pParameters, nParameters));
-        THROW_IF_FAILED(application->LoadManagedApplication());
+        THROW_IF_FAILED(application->LoadManagedApplication(errorContext));
         return S_OK;
     }
     catch (InvalidOperationException& ex)

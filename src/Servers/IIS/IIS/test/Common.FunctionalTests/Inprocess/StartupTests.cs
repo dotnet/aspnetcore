@@ -416,7 +416,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
-        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/1772", FlakyOn.All)]
         public async Task StartupTimeoutIsApplied()
         {
             // From what I can tell, this failure is due to ungraceful shutdown.
@@ -434,11 +433,17 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
                 var response = await deploymentResult.HttpClient.GetAsync("/");
                 Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
 
-                StopServer();
+                StopServer(gracefulShutdown: false);
 
                 EventLogHelpers.VerifyEventLogEvents(deploymentResult,
                     EventLogHelpers.InProcessFailedToStart(deploymentResult, "Managed server didn't initialize after 1000 ms.")
                     );
+
+                if (DeployerSelector.HasNewHandler)
+                {
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Assert.Contains("ANCM Failed to Start Within Startup Time Limit", responseContent);
+                }
             }
         }
 
