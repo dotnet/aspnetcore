@@ -348,6 +348,10 @@ if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
         }
     }
 
+    if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
+        $env:PATH = "${env:PATH};$(Join-Path $env:JAVA_HOME bin)"
+    }
+
     if (-not $foundJdk) {
         Write-Error "Could not find the JDK. Either run $PSScriptRoot\eng\scripts\InstallJdk.ps1 to install for this repo, or install the JDK globally on your machine (see $PSScriptRoot\docs\BuildFromSource.md for details)."
     }
