@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.RequestThrottling.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -16,9 +15,11 @@ namespace Microsoft.AspNetCore.RequestThrottling
     /// </summary>
     public class RequestThrottlingMiddleware
     {
-        private readonly RequestQueue _requestQueue;
+        private readonly SemaphoreSlim _queueSemaphore;
+        private readonly SemaphoreSlim _serverSemaphore;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
+        private readonly RequestThrottlingOptions _options;
 
         /// <summary>
         /// Creates a new <see cref="RequestThrottlingMiddleware"/>.
@@ -39,9 +40,10 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
-            _requestQueue = new RequestQueue(
-                options.Value.MaxConcurrentRequests.Value,
-                options.Value.RequestQueueLimit);
+            _options = options.Value;
+
+            _queueSemaphore = new SemaphoreSlim(_options.RequestQueueLimit);
+            _serverSemaphore = new SemaphoreSlim(_options.MaxConcurrentRequests.Value);
         }
 
         /// <summary>
@@ -51,30 +53,27 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
-            var waitInQueueTask = _requestQueue.TryEnterQueueAsync();
-
-            if (waitInQueueTask.IsCompletedSuccessfully)
+            var queueEntryTask = _queueSemaphore.WaitAsync();
+            if (!queueEntryTask.IsCompletedSuccessfully)
             {
-                var requestPassedThrough = await waitInQueueTask;
-                if (requestPassedThrough)
-                {
-                    RequestThrottlingLog.RequestRunImmediately(_logger);
-                }
-                else
-                {
-                    RequestThrottlingLog.RequestRejectedQueueFull(_logger);
-                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                    return;
-                }
+                RequestThrottlingLog.RequestRejectedQueueFull(_logger);
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                return;
+            }
+
+            var serverEntryTask = _serverSemaphore.WaitAsync();
+            if (!serverEntryTask.IsCompletedSuccessfully)
+            {
+                RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
+                await serverEntryTask;
+                RequestThrottlingLog.RequestDequeued(_logger, WaitingRequests);
             }
             else
             {
-                RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
-                var result = await waitInQueueTask;
-                RequestThrottlingLog.RequestDequeued(_logger, WaitingRequests);
-
-                Debug.Assert(result);
+                RequestThrottlingLog.RequestRunImmediately(_logger);
             }
+
+            _queueSemaphore.Release();
 
             try
             {
@@ -82,7 +81,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
             }
             finally
             {
-                _requestQueue.Release();
+                _serverSemaphore.Release();
             }
         }
 
@@ -92,7 +91,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// </summary>
         internal int ConcurrentRequests
         {
-            get => _requestQueue.ConcurrentRequests;
+            get => _options.MaxConcurrentRequests.Value - _serverSemaphore.CurrentCount;
         }
 
         /// <summary>
@@ -100,7 +99,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// </summary>
         internal int WaitingRequests
         {
-            get => _requestQueue.WaitingRequests;
+            get => _options.RequestQueueLimit - _queueSemaphore.CurrentCount;
         }
 
         private static class RequestThrottlingLog

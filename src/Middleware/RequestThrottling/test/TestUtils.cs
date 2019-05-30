@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.RequestThrottling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
-using Microsoft.AspNetCore.RequestThrottling.Internal;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
@@ -26,7 +24,5 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     options: Options.Create(options)
                 );
         }
-
-        internal static RequestQueue CreateRequestQueue(int maxConcurrentRequests) => new RequestQueue(maxConcurrentRequests, 5000);
     }
 }
