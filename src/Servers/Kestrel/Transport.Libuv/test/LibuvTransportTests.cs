@@ -58,19 +58,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
             async Task EchoServerAsync()
             {
-                await using var connection = await transport.AcceptAsync();
-
                 while (true)
                 {
-                    var result = await connection.Transport.Input.ReadAsync();
+                    await using var connection = await transport.AcceptAsync();
 
-                    if (result.IsCompleted)
+                    if (connection == null)
                     {
                         break;
                     }
-                    await connection.Transport.Output.WriteAsync(result.Buffer.ToArray());
 
-                    connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                    while (true)
+                    {
+                        var result = await connection.Transport.Input.ReadAsync();
+
+                        if (result.IsCompleted)
+                        {
+                            break;
+                        }
+                        await connection.Transport.Output.WriteAsync(result.Buffer.ToArray());
+
+                        connection.Transport.Input.AdvanceTo(result.Buffer.End);
+                    }
                 }
             }
 
@@ -79,7 +87,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             using (var socket = TestConnection.CreateConnectedLoopbackSocket(endpoint.Port))
             {
                 var data = Encoding.ASCII.GetBytes("Hello World");
-                socket.Send(data);
+                await socket.SendAsync(data, SocketFlags.None);
 
                 var buffer = new byte[data.Length];
                 var read = 0;
@@ -91,9 +99,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 Assert.Equal(data, buffer);
             }
 
-            await serverTask.DefaultTimeout();
-
             await transport.UnbindAsync();
+
+            await serverTask.DefaultTimeout();
         }
 
         [Fact]
