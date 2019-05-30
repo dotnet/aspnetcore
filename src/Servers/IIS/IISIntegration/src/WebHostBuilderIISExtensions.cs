@@ -78,8 +78,7 @@ namespace Microsoft.AspNetCore.Hosting
                 }
 
                 var address = "http://127.0.0.1:" + port;
-                hostBuilder.CaptureStartupErrors(true);
-
+                    
                 hostBuilder.ConfigureServices(services =>
                 {
                     // Delay register the url so users don't accidently overwrite it.

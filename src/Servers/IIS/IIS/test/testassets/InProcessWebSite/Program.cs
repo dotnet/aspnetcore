@@ -137,7 +137,9 @@ namespace TestSite
                                            factory.AddConsole();
                                            factory.AddFilter("Console", level => level >= LogLevel.Information);
                                        })
+                                       .UseKestrel()
                                        .UseIIS()
+                                       .UseIISIntegration()
                                        .UseStartup<ThrowingStartup>()
                                        .Build();
 
@@ -155,7 +157,9 @@ namespace TestSite
                                 factory.AddConsole();
                                 factory.AddFilter("Console", level => level >= LogLevel.Information);
                             })
+                            .UseKestrel()
                             .UseIIS()
+                            .UseIISIntegration()
                             .UseStartup<ThrowingStartup>();
                         });
                                    
