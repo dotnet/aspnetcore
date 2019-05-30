@@ -5,8 +5,8 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static partial class CertificateForwarderExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCertificateHeaderForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwarderOptions> configure) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseCertificateHeaderForwarding(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCertificateForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwarderOptions> configure) { throw null; }
+        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseCertificateForwarding(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
     }
     public static partial class ForwardedHeadersExtensions
     {
@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
     public partial class CertificateForwarderMiddleware
     {
         public CertificateForwarderMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpOverrides.CertificateForwarderOptions> options) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
     }
     public partial class CertificateForwarderOptions

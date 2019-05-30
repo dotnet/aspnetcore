@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     {
         public CertificateAuthenticationEvents() { }
         public System.Func<Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationFailedContext, System.Threading.Tasks.Task> OnAuthenticationFailed { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public System.Func<Microsoft.AspNetCore.Authentication.Certificate.ValidateCertificateContext, System.Threading.Tasks.Task> OnValidateCertificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Func<Microsoft.AspNetCore.Authentication.Certificate.CertificateValidatedContext, System.Threading.Tasks.Task> OnCertificateValidated { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public virtual System.Threading.Tasks.Task AuthenticationFailed(Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationFailedContext context) { throw null; }
-        public virtual System.Threading.Tasks.Task ValidateCertificate(Microsoft.AspNetCore.Authentication.Certificate.ValidateCertificateContext context) { throw null; }
+        public virtual System.Threading.Tasks.Task CertificateValidated(Microsoft.AspNetCore.Authentication.Certificate.CertificateValidatedContext context) { throw null; }
     }
     public partial class CertificateAuthenticationFailedContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions>
     {
@@ -38,9 +38,9 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
         SelfSigned = 2,
         All = 3,
     }
-    public partial class ValidateCertificateContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions>
+    public partial class CertificateValidatedContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions>
     {
-        public ValidateCertificateContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions)) { }
+        public CertificateValidatedContext(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions options) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.Certificate.CertificateAuthenticationOptions)) { }
         public System.Security.Cryptography.X509Certificates.X509Certificate2 ClientCertificate { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     public static partial class X509Certificate2Extensions
