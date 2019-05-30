@@ -505,17 +505,13 @@ function transportMatches(requestedTransport: HttpTransportType | undefined, act
 
 export class TransportSendQueue {
     private sending: boolean = false;
-    private data: any[] = [];
+    private buffer: any[] = [];
     private promiseQueue?: Promise<void>;
 
     public async send(transport: ITransport, data: string | ArrayBuffer): Promise<void> {
-        if (this.sending) {
-            this.bufferData(data);
-            return this.promiseQueue!
-                .then(() => this.sendBufferedData(transport));
-        }
-
-        return this.sendCore(transport, data);
+        return this.sending ?
+            this.bufferData(transport, data) :
+            this.sendCore(transport, data);
     }
 
     private async sendCore(transport: ITransport, data: string | ArrayBuffer) {
@@ -528,36 +524,44 @@ export class TransportSendQueue {
             await transport.send(data);
         } finally {
             this.sending = false;
+            this.promiseQueue = undefined;
             resolve!();
         }
     }
 
-    private bufferData(data: string | ArrayBuffer) {
-        if (this.data.length && typeof(this.data[0]) !== typeof(data)) {
-            throw new Error(`Expected data to be of type ${typeof(this.data)} but was of type ${typeof(data)}`);
+    private bufferData(transport: ITransport, data: string | ArrayBuffer) {
+        if (this.buffer.length) {
+            if (typeof(this.buffer[0]) !== typeof(data)) {
+                throw new Error(`Expected data to be of type ${typeof(this.buffer)} but was of type ${typeof(data)}`);
+            }
+        } else {
+            // For the first entry, update the promise to queue up a buffer send
+            this.promiseQueue = this.promiseQueue!
+                .then(() => this.sendBufferedData(transport));
         }
 
-        this.data.push(data);
+        this.buffer.push(data);
+        return this.promiseQueue;
     }
 
     private sendBufferedData(transport: ITransport): Promise<void> {
-        if (!this.data.length) {
+        if (!this.buffer.length) {
             return Promise.resolve();
         }
 
-        const data = typeof(this.data[0]) === "string" ?
-            this.data.join("") :
-            TransportSendQueue.concatBuffers(this.data);
+        const data = typeof(this.buffer[0]) === "string" ?
+            this.buffer.join("") :
+            TransportSendQueue.concatBuffers(this.buffer);
 
-        this.data.length = 0;
+        this.buffer.length = 0;
         return this.sendCore(transport, data);
     }
 
-    private static concatBuffers(buffers: ArrayBuffer[]): ArrayBuffer {
-        const totalLength = buffers.map((b) => b.byteLength).reduce((a, b) => a + b);
+    private static concatBuffers(arrayBuffers: ArrayBuffer[]): ArrayBuffer {
+        const totalLength = arrayBuffers.map((b) => b.byteLength).reduce((a, b) => a + b);
         const result = new Uint8Array(totalLength);
         let offset = 0;
-        for (const item of buffers) {
+        for (const item of arrayBuffers) {
             result.set(new Uint8Array(item), offset);
             offset += item.byteLength;
         }

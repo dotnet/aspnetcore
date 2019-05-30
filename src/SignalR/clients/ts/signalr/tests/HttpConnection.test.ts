@@ -956,19 +956,21 @@ describe("TransportSendQueue", () => {
         const transport = new TestTransport();
         transport.send = sendMock;
 
-        let firstDone = false;
         let secondDone = false;
+        let thirdDone = false;
 
-        const first = queue.send(transport, "Hello").then(() => firstDone = true);
-        expect(firstDone).toBe(false);
+        const first = queue.send(transport, "Hello");
         const second = queue.send(transport, "World").then(() => secondDone = true);
-        const third = queue.send(transport, "!");
+        const third = queue.send(transport, "!").then(() => thirdDone = true);
+
+        expect(secondDone).toBe(false);
+        expect(thirdDone).toBe(false);
 
         promiseSource.resolve();
-        expect(firstDone).toBe(false);
-        expect(secondDone).toBe(false);
-
         await Promise.all([first, second, third]);
+
+        expect(secondDone).toBe(true);
+        expect(thirdDone).toBe(true);
 
         expect(sendMock.mock.calls.length).toBe(2);
         expect(sendMock.mock.calls[0][0]).toBe("Hello");
