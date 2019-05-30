@@ -169,8 +169,19 @@ namespace Microsoft.AspNetCore.Identity
         public virtual async Task RefreshSignInAsync(TUser user)
         {
             var auth = await Context.AuthenticateAsync(IdentityConstants.ApplicationScheme);
-            var authenticationMethod = auth?.Principal?.FindFirstValue(ClaimTypes.AuthenticationMethod);
-            await SignInAsync(user, auth?.Properties, authenticationMethod);
+            var claims = new List<Claim>();
+            var authenticationMethod = auth?.Principal?.FindFirst(ClaimTypes.AuthenticationMethod);
+            if (authenticationMethod != null)
+            {
+                claims.Add(authenticationMethod);
+            }
+            var amr = auth?.Principal?.FindFirst("amr");
+            if (amr != null)
+            {
+                claims.Add(amr);
+            }
+
+            await SignInWithClaimsAsync(user, auth?.Properties, claims);
         }
 
         /// <summary>
@@ -181,9 +192,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="authenticationMethod">Name of the method used to authenticate the user.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
         public virtual Task SignInAsync(TUser user, bool isPersistent, string authenticationMethod = null)
-        {
-            return SignInAsync(user, new AuthenticationProperties { IsPersistent = isPersistent }, authenticationMethod);
-        }
+            => SignInAsync(user, new AuthenticationProperties { IsPersistent = isPersistent }, authenticationMethod);
 
         /// <summary>
         /// Signs in the specified <paramref name="user"/>.
@@ -192,13 +201,39 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="authenticationProperties">Properties applied to the login and authentication cookie.</param>
         /// <param name="authenticationMethod">Name of the method used to authenticate the user.</param>
         /// <returns>The task object representing the asynchronous operation.</returns>
-        public virtual async Task SignInAsync(TUser user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
+        public virtual Task SignInAsync(TUser user, AuthenticationProperties authenticationProperties, string authenticationMethod = null)
         {
-            var userPrincipal = await CreateUserPrincipalAsync(user);
-            // Review: should we guard against CreateUserPrincipal returning null?
+            var additionalClaims = new List<Claim>();
             if (authenticationMethod != null)
             {
-                userPrincipal.Identities.First().AddClaim(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
+                additionalClaims.Add(new Claim(ClaimTypes.AuthenticationMethod, authenticationMethod));
+            }
+            return SignInWithClaimsAsync(user, authenticationProperties, additionalClaims);
+        }
+
+        /// <summary>
+        /// Signs in the specified <paramref name="user"/>.
+        /// </summary>
+        /// <param name="user">The user to sign-in.</param>
+        /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
+        /// <param name="additionalClaims">Additional claims that will be stored in the cookie.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        public virtual Task SignInWithClaimsAsync(TUser user, bool isPersistent, IEnumerable<Claim> additionalClaims)
+            => SignInWithClaimsAsync(user, new AuthenticationProperties { IsPersistent = isPersistent }, additionalClaims);
+
+        /// <summary>
+        /// Signs in the specified <paramref name="user"/>.
+        /// </summary>
+        /// <param name="user">The user to sign-in.</param>
+        /// <param name="authenticationProperties">Properties applied to the login and authentication cookie.</param>
+        /// <param name="additionalClaims">Additional claims that will be stored in the cookie.</param>
+        /// <returns>The task object representing the asynchronous operation.</returns>
+        public virtual async Task SignInWithClaimsAsync(TUser user, AuthenticationProperties authenticationProperties, IEnumerable<Claim> additionalClaims)
+        {
+            var userPrincipal = await CreateUserPrincipalAsync(user);
+            foreach (var claim in additionalClaims)
+            {
+                userPrincipal.Identities.First().AddClaim(claim);
             }
             await Context.SignInAsync(IdentityConstants.ApplicationScheme,
                 userPrincipal,
@@ -438,9 +473,13 @@ namespace Microsoft.AspNetCore.Identity
             // When token is verified correctly, clear the access failed count used for lockout
             await ResetLockout(user);
 
+            var claims = new List<Claim>();
+            claims.Add(new Claim("amr", "mfa"));
+
             // Cleanup external cookie
             if (twoFactorInfo.LoginProvider != null)
             {
+                claims.Add(new Claim(ClaimTypes.AuthenticationMethod, twoFactorInfo.LoginProvider));
                 await Context.SignOutAsync(IdentityConstants.ExternalScheme);
             }
             // Cleanup two factor user id cookie
@@ -449,7 +488,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 await RememberTwoFactorClientAsync(user);
             }
-            await SignInAsync(user, isPersistent, twoFactorInfo.LoginProvider);
+            await SignInWithClaimsAsync(user, isPersistent, claims);
         }
 
         /// <summary>
@@ -760,7 +799,14 @@ namespace Microsoft.AspNetCore.Identity
             {
                 await Context.SignOutAsync(IdentityConstants.ExternalScheme);
             }
-            await SignInAsync(user, isPersistent, loginProvider);
+            if (loginProvider == null)
+            {
+                await SignInWithClaimsAsync(user, isPersistent, new Claim[] { new Claim("amr", "pwd") });
+            }
+            else
+            {
+                await SignInAsync(user, isPersistent, loginProvider);
+            }
             return SignInResult.Success;
         }
 
