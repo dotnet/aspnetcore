@@ -1,7 +1,0 @@
-<Project>
-  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.props))\Directory.Build.props" />
-
-  <ItemGroup Condition="'$(IsImplementationProject)' == 'true'">
-    <PackageReference Include="Internal.AspNetCore.Analyzers" PrivateAssets="All" Version="$(InternalAspNetCoreAnalyzersPackageVersion)" AllowExplicitReference="true" />
-  </ItemGroup>
-</Project>
