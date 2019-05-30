@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             var services = new ServiceCollection()
                 .AddOptions()
-                .AddCertificateHeaderForwarding(o => o.CertificateHeader = null);
+                .AddCertificateForwarding(o => o.CertificateHeader = null);
             var options = services.BuildServiceProvider().GetRequiredService<IOptions<CertificateForwarderOptions>>();
             Assert.Throws<OptionsValidationException>(() => options.Value);
         }
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         {
             var services = new ServiceCollection()
                 .AddOptions()
-                .AddCertificateHeaderForwarding(o => o.CertificateHeader = "");
+                .AddCertificateForwarding(o => o.CertificateHeader = "");
             var options = services.BuildServiceProvider().GetRequiredService<IOptions<CertificateForwarderOptions>>();
             Assert.Throws<OptionsValidationException>(() => options.Value);
         }
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCertificateHeaderForwarding(options => { });
+                    services.AddCertificateForwarding(options => { });
                 })
                 .Configure(app =>
                 {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         Assert.Null(context.Connection.ClientCertificate);
                         await next();
                     });
-                    app.UseCertificateHeaderForwarding();
+                    app.UseCertificateForwarding();
                     app.Use(async (context, next) =>
                     {
                         Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
@@ -65,17 +65,17 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             var context = await server.SendAsync(c =>
             {
-                c.Request.Headers["X-ARR-ClientCert"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
+                c.Request.Headers["X-Client-Cert"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
             });
         }
 
         [Fact]
-        public async Task VerifyHeaderIsIgnoredIfCertificateAlreadySet()
+        public async Task VerifyHeaderOverridesCertificateEvenAlreadySet()
         {
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCertificateHeaderForwarding(options => { });
+                    services.AddCertificateForwarding(options => { });
                 })
                 .Configure(app =>
                 {
@@ -85,10 +85,40 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         context.Connection.ClientCertificate = Certificates.SelfSignedNotYetValid;
                         await next();
                     });
-                    app.UseCertificateHeaderForwarding();
+                    app.UseCertificateForwarding();
                     app.Use(async (context, next) =>
                     {
-                        Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedNotYetValid);
+                        Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
+                        await next();
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Client-Cert"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
+            });
+        }
+
+        [Fact]
+        public async Task VerifySettingTheAzureHeaderOnTheForwarderOptionsWorks()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddCertificateForwarding(options => options.CertificateHeader = "X-ARR-ClientCert");
+                })
+                .Configure(app =>
+                {
+                    app.Use(async (context, next) =>
+                    {
+                        Assert.Null(context.Connection.ClientCertificate);
+                        await next();
+                    });
+                    app.UseCertificateForwarding();
+                    app.Use(async (context, next) =>
+                    {
+                        Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
                         await next();
                     });
                 });
@@ -101,42 +131,12 @@ namespace Microsoft.AspNetCore.HttpOverrides
         }
 
         [Fact]
-        public async Task VerifySettingTheHeaderOnTheForwarderOptionsWorks()
-        {
-            var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddCertificateHeaderForwarding(options => options.CertificateHeader = "some-random-header");
-                })
-                .Configure(app =>
-                {
-                    app.Use(async (context, next) =>
-                    {
-                        Assert.Null(context.Connection.ClientCertificate);
-                        await next();
-                    });
-                    app.UseCertificateHeaderForwarding();
-                    app.Use(async (context, next) =>
-                    {
-                        Assert.Equal(context.Connection.ClientCertificate, Certificates.SelfSignedValidWithNoEku);
-                        await next();
-                    });
-                });
-            var server = new TestServer(builder);
-
-            var context = await server.SendAsync(c =>
-            {
-                c.Request.Headers["some-random-header"] = Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
-            });
-        }
-
-        [Fact]
         public async Task VerifyACustomHeaderFailsIfTheHeaderIsNotPresent()
         {
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCertificateHeaderForwarding(options => options.CertificateHeader = "some-random-header");
+                    services.AddCertificateForwarding(options => options.CertificateHeader = "some-random-header");
                 })
                 .Configure(app =>
                 {
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         Assert.Null(context.Connection.ClientCertificate);
                         await next();
                     });
-                    app.UseCertificateHeaderForwarding();
+                    app.UseCertificateForwarding();
                     app.Use(async (context, next) =>
                     {
                         Assert.Null(context.Connection.ClientCertificate);
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCertificateHeaderForwarding(options => { });
+                    services.AddCertificateForwarding(options => { });
                 })
                 .Configure(app =>
                 {
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         Assert.Null(context.Connection.ClientCertificate);
                         await next();
                     });
-                    app.UseCertificateHeaderForwarding();
+                    app.UseCertificateForwarding();
                     app.Use(async (context, next) =>
                     {
                         Assert.Null(context.Connection.ClientCertificate);
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
 
             var context = await server.SendAsync(c =>
             {
-                c.Request.Headers["X-ARR-ClientCert"] = "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
+                c.Request.Headers["X-Client-Cert"] = "OOPS" + Convert.ToBase64String(Certificates.SelfSignedValidWithNoEku.RawData);
             });
         }
 
