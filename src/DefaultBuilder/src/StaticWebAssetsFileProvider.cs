@@ -2,28 +2,19 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore
 {
-    /// <summary>
-    /// A <see cref="IFileProvider"/> for serving static web assets during development.
-    /// </summary>
     internal class StaticWebAssetsFileProvider : IFileProvider
     {
-        private static readonly StringComparison FileSystemBasePathComparisonMode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
+        private static readonly StringComparison FilePathComparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
             StringComparison.OrdinalIgnoreCase :
             StringComparison.Ordinal;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="StaticWebAssetsFileProvider"/>.
-        /// </summary>
-        /// <param name="pathPrefix">The path prefix under which the files in the <paramref name="contentRoot"/> folder will
-        /// be mapped.</param>
-        /// <param name="contentRoot">The absolute path to the content root associated with the static web assets.</param>
         public StaticWebAssetsFileProvider(string pathPrefix, string contentRoot)
         {
             BasePath = pathPrefix.StartsWith("/") ? pathPrefix : "/" + pathPrefix;
@@ -37,26 +28,26 @@ namespace Microsoft.AspNetCore
         /// <inheritdoc />
         public IDirectoryContents GetDirectoryContents(string subpath)
         {
-            if (!subpath.StartsWith(BasePath, FileSystemBasePathComparisonMode))
+            if (!StartsWithBasePath(subpath, out var physicalPath))
             {
                 return NotFoundDirectoryContents.Singleton;
             }
             else
             {
-                return InnerProvider.GetDirectoryContents(subpath.Substring(BasePath.Length));
+                return InnerProvider.GetDirectoryContents(physicalPath);
             }
         }
 
         /// <inheritdoc />
         public IFileInfo GetFileInfo(string subpath)
         {
-            if (!subpath.StartsWith(BasePath, FileSystemBasePathComparisonMode))
+            if (!StartsWithBasePath(subpath, out var physicalPath))
             {
                 return new NotFoundFileInfo(subpath);
             }
             else
             {
-                return InnerProvider.GetFileInfo(subpath.Substring(BasePath.Length));
+                return InnerProvider.GetFileInfo(physicalPath);
             }
         }
 
@@ -64,6 +55,11 @@ namespace Microsoft.AspNetCore
         public IChangeToken Watch(string filter)
         {
             return InnerProvider.Watch(filter);
+        }
+
+        private bool StartsWithBasePath(string subpath, out PathString rest)
+        {
+            return new PathString(subpath).StartsWithSegments(BasePath, FilePathComparison, out rest);
         }
     }
 }

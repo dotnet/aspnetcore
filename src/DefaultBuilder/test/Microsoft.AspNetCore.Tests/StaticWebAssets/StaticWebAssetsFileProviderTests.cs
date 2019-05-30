@@ -6,7 +6,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Tests.StaticWebAssets
+namespace Microsoft.AspNetCore.Tests
 {
     public class StaticWebAssetsFileProviderTests
     {
@@ -35,6 +35,22 @@ namespace Microsoft.AspNetCore.Tests.StaticWebAssets
 
             // Assert
             Assert.Equal("/_content", provider.BasePath);
+        }
+
+        [Fact]
+        public void GetFileInfo_DoesNotMatch_IncompletePrefixSegments()
+        {
+            // Arrange
+            var expectedResult = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+            var provider = new StaticWebAssetsFileProvider(
+                "_cont",
+                Path.GetDirectoryName(new Uri(typeof(StaticWebAssetsFileProviderTests).Assembly.CodeBase).LocalPath));
+
+            // Act
+            var file = provider.GetFileInfo("/_content/Microsoft.AspNetCore.TestHost.StaticWebAssets.xml");
+
+            // Assert
+            Assert.False(file.Exists, "File exists");
         }
 
         [Fact]

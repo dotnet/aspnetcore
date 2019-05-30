@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore
             {
                 if (ctx.HostingEnvironment.IsDevelopment())
                 {
-                    ctx.HostingEnvironment.UseStaticWebAssets();
+                    StaticWebAssetsLoader.UseStaticWebAssets(ctx.HostingEnvironment);
                 }
             });
             builder.UseKestrel((builderContext, options) =>
