@@ -11,10 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Remove="Internal.AspNetCore.Sdk" />
     <PackageReference Include="NuGet.Build.Tasks" Version="5.1.0-rtm.5921" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
-    <PackageReference Include="Yarn.MSBuild" Version="1.15.2" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildInstallers)' == 'true' AND '$(TargetOsName)' == 'win'">
