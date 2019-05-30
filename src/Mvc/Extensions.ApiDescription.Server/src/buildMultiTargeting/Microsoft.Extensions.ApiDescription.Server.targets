@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <ItemGroup Condition=" '$(OpenApiRetrieveDocuments)' == 'true' ">
+    <ProjectCapability Include="OpenApiGetDocuments" />
+  </ItemGroup>
+
+  <Target Name="RetrieveOpenApiDocuments">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+        Targets="RetrieveOpenApiDocuments"
+        Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
+        RemoveProperties="RuntimeIdentifier" />
+  </Target>
+
+  <Target Name="_RetrieveOpenApiDocuments"
+      AfterTargets="Build"
+      Condition=" '$(OpenApiRetrieveDocumentsAfterBuild)' == 'true' "
+      DependsOnTargets="RetrieveOpenApiDocuments" />
+
+  <Target Name="OpenApiGetDocuments" Returns="@(_OpenApiProjectDocuments)">
+    <MSBuild Projects="$(MSBuildProjectFile)"
+        Targets="OpenApiGetDocuments"
+        Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
+        RemoveProperties="RuntimeIdentifier">
+      <Output TaskParameter="TargetOutputs" ItemName="_OpenApiProjectDocuments" />
+    </MSBuild>
+  </Target>
+</Project>

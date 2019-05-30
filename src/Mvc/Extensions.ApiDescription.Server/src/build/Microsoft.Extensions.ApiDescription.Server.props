@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project>
+  <!--
+    Settings users may update as they see fit.
+  -->
+  <PropertyGroup>
+    <!--
+      Options added to the Open API retrieval tool ('dotnet-getdocument') command line. Available options control
+      console output: 'no-color', 'prefix-output' and 'verbose'. All require a double-dash prefix.
+    -->
+    <OpenApiGetDocumentOptions Condition="'$(OpenApiGetDocumentOptions)' == ''"></OpenApiGetDocumentOptions>
+
+    <!--
+      If 'true' (the default), enable retrieval of Open API documents. Otherwise, this feature is completely disabled.
+    -->
+    <OpenApiRetrieveDocuments Condition=" '$(OpenApiRetrieveDocuments)' == '' ">true</OpenApiRetrieveDocuments>
+
+    <!--
+      If 'true' (the default if $(OpenApiRetrieveDocuments) is 'true'), will retrieve of Open API documents after every
+      build. Set to 'false' when targets are invoked from the command line or tied to another target.
+    -->
+    <OpenApiRetrieveDocumentsAfterBuild
+      Condition=" '$(OpenApiRetrieveDocumentsAfterBuild)' == '' ">$(OpenApiRetrieveDocuments)</OpenApiRetrieveDocumentsAfterBuild>
+
+    <!--
+      Where to place Open API documents retrieved from the application. Value is interpreted relative to the project
+      folder, unless already an absolute path.
+    -->
+    <OpenApiDocumentDirectory Condition=" '$(OpenApiDocumentDirectory)' == '' ">$(BaseIntermediateOutputPath)</OpenApiDocumentDirectory>
+  </PropertyGroup>
+</Project>

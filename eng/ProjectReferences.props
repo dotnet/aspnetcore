@@ -8,7 +8,9 @@
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Identity.Specification.Tests" ProjectPath="$(RepoRoot)src\Identity\Specification.Tests\src\Microsoft.AspNetCore.Identity.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.Web.Xdt.Extensions" ProjectPath="$(RepoRoot)src\SiteExtensions\Microsoft.Web.Xdt.Extensions\src\Microsoft.Web.Xdt.Extensions.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" ProjectPath="$(RepoRoot)src\Tools\FirstRunCertGenerator\src\Microsoft.AspNetCore.DeveloperCertificates.XPlat.csproj"  />
-    <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Tasks" ProjectPath="$(RepoRoot)src\Mvc\Extensions.ApiDescription.Client\src\Microsoft.Extensions.ApiDescription.Client.csproj"  />
+    <ProjectReferenceProvider Include="Microsoft.Extensions.ApiDescription.Client" ProjectPath="$(RepoRoot)src\Mvc\Extensions.ApiDescription.Client\src\Microsoft.Extensions.ApiDescription.Client.csproj"  />
+    <ProjectReferenceProvider Include="dotnet-getdocument" ProjectPath="$(RepoRoot)src\Mvc\dotnet-getdocument\src\dotnet-getdocument.csproj" />
+    <ProjectReferenceProvider Include="GetDocumentInsider" ProjectPath="$(RepoRoot)src\Mvc\GetDocumentInsider\src\GetDocumentInsider.csproj" />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.SignalR.Specification.Tests" ProjectPath="$(RepoRoot)src\SignalR\server\Specification.Tests\src\Microsoft.AspNetCore.SignalR.Specification.Tests.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore.Blazor.Build" ProjectPath="$(RepoRoot)src\Components\Blazor\Build\src\Microsoft.AspNetCore.Blazor.Build.csproj"  />
     <ProjectReferenceProvider Include="Microsoft.AspNetCore" ProjectPath="$(RepoRoot)src\DefaultBuilder\src\Microsoft.AspNetCore.csproj" RefProjectPath="$(RepoRoot)src\DefaultBuilder\ref\Microsoft.AspNetCore.csproj" />
