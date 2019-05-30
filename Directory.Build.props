@@ -130,8 +130,6 @@
     <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
 
-  <Import Project="build\sources.props" />
-
   <!-- Artifacts layout -->
   <PropertyGroup>
     <ArtifactsDir>$(MSBuildThisFileDirectory)artifacts\</ArtifactsDir>
