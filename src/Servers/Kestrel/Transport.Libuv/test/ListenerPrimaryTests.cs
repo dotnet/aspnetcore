@@ -2,12 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
@@ -304,35 +302,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         private static Uri GetUri(EndPoint endpoint)
         {
             return new Uri($"http://{endpoint}");
-        }
-
-        private class ConnectionBuilder : IConnectionBuilder
-        {
-            private readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _components = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
-
-            public IServiceProvider ApplicationServices { get; set; }
-
-            public IConnectionBuilder Use(Func<ConnectionDelegate, ConnectionDelegate> middleware)
-            {
-                _components.Add(middleware);
-                return this;
-            }
-
-            public ConnectionDelegate Build()
-            {
-                ConnectionDelegate app = context =>
-                {
-                    return Task.CompletedTask;
-                };
-
-                for (int i = _components.Count - 1; i >= 0; i--)
-                {
-                    var component = _components[i];
-                    app = component(app);
-                }
-
-                return app;
-            }
         }
     }
 }

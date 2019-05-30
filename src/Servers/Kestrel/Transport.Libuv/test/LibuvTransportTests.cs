@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task ConnectionCanReadAndWrite()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
+            await using var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             await transport.BindAsync();
             var endpoint = (IPEndPoint)transport.EndPoint;
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 var read = 0;
                 while (read < data.Length)
                 {
-                    read += socket.Receive(buffer, read, buffer.Length - read, SocketFlags.None);
+                    read += await socket.ReceiveAsync(buffer.AsMemory(read, buffer.Length - read), SocketFlags.None);
                 }
 
                 Assert.Equal(data, buffer);
@@ -94,7 +94,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             await serverTask.DefaultTimeout();
 
             await transport.UnbindAsync();
-            await transport.DisposeAsync();
         }
 
         [Fact]
@@ -153,7 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task CallingDisposeAsyncWillYieldPendingAccepts()
         {
             var transportContext = new TestLibuvTransportContext();
-            var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
+            await using var transport = new LibuvConnectionListener(transportContext, new IPEndPoint(IPAddress.Loopback, 0));
 
             await transport.BindAsync();
 
@@ -164,8 +163,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var connection = await acceptTask.DefaultTimeout();
 
             Assert.Null(connection);
-
-            await transport.DisposeAsync();
         }
 
         [ConditionalTheory]
@@ -187,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 Options = new LibuvTransportOptions { ThreadCount = threadCount }
             };
 
-            var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);
+            await using var transport = new LibuvConnectionListener(transportContext, listenOptions.EndPoint);
             await transport.BindAsync();
             listenOptions.EndPoint = transport.EndPoint;
 
@@ -210,16 +207,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 }
             }
 
-            await transport.UnbindAsync().ConfigureAwait(false);
+            await transport.UnbindAsync();
 
-            await acceptTask.ConfigureAwait(false);
+            await acceptTask;
 
-            if (!await serviceContext.ConnectionManager.CloseAllConnectionsAsync(default).ConfigureAwait(false))
+            if (!await serviceContext.ConnectionManager.CloseAllConnectionsAsync(default))
             {
-                await serviceContext.ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false);
+                await serviceContext.ConnectionManager.AbortAllConnectionsAsync();
             }
-
-            await transport.DisposeAsync().ConfigureAwait(false);
         }
     }
 }

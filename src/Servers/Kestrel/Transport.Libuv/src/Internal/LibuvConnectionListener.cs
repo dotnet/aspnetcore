@@ -91,12 +91,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (_acceptEnumerator != null)
             {
-                while (await _acceptEnumerator.MoveNextAsync())
+                while (await _acceptEnumerator.MoveNextAsync().ConfigureAwait(false))
                 {
                     _acceptEnumerator.Current.Abort();
                 }
 
-                await _acceptEnumerator.DisposeAsync();
+                await _acceptEnumerator.DisposeAsync().ConfigureAwait(false);
             }
 
             _listeners.Clear();
