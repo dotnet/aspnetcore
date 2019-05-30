@@ -357,6 +357,7 @@ Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
     $env:KOREBUILD_KEEPGLOBALJSON = 1
+    $env:KOREBUILD_DISABLE_DOTNET_ARCH = 1
     Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $PSScriptRoot -ConfigFile $ConfigFile -CI:$CI
     if ($ForceCoreMsbuild) {
         $global:KoreBuildSettings.MSBuildType = 'core'

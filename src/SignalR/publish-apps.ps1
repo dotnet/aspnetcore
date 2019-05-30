@@ -4,7 +4,7 @@ param($RootDirectory = (Get-Location), $Framework = "netcoreapp3.0", $Runtime = 
 $RootDirectory = (Convert-Path $RootDirectory)
 
 # Find dotnet.exe
-$dotnet = Join-Path (Join-Path (Join-Path $env:USERPROFILE ".dotnet") "x64") "dotnet.exe"
+$dotnet = Join-Path (Join-Path $env:USERPROFILE ".dotnet") "dotnet.exe"
 
 if(!(Test-Path $dotnet)) {
     throw "Could not find dotnet at: $dotnet"
