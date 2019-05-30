@@ -122,8 +122,6 @@ CreateApplication(
 
         std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> inProcessApplication;
 
-        // TODO not sure how easy it will be to untangle errors here
-        // ErrorContext errorContext;
         ErrorContext errorContext;
         errorContext.statusCode = 500;
         errorContext.subStatusCode = 30;
