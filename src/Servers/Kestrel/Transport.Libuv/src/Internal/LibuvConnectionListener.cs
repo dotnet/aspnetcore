@@ -89,14 +89,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             await UnbindAsync().ConfigureAwait(false);
 
-            if (_acceptEnumerator != null)
+            foreach (var listener in _listeners)
             {
-                while (await _acceptEnumerator.MoveNextAsync().ConfigureAwait(false))
-                {
-                    _acceptEnumerator.Current.Abort();
-                }
-
-                await _acceptEnumerator.DisposeAsync().ConfigureAwait(false);
+                await listener.AbortQueuedConnectionAsync().ConfigureAwait(false);
             }
 
             _listeners.Clear();

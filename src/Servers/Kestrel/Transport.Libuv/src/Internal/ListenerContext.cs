@@ -17,7 +17,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
     internal class ListenerContext
     {
-        private readonly Channel<LibuvConnection> _acceptQueue = Channel.CreateUnbounded<LibuvConnection>(new UnboundedChannelOptions { SingleReader = true });
+        // Single reader, single writer queue since all writes happen from the uv thread and reads happen sequentially
+        private readonly Channel<LibuvConnection> _acceptQueue = Channel.CreateUnbounded<LibuvConnection>(new UnboundedChannelOptions
+        {
+            SingleReader = true,
+            SingleWriter = true
+        });
 
         public ListenerContext(LibuvTransportContext transportContext)
         {
@@ -45,6 +50,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Aborts all unaccepted connections in the queue
+        /// </summary>
+        /// <returns></returns>
+        public async Task AbortQueuedConnectionAsync()
+        {
+            while (await _acceptQueue.Reader.WaitToReadAsync())
+            {
+                while (_acceptQueue.Reader.TryRead(out var connection))
+                {
+                    // REVIEW: Pass an abort reason?
+                    connection.Abort();
+                }
+            }
         }
 
         /// <summary>
