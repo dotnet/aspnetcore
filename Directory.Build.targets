@@ -74,8 +74,6 @@
     <IsPackable Condition="'$(IsPackable)' == '' AND ('$(IsImplementationProject)' == 'true' OR '$(IsAnalyzersProject)' == 'true') ">true</IsPackable>
     <IsPackable Condition="'$(IsPackable)' == '' ">false</IsPackable>
 
-    <RuntimeFrameworkVersion Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">$(MicrosoftNETCoreAppPackageVersion)</RuntimeFrameworkVersion>
-
     <BuildHelixPayload Condition="'$(BuildHelixPayload)' == '' AND '$(IsTestProject)' == 'true'">true</BuildHelixPayload>
   </PropertyGroup>
 
