@@ -4,9 +4,6 @@
 <Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory)..\, Directory.Build.targets))\Directory.Build.targets" />
 
-  <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.GenerateFileFromTemplate" AssemblyFile="$(BuildToolsTaskAssembly)" />
-  <UsingTask Condition=" '$(BuildToolsTaskAssembly)' != '' AND Exists('$(BuildToolsTaskAssembly)') " TaskName="Microsoft.AspNetCore.BuildTools.Run" AssemblyFile="$(BuildToolsTaskAssembly)" />
-
   <!-- Output paths -->
   <PropertyGroup>
     <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
@@ -75,6 +72,6 @@
       <FpmArgs Include="$(PackageContentRoot)=$(RpmPackageInstallRoot)" />
     </ItemGroup>
 
-    <Run FileName="fpm" Arguments="@(FpmArgs)" />
+    <Exec Command="fpm @(FpmArgs->'&quot;%(Identity)&quot;',' ')" />
   </Target>
 </Project>

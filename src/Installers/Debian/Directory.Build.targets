@@ -3,6 +3,8 @@
 
   <PropertyGroup>
     <TargetPath>$(OutputPath)$(TargetFileName)</TargetPath>
+    <!-- workaround for restore error caused by non-standard PackageVersion format. -->
+    <_RestoreProjectVersion>1.0.0</_RestoreProjectVersion>
     <DebBuildDependsOn>
       $(DebBuildDependsOn);
       PrepareForBuild;
