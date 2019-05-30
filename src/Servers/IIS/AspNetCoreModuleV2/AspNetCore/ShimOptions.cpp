@@ -43,8 +43,6 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     m_struStdoutLogFile = section->GetRequiredString(CS_ASPNETCORE_STDOUT_LOG_FILE);
     m_fDisableStartupPage = section->GetRequiredBool(CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE);
 
-    // This will not include environment variables defined in the web.config.
-    // Reading environment variables can be added here, but it adds more code to the shim.
     const auto detailedErrors = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_DETAILEDERRORS").value_or(L"");
     const auto aspnetCoreEnvironment = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_ENVIRONMENT").value_or(L"");
     const auto dotnetEnvironment = Environment::GetEnvironmentVariableValue(L"DOTNET_ENVIRONMENT").value_or(L"");
@@ -52,6 +50,19 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     auto detailedErrorsEnabled = equals_ignore_case(L"1", detailedErrors) || equals_ignore_case(L"true", detailedErrors);
     auto aspnetCoreEnvironmentEnabled = equals_ignore_case(L"Development", aspnetCoreEnvironment);
     auto dotnetEnvironmentEnabled = equals_ignore_case(L"Development", dotnetEnvironment);
+
+    // Need to read web.config environment variables to check if aspnetcore environment is set too.
+    auto environmentVariables = section->GetMap(CS_ASPNETCORE_ENVIRONMENT_VARIABLES);
+
+    // Technically this will add an entry to the map here, but we aren't keeping the m
+    const auto detailedErrorsFromWebConfig = environmentVariables[L"ASPNETCORE_DETAILEDERRORS"];
+    const auto aspnetCoreEnvironmentFromWebConfig = environmentVariables[L"ASPNETCORE_ENVIRONMENT"];
+    const auto dotnetEnvironmentFromWebConfig = environmentVariables[L"DOTNET_ENVIRONMENT"];
+
+    // TODO make some helpers for this
+    detailedErrorsEnabled |= equals_ignore_case(L"1", detailedErrorsFromWebConfig) || equals_ignore_case(L"true", detailedErrorsFromWebConfig);
+    aspnetCoreEnvironmentEnabled |= equals_ignore_case(L"Development", aspnetCoreEnvironmentFromWebConfig);
+    dotnetEnvironmentEnabled |= equals_ignore_case(L"Development", dotnetEnvironmentFromWebConfig);
 
     m_fShowDetailedErrors = detailedErrorsEnabled || aspnetCoreEnvironmentEnabled || dotnetEnvironmentEnabled;
 }
