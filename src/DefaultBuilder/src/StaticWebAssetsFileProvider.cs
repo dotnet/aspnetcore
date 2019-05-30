@@ -9,6 +9,18 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore
 {
+    // A file provider used for serving static web assets from referenced projects and packages during development.
+    // The file provider maps folders from referenced projects and packages and prepends a prefix to their relative
+    // paths.
+    // At publish time the assets end up in the wwwroot folder of the published app under the prefix indicated here
+    // as the base path.
+    // For example, for a referenced project mylibrary with content under <<mylibrarypath>>\wwwroot will expose
+    // static web assets under _content/mylibrary (this is by convention). The path prefix or base path we apply
+    // is that (_content/mylibrary).
+    // when the app gets published, the build pipeline puts the static web assets for mylibrary under
+    // publish/wwwroot/_content/mylibrary/sample-asset.js
+    // To allow for the same experience during development, StaticWebAssetsFileProvider maps the contents of
+    // <<mylibrarypath>>\wwwroot\** to _content/mylibrary/**
     internal class StaticWebAssetsFileProvider : IFileProvider
     {
         private static readonly StringComparison FilePathComparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
