@@ -250,6 +250,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
+
             return Users.FirstOrDefaultAsync(u => u.NormalizedUserName == normalizedUserName, cancellationToken);
         }
 
@@ -311,7 +312,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                 throw new ArgumentNullException(nameof(user));
             }
 
-            return await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).Select(c => c.ToClaim()).ToListAsync(cancellationToken);
+            // TODO: Fix once EF query works Issue #10668
+            return (await UserClaims.Where(uc => uc.UserId.Equals(user.Id)).ToListAsync(cancellationToken)).Select(c => c.ToClaim()).ToList();
         }
 
         /// <summary>
@@ -502,7 +504,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
         {
             cancellationToken.ThrowIfCancellationRequested();
             ThrowIfDisposed();
-            return Users.SingleOrDefaultAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
+            // TODO: Fix once EF query works Issue #10668
+            return Task.FromResult(Users.Where(u => u.NormalizedEmail == normalizedEmail).ToList().SingleOrDefault());
         }
 
         /// <summary>
