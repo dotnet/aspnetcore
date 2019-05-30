@@ -19,19 +19,16 @@
     <PublishDir>$(IntermediatePackDir)$(TargetFramework)/</PublishDir>
   </PropertyGroup>
 
+  <ItemGroup>
+    <NuspecProperty Include="configuration=$(Configuration)" />
+    <NuspecProperty Include="publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)))" />
+    <NuspecProperty Include="componentsversion=$(ComponentsPackageVersion)" />
+    <NuspecProperty Include="razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion)" />
+    <NuspecProperty Include="blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion)" />
+  </ItemGroup>
+
   <!-- Executes /t:Publish for all target frameworks before packing-->
   <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
-    <PropertyGroup>
-      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-      <NuspecProperties>
-      configuration=$(Configuration);
-      version=$(PackageVersion);
-      publishDir=$([MSBuild]::NormalizeDirectory($(IntermediatePackDir)));
-      componentsversion=$(ComponentsPackageVersion);
-      razorversion=$(MicrosoftAspNetCoreRazorDesignPackageVersion);
-      blazormonoversion=$(MicrosoftAspNetCoreBlazorMonoPackageVersion);
-      repositorycommit=$(SourceRevisionId);</NuspecProperties>
-    </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFramework)" />
     </ItemGroup>

@@ -9,7 +9,6 @@
     <AssemblyName>Microsoft.Extensions.ApiDescription.Tasks</AssemblyName>
     <Description>MSBuild tasks and targets for code generation</Description>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <IncludeSource>false</IncludeSource>
     <IncludeSymbols>false</IncludeSymbols>
     <NuspecFile>$(MSBuildProjectName).nuspec</NuspecFile>
     <PackageId>$(MSBuildProjectName)</PackageId>
@@ -26,24 +25,8 @@
     <Reference Include="Microsoft.Build.Utilities.Core" />
   </ItemGroup>
 
-  <Target Name="PopulateNuspec">
-    <PropertyGroup>
-      <NuspecProperties>
-        id=$(PackageId);
-        authors=$(Authors);
-        baseOutputPath=$(BaseOutputPath);
-        configuration=$(Configuration);
-        copyright=$(Copyright);
-        description=$(PackageDescription);
-        iconUrl=$(PackageIconUrl);
-        licenseUrl=$(PackageLicenseUrl);
-        owners=$(Company);
-        projectUrl=$(PackageProjectUrl);
-        repositoryCommit=$(SourceRevisionId);
-        repositoryUrl=$(RepositoryUrl);
-        tags=$(PackageTags.Replace(';', ' '));
-        version=$(PackageVersion);
-      </NuspecProperties>
-    </PropertyGroup>
-  </Target>
+  <ItemGroup>
+    <NuspecProperty Include="baseOutputPath=$(BaseOutputPath)" />
+    <NuspecProperty Include="configuration=$(Configuration)" />
+  </ItemGroup>
 </Project>

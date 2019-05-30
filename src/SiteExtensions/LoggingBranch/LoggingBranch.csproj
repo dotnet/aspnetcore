@@ -18,7 +18,6 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeSymbols>false</IncludeSymbols>
-    <IncludeSource>false</IncludeSource>
     <ContentTargetFolders>content</ContentTargetFolders>
   </PropertyGroup>
 

@@ -6,8 +6,9 @@
     <EnableDefaultItems>False</EnableDefaultItems>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IncludeBuildOutput>False</IncludeBuildOutput>
-    <NoWarn>2008</NoWarn>
+    <NoWarn>$(NoWarn);2008</NoWarn>
     <Description>Templates for ASP.NET Core Blazor projects.</Description>
+    <PackageTags>aspnet;templates;blazor;spa</PackageTags>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
 

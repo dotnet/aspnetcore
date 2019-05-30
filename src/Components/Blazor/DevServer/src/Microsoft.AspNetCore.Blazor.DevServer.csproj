@@ -3,9 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <OutputType>Exe</OutputType>
-    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AssemblyName>blazor-devserver</AssemblyName>
-    <PackageId>Microsoft.AspNetCore.Blazor.DevServer</PackageId>
     <IsShippingPackage>true</IsShippingPackage>
     <HasReferenceAssembly>false</HasReferenceAssembly>
     <StartupObject>Microsoft.AspNetCore.Blazor.DevServer.Program</StartupObject>
@@ -30,18 +28,14 @@
     <NuspecFile>Microsoft.AspNetCore.Blazor.DevServer.nuspec</NuspecFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <NuspecProperty Include="publishDir=$([MSBuild]::NormalizeDirectory($(PublishDir)))" />
+    <NuspecProperty Include="componentsrootdir=..\..\..\" />
+    <NuspecProperty Include="blazorversion=$(PackageVersion)" />
+  </ItemGroup>
+
   <!-- Executes /t:Publish for all target frameworks before packing-->
   <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
-    <PropertyGroup>
-      <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
-      <NuspecProperties>
-        packageId=$(PackageId);
-        description=$(Description);
-        publishDir=$([MSBuild]::NormalizeDirectory($(PublishDir)));
-        componentsrootdir=..\..\..\;
-        blazorversion=$(PackageVersion);
-        repositorycommit=$(SourceRevisionId);</NuspecProperties>
-    </PropertyGroup>
     <ItemGroup>
       <_TargetFramework Include="$(TargetFramework)" />
     </ItemGroup>
