@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
@@ -85,7 +86,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
                 }
             }
 
-            return nodes;
+            // Its important that we order the nodes here to produce a manifest deterministically.
+            return nodes.OrderBy(e=>e.Attribute(BasePath).Value);
         }
 
         private XmlWriter GetXmlWriter(XmlWriterSettings settings)

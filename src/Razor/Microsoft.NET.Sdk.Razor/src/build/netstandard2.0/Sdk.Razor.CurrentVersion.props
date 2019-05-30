@@ -75,7 +75,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemGroup>
 
   <PropertyGroup>
-    <EnableRazorSdkContent Condition=" '$(UsingMicrosoftNETSdkWeb)' == '' ">true</EnableRazorSdkContent>
+    <EnableRazorSdkContent Condition="'$(EnableRazorSdkContent)' =='' and '$(UsingMicrosoftNETSdkWeb)' == '' ">true</EnableRazorSdkContent>
   </PropertyGroup>
 
   <Import 

@@ -485,6 +485,40 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
+        // This method extracts the nupkg to a fixed directory path. To avoid the extra work of
+        // cleaning up after each invocation, this method accepts multiple files.
+        public static void NupkgDoesNotContain(MSBuildResult result, string nupkgPath, params string[] filePaths)
+        {
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            if (nupkgPath == null)
+            {
+                throw new ArgumentNullException(nameof(nupkgPath));
+            }
+
+            if (filePaths == null)
+            {
+                throw new ArgumentNullException(nameof(filePaths));
+            }
+
+            nupkgPath = Path.Combine(result.Project.DirectoryPath, nupkgPath);
+            FileExists(result, nupkgPath);
+
+            var unzipped = Path.Combine(result.Project.DirectoryPath, Path.GetFileNameWithoutExtension(nupkgPath));
+            ZipFile.ExtractToDirectory(nupkgPath, unzipped);
+
+            foreach (var filePath in filePaths)
+            {
+                if (File.Exists(Path.Combine(unzipped, filePath)))
+                {
+                    throw new NupkgFileFoundException(result, nupkgPath, filePath);
+                }
+            }
+        }
+
         public static void AssemblyContainsType(MSBuildResult result, string assemblyPath, string fullTypeName)
         {
             if (result == null)
@@ -871,6 +905,22 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             public string NupkgPath { get; }
 
             protected override string Heading => $"File: '{FilePath}' was not found was not found in {NupkgPath}.";
+        }
+
+        private class NupkgFileFoundException : MSBuildXunitException
+        {
+            public NupkgFileFoundException(MSBuildResult result, string nupkgPath, string filePath)
+                : base(result)
+            {
+                NupkgPath = nupkgPath;
+                FilePath = filePath;
+            }
+
+            public string FilePath { get; }
+
+            public string NupkgPath { get; }
+
+            protected override string Heading => $"File: '{FilePath}' was found in {NupkgPath}.";
         }
     }
 }

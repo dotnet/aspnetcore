@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -175,6 +176,151 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                 result,
                 Path.Combine("bin", Configuration, "ClassLibrary.1.0.0.nupkg"),
                 Path.Combine("lib", "netcoreapp3.0", "ClassLibrary.Views.dll"));
+        }
+
+        [Fact]
+        [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
+        public async Task Pack_IncludesStaticWebAssets()
+        {
+            var result = await DotnetMSBuild("Pack");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            Assert.FileExists(result, OutputPath, "PackageLibraryDirectDependency.dll");
+
+            Assert.NupkgContains(
+                result,
+                Path.Combine("..", "TestPackageRestoreSource", "PackageLibraryDirectDependency.1.0.0.nupkg"),
+                filePaths: new[]
+                {
+                    Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
+                    Path.Combine("staticwebassets", "css", "site.css"),
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                });
+        }
+
+        [Fact]
+        [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
+        public async Task Pack_StaticWebAssetsEnabledFalse_DoesNotPackAnyStaticWebAssets()
+        {
+            var result = await DotnetMSBuild("Pack", "/p:StaticWebAssetsEnabled=false");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            Assert.FileExists(result, OutputPath, "PackageLibraryDirectDependency.dll");
+
+            Assert.NupkgDoesNotContain(
+                result,
+                Path.Combine("..", "TestPackageRestoreSource", "PackageLibraryDirectDependency.1.0.0.nupkg"),
+                filePaths: new[]
+                {
+                    Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
+                    Path.Combine("staticwebassets", "css", "site.css"),
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                });
+        }
+
+        [Fact]
+        [InitializeTestProject("PackageLibraryDirectDependency", additionalProjects: new[] { "PackageLibraryTransitiveDependency" })]
+        public async Task Pack_NoBuild_IncludesStaticWebAssets()
+        {
+            var result = await DotnetMSBuild("Build");
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            var pack = await DotnetMSBuild("Pack", "/p:NoBuild=true");
+            Assert.BuildPassed(pack, allowWarnings: true);
+
+            Assert.FileExists(pack, OutputPath, "PackageLibraryDirectDependency.dll");
+
+            Assert.NupkgContains(
+                pack,
+                Path.Combine("..", "TestPackageRestoreSource", "PackageLibraryDirectDependency.1.0.0.nupkg"),
+                filePaths: new[]
+                {
+                    Path.Combine("staticwebassets", "js", "pkg-direct-dep.js"),
+                    Path.Combine("staticwebassets", "css", "site.css"),
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
+                    Path.Combine("build", "PackageLibraryDirectDependency.props"),
+                    Path.Combine("buildMultiTargeting", "PackageLibraryDirectDependency.props"),
+                    Path.Combine("buildTransitive", "PackageLibraryDirectDependency.props")
+                });
+        }
+
+        [Fact]
+        [InitializeTestProject("ComponentLibrary")]
+        public async Task Pack_DoesNotIncludeAnyCustomPropsFiles_WhenNoStaticAssetsAreAvailable()
+        {
+            MSBuildIntegrationTestBase.TargetFramework = "netstandard2.0";
+
+            var result = await DotnetMSBuild("Pack");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            Assert.FileExists(result, OutputPath, "ComponentLibrary.dll");
+
+            Assert.NupkgDoesNotContain(
+                result,
+                Path.Combine("bin", Configuration, "ComponentLibrary.1.0.0.nupkg"),
+                filePaths: new[]
+                {
+                    Path.Combine("build", "Microsoft.AspNetCore.StaticWebAssets.props"),
+                    Path.Combine("build", "ComponentLibrary.props"),
+                    Path.Combine("buildMultiTargeting", "ComponentLibrary.props"),
+                    Path.Combine("buildTransitive", "ComponentLibrary.props")
+                });
+        }
+
+        [Fact]
+        [InitializeTestProject("PackageLibraryTransitiveDependency")]
+        public async Task Pack_Incremental_DoesNotRegenerateCacheAndPropsFiles()
+        {
+            TargetFramework = "netstandard2.0";
+            var result = await DotnetMSBuild("Pack");
+
+            Assert.BuildPassed(result, allowWarnings: true);
+
+            Assert.FileExists(result, OutputPath, "PackageLibraryTransitiveDependency.dll");
+
+            Assert.FileExists(result, IntermediateOutputPath, "staticwebassets", "msbuild.PackageLibraryTransitiveDependency.Microsoft.AspNetCore.StaticWebAssets.props");
+            Assert.FileExists(result, IntermediateOutputPath, "staticwebassets", "msbuild.build.PackageLibraryTransitiveDependency.props");
+            Assert.FileExists(result, IntermediateOutputPath, "staticwebassets", "msbuild.buildMultiTargeting.PackageLibraryTransitiveDependency.props");
+            Assert.FileExists(result, IntermediateOutputPath, "staticwebassets", "msbuild.buildTransitive.PackageLibraryTransitiveDependency.props");
+            Assert.FileExists(result, IntermediateOutputPath, "staticwebassets", "PackageLibraryTransitiveDependency.StaticWebAssets.Pack.cache");
+
+            var directoryPath = Path.Combine(result.Project.DirectoryPath, IntermediateOutputPath, "staticwebassets");
+            var thumbPrints = new Dictionary<string, FileThumbPrint>();
+            var thumbPrintFiles = new[]
+            {
+                Path.Combine(directoryPath, "msbuild.PackageLibraryTransitiveDependency.Microsoft.AspNetCore.StaticWebAssets.props"),
+                Path.Combine(directoryPath, "msbuild.build.PackageLibraryTransitiveDependency.props"),
+                Path.Combine(directoryPath, "msbuild.buildMultiTargeting.PackageLibraryTransitiveDependency.props"),
+                Path.Combine(directoryPath, "msbuild.buildTransitive.PackageLibraryTransitiveDependency.props"),
+                Path.Combine(directoryPath, "PackageLibraryTransitiveDependency.StaticWebAssets.Pack.cache"),
+            };
+
+            foreach (var file in thumbPrintFiles)
+            {
+                var thumbprint = GetThumbPrint(file);
+                thumbPrints[file] = thumbprint;
+            }
+
+            // Act
+            var incremental = await DotnetMSBuild("Pack");
+
+            // Assert
+            Assert.BuildPassed(incremental, allowWarnings: true);
+
+            foreach (var file in thumbPrintFiles)
+            {
+                var thumbprint = GetThumbPrint(file);
+                Assert.Equal(thumbPrints[file], thumbprint);
+            }
         }
     }
 }

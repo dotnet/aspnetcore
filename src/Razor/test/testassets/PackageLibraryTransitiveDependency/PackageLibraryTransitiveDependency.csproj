@@ -6,6 +6,7 @@
 
   <PropertyGroup>
     <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <RazorLangVersion>3.0</RazorLangVersion>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -34,11 +35,5 @@
   </ItemGroup>
 
   <!-- Test Placeholder -->
-
-  <ItemGroup>
-    <Content Include="build\**" Pack="true" PackagePath="buildTransitive" />
-    <!-- We will remove the line below when we do the item to support packing -->
-    <Content Update="wwwroot\**" Pack="true" PackagePath="razorContent" />
-  </ItemGroup>
 
 </Project>
