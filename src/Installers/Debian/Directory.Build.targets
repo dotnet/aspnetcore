@@ -33,7 +33,7 @@
         DebianPackageInstallRoot=$(DebianPackageInstallRoot);
         MaintainerEmail=$(MaintainerEmail);
         PackageId=$(PackageId);
-        PackageLicenseType=$(PackageLicenseType);
+        PackageLicenseExpression=$(PackageLicenseExpression);
         PackageProjectUrl=$(PackageProjectUrl);
         PackageRevision=$(PackageRevision);
         PackageVersion=$(PackageVersion);

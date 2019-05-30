@@ -69,7 +69,7 @@
       <FpmArgs Include="--description;$(PackageDescription)" />
       <FpmArgs Include="--maintainer;$(Authors) &lt;$(MaintainerEmail)&gt;" />
       <FpmArgs Include="--vendor;$(Company)" />
-      <FpmArgs Include="--license;$(PackageLicenseType)" />
+      <FpmArgs Include="--license;$(PackageLicenseExpression)" />
       <FpmArgs Include="--url;$(PackageProjectUrl)" />
       <FpmArgs Include="--directories;%(InstallerOwnedDirectory.Identity)" Condition=" '%(InstallerOwnedDirectory.Identity)' != '' " />
       <FpmArgs Include="$(PackageContentRoot)=$(RpmPackageInstallRoot)" />
