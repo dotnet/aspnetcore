@@ -11,7 +11,6 @@
     <NoWarn>$(NoWarn);NU1605</NoWarn>
     <!-- https://github.com/aspnet/AspNetCore/issues/8343 -->
     <BuildHelixPayload>false</BuildHelixPayload>
-    <IsTestProject>false</IsTestProject>
     <IsReferenceAssemblyProject>false</IsReferenceAssemblyProject>
     <IsProjectReferenceProvider>false</IsProjectReferenceProvider>
   </PropertyGroup>
@@ -22,10 +21,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
+
     <Reference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <Reference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
     <Reference Include="Microsoft.AspNetCore.Identity" />
-    <ProjectReference Include="$(RepoRoot)src\Servers\IIS\IntegrationTesting.IIS\src\Microsoft.AspNetCore.Server.IntegrationTesting.IIS.csproj" />
     <Reference Include="Microsoft.AspNetCore.WebUtilities" />
     <Reference Include="Microsoft.Extensions.CommandLineUtils.Sources" />
     <Reference Include="Microsoft.Extensions.Configuration.Binder" />

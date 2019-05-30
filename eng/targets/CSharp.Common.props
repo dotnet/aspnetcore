@@ -34,22 +34,13 @@
     <PackageReference Include="Microsoft.NET.Sdk.Razor" PrivateAssets="All" Version="$(MicrosoftNETSdkRazorPackageVersion)" AllowExplicitReference="true" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' ">
-    <PackageReference Include="xunit.runner.console" Version="$(XunitRunnerConsolePackageVersion)" AllowExplicitReference="true" />
-  </ItemGroup>
-
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(OS)' != 'Windows_NT' ">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="$(MicrosoftNETFrameworkReferenceAssembliesPackageVersion)" PrivateAssets="All" AllowExplicitReference="true" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsTestProject)' == 'true' ">
     <Reference Include="Microsoft.AspNetCore.Testing" />
-    <Reference Include="Microsoft.NET.Test.Sdk" />
     <Reference Include="Moq" />
-    <Reference Include="xunit" />
-    <Reference Include="xunit.analyzers" />
-    <Reference Include="xunit.runner.visualstudio" />
-    <Reference Include="xunit.runner.console" Condition=" '$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(IsHelixJob)' == 'true' " />
   </ItemGroup>
 
   <ItemDefinitionGroup Condition=" '$(IsTestProject)' == 'true' ">
