@@ -1767,50 +1767,6 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
             }
         }
 
-        private class RejectHandler : TestAuthenticationHandler
-        {
-            protected override bool ShouldAccept => false;
-        }
-
-        private class TestAuthenticationHandler : IAuthenticationHandler
-        {
-            private HttpContext HttpContext;
-            private AuthenticationScheme _scheme;
-
-            protected virtual bool ShouldAccept => true;
-
-            public Task<AuthenticateResult> AuthenticateAsync()
-            {
-                if (ShouldAccept)
-                {
-                    return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(HttpContext.User, _scheme.Name)));
-                }
-                else
-                {
-                    return Task.FromResult(AuthenticateResult.NoResult());
-                }
-            }
-
-            public Task ChallengeAsync(AuthenticationProperties properties)
-            {
-                HttpContext.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return Task.CompletedTask;
-            }
-
-            public Task ForbidAsync(AuthenticationProperties properties)
-            {
-                HttpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
-                return Task.CompletedTask;
-            }
-
-            public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
-            {
-                HttpContext = context;
-                _scheme = scheme;
-                return Task.CompletedTask;
-            }
-        }
-
         private static async Task CheckTransportSupported(HttpTransportType supportedTransports, HttpTransportType transportType, int status, ILoggerFactory loggerFactory)
         {
             var manager = CreateConnectionManager(loggerFactory);
