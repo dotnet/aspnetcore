@@ -75,10 +75,10 @@ public:
     DWORD
     QueryStartupTimeLimitInMS() const
     {
-        //if (IsDebuggerPresent())
-        //{
-        //    return INFINITE;
-        //}
+        if (IsDebuggerPresent())
+        {
+            return INFINITE;
+        }
 
         return m_dwStartupTimeLimitInMS;
     }

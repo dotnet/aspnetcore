@@ -273,7 +273,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             StandardStreamRedirection redirection(*redirectionOutput.get(), m_pHttpServer.IsCommandLineLaunch());
 
             context->m_redirectionOutput = redirectionOutput.get();
-            
+
             //Start CLR thread
             m_clrThread = std::thread(ClrThreadEntryPoint, context);
 
