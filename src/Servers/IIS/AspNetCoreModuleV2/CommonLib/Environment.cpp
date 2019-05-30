@@ -47,10 +47,10 @@ Environment::GetEnvironmentVariableValue(const std::wstring & str)
     }
     else if (requestedSize == 1)
     {
-        // String just contains a nullcharacter, return empty string
+        // String just contains a nullcharacter, return nothing
         // GetEnvironmentVariableW has inconsistent behavior when returning size for an empty
         // environment variable.
-        return L"";
+        return std::nullopt;
     }
 
     std::wstring expandedStr;

@@ -43,11 +43,17 @@ ShimOptions::ShimOptions(const ConfigurationSource &configurationSource) :
     m_struStdoutLogFile = section->GetRequiredString(CS_ASPNETCORE_STDOUT_LOG_FILE);
     m_fDisableStartupPage = section->GetRequiredBool(CS_ASPNETCORE_DISABLE_START_UP_ERROR_PAGE);
 
-    // This will not include environment variables defined in the web.config.
-    // Reading environment variables can be added here, but it adds more code to the shim.
-    const auto detailedErrors = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_DETAILEDERRORS").value_or(L"");
-    const auto aspnetCoreEnvironment = Environment::GetEnvironmentVariableValue(L"ASPNETCORE_ENVIRONMENT").value_or(L"");
-    const auto dotnetEnvironment = Environment::GetEnvironmentVariableValue(L"DOTNET_ENVIRONMENT").value_or(L"");
+    auto environmentVariables = section->GetMap(CS_ASPNETCORE_ENVIRONMENT_VARIABLES);
+
+    // Indexing into environment variable map will add a default entry if none is present
+    // This is okay here as we throw away the map shortly after.
+    // Process set environment variables are prioritized over web config variables.
+    const auto detailedErrors = Environment::GetEnvironmentVariableValue(CS_ASPNETCORE_DETAILEDERRORS)
+        .value_or(environmentVariables[CS_ASPNETCORE_DETAILEDERRORS]);
+    const auto aspnetCoreEnvironment = Environment::GetEnvironmentVariableValue(CS_ASPNETCORE_ENVIRONMENT)
+        .value_or(environmentVariables[CS_ASPNETCORE_ENVIRONMENT]);
+    const auto dotnetEnvironment = Environment::GetEnvironmentVariableValue(CS_DOTNET_ENVIRONMENT)
+        .value_or(environmentVariables[CS_DOTNET_ENVIRONMENT]);
 
     auto detailedErrorsEnabled = equals_ignore_case(L"1", detailedErrors) || equals_ignore_case(L"true", detailedErrors);
     auto aspnetCoreEnvironmentEnabled = equals_ignore_case(L"Development", aspnetCoreEnvironment);

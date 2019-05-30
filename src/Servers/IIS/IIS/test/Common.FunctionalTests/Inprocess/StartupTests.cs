@@ -366,6 +366,26 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
         }
 
         [ConditionalFact]
+        public async Task TargedDifferenceSharedFramework_FailedToFindNativeDependenciesErrorInResponse()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "TRUE";
+            var deploymentResult = await DeployAsync(deploymentParameters);
+
+            Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
+            if (DeployerSelector.HasNewShim)
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
+                var responseString = await deploymentResult.HttpClient.GetStringAsync("/HelloWorld");
+                Assert.Contains("The specified framework 'Microsoft.NETCore.App', version '2.9.9'", responseString);
+            }
+            else
+            {
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult);
+            }
+        }
+
+        [ConditionalFact]
         public async Task RemoveInProcessReference_FailedToFindRequestHandler()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(Fixture.InProcessTestSite);
@@ -662,8 +682,32 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
 
             // Deployment parameters by default set ASPNETCORE_DETAILEDERRORS to true
-            deploymentParameters.EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "";
+            deploymentParameters.EnvironmentVariables.Remove("ASPNETCORE_DETAILEDERRORS");
             deploymentParameters.EnvironmentVariables[environmentVariable] = value;
+
+            var deploymentResult = await DeployAsync(deploymentParameters);
+            var result = await deploymentResult.HttpClient.GetAsync("/");
+            Assert.False(result.IsSuccessStatusCode);
+
+            var content = await result.Content.ReadAsStringAsync();
+            Assert.Contains("InvalidOperationException", content);
+            Assert.Contains("TestSite.Program.Main", content);
+
+            StopServer();
+
+            VerifyDotnetRuntimeEventLog(deploymentResult);
+        }
+
+        [ConditionalFact]
+        [RequiresNewHandler]
+        public async Task ExceptionIsLoggedToEventLogAndPutInResponseWhenDeveloperExceptionPageIsEnabledViaWebConfig()
+        {
+            var deploymentParameters = Fixture.GetBaseDeploymentParameters();
+            deploymentParameters.TransformArguments((a, _) => $"{a} Throw");
+
+            // Deployment parameters by default set ASPNETCORE_DETAILEDERRORS to true
+            deploymentParameters.EnvironmentVariables.Remove("ASPNETCORE_DETAILEDERRORS");
+            deploymentParameters.WebConfigBasedEnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "TRUE";
 
             var deploymentResult = await DeployAsync(deploymentParameters);
             var result = await deploymentResult.HttpClient.GetAsync("/");
