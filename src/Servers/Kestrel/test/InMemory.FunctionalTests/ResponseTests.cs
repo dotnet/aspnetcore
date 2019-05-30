@@ -3883,6 +3883,40 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
             }
         }
 
+        [Fact]
+        public async Task ResponseStreamWrappingWorks()
+        {
+            await using (var server = new TestServer(async httpContext =>
+            {
+                var oldBody = httpContext.Response.Body;
+                httpContext.Response.Body = new MemoryStream();
+
+                await httpContext.Response.BodyWriter.WriteAsync(new byte[1]);
+                await httpContext.Response.Body.WriteAsync(new byte[1]);
+
+                Assert.Equal(2, httpContext.Response.Body.Length);
+
+                httpContext.Response.Body = oldBody;
+
+            }, new TestServiceContext(LoggerFactory)))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                                        "HTTP/1.1 200 OK",
+                                        $"Date: {server.Context.DateHeaderValue}",
+                                        "Content-Length: 0",
+                                        "",
+                                        "");
+                }
+            }
+        }
+
         private static async Task ResponseStatusCodeSetBeforeHttpContextDispose(
             ITestSink testSink,
             ILoggerFactory loggerFactory,

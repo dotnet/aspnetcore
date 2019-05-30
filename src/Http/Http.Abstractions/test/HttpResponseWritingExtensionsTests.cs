@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -28,6 +29,27 @@ namespace Microsoft.AspNetCore.Http
             await context.Response.WriteAsync("Hello World");
 
             Assert.Equal(22, context.Response.Body.Length);
+        }
+
+        [Theory]
+        [MemberData(nameof(Encodings))]
+        public async Task WritingTextThatRequiresMultipleSegmentsWorks(Encoding encoding)
+        {
+            var outputStream = new MemoryStream();
+
+            HttpContext context = new DefaultHttpContext();
+            context.Response.Body = outputStream;
+
+            var inputString = string.Concat(Enumerable.Repeat("昨日すき焼きを食べました", 1000));
+            var expected = encoding.GetBytes(inputString);
+            await context.Response.WriteAsync(inputString, encoding);
+
+            outputStream.Position = 0;
+            var actual = new byte[expected.Length];
+            var length = outputStream.Read(actual);
+
+            Assert.Equal(expected.Length, length);
+            Assert.Equal(expected, actual);
         }
 
         [Theory]
