@@ -49,8 +49,18 @@ namespace Microsoft.AspNetCore
 
         internal static Stream ResolveManifest(IWebHostEnvironment environment)
         {
-            var assembly = Assembly.Load(environment.ApplicationName);
-            if (assembly.GetManifestResourceNames().Any(a => a == StaticWebAssetsManifestName))
+            // We plan to remove the embedded file resolution code path in
+            // a future preview.
+            Assembly assembly = null;
+            try
+            {
+                assembly = Assembly.Load(environment.ApplicationName);
+            }
+            catch (Exception)
+            {
+            }
+
+            if (assembly != null && assembly.GetManifestResourceNames().Any(a => a == StaticWebAssetsManifestName))
             {
                 return assembly.GetManifestResourceStream(StaticWebAssetsManifestName);
             }

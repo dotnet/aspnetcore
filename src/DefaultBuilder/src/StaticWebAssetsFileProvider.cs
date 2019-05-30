@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore
 
         public StaticWebAssetsFileProvider(string pathPrefix, string contentRoot)
         {
-            BasePath = pathPrefix.StartsWith("/") ? pathPrefix : "/" + pathPrefix;
+            BasePath = new PathString(pathPrefix.StartsWith("/") ? pathPrefix : "/" + pathPrefix);
             InnerProvider = new PhysicalFileProvider(contentRoot);
         }
 
         public PhysicalFileProvider InnerProvider { get; }
 
-        public string BasePath { get; }
+        public PathString BasePath { get; }
 
         /// <inheritdoc />
         public IDirectoryContents GetDirectoryContents(string subpath)
