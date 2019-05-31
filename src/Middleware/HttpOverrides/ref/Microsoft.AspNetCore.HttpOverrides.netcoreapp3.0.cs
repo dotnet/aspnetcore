@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public bool Contains(System.Net.IPAddress address) { throw null; }
     }
 }
-namespace Microsoft.AspNetCore.DependencyInjection
+namespace Microsoft.Extensions.DependencyInjection
 {
     public static partial class CertificateForwardingServiceExtensions
     {
