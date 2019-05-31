@@ -22,8 +22,9 @@
 
   <!-- Pack settings -->
   <PropertyGroup>
-    <PackDependsOn>$(PackDependsOn);Publish</PackDependsOn>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);publish</GenerateNuspecDependsOn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
+    <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
     <NuspecFile>Microsoft.AspNetCore.Blazor.DevServer.nuspec</NuspecFile>
   </PropertyGroup>
 

@@ -1,8 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- Execute PopulateNuspec fairly late. -->
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);PopulateNuspec</GenerateNuspecDependsOn>
-
     <!-- Do not complain about lack of lib folder. -->
     <NoPackageAnalysis>true</NoPackageAnalysis>
 
