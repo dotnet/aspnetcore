@@ -22,7 +22,7 @@ type WeatherController () =
     inherit ControllerBase()
 
     [<HttpGet>]
-    member this.Get(location:string, unit: string) =
+    member this.Get(location:string, unit: TemperatureUnit) =
         let rnd = System.Random()
         let result:WeatherResult = {
             Location = location;
