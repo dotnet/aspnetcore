@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     // This is a singleton instance
-    // Generates strong criptographic ids for circuits that are protected with authenticated encryption.
+    // Generates strong cryptographic ids for circuits that are protected with authenticated encryption.
     internal class CircuitIdFactory
     {
         private readonly RandomNumberGenerator _generator = RandomNumberGenerator.Create();
@@ -28,18 +28,10 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public string CreateCircuitId()
         {
             var buffer = new byte[32];
-            try
-            {
-                _generator.GetBytes(buffer);
-                var payload = _protector.Protect(buffer);
+            _generator.GetBytes(buffer);
+            var payload = _protector.Protect(buffer);
 
-                return Base64UrlTextEncoder.Encode(payload);
-            }
-            finally
-            {
-                // Its good practice to clear secrets from memory as soon as we are done with them.
-                Array.Clear(buffer, 0, 32);
-            }
+            return Base64UrlTextEncoder.Encode(payload);
         }
 
         public bool ValidateCircuitId(string circuitId)

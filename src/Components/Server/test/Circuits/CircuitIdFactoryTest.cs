@@ -3,20 +3,18 @@
 
 using System;
 using System.Linq;
-using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
+namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     public class CircuitIdFactoryTest
     {
         [Fact]
         public void CreateCircuitId_Generates_NewRandomId()
         {
-            CircuitIdFactory factory = CreateTestFactory();
+            var factory = TestCircuitIdFactory.CreateTestFactory();
 
             // Act
             var id = factory.CreateCircuitId();
@@ -31,7 +29,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
         public void CreateCircuitId_Generates_GeneratesDifferentIds_ForSuccesiveCalls()
         {
             // Arrange
-            CircuitIdFactory factory = CreateTestFactory();
+            var factory = TestCircuitIdFactory.CreateTestFactory();
 
             // Act
             var ids = Enumerable.Range(0, 100).Select(i => factory.CreateCircuitId()).ToArray();
@@ -45,7 +43,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
         public void CircuitIds_Roundtrip()
         {
             // Arrange
-            CircuitIdFactory factory = CreateTestFactory();
+            var factory = TestCircuitIdFactory.CreateTestFactory();
             var id = factory.CreateCircuitId();
 
             // Act
@@ -59,7 +57,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
         public void ValidateCircuitId_ReturnsFalseForMalformedPayloads()
         {
             // Arrange
-            CircuitIdFactory factory = CreateTestFactory();
+            var factory = TestCircuitIdFactory.CreateTestFactory();
 
             // Act
             var isValid = factory.ValidateCircuitId("$%@&==");
@@ -72,7 +70,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
         public void ValidateCircuitId_ReturnsFalseForPotentiallyTamperedPayloads()
         {
             // Arrange
-            CircuitIdFactory factory = CreateTestFactory();
+            var factory = TestCircuitIdFactory.CreateTestFactory();
             var id = factory.CreateCircuitId();
             var protectedBytes = Base64UrlTextEncoder.Decode(id);
             for (int i = protectedBytes.Length - 10; i < protectedBytes.Length; i++)
@@ -86,15 +84,6 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
 
             // Assert
             Assert.False(isValid, "Accepted a tampered payload");
-        }
-
-        private static CircuitIdFactory CreateTestFactory()
-        {
-            // Arrange
-            return new CircuitIdFactory(Options.Create(new CircuitOptions
-            {
-                CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-            }));
         }
     }
 }

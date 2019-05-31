@@ -35,10 +35,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task ConnectAsync_TransfersClientOnActiveCircuit()
         {
             // Arrange
-            var circuitIdFactory = new CircuitIdFactory(Options.Create<CircuitOptions>(new CircuitOptions
-            {
-                CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-            }));
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
 
             var registry = CreateRegistry(circuitIdFactory);
             var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
@@ -63,10 +60,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task ConnectAsync_MakesInactiveCircuitActive()
         {
             // Arrange
-            var circuitIdFactory = new CircuitIdFactory(Options.Create<CircuitOptions>(new CircuitOptions
-            {
-                CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-            }));
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
 
             var registry = CreateRegistry(circuitIdFactory);
             var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId());
@@ -92,10 +86,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task ConnectAsync_InvokesCircuitHandlers_WhenCircuitWasPreviouslyDisconnected()
         {
             // Arrange
-            var circuitIdFactory = new CircuitIdFactory(Options.Create<CircuitOptions>(new CircuitOptions
-            {
-                CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-            }));
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
             var registry = CreateRegistry(circuitIdFactory);
             var handler = new Mock<CircuitHandler> { CallBase = true };
             var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), handlers: new[] { handler.Object });
@@ -119,10 +110,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task ConnectAsync_InvokesCircuitHandlers_WhenCircuitWasConsideredConnected()
         {
             // Arrange
-            var circuitIdFactory = new CircuitIdFactory(Options.Create<CircuitOptions>(new CircuitOptions
-            {
-                CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-            }));
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
             var registry = CreateRegistry(circuitIdFactory);
             var handler = new Mock<CircuitHandler> { CallBase = true };
             var circuitHost = TestCircuitHost.Create(circuitIdFactory.CreateCircuitId(), handlers: new[] { handler.Object });
@@ -218,10 +206,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task Connect_WhileDisconnectIsInProgress()
         {
             // Arrange
-            var circuitIdFactory = new CircuitIdFactory(Options.Create<CircuitOptions>(new CircuitOptions
-            {
-                CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-            }));
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
 
             var registry = new TestCircuitRegistry(circuitIdFactory);
             registry.BeforeDisconnect = new ManualResetEventSlim();
@@ -262,10 +247,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task Connect_WhileDisconnectIsInProgress_SeriallyExecutesCircuitHandlers()
         {
             // Arrange
-            var circuitIdFactory = new CircuitIdFactory(Options.Create<CircuitOptions>(new CircuitOptions
-            {
-                CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-            }));
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
 
             var registry = new TestCircuitRegistry(circuitIdFactory);
             registry.BeforeDisconnect = new ManualResetEventSlim();
@@ -305,10 +287,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task DisconnectWhenAConnectIsInProgress()
         {
             // Arrange
-            var circuitIdFactory = new CircuitIdFactory(Options.Create<CircuitOptions>(new CircuitOptions
-            {
-                CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-            }));
+            var circuitIdFactory = TestCircuitIdFactory.CreateTestFactory();
 
             var registry = new TestCircuitRegistry(circuitIdFactory);
             registry.BeforeConnect = new ManualResetEventSlim();
