@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
-    public class CertificateForwarderTests
+    public class CertificateForwardingTests
     {
         [Fact]
         public void VerifySettingNullHeaderOptionThrows()
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var services = new ServiceCollection()
                 .AddOptions()
                 .AddCertificateForwarding(o => o.CertificateHeader = null);
-            var options = services.BuildServiceProvider().GetRequiredService<IOptions<CertificateForwarderOptions>>();
+            var options = services.BuildServiceProvider().GetRequiredService<IOptions<CertificateForwardingOptions>>();
             Assert.Throws<OptionsValidationException>(() => options.Value);
         }
 
@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var services = new ServiceCollection()
                 .AddOptions()
                 .AddCertificateForwarding(o => o.CertificateHeader = "");
-            var options = services.BuildServiceProvider().GetRequiredService<IOptions<CertificateForwarderOptions>>();
+            var options = services.BuildServiceProvider().GetRequiredService<IOptions<CertificateForwardingOptions>>();
             Assert.Throws<OptionsValidationException>(() => options.Value);
         }
 

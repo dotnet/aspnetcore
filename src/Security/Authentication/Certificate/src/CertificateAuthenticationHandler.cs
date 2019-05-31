@@ -231,21 +231,5 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
             var identity = new ClaimsIdentity(claims, CertificateAuthenticationDefaults.AuthenticationScheme);
             return new ClaimsPrincipal(identity);
         }
-
-        private AuthenticateResult Success(ClaimsPrincipal principal, X509Certificate2 certificate)
-        {
-            var props = new AuthenticationProperties
-            {
-                Items =
-                {
-                    {
-                        CertificateAuthenticationDefaults.CertificateItemsKey, certificate.GetRawCertDataString()
-                    }
-                }
-            };
-
-            var ticket = new AuthenticationTicket(principal, props, Scheme.Name);
-            return AuthenticateResult.Success(ticket);
-        }
     }
 }

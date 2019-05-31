@@ -11,14 +11,14 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.HttpOverrides
 {
-    internal class CertificateForwarderFeature : ITlsConnectionFeature
+    internal class CertificateForwardingFeature : ITlsConnectionFeature
     {
         private ILogger _logger;
         private StringValues _header;
-        private CertificateForwarderOptions _options;
+        private CertificateForwardingOptions _options;
         private X509Certificate2 _certificate;
 
-        public CertificateForwarderFeature(ILogger logger, StringValues header, CertificateForwarderOptions options)
+        public CertificateForwardingFeature(ILogger logger, StringValues header, CertificateForwardingOptions options)
         {
             _logger = logger;
             _options = options;

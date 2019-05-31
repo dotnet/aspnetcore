@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.HttpOverrides
     /// <summary>
     /// Middleware that converts a forward header into a client certificate if found.
     /// </summary>
-    public class CertificateForwarderMiddleware
+    public class CertificateForwardingMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly CertificateForwarderOptions _options;
+        private readonly CertificateForwardingOptions _options;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -26,10 +26,10 @@ namespace Microsoft.AspNetCore.HttpOverrides
         /// <param name="next"></param>
         /// <param name="loggerFactory"></param>
         /// <param name="options"></param>
-        public CertificateForwarderMiddleware(
+        public CertificateForwardingMiddleware(
                 RequestDelegate next,
                 ILoggerFactory loggerFactory,
-                IOptions<CertificateForwarderOptions> options)
+                IOptions<CertificateForwardingOptions> options)
         {
             _next = next ?? throw new ArgumentNullException(nameof(next));
 
@@ -44,11 +44,11 @@ namespace Microsoft.AspNetCore.HttpOverrides
             }
 
             _options = options.Value;
-            _logger = loggerFactory.CreateLogger<CertificateForwarderMiddleware>();
+            _logger = loggerFactory.CreateLogger<CertificateForwardingMiddleware>();
         }
 
         /// <summary>
-        /// Looks for the presence of a <see cref="CertificateForwarderOptions.CertificateHeader"/> header in the request,
+        /// Looks for the presence of a <see cref="CertificateForwardingOptions.CertificateHeader"/> header in the request,
         /// if found, converts this header to a ClientCertificate set on the connection.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/>.</param>
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var header = httpContext.Request.Headers[_options.CertificateHeader];
             if (!StringValues.IsNullOrEmpty(header))
             {
-                httpContext.Features.Set<ITlsConnectionFeature>(new CertificateForwarderFeature(_logger, header, _options));
+                httpContext.Features.Set<ITlsConnectionFeature>(new CertificateForwardingFeature(_logger, header, _options));
             }
             return _next(httpContext);
         }

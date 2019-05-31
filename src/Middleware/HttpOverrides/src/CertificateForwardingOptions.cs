@@ -7,9 +7,9 @@ using System.Security.Cryptography.X509Certificates;
 namespace Microsoft.AspNetCore.HttpOverrides
 {
     /// <summary>
-    /// Used to configure the <see cref="CertificateForwarderMiddleware"/>.
+    /// Used to configure the <see cref="CertificateForwardingMiddleware"/>.
     /// </summary>
-    public class CertificateForwarderOptions
+    public class CertificateForwardingOptions
     {
         /// <summary>
         /// The name of the header containing the client certificate.

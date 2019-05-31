@@ -3,9 +3,8 @@
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public static partial class CertificateForwarderExtensions
+    public static partial class CertificateForwardingBuilderExtensions
     {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCertificateForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwarderOptions> configure) { throw null; }
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseCertificateForwarding(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
     }
     public static partial class ForwardedHeadersExtensions
@@ -40,17 +39,24 @@ namespace Microsoft.AspNetCore.Builder
         public string FormFieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
+namespace Microsoft.AspNetCore.DependencyInjection
+{
+    public static partial class CertificateForwardingServiceExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCertificateForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions> configure) { throw null; }
+    }
+}
 namespace Microsoft.AspNetCore.HttpOverrides
 {
-    public partial class CertificateForwarderMiddleware
+    public partial class CertificateForwardingMiddleware
     {
-        public CertificateForwarderMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpOverrides.CertificateForwarderOptions> options) { }
+        public CertificateForwardingMiddleware(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions> options) { }
         public System.Threading.Tasks.Task Invoke(Microsoft.AspNetCore.Http.HttpContext httpContext) { throw null; }
     }
-    public partial class CertificateForwarderOptions
+    public partial class CertificateForwardingOptions
     {
         public System.Func<string, System.Security.Cryptography.X509Certificates.X509Certificate2> HeaderConverter;
-        public CertificateForwarderOptions() { }
+        public CertificateForwardingOptions() { }
         public string CertificateHeader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.FlagsAttribute]
