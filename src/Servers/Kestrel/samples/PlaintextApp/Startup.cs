@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Hosting;
 
 namespace PlaintextApp
@@ -31,7 +32,7 @@ namespace PlaintextApp
             });
         }
 
-        public static Task Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -42,7 +43,7 @@ namespace PlaintextApp
                 .UseStartup<Startup>()
                 .Build();
 
-            return host.RunAsync();
+            await host.RunAsync();
         }
     }
 

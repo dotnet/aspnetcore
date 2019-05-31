@@ -234,7 +234,7 @@ namespace Microsoft.AspNetCore.Http.Connections.Client
         /// A connection cannot be restarted after it has stopped. To restart a connection
         /// a new instance should be created using the same options.
         /// </remarks>
-        public async Task DisposeAsync()
+        public override async ValueTask DisposeAsync()
         {
             using (_logger.BeginScope(_logScope))
             {

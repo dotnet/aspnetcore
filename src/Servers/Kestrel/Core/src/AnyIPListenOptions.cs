@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 context.Logger.LogDebug(CoreStrings.FormatFallbackToIPv4Any(IPEndPoint.Port));
 
                 // for machines that do not support IPv6
-                IPEndPoint = new IPEndPoint(IPAddress.Any, IPEndPoint.Port);
+                EndPoint = new IPEndPoint(IPAddress.Any, IPEndPoint.Port);
                 await base.BindAsync(context).ConfigureAwait(false);
             }
         }

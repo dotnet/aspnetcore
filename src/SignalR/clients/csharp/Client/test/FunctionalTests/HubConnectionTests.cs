@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
             var delegateConnectionFactory = new DelegateConnectionFactory(
                 GetHttpConnectionFactory(url, loggerFactory, path, transportType ?? HttpTransportType.LongPolling | HttpTransportType.WebSockets | HttpTransportType.ServerSentEvents),
-                connection => ((HttpConnection)connection).DisposeAsync());
+                connection => ((HttpConnection)connection).DisposeAsync().AsTask());
             hubConnectionBuilder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
             return hubConnectionBuilder.Build();

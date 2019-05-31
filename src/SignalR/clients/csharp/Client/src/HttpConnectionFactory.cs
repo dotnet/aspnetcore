@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         /// <inheritdoc />
         public Task DisposeAsync(ConnectionContext connection)
         {
-            return ((HttpConnection)connection).DisposeAsync();
+            return connection.DisposeAsync().AsTask();
         }
     }
 }

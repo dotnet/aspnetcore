@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
@@ -62,7 +61,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             pauseWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             resumeWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
             useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+            minimumSegmentSize: MemoryPool.GetMinimumSegmentSize()
         );
 
         internal PipeOptions AdaptedOutputPipeOptions => new PipeOptions
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             pauseWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
             resumeWriterThreshold: _context.ServiceContext.ServerOptions.Limits.MaxResponseBufferSize ?? 0,
             useSynchronizationContext: false,
-            minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+            minimumSegmentSize: MemoryPool.GetMinimumSegmentSize()
         );
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
@@ -94,7 +93,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     adaptedPipeline = new AdaptedPipeline(_adaptedTransport,
                                                           new Pipe(AdaptedInputPipeOptions),
                                                           new Pipe(AdaptedOutputPipeOptions),
-                                                          Log);
+                                                          Log,
+                                                          MemoryPool.GetMinimumAllocSize());
 
                     _adaptedTransport = adaptedPipeline;
                 }

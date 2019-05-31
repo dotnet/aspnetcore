@@ -9,7 +9,6 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -546,7 +545,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 pauseWriterThreshold: 1,
                 resumeWriterThreshold: 1,
                 useSynchronizationContext: false,
-                minimumSegmentSize: KestrelMemoryPool.MinimumSegmentSize
+                minimumSegmentSize: context.MemoryPool.GetMinimumSegmentSize()
             ));
     }
 }
