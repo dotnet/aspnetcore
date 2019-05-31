@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
 
@@ -23,7 +24,7 @@
     <IsPackable>false</IsPackable>
     <UseCodebase>true</UseCodebase>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
-    <DeployExtension Condition="'$(CI)' == 'true'">false</DeployExtension>
+    <DeployProjectOutput Condition="'$(CI)' == 'true'">false</DeployProjectOutput>
     <DisablePackageReferenceRestrictions>true</DisablePackageReferenceRestrictions>
   </PropertyGroup>
 
@@ -35,15 +36,6 @@
 
     BEGIN INTERESTING STUFF
   -->
-  <PropertyGroup>
-    <!--
-      Following VS convention of using the VS release # as a convention for the vsix version.
-
-      VS needs this build number to be parsable by System.Version, so it can't have any letters or a - which
-      is used by our build system.
-    -->
-    <VsixVersionPrefix>16.0.0</VsixVersionPrefix>
-  </PropertyGroup>
 
   <PropertyGroup>
     <!--
@@ -133,4 +125,20 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- These need to be set after Sdk.targets because $(VersionSuffixDateStamp) is empty before Sdk.targets is evaluated. -->
+  <PropertyGroup>
+    <!--
+      Following VS convention of using the VS release # as a convention for the vsix version.
+
+      VS needs this build number to be parsable by System.Version, so it can't have any letters or a - which
+      is used by our build system.
+    -->
+    <VsixVersion Condition="'$(VersionSuffixDateStamp)' != ''">16.0.$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</VsixVersion>
+    <!-- For local development, set this 42 so its always higher than officil builds. -->
+    <VsixVersion Condition="'$(VersionSuffixDateStamp)' == ''">42.42.42.4242424</VsixVersion>
+    <InformationalVersion>$(VsixVersion)</InformationalVersion>
+  </PropertyGroup>
 </Project>
