@@ -2,13 +2,13 @@
 <Project>
   <!-- Internal settings. Not intended for customization. -->
   <PropertyGroup>
-    <GenerateOpenApiReferenceCodeDependsOn>
+    <GenerateOpenApiCodeDependsOn>
       _GenerateErrorsForOldItems;
       _CreateOpenApiReferenceItemsForOpenApiProjectReferences;
       _GetMetadataForOpenApiReferences;
-      _GenerateOpenApiReferenceCode;
+      _GenerateOpenApiCode;
       _CreateCompileItemsForOpenApiReferences
-    </GenerateOpenApiReferenceCodeDependsOn>
+    </GenerateOpenApiCodeDependsOn>
   </PropertyGroup>
 
   <!-- OpenApiProjectReference support. -->
@@ -56,7 +56,7 @@
     <GetFileReferenceMetadata Inputs="@(OpenApiReference)"
         Extension="$(DefaultLanguageSourceExtension)"
         Namespace="$(RootNamespace)"
-        OutputDirectory="$(OpenApiDefaultOutputDirectory)">
+        OutputDirectory="$(OpenApiCodeDirectory)">
       <Output TaskParameter="Outputs" ItemName="_Temporary" />
     </GetFileReferenceMetadata>
 
@@ -73,16 +73,16 @@
     </GetCurrentItems>
   </Target>
 
-  <Target Name="_InnerGenerateOpenApiReferenceCode" DependsOnTargets="_GetCurrentOpenApiReference;$(GeneratorTarget)" />
+  <Target Name="_InnerGenerateOpenApiCode" DependsOnTargets="_GetCurrentOpenApiReference;$(GeneratorTarget)" />
 
-  <Target Name="_GenerateOpenApiReferenceCode"
-      Condition="$(OpenApiGenerateAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true')"
+  <Target Name="_GenerateOpenApiCode"
+      Condition="$(OpenApiGenerateCodeAtDesignTime) OR ('$(DesignTimeBuild)' != 'true' AND '$(BuildingProject)' == 'true')"
       Inputs="@(OpenApiReference)"
       Outputs="%(OutputPath)">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
         BuildInParallel="$(BuildInParallel)"
         Properties="GeneratorTargetPath=%(OpenApiReference.OutputPath);GeneratorTarget=Generate%(CodeGenerator);GeneratorMetadata=%(SerializedMetadata)"
-        Targets="_InnerGenerateOpenApiReferenceCode" />
+        Targets="_InnerGenerateOpenApiCode" />
   </Target>
 
   <Target Name="_CreateCompileItemsForOpenApiReferences" Condition="'@(OpenApiReference)' != ''">
@@ -136,12 +136,12 @@
 
   <!-- Main code generation entry point. -->
 
-  <Target Name="GenerateOpenApiReferenceCode" DependsOnTargets="$(GenerateOpenApiReferenceCodeDependsOn)" />
+  <Target Name="GenerateOpenApiCode" DependsOnTargets="$(GenerateOpenApiCodeDependsOn)" />
 
   <!-- Unless this is an inner build or default timing is disabled, tie code generation into the build. -->
 
-  <Target Name="_TieInGenerateOpenApiReferenceCode"
+  <Target Name="_TieInGenerateOpenApiCode"
       BeforeTargets="BeforeCompile"
-      Condition=" '$(OpenApiGenerateBeforeCompile)' == 'true' AND ('$(TargetFramework)' == '' OR '$(TargetFrameworks)' == '') "
-      DependsOnTargets="GenerateOpenApiReferenceCode" />
+      Condition=" '$(OpenApiGenerateCodeOnBuild)' == 'true' AND ('$(TargetFramework)' == '' OR '$(TargetFrameworks)' == '') "
+      DependsOnTargets="GenerateOpenApiCode" />
 </Project>

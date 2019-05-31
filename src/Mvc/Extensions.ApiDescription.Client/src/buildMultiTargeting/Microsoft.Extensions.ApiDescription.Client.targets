@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
-  <Target Name="GenerateOpenApiReferenceCode">
+  <Target Name="GenerateOpenApiCode">
     <MSBuild Projects="$(MSBuildProjectFile)"
-        Targets="GenerateOpenApiReferenceCode"
+        Targets="GenerateOpenApiCode"
         Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
         RemoveProperties="RuntimeIdentifier" />
   </Target>
 
-  <Target Name="_TieInGenerateOpenApiReferenceCode"
+  <Target Name="_TieInGenerateOpenApiCode"
       BeforeTargets="BeforeCompile"
-      Condition=" ''$(OpenApiGenerateBeforeCompile)' == 'true' "
-      DependsOnTargets="GenerateOpenApiReferenceCode" />
+      Condition=" ''$(OpenApiGenerateCodeOnBuild)' == 'true' "
+      DependsOnTargets="GenerateOpenApiCode" />
 </Project>
