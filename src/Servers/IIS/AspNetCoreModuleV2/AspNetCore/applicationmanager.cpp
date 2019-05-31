@@ -10,6 +10,7 @@
 #include "EventLog.h"
 
 extern BOOL         g_fInShutdown;
+extern BOOL         g_fInAppOfflineShutdown;
 
 //
 // Retrieves the application info from the application manager
@@ -108,12 +109,31 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 if (itr->second->ConfigurationPathApplies(configurationPath))
                 {
                     applicationsToRecycle.emplace_back(itr->second);
-                    itr = m_pApplicationInfoHash.erase(itr);
+                    // Delete after shutting the application down to avoid creating
+                    // another application info, which would just return app_offline.
+                    if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
+                    {
+                        ++itr;
+                    }
+                    else
+                    {
+                        itr = m_pApplicationInfoHash.erase(itr);
+                    }
                 }
                 else
                 {
                     ++itr;
+
                 }
+            }
+
+            if (m_handlerResolver.GetHostingModel() == APP_HOSTING_MODEL::HOSTING_IN_PROCESS)
+            {
+                // For detecting app_offline when the app_offline file isn't present.
+                // Normally, app_offline state is independent of application
+                // (Just checks for app_offline file).
+                // For shadow copying, we need some other indication that the app is offline.
+                g_fInAppOfflineShutdown = true;
             }
 
             // All applications were unloaded reset handler resolver validation logic
@@ -155,6 +175,26 @@ APPLICATION_MANAGER::RecycleApplicationFromManager(
                 }
             }
         }
+        {
+            SRWExclusiveLock lock(m_srwLock);
+            const std::wstring configurationPath = pszApplicationId;
+
+            // Remove apps after calling shutdown on each of them
+            // This is exclusive to in-process, as the shutdown of an inprocess app recycles
+            // the entire worker process.
+            auto itr = m_pApplicationInfoHash.begin();
+            while (itr != m_pApplicationInfoHash.end())
+            {
+                if (itr->second != nullptr && itr->second->ConfigurationPathApplies(configurationPath))
+                {
+                    itr = m_pApplicationInfoHash.erase(itr);
+                }
+                else
+                {
+                    ++itr;
+                }
+            }
+        }
     }
     CATCH_RETURN()
 
@@ -172,6 +212,7 @@ APPLICATION_MANAGER::ShutDown()
     // However, it is possible to receive multiple OnGlobalStopListening events
     // Protect against this by checking if we already shut down.
     g_fInShutdown = TRUE;
+    g_fInAppOfflineShutdown = true;
 
     // During shutdown we lock until we delete the application
     SRWExclusiveLock lock(m_srwLock);

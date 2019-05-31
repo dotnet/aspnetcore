@@ -11,12 +11,13 @@
 class AppOfflineTrackingApplication: public APPLICATION
 {
 public:
-    AppOfflineTrackingApplication(const IHttpApplication& application)
+    AppOfflineTrackingApplication(const IHttpApplication& application, const std::wstring& shadowCopyDirectory)
         : APPLICATION(application),
         m_applicationPath(application.GetApplicationPhysicalPath()),
         m_fileWatcher(nullptr),
         m_fAppOfflineProcessed(false)
     {
+        m_shadowCopyDirectory = shadowCopyDirectory;
     }
 
     ~AppOfflineTrackingApplication() override
@@ -37,6 +38,9 @@ public:
     VOID
     OnAppOffline();
 
+    // TODO protected
+    bool                                         m_detectedAppOffline;
+    std::wstring                                 m_shadowCopyDirectory;
 private:
     HRESULT
     StartMonitoringAppOflineImpl();

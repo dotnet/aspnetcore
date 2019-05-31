@@ -25,13 +25,13 @@ HRESULT AppOfflineTrackingApplication::StartMonitoringAppOffline()
 
 void AppOfflineTrackingApplication::StopInternal(bool fServerInitiated)
 {
-    APPLICATION::StopInternal(fServerInitiated);
-
     if (m_fileWatcher)
     {
         m_fileWatcher->StopMonitor();
         m_fileWatcher = nullptr;
     }
+
+    APPLICATION::StopInternal(fServerInitiated);
 }
 
 HRESULT AppOfflineTrackingApplication::StartMonitoringAppOflineImpl()
@@ -44,6 +44,7 @@ HRESULT AppOfflineTrackingApplication::StartMonitoringAppOflineImpl()
     m_fileWatcher = std::make_unique<FILE_WATCHER>();
     RETURN_IF_FAILED(m_fileWatcher->Create(m_applicationPath.c_str(),
         L"app_offline.htm",
+        m_shadowCopyDirectory,
         this));
 
     return S_OK;
@@ -56,11 +57,22 @@ void AppOfflineTrackingApplication::OnAppOffline()
         return;
     }
 
-    LOG_INFOF(L"Received app_offline notification in application '%ls'", m_applicationPath.c_str());
-    EventLog::Info(
-        ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
-        ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
-        m_applicationPath.c_str());
+    if (m_detectedAppOffline)
+    {
+        LOG_INFOF(L"Received app_offline notification in application '%ls'", m_applicationPath.c_str());
+        EventLog::Info(
+            ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
+            ASPNETCORE_EVENT_RECYCLE_APPOFFLINE_MSG,
+            m_applicationPath.c_str());
+    }
+    else
+    {
+        LOG_INFOF(L"Received file change notification in application '%ls'", m_applicationPath.c_str());
+        EventLog::Info(
+            ASPNETCORE_EVENT_RECYCLE_APPOFFLINE,
+            ASPNETCORE_EVENT_RECYCLE_FILECHANGE_MSG,
+            m_applicationPath.c_str());
+    }
 
     Stop(/*fServerInitiated*/ false);
 }

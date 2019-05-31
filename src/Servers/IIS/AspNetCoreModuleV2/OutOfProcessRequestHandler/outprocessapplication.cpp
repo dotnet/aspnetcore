@@ -2,14 +2,13 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "outprocessapplication.h"
-
 #include "SRWExclusiveLock.h"
 #include "exceptions.h"
 
 OUT_OF_PROCESS_APPLICATION::OUT_OF_PROCESS_APPLICATION(
     IHttpApplication& pApplication,
     std::unique_ptr<REQUESTHANDLER_CONFIG> pConfig) :
-    AppOfflineTrackingApplication(pApplication),
+    AppOfflineTrackingApplication(pApplication, /* shadowCopyDirectory */ std::wstring()),
     m_fWebSocketSupported(WEBSOCKET_STATUS::WEBSOCKET_UNKNOWN),
     m_pConfig(std::move(pConfig))
 {

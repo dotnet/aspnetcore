@@ -3,6 +3,8 @@
 
 #include "applicationinfo.h"
 
+#include "rpcdce.h"
+#include "Rpc.h"
 #include "proxymodule.h"
 #include "HostFxrResolver.h"
 #include "debugutil.h"
@@ -18,6 +20,7 @@
 #include "file_utility.h"
 
 extern HINSTANCE           g_hServerModule;
+extern BOOL         g_fInAppOfflineShutdown;
 
 HRESULT
 APPLICATION_INFO::CreateHandler(
@@ -49,7 +52,6 @@ APPLICATION_INFO::CreateHandler(
         while (hr != S_OK)
         {
             // At this point application is either null or shutdown and is returning S_FALSE
-
             if (m_pApplication != nullptr)
             {
                 LOG_INFO(L"Application went offline");
@@ -80,6 +82,20 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 
         return S_OK;
     }
+
+    if (g_fInAppOfflineShutdown)
+    {
+        m_pApplication = make_application<ServerErrorApplication>(
+            pHttpApplication,
+            E_FAIL,
+            false /* disableStartupPage */,
+            "" /* responseContent */,
+            503i16 /* statusCode */,
+            0i16 /* subStatusCode */,
+            "Application Shutting Down");
+        return S_OK;
+    }
+
     try
     {
         const WebConfigConfigurationSource configurationSource(m_pServer.GetAdminManager(), pHttpApplication);
@@ -93,6 +109,7 @@ APPLICATION_INFO::CreateApplication(IHttpContext& pHttpContext)
 
         if (FAILED_LOG(hr))
         {
+            OBSERVE_CAUGHT_EXCEPTION();
             EventLog::Error(
                 ASPNETCORE_EVENT_ADD_APPLICATION_ERROR,
                 ASPNETCORE_EVENT_ADD_APPLICATION_ERROR_MSG,
@@ -175,13 +192,16 @@ APPLICATION_INFO::TryCreateApplication(IHttpContext& pHttpContext, const ShimOpt
         }
     }
 
-    RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), m_pApplicationFactory, options, error));
+    std::filesystem::path shadowCopyPath = HandleShadowCopy(options, pHttpContext);
+
+    RETURN_IF_FAILED(m_handlerResolver.GetApplicationFactory(*pHttpContext.GetApplication(), shadowCopyPath, m_pApplicationFactory, options, error));
     LOG_INFO(L"Creating handler application");
 
     IAPPLICATION * newApplication;
     RETURN_IF_FAILED(m_pApplicationFactory->Execute(
         &m_pServer,
         &pHttpContext,
+        shadowCopyPath,
         &newApplication));
 
     m_pApplication.reset(newApplication);
@@ -206,19 +226,92 @@ APPLICATION_INFO::TryCreateHandler(
             return S_OK;
         }
     }
+
     return S_FALSE;
 }
 
 VOID
 APPLICATION_INFO::ShutDownApplication(const bool fServerInitiated)
 {
-    SRWExclusiveLock lock(m_applicationLock);
-
-    if (m_pApplication)
+    IAPPLICATION* app = nullptr;
     {
-        LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
-        m_pApplication->Stop(fServerInitiated);
-        m_pApplication = nullptr;
-        m_pApplicationFactory = nullptr;
+        SRWExclusiveLock lock(m_applicationLock);
+        if (!m_pApplication)
+        {
+            return;
+        }
+        app = m_pApplication.get();
     }
+   
+    LOG_INFOF(L"Stopping application '%ls'", QueryApplicationInfoKey().c_str());
+    app->Stop(fServerInitiated);
+    LOG_INFO(L"Setting app to null");
+
+    SRWExclusiveLock lock(m_applicationLock);
+    LOG_INFO(L"lock acquired");
+
+    m_pApplication = nullptr;
+    m_pApplicationFactory = nullptr;
+}
+
+std::wstring
+APPLICATION_INFO::HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext)
+{
+    std::filesystem::path shadowCopyPath;
+
+    if (options.QueryShadowCopyEnabled())
+    {
+        shadowCopyPath = options.QueryShadowCopyDirectory();
+        std::wstring physicalPath = pHttpContext.GetApplication()->GetApplicationPhysicalPath();
+
+        // Make shadow copy path absolute.
+        if (!shadowCopyPath.is_absolute())
+        {
+            shadowCopyPath = std::filesystem::absolute(std::filesystem::path(physicalPath) / shadowCopyPath);
+        }
+
+        // The shadow copy directory itself isn't copied to directly.
+        // Instead subdirectories with numerically increasing names are created.
+        // This is because on shutdown, the app itself will still have all dlls loaded,
+        // meaning we can't copy to the same subdirectory. Therefore, on shutdown,
+        // we create a directory that is one larger than the previous largest directory number.
+        auto directoryName = 0;
+        std::string directoryNameStr = "0";
+        auto shadowCopyBaseDirectory = std::filesystem::directory_entry(shadowCopyPath);
+        if (!shadowCopyBaseDirectory.exists())
+        {
+            CreateDirectory(shadowCopyBaseDirectory.path().wstring().c_str(), NULL);
+        }
+
+        for (auto& entry : std::filesystem::directory_iterator(shadowCopyPath))
+        {
+            if (entry.is_directory())
+            {
+                try
+                {
+                    std::string::size_type size;
+                    int intFileName = std::stoi(entry.path().filename().string(), &size);
+                    if (intFileName > directoryName)
+                    {
+                        directoryName = intFileName;
+                        directoryNameStr = std::string(entry.path().string());
+                    }
+                }
+                catch (...)
+                {
+                    OBSERVE_CAUGHT_EXCEPTION();
+                    // Ignore any folders that can't be converted to an int.
+                }
+            }
+        }
+
+        shadowCopyPath = shadowCopyPath / std::filesystem::path(directoryNameStr);
+        HRESULT hr = Environment::CopyToDirectory(physicalPath, shadowCopyPath, options.QueryCleanShadowCopyDirectory(), shadowCopyBaseDirectory.path().parent_path());
+        if (hr != S_OK)
+        {
+            return std::wstring();
+        }
+    }
+
+    return shadowCopyPath;
 }

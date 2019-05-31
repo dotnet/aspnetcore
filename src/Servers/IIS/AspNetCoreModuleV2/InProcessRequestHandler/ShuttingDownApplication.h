@@ -32,7 +32,7 @@ class ShuttingDownApplication : public InProcessApplicationBase
 {
 public:
     ShuttingDownApplication(IHttpServer& pHttpServer, IHttpApplication& pHttpApplication)
-        : InProcessApplicationBase(pHttpServer, pHttpApplication)
+        : InProcessApplicationBase(pHttpServer, pHttpApplication, /* shadowCopyDirectory */ std::wstring())
     {
     }
 

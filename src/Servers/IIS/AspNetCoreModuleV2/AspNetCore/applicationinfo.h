@@ -66,6 +66,7 @@ public:
         return false;
     }
 
+
 private:
 
     HRESULT
@@ -78,6 +79,9 @@ private:
 
     HRESULT
     TryCreateApplication(IHttpContext& pHttpContext, const ShimOptions& options, ErrorContext& error);
+
+    std::wstring
+    HandleShadowCopy(const ShimOptions& options, IHttpContext& pHttpContext);
 
     IHttpServer            &m_pServer;
     HandlerResolver        &m_handlerResolver;

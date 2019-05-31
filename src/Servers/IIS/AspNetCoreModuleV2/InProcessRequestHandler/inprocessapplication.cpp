@@ -22,7 +22,9 @@ IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(
     std::unique_ptr<InProcessOptions> pConfig,
     APPLICATION_PARAMETER* pParameters,
     DWORD                  nParameters) :
-    InProcessApplicationBase(pHttpServer, pApplication),
+    InProcessApplicationBase(pHttpServer,
+        pApplication,
+        FindParameter<PCWSTR>("ShadowCopyDirectory", pParameters, nParameters)),
     m_Initialized(false),
     m_blockManagedCallbacks(true),
     m_waitForShutdown(true),
@@ -48,6 +50,9 @@ IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 VOID
 IN_PROCESS_APPLICATION::StopInternal(bool fServerInitiated)
 {
+    // Stop app offline tracking before shutting down CLR.
+    // This is to help with shadow copy scenario where the app is shutting down.
+    AppOfflineTrackingApplication::StopInternal(fServerInitiated);
     StopClr();
     InProcessApplicationBase::StopInternal(fServerInitiated);
 }
@@ -90,6 +95,12 @@ IN_PROCESS_APPLICATION::StopClr()
     {
         // Worker thread would wait for clr to finish and log error if required
         m_workerThread.join();
+    }
+
+    if (m_folderCleanupThread.joinable())
+    {
+        // Worker thread would wait for clr to finish and log error if required
+        m_folderCleanupThread.join();
     }
 
     s_Application = nullptr;
@@ -146,6 +157,29 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
 
     LOG_INFO(L"Waiting for initialization");
 
+    THROW_IF_FAILED(StartMonitoringAppOffline());
+
+    if (!m_shadowCopyDirectory.empty())
+    {
+        if (!Environment::CheckUpToDate(QueryApplicationPhysicalPath(), m_shadowCopyDirectory, L".dll", std::filesystem::path(m_shadowCopyDirectory).parent_path()))
+        {
+            Stop(/* fServerInitiated */false);
+            throw InvalidOperationException(L"File changed between copy and start of application, restarting.");
+        }
+        // Cleanup other directories that haven't been removed.
+        m_folderCleanupThread = std::thread([](std::wstring shadowCopyDir)
+            {
+                auto parentDir = std::filesystem::path(shadowCopyDir).parent_path();
+                for (auto& p : std::filesystem::directory_iterator(parentDir))
+                {
+                    if (p.path() != shadowCopyDir)
+                    {
+                        std::filesystem::remove_all(p.path());
+                    }
+                }
+            }, m_shadowCopyDirectory);
+    }
+
     m_workerThread = std::thread([](std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> application)
     {
         LOG_INFO(L"Starting in-process worker thread");
@@ -188,8 +222,6 @@ IN_PROCESS_APPLICATION::LoadManagedApplication(ErrorContext& errorContext)
         throw InvalidOperationException(format(L"CLR worker thread exited prematurely"));
     }
 
-    THROW_IF_FAILED(StartMonitoringAppOffline());
-
     return S_OK;
 }
 
@@ -209,7 +241,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             THROW_IF_FAILED(HostFxrResolutionResult::Create(
                 m_dotnetExeKnownLocation,
                 m_pConfig->QueryProcessPath(),
-                QueryApplicationPhysicalPath(),
+                m_shadowCopyDirectory.empty() ? QueryApplicationPhysicalPath() : m_shadowCopyDirectory,
                 m_pConfig->QueryArguments(),
                 errorContext,
                 hostFxrResolutionResult
@@ -577,7 +609,6 @@ IN_PROCESS_APPLICATION::CreateHandler(
     try
     {
         SRWSharedLock dataLock(m_dataLock);
-
         DBG_ASSERT(!m_fStopCalled);
         m_requestCount++;
 

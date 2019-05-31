@@ -22,5 +22,12 @@ public:
     std::wstring GetDllDirectoryValue();
     static
     bool IsRunning64BitProcess();
+    static
+    HRESULT CopyToDirectory(std::wstring source, std::filesystem::path destination, bool cleanDest, std::filesystem::path directoryToIgnore);
+    static
+    bool CheckUpToDate(std::wstring source, std::filesystem::path destination, const std::wstring& extension, const std::filesystem::path& directoryToIgnore);
+private:
+    static
+    void CopyToDirectoryInner(const std::filesystem::path& source_folder, const std::filesystem::path& target_folder, const std::filesystem::path& directoryToIgnore);
 };
 
