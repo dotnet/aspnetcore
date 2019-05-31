@@ -39,4 +39,9 @@
       https://dotnet.myget.org/F/roslyn-tools/api/v3/index.json;
     </RestoreSources>
   </PropertyGroup>
+
+  <!-- Prevent pdb2pdb.exe from running because it is currently causing build failures in Blazor. -->
+  <PropertyGroup>
+    <PublishWindowsPdb>false</PublishWindowsPdb>
+  </PropertyGroup>
 </Project>
