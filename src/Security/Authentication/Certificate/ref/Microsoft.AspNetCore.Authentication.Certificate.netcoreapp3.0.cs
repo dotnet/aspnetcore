@@ -6,7 +6,6 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
     public static partial class CertificateAuthenticationDefaults
     {
         public const string AuthenticationScheme = "Certificate";
-        public const string CertificateItemsKey = "Certificate";
     }
     public partial class CertificateAuthenticationEvents
     {
