@@ -375,9 +375,12 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             Helpers.ModifyFrameworkVersionInRuntimeConfig(deploymentResult);
             if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.31 - ANCM Failed to Find Native Dependencies");
-                var responseString = await deploymentResult.HttpClient.GetStringAsync("/HelloWorld");
-                Assert.Contains("The specified framework 'Microsoft.NETCore.App', version '2.9.9'", responseString);
+                var response = await deploymentResult.HttpClient.GetAsync("/HelloWorld");
+
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Assert.Contains("HTTP Error 500.31 - ANCM Failed to Find Native Dependencies", responseContent);
+                Assert.Contains("The specified framework 'Microsoft.NETCore.App', version '2.9.9'", responseContent);
             }
             else
             {
