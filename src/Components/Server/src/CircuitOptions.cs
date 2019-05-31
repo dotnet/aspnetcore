@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Components.Server
         public TimeSpan DisconnectedCircuitRetentionPeriod { get; set; } = TimeSpan.FromMinutes(3);
 
         /// <summary>
-        /// Gets the <see cref="IDataProtector"/> used to protect the generated circuit Ids.
+        /// Gets or sets the <see cref="IDataProtector"/> used to protect the generated circuit Ids.
         /// </summary>
         public IDataProtector CircuitIdProtector { get; set; }
     }
