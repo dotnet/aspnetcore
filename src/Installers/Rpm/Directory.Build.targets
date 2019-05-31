@@ -9,11 +9,7 @@
     <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
   </PropertyGroup>
 
-  <Target Name="GetTargetPath" Returns="$(TargetPath)">
-    <PropertyGroup>
-      <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
-    </PropertyGroup>
-  </Target>
+  <Target Name="GetTargetPath" Returns="$(TargetPath)" />
 
   <Target Name="PrepareForBuild">
     <MakeDir Directories="$(IntermediateOutputPath)" />
@@ -56,25 +52,25 @@
 
     <ItemGroup>
       <FpmArgs Include="--verbose" />
-      <FpmArgs Include="--input-type;dir" />
-      <FpmArgs Include="--output-type;rpm" />
-      <FpmArgs Include="--name;$(PackageId)" />
-      <FpmArgs Include="--package;$(TargetPath)" />
-      <FpmArgs Include="--version;$(PackageVersion)" />
-      <FpmArgs Include="--iteration;$(PackageRevision)" />
-      <FpmArgs Include="--architecture;$(RpmArch)" />
-      <FpmArgs Include="--depends;%(RpmDependency.Identity) &gt;= %(RpmDependency.Version)" Condition=" '%(RpmDependency.Identity)' != '' "  />
-      <FpmArgs Include="--rpm-changelog;$(GeneratedChangeLog)" />
-      <FpmArgs Include="--rpm-summary;$(PackageSummary)" />
-      <FpmArgs Include="--description;$(PackageDescription)" />
-      <FpmArgs Include="--maintainer;$(Authors) &lt;$(MaintainerEmail)&gt;" />
-      <FpmArgs Include="--vendor;$(Company)" />
-      <FpmArgs Include="--license;$(PackageLicenseExpression)" />
-      <FpmArgs Include="--url;$(PackageProjectUrl)" />
-      <FpmArgs Include="--directories;%(InstallerOwnedDirectory.Identity)" Condition=" '%(InstallerOwnedDirectory.Identity)' != '' " />
-      <FpmArgs Include="$(PackageContentRoot)=$(RpmPackageInstallRoot)" />
+      <FpmArgs Include="--input-type=dir" />
+      <FpmArgs Include="--output-type=rpm" />
+      <FpmArgs Include="--name=$(PackageId)" />
+      <FpmArgs Include="--package=$(TargetPath)" />
+      <FpmArgs Include="--version=$(PackageVersion)" />
+      <FpmArgs Include="--iteration=$(PackageRevision)" />
+      <FpmArgs Include="--architecture=$(RpmArch)" />
+      <FpmArgs Include="--depends=&quot;%(RpmDependency.Identity) &gt;= %(RpmDependency.Version)&quot;" Condition=" '%(RpmDependency.Identity)' != '' "  />
+      <FpmArgs Include="--rpm-changelog=&quot;$(GeneratedChangeLog)&quot;" />
+      <FpmArgs Include="--rpm-summary=&quot;$(PackageSummary)&quot;" />
+      <FpmArgs Include="--description=&quot;$(PackageDescription)&quot;" />
+      <FpmArgs Include="--maintainer=&quot;$(Authors) &lt;$(MaintainerEmail)&gt;&quot;" />
+      <FpmArgs Include="--vendor=&quot;$(Company)&quot;" />
+      <FpmArgs Include="--license=$(PackageLicenseExpression)" />
+      <FpmArgs Include="--url=$(PackageProjectUrl)" />
+      <FpmArgs Include="--directories=&quot;%(InstallerOwnedDirectory.Identity)&quot;" Condition=" '%(InstallerOwnedDirectory.Identity)' != '' " />
+      <FpmArgs Include="&quot;$(PackageContentRoot)=$(RpmPackageInstallRoot)&quot;" />
     </ItemGroup>
 
-    <Exec Command="fpm @(FpmArgs->'&quot;%(Identity)&quot;',' ')" />
+    <Exec Command="fpm @(FpmArgs,' ')" />
   </Target>
 </Project>

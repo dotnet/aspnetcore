@@ -28,6 +28,7 @@
 
   <PropertyGroup>
     <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).rpm</TargetFileName>
+    <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
 
     <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
 
