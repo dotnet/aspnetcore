@@ -63,7 +63,7 @@ export class HttpConnection implements IConnection {
     private stopPromiseResolver!: (value?: PromiseLike<void>) => void;
     private stopError?: Error;
     private accessTokenFactory?: () => string | Promise<string>;
-    private sendQueue: TransportSendQueue = new TransportSendQueue();
+    private sendQueue?: TransportSendQueue;
 
     public readonly features: any = {};
     public connectionId?: string;
@@ -147,8 +147,12 @@ export class HttpConnection implements IConnection {
             return Promise.reject(new Error("Cannot send data if the connection is not in the 'Connected' State."));
         }
 
+        if (!this.sendQueue) {
+            this.sendQueue = new TransportSendQueue(this.transport!);
+        }
+
         // Transport will not be null if state is connected
-        return this.sendQueue.send(this.transport!, data);
+        return this.sendQueue.send(data);
     }
 
     public async stop(error?: Error): Promise<void> {
@@ -190,6 +194,11 @@ export class HttpConnection implements IConnection {
         // The transport should always be set if currently connected. If it wasn't set, it's likely because
         // stop was called during start() and start() failed.
         if (this.transport) {
+            if (this.sendQueue) {
+                this.sendQueue.stop();
+                this.sendQueue = undefined;
+            }
+
             try {
                 await this.transport.stop();
             } catch (e) {
@@ -504,57 +513,65 @@ function transportMatches(requestedTransport: HttpTransportType | undefined, act
 }
 
 export class TransportSendQueue {
-    private sending: boolean = false;
     private buffer: any[] = [];
-    private promiseQueue?: Promise<void>;
+    private sendBufferedData: PromiseSource;
+    private executing: boolean = true;
+    private transportResult: PromiseSource;
 
-    public async send(transport: ITransport, data: string | ArrayBuffer): Promise<void> {
-        return this.sending ?
-            this.bufferData(transport, data) :
-            this.sendCore(transport, data);
+    constructor(private transport: ITransport) {
+        this.sendBufferedData = new PromiseSource();
+        this.transportResult = new PromiseSource();
+
+        // Suppress typescript error about handling Promises. The sendLoop doesn't need to be observed
+        this.sendLoop().then(() => {}, (_) => {});
     }
 
-    private async sendCore(transport: ITransport, data: string | ArrayBuffer) {
-        this.sending = true;
-
-        let resolve: () => void;
-        this.promiseQueue = new Promise((r) => resolve = r);
-
-        try {
-            await transport.send(data);
-        } finally {
-            this.sending = false;
-            this.promiseQueue = undefined;
-            resolve!();
-        }
+    public send(data: string | ArrayBuffer): Promise<void> {
+        this.bufferData(data);
+        return this.transportResult.promise;
     }
 
-    private bufferData(transport: ITransport, data: string | ArrayBuffer) {
-        if (this.buffer.length) {
-            if (typeof(this.buffer[0]) !== typeof(data)) {
-                throw new Error(`Expected data to be of type ${typeof(this.buffer)} but was of type ${typeof(data)}`);
-            }
-        } else {
-            // For the first entry, update the promise to queue up a buffer send
-            this.promiseQueue = this.promiseQueue!
-                .then(() => this.sendBufferedData(transport));
+    public stop(): void {
+        this.executing = false;
+        this.sendBufferedData.resolve();
+    }
+
+    private bufferData(data: string | ArrayBuffer): void {
+        if (this.buffer.length && typeof(this.buffer[0]) !== typeof(data)) {
+            throw new Error(`Expected data to be of type ${typeof(this.buffer)} but was of type ${typeof(data)}`);
         }
 
         this.buffer.push(data);
-        return this.promiseQueue;
+        this.sendBufferedData.resolve();
     }
 
-    private sendBufferedData(transport: ITransport): Promise<void> {
-        if (!this.buffer.length) {
-            return Promise.resolve();
+    private async sendLoop(): Promise<void> {
+        while (true) {
+            await this.sendBufferedData.promise;
+
+            if (!this.executing) {
+                // Did we stop?
+                break;
+            }
+
+            this.sendBufferedData = new PromiseSource();
+
+            const transportResult = this.transportResult;
+            this.transportResult = new PromiseSource();
+
+            const data = typeof(this.buffer[0]) === "string" ?
+                this.buffer.join("") :
+                TransportSendQueue.concatBuffers(this.buffer);
+
+            this.buffer.length = 0;
+
+            try {
+                await this.transport.send(data);
+                transportResult.resolve();
+            } catch (error) {
+                transportResult.reject(error);
+            }
         }
-
-        const data = typeof(this.buffer[0]) === "string" ?
-            this.buffer.join("") :
-            TransportSendQueue.concatBuffers(this.buffer);
-
-        this.buffer.length = 0;
-        return this.sendCore(transport, data);
     }
 
     private static concatBuffers(arrayBuffers: ArrayBuffer[]): ArrayBuffer {
@@ -567,5 +584,23 @@ export class TransportSendQueue {
         }
 
         return result;
+    }
+}
+
+class PromiseSource {
+    private resolver?: () => void;
+    private rejecter!: (reason?: any) => void;
+    public promise: Promise<void>;
+
+    constructor() {
+        this.promise = new Promise((resolve, reject) => [this.resolver, this.rejecter] = [resolve, reject]);
+    }
+
+    public resolve(): void {
+        this.resolver!();
+    }
+
+    public reject(reason?: any): void {
+        this.rejecter!(reason);
     }
 }

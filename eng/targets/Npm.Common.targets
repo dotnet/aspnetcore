@@ -53,6 +53,23 @@
 
     <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
 
+    <ReadLinesFromFile File="$(PackageJson)" Condition="@(ReplacePackageContent->Count()) != 0">
+      <Output TaskParameter="Lines" ItemName="PackageJsonContent" />
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <_PackageJsonContent>@(PackageJsonContent->'%(Identity)', '%0a')</_PackageJsonContent>
+      <_PackageJsonContent>$(_PackageJsonContent.Replace('%(ReplacePackageContent.Identity)', '%(ReplacePackageContent.ReplaceWith)'))</_PackageJsonContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      File="$(PackageJson)"
+      Lines="$(_PackageJsonContent)"
+      Condition="@(ReplacePackageContent->Count()) != 0"
+      Overwrite="true" />
+
+    <Message Text="$(_PackageJsonContent)" Importance="High" />
+
     <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
     <Yarn Command="pack --filename $(PackageFileName)" />
 
