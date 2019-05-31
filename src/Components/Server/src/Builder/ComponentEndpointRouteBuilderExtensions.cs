@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
-            return new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(ComponentHub.DefaultPath));
+            return endpoints.MapBlazorHub(configureOptions: _ => { });
         }
 
         /// <summary>
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(selector));
             }
 
-            return new ComponentEndpointConventionBuilder(endpoints.MapHub<ComponentHub>(path)).AddComponent(componentType, selector);
+            return endpoints.MapBlazorHub(componentType, selector, path, configureOptions: _ => { });
         }
 
         /// <summary>
