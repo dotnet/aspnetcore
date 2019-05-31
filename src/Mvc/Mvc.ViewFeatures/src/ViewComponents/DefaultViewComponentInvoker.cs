@@ -93,6 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
             await result.ExecuteAsync(context);
         }
 
+#nullable enable
         private async Task<IViewComponentResult> InvokeAsyncCore(ObjectMethodExecutor executor, ViewComponentContext context)
         {
             var component = _viewComponentFactory.CreateViewComponent(context);
@@ -168,6 +169,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 return viewComponentResult;
             }
         }
+#nullable restore
 
         private static IViewComponentResult CoerceToViewComponentResult(object value)
         {
