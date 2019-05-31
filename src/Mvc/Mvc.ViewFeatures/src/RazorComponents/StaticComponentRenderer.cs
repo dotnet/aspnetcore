@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
@@ -33,9 +34,30 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
             InitializeUriHelper(httpContext);
             using (var htmlRenderer = new HtmlRenderer(httpContext.RequestServices, _encoder.Encode, dispatcher))
             {
-                var result = await dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync(
-                    componentType,
-                    parameters));
+                ComponentRenderedText result = default;
+                try
+                {
+                    result = await dispatcher.InvokeAsync(() => htmlRenderer.RenderComponentAsync(
+                        componentType,
+                        parameters));
+                }
+                catch (NavigationException navigationException)
+                {
+                    // Navigation was attempted during prerendering.
+                    if (httpContext.Response.HasStarted)
+                    {
+                        // We can't perform a redirect as the server already started sending the response.
+                        // This is considered an application error as the developer should buffer the response until
+                        // all components have rendered.
+                        throw new InvalidOperationException("A navigation command was attempted during prerendering after the server already started sending the response. " +
+                            "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                            "reponse and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.", navigationException);
+                    }
+
+                    httpContext.Response.Redirect(navigationException.Location);
+                    return Array.Empty<string>();
+                }
+
                 return result.Tokens;
             }
         }

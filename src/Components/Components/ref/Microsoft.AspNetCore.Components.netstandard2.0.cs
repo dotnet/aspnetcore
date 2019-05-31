@@ -361,6 +361,11 @@ namespace Microsoft.AspNetCore.Components
         public static explicit operator Microsoft.AspNetCore.Components.MarkupString (string value) { throw null; }
         public override string ToString() { throw null; }
     }
+    public partial class NavigationException : System.Exception
+    {
+        public NavigationException(string uri) { }
+        public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct Parameter
     {
