@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling.Internal;
@@ -16,7 +17,6 @@ namespace Microsoft.AspNetCore.RequestThrottling
     public class RequestThrottlingMiddleware
     {
         private readonly RequestQueue _requestQueue;
-        private readonly RequestThrottlingOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
 
@@ -32,11 +32,16 @@ namespace Microsoft.AspNetCore.RequestThrottling
             {
                 throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be specified.", nameof(options));
             }
+            if (options.Value.RequestQueueLimit < 0)
+            {
+                throw new ArgumentException("The value of 'options.RequestQueueLimit' must be a positive integer.", nameof(options));
+            }
 
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
-            _options = options.Value;
-            _requestQueue = new RequestQueue(_options.MaxConcurrentRequests.Value);
+            _requestQueue = new RequestQueue(
+                options.Value.MaxConcurrentRequests.Value,
+                options.Value.RequestQueueLimit);
         }
 
         /// <summary>
@@ -46,17 +51,24 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <returns>A <see cref="Task"/> that completes when the request leaves.</returns>
         public async Task Invoke(HttpContext context)
         {
-            var waitInQueueTask = _requestQueue.EnterQueue();
-
-            if (waitInQueueTask.IsCompletedSuccessfully)
+            var waitInQueueTask = _requestQueue.TryEnterQueueAsync();
+            if (waitInQueueTask.IsCompletedSuccessfully && !waitInQueueTask.Result)
             {
-                RequestThrottlingLog.RequestRunImmediately(_logger);
+                RequestThrottlingLog.RequestRejectedQueueFull(_logger);
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                return;
+            }
+            else if (!waitInQueueTask.IsCompletedSuccessfully)
+            {
+                RequestThrottlingLog.RequestEnqueued(_logger, ActiveRequestCount);
+                var result = await waitInQueueTask;
+                RequestThrottlingLog.RequestDequeued(_logger, ActiveRequestCount);
+
+                Debug.Assert(result);
             }
             else
             {
-                RequestThrottlingLog.RequestEnqueued(_logger, WaitingRequests);
-                await waitInQueueTask;
-                RequestThrottlingLog.RequestDequeued(_logger, WaitingRequests);
+                RequestThrottlingLog.RequestRunImmediately(_logger, ActiveRequestCount);
             }
 
             try
@@ -70,46 +82,48 @@ namespace Microsoft.AspNetCore.RequestThrottling
         }
 
         /// <summary>
-        /// The number of live requests that are downstream from this middleware.
-        /// Cannot exceeed <see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
+        /// The number of requests currently on the server.
+        /// Cannot exceeed the sum of <see cref="RequestThrottlingOptions.RequestQueueLimit"> and </see>/><see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
         /// </summary>
-        internal int ConcurrentRequests
+        internal int ActiveRequestCount
         {
-            get => _requestQueue.ConcurrentRequests;
+            get => _requestQueue.TotalRequests;
         }
 
-        /// <summary>
-        /// Number of requests currently enqueued and waiting to be processed.
-        /// </summary>
-        internal int WaitingRequests
-        {
-            get => _requestQueue.WaitingRequests;
-        }
+        // TODO :: update log wording to reflect the changes
 
         private static class RequestThrottlingLog
         {
             private static readonly Action<ILogger, int, Exception> _requestEnqueued =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "RequestEnqueued"), "Concurrent request limit reached, queuing request. Current queue length: {QueuedRequests}.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "RequestEnqueued"), "MaxConcurrentRequests limit reached, request has been queued. Current active requests: {ActiveRequests}.");
 
             private static readonly Action<ILogger, int, Exception> _requestDequeued =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "RequestDequeued"), "Request dequeued. Current queue length: {QueuedRequests}.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "RequestDequeued"), "Request dequeued. Current active requests: {ActiveRequests}.");
 
-            private static readonly Action<ILogger, Exception> _requestRunImmediately =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(3, "RequestRunImmediately"), "Concurrent request limit has not been reached, running request immediately.");
+            private static readonly Action<ILogger, int, Exception> _requestRunImmediately =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(3, "RequestRunImmediately"), "Below MaxConcurrentRequests limit, running request immediately. Current active requests: {ActiveRequests}");
 
-            internal static void RequestEnqueued(ILogger logger, int queuedRequests)
+            private static readonly Action<ILogger, Exception> _requestRejectedQueueFull =
+                LoggerMessage.Define(LogLevel.Debug, new EventId(4, "RequestRejectedQueueFull"), "Currently at the 'RequestQueueLimit', rejecting this request with a '503 server not availible' error");
+
+            internal static void RequestEnqueued(ILogger logger, int activeRequests)
             {
-                _requestEnqueued(logger, queuedRequests, null);
+                _requestEnqueued(logger, activeRequests, null);
             }
 
-            internal static void RequestDequeued(ILogger logger, int queuedRequests)
+            internal static void RequestDequeued(ILogger logger, int activeRequests)
             {
-                _requestDequeued(logger, queuedRequests, null);
+                _requestDequeued(logger, activeRequests, null);
             }
 
-            internal static void RequestRunImmediately(ILogger logger)
+            internal static void RequestRunImmediately(ILogger logger, int activeRequests)
             {
-                _requestRunImmediately(logger, null);
+                _requestRunImmediately(logger, activeRequests, null);
+            }
+
+            internal static void RequestRejectedQueueFull(ILogger logger)
+            {
+                _requestRejectedQueueFull(logger, null);
             }
         }
     }
