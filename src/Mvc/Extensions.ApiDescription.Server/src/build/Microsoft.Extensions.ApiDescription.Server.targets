@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
   <PropertyGroup>
-    <_OpenApiDocumentsCache>$(BaseIntermediateOutputPath)$(MSBuildProjectFile).OpenApiFiles.cache</_OpenApiDocumentsCache>
+    <_OpenApiDocumentsCache>$(BaseIntermediateOutputPath)$(MSBuildProjectName).OpenApiFiles.cache</_OpenApiDocumentsCache>
   </PropertyGroup>
   <ItemGroup Condition=" '$(OpenApiRetrieveDocuments)' == 'true' ">
     <ProjectCapability Include="OpenApiGetDocuments" />

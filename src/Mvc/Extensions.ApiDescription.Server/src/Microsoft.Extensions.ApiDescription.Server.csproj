@@ -8,7 +8,7 @@
     <!-- Do not complain about lack of lib folder. -->
     <NoPackageAnalysis>true</NoPackageAnalysis>
 
-    <!-- Included primarily to ensure GetDocumentInsider and dotnet-getdocument can be referenced. -->
+    <!-- Included primarily to ensure dotnet-getdocument and GetDocument.Insider can be referenced. -->
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
 
     <Description>MSBuild tasks and targets for build-time Swagger and OpenApi document generation</Description>
@@ -28,7 +28,7 @@
 
   <ItemGroup>
     <Reference Include="dotnet-getdocument" Condition=" '$(TargetFramework)' == 'netcoreapp2.1' " />
-    <Reference Include="GetDocumentInsider" />
+    <Reference Include="GetDocument.Insider" />
   </ItemGroup>
 
   <Target Name="PopulateNuspec">
