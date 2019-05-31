@@ -39,13 +39,6 @@ namespace Microsoft.AspNetCore.Builder
         public string FormFieldName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
 }
-namespace Microsoft.AspNetCore.DependencyInjection
-{
-    public static partial class CertificateForwardingServiceExtensions
-    {
-        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCertificateForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions> configure) { throw null; }
-    }
-}
 namespace Microsoft.AspNetCore.HttpOverrides
 {
     public partial class CertificateForwardingMiddleware
@@ -95,5 +88,12 @@ namespace Microsoft.AspNetCore.HttpOverrides
         public System.Net.IPAddress Prefix { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public int PrefixLength { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public bool Contains(System.Net.IPAddress address) { throw null; }
+    }
+}
+namespace Microsoft.AspNetCore.DependencyInjection
+{
+    public static partial class CertificateForwardingServiceExtensions
+    {
+        public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddCertificateForwarding(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.HttpOverrides.CertificateForwardingOptions> configure) { throw null; }
     }
 }
