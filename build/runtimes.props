@@ -4,6 +4,12 @@
     <DotNetCoreRuntime Include="$(MicrosoftNETCoreAppPackageVersion)"
       Feed="$(DotNetAssetRootUrl)"
       FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
+
+    <DotNetCoreRuntime Condition="'$(OS)' == 'Windows_NT'"
+      Include="$(MicrosoftNETCoreAppPackageVersion)"
+      Arch="x86"
+      Feed="$(DotNetAssetRootUrl)"
+      FeedCredential="$(DotNetAssetRootAccessTokenSuffix)" />
   </ItemGroup>
 
 </Project>
