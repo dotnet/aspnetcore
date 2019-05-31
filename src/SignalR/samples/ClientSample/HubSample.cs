@@ -29,7 +29,9 @@ namespace ClientSample
         public static async Task<int> ExecuteAsync(string baseUrl)
         {
             var uri = baseUrl == null ? new Uri("net.tcp://127.0.0.1:9001") : new Uri(baseUrl);
+
             Console.WriteLine("Connecting to {0}", uri);
+
             var connectionBuilder = new HubConnectionBuilder()
                 .ConfigureLogging(logging =>
                 {
@@ -53,58 +55,57 @@ namespace ClientSample
             connectionBuilder.WithAutomaticReconnect();
 
             var connection = connectionBuilder.Build();
+            var closedTokenSource = new CancellationTokenSource();
 
             Console.CancelKeyPress += (sender, a) =>
             {
                 a.Cancel = true;
+                closedTokenSource.Cancel();
                 connection.DisposeAsync().GetAwaiter().GetResult();
             };
 
             // Set up handler
             connection.On<string>("Send", Console.WriteLine);
 
-            CancellationTokenSource closedTokenSource = null;
-
             connection.Closed += e =>
             {
-                // This should never be null by the time this fires
                 closedTokenSource.Cancel();
+                connection.DisposeAsync().GetAwaiter().GetResult();
 
                 Console.WriteLine("Connection closed...");
                 return Task.CompletedTask;
             };
 
-
-            do
+            if (!await ConnectAsync(connection, closedTokenSource.Token))
             {
-                // Dispose the previous token
-                closedTokenSource?.Dispose();
-
-                // Create a new token for this run
-                closedTokenSource = new CancellationTokenSource();
-
-                // Connect to the server
-            } while (!await ConnectAsync(connection));
+                Console.WriteLine("Failed to establish a connection to '{0}' because the CancelKeyPress event fired first. Exiting...", uri);
+                return 0;
+            }
 
             Console.WriteLine("Connected to {0}", uri);
 
             // Handle the connected connection
             while (true)
             {
+                // If the underlying connection closes while waiting for user input, the user will not observe
+                // the connection close aside from "Connection closed..." being printed to the console. That's
+                // because cancelling Console.ReadLine() is a royal pain.
+                var line = Console.ReadLine();
+
+                if (line == null || closedTokenSource.Token.IsCancellationRequested)
+                {
+                    Console.WriteLine("Exiting...");
+                    break;
+                }
+
                 try
                 {
-                    var line = Console.ReadLine();
-
-                    if (line == null || closedTokenSource.Token.IsCancellationRequested)
-                    {
-                        break;
-                    }
-
                     await connection.InvokeAsync<object>("Send", line);
                 }
-                catch (ObjectDisposedException)
+                catch when (closedTokenSource.IsCancellationRequested)
                 {
                     // We're shutting down the client
+                    Console.WriteLine("Failed to send '{0}' because the CancelKeyPress event fired first. Exiting...", line);
                     break;
                 }
                 catch (Exception ex)
@@ -118,22 +119,21 @@ namespace ClientSample
             return 0;
         }
 
-        private static async Task<bool> ConnectAsync(HubConnection connection)
+        private static async Task<bool> ConnectAsync(HubConnection connection, CancellationToken token)
         {
             // Keep trying to until we can start
             while (true)
             {
                 try
                 {
-                    await connection.StartAsync();
+                    await connection.StartAsync(token);
                     return true;
                 }
-                catch (ObjectDisposedException)
+                catch when (token.IsCancellationRequested)
                 {
-                    // Client side killed the connection
                     return false;
                 }
-                catch (Exception)
+                catch
                 {
                     Console.WriteLine("Failed to connect, trying again in 5000(ms)");
 
