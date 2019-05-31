@@ -122,10 +122,13 @@ CreateApplication(
 
         std::unique_ptr<IN_PROCESS_APPLICATION, IAPPLICATION_DELETER> inProcessApplication;
 
-        // TODO not sure how easy it will be to untangle errors here
-        // ErrorContext errorContext;
+        ErrorContext errorContext;
+        errorContext.statusCode = 500;
+        errorContext.subStatusCode = 30;
+        errorContext.generalErrorType = "ANCM In-Process Start Failure";
+        errorContext.errorReason = "<ul><li>The application failed to start</li><li>The application started but then stopped</li><li>The application started but threw an exception during startup</li></ul>";
 
-        if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, pSite, *pHttpApplication, pParameters, nParameters, inProcessApplication)))
+        if (!FAILED_LOG(hr = IN_PROCESS_APPLICATION::Start(*pServer, pSite, *pHttpApplication, pParameters, nParameters, inProcessApplication, errorContext)))
         {
             *ppApplication = inProcessApplication.release();
         }
@@ -138,10 +141,10 @@ CreateApplication(
                 g_errorPageContent :
                 FILE_UTILITY::GetHtml(g_hServerModule,
                     IN_PROCESS_RH_STATIC_HTML,
-                    500i16,
-                    30i16,
-                    "ANCM In-Process Start Failure",
-                    "<ul><li>The application failed to start</li><li>The application started but then stopped</li><li>The application started but threw an exception during startup</li></ul>",
+                    errorContext.statusCode,
+                    errorContext.subStatusCode,
+                    errorContext.generalErrorType,
+                    errorContext.errorReason,
                     "");
 
             auto pErrorApplication = std::make_unique<StartupExceptionApplication>(*pServer,
@@ -149,8 +152,8 @@ CreateApplication(
                 options->QueryDisableStartUpErrorPage(),
                 hr,
                 content,
-                500i16,
-                30i16,
+                errorContext.statusCode,
+                errorContext.subStatusCode,
                 "Internal Server Error");
 
             RETURN_IF_FAILED(pErrorApplication->StartMonitoringAppOffline());
