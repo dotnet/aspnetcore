@@ -349,7 +349,7 @@ if ($RunBuild -and ($All -or $BuildJava) -and -not $NoBuildJava) {
     }
 
     if ($env:PATH -notlike "*${env:JAVA_HOME}*") {
-        $env:PATH = "${env:PATH};$(Join-Path $env:JAVA_HOME bin)"
+        $env:PATH = "$(Join-Path $env:JAVA_HOME bin);${env:PATH}"
     }
 
     if (-not $foundJdk) {

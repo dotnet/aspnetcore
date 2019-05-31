@@ -68,6 +68,7 @@
 
   <!-- Source code settings -->
   <PropertyGroup>
+    <RepoRoot>$(MSBuildThisFileDirectory)</RepoRoot>
     <RepositoryUrl>https://github.com/aspnet/AspNetCore</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <SharedSourceRoot>$(MSBuildThisFileDirectory)src\Shared\</SharedSourceRoot>
