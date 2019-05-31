@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Components.Forms
     /* This is almost equivalent to a .razor file containing:
      *
      *    @inherits InputBase<string>
-     *    <textarea bind="@CurrentValue" id="@Id" class="@CssClass"></textarea>
+     *    <textarea @bind="@CurrentValue" id="@Id" class="@CssClass"></textarea>
      *
      * The only reason it's not implemented as a .razor file is that we don't presently have the ability to compile those
      * files within this project. Developers building their own input components should use Razor syntax.

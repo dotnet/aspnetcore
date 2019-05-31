@@ -585,7 +585,7 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
         private JsonDocument GetParsedObject(object obj, Type type)
         {
-            var bytes = JsonSerializer.ToBytes(obj, type, _payloadSerializerOptions);
+            var bytes = JsonSerializer.ToUtf8Bytes(obj, type, _payloadSerializerOptions);
             var token = JsonDocument.Parse(bytes);
             return token;
         }

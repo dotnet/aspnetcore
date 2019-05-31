@@ -316,17 +316,14 @@ var DotNet;
             promise.catch(function (error) { return console.error(error); });
         };
         DotNetObject.prototype.serializeAsArg = function () {
-            return "__dotNetObject:" + this._id;
+            return { __dotNetObject: this._id };
         };
         return DotNetObject;
     }());
-    var dotNetObjectValueFormat = /^__dotNetObject\:(\d+)$/;
+    var dotNetObjectRefKey = '__dotNetObject';
     attachReviver(function reviveDotNetObject(key, value) {
-        if (typeof value === 'string') {
-            var match = value.match(dotNetObjectValueFormat);
-            if (match) {
-                return new DotNetObject(parseInt(match[1]));
-            }
+        if (value && typeof value === 'object' && value.hasOwnProperty(dotNetObjectRefKey)) {
+            return new DotNetObject(value.__dotNetObject);
         }
         // Unrecognized - let another reviver handle it
         return value;
@@ -1406,7 +1403,7 @@ function getCaptureIdAttributeName(referenceCaptureId) {
     return "_bl_" + referenceCaptureId;
 }
 // Support receiving ElementRef instances as args in interop calls
-var elementRefKey = '_blazorElementRef'; // Keep in sync with ElementRef.cs
+var elementRefKey = '__internalId'; // Keep in sync with ElementRef.cs
 DotNet.attachReviver(function (key, value) {
     if (value && typeof value === 'object' && value.hasOwnProperty(elementRefKey) && typeof value[elementRefKey] === 'string') {
         return getElementByCaptureId(value[elementRefKey]);
@@ -2339,7 +2336,7 @@ function sendAsync(id, body, jsonFetchArgs) {
             switch (_a.label) {
                 case 0:
                     fetchOptions = JSON.parse(Environment_1.platform.toJavaScriptString(jsonFetchArgs));
-                    requestInit = Object.assign(fetchOptions.requestInit, fetchOptions.requestInitOverrides);
+                    requestInit = Object.assign(convertToRequestInit(fetchOptions.requestInit), fetchOptions.requestInitOverrides);
                     if (body) {
                         requestInit.body = Environment_1.platform.toUint8Array(body);
                     }
@@ -2364,6 +2361,13 @@ function sendAsync(id, body, jsonFetchArgs) {
         });
     });
 }
+function convertToRequestInit(blazorRequestInit) {
+    return {
+        credentials: blazorRequestInit.credentials,
+        method: blazorRequestInit.method,
+        headers: blazorRequestInit.headers.map(function (item) { return [item.name, item.value]; })
+    };
+}
 function dispatchSuccessResponse(id, response, responseData) {
     var responseDescriptor = {
         statusCode: response.status,
@@ -2371,7 +2375,7 @@ function dispatchSuccessResponse(id, response, responseData) {
         headers: [],
     };
     response.headers.forEach(function (value, name) {
-        responseDescriptor.headers.push([name, value]);
+        responseDescriptor.headers.push({ name: name, value: value });
     });
     if (!allocateArrayMethod) {
         allocateArrayMethod = Environment_1.platform.findMethod(httpClientAssembly, httpClientNamespace, httpClientTypeName, 'AllocateArray');

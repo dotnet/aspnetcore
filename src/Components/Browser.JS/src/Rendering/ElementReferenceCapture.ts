@@ -12,7 +12,7 @@ function getCaptureIdAttributeName(referenceCaptureId: string) {
 }
 
 // Support receiving ElementRef instances as args in interop calls
-const elementRefKey = '_blazorElementRef'; // Keep in sync with ElementRef.cs
+const elementRefKey = '__internalId'; // Keep in sync with ElementRef.cs
 DotNet.attachReviver((key, value) => {
   if (value && typeof value === 'object' && value.hasOwnProperty(elementRefKey) && typeof value[elementRefKey] === 'string') {
     return getElementByCaptureId(value[elementRefKey]);

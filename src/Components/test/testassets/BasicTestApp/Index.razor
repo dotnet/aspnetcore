@@ -1,7 +1,7 @@
 @using Microsoft.AspNetCore.Components.RenderTree
 <div id="test-selector">
   Select test:
-    <select bind=@SelectedComponentTypeName>
+    <select @bind=@SelectedComponentTypeName>
         <option value="none">Choose...</option>
         <option value="BasicTestApp.InteropComponent">Interop component</option>
         <option value="BasicTestApp.AsyncEventHandlerComponent">Async event handlers</option>

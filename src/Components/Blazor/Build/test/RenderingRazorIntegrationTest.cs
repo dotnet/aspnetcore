@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var component = CompileToComponent(
-                @"<input bind=""MyValue"" />
+                @"<input @bind=""MyValue"" />
                 @code {
                     public string MyValue { get; set; } = ""Initial value"";
                 }");
@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var component = CompileToComponent(
-                @"<textarea bind=""MyValue"" ></textarea>
+                @"<textarea @bind=""MyValue"" ></textarea>
                 @code {
                     public string MyValue { get; set; } = ""Initial value"";
                 }");
@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var component = CompileToComponent(
-                @"<input bind=""MyDate"" />
+                @"<input @bind=""MyDate"" />
                 @code {
                     public DateTime MyDate { get; set; } = new DateTime(2018, 3, 4, 1, 2, 3);
                 }");
@@ -448,7 +448,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange/Act
             var testDateFormat = "ddd yyyy-MM-dd";
             var component = CompileToComponent(
-                $@"<input bind=""@MyDate"" bind:format=""{testDateFormat}"" />
+                $@"<input @bind=""@MyDate"" @bind:format=""{testDateFormat}"" />
                 @code {{
                     public DateTime MyDate {{ get; set; }} = new DateTime(2018, 3, 4);
                 }}");
@@ -483,7 +483,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button onclick=""function(){console.log('hello');};"" />");
+<button @onclick=""function(){console.log('hello');};"" />");
 
             // Act
             var frames = GetRenderTree(component);
@@ -499,7 +499,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button onclick=""@(x => Clicked = true)"" />
+<button @onclick=""@(x => Clicked = true)"" />
 @code {
     public bool Clicked { get; set; }
 }");
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange
             var component = CompileToComponent(@"
-<button onclick=""@OnClick"" />
+<button @onclick=""@OnClick"" />
 @code {
     public void OnClick(UIMouseEventArgs e) { Clicked = true; }
     public bool Clicked { get; set; }
@@ -568,7 +568,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
         {
             // Arrange/Act
             var component = CompileToComponent(
-                @"<input bind=""MyValue"" />
+                @"<input @bind=""MyValue"" />
                 @code {
                     public bool MyValue { get; set; } = true;
                 }");
@@ -604,7 +604,7 @@ namespace Microsoft.AspNetCore.Blazor.Build.Test
             // Arrange/Act
             var myEnumType = FullTypeName<MyEnum>();
             var component = CompileToComponent(
-                $@"<input bind=""MyValue"" />
+                $@"<input @bind=""MyValue"" />
                 @code {{
                     public {myEnumType} MyValue {{ get; set; }} = {myEnumType}.{nameof(MyEnum.FirstValue)};
                 }}");

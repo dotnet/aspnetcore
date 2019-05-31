@@ -102,8 +102,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
 
         public InMemoryConnection CreateConnection()
         {
-            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log);
-            _ = HandleConnection(transportConnection);
+            var transportConnection = new InMemoryTransportConnection(_memoryPool, Context.Log, Context.Scheduler);
+            _transportFactory.AddConnection(transportConnection);
             return new InMemoryConnection(transportConnection);
         }
 
@@ -126,36 +126,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests.TestTrans
         IServiceProvider IStartup.ConfigureServices(IServiceCollection services)
         {
             return services.BuildServiceProvider();
-        }
-
-        private async Task HandleConnection(InMemoryTransportConnection transportConnection)
-        {
-            try
-            {
-                var middlewareTask = _transportFactory.ConnectionDispatcher.OnConnection(transportConnection);
-                var transportTask = CancellationTokenAsTask(transportConnection.ConnectionClosed);
-
-                await transportTask;
-                await middlewareTask;
-
-                transportConnection.Dispose();
-            }
-            catch (Exception ex)
-            {
-                Debug.Assert(false, $"Unexpected exception: {ex}.");
-            }
-        }
-
-        private static Task CancellationTokenAsTask(CancellationToken token)
-        {
-            if (token.IsCancellationRequested)
-            {
-                return Task.CompletedTask;
-            }
-
-            var tcs = new TaskCompletionSource<object>();
-            token.Register(() => tcs.SetResult(null));
-            return tcs.Task;
         }
 
         public async ValueTask DisposeAsync()
