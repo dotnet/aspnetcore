@@ -33,4 +33,4 @@ These are available in the [Visual Studio Preview](https://www.visualstudio.com/
 * *Enable Source Link support* in Visual Studio should be enabled.
 * *Enable source server support* in Visual should be enabled.
 * *Enable Just My Code* should be disabled
-* Add https://dotnet.myget.org/F/aspnetcore-dev/symbols to the list of symbol servers in the Visual Studio Debugging options
+* Under Symbols enable the *Microsoft Symbol Servers* setting.

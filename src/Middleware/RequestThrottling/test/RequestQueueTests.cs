@@ -12,69 +12,52 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
         [Fact]
         public async Task LimitsIncomingRequests()
         {
-            using var s = new RequestQueue(1);
-            Assert.Equal(1, s.Count);
+            using var s = TestUtils.CreateRequestQueue(1);
+            Assert.Equal(0, s.TotalRequests);
 
-            await s.EnterQueue().OrTimeout();
-            Assert.Equal(0, s.Count);
-
-            s.Release();
-            Assert.Equal(1, s.Count);
-        }
-
-        [Fact]
-        public async Task TracksQueueLength()
-        {
-            using var s = new RequestQueue(1);
-            Assert.Equal(0, s.WaitingRequests);
-
-            await s.EnterQueue();
-            Assert.Equal(0, s.WaitingRequests);
-
-            var enterQueueTask = s.EnterQueue();
-            Assert.Equal(1, s.WaitingRequests);
+            Assert.True(await s.TryEnterQueueAsync().OrTimeout());
+            Assert.Equal(1, s.TotalRequests);
 
             s.Release();
-            await enterQueueTask;
-            Assert.Equal(0, s.WaitingRequests);
+            Assert.Equal(0, s.TotalRequests);
         }
 
         [Fact]
         public void DoesNotWaitIfSpaceAvailible()
         {
-            using var s = new RequestQueue(2);
+            using var s = TestUtils.CreateRequestQueue(2);
 
-            var t1 = s.EnterQueue();
+            var t1 = s.TryEnterQueueAsync();
             Assert.True(t1.IsCompleted);
 
-            var t2 = s.EnterQueue();
+            var t2 = s.TryEnterQueueAsync();
             Assert.True(t2.IsCompleted);
 
-            var t3 = s.EnterQueue();
+            var t3 = s.TryEnterQueueAsync();
             Assert.False(t3.IsCompleted);
         }
 
         [Fact]
         public async Task WaitsIfNoSpaceAvailible()
         {
-            using var s = new RequestQueue(1);
-            await s.EnterQueue().OrTimeout();
+            using var s = TestUtils.CreateRequestQueue(1);
+            Assert.True(await s.TryEnterQueueAsync().OrTimeout());
 
-            var waitingTask = s.EnterQueue();
+            var waitingTask = s.TryEnterQueueAsync();
             Assert.False(waitingTask.IsCompleted);
 
             s.Release();
-            await waitingTask.OrTimeout();
+            Assert.True(await waitingTask.OrTimeout());
         }
 
         [Fact]
         public async Task IsEncapsulated()
         {
-            using var s1 = new RequestQueue(1);
-            using var s2 = new RequestQueue(1);
+            using var s1 = TestUtils.CreateRequestQueue(1);
+            using var s2 = TestUtils.CreateRequestQueue(1);
 
-            await s1.EnterQueue().OrTimeout();
-            await s2.EnterQueue().OrTimeout();
+            Assert.True(await s1.TryEnterQueueAsync().OrTimeout());
+            Assert.True(await s2.TryEnterQueueAsync().OrTimeout());
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Components.Browser" />
+    <Reference Include="Microsoft.AspNetCore.DataProtection" />
     <Reference Include="Microsoft.Extensions.Logging" />
     <Reference Include="Microsoft.AspNetCore.SignalR" />
     <Reference Include="Microsoft.AspNetCore.StaticFiles" />
@@ -52,10 +53,7 @@
   <ItemGroup>
     <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js" LogicalName="_framework/%(Filename)%(Extension)" />
 
-    <EmbeddedResource
-      Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map"
-      LogicalName="_framework/%(Filename)%(Extension)"
-      Condition="Exists('..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map')" />
+    <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map')" />
   </ItemGroup>
 
 </Project>

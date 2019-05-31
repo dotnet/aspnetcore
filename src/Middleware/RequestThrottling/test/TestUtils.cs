@@ -6,16 +6,18 @@ using Microsoft.AspNetCore.RequestThrottling;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.RequestThrottling.Internal;
 
 namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
     public static class TestUtils
     {
-        public static RequestThrottlingMiddleware CreateTestMiddleWare(int? maxConcurrentRequests, RequestDelegate next = null)
+        public static RequestThrottlingMiddleware CreateTestMiddleware(int? maxConcurrentRequests, int requestQueueLimit = 5000, RequestDelegate next = null)
         {
             var options = new RequestThrottlingOptions
             {
-                MaxConcurrentRequests = maxConcurrentRequests
+                MaxConcurrentRequests = maxConcurrentRequests,
+                RequestQueueLimit = requestQueueLimit
             };
 
             return new RequestThrottlingMiddleware(
@@ -24,5 +26,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     options: Options.Create(options)
                 );
         }
+
+        internal static RequestQueue CreateRequestQueue(int maxConcurrentRequests) => new RequestQueue(maxConcurrentRequests, 5000);
     }
 }

@@ -115,6 +115,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     public partial class EditForm : Microsoft.AspNetCore.Components.ComponentBase
     {
         public EditForm() { }
+        [Parameter(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public Microsoft.AspNetCore.Components.RenderFragment<Microsoft.AspNetCore.Components.Forms.EditContext> ChildContent { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
@@ -134,6 +136,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     public abstract partial class InputBase<T> : Microsoft.AspNetCore.Components.ComponentBase
     {
         protected InputBase() { }
+        [Parameter(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public string Class { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         protected string CssClass { get { throw null; } }
@@ -207,6 +211,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     public partial class ValidationMessage<T> : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
     {
         public ValidationMessage() { }
+        [Parameter(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         [Microsoft.AspNetCore.Components.ParameterAttribute]
         public System.Linq.Expressions.Expression<System.Func<T>> For { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
@@ -217,6 +223,8 @@ namespace Microsoft.AspNetCore.Components.Forms
     public partial class ValidationSummary : Microsoft.AspNetCore.Components.ComponentBase, System.IDisposable
     {
         public ValidationSummary() { }
+        [Parameter(CaptureUnmatchedValues = true)]
+        public System.Collections.Generic.IReadOnlyDictionary<string, object> AdditionalAttributes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } private set { throw null; }}
         protected override void BuildRenderTree(Microsoft.AspNetCore.Components.RenderTree.RenderTreeBuilder builder) { }
         protected override void OnParametersSet() { }
         void System.IDisposable.Dispose() { }
