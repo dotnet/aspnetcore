@@ -52,27 +52,23 @@ namespace Microsoft.AspNetCore.RequestThrottling
         public async Task Invoke(HttpContext context)
         {
             var waitInQueueTask = _requestQueue.TryEnterQueueAsync();
-
-            if (waitInQueueTask.IsCompletedSuccessfully)
+            if (waitInQueueTask.IsCompletedSuccessfully && !waitInQueueTask.Result)
             {
-                if (waitInQueueTask.Result)
-                {
-                    RequestThrottlingLog.RequestRunImmediately(_logger);
-                }
-                else
-                {
-                    RequestThrottlingLog.RequestRejectedQueueFull(_logger);
-                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                    return;
-                }
+                RequestThrottlingLog.RequestRejectedQueueFull(_logger);
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                return;
             }
-            else
+            else if (!waitInQueueTask.IsCompletedSuccessfully)
             {
                 RequestThrottlingLog.RequestEnqueued(_logger, ActiveRequestCount);
                 var result = await waitInQueueTask;
                 RequestThrottlingLog.RequestDequeued(_logger, ActiveRequestCount);
 
                 Debug.Assert(result);
+            }
+            else
+            {
+                RequestThrottlingLog.RequestRunImmediately(_logger, ActiveRequestCount);
             }
 
             try
@@ -99,30 +95,30 @@ namespace Microsoft.AspNetCore.RequestThrottling
         private static class RequestThrottlingLog
         {
             private static readonly Action<ILogger, int, Exception> _requestEnqueued =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "RequestEnqueued"), "Concurrent request limit reached, queuing request. Current queue length: {QueuedRequests}.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(1, "RequestEnqueued"), "MaxConcurrentRequests limit reached, request has been queued. Current active requests: {ActiveRequests}.");
 
             private static readonly Action<ILogger, int, Exception> _requestDequeued =
-                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "RequestDequeued"), "Request dequeued. Current queue length: {QueuedRequests}.");
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(2, "RequestDequeued"), "Request dequeued. Current active requests: {ActiveRequests}.");
 
-            private static readonly Action<ILogger, Exception> _requestRunImmediately =
-                LoggerMessage.Define(LogLevel.Debug, new EventId(3, "RequestRunImmediately"), "Concurrent request limit has not been reached, running request immediately.");
+            private static readonly Action<ILogger, int, Exception> _requestRunImmediately =
+                LoggerMessage.Define<int>(LogLevel.Debug, new EventId(3, "RequestRunImmediately"), "Below MaxConcurrentRequests limit, running request immediately. Current active requests: {ActiveRequests}");
 
             private static readonly Action<ILogger, Exception> _requestRejectedQueueFull =
                 LoggerMessage.Define(LogLevel.Debug, new EventId(4, "RequestRejectedQueueFull"), "Currently at the 'RequestQueueLimit', rejecting this request with a '503 server not availible' error");
 
-            internal static void RequestEnqueued(ILogger logger, int queuedRequests)
+            internal static void RequestEnqueued(ILogger logger, int activeRequests)
             {
-                _requestEnqueued(logger, queuedRequests, null);
+                _requestEnqueued(logger, activeRequests, null);
             }
 
-            internal static void RequestDequeued(ILogger logger, int queuedRequests)
+            internal static void RequestDequeued(ILogger logger, int activeRequests)
             {
-                _requestDequeued(logger, queuedRequests, null);
+                _requestDequeued(logger, activeRequests, null);
             }
 
-            internal static void RequestRunImmediately(ILogger logger)
+            internal static void RequestRunImmediately(ILogger logger, int activeRequests)
             {
-                _requestRunImmediately(logger, null);
+                _requestRunImmediately(logger, activeRequests, null);
             }
 
             internal static void RequestRejectedQueueFull(ILogger logger)
