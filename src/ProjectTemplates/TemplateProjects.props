@@ -8,7 +8,6 @@
     <NoWarn>$(NoWarn);2008;8021</NoWarn>
     <PackageTags>aspnet;templates</PackageTags>
     <NuspecFile>$(MSBuildThisFileDirectory)templates.nuspec</NuspecFile>
-    <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
   </PropertyGroup>

@@ -27,6 +27,8 @@
 
     <TargetingPackVersion>$(TargetingPackVersionPrefix)</TargetingPackVersion>
     <TargetingPackVersion Condition=" '$(VersionSuffix)' != '' ">$(TargetingPackVersionPrefix)-$(VersionSuffix)</TargetingPackVersion>
+
+    <SharedFxProductName>$(Product) $(PackageVersion) Shared Framework</SharedFxProductName>
   </PropertyGroup>
 
   <PropertyGroup>

@@ -14,7 +14,6 @@
     <IsPackable Condition="'$(BuildNodeJS)' == 'false'">false</IsPackable>
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);Publish</GenerateNuspecDependsOn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <NuspecBasePath>$(MSBuildProjectDirectory)</NuspecBasePath>
     <NuspecFile>Microsoft.AspNetCore.Blazor.Build.nuspec</NuspecFile>
   </PropertyGroup>
 

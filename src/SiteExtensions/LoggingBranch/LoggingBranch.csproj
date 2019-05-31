@@ -9,7 +9,6 @@
     <PackageTags>aspnet;logging;aspnetcore;AzureSiteExtension;keyvault;configuration;dataprotection</PackageTags>
     <ContentTargetFolders>content</ContentTargetFolders>
     <PackageId>Microsoft.AspNetCore.AzureAppServices.SiteExtension.$(TrimmedVersion).$(TargetArchitecture)</PackageId>
-    <MicrosoftAspNetCoreAppPackageVersion>$(PackageVersion)</MicrosoftAspNetCoreAppPackageVersion>
     <HostingStartupRuntimeFrameworkVersion>$(MicrosoftNETCoreAppPackageVersion)</HostingStartupRuntimeFrameworkVersion>
 
     <TargetFramework>net461</TargetFramework>
