@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore
 
         internal static void ConfigureWebDefaults(IWebHostBuilder builder)
         {
-            builder.ConfigureAppConfiguration((ctx,cb) =>
+            builder.ConfigureAppConfiguration((ctx, cb) =>
             {
                 if (ctx.HostingEnvironment.IsDevelopment())
                 {
