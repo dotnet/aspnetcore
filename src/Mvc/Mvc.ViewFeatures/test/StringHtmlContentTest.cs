@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Text.Encodings.Web;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
@@ -32,8 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Assert
             using (var stringWritter = new StringWriter())
             {
-                tearsOfJoy.WriteTo((TextWriter)stringWritter, HtmlEncoder.Default);
-                Asssert.Equal("&#x1f602;2", stringWritter.ToString());
+                tearsOfJoy.WriteTo(stringWritter, HtmlEncoder.Default);
+                Assert.Equal("&#x1f602;2", stringWritter.ToString());
             }
         }
     }
