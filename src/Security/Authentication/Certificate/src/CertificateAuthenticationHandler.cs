@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Authentication.Certificate
 
                 await Events.CertificateValidated(certificateValidatedContext);
 
-                if (certificateValidatedContext?.Result != null)
+                if (certificateValidatedContext.Result != null)
                 {
                     return certificateValidatedContext.Result;
                 }
