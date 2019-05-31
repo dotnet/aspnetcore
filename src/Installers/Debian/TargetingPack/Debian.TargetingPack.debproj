@@ -26,9 +26,9 @@
   <PropertyGroup>
     <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).deb</TargetFileName>
 
-    <PackageVersion>$(TargetingPackVersionPrefix)</PackageVersion>
+    <DebPackageVersion>$(TargetingPackVersionPrefix)</DebPackageVersion>
     <!-- Deb installers are versioned as M.N.P~PreReleaseVersionLabel-Build following the core-setup convention -->
-    <PackageVersion Condition="'$(VersionSuffix)' != ''">$(PackageVersion)~$(VersionSuffix)</PackageVersion>
+    <DebPackageVersion Condition="'$(VersionSuffix)' != ''">$(DebPackageVersion)~$(VersionSuffix)</DebPackageVersion>
     <PackageRevision>1</PackageRevision>
 
     <!-- Suppresses building this project completely during servicing builds. -->

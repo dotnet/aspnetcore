@@ -32,10 +32,10 @@
 
   <PropertyGroup>
     <TargetFileName>$(RuntimeInstallerBaseName)-$(SharedFxVersion)-x64.deb</TargetFileName>
-    <!-- PackageVersion does not match the ASP.NET Core runtime verison. -->
-    <PackageVersion>$(AspNetCoreMajorVersion).$(AspNetCoreMinorVersion).$(AspNetCorePatchVersion)</PackageVersion>
+    <!-- DebPackageVersion does not match the ASP.NET Core runtime verison. -->
+    <DebPackageVersion>$(VersionPrefix)</DebPackageVersion>
     <!-- Deb installers are versioned as M.N.P~PreReleaseVersionLabel-Build following the core-setup convention -->
-    <PackageVersion Condition="'$(VersionSuffix)' != ''">$(PackageVersion)~$(VersionSuffix)</PackageVersion>
+    <DebPackageVersion Condition="'$(VersionSuffix)' != ''">$(DebPackageVersion)~$(VersionSuffix)</DebPackageVersion>
     <PackageRevision>1</PackageRevision>
   </PropertyGroup>
 </Project>
