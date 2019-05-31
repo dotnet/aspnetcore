@@ -349,9 +349,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             return new CircuitRegistry(
                 Options.Create(new CircuitOptions()),
                 NullLogger<CircuitRegistry>.Instance,
-                factory ?? new CircuitIdFactory(Options.Create(new CircuitOptions {
-                    CircuitIdProtector = new EphemeralDataProtectionProvider().CreateProtector("Test")
-                })));
+                factory ?? TestCircuitIdFactory.CreateTestFactory());
         }
 
         private class SerialCircuitHandler : CircuitHandler

@@ -13,12 +13,14 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     // Generates strong cryptographic ids for circuits that are protected with authenticated encryption.
     internal class CircuitIdFactory
     {
+        private const string CircuitIdProtectorPurpose = "Microsoft.AspNetCore.Components.Server";
+
         private readonly RandomNumberGenerator _generator = RandomNumberGenerator.Create();
         private readonly IDataProtector _protector;
 
-        public CircuitIdFactory(IOptions<CircuitOptions> options)
+        public CircuitIdFactory(IDataProtectionProvider provider)
         {
-            _protector = options.Value.CircuitIdProtector;
+            _protector = provider.CreateProtector(CircuitIdProtectorPurpose);
         }
 
         // Generates a circuit id that is produced from a strong cryptographic random number generator

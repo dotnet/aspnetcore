@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             var circuitRegistry = new CircuitRegistry(
                 Options.Create(new CircuitOptions()),
                 Mock.Of<ILogger<CircuitRegistry>>(),
-                new CircuitIdFactory(Options.Create(new CircuitOptions())));
+                TestCircuitIdFactory.CreateTestFactory());
             var circuitPrerenderer = new CircuitPrerenderer(circuitFactory, circuitRegistry);
             var httpContext = new DefaultHttpContext();
             var httpRequest = httpContext.Request;
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Components.Server.Tests.Circuits
             var circuitRegistry = new CircuitRegistry(
                 Options.Create(new CircuitOptions()),
                 Mock.Of<ILogger<CircuitRegistry>>(),
-                new CircuitIdFactory(Options.Create(new CircuitOptions())));
+                TestCircuitIdFactory.CreateTestFactory());
             var circuitPrerenderer = new CircuitPrerenderer(circuitFactory, circuitRegistry);
             var httpContext = new DefaultHttpContext();
             var httpRequest = httpContext.Request;

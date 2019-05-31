@@ -28,6 +28,8 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             var builder = new DefaultServerSideBlazorBuilder(services);
 
+            services.AddDataProtection();
+
             // This call INTENTIONALLY uses the AddHubOptions on the SignalR builder, because it will merge
             // the global HubOptions before running the configure callback. We want to ensure that happens
             // once. Our AddHubOptions method doesn't do this.
@@ -53,8 +55,6 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<CircuitFactory, DefaultCircuitFactory>();
 
             services.TryAddSingleton<CircuitIdFactory>();
-            services.TryAddEnumerable(ServiceDescriptor
-                .Singleton<IPostConfigureOptions<CircuitOptions>, PostConfigureCircuitOptionsCircuitIdDataprotector>());
 
             services.TryAddScoped(s => s.GetRequiredService<ICircuitAccessor>().Circuit);
             services.TryAddScoped<ICircuitAccessor, DefaultCircuitAccessor>();
