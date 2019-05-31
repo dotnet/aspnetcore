@@ -10,7 +10,12 @@ namespace Microsoft.AspNetCore.Http.Connections
 {
     /// <summary>
     /// Maps routes to ASP.NET Core Connection Handlers.
+    /// <para>
+    /// This class is obsolete and will be removed in a future version.
+    /// The recommended alternative is to use MapConnection and MapConnectionHandler&#60;TConnectionHandler&#62; inside Microsoft.AspNetCore.Builder.UseEndpoints(...).
+    /// </para>
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version. The recommended alternative is to use MapConnection and MapConnectionHandler<TConnectionHandler> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
     public class ConnectionsRouteBuilder
     {
         private readonly IEndpointRouteBuilder _endpoints;

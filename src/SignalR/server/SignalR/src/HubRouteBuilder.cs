@@ -13,7 +13,12 @@ namespace Microsoft.AspNetCore.SignalR
 {
     /// <summary>
     /// Maps incoming requests to <see cref="Hub"/> types.
+    /// <para>
+    ///     This class is obsolete and will be removed in a future version.
+    ///     The recommended alternative is to use MapHub&#60;THub&#62; inside Microsoft.AspNetCore.Builder.UseEndpoints(...).
+    /// </para>
     /// </summary>
+    [Obsolete("This class is obsolete and will be removed in a future version. The recommended alternative is to use MapHub<THub> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
     public class HubRouteBuilder
     {
         private readonly ConnectionsRouteBuilder _routes;

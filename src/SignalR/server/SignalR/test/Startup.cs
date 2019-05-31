@@ -72,10 +72,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             app.UseAuthorization();
 
             // Legacy routing, runs different code path for mapping hubs
+#pragma warning disable CS0618 // Type or member is obsolete
             app.UseSignalR(routes =>
             {
                 routes.MapHub<AuthHub>("/authHub");
             });
+#pragma warning restore CS0618 // Type or member is obsolete
 
             app.UseEndpoints(endpoints =>
             {

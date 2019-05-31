@@ -39,10 +39,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     var ex = Assert.Throws<InvalidOperationException>(() =>
                     {
+#pragma warning disable CS0618 // Type or member is obsolete
                         app.UseSignalR(routes =>
                         {
                             routes.MapHub<AuthHub>("/overloads");
                         });
+#pragma warning restore CS0618 // Type or member is obsolete
                     });
 
                     Assert.Equal("Unable to find the required services. Please add all the required services by calling " +
@@ -318,7 +320,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubAppliesHubMetadata()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             void ConfigureRoutes(HubRouteBuilder routes)
+#pragma warning restore CS0618 // Type or member is obsolete
             {
                 // This "Foo" policy should override the default auth attribute
                 routes.MapHub<AuthHub>("/path");
@@ -388,6 +392,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 .Build();
         }
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private IWebHost BuildWebHost(Action<HubRouteBuilder> configure)
         {
             return new WebHostBuilder()
@@ -403,5 +408,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 .UseUrls("http://127.0.0.1:0")
                 .Build();
         }
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

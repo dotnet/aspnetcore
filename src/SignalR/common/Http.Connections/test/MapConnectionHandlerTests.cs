@@ -405,10 +405,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                 })
                 .Configure(app =>
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     app.UseConnections(routes =>
                     {
                         routes.MapConnectionHandler<TConnectionHandler>(path, configureOptions);
                     });
+#pragma warning restore CS0618 // Type or member is obsolete
                 })
                 .ConfigureLogging(factory =>
                 {
