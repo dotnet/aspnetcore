@@ -109,9 +109,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
-                Assert.Equal(2, dataSource.Endpoints.Count);
-                Assert.Equal(1, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
-                Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    });
             }
 
             Assert.Equal(0, authCount);
@@ -130,9 +138,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
-                Assert.Equal(2, dataSource.Endpoints.Count);
-                Assert.Equal(1, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
-                Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    });
             }
 
             Assert.Equal(0, authCount);
@@ -151,9 +167,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
-                Assert.Equal(2, dataSource.Endpoints.Count);
-                Assert.Equal(2, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
-                Assert.Equal(2, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        Assert.Equal(2, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Equal(2, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    });
             }
 
             Assert.Equal(0, authCount);
@@ -172,9 +196,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
-                Assert.Equal(2, dataSource.Endpoints.Count);
-                Assert.Equal(1, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
-                Assert.Equal(1, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Equal(1, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    });
             }
 
             Assert.Equal(0, authCount);
@@ -196,9 +228,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
-                Assert.Equal(2, dataSource.Endpoints.Count);
-                Assert.Equal(2, dataSource.Endpoints[0].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
-                Assert.Equal(2, dataSource.Endpoints[1].Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        Assert.Equal(2, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Equal(2, endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>().Count);
+                    });
             }
 
             Assert.Equal(0, authCount);
@@ -220,9 +260,27 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
-                Assert.Equal(2, dataSource.Endpoints.Count);
-                Assert.Equal("Foo", dataSource.Endpoints[0].Metadata.GetMetadata<IAuthorizeData>()?.Policy);
-                Assert.Equal("Foo", dataSource.Endpoints[1].Metadata.GetMetadata<IAuthorizeData>()?.Policy);
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        Assert.Collection(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(),
+                            auth => { },
+                            auth =>
+                            {
+                                Assert.Equal("Foo", auth?.Policy);
+                            });
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Collection(endpoint.Metadata.GetOrderedMetadata<IAuthorizeData>(),
+                            auth => { },
+                            auth =>
+                            {
+                                Assert.Equal("Foo", auth?.Policy);
+                            });
+                    });
             }
         }
 
@@ -241,11 +299,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
-                Assert.Equal(2, dataSource.Endpoints.Count);
-                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[0].Metadata.GetMetadata<HubMetadata>()?.HubType);
-                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[1].Metadata.GetMetadata<HubMetadata>()?.HubType);
-                Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<NegotiateMetadata>());
-                Assert.Null(dataSource.Endpoints[1].Metadata.GetMetadata<NegotiateMetadata>());
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        Assert.Equal(typeof(AuthHub), endpoint.Metadata.GetMetadata<HubMetadata>()?.HubType);
+                        Assert.NotNull(endpoint.Metadata.GetMetadata<NegotiateMetadata>());
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Equal(typeof(AuthHub), endpoint.Metadata.GetMetadata<HubMetadata>()?.HubType);
+                        Assert.Null(endpoint.Metadata.GetMetadata<NegotiateMetadata>());
+                    });
             }
         }
 
@@ -264,12 +330,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
-                Assert.Equal(2, dataSource.Endpoints.Count);
-
-                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[0].Metadata.GetMetadata<HubMetadata>()?.HubType);
-                Assert.Equal(typeof(AuthHub), dataSource.Endpoints[1].Metadata.GetMetadata<HubMetadata>()?.HubType);
-                Assert.NotNull(dataSource.Endpoints[0].Metadata.GetMetadata<NegotiateMetadata>());
-                Assert.Null(dataSource.Endpoints[1].Metadata.GetMetadata<NegotiateMetadata>());
+                Assert.Collection(dataSource.Endpoints,
+                    endpoint =>
+                    {
+                        Assert.Equal("/path/negotiate", endpoint.DisplayName);
+                        Assert.Equal(typeof(AuthHub), endpoint.Metadata.GetMetadata<HubMetadata>()?.HubType);
+                        Assert.NotNull(endpoint.Metadata.GetMetadata<NegotiateMetadata>());
+                    },
+                    endpoint =>
+                    {
+                        Assert.Equal("/path", endpoint.DisplayName);
+                        Assert.Equal(typeof(AuthHub), endpoint.Metadata.GetMetadata<HubMetadata>()?.HubType);
+                        Assert.Null(endpoint.Metadata.GetMetadata<NegotiateMetadata>());
+                    });
             }
         }
 

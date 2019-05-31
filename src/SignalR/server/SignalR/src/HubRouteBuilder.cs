@@ -51,6 +51,8 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="configureOptions">A callback to configure dispatcher options.</param>
         public void MapHub<THub>(PathString path, Action<HttpConnectionDispatcherOptions> configureOptions) where THub : Hub
         {
+            // This will be null if someone is manually using the HubRouteBuilder(ConnectionsRouteBuilder routes) constructor
+            // SignalR itself will only use the IEndpointRouteBuilder overload
             if (_endpoints != null)
             {
                 _endpoints.MapHub<THub>(path, configureOptions);
