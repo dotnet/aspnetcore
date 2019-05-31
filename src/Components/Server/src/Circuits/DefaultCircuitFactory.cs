@@ -21,13 +21,16 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILoggerFactory _loggerFactory;
+        private readonly CircuitIdFactory _circuitIdFactory;
 
         public DefaultCircuitFactory(
             IServiceScopeFactory scopeFactory,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            CircuitIdFactory circuitIdFactory)
         {
             _scopeFactory = scopeFactory ?? throw new ArgumentNullException(nameof(scopeFactory));
             _loggerFactory = loggerFactory;
+            _circuitIdFactory = circuitIdFactory ?? throw new ArgumentNullException(nameof(circuitIdFactory));
         }
 
         public override CircuitHost CreateCircuitHost(
@@ -81,6 +84,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 .ToArray();
 
             var circuitHost = new CircuitHost(
+                _circuitIdFactory.CreateCircuitId(),
                 scope,
                 client,
                 rendererRegistry,

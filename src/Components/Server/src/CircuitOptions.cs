@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace Microsoft.AspNetCore.Components.Server
 {
@@ -45,5 +46,10 @@ namespace Microsoft.AspNetCore.Components.Server
         /// Defaults to <c>3 minutes</c>.
         /// </value>
         public TimeSpan DisconnectedCircuitRetentionPeriod { get; set; } = TimeSpan.FromMinutes(3);
+
+        /// <summary>
+        /// Gets the <see cref="IDataProtector"/> used to protect the generated circuit Ids.
+        /// </summary>
+        public IDataProtector CircuitIdProtector { get; set; }
     }
 }

@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public event UnhandledExceptionEventHandler UnhandledException;
 
         public CircuitHost(
+            string circuitId,
             IServiceScope scope,
             CircuitClientProxy client,
             RendererRegistry rendererRegistry,
@@ -60,6 +61,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             CircuitHandler[] circuitHandlers,
             ILogger logger)
         {
+            CircuitId = circuitId;
             _scope = scope ?? throw new ArgumentNullException(nameof(scope));
             Dispatcher = dispatcher;
             Client = client;
@@ -78,7 +80,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             Renderer.UnhandledSynchronizationException += SynchronizationContext_UnhandledException;
         }
 
-        public string CircuitId { get; } = Guid.NewGuid().ToString();
+        public string CircuitId { get; }
 
         public Circuit Circuit { get; }
 
