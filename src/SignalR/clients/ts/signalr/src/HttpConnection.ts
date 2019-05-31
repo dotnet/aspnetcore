@@ -518,7 +518,7 @@ export class TransportSendQueue {
     private executing: boolean = true;
     private transportResult: PromiseSource;
 
-    constructor(private transport: ITransport) {
+    constructor(private readonly transport: ITransport) {
         this.sendBufferedData = new PromiseSource();
         this.transportResult = new PromiseSource();
 

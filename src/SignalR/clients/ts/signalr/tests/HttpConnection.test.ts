@@ -882,7 +882,7 @@ describe("TransportSendQueue", () => {
         // Wait until we're inside transport.send
         await promiseSource2;
 
-        // These two operations should get queued.
+        // This should get queued.
         const second = queue.send("world");
 
         promiseSource3.reject();
@@ -926,7 +926,7 @@ describe("TransportSendQueue", () => {
         // Wait until we're inside transport.send
         await promiseSource2;
 
-        // These two operations should get queued.
+        // This should get queued.
         const second = queue.send("world");
 
         promiseSource3.resolve();
@@ -1019,6 +1019,38 @@ describe("TransportSendQueue", () => {
         expect(sendMock.mock.calls[0][0]).toEqual(new Uint8Array([4, 5, 6]));
         expect(sendMock.mock.calls[1][0]).toEqual(new Uint8Array([7, 8, 10, 12, 14]));
 
+        queue.stop();
+    });
+
+    it ("throws if mixed data is queued", async () => {
+        const promiseSource1 = new PromiseSource();
+        const promiseSource2 = new PromiseSource();
+        const promiseSource3 = new PromiseSource();
+        const transport = new TestTransport();
+        const sendMock = jest.fn()
+            .mockImplementationOnce(async () => {
+                await promiseSource1;
+                promiseSource2.resolve();
+                await promiseSource3;
+            })
+            .mockImplementationOnce(() => Promise.resolve());
+        transport.send = sendMock;
+
+        const queue = new TransportSendQueue(transport);
+
+        const first = queue.send(new Uint8Array([4, 5, 6]));
+        // This should allow first to enter transport.send
+        promiseSource1.resolve();
+        // Wait until we're inside transport.send
+        await promiseSource2;
+
+        // These two operations should get queued.
+        const second = queue.send(new Uint8Array([7, 8, 10]));
+        expect(() => queue.send("A string!")).toThrow();
+
+        promiseSource3.resolve();
+
+        await Promise.all([first, second]);
         queue.stop();
     });
 });
