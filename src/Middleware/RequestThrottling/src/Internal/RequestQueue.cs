@@ -46,12 +46,12 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
 
         public void Release()
         {
+            _serverSemaphore.Release();
+
             lock (_totalRequestsLock)
             {
                 TotalRequests--;
             }
-
-            _serverSemaphore.Release();
         }
 
         public void Dispose()
