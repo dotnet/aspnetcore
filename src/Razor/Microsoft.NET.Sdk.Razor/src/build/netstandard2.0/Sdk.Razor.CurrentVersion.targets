@@ -846,6 +846,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(RazorDesignTimeTargets)" />
 
+  <PropertyGroup>
+    <!--
+      Defines the list of file extensions that VS will monitor to reload the application.
+      We'll only define these for C# projects targeting RazorLangVersion 3.0 or later, and let VS use defaults in other cases.
+
+      This property can be removed after the next insertion in to VS.
+    -->
+    <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(RazorUpToDateReloadFileTypes)' == ''">$(RazorUpToDateReloadFileTypes)</UpToDateReloadFileTypes>
+  </PropertyGroup>
+
   <!--
     This is a hook to import a set of targets after the Razor targets. By default this is unused.
   -->
