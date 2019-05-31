@@ -22,23 +22,15 @@
 
   <!-- Pack settings -->
   <PropertyGroup>
+    <PackDependsOn>$(PackDependsOn);Publish</PackDependsOn>
     <NoPackageAnalysis>true</NoPackageAnalysis>
-    <IntermediatePackDir>obj\publish\</IntermediatePackDir>
-    <PublishDir>$(IntermediatePackDir)$(TargetFramework)\</PublishDir>
     <NuspecFile>Microsoft.AspNetCore.Blazor.DevServer.nuspec</NuspecFile>
   </PropertyGroup>
 
   <ItemGroup>
-    <NuspecProperty Include="publishDir=$([MSBuild]::NormalizeDirectory($(PublishDir)))" />
+    <NuspecProperty Include="publishDir=$(PublishDir)" />
     <NuspecProperty Include="componentsrootdir=..\..\..\" />
     <NuspecProperty Include="blazorversion=$(PackageVersion)" />
   </ItemGroup>
 
-  <!-- Executes /t:Publish for all target frameworks before packing-->
-  <Target Name="PublishAll" BeforeTargets="_IntermediatePack">
-    <ItemGroup>
-      <_TargetFramework Include="$(TargetFramework)" />
-    </ItemGroup>
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="Publish" Properties="TargetFramework=%(_TargetFramework.Identity)" />
-  </Target>
 </Project>
