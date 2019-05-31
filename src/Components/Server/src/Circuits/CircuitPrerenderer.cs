@@ -8,12 +8,14 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Components.Server.Circuits
 {
     internal class CircuitPrerenderer : IComponentPrerenderer
     {
         private static object CircuitHostKey = new object();
+        private static object NavigationStatusKey = new object();
 
         private readonly CircuitFactory _circuitFactory;
         private readonly CircuitRegistry _registry;
@@ -27,10 +29,15 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         public async Task<ComponentPrerenderResult> PrerenderComponentAsync(ComponentPrerenderingContext prerenderingContext)
         {
             var context = prerenderingContext.Context;
-            var navigationStatus = new CircuitNavigationStatus();
+            var navigationStatus = GetOrCreateNavigationStatus(context);
+            if (navigationStatus.Navigated)
+            {
+                // Avoid creating a circuit host if other component earlier in the pipeline already triggered
+                // a navigation request. Instead rendre nothing
+                return new ComponentPrerenderResult(Array.Empty<string>());
+            }
             var circuitHost = GetOrCreateCircuitHost(context, navigationStatus);
-
-            ComponentRenderedText renderResult = default; 
+            ComponentRenderedText renderResult = default;
             try
             {
                 renderResult = await circuitHost.PrerenderComponentAsync(
@@ -55,6 +62,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 }
 
                 context.Response.Redirect(navigationException.Location);
+                return new ComponentPrerenderResult(Array.Empty<string>());
             }
 
             circuitHost.Descriptors.Add(new ComponentDescriptor
@@ -63,14 +71,28 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
                 Prerendered = true
             });
 
-            var result = new[] {
+            var result = (new[] {
                 $"<!-- M.A.C.Component:{{\"circuitId\":\"{circuitHost.CircuitId}\",\"rendererId\":\"{circuitHost.Renderer.Id}\",\"componentId\":\"{renderResult.ComponentId}\"}} -->",
-            }.Concat(renderResult.Tokens).Concat(
+            }).Concat(renderResult.Tokens).Concat(
                 new[] {
                     $"<!-- M.A.C.Component: {renderResult.ComponentId} -->"
                 });
 
             return new ComponentPrerenderResult(result);
+        }
+
+        private CircuitNavigationStatus GetOrCreateNavigationStatus(HttpContext context)
+        {
+            if (context.Items.TryGetValue(NavigationStatusKey, out var existingHost))
+            {
+                return (CircuitNavigationStatus)existingHost;
+            }
+            else
+            {
+                var navigationStatus = new CircuitNavigationStatus();
+                context.Items[NavigationStatusKey] = navigationStatus;
+                return navigationStatus;
+            }
         }
 
         private static async Task CleanupCircuitState(HttpContext context, CircuitNavigationStatus navigationStatus, CircuitHost circuitHost)

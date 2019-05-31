@@ -70,6 +70,12 @@ namespace BasicWebSite.Controllers
             return Ok(_weatherData);
         }
 
+        [HttpGet("/components/Navigation/{staticPrerender=true}")]
+        public IActionResult Navigation(bool staticPrerender)
+        {
+            return View(staticPrerender);
+        }
+
         private class WeatherRow
         {
             public string DateFormatted { get; internal set; }

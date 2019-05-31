@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
@@ -54,6 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.RazorComponents
                     }
 
                     httpContext.Response.Redirect(navigationException.Location);
+                    return Array.Empty<string>();
                 }
 
                 return result.Tokens;
