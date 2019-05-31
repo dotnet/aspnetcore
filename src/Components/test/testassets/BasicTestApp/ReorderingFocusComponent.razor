@@ -11,9 +11,9 @@
 <ul class="incomplete-items">
     @foreach (var item in todoItems.Where(item => !item.IsDone))
     {
-        <li key="@item.Id" class="@($"item-{item.Id}")">
-            <input type="checkbox" bind="@item.IsDone"/>
-            <input type="text" bind="@item.Text" oninput="@Shuffle" />
+        <li @key="@item.Id" class="@($"item-{item.Id}")">
+            <input type="checkbox" @bind="@item.IsDone"/>
+            <input type="text" @bind="@item.Text" @oninput="@Shuffle" />
         </li>
     }
 </ul>
@@ -23,9 +23,9 @@
 <ul class="complete-items">
     @foreach (var item in todoItems.Where(item => item.IsDone))
     {
-        <li key="@item.Id" class="@($"item-{item.Id}")">
-            <input type="checkbox" bind="@item.IsDone" />
-            <input type="text" bind="@item.Text" oninput="@Shuffle" />
+        <li @key="@item.Id" class="@($"item-{item.Id}")">
+            <input type="checkbox" @bind="@item.IsDone" />
+            <input type="text" @bind="@item.Text" @oninput="@Shuffle" />
         </li>
     }
 </ul>

@@ -11,7 +11,7 @@
     </ItemTemplate>
 </TemplatedTable>
 
-Toggle: <input type="checkbox" bind="ShowFooter" id="toggle"/>
+Toggle: <input type="checkbox" @bind="ShowFooter" id="toggle"/>
 
 @code {
     List<Item> Items { get; } = new List<Item>()

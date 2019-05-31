@@ -12,6 +12,12 @@ namespace BasicTestApp.AuthTest
 
         public string UserName { get; set; }
 
-        public List<(string Type, string Value)> ExposedClaims { get; set; }
+        public List<ExposedClaim> ExposedClaims { get; set; }
+    }
+
+    public class ExposedClaim
+    {
+        public string Type { get; set; }
+        public string Value { get; set; }
     }
 }

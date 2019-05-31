@@ -1,4 +1,4 @@
-﻿<h1>Component capture</h1>
+<h1>Component capture</h1>
 
 <p>
     This shows how a component reference may be captured as a field value using 'ref' syntax.
@@ -11,15 +11,15 @@
 @if (_toggleCapturedComponentPresence)
 {
     <div id="child-component">
-        <CounterComponent ref="_myChildCounter" />
+        <CounterComponent @ref="_myChildCounter" />
     </div>
 }
 
 <fieldset>
     <legend>External controls</legend>
-    <button id="reset-child" onclick="@ResetChildCounter">Reset</button>
+    <button id="reset-child" @onclick="@ResetChildCounter">Reset</button>
     <label>
-        <input id="toggle-child" type="checkbox" bind="_toggleCapturedComponentPresence" />
+        <input id="toggle-child" type="checkbox" @bind="_toggleCapturedComponentPresence" />
         Toggle counter presence
     </label>
 </fieldset>
