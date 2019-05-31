@@ -7,10 +7,13 @@
   <!-- Output paths -->
   <PropertyGroup>
     <RpmPackageInstallRoot Condition="'$(RpmPackageInstallRoot)' != '' AND !HasTrailingSlash('$(RpmPackageInstallRoot)')">$(RpmPackageInstallRoot)/</RpmPackageInstallRoot>
-    <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
   </PropertyGroup>
 
-  <Target Name="GetTargetPath" Returns="$(TargetPath)" />
+  <Target Name="GetTargetPath" Returns="$(TargetPath)">
+    <PropertyGroup>
+      <TargetPath>$(InstallersOutputPath)$(TargetFileName)</TargetPath>
+    </PropertyGroup>
+  </Target>
 
   <Target Name="PrepareForBuild">
     <MakeDir Directories="$(IntermediateOutputPath)" />
