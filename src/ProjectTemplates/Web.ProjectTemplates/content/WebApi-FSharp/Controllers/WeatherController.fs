@@ -1,4 +1,4 @@
-namespace WebApplication1.Controllers
+﻿namespace WebApplication1.Controllers
 
 open System
 open System.Collections.Generic
@@ -22,25 +22,11 @@ type WeatherController () =
     inherit ControllerBase()
 
     [<HttpGet>]
-    [<Route("GetWeatherByLocationWithUnit")>]
     member this.Get(location:string, unit: string) =
         let rnd = System.Random()
         let result:WeatherResult = {
             Location = location;
             Temperature = rnd.Next(-20,55);
-            TemperatureUnit = System.Enum.Parse(typeof<TemperatureUnit>,unit) 
-             :?> TemperatureUnit 
-        }
-        ActionResult<WeatherResult>(result)
-
-    [<HttpGet>]
-    [<Route("GetWeatherByLocation")>]
-    member this.Get(location:string) =
-        let rnd = System.Random()
-        let result:WeatherResult = {
-             Location = location;
-             Temperature = rnd.Next(-20,55);
-             TemperatureUnit = TemperatureUnit.Celsius
-        
+            TemperatureUnit = unit
         }
         ActionResult<WeatherResult>(result)

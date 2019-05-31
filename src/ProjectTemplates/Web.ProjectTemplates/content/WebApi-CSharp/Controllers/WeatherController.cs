@@ -18,18 +18,6 @@ namespace Company.WebApplication1.Controllers
     public class WeatherController : ControllerBase
     {
         [HttpGet]
-        public ActionResult<WeatherResult> GetWeatherResult(string location)
-        {
-            var rng = new Random();
-            return new WeatherResult
-            {
-                Location = location,
-                Temperature = rng.Next(-20, 55),
-                TemperatureUnit = TemperatureUnit.Celsius
-            };
-        }
-
-        [HttpGet]
         public ActionResult<WeatherResult> GetWeatherForecasts(string location, TemperatureUnit unit)
         {
             var rng = new Random();
