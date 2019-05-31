@@ -1421,7 +1421,8 @@ var TransportSendQueue = /** @class */ (function () {
         this.executing = true;
         this.sendBufferedData = new PromiseSource();
         this.transportResult = new PromiseSource();
-        this.sendCore().then(function () { }, function (_) { });
+        // Suppress typescript error about handling Promises. The sendLoop doesn't need to be observed
+        this.sendLoop().then(function () { }, function (_) { });
     }
     TransportSendQueue.prototype.send = function (data) {
         this.bufferData(data);
@@ -1432,15 +1433,13 @@ var TransportSendQueue = /** @class */ (function () {
         this.sendBufferedData.resolve();
     };
     TransportSendQueue.prototype.bufferData = function (data) {
-        if (this.buffer.length) {
-            if (typeof (this.buffer[0]) !== typeof (data)) {
-                throw new Error("Expected data to be of type " + typeof (this.buffer) + " but was of type " + typeof (data));
-            }
+        if (this.buffer.length && typeof (this.buffer[0]) !== typeof (data)) {
+            throw new Error("Expected data to be of type " + typeof (this.buffer) + " but was of type " + typeof (data));
         }
         this.buffer.push(data);
         this.sendBufferedData.resolve();
     };
-    TransportSendQueue.prototype.sendCore = function () {
+    TransportSendQueue.prototype.sendLoop = function () {
         return __awaiter(this, void 0, void 0, function () {
             var transportResult, data, error_1;
             return __generator(this, function (_a) {
