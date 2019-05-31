@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
 using System.Runtime.Loader;
 #endif
 using Microsoft.DotNet.Cli.CommandLine;
@@ -79,7 +79,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 }
             }
 
-#if NETCOREAPP2_0
+#if NETCOREAPP2_1
             AssemblyLoadContext.Default.Resolving += (loadContext, assemblyName) =>
             {
                 var name = assemblyName.Name;
