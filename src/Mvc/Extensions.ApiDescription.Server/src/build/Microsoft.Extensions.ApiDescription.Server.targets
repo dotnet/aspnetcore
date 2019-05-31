@@ -3,8 +3,8 @@
   <PropertyGroup>
     <_OpenApiDocumentsCache>$(BaseIntermediateOutputPath)$(MSBuildProjectName).OpenApiFiles.cache</_OpenApiDocumentsCache>
   </PropertyGroup>
-  <ItemGroup Condition=" '$(OpenApiRetrieveDocuments)' == 'true' ">
-    <ProjectCapability Include="OpenApiGetDocuments" />
+  <ItemGroup Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">
+    <ProjectCapability Include="OpenApiGenerateDocuments" />
   </ItemGroup>
 
   <Target Name="OpenApiGetDocuments" Returns="@(_OpenApiProjectDocuments)">
@@ -13,16 +13,16 @@
     </ReadLinesFromFile>
   </Target>
 
-  <Target Name="RetrieveOpenApiDocuments" Condition=" '$(OpenApiRetrieveDocuments)' == 'true' ">
+  <Target Name="GenerateOpenApiDocuments" Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">
     <PropertyGroup>
       <_Command>dotnet "$(MSBuildThisFileDirectory)/../tools/dotnet-getdocument.dll" --assembly "$(TargetPath)"</_Command>
       <_Command>$(_Command) --file-list "$(_OpenApiDocumentsCache)" --framework "$(TargetFrameworkMoniker)"</_Command>
-      <_Command>$(_Command) --output "$(OpenApiDocumentDirectory)" --project "$(MSBuildProjectName)"</_Command>
+      <_Command>$(_Command) --output "$(OpenApiDocumentsDirectory)" --project "$(MSBuildProjectName)"</_Command>
       <_Command Condition=" '$(ProjectAssetsFile)' != '' ">$(_Command) --assets-file "$(ProjectAssetsFile)"</_Command>
       <_Command Condition=" '$(PlatformTarget)' != '' ">$(_Command) --platform "$(PlatformTarget)"</_Command>
       <_Command Condition=" '$(PlatformTarget)' == '' AND '$(Platform)' != '' ">$(_Command) --platform "$(Platform)"</_Command>
       <_Command Condition=" '$(RuntimeIdentifier)' != '' ">$(_Command) --runtime "$(RuntimeIdentifier)"</_Command>
-      <_Command>$(_Command) $(OpenApiGetDocumentOptions)</_Command>
+      <_Command>$(_Command) $(OpenApiGenerateDocumentsOptions)</_Command>
     </PropertyGroup>
 
     <Message Importance="high" Text="%0ARetrieveOpenApiDocuments:" />
@@ -34,6 +34,6 @@
 
   <Target Name="_RetrieveOpenApiDocuments"
       AfterTargets="Build"
-      Condition=" '$(OpenApiRetrieveDocumentsAfterBuild)' == 'true' AND ('$(TargetFramework)' == '' OR '$(TargetFrameworks)' == '') "
-      DependsOnTargets="RetrieveOpenApiDocuments" />
+      Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' AND ('$(TargetFramework)' == '' OR '$(TargetFrameworks)' == '') "
+      DependsOnTargets="GenerateOpenApiDocuments" />
 </Project>

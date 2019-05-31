@@ -1,24 +1,24 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <Project>
-  <ItemGroup Condition=" '$(OpenApiRetrieveDocuments)' == 'true' ">
-    <ProjectCapability Include="OpenApiGetDocuments" />
+  <ItemGroup Condition=" '$(OpenApiGenerateDocuments)' == 'true' ">
+    <ProjectCapability Include="OpenApiGenerateDocuments" />
   </ItemGroup>
 
-  <Target Name="RetrieveOpenApiDocuments">
+  <Target Name="GenerateOpenApiDocuments">
     <MSBuild Projects="$(MSBuildProjectFile)"
-        Targets="RetrieveOpenApiDocuments"
+        Targets="GenerateOpenApiDocuments"
         Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
         RemoveProperties="RuntimeIdentifier" />
   </Target>
 
   <Target Name="_RetrieveOpenApiDocuments"
       AfterTargets="Build"
-      Condition=" '$(OpenApiRetrieveDocumentsAfterBuild)' == 'true' "
-      DependsOnTargets="RetrieveOpenApiDocuments" />
+      Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' "
+      DependsOnTargets="GenerateOpenApiDocuments" />
 
-  <Target Name="OpenApiGetDocuments" Returns="@(_OpenApiProjectDocuments)">
+  <Target Name="OpenApiGenerateDocuments" Returns="@(_OpenApiProjectDocuments)">
     <MSBuild Projects="$(MSBuildProjectFile)"
-        Targets="OpenApiGetDocuments"
+        Targets="OpenApiGenerateDocuments"
         Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
         RemoveProperties="RuntimeIdentifier">
       <Output TaskParameter="TargetOutputs" ItemName="_OpenApiProjectDocuments" />
