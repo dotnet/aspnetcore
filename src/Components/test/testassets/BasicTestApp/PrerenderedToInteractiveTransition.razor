@@ -12,7 +12,7 @@
 <p>
     Clicks:
     <strong id="count">@count</strong>
-    <button id="increment-count" onclick="@(() => count++)">Click me</button>
+    <button id="increment-count" @onclick="@(() => count++)">Click me</button>
 </p>
 
 @code {

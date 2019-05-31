@@ -11,17 +11,11 @@ namespace CodeGenerator
             // See also: src/Kestrel.Transport.Abstractions/Internal/TransportConnection.FeatureCollection.cs
             var features = new[]
             {
-                "IHttpConnectionFeature",
                 "IConnectionIdFeature",
                 "IConnectionTransportFeature",
                 "IConnectionItemsFeature",
                 "IMemoryPoolFeature",
-                "IApplicationTransportFeature",
-                "ITransportSchedulerFeature",
-                "IConnectionLifetimeFeature",
-                "IConnectionHeartbeatFeature",
-                "IConnectionLifetimeNotificationFeature",
-                "IConnectionCompleteFeature"
+                "IConnectionLifetimeFeature"
             };
 
             var usings = $@"
@@ -29,7 +23,7 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;";
 
             return FeatureCollectionGenerator.GenerateFile(
-                namespaceName: "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal",
+                namespaceName: "Microsoft.AspNetCore.Connections",
                 className: "TransportConnection",
                 allFeatures: features,
                 implementedFeatures: features,

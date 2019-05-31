@@ -27,12 +27,12 @@
 <div id="unbound_lambda_child_content">
     <h3>Passing Child Content</h3>
     <TemplatedControl>
-        <button onclick="@(() => { })">Unbound Lambda Child Content</button>
+        <button @onclick="@(() => { })">Unbound Lambda Child Content</button>
     </TemplatedControl>
 </div>
 <div id="unbound_lambda_bind_to_component">
     <h3>Passing Child Content</h3>
-    <ButtonComponent bind-Count="buttonComponentCount" Text="Unbound Lambda Bind-To-Component" />
+    <ButtonComponent @bind-Count="buttonComponentCount" Text="Unbound Lambda Bind-To-Component" />
 </div>
 
 @code {

@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
@@ -28,9 +27,6 @@ namespace Http2SampleApp
                 .ConfigureKestrel((context, options) =>
                 {
                     var basePort = context.Configuration.GetValue<int?>("BASE_PORT") ?? 5000;
-
-                    // Run callbacks on the transport thread
-                    options.ApplicationSchedulingMode = SchedulingMode.Inline;
 
                     // Http/1.1 endpoint for comparison
                     options.Listen(IPAddress.Any, basePort, listenOptions =>

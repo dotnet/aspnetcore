@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Shared\Buffers.MemoryPool\*.cs" LinkBase="MemoryPool" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestApplicationErrorLogger.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestHttp1Connection.cs" />
     <Compile Include="$(KestrelSharedSourceRoot)test\TestKestrelTrace.cs" />

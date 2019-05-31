@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             var delegateConnectionFactory = new DelegateConnectionFactory(
                 format => new TestConnection().StartAsync(format),
-                connection => ((TestConnection)connection).DisposeAsync());
+                connection => ((TestConnection)connection).DisposeAsync().AsTask());
             builder.Services.AddSingleton<IConnectionFactory>(delegateConnectionFactory);
 
             var hubConnection = builder.Build();

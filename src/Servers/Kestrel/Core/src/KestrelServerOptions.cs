@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Certificates.Generation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -37,14 +36,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Defaults to true.
         /// </remarks>
         public bool AddServerHeader { get; set; } = true;
-
-        /// <summary>
-        /// Gets or sets a value that determines how Kestrel should schedule user callbacks.
-        /// </summary>
-        /// <remarks>The default mode is <see cref="SchedulingMode.Default"/></remarks>
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public SchedulingMode ApplicationSchedulingMode { get; set; } = SchedulingMode.Default;
-#pragma warning restore PUB0001 // Pubternal type in public API
 
         /// <summary>
         /// Gets or sets a value that controls whether synchronous IO is allowed for the <see cref="HttpContext.Request"/> and <see cref="HttpContext.Response"/>

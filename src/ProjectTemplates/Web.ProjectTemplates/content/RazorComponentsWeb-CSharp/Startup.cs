@@ -117,8 +117,7 @@ namespace RazorComponentsWeb_CSharp
                     .RequireAuthenticatedUser()
                     .Build();
                 options.Filters.Add(new AuthorizeFilter(policy));
-            })
-            .AddNewtonsoftJson();
+            });
 
 #endif
             services.AddRazorPages();

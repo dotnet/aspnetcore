@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Components.Forms
         /// Gets or sets the value of the input. This should be used with two-way binding.
         /// </summary>
         /// <example>
-        /// bind-Value="@model.PropertyName"
+        /// @bind-Value="@model.PropertyName"
         /// </example>
         [Parameter] public T Value { get; private set; }
 
