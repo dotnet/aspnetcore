@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ReplacePackageContent Include="file:../signalr" ReplaceWith="$(PackageVersion)" />
+    <ReplacePackageContent Include="file:../signalr" ReplaceWith=">=$(PackageVersion)" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
