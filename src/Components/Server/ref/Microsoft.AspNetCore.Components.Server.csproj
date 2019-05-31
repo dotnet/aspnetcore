@@ -6,6 +6,7 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <Compile Include="Microsoft.AspNetCore.Components.Server.netcoreapp3.0.cs" />
     <Reference Include="Microsoft.AspNetCore.Components.Browser"  />
+    <Reference Include="Microsoft.AspNetCore.DataProtection"  />
     <Reference Include="Microsoft.Extensions.Logging"  />
     <Reference Include="Microsoft.AspNetCore.SignalR"  />
     <Reference Include="Microsoft.AspNetCore.StaticFiles"  />

@@ -6,7 +6,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -41,15 +40,17 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
         private readonly object CircuitRegistryLock = new object();
         private readonly CircuitOptions _options;
         private readonly ILogger _logger;
+        private readonly CircuitIdFactory _circuitIdFactory;
         private readonly PostEvictionCallbackRegistration _postEvictionCallback;
 
         public CircuitRegistry(
             IOptions<CircuitOptions> options,
-            ILogger<CircuitRegistry> logger)
+            ILogger<CircuitRegistry> logger,
+            CircuitIdFactory circuitIdFactory)
         {
             _options = options.Value;
             _logger = logger;
-
+            _circuitIdFactory = circuitIdFactory;
             ConnectedCircuits = new ConcurrentDictionary<string, CircuitHost>(StringComparer.Ordinal);
 
             DisconnectedCircuits = new MemoryCache(new MemoryCacheOptions
@@ -139,6 +140,11 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
 
         public virtual async Task<CircuitHost> ConnectAsync(string circuitId, IClientProxy clientProxy, string connectionId, CancellationToken cancellationToken)
         {
+            if (!_circuitIdFactory.ValidateCircuitId(circuitId))
+            {
+                return null;
+            }
+
             CircuitHost circuitHost;
             bool previouslyConnected;
 
