@@ -25,10 +25,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenElement(0, "input");
-            builder.AddAttribute(1, "id", Id);
-            builder.AddAttribute(2, "class", CssClass);
-            builder.AddAttribute(3, "value", BindMethods.GetValue(CurrentValue));
-            builder.AddAttribute(4, "onchange", BindMethods.SetValueHandler(__value => CurrentValue = __value, CurrentValue));
+            builder.AddMultipleAttributes(1, AdditionalAttributes);
+            builder.AddAttribute(2, "id", Id);
+            builder.AddAttribute(3, "class", CssClass);
+            builder.AddAttribute(4, "value", BindMethods.GetValue(CurrentValue));
+            builder.AddAttribute(5, "onchange", BindMethods.SetValueHandler(__value => CurrentValue = __value, CurrentValue));
             builder.CloseElement();
         }
 
