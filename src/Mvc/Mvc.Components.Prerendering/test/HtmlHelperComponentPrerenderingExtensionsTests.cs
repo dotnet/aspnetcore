@@ -432,6 +432,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             var services = new ServiceCollection();
             services.AddLogging();
+            services.AddDataProtection();
             services.AddSingleton(HtmlEncoder.Default);
             configureServices = configureServices ?? (s => s.AddServerSideBlazor());
             configureServices?.Invoke(services);

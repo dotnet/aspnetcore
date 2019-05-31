@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
     // Generates strong criptographic ids for circuits that are protected with authenticated encryption.
     internal class CircuitIdFactory
     {
-        // Follow up with blowdart/levi. Create should be good enough, but not sure if we need
-        // to do anything additional for FIPS compliance.
         private readonly RandomNumberGenerator _generator = RandomNumberGenerator.Create();
         private readonly IDataProtector _protector;
 
