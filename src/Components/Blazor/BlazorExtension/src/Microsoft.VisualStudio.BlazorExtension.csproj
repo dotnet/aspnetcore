@@ -13,10 +13,7 @@
     <ExtensionInstallationFolder>Microsoft\Blazor</ExtensionInstallationFolder>
 
     <!-- This should be set as true if we're ever building the VSIX for inclusion by the VS installer. -->
-    <IsProductComponent Condition="'$(IsProductComponent)'==''">false</IsProductComponent>
-
-    <!-- This VSIX does not insert into VS directly. -->
-    <VisualStudioInsertionComponent>false</VisualStudioInsertionComponent>
+    <IsProductComponent>false</IsProductComponent>
 
     <!-- Update the VSToolsPath to ensure VSIX builds -->
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
