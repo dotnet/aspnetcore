@@ -138,7 +138,11 @@
 
   <Target Name="GenerateOpenApiCode" DependsOnTargets="$(GenerateOpenApiCodeDependsOn)" />
 
-  <!-- Unless this is an inner build or default timing is disabled, tie code generation into the build. -->
+  <!--
+    Unless this is an inner build or default timing is disabled, tie code generation into the build. Separate from
+    GenerateOpenApiCode and not invoked from the ../buildMultiTargeting targets to prevent repeated code generation
+    when multi-targeting.
+  -->
 
   <Target Name="_TieInGenerateOpenApiCode"
       BeforeTargets="BeforeCompile"
