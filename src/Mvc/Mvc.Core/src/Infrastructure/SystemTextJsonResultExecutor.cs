@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             Encoding = Encoding.UTF8
         }.ToString();
 
-        private readonly MvcOptions _mvcOptions;
+        private readonly JsonOptions _options;
         private readonly ILogger<SystemTextJsonResultExecutor> _logger;
 
         public SystemTextJsonResultExecutor(
-            IOptions<MvcOptions> mvcOptions,
+            IOptions<JsonOptions> options,
             ILogger<SystemTextJsonResultExecutor> logger)
         {
-            _mvcOptions = mvcOptions.Value;
+            _options = options.Value;
             _logger = logger;
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var serializerSettings = result.SerializerSettings;
             if (serializerSettings == null)
             {
-                return _mvcOptions.JsonSerializerOptions;
+                return _options.JsonSerializerOptions;
             }
             else
             {
