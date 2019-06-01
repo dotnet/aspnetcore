@@ -109,18 +109,18 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => GetString("ToolsDirectoryDescription");
 
         /// <summary>
-        /// Retrieving document named '{0}'.
+        /// Generating document named '{0}'.
         /// </summary>
-        internal static string RetrievingDocument
+        internal static string GeneratingDocument
         {
-            get => GetString("RetrievingDocument");
+            get => GetString("GeneratingDocument");
         }
 
         /// <summary>
-        /// Retrieving document named '{0}'.
+        /// Generating document named '{0}'.
         /// </summary>
-        internal static string FormatRetrievingDocument(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("RetrievingDocument"), p0);
+        internal static string FormatGeneratingDocument(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("GeneratingDocument"), p0);
 
         /// <summary>
         /// Assembly '{0}' does not contain an entry point.
@@ -221,20 +221,6 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => string.Format(CultureInfo.CurrentCulture, GetString("MethodTimedOut"), p0, p1, p2);
 
         /// <summary>
-        /// Method '{0}' of type '{1}' is an instance method. Must be static.
-        /// </summary>
-        internal static string MethodIsNotStatic
-        {
-            get => GetString("MethodIsNotStatic");
-        }
-
-        /// <summary>
-        /// Method '{0}' of type '{1}' is an instance method. Must be static.
-        /// </summary>
-        internal static string FormatMethodIsNotStatic(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MethodIsNotStatic"), p0, p1);
-
-        /// <summary>
         /// Method '{0}' of type '{1}' is static. Must be an instance method.
         /// </summary>
         internal static string MethodIsStatic
@@ -249,7 +235,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             => string.Format(CultureInfo.CurrentCulture, GetString("MethodIsStatic"), p0, p1);
 
         /// <summary>
-        /// Neither method '{0}' nor '{1}' found in type '{2}' with expected signatures.
+        /// No method '{0}', '{1}' or '{2}' found in type '{3}' with expected signatures.
         /// </summary>
         internal static string MethodsNotFound
         {
@@ -257,10 +243,10 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         }
 
         /// <summary>
-        /// Neither method '{0}' nor '{1}' found in type '{2}' with expected signatures.
+        /// No method '{0}', '{1}' or '{2}' found in type '{3}' with expected signatures.
         /// </summary>
-        internal static string FormatMethodsNotFound(object p0, object p1, object p2)
-            => string.Format(CultureInfo.CurrentCulture, GetString("MethodsNotFound"), p0, p1, p2);
+        internal static string FormatMethodsNotFound(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MethodsNotFound"), p0, p1, p2, p3);
 
         /// <summary>
         /// Writing document named '{0}' to '{1}'.
@@ -331,6 +317,20 @@ namespace Microsoft.Extensions.ApiDescription.Tool
         /// </summary>
         internal static string FormatProjectDescription()
             => GetString("ProjectDescription");
+
+        /// <summary>
+        /// Unable to resolve a non-null '{0}' implementation using method '{1}', '{2}' or '{3}' of type '{4}'.
+        /// </summary>
+        internal static string ServiceProviderNotFound
+        {
+            get => GetString("ServiceProviderNotFound");
+        }
+
+        /// <summary>
+        /// Unable to resolve a non-null '{0}' implementation using method '{1}', '{2}' or '{3}' of type '{4}'.
+        /// </summary>
+        internal static string FormatServiceProviderNotFound(object p0, object p1, object p2, object p3, object p4)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ServiceProviderNotFound"), p0, p1, p2, p3, p4);
 
         private static string GetString(string name, params string[] formatterNames)
         {

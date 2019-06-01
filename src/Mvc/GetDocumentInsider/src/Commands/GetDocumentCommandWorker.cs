@@ -6,25 +6,19 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 {
     internal class GetDocumentCommandWorker
     {
+        private const string DefaultDocumentName = "v1";
         private const string DocumentService = "Microsoft.Extensions.ApiDescriptions.IDocumentProvider";
+        private const string DotString = ".";
+        private const string InvalidFilenameString = "..";
+        private const string JsonExtension = ".json";
+        private const string UnderscoreString = "_";
         private static readonly char[] InvalidFilenameCharacters = Path.GetInvalidFileNameChars();
-        private static readonly string[] InvalidFilenameStrings = new[] { ".." };
-
-        private const string BuildMethodName = "BuildWebHost";
-        private static readonly object[] BuildArguments = new[] { Array.Empty<string>() };
-        private static readonly Type[] BuildParameterTypes = new[] { typeof(string[]) };
-        private static readonly Type BuildReturnType = typeof(IWebHost);
-
-        private const string CreateMethodName = "CreateWebHostBuilder";
-        private static readonly object[] CreateArguments = BuildArguments;
-        private static readonly Type[] CreateParameterTypes = BuildParameterTypes;
-        private static readonly Type CreateReturnType = typeof(IWebHostBuilder);
 
         private const string GetDocumentsMethodName = "GetDocumentNames";
         private static readonly object[] GetDocumentsArguments = Array.Empty<object>();
@@ -43,93 +37,49 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             if (entryPointType == null)
             {
                 Reporter.WriteError(Resources.FormatMissingEntryPoint(context.AssemblyPath));
-                return 2;
+                return 3;
             }
-
-            static string FormatException(Exception exception) => $"{exception.GetType().FullName}: {exception.Message}";
 
             try
             {
-                var services = GetServices(entryPointType);
+                var serviceFactory = HostFactoryResolver.ResolveServiceProviderFactory(assembly);
+                if (serviceFactory == null)
+                {
+                    Reporter.WriteError(Resources.FormatMethodsNotFound(
+                        HostFactoryResolver.BuildWebHost,
+                        HostFactoryResolver.CreateHostBuilder,
+                        HostFactoryResolver.CreateWebHostBuilder,
+                        entryPointType));
+
+                    return 4;
+                }
+
+                var services = serviceFactory(Array.Empty<string>());
                 if (services == null)
                 {
-                    return 3;
+                    Reporter.WriteError(Resources.FormatServiceProviderNotFound(
+                        typeof(IServiceProvider),
+                        HostFactoryResolver.BuildWebHost,
+                        HostFactoryResolver.CreateHostBuilder,
+                        HostFactoryResolver.CreateWebHostBuilder,
+                        entryPointType));
+
+                    return 5;
                 }
 
                 var success = GetDocuments(context, services);
                 if (!success)
                 {
-                    return 4;
+                    return 6;
                 }
-            }
-            catch (AggregateException ex) when (ex.InnerException != null)
-            {
-                foreach (var innerException in ex.Flatten().InnerExceptions)
-                {
-                    Reporter.WriteError(FormatException(innerException));
-                }
-
-                Reporter.WriteVerbose(ex.StackTrace);
-                return 5;
             }
             catch (Exception ex)
             {
-                Reporter.WriteError(FormatException(ex));
-                Reporter.WriteVerbose(ex.StackTrace);
-                return 6;
+                Reporter.WriteError(ex.ToString());
+                return 7;
             }
 
             return 0;
-        }
-
-        private static IServiceProvider GetServices(Type entryPointType)
-        {
-            // BuildWebHost (old style has highest priority)
-            var methodInfo = GetMethod(
-                BuildMethodName,
-                entryPointType,
-                BuildParameterTypes,
-                BuildReturnType,
-                // Will fall back to find CreateWebHostBuilder method.
-                reportErrors: false,
-                isStatic: true);
-            if (methodInfo != null)
-            {
-                var webHost = (IWebHost)InvokeMethod(methodInfo, instance: null, arguments: BuildArguments);
-                if (webHost == null)
-                {
-                    return null;
-                }
-
-                return webHost.Services;
-            }
-
-            // CreateWebHostBuilder
-            methodInfo = GetMethod(
-                CreateMethodName,
-                entryPointType,
-                CreateParameterTypes,
-                CreateReturnType,
-                // Use a different message for this case.
-                reportErrors: false,
-                isStatic: true);
-            if (methodInfo == null)
-            {
-                Reporter.WriteError(Resources.FormatMethodsNotFound(
-                    BuildMethodName,
-                    CreateMethodName,
-                    entryPointType));
-
-                return null;
-            }
-
-            var builder = (IWebHostBuilder)InvokeMethod(methodInfo, instance: null, arguments: CreateArguments);
-            if (builder == null)
-            {
-                return null;
-            }
-
-            return builder.Build().Services;
         }
 
         private static bool GetDocuments(GetDocumentCommandContext context, IServiceProvider services)
@@ -154,9 +104,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 GetDocumentsMethodName,
                 serviceType,
                 GetDocumentsParameterTypes,
-                GetDocumentsReturnType,
-                reportErrors: true,
-                isStatic: false);
+                GetDocumentsReturnType);
             if (getDocumentsMethod == null)
             {
                 return false;
@@ -166,9 +114,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
                 GenerateMethodName,
                 serviceType,
                 GenerateMethodParameterTypes,
-                GenerateMethodReturnType,
-                reportErrors: true,
-                isStatic: false);
+                GenerateMethodReturnType);
             if (generateMethod == null)
             {
                 return false;
@@ -208,9 +154,8 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
 
             // Write out the cache file.
             var stream = File.Create(context.FileListPath);
-            using var writer = new StreamWriter(stream) { AutoFlush = true };
+            using var writer = new StreamWriter(stream);
             writer.WriteLine(string.Join(Environment.NewLine, filePathList));
-            stream.Flush();
 
             return true;
         }
@@ -222,43 +167,43 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             MethodInfo generateMethod,
             object service)
         {
-            Reporter.WriteInformation(Resources.FormatRetrievingDocument(documentName));
+            Reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
             var stream = new MemoryStream();
-            using var writer = new StreamWriter(stream) { AutoFlush = true };
+            using var writer = new StreamWriter(stream);
             var resultTask = (Task)InvokeMethod(generateMethod, service, new object[] { documentName, writer });
             if (resultTask == null)
             {
                 return null;
             }
 
-            var finishedIndex = Task.WaitAny(resultTask, Task.Delay(TimeSpan.FromMinutes(1)));
-            if (finishedIndex != 0)
+            using (resultTask)
             {
-                Reporter.WriteError(Resources.FormatMethodTimedOut(GenerateMethodName, DocumentService, 1));
+                var finished = resultTask.Wait(TimeSpan.FromMinutes(1));
+                if (!finished)
+                {
+                    Reporter.WriteError(Resources.FormatMethodTimedOut(GenerateMethodName, DocumentService, 1));
+                    return null;
+                }
+            }
+
+            if (stream.Length == 0L)
+            {
+                Reporter.WriteError(
+                    Resources.FormatMethodWroteNoContent(GenerateMethodName, DocumentService, documentName));
+
                 return null;
             }
 
             var filePath = GetDocumentPath(documentName, projectName, outputDirectory);
+            Reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
             try
             {
-                if (stream.Length == 0L)
-                {
-                    Reporter.WriteError(Resources.FormatMethodWroteNoContent(
-                        GenerateMethodName,
-                        DocumentService,
-                        documentName));
-
-                    return null;
-                }
-
                 stream.Position = 0L;
-                Reporter.WriteInformation(Resources.FormatWritingDocument(documentName, filePath));
 
                 // Create the output FileStream last to avoid corrupting an existing file or writing partial data.
                 using var outStream = File.Create(filePath);
                 stream.CopyTo(outStream);
-                outStream.Flush();
             }
             catch
             {
@@ -272,24 +217,25 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
         private static string GetDocumentPath(string documentName, string projectName, string outputDirectory)
         {
             string path;
-            if (string.Equals("v1", documentName, StringComparison.Ordinal))
+            if (string.Equals(DefaultDocumentName, documentName, StringComparison.Ordinal))
             {
                 // Leave default document name out of the filename.
-                path = projectName + ".json";
+                path = projectName + JsonExtension;
             }
             else
             {
                 // Sanitize the document name because it may contain almost any character, including illegal filename
                 // characters such as '/' and '?' and the string "..". Do not treat slashes as folder separators.
-                var sanitizedDocumentName = string.Join("_", documentName.Split(InvalidFilenameCharacters));
-                while (sanitizedDocumentName.Contains(InvalidFilenameStrings[0]))
+                var sanitizedDocumentName = string.Join(
+                    UnderscoreString,
+                    documentName.Split(InvalidFilenameCharacters));
+
+                while (sanitizedDocumentName.Contains(InvalidFilenameString))
                 {
-                    sanitizedDocumentName = string.Join(
-                        ".",
-                        sanitizedDocumentName.Split(InvalidFilenameStrings, StringSplitOptions.None));
+                    sanitizedDocumentName = sanitizedDocumentName.Replace(InvalidFilenameString, DotString);
                 }
 
-                path = $"{projectName}_{documentName}.json";
+                path = $"{projectName}_{documentName}{JsonExtension}";
             }
 
             if (!string.IsNullOrEmpty(outputDirectory))
@@ -300,51 +246,24 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             return path;
         }
 
-        private static MethodInfo GetMethod(
-            string methodName,
-            Type type,
-            Type[] parameterTypes,
-            Type returnType,
-            bool reportErrors,
-            bool isStatic)
+        private static MethodInfo GetMethod(string methodName, Type type, Type[] parameterTypes, Type returnType)
         {
-            static void Report(bool reportErrors, string message)
-            {
-                if (reportErrors)
-                {
-                    Reporter.WriteError(message);
-                }
-                else
-                {
-                    Reporter.WriteWarning(message);
-                }
-            }
-
             var method = type.GetMethod(methodName, parameterTypes);
             if (method == null)
             {
-                Report(reportErrors, Resources.FormatMethodNotFound(methodName, type));
+                Reporter.WriteError(Resources.FormatMethodNotFound(methodName, type));
                 return null;
             }
 
-            if (isStatic != method.IsStatic)
+            if (method.IsStatic)
             {
-                if (isStatic)
-                {
-                    Report(reportErrors, Resources.FormatMethodIsNotStatic(methodName, type));
-                }
-                else
-                {
-                    Report(reportErrors, Resources.FormatMethodIsStatic(methodName, type));
-                }
-
+                Reporter.WriteError(Resources.FormatMethodIsStatic(methodName, type));
                 return null;
             }
 
             if (!returnType.IsAssignableFrom(method.ReturnType))
             {
-                Report(
-                    reportErrors,
+                Reporter.WriteError(
                     Resources.FormatMethodReturnTypeUnsupported(methodName, type, method.ReturnType, returnType));
 
                 return null;
@@ -358,10 +277,8 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             var result = method.Invoke(instance, arguments);
             if (result == null)
             {
-                Reporter.WriteError(Resources.FormatMethodReturnedNull(
-                    method.Name,
-                    method.DeclaringType,
-                    method.ReturnType));
+                Reporter.WriteError(
+                    Resources.FormatMethodReturnedNull(method.Name, method.DeclaringType, method.ReturnType));
             }
 
             return result;

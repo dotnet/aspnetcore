@@ -131,7 +131,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
             catch (Exception ex)
             {
                 Console.Error.WriteLine(ex.ToString());
-                return 1;
+                return 2;
             }
         }
 
