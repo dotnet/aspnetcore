@@ -35,14 +35,6 @@
     <Copy
       SourceFiles="@(_PublishFiles)"
       DestinationFolder="$(PublishDir)" />
-    <Copy
-      SourceFiles="@(_PagesFiles)"
-      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" 
-      ContinueOnError="true"/>
-    <Copy
-      SourceFiles="@(_wwwrootFiles)"
-      DestinationFolder="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot"
-      ContinueOnError="true"/>
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
