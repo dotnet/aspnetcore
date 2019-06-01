@@ -109,11 +109,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!ReferenceEquals(_requestStreamInternal, RequestBody))
                 {
                     _requestStreamInternal = RequestBody;
-                    RequestBodyPipeReader = PipeReader.Create(RequestBody);
+                    RequestBodyPipeReader = PipeReader.Create(RequestBody, new StreamPipeReaderOptions(_context.MemoryPool, _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool.GetMinimumAllocSize()));
 
                     OnCompleted((self) =>
                     {
-                        ((PipeWriter)self).Complete();
+                        ((PipeReader)self).Complete();
                         return Task.CompletedTask;
                     }, RequestBodyPipeReader);
                 }
@@ -243,11 +243,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (!ReferenceEquals(_responseStreamInternal, ResponseBody))
                 {
                     _responseStreamInternal = ResponseBody;
-                    ResponseBodyPipeWriter = PipeWriter.Create(ResponseBody);
+                    ResponseBodyPipeWriter = PipeWriter.Create(ResponseBody, new StreamPipeWriterOptions(_context.MemoryPool));
 
                     OnCompleted((self) =>
                     {
-                        ((PipeReader)self).Complete();
+                        ((PipeWriter)self).Complete();
                         return Task.CompletedTask;
                     }, ResponseBodyPipeWriter);
                 }
