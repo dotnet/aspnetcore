@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <param name="options">The <see cref="MvcOptions"/>.</param>
         public SystemTextJsonOutputFormatter(MvcOptions options)
         {
-            SerializerOptions = options.SerializerOptions;
+            SerializerOptions = options.JsonSerializerOptions;
 
             SupportedEncodings.Add(Encoding.UTF8);
             SupportedEncodings.Add(Encoding.Unicode);

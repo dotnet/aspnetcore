@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     {
         protected override IJsonHelper GetJsonHelper()
         {
-            var mvcOptions = new MvcOptions { SerializerOptions = { PropertyNamingPolicy = JsonNamingPolicy.CamelCase } };
+            var mvcOptions = new MvcOptions { JsonSerializerOptions = { PropertyNamingPolicy = JsonNamingPolicy.CamelCase } };
             return new SystemTextJsonHelper(Options.Create(mvcOptions));
         }
     }

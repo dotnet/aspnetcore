@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         {
             // JsonSerializer always encodes non-ASCII chars, so we do not need
             // to do anything special with the SerializerOptions
-            var json = JsonSerializer.ToString(value, _mvcOptions.SerializerOptions);
+            var json = JsonSerializer.ToString(value, _mvcOptions.JsonSerializerOptions);
             return new HtmlString(json);
         }
     }

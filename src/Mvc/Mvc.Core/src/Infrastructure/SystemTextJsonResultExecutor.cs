@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             var serializerSettings = result.SerializerSettings;
             if (serializerSettings == null)
             {
-                return _mvcOptions.SerializerOptions;
+                return _mvcOptions.JsonSerializerOptions;
             }
             else
             {

@@ -14,5 +14,20 @@ namespace FormatterWebSite.Controllers
         {
             return value;
         }
+
+        [HttpPost]
+        public ActionResult<SimpleModel> RoundtripSimpleModel(SimpleModel model)
+        {
+            return model;
+        }
+
+        public class SimpleModel
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public string StreetName { get; set; }
+        }
     }
 }

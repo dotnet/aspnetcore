@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using FormatterWebSite.Controllers;
 using Microsoft.AspNetCore.Hosting;
 using Xunit;
 
@@ -96,6 +97,28 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal(expected, responseBody);
+        }
+
+        [Fact]
+        public async Task JsonInputFormatter_RoundtripsPocoModel()
+        {
+            // Arrange
+            var expected = new JsonInputFormatterController.SimpleModel()
+            {
+                Id = 18,
+                Name = "James",
+                StreetName = "JnK",
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync("http://localhost/RoundtripSimpleModel/RoundtripSimpleModel/", expected);
+            var actual = await response.Content.ReadAsAsync<JsonInputFormatterController.SimpleModel>();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal(expected.Id, actual.Id);
+            Assert.Equal(expected.Name, actual.Name);
+            Assert.Equal(expected.StreetName, actual.StreetName);
         }
 
         [Fact]
