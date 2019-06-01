@@ -98,38 +98,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         Stream IHttpRequestFeature.Body
         {
-            get
-            {
-                return RequestBody;
-            }
-            set
-            {
-                RequestBody = value;
-                var requestPipeReader = new StreamPipeReader(RequestBody, new StreamPipeReaderAdapterOptions(
-                    minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize(),
-                    minimumReadThreshold: _context.MemoryPool.GetMinimumAllocSize(),
-                    _context.MemoryPool));
-                RequestBodyPipeReader = requestPipeReader;
-
-                // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
-                if (_wrapperObjectsToDispose == null)
-                {
-                    _wrapperObjectsToDispose = new List<IDisposable>();
-                }
-                _wrapperObjectsToDispose.Add(requestPipeReader);
-            }
+            get => RequestBody;
+            set => RequestBody = value;
         }
 
         PipeReader IRequestBodyPipeFeature.Reader
         {
             get
             {
+                if (!ReferenceEquals(_requestStreamInternal, RequestBody))
+                {
+                    _requestStreamInternal = RequestBody;
+                    RequestBodyPipeReader = PipeReader.Create(RequestBody);
+
+                    OnCompleted((self) =>
+                    {
+                        ((PipeWriter)self).Complete();
+                        return Task.CompletedTask;
+                    }, RequestBodyPipeReader);
+                }
+
                 return RequestBodyPipeReader;
-            }
-            set
-            {
-                RequestBodyPipeReader = value;
-                RequestBody = new ReadOnlyPipeStream(RequestBodyPipeReader);
             }
         }
 
@@ -241,37 +230,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
+        Stream IHttpResponseFeature.Body
+        {
+            get => ResponseBody;
+            set => ResponseBody = value;
+        }
+
         PipeWriter IResponseBodyPipeFeature.Writer
         {
             get
             {
-                return ResponsePipeWriter;
-            }
-            set
-            {
-                ResponsePipeWriter = value;
-                ResponseBody = new WriteOnlyPipeStream(ResponsePipeWriter);
-            }
-        }
-
-        Stream IHttpResponseFeature.Body
-        {
-            get
-            {
-                return ResponseBody;
-            }
-            set
-            {
-                ResponseBody = value;
-                var responsePipeWriter = new StreamPipeWriter(ResponseBody, minimumSegmentSize: _context.MemoryPool.GetMinimumSegmentSize(), _context.MemoryPool);
-                ResponsePipeWriter = responsePipeWriter;
-
-                // The StreamPipeWrapper needs to be disposed as it hold onto blocks of memory
-                if (_wrapperObjectsToDispose == null)
+                if (!ReferenceEquals(_responseStreamInternal, ResponseBody))
                 {
-                    _wrapperObjectsToDispose = new List<IDisposable>();
+                    _responseStreamInternal = ResponseBody;
+                    ResponseBodyPipeWriter = PipeWriter.Create(ResponseBody);
+
+                    OnCompleted((self) =>
+                    {
+                        ((PipeReader)self).Complete();
+                        return Task.CompletedTask;
+                    }, ResponseBodyPipeWriter);
                 }
-                _wrapperObjectsToDispose.Add(responsePipeWriter);
+
+                return ResponseBodyPipeWriter;
             }
         }
 

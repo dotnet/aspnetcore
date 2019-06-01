@@ -70,8 +70,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected string _methodText = null;
         private string _scheme = null;
-
-        private List<IDisposable> _wrapperObjectsToDispose;
+        private Stream _requestStreamInternal;
+        private Stream _responseStreamInternal;
 
         public HttpProtocol(HttpConnectionContext context)
         {
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public IHeaderDictionary ResponseHeaders { get; set; }
         public Stream ResponseBody { get; set; }
-        public PipeWriter ResponsePipeWriter { get; set; }
+        public PipeWriter ResponseBodyPipeWriter { get; set; }
 
         public CancellationToken RequestAborted
         {
@@ -317,7 +317,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 bodyControl = new BodyControl(bodyControl: this, this);
             }
 
-            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponsePipeWriter) = bodyControl.Start(messageBody);
+            (RequestBody, ResponseBody, RequestBodyPipeReader, ResponseBodyPipeWriter) = bodyControl.Start(messageBody);
+            _requestStreamInternal = RequestBody;
+            _responseStreamInternal = ResponseBody;
         }
 
         public void StopBodies() => bodyControl.Stop();
@@ -399,14 +401,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             localAbortCts?.Dispose();
-
-            if (_wrapperObjectsToDispose != null)
-            {
-                foreach (var disposable in _wrapperObjectsToDispose)
-                {
-                    disposable.Dispose();
-                }
-            }
 
             Output?.Reset();
 

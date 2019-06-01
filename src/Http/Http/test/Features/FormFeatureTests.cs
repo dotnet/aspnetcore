@@ -98,7 +98,9 @@ namespace Microsoft.AspNetCore.Http.Features
             await pipe.Writer.WriteAsync(formContent);
             pipe.Writer.Complete();
 
-            context.Request.BodyReader = pipe.Reader;
+            var mockFeature = new MockRequestBodyPipeFeature();
+            mockFeature.Reader = pipe.Reader;
+            context.Features.Set<IRequestBodyPipeFeature>(mockFeature);
 
             IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
             context.Features.Set<IFormFeature>(formFeature);
@@ -108,14 +110,19 @@ namespace Microsoft.AspNetCore.Http.Features
             Assert.Equal("bar", formCollection["foo"]);
             Assert.Equal("2", formCollection["baz"]);
 
-            // Cached
+            // Cached	
             formFeature = context.Features.Get<IFormFeature>();
             Assert.NotNull(formFeature);
             Assert.NotNull(formFeature.Form);
             Assert.Same(formFeature.Form, formCollection);
 
-            // Cleanup
+            // Cleanup	
             await responseFeature.CompleteAsync();
+        }
+
+        private class MockRequestBodyPipeFeature : IRequestBodyPipeFeature
+        {
+            public PipeReader Reader { get; set; }
         }
 
         private const string MultipartContentType = "multipart/form-data; boundary=WebKitFormBoundary5pDRpGheQXaM8k3T";
