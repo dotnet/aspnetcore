@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
 {
     internal class SystemTextJsonHelper : IJsonHelper
     {
-        private readonly MvcOptions _mvcOptions;
+        private readonly JsonOptions _options;
 
-        public SystemTextJsonHelper(IOptions<MvcOptions> mvcOptions)
+        public SystemTextJsonHelper(IOptions<JsonOptions> options)
         {
-            _mvcOptions = mvcOptions.Value;
+            _options = options.Value;
         }
 
         /// <inheritdoc />
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         {
             // JsonSerializer always encodes non-ASCII chars, so we do not need
             // to do anything special with the SerializerOptions
-            var json = JsonSerializer.ToString(value, _mvcOptions.JsonSerializerOptions);
+            var json = JsonSerializer.ToString(value, _options.JsonSerializerOptions);
             return new HtmlString(json);
         }
     }
