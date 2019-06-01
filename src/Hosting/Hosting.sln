@@ -59,8 +59,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{28899903-4A65-466C-B8C6-DA5A5CB5DF75}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{006042D1-A053-4788-8D58-AB08DBB2E668}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "..\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{962C2A87-DDA7-4D5E-861E-9042DA021F7D}"
 EndProject
 Global

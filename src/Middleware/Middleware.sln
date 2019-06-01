@@ -213,8 +213,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_dependencies", "_dependenc
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "..\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{85534665-96ED-4C14-BB63-DA9CC5F50DBD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{E6D8587C-97DB-4083-9983-8819241E202E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{7FF45C00-BAAF-43AD-B0D3-392C04E241E5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "..\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{69A74E57-48B7-43B8-A3D7-874F7B72F271}"

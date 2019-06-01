@@ -167,8 +167,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authen
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Features", "..\Http\Http.Features\src\Microsoft.AspNetCore.Http.Features.csproj", "{C72560B4-C9AC-49EA-B202-89BCD3826EB8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{DCB4C407-1121-4AB0-A6B6-DF28B8EBCBD1}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor", "..\Razor\Razor\src\Microsoft.AspNetCore.Razor.csproj", "{12D0BEB8-A1C6-4712-8368-83BC65428CA8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.DataProtection", "..\DataProtection\DataProtection\src\Microsoft.AspNetCore.DataProtection.csproj", "{CC355676-B7EF-4A0E-9659-BCB50127E850}"

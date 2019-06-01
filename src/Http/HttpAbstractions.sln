@@ -95,8 +95,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Static
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "..\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{83E82469-8225-47AD-9D0F-DFA078D7F930}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{58694FAB-BAB7-40F7-9973-C9104F1D376E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting", "..\Hosting\Hosting\src\Microsoft.AspNetCore.Hosting.csproj", "{94283D65-3BE9-403C-BF34-CFFA3AF89101}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "..\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{AC5D4AF2-F2F8-4A46-8A57-9858806C9A55}"

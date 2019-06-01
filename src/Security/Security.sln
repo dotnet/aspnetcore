@@ -118,8 +118,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Http.Headers"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "..\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{ADA1E8D3-C13C-4747-8B4D-F4278E7CDFEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{19F39424-5F0F-42BF-BE04-40B20398C255}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{F59ECA2C-146A-4708-B2C4-296F452C1AF3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "..\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{54F2FA08-8E1C-4FC1-A5CF-51D742E29EF7}"

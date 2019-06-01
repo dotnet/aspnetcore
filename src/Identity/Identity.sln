@@ -151,8 +151,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Routin
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "..\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{61A59575-D976-486D-979D-AD06373667EE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{7D3C1690-E372-4039-9DEC-79DF2C152EE3}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{4B4E0ED3-60D5-4C26-A6EA-CF43EBC38A52}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.WebUtilities", "..\Http\WebUtilities\src\Microsoft.AspNetCore.WebUtilities.csproj", "{8AC04CA6-7638-4F46-B31F-ECA93C38826D}"

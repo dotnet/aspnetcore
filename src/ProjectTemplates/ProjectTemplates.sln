@@ -79,8 +79,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel", "..\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj", "{B3928FBE-FCC1-4174-A581-53369D1B40E3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{CF55C43C-C96A-4AF1-9F52-974CB4C992E6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{B711B31D-727E-4142-BE50-50FA8AAC2EF5}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Cookies", "..\Security\Authentication\Cookies\src\Microsoft.AspNetCore.Authentication.Cookies.csproj", "{50896EEB-D3FD-4D2E-BD46-F42E3333C7CF}"

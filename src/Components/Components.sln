@@ -179,8 +179,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel", "..\Servers\Kestrel\Kestrel\src\Microsoft.AspNetCore.Server.Kestrel.csproj", "{E01CD19E-B0BE-4480-8B8E-3701DE862E62}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{06E9B7E9-3ABA-4766-BAF8-8904942470A9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{AA87CAA1-2456-4108-A02F-E16B9B8A98EE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Http.Connections.Common", "..\SignalR\common\Http.Connections.Common\src\Microsoft.AspNetCore.Http.Connections.Common.csproj", "{DC2F67CC-79DD-4F7C-AFD1-AC0D12B331C9}"
