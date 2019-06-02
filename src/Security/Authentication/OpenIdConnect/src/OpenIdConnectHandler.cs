@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Response.ContentType = "text/html;charset=UTF-8";
 
                 // Emit Cache-Control=no-cache to prevent client caching.
-                Response.Headers[HeaderNames.CacheControl] = "no-cache";
+                Response.Headers[HeaderNames.CacheControl] = "no-cache, no-store";
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
                 Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
