@@ -61,10 +61,12 @@
     <MakeDir Directories="$(PublishDir)\PathSchemeSelection\wwwroot" />
     <Copy
       SourceFiles="@(_customProviderFiles)"
-      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" />    
+      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" 
+      ContinueOnError="true" />
     <Copy
       SourceFiles="@(_staticFiles)"
-      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)" />
+      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)"
+      ContinueOnError="true" />
   </Target>
 
 </Project>
