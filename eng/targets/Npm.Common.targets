@@ -68,8 +68,6 @@
       Condition="@(ReplacePackageContent->Count()) != 0 AND $([MSBuild]::IsOSPlatform('Windows'))"
       Overwrite="true" />
 
-    <Message Text="$(_PackageJsonContent)" Importance="High" />
-
     <Yarn Command="version --no-git-tag-version --new-version $(PackageVersion)" />
     <Yarn Command="pack --filename $(PackageFileName)" />
 
