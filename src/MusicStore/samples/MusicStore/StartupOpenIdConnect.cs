@@ -2,12 +2,10 @@ using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using MusicStore.Components;
 using MusicStore.Models;
@@ -57,16 +55,8 @@ namespace MusicStore
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
 
             // Add EF services to the services container
-            if (_platform.UseInMemoryStore)
-            {
-                services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseInMemoryDatabase("Scratch"));
-            }
-            else
-            {
-                services.AddDbContext<MusicStoreContext>(options =>
-                            options.UseSqlServer(Configuration["Data:DefaultConnection:ConnectionString"]));
-            }
+            services.AddDbContext<MusicStoreContext>(options =>
+                options.UseSqlite("Data Source=MusicStore.db"));
 
             // Add Identity services to the services container
             services.AddIdentity<ApplicationUser, IdentityRole>()
