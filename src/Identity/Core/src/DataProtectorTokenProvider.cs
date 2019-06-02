@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity
@@ -21,15 +22,21 @@ namespace Microsoft.AspNetCore.Identity
         /// </summary>
         /// <param name="dataProtectionProvider">The system data protection provider.</param>
         /// <param name="options">The configured <see cref="DataProtectionTokenProviderOptions"/>.</param>
-        public DataProtectorTokenProvider(IDataProtectionProvider dataProtectionProvider, IOptions<DataProtectionTokenProviderOptions> options)
+        /// <param name="logger">The logger used to log messages, warnings and errors.</param>
+        public DataProtectorTokenProvider(IDataProtectionProvider dataProtectionProvider,
+                                          IOptions<DataProtectionTokenProviderOptions> options,
+                                          ILogger<DataProtectorTokenProvider<TUser>> logger)
         {
             if (dataProtectionProvider == null)
             {
                 throw new ArgumentNullException(nameof(dataProtectionProvider));
             }
+
             Options = options?.Value ?? new DataProtectionTokenProviderOptions();
+
             // Use the Name as the purpose which should usually be distinct from others
-            Protector = dataProtectionProvider.CreateProtector(Name ?? "DataProtectorTokenProvider"); 
+            Protector = dataProtectionProvider.CreateProtector(Name ?? "DataProtectorTokenProvider");
+            Logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         /// <summary>
@@ -55,6 +62,14 @@ namespace Microsoft.AspNetCore.Identity
         /// The name of this instance.
         /// </value>
         public string Name { get { return Options.Name; } }
+
+        /// <summary>
+        /// Gets the <see cref="ILogger"/> used to log messages from the provider.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ILogger"/> used to log messages from the provider.
+        /// </value>
+        public ILogger<DataProtectorTokenProvider<TUser>> Logger { get; }
 
         /// <summary>
         /// Generates a protected token for the specified <paramref name="user"/> as an asynchronous operation.
@@ -110,6 +125,7 @@ namespace Microsoft.AspNetCore.Identity
                     var expirationTime = creationTime + Options.TokenLifespan;
                     if (expirationTime < DateTimeOffset.UtcNow)
                     {
+                        Logger.LogWarning(0, "ValidateAsync failed: the expiration time is invalid.");
                         return false;
                     }
 
@@ -117,31 +133,50 @@ namespace Microsoft.AspNetCore.Identity
                     var actualUserId = await manager.GetUserIdAsync(user);
                     if (userId != actualUserId)
                     {
+                        Logger.LogWarning(1, $"ValidateAsync failed: the expected and actual UserId aren't equal");
                         return false;
                     }
+
                     var purp = reader.ReadString();
                     if (!string.Equals(purp, purpose))
                     {
+                        Logger.LogWarning(2, $"ValidateAsync failed: the expected and actual purpose aren't equal.");
                         return false;
                     }
+
                     var stamp = reader.ReadString();
                     if (reader.PeekChar() != -1)
                     {
+                        Logger.LogWarning(2, $"ValidateAsync failed: unexpected end of input.");
                         return false;
                     }
 
                     if (manager.SupportsUserSecurityStamp)
                     {
-                        return stamp == await manager.GetSecurityStampAsync(user);
+                        var isEqualsSecurityStamp = stamp == await manager.GetSecurityStampAsync(user);
+                        if (!isEqualsSecurityStamp)
+                        {
+                            Logger.LogWarning(4, $"ValidateAsync failed: the expected and actual stamp aren't equal.");
+                        }
+
+                        return isEqualsSecurityStamp;
                     }
-                    return stamp == "";
+
+                    
+                    var stampIsEmpty = stamp == "";
+                    if (!stampIsEmpty)
+                    {
+                        Logger.LogWarning(5, "ValidateAsync failed: the expected and actual stamp aren't equal. Expected not empty stamp.");
+                    }
+
+                    return stampIsEmpty; 
                 }
             }
-            // ReSharper disable once EmptyGeneralCatchClause
-            catch
-            {
-                // Do not leak exception
+            catch (Exception ex)
+            { 
+                Logger.LogWarning(6, $"ValidateAsync failed: an exception was thrown ${ex.Message}.");
             }
+
             return false;
         }
 
