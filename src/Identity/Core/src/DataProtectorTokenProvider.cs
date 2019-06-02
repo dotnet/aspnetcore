@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Identity
                     var stampIsEmpty = stamp == "";
                     if (!stampIsEmpty)
                     {
-                        Logger.LogWarning(5, "ValidateAsync failed: the expected and actual stamp aren't equal. Expected not empty stamp.");
+                        Logger.LogWarning(5, "ValidateAsync failed: the expected and actual stamp aren't equal. Expected empty stamp.");
                     }
 
                     return stampIsEmpty; 
