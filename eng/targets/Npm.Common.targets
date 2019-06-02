@@ -53,7 +53,7 @@
 
     <Copy SourceFiles="$(PackageJson)" DestinationFiles="$(_BackupPackageJson)" />
 
-    <ReadLinesFromFile File="$(PackageJson)" Condition="@(ReplacePackageContent->Count()) != 0">
+    <ReadLinesFromFile File="$(PackageJson)" Condition="@(ReplacePackageContent->Count()) != 0 AND $([MSBuild]::IsOSPlatform('Windows'))">
       <Output TaskParameter="Lines" ItemName="PackageJsonContent" />
     </ReadLinesFromFile>
 
@@ -65,7 +65,7 @@
     <WriteLinesToFile
       File="$(PackageJson)"
       Lines="$(_PackageJsonContent)"
-      Condition="@(ReplacePackageContent->Count()) != 0"
+      Condition="@(ReplacePackageContent->Count()) != 0 AND $([MSBuild]::IsOSPlatform('Windows'))"
       Overwrite="true" />
 
     <Message Text="$(_PackageJsonContent)" Importance="High" />
