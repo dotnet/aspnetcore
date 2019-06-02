@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 
@@ -19,6 +20,8 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
         private const string JsonExtension = ".json";
         private const string UnderscoreString = "_";
         private static readonly char[] InvalidFilenameCharacters = Path.GetInvalidFileNameChars();
+        private static readonly Encoding UTF8EncodingWithoutBOM
+            = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
         private const string GetDocumentsMethodName = "GetDocumentNames";
         private static readonly object[] GetDocumentsArguments = Array.Empty<object>();
@@ -169,16 +172,16 @@ namespace Microsoft.Extensions.ApiDescription.Tool.Commands
         {
             Reporter.WriteInformation(Resources.FormatGeneratingDocument(documentName));
 
-            var stream = new MemoryStream();
-            using var writer = new StreamWriter(stream);
-            var resultTask = (Task)InvokeMethod(generateMethod, service, new object[] { documentName, writer });
-            if (resultTask == null)
+            using var stream = new MemoryStream();
+            using (var writer = new StreamWriter(stream, UTF8EncodingWithoutBOM, bufferSize: 1024, leaveOpen: true))
             {
-                return null;
-            }
+                var arguments = new object[] { documentName, writer };
+                using var resultTask = (Task)InvokeMethod(generateMethod, service, arguments);
+                if (resultTask == null)
+                {
+                    return null;
+                }
 
-            using (resultTask)
-            {
                 var finished = resultTask.Wait(TimeSpan.FromMinutes(1));
                 if (!finished)
                 {
