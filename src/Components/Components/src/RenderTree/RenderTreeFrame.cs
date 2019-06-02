@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         }
 
         // Component constructor
-        private RenderTreeFrame(int sequence, int componentSubtreeLength, Type componentType, ComponentState componentState, object componentKey)
+        private RenderTreeFrame(int sequence, int componentSubtreeLength, Type componentType, int componentId, ComponentState componentState, object componentKey)
             : this()
         {
             Sequence = sequence;
@@ -224,11 +224,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             ComponentSubtreeLength = componentSubtreeLength;
             ComponentType = componentType;
             ComponentKey = componentKey;
+            ComponentId = componentId;
 
             if (componentState != null)
             {
                 ComponentState = componentState;
-                ComponentId = componentState.ComponentId;
             }
         }
 
@@ -302,10 +302,10 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(sequence, attributeName: name, attributeValue: value, attributeEventHandlerId: 0);
 
         internal static RenderTreeFrame ChildComponent(int sequence, Type componentType)
-            => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, null, null);
+            => new RenderTreeFrame(sequence, componentSubtreeLength: 0, componentType, componentId: 0, null, null);
 
         internal static RenderTreeFrame PlaceholderChildComponentWithSubtreeLength(int subtreeLength)
-            => new RenderTreeFrame(0, componentSubtreeLength: subtreeLength, typeof(IComponent), null, null);
+            => new RenderTreeFrame(0, componentSubtreeLength: subtreeLength, typeof(IComponent), componentId: 0, null, null);
 
         internal static RenderTreeFrame Region(int sequence)
             => new RenderTreeFrame(sequence, regionSubtreeLength: 0);
@@ -320,13 +320,16 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(Sequence, elementSubtreeLength: elementSubtreeLength, ElementName, ElementKey);
 
         internal RenderTreeFrame WithComponentSubtreeLength(int componentSubtreeLength)
-            => new RenderTreeFrame(Sequence, componentSubtreeLength: componentSubtreeLength, ComponentType, ComponentState, ComponentKey);
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: componentSubtreeLength, ComponentType, ComponentState?.ComponentId ?? 0, ComponentState, ComponentKey);
 
         internal RenderTreeFrame WithAttributeSequence(int sequence)
             => new RenderTreeFrame(sequence, attributeName: AttributeName, AttributeValue, AttributeEventHandlerId);
 
         internal RenderTreeFrame WithComponent(ComponentState componentState)
-            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, componentState, ComponentKey);
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, componentState?.ComponentId ?? 0, componentState, ComponentKey);
+
+        internal RenderTreeFrame WithComponentId(int componentId)
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, componentId, null, ComponentKey);
 
         internal RenderTreeFrame WithAttributeEventHandlerId(int eventHandlerId)
             => new RenderTreeFrame(Sequence, attributeName: AttributeName, AttributeValue, eventHandlerId);
@@ -341,7 +344,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
             => new RenderTreeFrame(Sequence, elementSubtreeLength: ElementSubtreeLength, ElementName, elementKey);
 
         internal RenderTreeFrame WithComponentKey(object componentKey)
-            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, ComponentState, componentKey);
+            => new RenderTreeFrame(Sequence, componentSubtreeLength: ComponentSubtreeLength, ComponentType, ComponentState?.ComponentId ?? 0, ComponentState, componentKey);
 
         /// <inheritdoc />
         // Just to be nice for debugging and unit tests.
