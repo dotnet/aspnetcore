@@ -54,6 +54,17 @@
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
+    <MakeDir Directories="$(PublishDir)\ClaimsTransformation\wwwroot" />
+    <MakeDir Directories="$(PublishDir)\Cookies\wwwroot" />
+    <MakeDir Directories="$(PublishDir)\DynamicSchemes\wwwroot" />
+    <MakeDir Directories="$(PublishDir)\Identity.ExternalClaims\wwwroot" />
+    <MakeDir Directories="$(PublishDir)\PathSchemeSelection\wwwroot" />
+    <Copy
+      SourceFiles="@(_customProviderFiles)"
+      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" />    
+    <Copy
+      SourceFiles="@(_staticFiles)"
+      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)" />
   </Target>
 
 </Project>
