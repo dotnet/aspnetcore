@@ -11,8 +11,15 @@ namespace Microsoft.AspNetCore.Mvc
     /// A filter that prevents execution of the StatusCodePages middleware.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
-    public class SkipStatusCodePagesAttribute : Attribute, IAlwaysRunResultFilter
+    public class SkipStatusCodePagesAttribute : Attribute, IAlwaysRunResultFilter, IOrderedFilter
     {
+        /// <inheritdoc />
+        /// <summary>
+        /// Gets or sets the order value for determining the order of execution of filters. Filters execute in
+        /// ascending numeric value of the <see cref="Order" /> property.
+        /// </summary>
+        public int Order { get; set; } = -1000;
+
         /// <inheritdoc />
         public void OnResultExecuted(ResultExecutedContext context)
         {
