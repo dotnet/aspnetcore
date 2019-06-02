@@ -30,6 +30,7 @@
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
+    <MakeDir Directories="$(PublishDir)\AzureAD.WebSite" />
   </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
