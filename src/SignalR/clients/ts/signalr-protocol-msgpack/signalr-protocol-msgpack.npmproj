@@ -6,6 +6,7 @@
     <IsPackable>true</IsPackable>
     <IsTestProject>false</IsTestProject>
     <IsShippingPackage>true</IsShippingPackage>
+    <IsBuildable>!$(MSBuildProjectDirectory.Contains('node_modules'))</IsBuildable>
   </PropertyGroup>
 
   <ItemGroup>

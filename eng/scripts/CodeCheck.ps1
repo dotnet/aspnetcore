@@ -174,8 +174,6 @@ try {
 
     Write-Host "Re-generating Browser.JS files"
     Invoke-Block {
-        & $dotnet build "$repoRoot\src\SignalR\clients\ts\signalr\signalr.npmproj"
-        & $dotnet build "$repoRoot\src\SignalR\clients\ts\signalr-protocol-msgpack\signalr-protocol-msgpack.npmproj"
         & $dotnet build "$repoRoot\src\Components\Browser.JS\Microsoft.AspNetCore.Components.Browser.JS.npmproj"
     }
 
