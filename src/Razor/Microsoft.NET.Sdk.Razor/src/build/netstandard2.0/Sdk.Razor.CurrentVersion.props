@@ -65,6 +65,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Determines if the refs folder is produced as part of build \ publish -->
     <PreserveCompilationReferences>false</PreserveCompilationReferences>
+
+    <!--
+    List of file extensions that will cause VS to restart the application when RazorSDK is effective.
+    This property affects C# projects targeting 3.0 or later.
+    -->
+    <RazorUpToDateReloadFileTypes>.cs;.razor;.resx;.cshtml</RazorUpToDateReloadFileTypes>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnableDefaultItems)' == 'true' And '$(EnableDefaultContentItems)' == 'true'">

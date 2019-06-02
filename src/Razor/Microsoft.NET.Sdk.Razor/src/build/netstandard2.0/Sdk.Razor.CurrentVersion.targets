@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableDefaultContentItems Condition=" '$(EnableDefaultContentItems)' == '' ">true</EnableDefaultContentItems>
   </PropertyGroup>
 
-  <!-- 
+  <!--
     Targets supporting Razor MSBuild integration. Contain support for generating C# code using Razor
     and including the generated code in the project lifecycle, including compiling, publishing and producing
     nuget packages.
@@ -165,7 +165,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </PropertyGroup>
 
-  <!-- 
+  <!--
     Default values for properties that affect Razor targets to the standard build lifecycle.
   -->
   <PropertyGroup Condition="'$(RazorCompileOnBuild)'=='' AND '$(Language)'=='C#'">
@@ -223,9 +223,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PreserveCompilationReferences Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='true'">false</PreserveCompilationReferences>
     <PreserveCompilationReferences Condition="'$(MvcRazorExcludeRefAssembliesFromPublish)'=='false'">true</PreserveCompilationReferences>
 
-    <!-- 
+    <!--
       We can't set the actual default value here due to evaluation order (depends on $(OutDir)).
-      
+
       This handles a compatibility case with MVC Precompilation.
     -->
     <RazorOutputPath Condition="'$(MvcRazorOutputPath)'!=''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))</RazorOutputPath>
@@ -233,7 +233,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--
       Configures whether all of the @(RazorGenerate) items will be added as embedded files to the produced assembly.
 
-      When true, everything in @(RazorGenerate) will be added to @(RazorEmbeddedFiles) and passed to CSC.  
+      When true, everything in @(RazorGenerate) will be added to @(RazorEmbeddedFiles) and passed to CSC.
     -->
     <EmbedRazorGenerateSources Condition="'$(MvcRazorEmbedViewSources)'!=''">$(MvcRazorEmbedViewSources)</EmbedRazorGenerateSources>
     <EmbedRazorGenerateSources Condition="'$(EmbedRazorGenerateSources)'==''">false</EmbedRazorGenerateSources>
@@ -321,6 +321,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
     <UpToDateCheckBuilt Include="@(RazorIntermediateAssembly)"
       Condition="'$(RazorCompileOnBuild)'=='true' AND '@(Content->WithMetadataValue('Extension', '.cshtml'))' != ''" />
+
+    <!-- Set up watchers for dotnet-watch -->
+    <Watch Include="@(Content->WithMetadataValue('Extension', '.razor'))" />
+
+    <Watch Include="@(Content->WithMetadataValue('Extension', '.cshtml'))"
+      Condition="'$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(AddCshtmlFilesToDotNetWatchList)' != 'false'" />
   </ItemGroup>
 
   <!--
@@ -348,7 +354,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Razor.MvcApplicationPartsDiscovery.targets" Condition="'$(_TargetingNETCoreApp30OrLater)' == 'true'" />
 
-  <!-- 
+  <!--
     These are the targets that actually do compilation using CSC, separated from the main file for ease of maintenance.
 
     RazorCoreCompile should be defined there.
@@ -373,9 +379,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="RazorCompile" DependsOnTargets="$(RazorCompileDependsOn)">
   </Target>
 
-  <!-- 
+  <!--
     Computes the applicable @(ResolvedRazorConfiguration) and @(ResolvedRazorExtension) items that match the project's
-    configuration. 
+    configuration.
   -->
   <Target Name="ResolveRazorConfiguration">
     <ItemGroup Condition="'$(RazorDefaultConfiguration)'!=''">
@@ -411,8 +417,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     Gets assembly attributes in support for Razor runtime code generation. This is a set of standard
     metadata attributes (defined in Microsoft.AspNetCore.Razor.Runtime) that capture the build-time
     Razor configuration of an application to be used at runtime.
-    
-    This allows the project file to act as the source of truth for the applicable Razor configuration regardless 
+
+    This allows the project file to act as the source of truth for the applicable Razor configuration regardless
     of how Razor is used.
 
     The SDK expects configurations that use runtime compilation to set $(GenerateRazorHostingAssemblyInfo) to true,
@@ -469,13 +475,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!--
       Ideally we want to able to update all Content items that also appear in RazorGenerate to have
-      CopyToPublishDirectory=Never. However, there isn't a simple way to do this (https://github.com/Microsoft/msbuild/issues/1618). 
+      CopyToPublishDirectory=Never. However, there isn't a simple way to do this (https://github.com/Microsoft/msbuild/issues/1618).
       Instead, we'll update all cshtml Content items when EnableDefaultRazorGenerateItems=true and Razor Sdk is used for publishing.
     -->
     <ItemGroup Condition="
-      '$(EnableDefaultRazorGenerateItems)'=='true' and 
-      '$(CopyRazorGenerateFilesToPublishDirectory)'=='false' and 
-      '$(ResolvedRazorCompileToolset)'=='RazorSdk' and 
+      '$(EnableDefaultRazorGenerateItems)'=='true' and
+      '$(CopyRazorGenerateFilesToPublishDirectory)'=='false' and
+      '$(ResolvedRazorCompileToolset)'=='RazorSdk' and
       '$(RazorCompileOnPublish)'=='true'">
 
       <Content Condition="'%(Content.Extension)'=='.cshtml'" CopyToPublishDirectory="Never" />
@@ -555,7 +561,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <!-- 
+  <!--
     Gathers input assemblies for Tag Helper discovery and compilation. Add items to @(ReferencePath)
   -->
   <Target
@@ -616,7 +622,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     This target is called after PrepareForPublish when RazorCompileOnPublish=true so that we can hook into publish.
     This target just hooks up other targets since Publish and PrepareForPublish don't have a DependsOnTargets
-    property we can use. 
+    property we can use.
   -->
   <Target
     Name="_RazorPrepareForPublish"
@@ -668,7 +674,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="ResolveRazorGenerateInputs"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnBuild)'=='true'">
 
-    <!-- 
+    <!--
       This condition needs to be inside the target because it the itemgroup will be populated after the target's
       condition is evaluated.
     -->
@@ -698,7 +704,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="ResolveRazorGenerateInputs"
     Condition="'$(ResolvedRazorCompileToolset)'=='RazorSdk' and '$(RazorCompileOnPublish)'=='true'">
 
-    <!-- 
+    <!--
       This condition needs to be inside the target because it the itemgroup will be populated after the target's
       condition is evaluated.
     -->
@@ -773,7 +779,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!--
-    Called after ComputeFilesToPublish and ComputeRefAssembliesToPublish but before CopyFilesToPublishDirectory - this target is called when 
+    Called after ComputeFilesToPublish and ComputeRefAssembliesToPublish but before CopyFilesToPublishDirectory - this target is called when
     publishing the project to get a list of files to the output directory.
   -->
   <Target
@@ -793,7 +799,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!--
       RazorGenerate items are usually populated from the '.cshtml' files in @(Content). These are published by default
-      so all we need to do is exclude them. 
+      so all we need to do is exclude them.
     -->
     <ItemGroup Condition="'$(CopyRazorGenerateFilesToPublishDirectory)'=='false'">
       <ResolvedFileToPublish Remove="%(RazorGenerate.FullPath)"/>
@@ -845,6 +851,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Import Project="$(RazorDesignTimeTargets)" />
+
+  <PropertyGroup>
+    <!--
+      Defines the list of file extensions that VS will monitor to reload the application.
+      We'll only define these for C# projects targeting RazorLangVersion 3.0 or later, and let VS use defaults in other cases.
+
+      This property can be removed after the next insertion in to VS.
+    -->
+    <UpToDateReloadFileTypes Condition="'$(Language)'=='C#' AND '$(_Targeting30OrNewerRazorLangVersion)' == 'true' AND '$(RazorUpToDateReloadFileTypes)' == ''">$(RazorUpToDateReloadFileTypes)</UpToDateReloadFileTypes>
+  </PropertyGroup>
 
   <!--
     This is a hook to import a set of targets after the Razor targets. By default this is unused.
