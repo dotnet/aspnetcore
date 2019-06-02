@@ -216,29 +216,6 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
         }
 
-        [Fact]
-        public async Task DispoingTheResponseBodyDoesNotDisposeClientStreams()
-        {
-            var builder = new WebHostBuilder().Configure(app =>
-            {
-                app.Run(async context =>
-                {
-                    await using (var sr = new StreamWriter(context.Response.Body))
-                    {
-                        sr.Write("Hello World");
-                    }
-                });
-            });
-
-            var server = new TestServer(builder);
-
-            var stream = new ThrowOnDisposeStream();
-            stream.Write(Encoding.ASCII.GetBytes("Hello World"));
-            var response = await server.CreateClient().PostAsync("/", new StreamContent(stream));
-            Assert.True(response.IsSuccessStatusCode);
-            Assert.Equal("Hello World", await response.Content.ReadAsStringAsync());
-        }
-
         public class CustomContainerStartup
         {
             public IServiceProvider Services;
