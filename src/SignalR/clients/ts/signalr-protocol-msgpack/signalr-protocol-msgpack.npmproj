@@ -3,9 +3,9 @@
 
   <PropertyGroup>
     <PackageId>@aspnet/signalr-protocol-msgpack</PackageId>
-    <IsPackable>true</IsPackable>
+    <IsPackable>!$(MSBuildProjectDirectory.Contains('node_modules'))</IsPackable>
     <IsTestProject>false</IsTestProject>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsShippingPackage>!$(MSBuildProjectDirectory.Contains('node_modules'))</IsShippingPackage>
     <IsBuildable>!$(MSBuildProjectDirectory.Contains('node_modules'))</IsBuildable>
   </PropertyGroup>
 

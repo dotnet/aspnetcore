@@ -57,7 +57,7 @@
       <Output TaskParameter="Lines" ItemName="PackageJsonContent" />
     </ReadLinesFromFile>
 
-    <PropertyGroup>
+    <PropertyGroup Condition="@(PackageJsonContent->Count()) > 0">
       <_PackageJsonContent>@(PackageJsonContent->'%(Identity)', '%0a')</_PackageJsonContent>
       <_PackageJsonContent>$(_PackageJsonContent.Replace('%(ReplacePackageContent.Identity)', '%(ReplacePackageContent.ReplaceWith)'))</_PackageJsonContent>
     </PropertyGroup>
