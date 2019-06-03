@@ -1,15 +1,3 @@
-@*#if (IndividualLocalAuth)
-<AuthorizeView>
-    <Authorized>
-        <a href="Identity/Account/Manage">Hello, @context.User.Identity.Name!</a>
-        <a href="Identity/Account/LogOut">Log out</a>
-    </Authorized>
-    <NotAuthorized>
-        <a href="Identity/Account/Register">Register</a>
-        <a href="Identity/Account/Login">Log in</a>
-    </NotAuthorized>
-</AuthorizeView>
-#elseif (IndividualB2CAuth)
 @using Microsoft.AspNetCore.Authentication.AzureADB2C.UI
 @using Microsoft.Extensions.Options
 @inject IOptionsMonitor<AzureADB2COptions> AzureADB2COptions
@@ -40,18 +28,3 @@
         canEditProfile = !string.IsNullOrEmpty(options.EditProfilePolicyId);
     }
 }
-#elseif (OrganizationalAuth)
-<AuthorizeView>
-    <Authorized>
-        Hello, @context.User.Identity.Name!
-        <a href="AzureAD/Account/SignOut">Log out</a>
-    </Authorized>
-    <NotAuthorized>
-        <a href="AzureAD/Account/SignIn">Log in</a>
-    </NotAuthorized>
-</AuthorizeView>
-#elseif (WindowsAuth)
-<AuthorizeView>
-    Hello, @context.User.Identity.Name!
-</AuthorizeView>
-#endif*@
