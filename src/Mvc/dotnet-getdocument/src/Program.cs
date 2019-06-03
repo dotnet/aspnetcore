@@ -14,6 +14,7 @@ namespace Microsoft.Extensions.ApiDescription.Tool
             var app = new CommandLineApplication(throwOnUnexpectedArg: false)
             {
                 FullName = Resources.CommandFullName,
+                Name = Resources.CommandFullName,
             };
 
             new InvokeCommand().Configure(app);
