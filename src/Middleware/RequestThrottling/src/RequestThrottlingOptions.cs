@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling;
 
 namespace Microsoft.AspNetCore.RequestThrottling
@@ -22,5 +23,10 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// Defaults to 5000 queued requests.
         /// </summary>
         public int RequestQueueLimit { get; set; } = 5000;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public RequestDelegate OnRejected { get; set; }
     }
 }
