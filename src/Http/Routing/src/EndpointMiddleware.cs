@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public Task Invoke(HttpContext httpContext)
         {
-            var endpoint = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
+            var endpoint = httpContext.GetEndpoint();
             if (endpoint?.RequestDelegate != null)
             {
                 if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)

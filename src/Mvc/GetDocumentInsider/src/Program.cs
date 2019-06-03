@@ -17,9 +17,10 @@ namespace Microsoft.Extensions.ApiDescription.Tool
                 Console.OutputEncoding = Encoding.UTF8;
             }
 
-            var app = new CommandLineApplication(throwOnUnexpectedArg: false)
+            var app = new CommandLineApplication()
             {
-                Name = "GetDocument.Insider"
+                FullName = Resources.CommandFullName,
+                Name = Resources.CommandFullName,
             };
 
             new GetDocumentCommand().Configure(app);

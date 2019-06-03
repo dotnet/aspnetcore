@@ -22,8 +22,6 @@
     <Compile Include="../../GetDocumentInsider/src/ProductInfo.cs" />
     <Compile Include="../../GetDocumentInsider/src/Reporter.cs" />
 
-    <EmbeddedResource Include="ServiceProjectReferenceMetadata.targets" />
-
     <Reference Include="Newtonsoft.Json" />
   </ItemGroup>
 </Project>

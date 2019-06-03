@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.AspNetCore.Http.Connections.Internal;
@@ -48,13 +46,6 @@ namespace Microsoft.AspNetCore.Builder
         public static IEndpointConventionBuilder MapConnectionHandler<TConnectionHandler>(this IEndpointRouteBuilder endpoints, string pattern, Action<HttpConnectionDispatcherOptions> configureOptions) where TConnectionHandler : ConnectionHandler
         {
             var options = new HttpConnectionDispatcherOptions();
-            // REVIEW: WE should consider removing this and instead just relying on the
-            // AuthorizationMiddleware
-            var attributes = typeof(TConnectionHandler).GetCustomAttributes(inherit: true);
-            foreach (var attribute in attributes.OfType<AuthorizeAttribute>())
-            {
-                options.AuthorizationData.Add(attribute);
-            }
             configureOptions?.Invoke(options);
 
             var conventionBuilder = endpoints.MapConnections(pattern, options, b =>
@@ -62,6 +53,7 @@ namespace Microsoft.AspNetCore.Builder
                 b.UseConnectionHandler<TConnectionHandler>();
             });
 
+            var attributes = typeof(TConnectionHandler).GetCustomAttributes(inherit: true);
             conventionBuilder.Add(e =>
             {
                 // Add all attributes on the ConnectionHandler has metadata (this will allow for things like)
@@ -93,7 +85,7 @@ namespace Microsoft.AspNetCore.Builder
             var connectionDelegate = connectionBuilder.Build();
 
             // REVIEW: Consider expanding the internals of the dispatcher as endpoint routes instead of
-            // using if statemants we can let the matcher handle
+            // using if statements we can let the matcher handle
 
             var conventionBuilders = new List<IEndpointConventionBuilder>();
 

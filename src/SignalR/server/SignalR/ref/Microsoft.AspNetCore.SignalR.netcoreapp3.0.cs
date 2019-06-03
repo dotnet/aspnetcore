@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Builder
     }
     public static partial class SignalRAppBuilderExtensions
     {
+        [System.ObsoleteAttribute("This method is obsolete and will be removed in a future version. The recommended alternative is to use MapHub<THub> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseSignalR(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, System.Action<Microsoft.AspNetCore.SignalR.HubRouteBuilder> configure) { throw null; }
     }
 }
@@ -25,6 +26,7 @@ namespace Microsoft.AspNetCore.SignalR
         internal HubEndpointConventionBuilder() { }
         public void Add(System.Action<Microsoft.AspNetCore.Builder.EndpointBuilder> convention) { }
     }
+    [System.ObsoleteAttribute("This class is obsolete and will be removed in a future version. The recommended alternative is to use MapHub<THub> inside Microsoft.AspNetCore.Builder.UseEndpoints(...).")]
     public partial class HubRouteBuilder
     {
         public HubRouteBuilder(Microsoft.AspNetCore.Http.Connections.ConnectionsRouteBuilder routes) { }
