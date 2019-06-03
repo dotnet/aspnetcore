@@ -212,12 +212,10 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual ObjectResult StatusCode([ActionResultStatusCode] int statusCode, [ActionResultObjectValue] object value)
         {
-            var result = new ObjectResult(value)
+            return new ObjectResult(value)
             {
                 StatusCode = statusCode
             };
-
-            return result;
         }
 
         /// <summary>
@@ -270,13 +268,11 @@ namespace Microsoft.AspNetCore.Mvc
         [NonAction]
         public virtual ContentResult Content(string content, MediaTypeHeaderValue contentType)
         {
-            var result = new ContentResult
+            return new ContentResult
             {
                 Content = content,
                 ContentType = contentType?.ToString()
             };
-
-            return result;
         }
 
         /// <summary>
