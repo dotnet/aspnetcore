@@ -3,7 +3,7 @@
 
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.SignalR.Internal
+namespace Microsoft.AspNetCore.Internal
 {
     internal static class TaskCache
     {
