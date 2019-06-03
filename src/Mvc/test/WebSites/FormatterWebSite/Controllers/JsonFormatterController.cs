@@ -64,5 +64,20 @@ namespace FormatterWebSite.Controllers
 
             return Content(value.ToString());
         }
+
+        [HttpPost]
+        public ActionResult<SimpleModel> RoundtripSimpleModel([FromBody] SimpleModel model)
+        {
+            return model;
+        }
+
+        public class SimpleModel
+        {
+            public int Id { get; set; }
+
+            public string Name { get; set; }
+
+            public string StreetName { get; set; }
+        }
     }
 }

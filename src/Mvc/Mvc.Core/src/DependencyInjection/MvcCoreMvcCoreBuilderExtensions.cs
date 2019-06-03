@@ -45,6 +45,30 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
+        /// Configures <see cref="JsonOptions"/> for the specified <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
+        /// <param name="configure">An <see cref="Action"/> to configure the <see cref="JsonOptions"/>.</param>
+        /// <returns>The <see cref="IMvcBuilder"/>.</returns>
+        public static IMvcCoreBuilder AddJsonOptions(
+            this IMvcCoreBuilder builder,
+            Action<JsonOptions> configure)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            builder.Services.Configure(configure);
+            return builder;
+        }
+
+        /// <summary>
         /// Adds services to support <see cref="FormatterMappings"/>.
         /// </summary>
         /// <param name="builder">The <see cref="IMvcBuilder"/>.</param>
