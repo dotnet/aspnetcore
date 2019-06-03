@@ -35,10 +35,12 @@
     <?define SchemaGuid = "ab582af2-d6c0-43f7-8412-76a19c65d7f2" ?>
     <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
+    <?define AspNetCoreV2NetHost = "$(var.NetHost64bit)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
 <?else ?>
     <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
+    <?define AspNetCoreV2NetHost = "$(var.NetHost32bit)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
 <?endif ?>
 
@@ -172,6 +174,12 @@
                     DiskId="1"
                     Vital="yes">
                 </File>
+                 <File Id="AspNetCoreModuleNetHostDll"
+                    Name="nethost.dll"
+                    Source="$(var.AspNetCoreV2NetHost)"
+                    DiskId="1"
+                    Vital="yes">
+                </File>
               <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
                 <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll]"/>
                 <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
@@ -212,6 +220,12 @@
                   <File Id="AspNetCoreModuleDll.wow"
                         Name="aspnetcorev2.dll"
                         Source="$(var.AspNetCoreV2WoW64.TargetPath)"
+                        DiskId="1"
+                        Vital="yes">
+                  </File>
+                    <File Id="AspNetCoreModuleNetHostDll.wow"
+                        Name="nethost.dll"
+                        Source="$(var.NetHost32bit)"
                         DiskId="1"
                         Vital="yes">
                   </File>
