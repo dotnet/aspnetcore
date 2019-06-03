@@ -14,9 +14,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapSignalRFailsForInvalidHub()
         {
-            var ex = Assert.Throws<NotSupportedException>(() =>
+            NotSupportedException ex = Assert.Throws<NotSupportedException>(() =>
             {
-                using (var host = BuildWebHost(routes => routes.MapHub<InvalidHub>("/overloads")))
+                using (IWebHost host = BuildWebHost(routes => routes.MapHub<InvalidHub>("/overloads")))
                 {
                     host.Start();
                 }
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void NotAddingSignalRServiceThrows()
         {
-            var executedConfigure = false;
+            bool executedConfigure = false;
             var builder = new WebHostBuilder();
 
             builder
@@ -37,14 +37,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     executedConfigure = true;
 
-                    var ex = Assert.Throws<InvalidOperationException>(() =>
+                    InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() =>
                     {
-#pragma warning disable CS0618 // Type or member is obsolete
-                        app.UseSignalR(routes =>
-                        {
-                            routes.MapHub<AuthHub>("/overloads");
-                        });
-#pragma warning restore CS0618 // Type or member is obsolete
+                        //#pragma warning disable CS0618 // Type or member is obsolete
+                        //                        app.UseSignalR(routes =>
+                        //                        {
+                        //                            routes.MapHub<AuthHub>("/overloads");
+                        //                        });
+                        //#pragma warning restore CS0618 // Type or member is obsolete
                     });
 
                     Assert.Equal("Unable to find the required services. Please add all the required services by calling " +
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 })
                 .UseUrls("http://127.0.0.1:0");
 
-            using (var host = builder.Build())
+            using (IWebHost host = builder.Build())
             {
                 host.Start();
             }
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void NotAddingSignalRServiceThrowsWhenUsingEndpointRouting()
         {
-            var executedConfigure = false;
+            bool executedConfigure = false;
             var builder = new WebHostBuilder();
 
             builder
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     executedConfigure = true;
 
-                    var ex = Assert.Throws<InvalidOperationException>(() =>
+                    InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() =>
                     {
                         app.UseRouting();
                         app.UseEndpoints(endpoints =>
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 })
                 .UseUrls("http://127.0.0.1:0");
 
-            using (var host = builder.Build())
+            using (IWebHost host = builder.Build())
             {
                 host.Start();
             }
@@ -101,15 +101,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubFindsAuthAttributeOnHub()
         {
-            var authCount = 0;
-            using (var host = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
+            int authCount = 0;
+            using (IWebHost host = BuildWebHost(routes => routes.MapHub<AuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
             })))
             {
                 host.Start();
 
-                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                EndpointDataSource dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Collection(dataSource.Endpoints,
                     endpoint =>
@@ -130,15 +130,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubFindsAuthAttributeOnInheritedHub()
         {
-            var authCount = 0;
-            using (var host = BuildWebHost(routes => routes.MapHub<InheritedAuthHub>("/path", options =>
+            int authCount = 0;
+            using (IWebHost host = BuildWebHost(routes => routes.MapHub<InheritedAuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
             })))
             {
                 host.Start();
 
-                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                EndpointDataSource dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Collection(dataSource.Endpoints,
                     endpoint =>
@@ -159,15 +159,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubFindsMultipleAuthAttributesOnDoubleAuthHub()
         {
-            var authCount = 0;
-            using (var host = BuildWebHost(routes => routes.MapHub<DoubleAuthHub>("/path", options =>
+            int authCount = 0;
+            using (IWebHost host = BuildWebHost(routes => routes.MapHub<DoubleAuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
             })))
             {
                 host.Start();
 
-                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                EndpointDataSource dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Collection(dataSource.Endpoints,
                     endpoint =>
@@ -188,15 +188,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubEndPointRoutingFindsAttributesOnHub()
         {
-            var authCount = 0;
-            using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapHub<AuthHub>("/path", options =>
+            int authCount = 0;
+            using (IWebHost host = BuildWebHostWithEndPointRouting(routes => routes.MapHub<AuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
             })))
             {
                 host.Start();
 
-                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                EndpointDataSource dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Collection(dataSource.Endpoints,
                     endpoint =>
@@ -217,9 +217,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubEndPointRoutingFindsAttributesOnHubAndFromOptions()
         {
-            var authCount = 0;
+            int authCount = 0;
             HttpConnectionDispatcherOptions configuredOptions = null;
-            using (var host = BuildWebHostWithEndPointRouting(routes => routes.MapHub<AuthHub>("/path", options =>
+            using (IWebHost host = BuildWebHostWithEndPointRouting(routes => routes.MapHub<AuthHub>("/path", options =>
             {
                 authCount += options.AuthorizationData.Count;
                 options.AuthorizationData.Add(new AuthorizeAttribute());
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 host.Start();
 
-                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                EndpointDataSource dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Collection(dataSource.Endpoints,
                     endpoint =>
@@ -256,11 +256,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                       .RequireAuthorization(new AuthorizeAttribute("Foo"));
             }
 
-            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            using (IWebHost host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
             {
                 host.Start();
 
-                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                EndpointDataSource dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Collection(dataSource.Endpoints,
                     endpoint =>
@@ -295,11 +295,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 endpoints.MapHub<AuthHub>("/path");
             }
 
-            using (var host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
+            using (IWebHost host = BuildWebHostWithEndPointRouting(ConfigureRoutes))
             {
                 host.Start();
 
-                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                EndpointDataSource dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Collection(dataSource.Endpoints,
                     endpoint =>
@@ -320,19 +320,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public void MapHubAppliesHubMetadata()
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            void ConfigureRoutes(HubRouteBuilder routes)
-#pragma warning restore CS0618 // Type or member is obsolete
+            void ConfigureRoutes(IEndpointRouteBuilder endpoint)
             {
                 // This "Foo" policy should override the default auth attribute
-                routes.MapHub<AuthHub>("/path");
+                endpoint.MapHub<AuthHub>("/path");
             }
 
-            using (var host = BuildWebHost(ConfigureRoutes))
+            using (IWebHost host = BuildWebHost(ConfigureRoutes))
             {
                 host.Start();
 
-                var dataSource = host.Services.GetRequiredService<EndpointDataSource>();
+                EndpointDataSource dataSource = host.Services.GetRequiredService<EndpointDataSource>();
                 // We register 2 endpoints (/negotiate and /)
                 Assert.Collection(dataSource.Endpoints,
                     endpoint =>
@@ -392,8 +390,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 .Build();
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        private IWebHost BuildWebHost(Action<HubRouteBuilder> configure)
+        private IWebHost BuildWebHost(Action<IEndpointRouteBuilder> configure)
         {
             return new WebHostBuilder()
                 .UseKestrel()
@@ -402,12 +399,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     services.AddSignalR();
                 })
                 .Configure(app =>
-                {
-                    app.UseSignalR(options => configure(options));
+                { 
+                    app.UseRouting(); 
+                    app.UseEndpoints(cfg => configure(cfg));
                 })
                 .UseUrls("http://127.0.0.1:0")
                 .Build();
         }
-#pragma warning restore CS0618 // Type or member is obsolete
     }
 }

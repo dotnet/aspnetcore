@@ -404,13 +404,12 @@ namespace Microsoft.AspNetCore.Http.Connections.Tests
                     services.AddConnections();
                 })
                 .Configure(app =>
-                {
-#pragma warning disable CS0618 // Type or member is obsolete
-                    app.UseConnections(routes =>
+                { 
+                    app.UseRouting();
+                    app.UseEndpoints(endpoints =>
                     {
-                        routes.MapConnectionHandler<TConnectionHandler>(path, configureOptions);
-                    });
-#pragma warning restore CS0618 // Type or member is obsolete
+                        endpoints.MapConnectionHandler<TConnectionHandler>(path, configureOptions);
+                    }); 
                 })
                 .ConfigureLogging(factory =>
                 {
