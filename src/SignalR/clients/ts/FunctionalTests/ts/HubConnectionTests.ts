@@ -457,7 +457,7 @@ describe("hubConnection", () => {
 
                 const complexObject = {
                     ByteArray: protocol.name === "json"
-                        ? new Array(0x68, 0x65, 0x6c, 0x6c, 0x6f)
+                        ? "aGVsbG8="
                         : new Uint8Array([0x68, 0x65, 0x6c, 0x6c, 0x6f]),
                     DateTime: protocol.name === "json"
                         ? "2002-04-01T10:20:15Z"
@@ -499,7 +499,7 @@ describe("hubConnection", () => {
 
                 const complexObject = {
                     ByteArray: protocol.name === "json"
-                        ? new Array(0x1, 0x2, 0x3)
+                        ? "AQID"
                         : new Uint8Array([0x1, 0x2, 0x3]),
                     DateTime: protocol.name === "json"
                         ? "2000-01-01T00:00:00Z"
