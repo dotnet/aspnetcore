@@ -1,9 +1,0 @@
-{
-  "name": "common",
-  "private": true,
-  "version": "0.0.1",
-  "description": "Common dependencies used during dev time. DO NOT PUBLISH",
-  "devDependencies": {
-    "rimraf": "^2.6.2"
-  }
-}
