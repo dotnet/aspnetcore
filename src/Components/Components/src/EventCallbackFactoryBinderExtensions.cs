@@ -819,7 +819,7 @@ namespace Microsoft.AspNetCore.Components
                     }
 
                     // We intentionally close-over the TypeConverter to cache it. The TypeDescriptor infrastructure is slow.
-                    var converted = typeConverter.ConvertFromString(context: null, CultureInfo.InvariantCulture, text);
+                    var converted = typeConverter.ConvertFromString(context: null, CultureInfo.CurrentCulture, text);
                     if (converted == null)
                     {
                         value = default;
