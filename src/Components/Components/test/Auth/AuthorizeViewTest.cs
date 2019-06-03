@@ -2,23 +2,34 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Principal;
+using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Components.Test.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Components
 {
     public class AuthorizeViewTest
     {
+        // Nothing should exceed the timeout in a successful run of the the tests, this is just here to catch
+        // failures.
+        private static readonly TimeSpan Timeout = Debugger.IsAttached ? System.Threading.Timeout.InfiniteTimeSpan : TimeSpan.FromSeconds(10);
+
         [Fact]
         public void RendersNothingIfNotAuthorized()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var authorizationService = new TestAuthorizationService();
+            var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
                 childContent:
                     context => builder => builder.AddContent(0, "This should not be rendered"));
@@ -30,18 +41,27 @@ namespace Microsoft.AspNetCore.Components
             // Assert
             var diff = renderer.Batches.Single().GetComponentDiffs<AuthorizeView>().Single();
             Assert.Empty(diff.Edits);
+
+            // Assert: The IAuthorizationService was given expected criteria
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Null(call.user.Identity);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
+            });
         }
 
         [Fact]
         public void RendersNotAuthorizedContentIfNotAuthorized()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var authorizationService = new TestAuthorizationService();
+            var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
-                childContent:
-                    context => builder => builder.AddContent(0, "This should not be rendered"),
                 notAuthorizedContent:
-                    builder => builder.AddContent(0, "You are not authorized"));
+                    context => builder => builder.AddContent(0, $"You are not authorized, even though we know you are {context.User.Identity.Name}"));
+            rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
 
             // Act
             renderer.AssignRootComponentId(rootComponent);
@@ -54,7 +74,16 @@ namespace Microsoft.AspNetCore.Components
                 Assert.Equal(RenderTreeEditType.PrependFrame, edit.Type);
                 AssertFrame.Text(
                     renderer.Batches.Single().ReferenceFrames[edit.ReferenceFrameIndex],
-                    "You are not authorized");
+                    "You are not authorized, even though we know you are Nellie");
+            });
+
+            // Assert: The IAuthorizationService was given expected criteria
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Nellie", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
             });
         }
 
@@ -62,7 +91,9 @@ namespace Microsoft.AspNetCore.Components
         public void RendersNothingIfAuthorizedButNoChildContentOrAuthorizedContentProvided()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var authorizationService = new TestAuthorizationService();
+            authorizationService.NextResult = AuthorizationResult.Success();
+            var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView();
             rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
 
@@ -73,13 +104,24 @@ namespace Microsoft.AspNetCore.Components
             // Assert
             var diff = renderer.Batches.Single().GetComponentDiffs<AuthorizeView>().Single();
             Assert.Empty(diff.Edits);
+
+            // Assert: The IAuthorizationService was given expected criteria
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Nellie", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
+            });
         }
 
         [Fact]
         public void RendersChildContentIfAuthorized()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var authorizationService = new TestAuthorizationService();
+            authorizationService.NextResult = AuthorizationResult.Success();
+            var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
                 childContent: context => builder =>
                     builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
@@ -98,13 +140,24 @@ namespace Microsoft.AspNetCore.Components
                     renderer.Batches.Single().ReferenceFrames[edit.ReferenceFrameIndex],
                     "You are authenticated as Nellie");
             });
+
+            // Assert: The IAuthorizationService was given expected criteria
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Nellie", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
+            });
         }
 
         [Fact]
         public void RendersAuthorizedContentIfAuthorized()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var authorizationService = new TestAuthorizationService();
+            authorizationService.NextResult = AuthorizationResult.Success();
+            var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
                 authorizedContent: context => builder =>
                     builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
@@ -123,13 +176,24 @@ namespace Microsoft.AspNetCore.Components
                     renderer.Batches.Single().ReferenceFrames[edit.ReferenceFrameIndex],
                     "You are authenticated as Nellie");
             });
+
+            // Assert: The IAuthorizationService was given expected criteria
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Nellie", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
+            });
         }
 
         [Fact]
         public void RespondsToChangeInAuthorizationState()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var authorizationService = new TestAuthorizationService();
+            authorizationService.NextResult = AuthorizationResult.Success();
+            var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
                 childContent: context => builder =>
                     builder.AddContent(0, $"You are authenticated as {context.User.Identity.Name}"));
@@ -141,6 +205,7 @@ namespace Microsoft.AspNetCore.Components
             rootComponent.TriggerRender();
             var authorizeViewComponentId = renderer.Batches.Single()
                 .GetComponentFrames<AuthorizeView>().Single().ComponentId;
+            authorizationService.AuthorizeCalls.Clear();
 
             // Act
             rootComponent.AuthenticationState = CreateAuthenticationState("Ronaldo");
@@ -158,13 +223,23 @@ namespace Microsoft.AspNetCore.Components
                     batch.ReferenceFrames[edit.ReferenceFrameIndex],
                     "You are authenticated as Ronaldo");
             });
+
+            // Assert: The IAuthorizationService was given expected criteria
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Ronaldo", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
+            });
         }
 
         [Fact]
         public void ThrowsIfBothChildContentAndAuthorizedContentProvided()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var authorizationService = new TestAuthorizationService();
+            var renderer = CreateTestRenderer(authorizationService);
             var rootComponent = WrapInAuthorizeView(
                 authorizedContent: context => builder => { },
                 childContent: context => builder => { });
@@ -173,16 +248,20 @@ namespace Microsoft.AspNetCore.Components
             renderer.AssignRootComponentId(rootComponent);
             var ex = Assert.Throws<InvalidOperationException>(() =>
                 rootComponent.TriggerRender());
-            Assert.Equal("When using AuthorizeView, do not specify both 'Authorized' and 'ChildContent'.", ex.Message);
+            Assert.Equal("Do not specify both 'Authorized' and 'ChildContent'.", ex.Message);
         }
 
         [Fact]
         public void RendersNothingUntilAuthorizationCompleted()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var @event = new ManualResetEventSlim();
+            var authorizationService = new TestAuthorizationService();
+            var renderer = CreateTestRenderer(authorizationService);
+            renderer.OnUpdateDisplayComplete = () => { @event.Set(); };
             var rootComponent = WrapInAuthorizeView(
-                notAuthorizedContent: builder => builder.AddContent(0, "You are not authorized"));
+                notAuthorizedContent:
+                    context => builder => builder.AddContent(0, "You are not authorized"));
             var authTcs = new TaskCompletionSource<AuthenticationState>();
             rootComponent.AuthenticationState = authTcs.Task;
 
@@ -195,7 +274,12 @@ namespace Microsoft.AspNetCore.Components
             Assert.Empty(diff1.Edits);
 
             // Act/Assert 2: Auth process completes asynchronously
+            @event.Reset();
             authTcs.SetResult(new AuthenticationState(new ClaimsPrincipal()));
+
+            // We need to wait here because the continuations of SetResult will be scheduled to run asynchronously.
+            @event.Wait(Timeout);
+
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
@@ -212,7 +296,11 @@ namespace Microsoft.AspNetCore.Components
         public void RendersAuthorizingContentUntilAuthorizationCompleted()
         {
             // Arrange
-            var renderer = new TestRenderer();
+            var @event = new ManualResetEventSlim();
+            var authorizationService = new TestAuthorizationService();
+            authorizationService.NextResult = AuthorizationResult.Success();
+            var renderer = CreateTestRenderer(authorizationService);
+            renderer.OnUpdateDisplayComplete = () => { @event.Set(); };
             var rootComponent = WrapInAuthorizeView(
                 authorizingContent: builder => builder.AddContent(0, "Auth pending..."),
                 authorizedContent: context => builder => builder.AddContent(0, $"Hello, {context.User.Identity.Name}!"));
@@ -234,7 +322,12 @@ namespace Microsoft.AspNetCore.Components
             });
 
             // Act/Assert 2: Auth process completes asynchronously
+            @event.Reset();
             authTcs.SetResult(CreateAuthenticationState("Monsieur").Result);
+
+            // We need to wait here because the continuations of SetResult will be scheduled to run asynchronously.
+            @event.Wait(Timeout);
+
             Assert.Equal(2, renderer.Batches.Count);
             var batch2 = renderer.Batches[1];
             var diff2 = batch2.DiffsByComponentId[authorizeViewComponentId].Single();
@@ -252,13 +345,96 @@ namespace Microsoft.AspNetCore.Components
                     batch2.ReferenceFrames[edit.ReferenceFrameIndex],
                     "Hello, Monsieur!");
             });
+
+            // Assert: The IAuthorizationService was given expected criteria
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Monsieur", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
+            });
+        }
+
+        [Fact]
+        public void IncludesPolicyInAuthorizeCall()
+        {
+            // Arrange
+            var authorizationService = new TestAuthorizationService();
+            var renderer = CreateTestRenderer(authorizationService);
+            var rootComponent = WrapInAuthorizeView(policy: "MyTestPolicy");
+            rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
+
+            // Act
+            renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+
+            // Assert
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Nellie", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements,
+                    req => Assert.Equal("MyTestPolicy", ((TestPolicyRequirement)req).PolicyName));
+            });
+        }
+
+        [Fact]
+        public void IncludesRolesInAuthorizeCall()
+        {
+            // Arrange
+            var authorizationService = new TestAuthorizationService();
+            var renderer = CreateTestRenderer(authorizationService);
+            var rootComponent = WrapInAuthorizeView(roles: "SuperTestRole1, SuperTestRole2");
+            rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
+
+            // Act
+            renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+
+            // Assert
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Nellie", call.user.Identity.Name);
+                Assert.Null(call.resource);
+                Assert.Collection(call.requirements, req => Assert.Equal(
+                    new[] { "SuperTestRole1", "SuperTestRole2" },
+                    ((RolesAuthorizationRequirement)req).AllowedRoles));
+            });
+        }
+
+        [Fact]
+        public void IncludesResourceInAuthorizeCall()
+        {
+            // Arrange
+            var authorizationService = new TestAuthorizationService();
+            var renderer = CreateTestRenderer(authorizationService);
+            var resource = new object();
+            var rootComponent = WrapInAuthorizeView(resource: resource);
+            rootComponent.AuthenticationState = CreateAuthenticationState("Nellie");
+
+            // Act
+            renderer.AssignRootComponentId(rootComponent);
+            rootComponent.TriggerRender();
+
+            // Assert
+            Assert.Collection(authorizationService.AuthorizeCalls, call =>
+            {
+                Assert.Equal("Nellie", call.user.Identity.Name);
+                Assert.Same(resource, call.resource);
+                Assert.Collection(call.requirements, req =>
+                    Assert.IsType<DenyAnonymousAuthorizationRequirement>(req));
+            });
         }
 
         private static TestAuthStateProviderComponent WrapInAuthorizeView(
             RenderFragment<AuthenticationState> childContent = null,
             RenderFragment<AuthenticationState> authorizedContent = null,
-            RenderFragment notAuthorizedContent = null,
-            RenderFragment authorizingContent = null)
+            RenderFragment<AuthenticationState> notAuthorizedContent = null,
+            RenderFragment authorizingContent = null,
+            string policy = null,
+            string roles = null,
+            object resource = null)
         {
             return new TestAuthStateProviderComponent(builder =>
             {
@@ -267,6 +443,9 @@ namespace Microsoft.AspNetCore.Components
                 builder.AddAttribute(2, nameof(AuthorizeView.Authorized), authorizedContent);
                 builder.AddAttribute(3, nameof(AuthorizeView.NotAuthorized), notAuthorizedContent);
                 builder.AddAttribute(4, nameof(AuthorizeView.Authorizing), authorizingContent);
+                builder.AddAttribute(5, nameof(AuthorizeView.Policy), policy);
+                builder.AddAttribute(6, nameof(AuthorizeView.Roles), roles);
+                builder.AddAttribute(7, nameof(AuthorizeView.Resource), resource);
                 builder.CloseComponent();
             });
         }
@@ -287,8 +466,28 @@ namespace Microsoft.AspNetCore.Components
             {
                 builder.OpenComponent<CascadingValue<Task<AuthenticationState>>>(0);
                 builder.AddAttribute(1, nameof(CascadingValue<Task<AuthenticationState>>.Value), AuthenticationState);
-                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, _childContent);
+                builder.AddAttribute(2, RenderTreeBuilder.ChildContent, (RenderFragment)(builder =>
+                {
+                    builder.OpenComponent<NeverReRenderComponent>(0);
+                    builder.AddAttribute(1, RenderTreeBuilder.ChildContent, _childContent);
+                    builder.CloseComponent();
+                }));
                 builder.CloseComponent();
+            }
+        }
+
+        // This is useful to show that the reason why a CascadingValue refreshes is because the
+        // value itself changed, not just that we're re-rendering the entire tree and have to
+        // recurse into all descendants because we're passing ChildContent
+        class NeverReRenderComponent : ComponentBase
+        {
+            [Parameter] RenderFragment ChildContent { get; set; }
+
+            protected override bool ShouldRender() => false;
+
+            protected override void BuildRenderTree(RenderTreeBuilder builder)
+            {
+                builder.AddContent(0, ChildContent);
             }
         }
 
@@ -303,6 +502,60 @@ namespace Microsoft.AspNetCore.Components
             public bool IsAuthenticated => true;
 
             public string Name { get; set; }
+        }
+
+        public TestRenderer CreateTestRenderer(IAuthorizationService authorizationService)
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton(authorizationService);
+            serviceCollection.AddSingleton<IAuthorizationPolicyProvider>(new TestAuthorizationPolicyProvider());
+            return new TestRenderer(serviceCollection.BuildServiceProvider());
+        }
+
+        private class TestAuthorizationService : IAuthorizationService
+        {
+            public AuthorizationResult NextResult { get; set; }
+                = AuthorizationResult.Failed();
+
+            public List<(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)> AuthorizeCalls { get; }
+                = new List<(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)>();
+
+            public Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)
+            {
+                AuthorizeCalls.Add((user, resource, requirements));
+
+                // The TestAuthorizationService doesn't actually apply any authorization requirements
+                // It just returns the specified NextResult, since we're not trying to test the logic
+                // in DefaultAuthorizationService or similar here. So it's up to tests to set a desired
+                // NextResult and assert that the expected criteria were passed by inspecting AuthorizeCalls.
+                return Task.FromResult(NextResult);
+            }
+
+            public Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName)
+                => throw new NotImplementedException();
+        }
+
+        private class TestAuthorizationPolicyProvider : IAuthorizationPolicyProvider
+        {
+            private readonly AuthorizationOptions options = new AuthorizationOptions();
+
+            public Task<AuthorizationPolicy> GetDefaultPolicyAsync()
+                => Task.FromResult(options.DefaultPolicy);
+
+            public Task<AuthorizationPolicy> GetFallbackPolicyAsync()
+                => Task.FromResult(options.FallbackPolicy);
+
+            public Task<AuthorizationPolicy> GetPolicyAsync(string policyName) => Task.FromResult(
+                new AuthorizationPolicy(new[]
+                {
+                    new TestPolicyRequirement { PolicyName = policyName }
+                },
+                new[] { $"TestScheme:{policyName}" }));
+        }
+
+        public class TestPolicyRequirement : IAuthorizationRequirement
+        {
+            public string PolicyName { get; set; }
         }
     }
 }

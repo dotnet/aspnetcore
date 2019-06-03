@@ -33,25 +33,22 @@ namespace Microsoft.AspNetCore.Routing
 
         public Task Invoke(HttpContext httpContext)
         {
-            var endpoint = httpContext.Features.Get<IEndpointFeature>()?.Endpoint;
+            var endpoint = httpContext.GetEndpoint();
             if (endpoint?.RequestDelegate != null)
             {
-                if (_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
+                if (!_routeOptions.SuppressCheckForUnhandledSecurityMetadata)
                 {
-                    // User opted out of this check.
-                    return Task.CompletedTask;
-                }
+                    if (endpoint.Metadata.GetMetadata<IAuthorizeData>() != null &&
+                        !httpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
+                    {
+                        ThrowMissingAuthMiddlewareException(endpoint);
+                    }
 
-                if (endpoint.Metadata.GetMetadata<IAuthorizeData>() != null &&
-                    !httpContext.Items.ContainsKey(AuthorizationMiddlewareInvokedKey))
-                {
-                    ThrowMissingAuthMiddlewareException(endpoint);
-                }
-
-                if (endpoint.Metadata.GetMetadata<ICorsMetadata>() != null &&
-                    !httpContext.Items.ContainsKey(CorsMiddlewareInvokedKey))
-                {
-                    ThrowMissingCorsMiddlewareException(endpoint);
+                    if (endpoint.Metadata.GetMetadata<ICorsMetadata>() != null &&
+                        !httpContext.Items.ContainsKey(CorsMiddlewareInvokedKey))
+                    {
+                        ThrowMissingCorsMiddlewareException(endpoint);
+                    }
                 }
 
                 Log.ExecutingEndpoint(_logger, endpoint);

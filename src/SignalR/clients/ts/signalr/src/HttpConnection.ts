@@ -63,6 +63,7 @@ export class HttpConnection implements IConnection {
     private stopPromiseResolver!: (value?: PromiseLike<void>) => void;
     private stopError?: Error;
     private accessTokenFactory?: () => string | Promise<string>;
+    private sendQueue?: TransportSendQueue;
 
     public readonly features: any = {};
     public connectionId?: string;
@@ -146,8 +147,12 @@ export class HttpConnection implements IConnection {
             return Promise.reject(new Error("Cannot send data if the connection is not in the 'Connected' State."));
         }
 
+        if (!this.sendQueue) {
+            this.sendQueue = new TransportSendQueue(this.transport!);
+        }
+
         // Transport will not be null if state is connected
-        return this.transport!.send(data);
+        return this.sendQueue.send(data);
     }
 
     public async stop(error?: Error): Promise<void> {
@@ -189,6 +194,11 @@ export class HttpConnection implements IConnection {
         // The transport should always be set if currently connected. If it wasn't set, it's likely because
         // stop was called during start() and start() failed.
         if (this.transport) {
+            if (this.sendQueue) {
+                this.sendQueue.stop();
+                this.sendQueue = undefined;
+            }
+
             try {
                 await this.transport.stop();
             } catch (e) {
@@ -500,4 +510,97 @@ export class HttpConnection implements IConnection {
 
 function transportMatches(requestedTransport: HttpTransportType | undefined, actualTransport: HttpTransportType) {
     return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
+}
+
+export class TransportSendQueue {
+    private buffer: any[] = [];
+    private sendBufferedData: PromiseSource;
+    private executing: boolean = true;
+    private transportResult: PromiseSource;
+
+    constructor(private readonly transport: ITransport) {
+        this.sendBufferedData = new PromiseSource();
+        this.transportResult = new PromiseSource();
+
+        // Suppress typescript error about handling Promises. The sendLoop doesn't need to be observed
+        this.sendLoop().then(() => {}, (_) => {});
+    }
+
+    public send(data: string | ArrayBuffer): Promise<void> {
+        this.bufferData(data);
+        return this.transportResult.promise;
+    }
+
+    public stop(): void {
+        this.executing = false;
+        this.sendBufferedData.resolve();
+    }
+
+    private bufferData(data: string | ArrayBuffer): void {
+        if (this.buffer.length && typeof(this.buffer[0]) !== typeof(data)) {
+            throw new Error(`Expected data to be of type ${typeof(this.buffer)} but was of type ${typeof(data)}`);
+        }
+
+        this.buffer.push(data);
+        this.sendBufferedData.resolve();
+    }
+
+    private async sendLoop(): Promise<void> {
+        while (true) {
+            await this.sendBufferedData.promise;
+
+            if (!this.executing) {
+                // Did we stop?
+                break;
+            }
+
+            this.sendBufferedData = new PromiseSource();
+
+            const transportResult = this.transportResult;
+            this.transportResult = new PromiseSource();
+
+            const data = typeof(this.buffer[0]) === "string" ?
+                this.buffer.join("") :
+                TransportSendQueue.concatBuffers(this.buffer);
+
+            this.buffer.length = 0;
+
+            try {
+                await this.transport.send(data);
+                transportResult.resolve();
+            } catch (error) {
+                transportResult.reject(error);
+            }
+        }
+    }
+
+    private static concatBuffers(arrayBuffers: ArrayBuffer[]): ArrayBuffer {
+        const totalLength = arrayBuffers.map((b) => b.byteLength).reduce((a, b) => a + b);
+        const result = new Uint8Array(totalLength);
+        let offset = 0;
+        for (const item of arrayBuffers) {
+            result.set(new Uint8Array(item), offset);
+            offset += item.byteLength;
+        }
+
+        return result;
+    }
+}
+
+class PromiseSource {
+    private resolver?: () => void;
+    private rejecter!: (reason?: any) => void;
+    public promise: Promise<void>;
+
+    constructor() {
+        this.promise = new Promise((resolve, reject) => [this.resolver, this.rejecter] = [resolve, reject]);
+    }
+
+    public resolve(): void {
+        this.resolver!();
+    }
+
+    public reject(reason?: any): void {
+        this.rejecter!(reason);
+    }
 }

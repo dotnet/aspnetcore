@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(PublishedSitesCollection.Name)]
     public class LoggingTests : LogFileTestBase
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         public async Task CaptureLogsForOutOfProcessWhenProcessFailsToStart()
         {
             var deploymentParameters = Fixture.GetBaseDeploymentParameters(HostingModel.OutOfProcess);
-            deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWrite");
+            deploymentParameters.TransformArguments((a, _) => $"{a} ConsoleWriteSingle");
             var deploymentResult = await DeployAsync(deploymentParameters);
 
             var response = await deploymentResult.HttpClient.GetAsync("Test");

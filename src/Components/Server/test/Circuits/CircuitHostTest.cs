@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
             var circuitHost = TestCircuitHost.Create(
+                Guid.NewGuid().ToString(),
                 serviceScope.Object,
                 remoteRenderer);
 
@@ -46,6 +47,7 @@ namespace Microsoft.AspNetCore.Components.Server.Circuits
             var serviceScope = new Mock<IServiceScope>();
             var remoteRenderer = GetRemoteRenderer(Renderer.CreateDefaultDispatcher());
             var circuitHost = TestCircuitHost.Create(
+                Guid.NewGuid().ToString(),
                 serviceScope.Object,
                 remoteRenderer);
 

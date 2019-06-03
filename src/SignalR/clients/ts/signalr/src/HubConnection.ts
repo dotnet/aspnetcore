@@ -854,7 +854,7 @@ export class HubConnection {
 
     private isObservable(arg: any): arg is IStreamResult<any> {
         // This allows other stream implementations to just work (like rxjs)
-        return arg.subscribe && typeof arg.subscribe === "function";
+        return arg && arg.subscribe && typeof arg.subscribe === "function";
     }
 
     private createStreamInvocation(methodName: string, args: any[], streamIds: string[]): StreamInvocationMessage {

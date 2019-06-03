@@ -16,7 +16,7 @@
     [@((RenderFragment)EmitMarkupBlock)]
 </div>
 
-<button onclick=@(() => { changeOutput = true; })>Change output</button>
+<button @onclick=@(() => { changeOutput = true; })>Change output</button>
 
 <h2>Markup string</h2>
 
@@ -24,7 +24,7 @@
 
 @((MarkupString)myMarkup)
 
-@functions {
+@code {
     bool changeOutput;
 
     string myMarkup = "<p class='markup-string-value'>This is a <em>markup string</em>.</p>";

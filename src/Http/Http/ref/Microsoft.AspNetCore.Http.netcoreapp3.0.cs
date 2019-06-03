@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class RequestBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IRequestBodyPipeFeature
     {
         public RequestBodyPipeFeature(Microsoft.AspNetCore.Http.HttpContext context) { }
-        public System.IO.Pipelines.PipeReader Reader { get { throw null; } set { } }
+        public System.IO.Pipelines.PipeReader Reader { get { throw null; } }
     }
     public partial class RequestCookiesFeature : Microsoft.AspNetCore.Http.Features.IRequestCookiesFeature
     {
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Http.Features
     public partial class ResponseBodyPipeFeature : Microsoft.AspNetCore.Http.Features.IResponseBodyPipeFeature
     {
         public ResponseBodyPipeFeature(Microsoft.AspNetCore.Http.HttpContext context) { }
-        public System.IO.Pipelines.PipeWriter Writer { get { throw null; } set { } }
+        public System.IO.Pipelines.PipeWriter Writer { get { throw null; } }
     }
     public partial class ResponseCookiesFeature : Microsoft.AspNetCore.Http.Features.IResponseCookiesFeature
     {
@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         public DefaultHttpRequest(Microsoft.AspNetCore.Http.DefaultHttpContext context) { }
         public override System.IO.Stream Body { get { throw null; } set { } }
-        public override System.IO.Pipelines.PipeReader BodyReader { get { throw null; } set { } }
+        public override System.IO.Pipelines.PipeReader BodyReader { get { throw null; } }
         public override long? ContentLength { get { throw null; } set { } }
         public override string ContentType { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Http.IRequestCookieCollection Cookies { get { throw null; } set { } }
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Http.Internal
     {
         public DefaultHttpResponse(Microsoft.AspNetCore.Http.DefaultHttpContext context) { }
         public override System.IO.Stream Body { get { throw null; } set { } }
-        public override System.IO.Pipelines.PipeWriter BodyWriter { get { throw null; } set { } }
+        public override System.IO.Pipelines.PipeWriter BodyWriter { get { throw null; } }
         public override long? ContentLength { get { throw null; } set { } }
         public override string ContentType { get { throw null; } set { } }
         public override Microsoft.AspNetCore.Http.IResponseCookies Cookies { get { throw null; } }
@@ -490,95 +490,5 @@ namespace Microsoft.Extensions.DependencyInjection
     public static partial class HttpServiceCollectionExtensions
     {
         public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddHttpContextAccessor(this Microsoft.Extensions.DependencyInjection.IServiceCollection services) { throw null; }
-    }
-}
-namespace System.IO.Pipelines
-{
-    public partial class ReadOnlyPipeStream : System.IO.Stream
-    {
-        public ReadOnlyPipeStream(System.IO.Pipelines.PipeReader pipeReader) { }
-        public ReadOnlyPipeStream(System.IO.Pipelines.PipeReader pipeReader, bool allowSynchronousIO) { }
-        public override bool CanRead { get { throw null; } }
-        public override bool CanSeek { get { throw null; } }
-        public override bool CanWrite { get { throw null; } }
-        public System.IO.Pipelines.PipeReader InnerPipeReader { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override long Length { get { throw null; } }
-        public override long Position { get { throw null; } set { } }
-        public override int WriteTimeout { get { throw null; } set { } }
-        public override System.IAsyncResult BeginRead(byte[] buffer, int offset, int count, System.AsyncCallback callback, object state) { throw null; }
-        public override System.Threading.Tasks.Task CopyToAsync(System.IO.Stream destination, int bufferSize, System.Threading.CancellationToken cancellationToken) { throw null; }
-        public override int EndRead(System.IAsyncResult asyncResult) { throw null; }
-        public override void Flush() { }
-        public override System.Threading.Tasks.Task FlushAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
-        public override int Read(byte[] buffer, int offset, int count) { throw null; }
-        public override System.Threading.Tasks.Task<int> ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
-        public override System.Threading.Tasks.ValueTask<int> ReadAsync(System.Memory<byte> destination, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public override long Seek(long offset, System.IO.SeekOrigin origin) { throw null; }
-        public override void SetLength(long value) { }
-        public override void Write(byte[] buffer, int offset, int count) { }
-        public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
-    }
-    public partial class StreamPipeReader : System.IO.Pipelines.PipeReader, System.IDisposable
-    {
-        public StreamPipeReader(System.IO.Stream readingStream) { }
-        public StreamPipeReader(System.IO.Stream readingStream, System.IO.Pipelines.StreamPipeReaderAdapterOptions options) { }
-        public System.IO.Stream InnerStream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override void AdvanceTo(System.SequencePosition consumed) { }
-        public override void AdvanceTo(System.SequencePosition consumed, System.SequencePosition examined) { }
-        public override void CancelPendingRead() { }
-        public override void Complete(System.Exception exception = null) { }
-        public void Dispose() { }
-        public override void OnWriterCompleted(System.Action<System.Exception, object> callback, object state) { }
-        [System.Diagnostics.DebuggerStepThroughAttribute]
-        public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.ReadResult> ReadAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public override bool TryRead(out System.IO.Pipelines.ReadResult result) { throw null; }
-    }
-    public partial class StreamPipeReaderAdapterOptions
-    {
-        public const int DefaultMinimumReadThreshold = 256;
-        public const int DefaultMinimumSegmentSize = 4096;
-        public static System.IO.Pipelines.StreamPipeReaderAdapterOptions DefaultOptions;
-        public StreamPipeReaderAdapterOptions() { }
-        public StreamPipeReaderAdapterOptions(int minimumSegmentSize, int minimumReadThreshold, System.Buffers.MemoryPool<byte> memoryPool) { }
-        public System.Buffers.MemoryPool<byte> MemoryPool { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MinimumReadThreshold { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public int MinimumSegmentSize { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-    }
-    public partial class StreamPipeWriter : System.IO.Pipelines.PipeWriter, System.IDisposable
-    {
-        public StreamPipeWriter(System.IO.Stream writingStream) { }
-        public StreamPipeWriter(System.IO.Stream writingStream, int minimumSegmentSize, System.Buffers.MemoryPool<byte> pool = null) { }
-        public System.IO.Stream InnerStream { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override void Advance(int count) { }
-        public override void CancelPendingFlush() { }
-        public override void Complete(System.Exception exception = null) { }
-        public void Dispose() { }
-        public override System.Threading.Tasks.ValueTask<System.IO.Pipelines.FlushResult> FlushAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
-        public override System.Memory<byte> GetMemory(int sizeHint = 0) { throw null; }
-        public override System.Span<byte> GetSpan(int sizeHint = 0) { throw null; }
-        public override void OnReaderCompleted(System.Action<System.Exception, object> callback, object state) { }
-    }
-    public partial class WriteOnlyPipeStream : System.IO.Stream
-    {
-        public WriteOnlyPipeStream(System.IO.Pipelines.PipeWriter pipeWriter) { }
-        public WriteOnlyPipeStream(System.IO.Pipelines.PipeWriter pipeWriter, bool allowSynchronousIO) { }
-        public override bool CanRead { get { throw null; } }
-        public override bool CanSeek { get { throw null; } }
-        public override bool CanWrite { get { throw null; } }
-        public System.IO.Pipelines.PipeWriter InnerPipeWriter { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
-        public override long Length { get { throw null; } }
-        public override long Position { get { throw null; } set { } }
-        public override int ReadTimeout { get { throw null; } set { } }
-        public override System.IAsyncResult BeginWrite(byte[] buffer, int offset, int count, System.AsyncCallback callback, object state) { throw null; }
-        public override void EndWrite(System.IAsyncResult asyncResult) { }
-        public override void Flush() { }
-        public override System.Threading.Tasks.Task FlushAsync(System.Threading.CancellationToken cancellationToken) { throw null; }
-        public override int Read(byte[] buffer, int offset, int count) { throw null; }
-        public override System.Threading.Tasks.Task<int> ReadAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
-        public override long Seek(long offset, System.IO.SeekOrigin origin) { throw null; }
-        public override void SetLength(long value) { }
-        public override void Write(byte[] buffer, int offset, int count) { }
-        public override System.Threading.Tasks.Task WriteAsync(byte[] buffer, int offset, int count, System.Threading.CancellationToken cancellationToken) { throw null; }
-        public override System.Threading.Tasks.ValueTask WriteAsync(System.ReadOnlyMemory<byte> source, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) { throw null; }
     }
 }

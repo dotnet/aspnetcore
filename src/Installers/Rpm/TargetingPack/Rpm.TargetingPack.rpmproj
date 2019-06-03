@@ -3,7 +3,7 @@
 
   <PropertyGroup>
     <RpmPackageInstallRoot>/usr/share/dotnet/</RpmPackageInstallRoot>
-    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion)-x64.rpm</TargetFileName>
+    <TargetFileName>$(TargetingPackInstallerBaseName)-$(TargetingPackVersion).rpm</TargetFileName>
 
     <PackageContentRoot>$(TargetingPackLayoutRoot)</PackageContentRoot>
 

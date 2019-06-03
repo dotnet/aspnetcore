@@ -3,13 +3,18 @@
 
   <PropertyGroup>
     <PackageId>@aspnet/signalr-protocol-msgpack</PackageId>
-    <IsPackable>true</IsPackable>
+    <IsPackable>!$(MSBuildProjectDirectory.Contains('node_modules'))</IsPackable>
     <IsTestProject>false</IsTestProject>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsShippingPackage>!$(MSBuildProjectDirectory.Contains('node_modules'))</IsShippingPackage>
+    <IsBuildable>!$(MSBuildProjectDirectory.Contains('node_modules'))</IsBuildable>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\signalr\signalr.npmproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ReplacePackageContent Include="file:../signalr" ReplaceWith=">=$(PackageVersion)" />
   </ItemGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Data.SqlClient;
 using System.Threading;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.FunctionalTests.Helpers;
 using Microsoft.EntityFrameworkCore;
@@ -24,13 +23,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
         private SqlServerTestStore(string name)
         {
-            _connectionString = new SqlConnectionStringBuilder
-            {
-                DataSource = @"(localdb)\MSSQLLocalDB",
-                InitialCatalog = name,
-                IntegratedSecurity = true,
-                ConnectTimeout = 600
-            }.ConnectionString;
+            _connectionString = $@"Server=(localdb)\mssqllocaldb;Database={name};Timeout=600";
         }
 
         public string ConnectionString

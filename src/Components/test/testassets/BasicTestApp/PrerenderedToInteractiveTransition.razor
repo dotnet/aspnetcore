@@ -12,10 +12,10 @@
 <p>
     Clicks:
     <strong id="count">@count</strong>
-    <button id="increment-count" onclick="@(() => count++)">Click me</button>
+    <button id="increment-count" @onclick="@(() => count++)">Click me</button>
 </p>
 
-@functions {
+@code {
     int count;
     bool firstRender = false;
     protected override Task OnAfterRenderAsync()

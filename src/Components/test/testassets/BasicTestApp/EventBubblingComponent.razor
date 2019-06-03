@@ -1,7 +1,7 @@
 <h3 id="event-bubbling">Bubbling standard event</h3>
 
-<div onclick="@(() => LogEvent("parent onclick"))">
-    <button id="button-with-onclick" onclick="@(() => LogEvent("target onclick"))">Button with onclick handler</button>
+<div @onclick="@(() => LogEvent("parent onclick"))">
+    <button id="button-with-onclick" @onclick="@(() => LogEvent("target onclick"))">Button with onclick handler</button>
     <button id="button-without-onclick" >Button without onclick handler</button>
 </div>
 
@@ -15,16 +15,16 @@
 <h3>Non-bubbling standard event</h3>
 
 <!-- The new Action(...) is needed until we add support for onfocus -->
-<div onfocus="@(new Action(() => LogEvent("parent onfocus")))">
-    <p>With onfocus: <input id="input-with-onfocus" onfocus="@(new Action(() => LogEvent("target onfocus")))" /></p>
+<div @onfocus="@(new Action(() => LogEvent("parent onfocus")))">
+    <p>With onfocus: <input id="input-with-onfocus" @onfocus="@(new Action(() => LogEvent("target onfocus")))" /></p>
     <p>Without onfocus: <input id="input-without-onfocus" /></p>
 </div>
 
 <h3>Event log</h3>
 
-<textarea readonly bind="@logValue"></textarea>
+<textarea readonly @bind="@logValue"></textarea>
 
-@functions {
+@code {
     string logValue = string.Empty;
 
     void LogEvent(string message)

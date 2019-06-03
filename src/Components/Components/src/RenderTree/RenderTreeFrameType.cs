@@ -9,6 +9,11 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     public enum RenderTreeFrameType: int
     {
         /// <summary>
+        /// Used only for unintialized frames.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// Represents a container for other frames.
         /// </summary>
         Element = 1,

@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             null);
         }
 
-        public Task DisposeAsync() => DisposeCoreAsync();
+        public override ValueTask DisposeAsync() => DisposeCoreAsync();
 
         public async Task<ConnectionContext> StartAsync(TransferFormat transferFormat = TransferFormat.Binary)
         {
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             Application.Output.Complete(ex);
         }
 
-        private async Task DisposeCoreAsync(Exception ex = null)
+        private async ValueTask DisposeCoreAsync(Exception ex = null)
         {
             Interlocked.Increment(ref _disposeCount);
             _disposed.TrySetResult(null);

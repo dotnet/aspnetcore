@@ -7,7 +7,7 @@ using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.Extensions.ApiDescription.Tasks
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     /// <summary>
     /// Adds or corrects ClassName, FirstForGenerator, Namespace, and OutputPath metadata in OpenApiReference items.

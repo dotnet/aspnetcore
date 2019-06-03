@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     <p>Fragment will be toggled below</p>
 
     @if (showFragment)
@@ -6,11 +6,11 @@
         @ExampleFragment
     }
 
-    <button onclick=@(_ => showFragment = !showFragment)>Toggle</button>
+    <button @onclick=@(_ => showFragment = !showFragment)>Toggle</button>
     <p>The end</p>
 </div>
 
-@functions {
+@code {
     bool showFragment;
 
     static RenderFragment ExampleFragment = builder =>

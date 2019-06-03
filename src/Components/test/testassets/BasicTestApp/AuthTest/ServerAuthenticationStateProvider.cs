@@ -29,7 +29,7 @@ namespace BasicTestApp.AuthTest
             if (data.IsAuthenticated)
             {
                 var claims = new[] { new Claim(ClaimTypes.Name, data.UserName) }
-                    .Concat(data.ExposedClaims.Select(c => new Claim(c.Key, c.Value)));
+                    .Concat(data.ExposedClaims.Select(c => new Claim(c.Type, c.Value)));
                 identity = new ClaimsIdentity(claims, "Server authentication");
             }
             else

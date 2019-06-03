@@ -9,7 +9,9 @@
   <ItemGroup>
     <!-- These assemblies are available as both a NuGet package and in the shared framework -->
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Features" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Metadata" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Connections.Abstractions" />
+    <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Authorization" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.Http.Connections.Common" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Protocols.Json" />
     <AspNetCoreAppReferenceAndPackage Include="Microsoft.AspNetCore.SignalR.Common" />
@@ -33,7 +35,6 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http.Extensions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Http" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Metadata" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Routing" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.WebUtilities" />
@@ -46,12 +47,10 @@
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.IIS" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.Cookies" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authentication.OAuth" />
-    <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authorization" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Authorization.Policy" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.CookiePolicy" />
     <AspNetCoreAppReference Include="Microsoft.AspNetCore.Cors" />

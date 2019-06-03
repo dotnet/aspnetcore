@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             request.Headers.Add("Cookie", authCookie);
 
             response = await Client.SendAsync(request);
-            await AssertAuthorizeResponse(response);
+            await AssertForbiddenResponse(response);
 
             authCookie = await GetAuthCookieAsync("LoginClaimAB");
             request = new HttpRequestMessage(HttpMethod.Get, action);
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             request.Headers.Add("Cookie", authCookie);
 
             response = await Client.SendAsync(request);
-            await AssertAuthorizeResponse(response);
+            await AssertForbiddenResponse(response);
 
             authCookie = await GetAuthCookieAsync("LoginClaimAB");
             request = new HttpRequestMessage(HttpMethod.Get, url);
@@ -257,6 +257,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
             Assert.Equal("/Account/Login", response.Headers.Location.LocalPath);
+        }
+
+        private async Task AssertForbiddenResponse(HttpResponseMessage response)
+        {
+            await response.AssertStatusCodeAsync(HttpStatusCode.Redirect);
+            Assert.Equal("/Account/AccessDenied", response.Headers.Location.LocalPath);
         }
 
         private async Task<string> GetAuthCookieAsync(string action)

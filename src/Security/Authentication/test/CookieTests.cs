@@ -1001,7 +1001,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Run(context => context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity())));
+                    app.Run(context => context.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(new ClaimsIdentity("whatever"))));
                 })
                 .ConfigureServices(services =>
                 {
@@ -1024,7 +1024,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Run(context => context.SignInAsync("Cookie1", new ClaimsPrincipal(new ClaimsIdentity())));
+                    app.Run(context => context.SignInAsync("Cookie1", new ClaimsPrincipal(new ClaimsIdentity("whatever"))));
                 })
                 .ConfigureServices(services =>
                 {
@@ -1048,7 +1048,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 {
                     app.UseAuthentication();
                     app.Map("/notlogin", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies",
-                        new ClaimsPrincipal())));
+                        new ClaimsPrincipal(new ClaimsIdentity("whatever")))));
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie(o => o.LoginPath = new PathString("/login")));
             var server = new TestServer(builder);
@@ -1065,7 +1065,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .Configure(app =>
                 {
                     app.UseAuthentication();
-                    app.Map("/login", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies", new ClaimsPrincipal())));
+                    app.Map("/login", signoutApp => signoutApp.Run(context => context.SignInAsync("Cookies", new ClaimsPrincipal(new ClaimsIdentity("whatever")))));
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie(o => o.LoginPath = new PathString("/login")));
 

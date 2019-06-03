@@ -21,7 +21,7 @@
             {
                 if (child.Key != null)
                 {
-                    <KeyCasesTreeNode key="@child.Key" Data="@child" />
+                    <KeyCasesTreeNode @key="@child.Key" Data="@child" />
                 }
                 else
                 {
@@ -32,10 +32,10 @@
     }
 </div>
 
-@functions {
+@code {
     public class Node
     {
-        public object Key { get; set; }
+        public string Key { get; set; }
         public string Label { get; set; }
         public List<Node> Children { get; set; }
     }

@@ -9,10 +9,12 @@ namespace Microsoft.AspNetCore.Analyzers.TestFiles.CompilationFeatureDetectorTes
     {
         public void Configure(IApplicationBuilder app)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             app.UseSignalR(routes =>
             {
 
             });
+#pragma warning restore CS0618 // Type or member is obsolete
         }
     }
 }

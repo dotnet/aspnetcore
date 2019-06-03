@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
         [Fact]
         public async Task Http10KeepAliveTransferEncoding()
         {
-            var testContext = new TestServiceContext();
+            var testContext = new TestServiceContext(LoggerFactory);
 
             await using (var server = new TestServer(AppChunked, testContext))
             {

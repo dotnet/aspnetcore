@@ -2,7 +2,7 @@
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml">
     <head>
         <meta charset="utf-8" />
-        <title> HTTP Error 500.30 - ANCM In-Process Start Failure </title>
+        <title> HTTP Error %d.%d - %s </title>
         <style>
             body {
                 font-family: 'Segoe UI', Tahoma, Arial, Helvetica, sans-serif;
@@ -58,14 +58,11 @@
         </style>
     </head>
     <body>
-        <h1> HTTP Error 500.30 - ANCM In-Process Start Failure </h1>
+        <h1> HTTP Error %d.%d - %s </h1>
 
-        <h2> Common causes of this issue: </h2>
-        <ul>
-            <li> The application failed to start </li>
-            <li> The application started but then stopped </li>
-            <li> The application started but threw an exception during startup </li>
-        </ul>
+        %s
+
+        %s
 
         <h2> Troubleshooting steps: </h2>
         <ul>

@@ -117,7 +117,7 @@ namespace PlatformBenchmarks
 
             // Content-Length header
             writer.Write(_headerContentLength);
-            var jsonPayload = JsonSerializer.ToBytes(new { message = "Hello, World!" }, SerializerOptions);
+            var jsonPayload = JsonSerializer.ToUtf8Bytes(new JsonMessage { message = "Hello, World!" }, SerializerOptions);
             writer.WriteNumeric((uint)jsonPayload.Length);
 
             // End of headers
@@ -154,6 +154,11 @@ namespace PlatformBenchmarks
             NotRecognized,
             PlainText,
             Json
+        }
+
+        public struct JsonMessage
+        {
+            public string message { get; set; }
         }
     }
 }

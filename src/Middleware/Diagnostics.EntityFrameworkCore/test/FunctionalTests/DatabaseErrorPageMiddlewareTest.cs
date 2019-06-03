@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -17,9 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -160,8 +156,9 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                         {
                             db.SaveChanges();
                         }
-                        catch (SqlException)
+                        catch (Exception e)
                         {
+                            Assert.Equal("SqlException", e.GetType().Name);
                         }
                     }
                 }
@@ -351,17 +348,16 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
                 });
             var server = new TestServer(builder);
 
-            var ex = await Assert.ThrowsAsync<SqlException>(async () =>
+            try
             {
-                try
-                {
-                    await server.CreateClient().GetAsync("http://localhost/");
-                }
-                catch (InvalidOperationException exception) when (exception.InnerException != null)
-                {
-                    throw exception.InnerException;
-                }
-            });
+                await server.CreateClient().GetAsync("http://localhost/");
+            }
+            catch (Exception exception)
+            {
+                Assert.True(
+                    exception.GetType().Name == "SqlException"
+                    || exception.InnerException?.GetType().Name == "SqlException");
+            }
 
             Assert.Contains(logProvider.Logger.Messages.ToList(), m =>
                 m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_ContextNotRegistered", typeof(BloggingContext))));
@@ -406,17 +402,16 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Tests
 
                 var server = SetupTestServer<BloggingContextWithSnapshotThatThrows, ExceptionInLogicMiddleware>(database, logProvider);
 
-                var ex = await Assert.ThrowsAsync<SqlException>(async () =>
+                try
                 {
-                    try
-                    {
-                        await server.CreateClient().GetAsync("http://localhost/");
-                    }
-                    catch (InvalidOperationException exception) when (exception.InnerException != null)
-                    {
-                        throw exception.InnerException;
-                    }
-                });
+                    await server.CreateClient().GetAsync("http://localhost/");
+                }
+                catch (Exception exception)
+                {
+                    Assert.True(
+                        exception.GetType().Name == "SqlException"
+                        || exception.InnerException?.GetType().Name == "SqlException");
+                }
 
                 Assert.Contains(logProvider.Logger.Messages.ToList(), m =>
                     m.StartsWith(StringsHelpers.GetResourceString("FormatDatabaseErrorPageMiddleware_Exception")));

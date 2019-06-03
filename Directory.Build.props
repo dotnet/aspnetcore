@@ -1,6 +1,15 @@
 ﻿<Project>
   <Import Project="version.props" />
 
+  <!--
+    These imports look funny.
+    Eventually they will be replaced by a simplified import that brings in
+    the entire Arcade SDK. For now, we're moving onto Arcade one piece at a time.
+  -->
+  <Import Project="../tools/DefaultVersions.Generated.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
+  <Import Project="eng\Versions.props" />
+  <Import Project="../tools/Compiler.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(UsingToolMicrosoftNetCompilers)' == 'true'"/>
+
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
 
@@ -121,7 +130,6 @@
     <OutDirName Condition="'$(IsReferenceAssemblyProject)' == 'true'">$(MSBuildProjectName)-ref</OutDirName>
   </PropertyGroup>
 
-  <Import Project="eng\Versions.props" />
   <Import Project="build\sources.props" />
 
   <!-- Artifacts layout -->
@@ -190,7 +198,7 @@
     <!-- Projects which reference Microsoft.AspNetCore.Mvc.Testing should import this targets file to ensure dependency .deps.json files are copied into test output. -->
     <MvcTestingTargets>$(MSBuildThisFileDirectory)src\Mvc\Mvc.Testing\src\Microsoft.AspNetCore.Mvc.Testing.targets</MvcTestingTargets>
     <!-- IIS native projects can only be built on Windows for x86 and x64. -->
-    <BuildIisNativeProjects Condition="'$(BuildNative)' != 'false' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
+    <BuildIisNativeProjects Condition="'$(BuildNative)' == 'true' AND '$(TargetOsName)' == 'win' AND ('$(TargetArchitecture)' == 'x86' OR '$(TargetArchitecture)' == 'x64')">true</BuildIisNativeProjects>
     <!-- This property is shared by several projects to layout the AspNetCore.App targeting pack for installers -->
     <TargetingPackLayoutRoot>$(ArtifactsObjDir)TargetingPack.Layout\$(Configuration)\</TargetingPackLayoutRoot>
     <!-- This property is shared by several projects to layout the AspNetCore.App shared framework for installers -->

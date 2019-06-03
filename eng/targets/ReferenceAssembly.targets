@@ -55,7 +55,7 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <_GenAPICommand Condition="'$(MSBuildRuntimeType)' == 'core'">$(ToolHostCmd) --roll-forward-on-no-candidate-fx 2 "$(_GenAPIPath)"</_GenAPICommand>
+      <_GenAPICommand Condition="'$(MSBuildRuntimeType)' == 'core'">"$(DotNetTool)" --roll-forward-on-no-candidate-fx 2 "$(_GenAPIPath)"</_GenAPICommand>
       <_GenAPICmd>$(_GenAPICommand)</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) "$(TargetPath)"</_GenAPICmd>
       <_GenAPICmd>$(_GenAPICmd) --lib-path "@(_ReferencePathDirectories)"</_GenAPICmd>

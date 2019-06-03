@@ -3,7 +3,7 @@
     <AspNetCoreMajorVersion>3</AspNetCoreMajorVersion>
     <AspNetCoreMinorVersion>0</AspNetCoreMinorVersion>
     <AspNetCorePatchVersion>0</AspNetCorePatchVersion>
-    <PreReleasePreviewNumber>6</PreReleasePreviewNumber>
+    <PreReleasePreviewNumber>7</PreReleasePreviewNumber>
     <PreReleaseLabel>preview$(PreReleasePreviewNumber)</PreReleaseLabel>
     <PreReleaseBrandingLabel>Preview $(PreReleasePreviewNumber)</PreReleaseBrandingLabel>
     <ExperimentalVersionPrefix>0.3.$(AspNetCorePatchVersion)</ExperimentalVersionPrefix>
@@ -34,13 +34,11 @@
     <_BuildNumberShortDate>$([MSBuild]::Add($([MSBuild]::Add($([MSBuild]::Multiply($(_BuildNumberYY), 1000)), $([MSBuild]::Multiply($(_BuildNumberMM), 50)))), $(_BuildNumberDD)))</_BuildNumberShortDate>
 
     <VersionSuffixBuildOfTheDay>$([System.Convert]::ToInt32($(_BuildNumberR)))</VersionSuffixBuildOfTheDay>
-    <VersionSuffixBuildOfTheDayPadded>$(VersionSuffixBuildOfTheDay.PadLeft(2, '0'))</VersionSuffixBuildOfTheDayPadded>
 
-    <!-- TODO: consider using semver 2.0 instead, when/if https://github.com/dotnet/core-setup/issues/4795 is resolved -->
-    <BuildNumberSuffix>$(_BuildNumberShortDate)-$(VersionSuffixBuildOfTheDayPadded)</BuildNumberSuffix>
+    <BuildNumberSuffix>$(_BuildNumberShortDate).$(VersionSuffixBuildOfTheDay)</BuildNumberSuffix>
 
     <FileRevisionVersion>$(_BuildNumberShortDate)</FileRevisionVersion>
-    <VersionSuffix>$(PreReleaseLabel)-$(BuildNumberSuffix)</VersionSuffix>
+    <VersionSuffix>$(PreReleaseLabel).$(BuildNumberSuffix)</VersionSuffix>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(OfficialBuild)' != 'true' ">

@@ -27,11 +27,61 @@ namespace Templates.Test
 
         [Fact]
         [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
-        public async Task RazorComponentsTemplateWorks()
+        public async Task RazorComponentsTemplateWorks_NoAuth()
         {
-            Project = await ProjectFactory.GetOrCreateProject("blazorserverside", Output);
+            Project = await ProjectFactory.GetOrCreateProject("blazorserversidenoauth", Output);
 
             var createResult = await Project.RunDotNetNewAsync("blazorserverside");
+            Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
+
+            var publishResult = await Project.RunDotNetPublishAsync();
+            Assert.True(0 == publishResult.ExitCode, ErrorMessages.GetFailedProcessMessage("publish", Project, publishResult));
+
+            // Run dotnet build after publish. The reason is that one uses Config = Debug and the other uses Config = Release
+            // The output from publish will go into bin/Release/netcoreapp3.0/publish and won't be affected by calling build
+            // later, while the opposite is not true.
+
+            var buildResult = await Project.RunDotNetBuildAsync();
+            Assert.True(0 == buildResult.ExitCode, ErrorMessages.GetFailedProcessMessage("build", Project, buildResult));
+
+            using (var aspNetProcess = Project.StartBuiltProjectAsync())
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run built project", Project, aspNetProcess.Process));
+
+                await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+                if (BrowserFixture.IsHostAutomationSupported())
+                {
+                    aspNetProcess.VisitInBrowser(Browser);
+                    TestBasicNavigation();
+                }
+            }
+
+            using (var aspNetProcess = Project.StartPublishedProjectAsync())
+            {
+                Assert.False(
+                    aspNetProcess.Process.HasExited,
+                    ErrorMessages.GetFailedProcessMessageOrEmpty("Run published project", Project, aspNetProcess.Process));
+
+                await aspNetProcess.AssertStatusCode("/", HttpStatusCode.OK, "text/html");
+                if (BrowserFixture.IsHostAutomationSupported())
+                {
+                    aspNetProcess.VisitInBrowser(Browser);
+                    TestBasicNavigation();
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        [Flaky("https://github.com/aspnet/AspNetCore-Internal/issues/2407", FlakyOn.AzP.Windows)]
+        public async Task RazorComponentsTemplateWorks_IndividualAuth(bool useLocalDB)
+        {
+            Project = await ProjectFactory.GetOrCreateProject("blazorserversideindividual" + (useLocalDB ? "uld" : ""), Output);
+
+            var createResult = await Project.RunDotNetNewAsync("blazorserverside", auth: "Individual", useLocalDB: useLocalDB);
             Assert.True(0 == createResult.ExitCode, ErrorMessages.GetFailedProcessMessage("create/restore", Project, createResult));
 
             var publishResult = await Project.RunDotNetPublishAsync();
