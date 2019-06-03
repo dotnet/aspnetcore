@@ -25,20 +25,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 return;
             }
 
-            var references = documentNode.FindDescendantReferences<TagHelperPropertyIntermediateNode>();
+            var references = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeIntermediateNode>();
             for (var i = 0; i < references.Count; i++)
             {
                 var reference = references[i];
-                var node = (TagHelperPropertyIntermediateNode)reference.Node;
+                var node = (TagHelperDirectiveAttributeIntermediateNode)reference.Node;
 
-                if (node.TagHelper.IsRefTagHelper() && node.IsDirectiveAttribute)
+                if (node.TagHelper.IsRefTagHelper())
                 {
                     reference.Replace(RewriteUsage(@class, reference.Parent, node));
                 }
             }
         }
 
-        private IntermediateNode RewriteUsage(ClassDeclarationIntermediateNode classNode, IntermediateNode parent, TagHelperPropertyIntermediateNode node)
+        private IntermediateNode RewriteUsage(ClassDeclarationIntermediateNode classNode, IntermediateNode parent, TagHelperDirectiveAttributeIntermediateNode node)
         {
             // If we can't get a nonempty attribute name, do nothing because there will
             // already be a diagnostic for empty values
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private IntermediateToken DetermineIdentifierToken(TagHelperPropertyIntermediateNode attributeNode)
+        private IntermediateToken DetermineIdentifierToken(TagHelperDirectiveAttributeIntermediateNode attributeNode)
         {
             IntermediateToken foundToken = null;
 

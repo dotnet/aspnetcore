@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             // For each event handler *usage* we need to rewrite the tag helper node to map to basic constructs.
             // Each usage will be represented by a tag helper property that is a descendant of either
             // a component or element.
-            var references = documentNode.FindDescendantReferences<TagHelperPropertyIntermediateNode>();
+            var references = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeIntermediateNode>();
 
             var parents = new HashSet<IntermediateNode>();
             for (var i = 0; i < references.Count; i++)
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             for (var i = 0; i < references.Count; i++)
             {
                 var reference = references[i];
-                var node = (TagHelperPropertyIntermediateNode)reference.Node;
+                var node = (TagHelperDirectiveAttributeIntermediateNode)reference.Node;
 
                 if (!reference.Parent.Children.Contains(node))
                 {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     continue;
                 }
 
-                if (node.TagHelper.IsEventHandlerTagHelper() && node.IsDirectiveAttribute)
+                if (node.TagHelper.IsEventHandlerTagHelper())
                 {
                     reference.Replace(RewriteUsage(reference.Parent, node));
                 }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // If we still have duplicates at this point then they are genuine conflicts.
             var duplicates = parent.Children
-                .OfType<TagHelperPropertyIntermediateNode>()
+                .OfType<TagHelperDirectiveAttributeIntermediateNode>()
                 .Where(p => p.TagHelper?.IsEventHandlerTagHelper() ?? false)
                 .GroupBy(p => p.AttributeName)
                 .Where(g => g.Count() > 1);
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private IntermediateNode RewriteUsage(IntermediateNode parent, TagHelperPropertyIntermediateNode node)
+        private IntermediateNode RewriteUsage(IntermediateNode parent, TagHelperDirectiveAttributeIntermediateNode node)
         {
             var original = GetAttributeContent(node);
             if (original.Count == 0)
@@ -148,19 +148,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             var attributeName = node.AttributeName;
-            if (node.IsDirectiveAttribute && attributeName.StartsWith("@"))
-            {
-                // Directive attributes start with a "@" but we don't want that to be included in the output attribute name.
-                // E.g, <input @onclick="..." /> should result in the creation of 'onclick' attribute.
-                attributeName = attributeName.Substring(1);
-            }
+
             if (parent is MarkupElementIntermediateNode)
             {
                 var result = new HtmlAttributeIntermediateNode()
                 {
                     Annotations =
                     {
-                        [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
                     },
                     AttributeName = attributeName,
                     Source = node.Source,
@@ -188,7 +183,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     Annotations =
                     {
-                        [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
                     },
                 };
 
@@ -203,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
         }
 
-        private static IReadOnlyList<IntermediateToken> GetAttributeContent(TagHelperPropertyIntermediateNode node)
+        private static IReadOnlyList<IntermediateToken> GetAttributeContent(TagHelperDirectiveAttributeIntermediateNode node)
         {
             var template = node.FindDescendantNodes<TemplateIntermediateNode>().FirstOrDefault();
             if (template != null)

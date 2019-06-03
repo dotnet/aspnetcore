@@ -245,5 +245,26 @@ Some Content
                 "Invalid parameter name. The parameter name attribute 'Context' on component 'RenderChildContentString' can only include literal text.",
                 diagnostic.GetMessage());
         }
+
+        [Fact]
+        public void ChildContent_ExplicitChildContent_ContainsDirectiveAttribute_ProducesDiagnostic()
+        {
+            // Arrange
+            AdditionalSyntaxTrees.Add(RenderChildContentStringComponent);
+
+            // Act
+            var generated = CompileToCSharp(@"
+<RenderChildContentString>
+<ChildContent Context=""items"" @key=""Hello"">
+</ChildContent>
+</RenderChildContentString>");
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Same(ComponentDiagnosticFactory.ChildContentHasInvalidAttribute.Id, diagnostic.Id);
+            Assert.Equal(
+                "Unrecognized attribute '@key' on child content element 'ChildContent'.",
+                diagnostic.GetMessage());
+        }
     }
 }

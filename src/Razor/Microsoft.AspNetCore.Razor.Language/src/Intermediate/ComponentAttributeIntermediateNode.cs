@@ -42,12 +42,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
 
             var attributeName = propertyNode.AttributeName;
-            if (propertyNode.IsDirectiveAttribute && attributeName.StartsWith("@"))
-            {
-                // Directive attributes start with a "@" but we don't want that to be included in the output attribute name.
-                // E.g, <input @onclick="..." /> should result in the creation of 'onclick' attribute.
-                attributeName = attributeName.Substring(1);
-            }
 
             AttributeName = attributeName;
             AttributeStructure = propertyNode.AttributeStructure;
@@ -65,6 +59,32 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             for (var i = 0; i < propertyNode.Diagnostics.Count; i++)
             {
                 Diagnostics.Add(propertyNode.Diagnostics[i]);
+            }
+        }
+
+        public ComponentAttributeIntermediateNode(TagHelperDirectiveAttributeIntermediateNode directiveAttributeNode)
+        {
+            if (directiveAttributeNode == null)
+            {
+                throw new ArgumentNullException(nameof(directiveAttributeNode));
+            }
+
+            AttributeName = directiveAttributeNode.AttributeName;
+            AttributeStructure = directiveAttributeNode.AttributeStructure;
+            BoundAttribute = directiveAttributeNode.BoundAttribute;
+            PropertyName = directiveAttributeNode.BoundAttribute.GetPropertyName();
+            Source = directiveAttributeNode.Source;
+            TagHelper = directiveAttributeNode.TagHelper;
+            TypeName = directiveAttributeNode.BoundAttribute.IsWeaklyTyped() ? null : directiveAttributeNode.BoundAttribute.TypeName;
+
+            for (var i = 0; i < directiveAttributeNode.Children.Count; i++)
+            {
+                Children.Add(directiveAttributeNode.Children[i]);
+            }
+
+            for (var i = 0; i < directiveAttributeNode.Diagnostics.Count; i++)
+            {
+                Diagnostics.Add(directiveAttributeNode.Diagnostics[i]);
             }
         }
 

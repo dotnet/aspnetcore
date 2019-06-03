@@ -1,29 +1,25 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class TagHelperAttributeParameterIntermediateNode : IntermediateNode
+    public sealed class TagHelperDirectiveAttributeIntermediateNode : IntermediateNode
     {
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public string AttributeName { get; set; }
 
-        public string AttributeNameWithoutParameter { get; set; }
+        public string OriginalAttributeName { get; set; }
 
         public AttributeStructure AttributeStructure { get; set; }
-
-        public BoundAttributeParameterDescriptor BoundAttributeParameter { get; set; }
 
         public BoundAttributeDescriptor BoundAttribute { get; set; }
 
         public TagHelperDescriptor TagHelper { get; set; }
 
         public bool IsIndexerNameMatch { get; set; }
-
-        public bool IsDirectiveAttribute => BoundAttribute?.IsDirectiveAttribute() ?? false;
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
@@ -32,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitTagHelperAttributeParameter(this);
+            visitor.VisitTagHelperDirectiveAttribute(this);
         }
 
         public override void FormatNode(IntermediateNodeFormatter formatter)
@@ -40,10 +36,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             formatter.WriteContent(AttributeName);
 
             formatter.WriteProperty(nameof(AttributeName), AttributeName);
+            formatter.WriteProperty(nameof(OriginalAttributeName), OriginalAttributeName);
             formatter.WriteProperty(nameof(AttributeStructure), AttributeStructure.ToString());
             formatter.WriteProperty(nameof(BoundAttribute), BoundAttribute?.DisplayName);
-            formatter.WriteProperty(nameof(BoundAttributeParameter), BoundAttributeParameter?.DisplayName);
-            formatter.WriteProperty(nameof(IsDirectiveAttribute), IsDirectiveAttribute.ToString());
+            formatter.WriteProperty(nameof(IsIndexerNameMatch), IsIndexerNameMatch.ToString());
             formatter.WriteProperty(nameof(TagHelper), TagHelper?.DisplayName);
         }
     }

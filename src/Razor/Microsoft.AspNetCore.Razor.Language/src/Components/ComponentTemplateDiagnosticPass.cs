@@ -53,7 +53,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         ancestor is ComponentAttributeIntermediateNode ||
 
                         // Inside malformed ref attribute
-                        ancestor is TagHelperPropertyIntermediateNode)
+                        ancestor is TagHelperPropertyIntermediateNode ||
+
+                        // Inside a directive attribute
+                        ancestor is TagHelperDirectiveAttributeIntermediateNode)
                     {
                         Candidates.Add(new IntermediateNodeReference(Parent, node));
                     }

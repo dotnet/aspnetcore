@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         public static readonly RazorDiagnosticDescriptor UnsupportedComplexContent = new RazorDiagnosticDescriptor(
             $"{DiagnosticPrefix}9986",
-            () => "Component attributes do not support complex content (mixed C# and markup). Attribute: '{0}', text '{1}'",
+            () => "Component attributes do not support complex content (mixed C# and markup). Attribute: '{0}', text: '{1}'",
             RazorDiagnosticSeverity.Error);
 
         public static RazorDiagnostic Create_UnsupportedComplexContent(IntermediateNode node, string attributeName)
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             () => "The attribute '{0}' was matched by multiple bind attributes. Duplicates:{1}",
             RazorDiagnosticSeverity.Error);
 
-        public static RazorDiagnostic CreateBindAttribute_Duplicates(SourceSpan? source, string attribute, TagHelperPropertyIntermediateNode[] attributes)
+        public static RazorDiagnostic CreateBindAttribute_Duplicates(SourceSpan? source, string attribute, TagHelperDirectiveAttributeIntermediateNode[] attributes)
         {
             var diagnostic = RazorDiagnostic.Create(
                 BindAttribute_Duplicates,
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             () => "The attribute '{0}' was matched by multiple event handlers attributes. Duplicates:{1}",
             RazorDiagnosticSeverity.Error);
 
-        public static RazorDiagnostic CreateEventHandler_Duplicates(SourceSpan? source, string attribute, TagHelperPropertyIntermediateNode[] attributes)
+        public static RazorDiagnostic CreateEventHandler_Duplicates(SourceSpan? source, string attribute, TagHelperDirectiveAttributeIntermediateNode[] attributes)
         {
             var diagnostic = RazorDiagnostic.Create(
                 EventHandler_Duplicates,

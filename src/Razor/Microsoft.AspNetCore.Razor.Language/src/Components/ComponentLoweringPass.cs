@@ -261,13 +261,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                             continue;
                         }
 
-                        // This is an unrecognized attribute, this is possible if you try to do something like put 'ref' on a child content.
+                        // This is an unrecognized tag helper bound attribute. This will practically never happen unless the child content descriptor was misconfigured.
                         childContent.Diagnostics.Add(ComponentDiagnosticFactory.Create_ChildContentHasInvalidAttribute(property.Source, property.AttributeName, attribute.Name));
                     }
                     else if (child is TagHelperHtmlAttributeIntermediateNode a)
                     {
                         // This is an HTML attribute on a child content.
                         childContent.Diagnostics.Add(ComponentDiagnosticFactory.Create_ChildContentHasInvalidAttribute(a.Source, a.AttributeName, attribute.Name));
+                    }
+                    else if (child is TagHelperDirectiveAttributeIntermediateNode directiveAttribute)
+                    {
+                        // We don't support directive attributes inside child content, this is possible if you try to do something like put '@ref' on a child content.
+                        childContent.Diagnostics.Add(ComponentDiagnosticFactory.Create_ChildContentHasInvalidAttribute(directiveAttribute.Source, directiveAttribute.OriginalAttributeName, attribute.Name));
                     }
                     else
                     {
@@ -385,6 +390,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 _children.Add(new ComponentAttributeIntermediateNode(node));
             }
 
+            public override void VisitTagHelperDirectiveAttribute(TagHelperDirectiveAttributeIntermediateNode node)
+            {
+                // We don't want to do anything special with directive attributes here.
+                // Let their corresponding lowering pass take care of processing them.
+                _children.Add(node);
+            }
+
             public override void VisitDefault(IntermediateNode node)
             {
                 _children.Add(node);
@@ -488,6 +500,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 // the cases for components, but leave others alone. This allows our other passes
                 // to handle those cases.
                 _children.Add(node.TagHelper.IsComponentTagHelper() ? (IntermediateNode)new ComponentAttributeIntermediateNode(node) : node);
+            }
+
+            public override void VisitTagHelperDirectiveAttribute(TagHelperDirectiveAttributeIntermediateNode node)
+            {
+                // We don't want to do anything special with directive attributes here.
+                // Let their corresponding lowering pass take care of processing them.
+                _children.Add(node);
             }
 
             public override void VisitDefault(IntermediateNode node)

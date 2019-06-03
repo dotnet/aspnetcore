@@ -107,5 +107,23 @@ namespace Test
                     Assert.Equal(0, item.Span.CharacterIndex);
                 });
         }
+
+        [Fact]
+        public void DirectiveAttribute_ComplexContent_ReportsError()
+        {
+            // Arrange & Act
+            var generated = CompileToCSharp(@"
+<input type=""text"" @key=""Foo @Text"" />
+@functions {
+    public string Text { get; set; } = ""text"";
+}");
+
+            // Assert
+            var diagnostic = Assert.Single(generated.Diagnostics);
+            Assert.Equal("RZ9986", diagnostic.Id);
+            Assert.Equal(
+                "Component attributes do not support complex content (mixed C# and markup). Attribute: '@key', text: 'Foo @Text'",
+                diagnostic.GetMessage());
+        }
     }
 }

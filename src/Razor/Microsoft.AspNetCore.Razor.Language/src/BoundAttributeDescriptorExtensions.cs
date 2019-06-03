@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return isIndexerNameMatch && attribute.IsIndexerBooleanProperty;
         }
 
-        internal static bool IsDirectiveAttribute(this BoundAttributeDescriptor attribute)
+        public static bool IsDirectiveAttribute(this BoundAttributeDescriptor attribute)
         {
             if (attribute == null)
             {

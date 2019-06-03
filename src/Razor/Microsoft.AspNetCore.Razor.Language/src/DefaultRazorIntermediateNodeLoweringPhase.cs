@@ -1752,14 +1752,19 @@ namespace Microsoft.AspNetCore.Razor.Language
                                 return;
                             }
 
+                            // Directive attributes should start with '@' unless the descriptors are misconfigured.
+                            // In that case, we would have already logged an error.
+                            var actualAttributeName = attributeName.StartsWith("@") ? attributeName.Substring(1) : attributeName;
+
                             IntermediateNode attributeNode;
                             if (parameterMatch &&
-                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(attributeName, out var attributeNameWithoutParameter, out _))
+                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter, out _))
                             {
-                                attributeNode = new TagHelperAttributeParameterIntermediateNode()
+                                attributeNode = new TagHelperDirectiveAttributeParameterIntermediateNode()
                                 {
-                                    AttributeName = attributeName,
+                                    AttributeName = actualAttributeName,
                                     AttributeNameWithoutParameter = attributeNameWithoutParameter,
+                                    OriginalAttributeName = attributeName,
                                     BoundAttributeParameter = associatedAttributeParameterDescriptor,
                                     BoundAttribute = associatedAttributeDescriptor,
                                     TagHelper = associatedDescriptor,
@@ -1770,9 +1775,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                             }
                             else
                             {
-                                attributeNode = new TagHelperPropertyIntermediateNode()
+                                attributeNode = new TagHelperDirectiveAttributeIntermediateNode()
                                 {
-                                    AttributeName = attributeName,
+                                    AttributeName = actualAttributeName,
+                                    OriginalAttributeName = attributeName,
                                     BoundAttribute = associatedAttributeDescriptor,
                                     TagHelper = associatedDescriptor,
                                     AttributeStructure = node.TagHelperAttributeInfo.AttributeStructure,
@@ -1870,14 +1876,19 @@ namespace Microsoft.AspNetCore.Razor.Language
                             out var parameterMatch,
                             out var associatedAttributeParameterDescriptor))
                         {
+                            // Directive attributes should start with '@' unless the descriptors are misconfigured.
+                            // In that case, we would have already logged an error.
+                            var actualAttributeName = attributeName.StartsWith("@") ? attributeName.Substring(1) : attributeName;
+
                             IntermediateNode attributeNode;
                             if (parameterMatch &&
-                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(attributeName, out var attributeNameWithoutParameter, out _))
+                                TagHelperMatchingConventions.TryGetBoundAttributeParameter(actualAttributeName, out var attributeNameWithoutParameter, out _))
                             {
-                                attributeNode = new TagHelperAttributeParameterIntermediateNode()
+                                attributeNode = new TagHelperDirectiveAttributeParameterIntermediateNode()
                                 {
-                                    AttributeName = attributeName,
+                                    AttributeName = actualAttributeName,
                                     AttributeNameWithoutParameter = attributeNameWithoutParameter,
+                                    OriginalAttributeName = attributeName,
                                     BoundAttributeParameter = associatedAttributeParameterDescriptor,
                                     BoundAttribute = associatedAttributeDescriptor,
                                     TagHelper = associatedDescriptor,
@@ -1888,9 +1899,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                             }
                             else
                             {
-                                attributeNode = new TagHelperPropertyIntermediateNode()
+                                attributeNode = new TagHelperDirectiveAttributeIntermediateNode()
                                 {
-                                    AttributeName = attributeName,
+                                    AttributeName = actualAttributeName,
+                                    OriginalAttributeName = attributeName,
                                     BoundAttribute = associatedAttributeDescriptor,
                                     TagHelper = associatedDescriptor,
                                     AttributeStructure = node.TagHelperAttributeInfo.AttributeStructure,

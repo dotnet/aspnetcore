@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             }
 
             // For each @bind *usage* we need to rewrite the tag helper node to map to basic constructs.
-            var references = documentNode.FindDescendantReferences<TagHelperPropertyIntermediateNode>();
-            var parameterReferences = documentNode.FindDescendantReferences<TagHelperAttributeParameterIntermediateNode>();
+            var references = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeIntermediateNode>();
+            var parameterReferences = documentNode.FindDescendantReferences<TagHelperDirectiveAttributeParameterIntermediateNode>();
 
             var parents = new HashSet<IntermediateNode>();
             for (var i = 0; i < references.Count; i++)
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 var reference = references[i];
                 var parent = reference.Parent;
-                var node = (TagHelperPropertyIntermediateNode)reference.Node;
+                var node = (TagHelperDirectiveAttributeIntermediateNode)reference.Node;
 
                 if (!parent.Children.Contains(node))
                 {
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     continue;
                 }
 
-                if (node.TagHelper.IsBindTagHelper() && node.IsDirectiveAttribute)
+                if (node.TagHelper.IsBindTagHelper())
                 {
                     bindEntries[(parent, node.AttributeName)] = new BindEntry(reference);
                 }
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 var parameterReference = parameterReferences[i];
                 var parent = parameterReference.Parent;
-                var node = (TagHelperAttributeParameterIntermediateNode)parameterReference.Node;
+                var node = (TagHelperDirectiveAttributeParameterIntermediateNode)parameterReference.Node;
 
                 if (!parent.Children.Contains(node))
                 {
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     continue;
                 }
 
-                if (node.TagHelper.IsBindTagHelper() && node.IsDirectiveAttribute)
+                if (node.TagHelper.IsBindTagHelper())
                 {
                     // Check if this tag contains a corresponding non-parameterized bind node.
                     if (!bindEntries.TryGetValue((parent, node.AttributeNameWithoutParameter), out var entry))
@@ -140,12 +140,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 TagHelperDescriptor tagHelper = null;
                 string attributeName = null;
                 var attribute = node.Children[i];
-                if (attribute is TagHelperPropertyIntermediateNode propertyAttribute)
+                if (attribute is TagHelperDirectiveAttributeIntermediateNode directiveAttribute)
                 {
-                    attributeName = propertyAttribute.AttributeName;
-                    tagHelper = propertyAttribute.TagHelper;
+                    attributeName = directiveAttribute.AttributeName;
+                    tagHelper = directiveAttribute.TagHelper;
                 }
-                else if (attribute is TagHelperAttributeParameterIntermediateNode parameterAttribute)
+                else if (attribute is TagHelperDirectiveAttributeParameterIntermediateNode parameterAttribute)
                 {
                     attributeName = parameterAttribute.AttributeName;
                     tagHelper = parameterAttribute.TagHelper;
@@ -159,12 +159,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         TagHelperDescriptor duplicateTagHelper = null;
                         string duplicateAttributeName = null;
                         var duplicate = node.Children[j];
-                        if (duplicate is TagHelperPropertyIntermediateNode duplicatePropertyAttribute)
+                        if (duplicate is TagHelperDirectiveAttributeIntermediateNode duplicateDirectiveAttribute)
                         {
-                            duplicateAttributeName = duplicatePropertyAttribute.AttributeName;
-                            duplicateTagHelper = duplicatePropertyAttribute.TagHelper;
+                            duplicateAttributeName = duplicateDirectiveAttribute.AttributeName;
+                            duplicateTagHelper = duplicateDirectiveAttribute.TagHelper;
                         }
-                        else if (duplicate is TagHelperAttributeParameterIntermediateNode duplicateParameterAttribute)
+                        else if (duplicate is TagHelperDirectiveAttributeParameterIntermediateNode duplicateParameterAttribute)
                         {
                             duplicateAttributeName = duplicateParameterAttribute.AttributeName;
                             duplicateTagHelper = duplicateParameterAttribute.TagHelper;
@@ -195,12 +195,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                         TagHelperDescriptor duplicateTagHelper = null;
                         string duplicateAttributeName = null;
                         var duplicate = node.Children[j];
-                        if (duplicate is TagHelperPropertyIntermediateNode duplicatePropertyAttribute)
+                        if (duplicate is TagHelperDirectiveAttributeIntermediateNode duplicateDirectiveAttribute)
                         {
-                            duplicateAttributeName = duplicatePropertyAttribute.AttributeName;
-                            duplicateTagHelper = duplicatePropertyAttribute.TagHelper;
+                            duplicateAttributeName = duplicateDirectiveAttribute.AttributeName;
+                            duplicateTagHelper = duplicateDirectiveAttribute.TagHelper;
                         }
-                        else if (duplicate is TagHelperAttributeParameterIntermediateNode duplicateParameterAttribute)
+                        else if (duplicate is TagHelperDirectiveAttributeParameterIntermediateNode duplicateParameterAttribute)
                         {
                             duplicateAttributeName = duplicateParameterAttribute.AttributeName;
                             duplicateTagHelper = duplicateParameterAttribute.TagHelper;
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
             // If we still have duplicates at this point then they are genuine conflicts.
             var duplicates = node.Children
-                .OfType<TagHelperPropertyIntermediateNode>()
+                .OfType<TagHelperDirectiveAttributeIntermediateNode>()
                 .GroupBy(p => p.AttributeName)
                 .Where(g => g.Count() > 1);
 
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             {
                 node.Diagnostics.Add(ComponentDiagnosticFactory.CreateBindAttribute_Duplicates(
                     node.Source,
-                    duplicate.Key,
+                    duplicate.First().OriginalAttributeName,
                     duplicate.ToArray()));
                 foreach (var property in duplicate)
                 {
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     Annotations =
                     {
-                        [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
                     },
                     AttributeName = valueAttributeName,
                     Source = node.Source,
@@ -362,7 +362,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     Annotations =
                     {
-                        [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
                     },
                     AttributeName = changeAttributeName,
                     Source = node.Source,
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     Annotations =
                     {
-                        [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
                     },
                     AttributeName = valueAttributeName,
                     BoundAttribute = valueAttribute, // Might be null if it doesn't match a component attribute
@@ -405,7 +405,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 {
                     Annotations =
                     {
-                        [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                        [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
                     },
                     AttributeName = changeAttributeName,
                     BoundAttribute = changeAttribute, // Might be null if it doesn't match a component attribute
@@ -430,7 +430,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                     {
                         Annotations =
                         {
-                            [ComponentMetadata.Common.OriginalAttributeName] = node.AttributeName,
+                            [ComponentMetadata.Common.OriginalAttributeName] = node.OriginalAttributeName,
                         },
                         AttributeName = expressionAttributeName,
                         BoundAttribute = expressionAttribute,
@@ -463,7 +463,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             valueAttributeName = null;
             changeAttributeName = null;
 
-            if (!attributeName.StartsWith("@bind"))
+            if (!attributeName.StartsWith("bind"))
             {
                 return false;
             }
@@ -473,7 +473,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
                 changeAttributeName = GetAttributeContent(bindEntry.BindEventNode)?.Content?.Trim('"');
             }
 
-            if (attributeName == "@bind")
+            if (attributeName == "bind")
             {
                 return true;
             }
@@ -591,7 +591,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
 
         private bool TryGetFormatNode(
             IntermediateNode node,
-            TagHelperPropertyIntermediateNode attributeNode,
+            TagHelperDirectiveAttributeIntermediateNode attributeNode,
             string valueAttributeName,
             out TagHelperPropertyIntermediateNode formatNode)
         {
@@ -807,16 +807,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Components
             public BindEntry(IntermediateNodeReference bindNodeReference)
             {
                 BindNodeReference = bindNodeReference;
-                BindNode = (TagHelperPropertyIntermediateNode)bindNodeReference.Node;
+                BindNode = (TagHelperDirectiveAttributeIntermediateNode)bindNodeReference.Node;
             }
 
             public IntermediateNodeReference BindNodeReference { get; }
 
-            public TagHelperPropertyIntermediateNode BindNode { get; }
+            public TagHelperDirectiveAttributeIntermediateNode BindNode { get; }
 
-            public TagHelperAttributeParameterIntermediateNode BindEventNode { get; set; }
+            public TagHelperDirectiveAttributeParameterIntermediateNode BindEventNode { get; set; }
 
-            public TagHelperAttributeParameterIntermediateNode BindFormatNode { get; set; }
+            public TagHelperDirectiveAttributeParameterIntermediateNode BindFormatNode { get; set; }
         }
     }
 }
