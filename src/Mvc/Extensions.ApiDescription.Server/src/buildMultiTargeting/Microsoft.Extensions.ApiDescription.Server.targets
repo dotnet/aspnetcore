@@ -11,14 +11,14 @@
         RemoveProperties="RuntimeIdentifier" />
   </Target>
 
-  <Target Name="_RetrieveOpenApiDocuments"
+  <Target Name="_GenerateOpenApiDocuments"
       AfterTargets="Build"
       Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' "
       DependsOnTargets="GenerateOpenApiDocuments" />
 
-  <Target Name="OpenApiGenerateDocuments" Returns="@(_OpenApiProjectDocuments)">
+  <Target Name="OpenApiGetDocuments" Returns="@(_OpenApiProjectDocuments)">
     <MSBuild Projects="$(MSBuildProjectFile)"
-        Targets="OpenApiGenerateDocuments"
+        Targets="OpenApiGetDocuments"
         Properties="TargetFramework=$(TargetFrameworks.Split(';')[0])"
         RemoveProperties="RuntimeIdentifier">
       <Output TaskParameter="TargetOutputs" ItemName="_OpenApiProjectDocuments" />

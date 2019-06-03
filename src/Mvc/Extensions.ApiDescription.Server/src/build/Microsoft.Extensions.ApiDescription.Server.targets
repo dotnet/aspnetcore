@@ -25,14 +25,14 @@
       <_Command>$(_Command) $(OpenApiGenerateDocumentsOptions)</_Command>
     </PropertyGroup>
 
-    <Message Importance="high" Text="%0ARetrieveOpenApiDocuments:" />
+    <Message Importance="high" Text="%0AGenerateOpenApiDocuments:" />
     <Message Importance="high" Text="  $(_Command)" />
     <Exec Command="$(_Command)" />
   </Target>
 
   <!-- Unless this is an inner build or default timing is disabled, tie document retrieval into the build. -->
 
-  <Target Name="_RetrieveOpenApiDocuments"
+  <Target Name="_GenerateOpenApiDocuments"
       AfterTargets="Build"
       Condition=" '$(OpenApiGenerateDocumentsOnBuild)' == 'true' AND ('$(TargetFramework)' == '' OR '$(TargetFrameworks)' == '') "
       DependsOnTargets="GenerateOpenApiDocuments" />
