@@ -1768,9 +1768,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="UnprocessableEntityResult"/> for the response.</returns>
         [NonAction]
         public virtual UnprocessableEntityResult UnprocessableEntity()
-        {
-            return new UnprocessableEntityResult();
-        }
+            => new UnprocessableEntityResult();
 
         /// <summary>
         /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
@@ -1779,9 +1777,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The created <see cref="UnprocessableEntityObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual UnprocessableEntityObjectResult UnprocessableEntity([ActionResultObjectValue] object error)
-        {
-            return new UnprocessableEntityObjectResult(error);
-        }
+            => new UnprocessableEntityObjectResult(error);
 
         /// <summary>
         /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
