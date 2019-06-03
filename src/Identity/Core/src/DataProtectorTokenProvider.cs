@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.Identity
                     var expirationTime = creationTime + Options.TokenLifespan;
                     if (expirationTime < DateTimeOffset.UtcNow)
                     {
-                        Logger.LogWarning(0, "ValidateAsync failed: the expiration time is invalid.");
+                        Logger.InvalidExpirationTime();
                         return false;
                     }
 
@@ -133,21 +134,21 @@ namespace Microsoft.AspNetCore.Identity
                     var actualUserId = await manager.GetUserIdAsync(user);
                     if (userId != actualUserId)
                     {
-                        Logger.LogWarning(1, $"ValidateAsync failed: the expected and actual UserId aren't equal");
+                        Logger.UserIdsNotEquals();
                         return false;
                     }
 
                     var purp = reader.ReadString();
                     if (!string.Equals(purp, purpose))
                     {
-                        Logger.LogWarning(2, $"ValidateAsync failed: the expected and actual purpose aren't equal.");
+                        Logger.PurposeNotEquals();
                         return false;
                     }
 
                     var stamp = reader.ReadString();
                     if (reader.PeekChar() != -1)
                     {
-                        Logger.LogWarning(2, $"ValidateAsync failed: unexpected end of input.");
+                        Logger.UnexpectedEndOfInput();
                         return false;
                     }
 
@@ -156,25 +157,25 @@ namespace Microsoft.AspNetCore.Identity
                         var isEqualsSecurityStamp = stamp == await manager.GetSecurityStampAsync(user);
                         if (!isEqualsSecurityStamp)
                         {
-                            Logger.LogWarning(4, $"ValidateAsync failed: the expected and actual stamp aren't equal.");
+                            Logger.SequrityStampNotEquals();
                         }
 
                         return isEqualsSecurityStamp;
                     }
 
-                    
+
                     var stampIsEmpty = stamp == "";
                     if (!stampIsEmpty)
                     {
-                        Logger.LogWarning(5, "ValidateAsync failed: the expected and actual stamp aren't equal. Expected empty stamp.");
+                        Logger.SecurityStampIsNotEmpty();
                     }
 
-                    return stampIsEmpty; 
+                    return stampIsEmpty;
                 }
             }
-            catch (Exception ex)
-            { 
-                Logger.LogWarning(6, $"ValidateAsync failed: an exception was thrown ${ex.Message}.");
+            catch
+            {
+                Logger.UnhandledException();
             }
 
             return false;
