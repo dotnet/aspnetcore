@@ -173,8 +173,10 @@ namespace Microsoft.AspNetCore.Identity
                     return stampIsEmpty;
                 }
             }
+            // ReSharper disable once EmptyGeneralCatchClause
             catch
             {
+                // Do not leak exception
                 Logger.UnhandledException();
             }
 
