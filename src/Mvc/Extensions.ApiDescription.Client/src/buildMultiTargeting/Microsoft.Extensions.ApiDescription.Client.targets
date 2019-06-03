@@ -7,7 +7,7 @@
         RemoveProperties="RuntimeIdentifier" />
   </Target>
 
-  <Target Name="_TieInGenerateOpenApiCode"
+  <Target Name="_GenerateOpenApiCode"
       BeforeTargets="BeforeCompile"
       Condition=" ''$(OpenApiGenerateCodeOnBuild)' == 'true' "
       DependsOnTargets="GenerateOpenApiCode" />
