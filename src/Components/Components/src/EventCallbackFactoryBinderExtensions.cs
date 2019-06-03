@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!int.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!int.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!int.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!long.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!long.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!long.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!long.TryParse(text, NumberStyles.Integer, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!float.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!float.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!float.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!float.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!double.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!double.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!double.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!double.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Components
                 return false;
             }
 
-            if (!decimal.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Components
                 return true;
             }
 
-            if (!decimal.TryParse(text, NumberStyles.Any, CultureInfo.CurrentCulture, out var converted))
+            if (!decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out var converted))
             {
                 value = default;
                 return false;
