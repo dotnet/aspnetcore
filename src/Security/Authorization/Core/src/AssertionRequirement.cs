@@ -56,5 +56,10 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
                 context.Succeed(this);
             }
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(AssertionRequirement)}:{Handler}={bool.TrueString}";
+        }
     }
 }

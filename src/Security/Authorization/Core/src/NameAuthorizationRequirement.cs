@@ -48,5 +48,10 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             }
             return Task.CompletedTask;
         }
+
+        public override string ToString()
+        {
+            return $"{nameof(NameAuthorizationRequirement)}:{nameof(AuthorizationHandlerContext.User.Identity.Name)}={RequiredName}";
+        }
     }
 }

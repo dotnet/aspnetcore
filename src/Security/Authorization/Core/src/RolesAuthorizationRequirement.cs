@@ -64,5 +64,13 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
             return Task.CompletedTask;
         }
 
+        public override string ToString()
+        {
+            var roles = (AllowedRoles == null || !AllowedRoles.Any())
+                ? string.Empty
+                : $"Roles in ({string.Join("|", AllowedRoles)})";
+
+            return $"{nameof(RolesAuthorizationRequirement)}:{roles}";
+        }
     }
 }
