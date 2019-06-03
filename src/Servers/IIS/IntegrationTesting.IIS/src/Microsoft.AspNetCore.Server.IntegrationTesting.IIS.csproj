@@ -45,7 +45,8 @@
   <Target Name="AddRunNativeComponents" BeforeTargets="AssignTargetPaths" Condition="'$(BuildIisNativeProjects)' == 'true'">
     <ItemGroup>
       <None Include="%(ShimComponents.DllLocation)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="%(ShimComponents.Platform)\%(ShimComponents.PackageSubPath)\%(ShimComponents.NativeAsset).dll" />
-      <None Include="$(Pkgruntime_win-x64_Microsoft_NETCore_DotNetAppHost)\nethost.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="x64/nethost.dll" />
+      <None Include="$(Pkgruntime_win-x64_Microsoft_NETCore_DotNetAppHost)\runtimes\win-x64\native\nethost.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="x64/nethost.dll" />
+      <None Include="$(Pkgruntime_win-x86_Microsoft_NETCore_DotNetAppHost)\runtimes\win-x86\native\nethost.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="x86/nethost.dll" />
     </ItemGroup>
   </Target>
 
@@ -62,6 +63,8 @@
     <Reference Include="Microsoft.NETCore.Windows.ApiSets" />
     <Reference Include="Microsoft.Web.Administration" />
     <Reference Include="System.ServiceProcess.ServiceController" />
+    <Reference Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" GeneratePathProperty="true" />
+    <Reference Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" GeneratePathProperty="true" />
   </ItemGroup>
 
 </Project>
