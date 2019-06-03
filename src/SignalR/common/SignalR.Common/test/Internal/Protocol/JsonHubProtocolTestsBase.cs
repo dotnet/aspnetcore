@@ -219,6 +219,18 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         }
 
         [Theory]
+        [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[[}]}")]
+        public void InvalidNestingWhileBindingTypesFails(string input)
+        {
+            input = Frame(input);
+
+            var binder = new TestBinder(paramTypes: new[] { typeof(int[]) }, returnType: null);
+            var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
+            var ex = Assert.Throws<InvalidDataException>(() => JsonHubProtocol.TryParseMessage(ref data, binder, out var message));
+            Assert.Equal("Error reading JSON.", ex.Message);
+        }
+
+        [Theory]
         [InlineData("{\"type\":1,\"invocationId\":\"42\",\"target\":\"foo\",\"arguments\":[\"2007-03-01T13:00:00Z\"]}")]
         [InlineData("{\"type\":1,\"invocationId\":\"42\",\"arguments\":[\"2007-03-01T13:00:00Z\"],\"target\":\"foo\"}")]
         public void DateTimeArgumentPreservesUtcKind(string input)

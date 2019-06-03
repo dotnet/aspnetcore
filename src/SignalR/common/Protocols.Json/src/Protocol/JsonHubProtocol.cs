@@ -701,13 +701,10 @@ namespace Microsoft.AspNetCore.SignalR.Protocol
 
             while (reader.TokenType != JsonTokenType.EndArray && reader.CurrentDepth > depth)
             {
-                if (arguments == null)
-                {
-                    arguments = new object[paramCount];
-                }
-
                 if (paramIndex < paramCount)
                 {
+                    arguments ??= new object[paramCount];
+
                     try
                     {
                         arguments[paramIndex] = BindType(ref reader, paramTypes[paramIndex]);
