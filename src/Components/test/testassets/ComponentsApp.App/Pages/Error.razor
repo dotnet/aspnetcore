@@ -3,13 +3,13 @@
 <h1>Error</h1>
 @if(ShouldCauseError)
 {
-    throw new InvalidOperationException("Exception while rendering");    
+    throw new InvalidOperationException("Exception while rendering");
 }
 else
 {
-    <button id="cause-error" onclick="@CauseError">Cause error</button>
+    <button id="cause-error" @onclick="@CauseError">Cause error</button>
 }
-@functions {
+@code {
     public bool ShouldCauseError { get; set; }
 
     void CauseError()

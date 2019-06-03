@@ -66,6 +66,7 @@ ci=false
 warn_as_error=true
 node_reuse=true
 binary_log=false
+pipelines_log=false
 
 projects=''
 configuration='Debug'
@@ -91,6 +92,9 @@ while [[ $# > 0 ]]; do
       ;;
     -binarylog|-bl)
       binary_log=true
+      ;;
+    -pipelineslog|-pl)
+      pipelines_log=true
       ;;
     -restore|-r)
       restore=true
@@ -146,6 +150,7 @@ while [[ $# > 0 ]]; do
 done
 
 if [[ "$ci" == true ]]; then
+  pipelines_log=true
   binary_log=true
   node_reuse=false
 fi

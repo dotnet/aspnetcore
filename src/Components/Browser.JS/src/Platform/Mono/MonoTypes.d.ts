@@ -24,4 +24,5 @@ declare namespace Mono {
 declare namespace MONO {
   var loaded_files: string[];
   var mono_wasm_runtime_is_ready: boolean;
+  function mono_wasm_setenv (name: string, value: string): void;
 }

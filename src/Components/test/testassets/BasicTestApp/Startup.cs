@@ -15,6 +15,12 @@ namespace BasicTestApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
+
+            services.AddAuthorizationCore(options =>
+            {
+                options.AddPolicy("NameMustStartWithB", policy =>
+                    policy.RequireAssertion(ctx => ctx.User.Identity.Name?.StartsWith("B") ?? false));
+            });
         }
 
         public void Configure(IComponentsApplicationBuilder app)

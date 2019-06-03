@@ -206,6 +206,13 @@ namespace Microsoft.AspNetCore
 
         internal static void ConfigureWebDefaults(IWebHostBuilder builder)
         {
+            builder.ConfigureAppConfiguration((ctx, cb) =>
+            {
+                if (ctx.HostingEnvironment.IsDevelopment())
+                {
+                    StaticWebAssetsLoader.UseStaticWebAssets(ctx.HostingEnvironment);
+                }
+            });
             builder.UseKestrel((builderContext, options) =>
             {
                 options.Configure(builderContext.Configuration.GetSection("Kestrel"));

@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO.Pipelines;
+using System.Net;
 using System.Security.Claims;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections.Features;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -17,7 +19,8 @@ namespace Microsoft.AspNetCore.Connections
                                             IConnectionItemsFeature,
                                             IConnectionTransportFeature,
                                             IConnectionUserFeature,
-                                            IConnectionLifetimeFeature
+                                            IConnectionLifetimeFeature,
+                                            IConnectionEndPointFeature
     {
         private CancellationTokenSource _connectionClosedTokenSource = new CancellationTokenSource();
 
@@ -42,6 +45,7 @@ namespace Microsoft.AspNetCore.Connections
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
             Features.Set<IConnectionLifetimeFeature>(this);
+            Features.Set<IConnectionEndPointFeature>(this);
         }
 
         public DefaultConnectionContext(string id, IDuplexPipe transport, IDuplexPipe application)
@@ -63,7 +67,9 @@ namespace Microsoft.AspNetCore.Connections
 
         public override IDuplexPipe Transport { get; set; }
 
-        public CancellationToken ConnectionClosed { get; set; }
+        public override CancellationToken ConnectionClosed { get; set; }
+        public override EndPoint LocalEndPoint { get; set; }
+        public override EndPoint RemoteEndPoint { get; set; }
 
         public override void Abort(ConnectionAbortedException abortReason)
         {
@@ -73,6 +79,12 @@ namespace Microsoft.AspNetCore.Connections
         public void Dispose()
         {
             _connectionClosedTokenSource.Dispose();
+        }
+
+        public override ValueTask DisposeAsync()
+        {
+            _connectionClosedTokenSource.Dispose();
+            return base.DisposeAsync();
         }
     }
 }

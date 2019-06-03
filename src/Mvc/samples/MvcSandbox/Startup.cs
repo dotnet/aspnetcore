@@ -109,7 +109,6 @@ namespace MvcSandbox
                     factory
                         .AddConsole()
                         .AddDebug();
-                    factory.SetMinimumLevel(LogLevel.Trace);
                 })
                 .UseIISIntegration()
                 .UseKestrel()

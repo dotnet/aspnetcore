@@ -1,5 +1,5 @@
 @using System.Collections.Generic
-@using Microsoft.JSInterop
+@using System.Text.Json.Serialization
 
 <div>
     <h2>Mouse position</h2>
@@ -7,16 +7,16 @@
         Output: <span id="output">@message</span>
     </p>
     <p>
-        Mouseover: <input id="mouseover_input" type="text" onmouseover="@OnMouseOver" onmouseout="@OnMouseOut" />
+        Mouseover: <input id="mouseover_input" type="text" @onmouseover="@OnMouseOver" @onmouseout="@OnMouseOut" />
     </p>
     <p>
-        <span id="mousemove_input" onmousemove="@OnMouseMove">Mousemove city!</span>
+        <span id="mousemove_input" @onmousemove="@OnMouseMove">Mousemove city!</span>
     </p>
     <p>
-        Mousedown: <input id="mousedown_input" onmousedown="@OnMouseDown" onmouseup="@OnMouseUp" />
+        Mousedown: <input id="mousedown_input" @onmousedown="@OnMouseDown" @onmouseup="@OnMouseUp" />
     </p>
     <p>
-        <button onclick="@Clear">Clear</button>
+        <button @onclick="@Clear">Clear</button>
     </p>
 
     <p>
@@ -24,7 +24,7 @@
     </p>
 </div>
 
-@functions {
+@code {
 
     string message;
 
@@ -65,7 +65,7 @@
 
     void DumpEvent(UIMouseEventArgs e)
     {
-        Console.WriteLine(Json.Serialize(e));
+        Console.WriteLine(JsonSerializer.ToString(e));
     }
 
     void Clear()

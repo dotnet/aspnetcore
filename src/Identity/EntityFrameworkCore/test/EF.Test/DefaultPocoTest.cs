@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             services
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
                 .AddDbContext<IdentityDbContext>(o =>
-                    o.UseSqlServer(fixture.ConnectionString)
+                    o.UseSqlite(fixture.Connection)
                         .ConfigureWarnings(b => b.Log(CoreEventId.ManyServiceProvidersCreatedWarning)))
                 .AddIdentity<IdentityUser, IdentityRole>()
                 .AddEntityFrameworkStores<IdentityDbContext>();
@@ -36,9 +36,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             _builder = new ApplicationBuilder(provider);
 
             using(var scoped = provider.GetRequiredService<IServiceScopeFactory>().CreateScope())
-            using (var db = scoped.ServiceProvider.GetRequiredService<IdentityDbContext>())
             {
-                db.Database.EnsureCreated();
+                scoped.ServiceProvider.GetRequiredService<IdentityDbContext>().Database.EnsureCreated();
             }
         }
 

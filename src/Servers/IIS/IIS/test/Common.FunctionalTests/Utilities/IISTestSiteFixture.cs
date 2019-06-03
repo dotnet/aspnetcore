@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting.IIS;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public class IISTestSiteFixture : IDisposable
     {

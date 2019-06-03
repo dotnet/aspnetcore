@@ -289,6 +289,8 @@ namespace Microsoft.AspNetCore.Identity.FunctionalTests
                 .WithWebHostBuilder(whb => whb.ConfigureTestServices(ConfigureTestServices))
                 .CreateClient();
 
+            ServerFactory.EnsureDatabaseCreated();
+
             var userName = $"{Guid.NewGuid()}@example.com";
             var guid = Guid.NewGuid();
             var email = userName;

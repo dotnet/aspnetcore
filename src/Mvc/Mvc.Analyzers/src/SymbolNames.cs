@@ -72,5 +72,11 @@ namespace Microsoft.AspNetCore.Mvc.Analyzers
         public const string ConfigureServicesMethod = "ConfigureServices";
 
         public const string ConfigureMethod = "Configure";
+
+        public const string RunAsyncMethodName = "RunAsync";
+
+        public const string TaskTypeName = "System.Threading.Tasks.Task";
+
+        public const string TagHelperRunnerTypeName = "Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner";
     }
 }

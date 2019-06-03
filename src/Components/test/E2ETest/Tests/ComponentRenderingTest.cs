@@ -597,6 +597,26 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             Browser.Equal("Hello from interop call", () => appElement.FindElement(By.Id("val-set-by-interop")).GetAttribute("value"));
         }
 
+        [Fact]
+        public void CanUseAddMultipleAttributes()
+        {
+            var appElement = MountTestComponent<DuplicateAttributesComponent>();
+
+            var selector = By.CssSelector("#duplicate-on-element > div");
+            WaitUntilExists(selector);
+
+            var element = appElement.FindElement(selector);
+            Assert.Equal(string.Empty, element.GetAttribute("bool")); // attribute is present
+            Assert.Equal("middle-value", element.GetAttribute("string"));
+            Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
+
+            selector = By.CssSelector("#duplicate-on-element-override > div");
+            element = appElement.FindElement(selector);
+            Assert.Null(element.GetAttribute("bool")); // attribute is not present
+            Assert.Equal("other-text", element.GetAttribute("string"));
+            Assert.Equal("unmatched-value", element.GetAttribute("unmatched"));
+        }
+
         static IAlert SwitchToAlert(IWebDriver driver)
         {
             try

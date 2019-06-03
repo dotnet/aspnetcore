@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public class PublishedApplicationPublisher: ApplicationPublisher
     {

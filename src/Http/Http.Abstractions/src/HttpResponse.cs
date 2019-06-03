@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Http
         public abstract Stream Body { get; set; }
 
         /// <summary>
-        /// Gets or sets the response body pipe <see cref="PipeWriter"/>
+        /// Gets the response body pipe <see cref="PipeWriter"/>
         /// </summary>
-        public abstract PipeWriter BodyWriter { get; set; }
+        public virtual PipeWriter BodyWriter { get => throw new NotImplementedException(); }
 
         /// <summary>
         /// Gets or sets the value for the <c>Content-Length</c> response header.
@@ -129,6 +129,6 @@ namespace Microsoft.AspNetCore.Http
         /// <remarks>
         /// If the <see cref="IHttpResponseStartFeature"/> isn't set, StartAsync will default to calling HttpResponse.Body.FlushAsync().
         /// </remarks>
-        public abstract Task StartAsync(CancellationToken cancellationToken = default);
+        public virtual Task StartAsync(CancellationToken cancellationToken = default) { throw new NotImplementedException(); }
     }
 }

@@ -25,7 +25,7 @@ Building ASP.NET Core on Windows requires:
     * Oracle's JDK <https://www.oracle.com/technetwork/java/javase/downloads/index.html>
     * To install a version of the JDK that will only be used by this repo, run [eng/scripts/InstallJdk.ps1](/eng/scripts/InstallJdk.ps1)
         ```ps1
-        PS> ./eng/scripts/InstalLJdk.ps1
+        PS> ./eng/scripts/InstallJdk.ps1
         ```
 
 ### macOS/Linux
@@ -81,21 +81,24 @@ Instead, we have many .sln files which include a sub-set of projects. These prin
 
 > :bulb: Pro tip: `dotnet new sln` and `dotnet sln` are one of the easiest ways to create and modify solutions.
 
-### Known issue: NU1105
+### Common error: CS0006
 
-Opening solution files may produce an error code NU1105 with a message such
+Opening solution files and building may produce an error code CS0006 with a message such
 
-> Unable to find project information for 'C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj'. Inside Visual Studio, this may be because the project is unloaded or not part of current solution. Otherwise the project file may be invalid or missing targets required for restore.
+> Error CS0006 Metadata file 'C:\src\aspnet\AspNetCore\artifacts\bin\Microsoft.AspNetCore.Metadata\Debug\netstandard2.0\Microsoft.AspNetCore.Metadata.dll' could not be found
 
-This is a known issue in NuGet (<https://github.com/NuGet/Home/issues/5820>) and we are working with them for a solution. See also <https://github.com/aspnet/AspNetCore/issues/4183> to track progress on this.
+The cause of this problem is that the solution you are using does not include the project that produces this .dll. This most often occurs after we have added new projects to the repo, but failed to update our .sln files to include the new project. In some cases, it is sometimes the intended behavior of the .sln which has been crafted to only include a subset of projects.
 
-**The workaround** for now is to add all projects to the solution. You can either do this one by one using `dotnet sln`
-
-    dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
-
-Or you can use this script to automatically traverse the project reference graph, which then invokes `dotnet sln` for you: [eng/scripts/AddAllProjectRefsToSolution.ps1](/eng/scripts/AddAllProjectRefsToSolution.ps1).
-
-    ./eng/scripts/AddAllProjectRefsToSolution.ps1 -WorkingDir src/Mvc/
+**You can fix this in one of two ways**
+1. Build the project on command line. In most cases, running `build.cmd` on command line solve this problem.
+2. Update the solution to include the missing project. You can either do this one by one using `dotnet sln`
+   ```
+   dotnet sln add C:\src\AspNetCore\src\Hosting\Abstractions\src\Microsoft.AspNetCore.Hosting.Abstractions.csproj
+   ```
+   Or you can use this script to automatically traverse the project reference graph, which then invokes `dotnet sln` for you: [eng/scripts/AddAllProjectRefsToSolution.ps1](/eng/scripts/AddAllProjectRefsToSolution.ps1).
+   ```
+   ./eng/scripts/AddAllProjectRefsToSolution.ps1 -WorkingDir src/Mvc/
+   ```
 
 ## Building with Visual Studio Code
 

@@ -216,7 +216,7 @@ namespace Test
             var component = CompileToComponent($@"
 <MyComponent OnClick=""{expression}""/>
 
-@functions {{
+@code {{
     private int counter;
     private void Increment(UIMouseEventArgs e) {{
         counter++;
@@ -261,7 +261,7 @@ namespace Test
             var component = CompileToComponent(@"
 <MyComponent OnClick=""@Increment""/>
 
-@functions {
+@code {
     private int counter;
     private void Increment(UIEventArgs e) {
         counter++;
@@ -445,8 +445,8 @@ namespace Test
 
             // Act
             var component = CompileToComponent(@"
-<p onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
-@functions {
+<p @onmouseover=""@OnComponentHover"" style=""background: @ParentBgColor;"" />
+@code {
     public string ParentBgColor { get; set; } = ""#FFFFFF"";
 
     public void OnComponentHover(UIMouseEventArgs e)

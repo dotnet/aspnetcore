@@ -31,6 +31,11 @@ namespace System.Buffers
         public override int MaxBufferSize { get; } = _blockSize;
 
         /// <summary>
+        /// The size of a block. 4096 is chosen because most operating systems use 4k pages.
+        /// </summary>
+        public static int BlockSize => _blockSize;
+
+        /// <summary>
         /// 4096 * 32 gives you a slabLength of 128k contiguous bytes allocated per slab
         /// </summary>
         private static readonly int _slabLength = _blockSize * _blockCount;

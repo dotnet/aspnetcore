@@ -27,6 +27,10 @@
                 <input name="username" />
             </p>
             <p>
+                Roles:
+                <input name="roles" />
+            </p>
+            <p>
                 <button type="submit">Submit</button>
             </p>
         </form>
@@ -37,7 +41,11 @@
         <p>
             Authenticated: <strong>@User.Identity.IsAuthenticated</strong>
             Username: <strong>@User.Identity.Name</strong>
-        </p>
+            Roles:
+            <strong>
+                @string.Join(", ", User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToArray())
+            </strong>
+        </p>foreach
         <a href="Authentication?signout=true">Sign out</a>
     </fieldset>
 </body>
@@ -60,6 +68,15 @@
                 new Claim(ClaimTypes.Name, username),
                 new Claim("test-claim", "Test claim value"),
             };
+
+            var roles = Request.Query["roles"];
+            if (!string.IsNullOrEmpty(roles))
+            {
+                foreach (var role in roles.ToString().Split(','))
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
 
             await HttpContext.SignInAsync(
                 new ClaimsPrincipal(new ClaimsIdentity(claims, "FakeAuthenticationType")));

@@ -1,15 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core
 {
@@ -17,21 +17,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// Describes either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor for an already open
     /// socket that Kestrel should bind to or open.
     /// </summary>
-    public class ListenOptions : IEndPointInformation, IConnectionBuilder
+    public class ListenOptions : IConnectionBuilder
     {
-        private FileHandleType _handleType;
         internal readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _middleware = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
 
         internal ListenOptions(IPEndPoint endPoint)
         {
-            Type = ListenType.IPEndPoint;
-            IPEndPoint = endPoint;
+            EndPoint = endPoint;
         }
 
         internal ListenOptions(string socketPath)
         {
-            Type = ListenType.SocketPath;
-            SocketPath = socketPath;
+            EndPoint = new UnixDomainSocketEndPoint(socketPath);
         }
 
         internal ListenOptions(ulong fileHandle)
@@ -41,87 +38,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         internal ListenOptions(ulong fileHandle, FileHandleType handleType)
         {
-            Type = ListenType.FileHandle;
-            FileHandle = fileHandle;
-            switch (handleType)
-            {
-                case FileHandleType.Auto:
-                case FileHandleType.Tcp:
-                case FileHandleType.Pipe:
-                    _handleType = handleType;
-                    break;
-                default:
-                    throw new NotSupportedException();
-            }
+            EndPoint = new FileHandleEndPoint(fileHandle, handleType);
         }
 
-        /// <summary>
-        /// The type of interface being described: either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor.
-        /// </summary>
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public ListenType Type { get; }
-#pragma warning restore PUB0001 // Pubternal type in public API
-
-#pragma warning disable PUB0001 // Pubternal type in public API
-        public FileHandleType HandleType
-#pragma warning restore PUB0001 // Pubternal type in public API
-        {
-            get => _handleType;
-            set
-            {
-                if (value == _handleType)
-                {
-                    return;
-                }
-                if (Type != ListenType.FileHandle || _handleType != FileHandleType.Auto)
-                {
-                    throw new InvalidOperationException();
-                }
-
-                switch (value)
-                {
-                    case FileHandleType.Tcp:
-                    case FileHandleType.Pipe:
-                        _handleType = value;
-                        break;
-                    default:
-                        throw new ArgumentException(nameof(HandleType));
-                }
-            }
-        }
+        public EndPoint EndPoint { get; internal set; }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
         /// The <see cref="IPEndPoint"/> to bind to.
-        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="ListenType.IPEndPoint"/>.
+        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="IPEndPoint"/>.
         /// </summary>
-        public IPEndPoint IPEndPoint { get; set; }
+        public IPEndPoint IPEndPoint => EndPoint as IPEndPoint;
 
         /// <summary>
         /// The absolute path to a Unix domain socket to bind to.
-        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="ListenType.SocketPath"/>.
+        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="UnixDomainSocketEndPoint"/>.
         /// </summary>
-        public string SocketPath { get; }
+        public string SocketPath => (EndPoint as UnixDomainSocketEndPoint)?.ToString();
 
         /// <summary>
         /// A file descriptor for the socket to open.
-        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="ListenType.FileHandle"/>.
+        /// Only set if the <see cref="ListenOptions"/> <see cref="Type"/> is <see cref="FileHandleEndPoint"/>.
         /// </summary>
-        public ulong FileHandle { get; }
+        public ulong FileHandle => (EndPoint as FileHandleEndPoint)?.FileHandle ?? 0;
 
         /// <summary>
         /// Enables an <see cref="IConnectionAdapter"/> to resolve and use services registered by the application during startup.
         /// Only set if accessed from the callback of a <see cref="KestrelServerOptions"/> Listen* method.
         /// </summary>
         public KestrelServerOptions KestrelServerOptions { get; internal set; }
-
-        /// <summary>
-        /// Set to false to enable Nagle's algorithm for all connections.
-        /// </summary>
-        /// <remarks>
-        /// Defaults to true.
-        /// </remarks>
-        public bool NoDelay { get; set; } = true;
 
         /// <summary>
         /// The protocols enabled on this endpoint.
@@ -153,13 +98,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 ? "https"
                 : "http";
 
-            switch (Type)
+            switch (EndPoint)
             {
-                case ListenType.IPEndPoint:
+                case IPEndPoint _:
                     return $"{scheme}://{IPEndPoint}";
-                case ListenType.SocketPath:
-                    return $"{scheme}://unix:{SocketPath}";
-                case ListenType.FileHandle:
+                case UnixDomainSocketEndPoint _:
+                    return $"{scheme}://unix:{EndPoint}";
+                case FileHandleEndPoint _:
                     return $"{scheme}://<file handle>";
                 default:
                     throw new InvalidOperationException();

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -23,6 +24,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         {
             _handleSubmitDelegate = HandleSubmitAsync;
         }
+
+        /// <summary>
+        /// Gets or sets a collection of additional attributes that will be applied to the created <c>form</c> element.
+        /// </summary>
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
 
         /// <summary>
         /// Supplies the edit context explicitly. If using this parameter, do not
@@ -99,11 +105,12 @@ namespace Microsoft.AspNetCore.Components.Forms
             builder.OpenRegion(_fixedEditContext.GetHashCode());
 
             builder.OpenElement(0, "form");
-            builder.AddAttribute(1, "onsubmit", _handleSubmitDelegate);
-            builder.OpenComponent<CascadingValue<EditContext>>(2);
-            builder.AddAttribute(3, "IsFixed", true);
-            builder.AddAttribute(4, "Value", _fixedEditContext);
-            builder.AddAttribute(5, RenderTreeBuilder.ChildContent, ChildContent?.Invoke(_fixedEditContext));
+            builder.AddMultipleAttributes(1, AdditionalAttributes);
+            builder.AddAttribute(2, "onsubmit", _handleSubmitDelegate);
+            builder.OpenComponent<CascadingValue<EditContext>>(3);
+            builder.AddAttribute(4, "IsFixed", true);
+            builder.AddAttribute(5, "Value", _fixedEditContext);
+            builder.AddAttribute(6, RenderTreeBuilder.ChildContent, ChildContent?.Invoke(_fixedEditContext));
             builder.CloseComponent();
             builder.CloseElement();
 

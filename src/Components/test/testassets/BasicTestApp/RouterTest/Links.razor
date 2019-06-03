@@ -14,11 +14,11 @@
     <li><NavLink href="/subdir/WithParameters/Name/Abc/LastName/McDef">With more parameters</NavLink></li>
 </ul>
 
-<button id="do-navigation" onclick=@(x => uriHelper.NavigateTo("Other"))>
+<button id="do-navigation" @onclick=@(x => uriHelper.NavigateTo("Other"))>
     Programmatic navigation
 </button>
 
-<button id="do-navigation-forced" onclick=@(x => uriHelper.NavigateTo("Other", true))>
+<button id="do-navigation-forced" @onclick=@(x => uriHelper.NavigateTo("Other", true))>
     Programmatic navigation with force-load
 </button>
 

@@ -16,7 +16,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 export DOTNET_ROOT="$DIR/.dotnet$RANDOM"
 
 # Ensure dotnet comes first on PATH
-export PATH="$DOTNET_ROOT:$PATH"
+export PATH="$DOTNET_ROOT:$PATH:$DIR/node/bin"
 
 # Prevent fallback to global .NET locations. This ensures our tests use the shared frameworks we specify and don't rollforward to something else that might be installed on the machine
 export DOTNET_MULTILEVEL_LOOKUP=0

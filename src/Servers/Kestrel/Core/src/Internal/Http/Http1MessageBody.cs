@@ -129,6 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     BadHttpRequestException.Throw(RequestRejectionReason.UpgradeRequestCannotHavePayload);
                 }
 
+                context.OnTrailersComplete(); // No trailers for these.
                 return new Http1UpgradeMessageBody(context);
             }
 
@@ -173,6 +174,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 BadHttpRequestException.Throw(requestRejectionReason, context.Method);
             }
 
+            context.OnTrailersComplete(); // No trailers for these.
             return keepAlive ? MessageBody.ZeroContentLengthKeepAlive : MessageBody.ZeroContentLengthClose;
         }
     }

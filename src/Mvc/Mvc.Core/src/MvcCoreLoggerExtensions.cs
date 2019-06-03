@@ -695,10 +695,12 @@ namespace Microsoft.AspNetCore.Mvc
             _selectingFirstCanWriteFormatter(logger, null);
         }
 
-        public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
+#nullable enable
+        public static IDisposable? ActionScope(this ILogger logger, ActionDescriptor action)
         {
             return logger.BeginScope(new ActionLogScope(action));
         }
+#nullable restore
 
         public static void ExecutingAction(this ILogger logger, ActionDescriptor action)
         {

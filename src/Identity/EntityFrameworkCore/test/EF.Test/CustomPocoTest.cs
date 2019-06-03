@@ -6,19 +6,12 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
-    public class CustomPocoTest : IClassFixture<ScratchDatabaseFixture>
+    public class CustomPocoTest
     {
-        private readonly ScratchDatabaseFixture _fixture;
-
-        public CustomPocoTest(ScratchDatabaseFixture fixture)
-        {
-            _fixture = fixture;
-        }
 
         public class User<TKey> where TKey : IEquatable<TKey>
         {
@@ -35,30 +28,17 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         }
 
-        public CustomDbContext<TKey> GetContext<TKey>() where TKey : IEquatable<TKey>
-        {
-            return DbUtil.Create<CustomDbContext<TKey>>(_fixture.ConnectionString);
-        }
-
-        public CustomDbContext<TKey> CreateContext<TKey>(bool delete = false) where TKey : IEquatable<TKey>
-        {
-            var db = GetContext<TKey>();
-            if (delete)
-            {
-                db.Database.EnsureDeleted();
-            }
-            db.Database.EnsureCreated();
-            return db;
-        }
-
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameGuid()
         {
-            using (var db = CreateContext<Guid>(true))
+            using (var db = new CustomDbContext<Guid>(
+                new DbContextOptionsBuilder().UseSqlite($"DataSource=D{Guid.NewGuid()}.db").Options))
             {
+                db.Database.EnsureCreated();
+
                 var oldName = Guid.NewGuid().ToString();
                 var user = new User<Guid> { UserName = oldName, Id = Guid.NewGuid() };
                 db.Users.Add(user);
@@ -68,6 +48,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 await db.SaveChangesAsync();
                 Assert.Null(db.Users.SingleOrDefault(u => u.UserName == oldName));
                 Assert.Equal(user, db.Users.Single(u => u.UserName == newName));
+
+                db.Database.EnsureDeleted();
             }
         }
 
@@ -77,8 +59,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameString()
         {
-            using (var db = CreateContext<string>(true))
+            using (var db = new CustomDbContext<string>(
+                new DbContextOptionsBuilder().UseSqlite($"DataSource=D{Guid.NewGuid()}.db").Options))
             {
+                db.Database.EnsureCreated();
+
                 var oldName = Guid.NewGuid().ToString();
                 var user = new User<string> { UserName = oldName, Id = Guid.NewGuid().ToString() };
                 db.Users.Add(user);
@@ -88,6 +73,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 await db.SaveChangesAsync();
                 Assert.Null(db.Users.SingleOrDefault(u => u.UserName == oldName));
                 Assert.Equal(user, db.Users.Single(u => u.UserName == newName));
+
+                db.Database.EnsureDeleted();
             }
         }
 
@@ -97,8 +84,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUserInt()
         {
-            using (var db = CreateContext<int>(true))
+            using (var db = new CustomDbContext<int>(
+                new DbContextOptionsBuilder().UseSqlite($"DataSource=D{Guid.NewGuid()}.db").Options))
             {
+                db.Database.EnsureCreated();
+
                 var user = new User<int>();
                 db.Users.Add(user);
                 await db.SaveChangesAsync();
@@ -106,6 +96,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 await db.SaveChangesAsync();
                 var fetch = db.Users.First(u => u.UserName == "Boo");
                 Assert.Equal(user, fetch);
+
+                db.Database.EnsureDeleted();
             }
         }
 
@@ -115,8 +107,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanCreateUserIntViaSet()
         {
-            using (var db = CreateContext<int>(true))
+            using (var db = new CustomDbContext<int>(
+                new DbContextOptionsBuilder().UseSqlite($"DataSource=D{Guid.NewGuid()}.db").Options))
             {
+                db.Database.EnsureCreated();
+
                 var user = new User<int>();
                 var users = db.Set<User<int>>();
                 users.Add(user);
@@ -125,6 +120,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 await db.SaveChangesAsync();
                 var fetch = users.First(u => u.UserName == "Boo");
                 Assert.Equal(user, fetch);
+
+                db.Database.EnsureDeleted();
             }
         }
 
@@ -134,8 +131,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameInt()
         {
-            using (var db = CreateContext<int>(true))
+            using (var db = new CustomDbContext<int>(
+                new DbContextOptionsBuilder().UseSqlite($"DataSource=D{Guid.NewGuid()}.db").Options))
             {
+                db.Database.EnsureCreated();
+
                 var oldName = Guid.NewGuid().ToString();
                 var user = new User<int> { UserName = oldName };
                 db.Users.Add(user);
@@ -145,6 +145,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 await db.SaveChangesAsync();
                 Assert.Null(db.Users.SingleOrDefault(u => u.UserName == oldName));
                 Assert.Equal(user, db.Users.Single(u => u.UserName == newName));
+
+                db.Database.EnsureDeleted();
             }
         }
 
@@ -154,8 +156,11 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task CanUpdateNameIntWithSet()
         {
-            using (var db = CreateContext<int>(true))
+            using (var db = new CustomDbContext<int>(
+                new DbContextOptionsBuilder().UseSqlite($"DataSource=D{Guid.NewGuid()}.db").Options))
             {
+                db.Database.EnsureCreated();
+
                 var oldName = Guid.NewGuid().ToString();
                 var user = new User<int> { UserName = oldName };
                 db.Set<User<int>>().Add(user);
@@ -165,6 +170,8 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 await db.SaveChangesAsync();
                 Assert.Null(db.Set<User<int>>().SingleOrDefault(u => u.UserName == oldName));
                 Assert.Equal(user, db.Set<User<int>>().Single(u => u.UserName == newName));
+
+                db.Database.EnsureDeleted();
             }
         }
     }

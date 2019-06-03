@@ -105,10 +105,11 @@ namespace Microsoft.AspNetCore.Components
         public string[] Types { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
-    public readonly partial struct ElementRef : Microsoft.JSInterop.Internal.ICustomArgSerializer
+    public readonly partial struct ElementRef
     {
         private readonly object _dummy;
-        object Microsoft.JSInterop.Internal.ICustomArgSerializer.ToJsonPrimitive() { throw null; }
+        [System.ComponentModel.EditorBrowsableAttribute(System.ComponentModel.EditorBrowsableState.Never)]
+        public string __internalId { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct EventCallback
@@ -360,6 +361,11 @@ namespace Microsoft.AspNetCore.Components
         public static explicit operator Microsoft.AspNetCore.Components.MarkupString (string value) { throw null; }
         public override string ToString() { throw null; }
     }
+    public partial class NavigationException : System.Exception
+    {
+        public NavigationException(string uri) { }
+        public string Location { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+    }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct Parameter
     {
@@ -373,6 +379,7 @@ namespace Microsoft.AspNetCore.Components
     public sealed partial class ParameterAttribute : System.Attribute
     {
         public ParameterAttribute() { }
+        public bool CaptureUnmatchedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
     }
     [System.Runtime.InteropServices.StructLayoutAttribute(System.Runtime.InteropServices.LayoutKind.Sequential)]
     public readonly partial struct ParameterCollection
@@ -769,6 +776,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
         public void AddContent<T>(int sequence, Microsoft.AspNetCore.Components.RenderFragment<T> fragment, T value) { }
         public void AddElementReferenceCapture(int sequence, System.Action<Microsoft.AspNetCore.Components.ElementRef> elementReferenceCaptureAction) { }
         public void AddMarkupContent(int sequence, string markupContent) { }
+        public void AddMultipleAttributes<T>(int sequence, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<string, T>> attributes) { }
         public void Clear() { }
         public void CloseComponent() { }
         public void CloseElement() { }
@@ -813,6 +821,7 @@ namespace Microsoft.AspNetCore.Components.RenderTree
     }
     public enum RenderTreeFrameType
     {
+        None = 0,
         Element = 1,
         Text = 2,
         Attribute = 3,

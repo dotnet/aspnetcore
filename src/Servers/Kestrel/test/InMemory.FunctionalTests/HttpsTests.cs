@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.None,
+                            enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
                             checkCertificateRevocation: false);
                 }
             }
@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.InMemory.FunctionalTests
                 using (var sslStream = new SslStream(connection.Stream, true, (sender, certificate, chain, errors) => true))
                 {
                     await sslStream.AuthenticateAsClientAsync("127.0.0.1", clientCertificates: null,
-                            enabledSslProtocols: SslProtocols.None,
+                            enabledSslProtocols: SslProtocols.Tls11 | SslProtocols.Tls12,
                             checkCertificateRevocation: false);
                 }
             }
