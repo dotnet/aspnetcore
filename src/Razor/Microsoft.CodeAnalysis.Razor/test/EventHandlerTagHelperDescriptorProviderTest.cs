@@ -56,6 +56,7 @@ namespace Test
             Assert.Equal(ComponentMetadata.EventHandler.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
+            Assert.False(item.IsComponentOrChildContentTagHelper());
 
             Assert.Equal(
                 "Sets the '@onclick' attribute to the provided string or delegate value. " +

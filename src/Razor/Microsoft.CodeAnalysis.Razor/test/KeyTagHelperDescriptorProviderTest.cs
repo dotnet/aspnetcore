@@ -35,6 +35,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.Equal(ComponentMetadata.Key.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
+            Assert.False(item.IsComponentOrChildContentTagHelper());
 
             Assert.Equal(
                 "Ensures that the component or element will be preserved across renders if (and only if) the supplied key value matches.",

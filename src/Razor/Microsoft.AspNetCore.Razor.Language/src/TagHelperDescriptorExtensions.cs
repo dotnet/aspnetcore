@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor.Language.Components;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -37,6 +38,26 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             tagHelper.Metadata.TryGetValue(TagHelperMetadata.Runtime.Name, out var value);
             return string.Equals(TagHelperConventions.DefaultKind, value, StringComparison.Ordinal);
+        }
+
+        public static bool IsComponentOrChildContentTagHelper(this TagHelperDescriptor tagHelper)
+        {
+            if (tagHelper == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelper));
+            }
+
+            if (tagHelper.IsComponentTagHelper())
+            {
+                return true;
+            }
+
+            if (tagHelper.IsChildContentTagHelper())
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }

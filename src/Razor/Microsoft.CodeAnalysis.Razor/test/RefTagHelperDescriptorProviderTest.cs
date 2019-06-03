@@ -35,6 +35,7 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.Equal(ComponentMetadata.Ref.RuntimeName, item.Metadata[TagHelperMetadata.Runtime.Name]);
             Assert.False(item.IsDefaultKind());
             Assert.False(item.KindUsesDefaultTagHelperRuntime());
+            Assert.False(item.IsComponentOrChildContentTagHelper());
 
             Assert.Equal(
                 "Populates the specified field or property with a reference to the element or component.",
