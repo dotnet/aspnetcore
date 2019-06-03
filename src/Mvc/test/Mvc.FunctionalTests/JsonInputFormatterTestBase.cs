@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task JsonInputFormatter_RoundtripsPocoModel()
         {
             // Arrange
-            var expected = new JsonInputFormatterController.SimpleModel()
+            var expected = new JsonFormatterController.SimpleModel()
             {
                 Id = 18,
                 Name = "James",
@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             };
 
             // Act
-            var response = await Client.PostAsJsonAsync("http://localhost/RoundtripSimpleModel/RoundtripSimpleModel/", expected);
-            var actual = await response.Content.ReadAsAsync<JsonInputFormatterController.SimpleModel>();
+            var response = await Client.PostAsJsonAsync("http://localhost/JsonFormatter/RoundtripSimpleModel/", expected);
+            var actual = await response.Content.ReadAsAsync<JsonFormatterController.SimpleModel>();
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
