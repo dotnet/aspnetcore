@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -54,14 +53,14 @@ namespace ClientSample
 
             connectionBuilder.WithAutomaticReconnect();
 
-            var connection = connectionBuilder.Build();
-            var closedTokenSource = new CancellationTokenSource();
+            await using var connection = connectionBuilder.Build();
+            using var closedTokenSource = new CancellationTokenSource();
 
             Console.CancelKeyPress += (sender, a) =>
             {
                 a.Cancel = true;
                 closedTokenSource.Cancel();
-                connection.DisposeAsync().GetAwaiter().GetResult();
+                connection.StopAsync().GetAwaiter().GetResult();
             };
 
             // Set up handler
@@ -69,10 +68,8 @@ namespace ClientSample
 
             connection.Closed += e =>
             {
-                closedTokenSource.Cancel();
-                connection.DisposeAsync().GetAwaiter().GetResult();
-
                 Console.WriteLine("Connection closed...");
+                closedTokenSource.Cancel();
                 return Task.CompletedTask;
             };
 
