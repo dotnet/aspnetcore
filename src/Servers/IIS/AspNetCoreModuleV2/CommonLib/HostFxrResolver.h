@@ -26,7 +26,8 @@ public:
         std::filesystem::path           &hostFxrDllPath,
         std::filesystem::path           &dotnetExePath,
         std::vector<std::wstring>       &arguments,
-        ErrorContext&                   errorContext
+        ErrorContext&                   errorContext,
+        HMODULE                         aspNetCoreModule
     );
 
     static

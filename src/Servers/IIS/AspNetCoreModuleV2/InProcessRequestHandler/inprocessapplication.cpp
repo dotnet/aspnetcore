@@ -195,7 +195,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
 
         auto context = std::make_shared<ExecuteClrContext>();
 
-        ErrorContext errorContext; // unused 
+        ErrorContext errorContext; // unused
 
         if (s_fMainCallback == nullptr)
         {
@@ -205,6 +205,7 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
                 QueryApplicationPhysicalPath(),
                 m_pConfig->QueryArguments(),
                 errorContext,
+                GetModuleHandle(TEXT("aspnetcorev2.dll")),
                 hostFxrResolutionResult
                 ));
 

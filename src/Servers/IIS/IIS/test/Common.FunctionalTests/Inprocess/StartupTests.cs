@@ -44,8 +44,6 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
 
         [ConditionalTheory]
         [InlineData("bogus", "", @"Executable was not found at '.*?\\bogus.exe")]
-        [InlineData("c:\\random files\\dotnet.exe", "something.dll", "")]
-        [InlineData(".\\dotnet.exe", "something.dll", "")]
         [InlineData("dotnet.exe", "", @"Application arguments are empty.")]
         [InlineData("dotnet.zip", "", @"Process path 'dotnet.zip' doesn't have '.exe' extension.")]
         public async Task InvalidProcessPath_ExpectServerError(string path, string arguments, string subError)

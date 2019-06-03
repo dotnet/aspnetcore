@@ -24,6 +24,7 @@ HRESULT HostFxrResolutionResult::Create(
         _In_ const std::wstring& pcwzApplicationPhysicalPath,
         _In_ const std::wstring& pcwzArguments,
         _In_ ErrorContext& errorContext,
+        _In_ HMODULE aspNetCoreModule,
         _Out_ std::unique_ptr<HostFxrResolutionResult>& ppWrapper)
 {
     std::filesystem::path knownDotnetLocation;
@@ -44,7 +45,8 @@ HRESULT HostFxrResolutionResult::Create(
                 hostFxrDllPath,
                 knownDotnetLocation,
                 arguments,
-                errorContext);
+                errorContext,
+                aspNetCoreModule);
 
         LOG_INFOF(L"Parsed hostfxr options: dotnet location: '%ls' hostfxr path: '%ls' arguments:", knownDotnetLocation.c_str(), hostFxrDllPath.c_str());
         for (size_t i = 0; i < arguments.size(); i++)
