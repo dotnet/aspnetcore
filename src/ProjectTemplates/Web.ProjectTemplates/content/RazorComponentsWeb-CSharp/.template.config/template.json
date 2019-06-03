@@ -70,6 +70,24 @@
           "exclude": [
             "Shared/LoginDisplay.razor"
           ]
+        },
+        {
+          "condition": "(NoAuth)",
+          "rename": {
+            "Shared/MainLayout.NoAuth.razor": "Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Shared/MainLayout.Auth.razor"
+          ]
+        },
+        {
+          "condition": "(!NoAuth)",
+          "rename": {
+            "Shared/MainLayout.Auth.razor": "Shared/MainLayout.razor"
+          },
+          "exclude": [
+            "Shared/MainLayout.NoAuth.razor"
+          ]
         }
       ]
     }
