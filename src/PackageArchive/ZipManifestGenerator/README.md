@@ -18,14 +18,8 @@ Example: dotnet run ./archive.zip files.txt
 To generate a new manifest for the incremental CI server package caches, you would run
 
 ```ps1
-$ProdConBuild='20180919-01'
-$Version='2.1.5'
-
-$patchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/${ProdconBuild}/final/assets/aspnetcore/Runtime/${Version}/nuGetPackagesArchive-ci-server-${Version}.patch.zip"
-
-dotnet run $patchUrl "../Archive.CiServer.Patch/ArchiveBaseline.${Version}.txt"
-
-$compatPatchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-1/${ProdconBuild}/final/assets/aspnetcore/Runtime/${Version}/nuGetPackagesArchive-ci-server-compat-${Version}.patch.zip"
-
-dotnet run $compatPatchUrl "../Archive.CiServer.Patch.Compat/ArchiveBaseline.${Version}.txt"
+./GenerateBaselinesForLastPatch.ps1
 ```
+
+This script is going to read the build manifests from https://github.com/dotnet/versions/tree/master/build-info/dotnet/product/cli/release and
+invoke the manifest generator for the last patch.
