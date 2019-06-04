@@ -4,11 +4,8 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <IsSampleProject>false</IsSampleProject>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <RunOnOSX1014>true</RunOnOSX1014>
   </PropertyGroup>
-
-  <ItemGroup>
-    <HelixProjectTargetQueue Include="OSX.1014.Amd64.Open" />
-  </ItemGroup>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
