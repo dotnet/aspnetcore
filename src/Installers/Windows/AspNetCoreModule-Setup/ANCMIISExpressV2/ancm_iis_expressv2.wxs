@@ -35,12 +35,12 @@
     <?define SchemaGuid = "ab582af2-d6c0-43f7-8412-76a19c65d7f2" ?>
     <?define SchemaGuid32 = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
-    <?define AspNetCoreV2NetHost = "$(var.NetHost64bit)" ?>
+    <?define NetHostProgramFilesTargetPath = "$(var.NetHost64bit)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
 <?else ?>
     <?define SchemaGuid = "e629b31a-3d56-4b5c-959c-586fc1c55599" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
-    <?define AspNetCoreV2NetHost = "$(var.NetHost32bit)" ?>
+    <?define NetHostProgramFilesTargetPath = "$(var.NetHost32bit)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
 <?endif ?>
 
@@ -179,10 +179,10 @@
                 <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
               </RegistryKey>
             </Component>
-            <Component Id="AspNetCoreModuleNetHost" Guid="2aa57b03-f4aa-4ed2-a3c1-4992507b299f" Win64="$(var.IsWin64)">
-                <File Id="AspNetCoreModuleNetHostDll"
+            <Component Id="NetHost" Guid="2aa57b03-f4aa-4ed2-a3c1-4992507b299f" Win64="$(var.IsWin64)">
+                <File Id="NetHostDll"
                     Name="nethost.dll"
-                    Source="$(var.AspNetCoreV2NetHost)"
+                    Source="$(var.NetHostProgramFilesTargetPath)"
                     DiskId="1"
                     Vital="yes">
                 </File>
@@ -230,8 +230,8 @@
                     <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
                   </RegistryKey>
                 </Component>
-                 <Component Id="AspNetCoreModuleNetHost.wow" Guid="877bc07b-1422-464f-b71c-8c1569bc0f54" Win64="no">
-                  <File Id="AspNetCoreModuleNetHostDll.wow"
+                 <Component Id="NetHost.wow" Guid="877bc07b-1422-464f-b71c-8c1569bc0f54" Win64="no">
+                  <File Id="NetHostDll.wow"
                         Name="nethost.dll"
                         Source="$(var.NetHost32bit)"
                         DiskId="1"
@@ -269,12 +269,12 @@
         <!-- Feature Definition -->
         <Feature Id="AspNetCoreModuleFeature" Title="!(loc.AspNetCoreModuleProductTitle)" Description="!(loc.AspNetCoreModuleProductDescription)" Level="1">
             <ComponentRef Id="AspNetCoreModule"/>
-            <ComponentRef Id="AspNetCoreModuleNetHost"/>
+            <ComponentRef Id="NetHost"/>
             <ComponentRef Id="AspNetCoreModuleHandler"/>
             <ComponentRef Id="AspNetCoreSchema"/>
             <?if $(var.Platform) = "x64" ?>
                 <ComponentRef Id="AspNetCoreModule.wow"/>
-                <ComponentRef Id="AspNetCoreModuleNetHost.wow"/>
+                <ComponentRef Id="NetHost.wow"/>
                 <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
                 <ComponentRef Id="AspNetCoreSchema.wow"/>
             <?endif ?>

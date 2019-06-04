@@ -50,35 +50,3 @@ TEST(ParseHostFxrArguments, ConvertDllToAbsolutePath)
     ASSERT_STREQ(L"exec", bstrArray[0].c_str());
     ASSERT_STREQ((system32 + L"\\ntdll.dll").c_str(), bstrArray[1].c_str());
 }
-
-TEST(ParseHostFxrArguments, ProvideNoArgs_InvalidArgs)
-{
-    std::vector<std::wstring> bstrArray;
-    std::filesystem::path struHostFxrDllLocation;
-    std::filesystem::path struExeLocation;
-
-    EXPECT_THROW(HostFxrResolver::GetHostFxrParameters(
-        L"dotnet", // processPath
-        L"some\\path",  // application physical path, ignored.
-        L"",  //arguments
-        struHostFxrDllLocation,
-        struExeLocation,
-        bstrArray), // args array.
-        InvalidOperationException);
-}
-
-TEST(GetHostFxrArguments, InvalidParams)
-{
-    std::vector<std::wstring> bstrArray;
-    std::filesystem::path struHostFxrDllLocation;
-    std::filesystem::path struExeLocation;
-
-    EXPECT_THROW(HostFxrResolver::GetHostFxrParameters(
-        L"bogus", // processPath
-        L"",  // application physical path, ignored.
-        L"ignored",  //arguments
-        struHostFxrDllLocation,
-        struExeLocation,
-        bstrArray), // args array.
-        InvalidOperationException);
-}

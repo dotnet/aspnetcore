@@ -9,8 +9,6 @@
     </ItemGroup>
   </Target>
 
-  <Import Project="Packaging.targets" />
-  <Import Project="ResolveReferences.targets" />
   <Target Name="Pack" />
   <Target Name="Restore" />
   <Target Name="ResolveNuGetPackageAssets" />

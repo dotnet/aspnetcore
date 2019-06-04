@@ -51,22 +51,17 @@ HostFxrResolver::GetHostFxrParameters(
         throw InvalidOperationException(format(L"Process path '%s' doesn't have '.exe' extension.", expandedProcessPath.c_str()));
     }
 
-    // call load dll and see what happens :)
     // TODO make sure we figure out a way to load this dll sxs
-    // TODO error handling
     std::wstring modulePath = GlobalVersionUtility::GetModuleName(aspNetCoreModule);
 
+    // If we are in the shim, load hostfxr.
+    // Otherwise, throw.
+    // I think we need to assume that hostfxr is loaded by the shim.
+    // but we may need a backup, which really sucks.
     modulePath = GlobalVersionUtility::RemoveFileNameFromFolderPath(modulePath);
 
     auto moduleHandle = LoadLibrary(modulePath.append(L"\\nethost.dll").c_str());
-    auto getHostfxrPath = ModuleHelpers::GetKnownProcAddress<get_hostfxr_path>(moduleHandle, "get_hostfxr_path");
 
-    // Check if the absolute path is to dotnet or not.
-    // Things to figure out:
-    // 1. what do we do with the dotnet path? Any reason for us to care?
-    //  need to care to make sure a newer shim still has fast load times with old handler
-    //  just create a reverse function?
-    // 2. Does this work with registry keys?
     if (IsDotnetExecutable(expandedProcessPath))
     {
         LOG_INFOF(L"Process path '%ls' is dotnet, treating application as portable", expandedProcessPath.c_str());
@@ -76,22 +71,35 @@ HostFxrResolver::GetHostFxrParameters(
             throw InvalidOperationException(L"Application arguments are empty.");
         }
 
-        std::wstring test;
-        size_t size = 500;
-        test.resize(size);
+        if (dotnetExePath.empty())
+        {
+            if (moduleHandle != nullptr)
+            {
+                auto get_host_fxr_path = ModuleHelpers::GetKnownProcAddress<get_hostfxr_path>(moduleHandle, "get_hostfxr_path");
 
-        AppendArguments(
-            expandedApplicationArguments,
-            applicationPhysicalPath,
-            arguments,
-            true);
+                std::wstring hostfxrPath;
+                size_t size = MAX_PATH * 2;
+                hostfxrPath.resize(size);
 
-        // TODO need to check if args[0] is a dll or not.
-        getHostfxrPath(test.data(), &size, arguments[0].c_str());
+                AppendArguments(
+                    expandedApplicationArguments,
+                    applicationPhysicalPath,
+                    arguments,
+                    true);
 
-        test.resize(size); // todo maybe +1 for nullchar
-        hostFxrDllPath = test;
-        dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
+                get_host_fxr_path(hostfxrPath.data(), &size, arguments[0].c_str());
+
+                hostfxrPath.resize(size);
+                hostFxrDllPath = hostfxrPath;
+                dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
+            }
+            else
+            {
+                // TODO need to review 2.2 code, this may need to still be allowed for handler if we shipped 2.2 without this assumption
+                throw InvalidOperationException(L"Must have hostfxr loaded in shim or have nethost.dll next to app.");
+            }
+        }
+       
         arguments.insert(arguments.begin(), dotnetExePath);
     }
     else
@@ -137,21 +145,31 @@ HostFxrResolver::GetHostFxrParameters(
             }
             else
             {
-                LOG_INFOF(L"hostfxr.dll found app local at '%ls', treating application as portable with launcher", hostFxrDllPath.c_str());
-                std::wstring test;
-                size_t size = 500;
-                test.resize(size);
+                if (dotnetExePath.empty())
+                {
+                    if (moduleHandle != nullptr)
+                    {
+                        auto getHostfxrPath = ModuleHelpers::GetKnownProcAddress<get_hostfxr_path>(moduleHandle, "get_hostfxr_path");
 
-                // passing "dotnet" here because we don't know where dotnet.exe should come from
-                // so trying all fallbacks is appropriate
-                // For portable with launcher apps we need dotnet.exe to be argv[0] and .dll be argv[1]
+                        LOG_INFOF(L"hostfxr.dll found app local at '%ls', treating application as portable with launcher", hostFxrDllPath.c_str());
+                        std::wstring test;
+                        size_t size = 500;
+                        test.resize(size);
 
-                getHostfxrPath(test.data(), &size, applicationDllPath.c_str());
+                        getHostfxrPath(test.data(), &size, applicationDllPath.c_str());
 
-                test.resize(size); // todo maybe +1 for nullchar
-                hostFxrDllPath = test;
+                        test.resize(size); // todo maybe +1 for nullchar
+                        hostFxrDllPath = test;
 
-                dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
+                        dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
+                    }
+                    else
+                    {
+                        // TODO need to review 2.2 code, this may need to still be allowed for handler if we shipped 2.2 without this assumption
+                        throw InvalidOperationException(L"Must have hostfxr loaded in shim or have nethost.dll next to app.");
+                    }
+                }
+
                 arguments.push_back(dotnetExePath);
                 arguments.push_back(applicationDllPath);
             }
@@ -250,6 +268,5 @@ HostFxrResolver::GetAbsolutePathToDotnetFromHostfxr(const fs::path& hostfxrPath)
 BOOL
 HostFxrResolver::IsDotnetExecutable(const std::filesystem::path& dotnetPath)
 {
-    // TODO this probably should check the path is dotnet for program files.
     return ends_with(dotnetPath, L"dotnet.exe", true);
 }

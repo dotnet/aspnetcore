@@ -27,8 +27,6 @@
     <DefineConstants>$(DefineConstants);Cabinet=$(Cabinet)</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="ResolveReferences.targets" />
-
   <PropertyGroup>
     <Culture Condition=" '$(Culture)' == '' ">en-US</Culture>
     <Cultures Condition=" '$(Cultures)' == '' ">$(Culture)</Cultures>
