@@ -10,17 +10,17 @@ using Xunit.Sdk;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
-    public class ForwardsCompatibilityTests : FixtureLoggedTest
+    public class NewShimTests : FixtureLoggedTest
     {
         private readonly IISTestSiteFixture _fixture;
 
-        public ForwardsCompatibilityTests(IISTestSiteFixture fixture) : base(fixture)
+        public NewShimTests(IISTestSiteFixture fixture) : base(fixture)
         {
             _fixture = fixture;
         }
 
         [ConditionalFact]
-        public async Task CheckForwardsCompatibilityIsUsed()
+        public async Task CheckNewShimIsUsed()
         {
             var response = await _fixture.Client.GetAsync("/HelloWorld");
             var handles = _fixture.DeploymentResult.HostProcess.Modules;

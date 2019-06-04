@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <TestGroupName>IISForwardsCompatibility.FunctionalTests</TestGroupName>
+    <TestGroupName>IISNewShim.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
-    <SkipTests Condition=" '$(SkipIISForwardsCompatibilityTests)' == 'true' ">true</SkipTests>
+    <SkipTests Condition=" '$(SkipIISNewShimTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
