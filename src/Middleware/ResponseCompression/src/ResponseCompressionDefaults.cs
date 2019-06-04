@@ -12,6 +12,15 @@ namespace Microsoft.AspNetCore.ResponseCompression
     {
         /// <summary>
         /// Default MIME types to compress responses for.
+        /// text/plain
+        /// text/css
+        /// application/javascript
+        /// text/html
+        /// application/xml
+        /// text/xml
+        /// application/json
+        /// text/json
+        /// application/wasm
         /// </summary>
         // This list is not intended to be exhaustive, it's a baseline for the 90% case.
         public static readonly IEnumerable<string> MimeTypes = new[]
