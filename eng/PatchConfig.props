@@ -35,5 +35,10 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.SignalR.Redis;
     </PackagesInPatch>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(VersionPrefix)' == '2.1.12' ">
+    <PackagesInPatch>
+      Microsoft.AspNetCore.Mvc.Core;
+    </PackagesInPatch>
+  </PropertyGroup>
 
 </Project>
