@@ -11,6 +11,12 @@
     </GenerateOpenApiCodeDependsOn>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)OpenApiItemsSchema.xaml">
+      <Context>File;BrowseObject</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
   <!-- OpenApiProjectReference support. -->
 
   <ItemGroup Condition=" '$(OpenApiBuildReferencedProjects)' == 'true' ">
