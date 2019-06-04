@@ -58,9 +58,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var authorizeFilters = action.Filters.OfType<AuthorizeFilter>();
             Assert.Single(authorizeFilters);
 
-            Assert.Null(authorizeFilters.First().Policy);
-            Assert.NotNull(authorizeFilters.First().PolicyProvider);
-            Assert.NotNull(authorizeFilters.First().AuthorizeData);
+            Assert.NotNull(authorizeFilters.First().Policy);
+            Assert.Null(authorizeFilters.First().PolicyProvider);
+            Assert.Null(authorizeFilters.First().AuthorizeData);
         }
 
         [Fact]
@@ -101,9 +101,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             var authorizationFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(action.Filters));
-            Assert.Null(authorizationFilter.Policy);
-            Assert.NotNull(authorizationFilter.AuthorizeData);
-            Assert.NotNull(authorizationFilter.PolicyProvider);
+            Assert.NotNull(authorizationFilter.Policy);
+            Assert.Null(authorizationFilter.AuthorizeData);
+            Assert.Null(authorizationFilter.PolicyProvider);
         }
 
         [Fact]
