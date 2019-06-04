@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void ReadCaseInsensitivePropertiesByDefault()
         {
-            var input = Frame("{\"type\":2,\"invocationId\":\"123\",\"item\":{\"StrIngProp\":\"SignalR!\",\"DoublePrOp\":6.2831853071,\"IntProp\":43,\"DateTimeProp\":\"2017-04-11T00:00:00Z\",\"NuLLProp\":null,\"ByteARRProp\":[1,2,3]}}");
+            var input = Frame("{\"type\":2,\"invocationId\":\"123\",\"item\":{\"StrIngProp\":\"test\",\"DoublePrOp\":3.14159,\"IntProp\":43,\"DateTimeProp\":\"2019-06-03T22:00:00\",\"NuLLProp\":null,\"ByteARRProp\":[2,4,6]}}");
 
             var binder = new TestBinder(null, typeof(TemporaryCustomObject));
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
@@ -113,8 +113,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var streamItemMessage = Assert.IsType<StreamItemMessage>(message);
             Assert.Equal(new TemporaryCustomObject()
             {
-                ByteArrProp = new byte[] { 1, 2, 3 },
-                IntProp = 43
+                ByteArrProp = new byte[] { 2, 4, 6 },
+                IntProp = 43,
+                DoubleProp = 3.14159,
+                StringProp = "test",
+                DateTimeProp = DateTime.Parse("6/3/2019 10:00:00 PM")
             }, streamItemMessage.Item);
         }
 
