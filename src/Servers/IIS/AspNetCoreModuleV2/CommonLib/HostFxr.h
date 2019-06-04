@@ -84,7 +84,7 @@ public:
 
     HostFxrErrorRedirector RedirectOutput(RedirectionOutput* writer) const noexcept;
     int SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept;
-    int InitializeForApp(int argc, PCWSTR* argv, const std::wstring m_dotnetExeKnownLocation) const noexcept;
+    int InitializeForApp(int argc, PCWSTR* argv, const std::wstring& m_dotnetExeKnownLocation) const noexcept;
     void Close() const noexcept;
 
 private:
