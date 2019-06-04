@@ -32,15 +32,16 @@
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)" />
+      DestinationFolder="$(PublishDir)"
+      ContinueOnError="true" />
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
-    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" Condition="!Exists('$(PublishDir)\Identity.DefaultUI.WebSite\Pages')" />
-    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" Condition="!Exists('$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot')" />
+    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" Condition="!Exists('$(PublishDir)\Identity.DefaultUI.WebSite\Pages')" ContinueOnError="true" />
+    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" Condition="!Exists('$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot')" ContinueOnError="true" />
   </Target>
 
 </Project>
