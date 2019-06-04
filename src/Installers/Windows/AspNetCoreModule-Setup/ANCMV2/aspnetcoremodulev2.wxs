@@ -26,12 +26,12 @@
 
 <?if $(var.Platform) = "x64" ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2.TargetPath)" ?>
-    <?define AspNetCoreV2NetHost = "$(var.NetHost64bit)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2Handler.TargetPath)" ?>
+    <?define AspNetCoreV2NetHost = "$(var.NetHost64bit)" ?>
 <?else ?>
     <?define AspNetCoreV2ProgramFilesTargetPath = "$(var.AspNetCoreV2WoW64.TargetPath)" ?>
-    <?define AspNetCoreV2NetHost = "$(var.NetHost32bit)" ?>
     <?define AspNetCoreV2HandlerProgramFilesTargetPath = "$(var.AspNetCoreV2HandlerWoW64.TargetPath)" ?>
+    <?define AspNetCoreV2NetHost = "$(var.NetHost32bit)" ?>
 <?endif ?>
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi" xmlns:dep="http://schemas.microsoft.com/wix/DependencyExtension">
@@ -146,7 +146,7 @@
                <Directory Id="IISModuleDirectory" Name="IIS">
                    <Directory Id="INSTALLLOCATION" ShortName="ANCM" Name="Asp.Net Core Module">
                        <Directory Id="VersionDir" Name="$(var.ProductVersionString)">
-                           <Component Id="AspNetCoreModuleV2" Guid="3a692941-59be-43cf-98a8-6ed01b12a519" Win64="$(var.IsWin64)">
+                            <Component Id="AspNetCoreModuleV2" Guid="3a692941-59be-43cf-98a8-6ed01b12a519" Win64="$(var.IsWin64)">
                                 <File Id="AspNetCoreModuleV2Dll"
                                     Name="aspnetcorev2.dll"
                                     Source="$(var.AspNetCoreV2ProgramFilesTargetPath)"
@@ -158,6 +158,16 @@
                                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleV2Dll]"/>
                                    <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
                                </RegistryKey>
+                            </Component>
+
+                            <Component Id="AspNetCoreModuleV2NetHost" Guid="f86c7a76-a437-4059-9962-c1de6267e961" Win64="$(var.IsWin64)">
+                                <File Id="AspNetCoreModuleV2NetHostDll"
+                                    Name="nethost.dll"
+                                    Source="$(var.AspNetCoreV2NetHost)"
+                                    DiskId="1"
+                                    Vital="yes">
+                                </File>
+                               <RemoveFile Id="AspNetCoreModuleV2NetHostDll_Remove" Name="nethost.dll" On="install" />
                            </Component>
                            <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)" >
                                <Component Id="AspNetCoreModuleHandler" Guid="4b62060a-deb8-4de3-9557-9c0be21dc844" Win64="$(var.IsWin64)">
@@ -202,6 +212,16 @@
                                     <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
                                 </RegistryKey>
                             </Component>
+
+                            <Component Id="AspNetCoreModuleV2NetHost.wow" Guid="564a522e-c9cc-4f47-b641-9bbb7797fc36" Win64="no">
+                                <File Id="AspNetCoreModuleV2NetHostDll.wow"
+                                    Name="nethost.dll"
+                                    Source="$(var.NetHost32bit)"
+                                    DiskId="1"
+                                    Vital="yes">
+                                </File>
+                                <RemoveFile Id="AspNetCoreModuleV2NetHostDll.wow_Remove" Name="nethost.dll" On="install" />
+                            </Component>
                             <Directory Id="HandlerVersionDir32" Name="$(var.ANCMFolderVersion)" SourceName="WowOnly">
                                 <Component Id="AspNetCoreModuleHandler.wow" Guid="d927e5d3-c8b2-400c-b85c-ae5c2772d6c3" Win64="no">
                                     <File Id="AspNetCoreModuleHandlerDll.wow"
@@ -223,11 +243,13 @@
         <Feature Id="AspNetCoreModuleFeature" Title="!(loc.AspNetCoreModuleProductTitle)" Description="!(loc.AspNetCoreModuleProductDescription)" Level="1">
             <ComponentRef Id="C_DiscoverabilityKey"/>
             <ComponentRef Id="AspNetCoreModuleV2"/>
+            <ComponentRef Id="AspNetCoreModuleV2NetHost"/>
             <ComponentRef Id="AspNetCoreModuleHandler"/>
             <ComponentRef Id="AspNetCoreSchemaV2"/>
             <?if $(var.Platform) = "x64" ?>
             <ComponentRef Id="C_DiscoverabilityKeyWow"/>
             <ComponentRef Id="AspNetCoreModuleV2.wow"/>
+            <ComponentRef Id="AspNetCoreModuleV2NetHost.wow"/>
             <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
             <?endif ?>
         </Feature>

@@ -179,17 +179,13 @@
                 <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
               </RegistryKey>
             </Component>
-            <Component Id="AspNetCoreModule" Guid="84ed6ce6-c8a3-4fa8-a872-c98a1d15dd4f" Win64="$(var.IsWin64)">
-                <File Id="AspNetCoreModuleDll"
-                    Name="aspnetcorev2.dll"
-                    Source="$(var.AspNetCoreV2ProgramFilesTargetPath)"
+            <Component Id="AspNetCoreModuleNetHost" Guid="2aa57b03-f4aa-4ed2-a3c1-4992507b299f" Win64="$(var.IsWin64)">
+                <File Id="AspNetCoreModuleNetHostDll"
+                    Name="nethost.dll"
+                    Source="$(var.AspNetCoreV2NetHost)"
                     DiskId="1"
                     Vital="yes">
                 </File>
-              <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
-                <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll]"/>
-                <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
-              </RegistryKey>
             </Component>
             <Directory Id="HandlerVersionDir" Name="$(var.ANCMFolderVersion)" >
               <Component Id="AspNetCoreModuleHandler" Guid="559EF726-B25C-480F-AFA4-32D0BA8B2376" Win64="$(var.IsWin64)">
@@ -229,16 +225,18 @@
                         DiskId="1"
                         Vital="yes">
                   </File>
-                    <File Id="AspNetCoreModuleNetHostDll.wow"
+                  <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll.wow]"/>
+                    <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
+                  </RegistryKey>
+                </Component>
+                 <Component Id="AspNetCoreModuleNetHost.wow" Guid="877bc07b-1422-464f-b71c-8c1569bc0f54" Win64="no">
+                  <File Id="AspNetCoreModuleNetHostDll.wow"
                         Name="nethost.dll"
                         Source="$(var.NetHost32bit)"
                         DiskId="1"
                         Vital="yes">
                   </File>
-                  <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
-                    <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll.wow]"/>
-                    <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
-                  </RegistryKey>
                 </Component>
                 <Directory Id="HandlerVersionDir32" Name="$(var.ANCMFolderVersion)" >
                   <Component Id="AspNetCoreModuleHandler.wow" Guid="0A8EDB50-7D85-4825-8010-D27EFAF061B6" Win64="no">
@@ -271,10 +269,12 @@
         <!-- Feature Definition -->
         <Feature Id="AspNetCoreModuleFeature" Title="!(loc.AspNetCoreModuleProductTitle)" Description="!(loc.AspNetCoreModuleProductDescription)" Level="1">
             <ComponentRef Id="AspNetCoreModule"/>
+            <ComponentRef Id="AspNetCoreModuleNetHost"/>
             <ComponentRef Id="AspNetCoreModuleHandler"/>
             <ComponentRef Id="AspNetCoreSchema"/>
             <?if $(var.Platform) = "x64" ?>
                 <ComponentRef Id="AspNetCoreModule.wow"/>
+                <ComponentRef Id="AspNetCoreModuleNetHost.wow"/>
                 <ComponentRef Id="AspNetCoreModuleHandler.wow"/>
                 <ComponentRef Id="AspNetCoreSchema.wow"/>
             <?endif ?>
