@@ -87,11 +87,14 @@ HostFxrResolver::GetHostFxrParameters(
                     arguments,
                     true);
 
+                // argument[0] will contain the dll path.
                 get_host_fxr_path(hostfxrPath.data(), &size, arguments[0].c_str());
 
                 hostfxrPath.resize(size);
                 hostFxrDllPath = hostfxrPath;
                 dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
+
+                arguments.insert(arguments.begin(), dotnetExePath);
             }
             else
             {
@@ -99,8 +102,15 @@ HostFxrResolver::GetHostFxrParameters(
                 throw InvalidOperationException(L"Must have hostfxr loaded in shim or have nethost.dll next to app.");
             }
         }
-       
-        arguments.insert(arguments.begin(), dotnetExePath);
+        else
+        {
+            arguments.push_back(dotnetExePath);
+            AppendArguments(
+                expandedApplicationArguments,
+                applicationPhysicalPath,
+                arguments,
+                true);
+        }
     }
     else
     {
@@ -149,17 +159,17 @@ HostFxrResolver::GetHostFxrParameters(
                 {
                     if (moduleHandle != nullptr)
                     {
-                        auto getHostfxrPath = ModuleHelpers::GetKnownProcAddress<get_hostfxr_path>(moduleHandle, "get_hostfxr_path");
+                        auto get_host_fxr_path = ModuleHelpers::GetKnownProcAddress<get_hostfxr_path>(moduleHandle, "get_hostfxr_path");
 
                         LOG_INFOF(L"hostfxr.dll found app local at '%ls', treating application as portable with launcher", hostFxrDllPath.c_str());
-                        std::wstring test;
-                        size_t size = 500;
-                        test.resize(size);
 
-                        getHostfxrPath(test.data(), &size, applicationDllPath.c_str());
+                        std::wstring hostfxrPath;
+                        size_t size = MAX_PATH * 2;
+                        hostfxrPath.resize(size);
 
-                        test.resize(size); // todo maybe +1 for nullchar
-                        hostFxrDllPath = test;
+                        get_host_fxr_path(hostfxrPath.data(), &size, applicationDllPath.c_str());
+                        hostfxrPath.resize(size);
+                        hostFxrDllPath = hostfxrPath;
 
                         dotnetExePath = GetAbsolutePathToDotnetFromHostfxr(hostFxrDllPath);
                     }
