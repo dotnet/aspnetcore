@@ -1,5 +1,5 @@
 ZipManifestGenerator
----------
+--------------------
 
 This console app is used to generate the list of files in a zip archive.
 
@@ -13,13 +13,10 @@ Usage: <ZIP> <OUTPUT>
 Example: dotnet run ./archive.zip files.txt
 ```
 
-## Example for servicing updates
+## Servicing updates
 
-To generate a new manifest for the incremental CI server package caches, you would run
+For convenience, this folder contains [./UpdateBaselines.ps1](./UpdateBaselines.ps1) to update
+the baselines from the last patch release.
 
-```ps1
-./GenerateBaselinesForLastPatch.ps1
-```
-
-This script is going to read the build manifests from https://github.com/dotnet/versions/tree/master/build-info/dotnet/product/cli/release and
-invoke the manifest generator for the last patch.
+Using version.props to figure out the last version, this script reads the build manifests from https://github.com/dotnet/versions/tree/master/build-info/dotnet/product/cli/release and
+invokes the manifest generator
