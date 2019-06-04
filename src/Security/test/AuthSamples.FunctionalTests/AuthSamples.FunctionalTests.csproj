@@ -54,11 +54,11 @@
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
-    <MakeDir Directories="$(PublishDir)\ClaimsTransformation\wwwroot" />
-    <MakeDir Directories="$(PublishDir)\Cookies\wwwroot" />
-    <MakeDir Directories="$(PublishDir)\DynamicSchemes\wwwroot" />
-    <MakeDir Directories="$(PublishDir)\Identity.ExternalClaims\wwwroot" />
-    <MakeDir Directories="$(PublishDir)\PathSchemeSelection\wwwroot" />
+    <MakeDir Directories="$(PublishDir)\ClaimsTransformation\wwwroot" Condition="!Exists('$(PublishDir)\ClaimsTransformation\wwwroot')" />
+    <MakeDir Directories="$(PublishDir)\Cookies\wwwroot" Condition="!Exists('$(PublishDir)\Cookies\wwwroot')" />
+    <MakeDir Directories="$(PublishDir)\DynamicSchemes\wwwroot" Condition="!Exists('$(PublishDir)\DynamicSchemes\wwwroot')" />
+    <MakeDir Directories="$(PublishDir)\Identity.ExternalClaims\wwwroot" Condition="!Exists('$(PublishDir)\Identity.ExternalClaims\wwwroot')" />
+    <MakeDir Directories="$(PublishDir)\PathSchemeSelection\wwwroot" Condition="!Exists('$(PublishDir)\PathSchemeSelection\wwwroot')" />
     <Copy
       SourceFiles="@(_customProviderFiles)"
       DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" 
