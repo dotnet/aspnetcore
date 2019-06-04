@@ -15,6 +15,7 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -30,8 +31,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     public class OpenIdConnectHandler : RemoteAuthenticationHandler<OpenIdConnectOptions>, IAuthenticationSignOutHandler
     {
         private const string NonceProperty = "N";
-
         private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
+        private const string CodeVerifierKey = "code_verifier";
+        private const string CodeChallengeKey = "code_challenge";
+        private const string CodeChallengeMethodKey = "code_challenge_method";
+        private const string CodeChallengeMethodS256 = "S256";
 
         private static readonly RandomNumberGenerator CryptoRandom = RandomNumberGenerator.Create();
 
@@ -365,6 +369,24 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Prompt = properties.GetParameter<string>(OpenIdConnectParameterNames.Prompt) ?? Options.Prompt,
                 Scope = string.Join(" ", properties.GetParameter<ICollection<string>>(OpenIdConnectParameterNames.Scope) ?? Options.Scope),
             };
+
+            // https://tools.ietf.org/html/rfc7636
+            if (Options.UsePkse)
+            {
+                var verifierBytes = new byte[32];
+                CryptoRandom.GetBytes(verifierBytes);
+                var codeVerifier = WebEncoders.Base64UrlEncode(verifierBytes);
+
+                // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
+                properties.Items.Add(CodeVerifierKey, codeVerifier);
+
+                using var sha256 = SHA256.Create();
+                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
+
+                message.Parameters.Add(CodeChallengeKey, codeChallenge);
+                message.Parameters.Add(CodeChallengeMethodKey, CodeChallengeMethodS256);
+            }
 
             // Add the 'max_age' parameter to the authentication request if MaxAge is not null.
             // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
@@ -1096,6 +1118,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 EnableTelemetryParameters = !Options.DisableTelemetry,
                 RedirectUri = properties.Items[OpenIdConnectDefaults.RedirectUriForCodePropertiesKey]
             };
+
+            // PKCE https://tools.ietf.org/html/rfc7636#section-4.5, see HandleChallengeAsyncInternal
+            if (properties.Items.TryGetValue(CodeVerifierKey, out var codeVerifier))
+            {
+                tokenEndpointRequest.Parameters.Add(CodeVerifierKey, codeVerifier);
+            }
 
             var context = new AuthorizationCodeReceivedContext(Context, Scheme, Options, properties)
             {
