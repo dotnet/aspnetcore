@@ -8,6 +8,12 @@ a {
     color: #0366d6;
 }
 
+.btn-primary {
+  color: #fff;
+  background-color: #1b6ec2;
+  border-color: #1861ac;
+}
+
 app {
     position: relative;
     display: flex;
@@ -24,66 +30,66 @@ app {
     flex: 1;
 }
 
-    .main .top-row {
-        background-color: #e6e6e6;
-        border-bottom: 1px solid #d6d5d5;
-        justify-content: flex-end;
-    }
+.main .top-row {
+    background-color: #f7f7f7;
+    border-bottom: 1px solid #d6d5d5;
+    justify-content: flex-end;
+}
 
-        .main .top-row > a {
-            margin-left: 1.5rem;
-        }
+.main .top-row > a {
+    margin-left: 1.5rem;
+}
 
 .sidebar {
     background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
 }
 
-    .sidebar .top-row {
-        background-color: rgba(0,0,0,0.4);
-    }
+.sidebar .top-row {
+    background-color: rgba(0,0,0,0.4);
+}
 
-    .sidebar .navbar-brand {
-        font-size: 1.1rem;
-    }
+.sidebar .navbar-brand {
+    font-size: 1.1rem;
+}
 
-    .sidebar .oi {
-        width: 2rem;
-        font-size: 1.1rem;
-        vertical-align: text-top;
-        top: -2px;
-    }
+.sidebar .oi {
+    width: 2rem;
+    font-size: 1.1rem;
+    vertical-align: text-top;
+    top: -2px;
+}
 
 .nav-item {
     font-size: 0.9rem;
     padding-bottom: 0.5rem;
 }
 
-    .nav-item:first-of-type {
-        padding-top: 1rem;
-    }
+.nav-item:first-of-type {
+    padding-top: 1rem;
+}
 
-    .nav-item:last-of-type {
-        padding-bottom: 1rem;
-    }
+.nav-item:last-of-type {
+    padding-bottom: 1rem;
+}
 
-    .nav-item a {
-        color: #d7d7d7;
-        border-radius: 4px;
-        height: 3rem;
-        display: flex;
-        align-items: center;
-        line-height: 3rem;
-    }
+.nav-item a {
+    color: #d7d7d7;
+    border-radius: 4px;
+    height: 3rem;
+    display: flex;
+    align-items: center;
+    line-height: 3rem;
+}
 
-        .nav-item a.active {
-            background-color: rgba(255,255,255,0.25);
-            color: white;
-        }
+.nav-item a.active {
+    background-color: rgba(255,255,255,0.25);
+    color: white;
+}
 
-        .nav-item a:hover {
-            background-color: rgba(255,255,255,0.1);
-            color: white;
-        }
+.nav-item a:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+}
 
 .content {
     padding-top: 1.1rem;
