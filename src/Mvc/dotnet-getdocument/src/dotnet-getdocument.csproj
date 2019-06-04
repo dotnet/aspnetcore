@@ -2,6 +2,7 @@
   <PropertyGroup>
     <AssemblyName>dotnet-getdocument</AssemblyName>
     <Description>GetDocument Command-line Tool outside man</Description>
+    <HasReferenceAssembly>false</HasReferenceAssembly>
     <IsPackable>false</IsPackable>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
@@ -10,7 +11,6 @@
     <VerifyVersion>false</VerifyVersion>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
     <VersionSuffix>$(ExperimentalVersionSuffix)</VersionSuffix>
-    <IsImplementationProject>false</IsImplementationProject>
   </PropertyGroup>
 
   <ItemGroup>
