@@ -6,6 +6,10 @@
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
 
+  <ItemGroup>
+    <HelixProjectTargetQueue Include="OSX.1014.Amd64.Open" />
+  </ItemGroup>
+
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
 
   <ItemGroup>
