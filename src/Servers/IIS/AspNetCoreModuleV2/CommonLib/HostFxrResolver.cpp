@@ -21,7 +21,8 @@ HostFxrResolver::GetHostFxrParameters(
     const std::wstring &applicationArguments,
     fs::path           &hostFxrDllPath,
     fs::path           &dotnetExePath,
-    std::vector<std::wstring> &arguments
+    std::vector<std::wstring> &arguments,
+    ErrorContext&      errorContext
 )
 {
     LOG_INFOF(L"Resolving hostfxr parameters for application: '%ls' arguments: '%ls' path: '%ls'",
@@ -93,7 +94,12 @@ HostFxrResolver::GetHostFxrParameters(
             LOG_INFOF(L"Checking application.dll at '%ls'", applicationDllPath.c_str());
             if (!is_regular_file(applicationDllPath))
             {
-                throw InvalidOperationException(format(L"Application .dll was not found at %s", applicationDllPath.c_str()));
+                errorContext.subStatusCode = 38;
+                errorContext.errorReason = "Application Dll not found. Confirm the application dll is present and is not published as a single executable.";
+                errorContext.generalErrorType = "ANCM Application Dll Not Found";
+                throw InvalidOperationException(
+                    format(L"Application .dll was not found at %s. Confirm the application dll is present and is not published as a single executable.",
+                        applicationDllPath.c_str()));
             }
 
             hostFxrDllPath = executablePath.parent_path() / "hostfxr.dll";

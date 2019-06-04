@@ -196,6 +196,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ErrorContext.h" />
     <ClInclude Include="PollingAppOfflineApplication.h" />
     <ClInclude Include="application.h" />
     <ClInclude Include="BindingInformation.h" />
