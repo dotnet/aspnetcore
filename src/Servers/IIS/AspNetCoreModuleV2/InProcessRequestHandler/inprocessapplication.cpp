@@ -241,23 +241,20 @@ IN_PROCESS_APPLICATION::ExecuteApplication()
             LOG_INFOF(L"Setting current directory to %s", this->QueryApplicationPhysicalPath().c_str());
         }
 
-        hostfxr_initialize_parameters params;
-        params.size = sizeof(hostfxr_initialize_parameters);
-        auto folderPath = m_dotnetExeKnownLocation.substr(0, m_dotnetExeKnownLocation.size() - 10);
-        params.dotnet_root = folderPath.c_str();
-        params.host_path = L"";
-
         // TODO This is horrible for now...
-        auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation, m_pConfig->QueryCallStartupHook());
+        auto startupReturnCode = context->m_hostFxr.InitializeForApp(context->m_argc, context->m_argv.get(), m_dotnetExeKnownLocation);
         if (startupReturnCode != 0)
         {
             throw InvalidOperationException(format(L"Error occured when initializing inprocess application, Return code: 0x%x", startupReturnCode));
         }
-        // TODO make these configurable via handler settings
-        value = context->m_hostFxr.SetRuntimePropertyValue(L"STARTUP_HOOKS", ASPNETCORE_STARTUP_ASSEMBLY);
-        value = context->m_hostFxr.SetRuntimePropertyValue(L"USE_ENTRYPOINT_FILTER", L"1");
 
-        LOG_LAST_ERROR_IF(!SetEnvironmentVariable(L"COMPlus_DefaultStackSize", m_pConfig->QueryStackSize().c_str()));
+        if (m_pConfig->QueryCallStartupHook())
+        {
+            RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
+        }
+
+        RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
+        RETURN_IF_NOT_ZERO(context->m_hostFxr.SetRuntimePropertyValue(L"DefaultStackSize", m_pConfig->QueryStackSize().c_str()));
 
         bool clrThreadExited;
         {
@@ -434,6 +431,7 @@ IN_PROCESS_APPLICATION::ExecuteClr(const std::shared_ptr<ExecuteClrContext>& con
         LOG_INFOF(L"Managed application exited with code %d", exitCode);
 
         context->m_exitCode = exitCode;
+        context->m_hostFxr.Close();
     }
     __except(GetExceptionCode() != 0)
     {

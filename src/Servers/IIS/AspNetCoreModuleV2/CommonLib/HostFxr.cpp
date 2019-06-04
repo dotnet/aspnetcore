@@ -44,7 +44,7 @@ void HostFxr::Load(HMODULE moduleHandle)
     {
         m_hostfxr_get_native_search_directories_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_get_native_search_directories_fn>(moduleHandle, "hostfxr_get_native_search_directories");
         m_corehost_set_error_writer_fn = ModuleHelpers::GetKnownProcAddress<corehost_set_error_writer_fn>(moduleHandle, "hostfxr_set_error_writer", /* optional */ true);
-        m_hostfxr_initialize_for_app_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_initialize_for_app_fn>(moduleHandle, "hostfxr_initialize_for_app", /* optional */ true);
+        m_hostfxr_initialize_for_dotnet_commandline_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_initialize_for_dotnet_runtime_fn>(moduleHandle, "hostfxr_initialize_for_dotnet_command_line", /* optional */ true);
         m_hostfxr_set_runtime_property_value_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_set_runtime_property_value_fn>(moduleHandle, "hostfxr_set_runtime_property_value", /* optional */ true);
         m_hostfxr_run_app_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_run_app_fn>(moduleHandle, "hostfxr_run_app", /* optional */ true);
         m_hostfxr_close_fn = ModuleHelpers::GetKnownProcAddress<hostfxr_close_fn>(moduleHandle, "hostfxr_close", /* optional */ true);
@@ -108,9 +108,9 @@ HostFxrErrorRedirector HostFxr::RedirectOutput(RedirectionOutput* writer) const 
     return HostFxrErrorRedirector(m_corehost_set_error_writer_fn, writer);
 }
 
-int HostFxr::InitializeForApp(int argc, const PCWSTR* argv, const std::wstring dotnetExe, bool callStartupHook) const noexcept
+int HostFxr::InitializeForApp(int argc, PCWSTR* argv, const std::wstring dotnetExe) const noexcept
 {
-    if (m_hostfxr_initialize_for_app_fn == nullptr)
+    if (m_hostfxr_initialize_for_dotnet_commandline_fn == nullptr)
     {
         return 0;
     }
@@ -119,32 +119,33 @@ int HostFxr::InitializeForApp(int argc, const PCWSTR* argv, const std::wstring d
     params.size = sizeof(hostfxr_initialize_parameters);
     params.host_path = L"";
 
+    // Transformation occurs here rather than hostfxr arguments as hostfxr_get_native_directories still needs
+    // exe as the first argument.
     if (!dotnetExe.empty())
     {
-        std::filesystem::path dotnetExePath(dotnetExe);
+        // Portable application
+        // argv[0] = dotnet.exe
+        // argv[1] = app.dll
+        // argv[2] = rest of the args
 
+        std::filesystem::path dotnetExePath(dotnetExe);
         auto dotnetFolderPath = dotnetExePath.parent_path();
         params.dotnet_root = dotnetFolderPath.c_str();
-        RETURN_IF_NOT_ZERO(m_hostfxr_initialize_for_app_fn(argc - 1, &argv[1], nullptr, &params, &m_host_context_handle));
 
+        RETURN_INT_IF_NOT_ZERO(m_hostfxr_initialize_for_dotnet_commandline_fn(argc - 1, &argv[1], &params, &m_host_context_handle));
     }
     else
     {
+        // Standalone application
+        // argv[0] = app.exe
+        // argv[1] = rest of the args
         params.dotnet_root = L"";
-
-        // Initialize_for_app doesn't work with an exe name
-        std::filesystem::path applicationPath(argv[0]);
+        std::filesystem::path applicationPath(argv[0]); 
         applicationPath.replace_extension(".dll");
+        argv[0] = applicationPath.c_str();
 
-        RETURN_IF_NOT_ZERO(m_hostfxr_initialize_for_app_fn(argc - 1, &argv[1], applicationPath.c_str(), &params, &m_host_context_handle));
+        RETURN_INT_IF_NOT_ZERO(m_hostfxr_initialize_for_dotnet_commandline_fn(argc, argv, &params, &m_host_context_handle));
     }
-
-    if (callStartupHook)
-    {
-        RETURN_IF_NOT_ZERO(SetRuntimePropertyValue(DOTNETCORE_STARTUP_HOOK, ASPNETCORE_STARTUP_ASSEMBLY));
-    }
-
-    RETURN_IF_NOT_ZERO(SetRuntimePropertyValue(DOTNETCORE_USE_ENTRYPOINT_FILTER, L"1"));
 
     return 0;
 }

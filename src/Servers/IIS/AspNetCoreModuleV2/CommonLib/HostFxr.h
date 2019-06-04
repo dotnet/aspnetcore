@@ -22,7 +22,7 @@ typedef INT(*hostfxr_get_native_search_directories_fn) (INT argc, CONST PCWSTR* 
 typedef INT(*hostfxr_main_fn) (DWORD argc, CONST PCWSTR argv[]);
 typedef void(*corehost_error_writer_fn) (const WCHAR* message);
 typedef corehost_error_writer_fn(*corehost_set_error_writer_fn) (corehost_error_writer_fn error_writer);
-typedef int(*hostfxr_initialize_for_app_fn)(int argc, const PCWSTR* argv, PCWSTR app_path, hostfxr_initialize_parameters* parameters, void* const* host_context_handle);
+typedef int(*hostfxr_initialize_for_dotnet_runtime_fn)(int argc, const PCWSTR* argv, hostfxr_initialize_parameters* parameters, void* const* host_context_handle);
 typedef int(*hostfxr_set_runtime_property_value_fn)(void* host_context_handle, PCWSTR name, PCWSTR value);
 typedef int(*hostfxr_run_app_fn)(void* host_context_handle);
 typedef int(*hostfxr_close_fn)(void* hostfxr_context_handle);
@@ -83,14 +83,14 @@ public:
 
     HostFxrErrorRedirector RedirectOutput(RedirectionOutput* writer) const noexcept;
     int SetRuntimePropertyValue(PCWSTR name, PCWSTR value) const noexcept;
-    int InitializeForApp(int argc, const PCWSTR* argv, const std::wstring m_dotnetExeKnownLocation, bool callStartupHook) const noexcept;
+    int InitializeForApp(int argc, PCWSTR* argv, const std::wstring m_dotnetExeKnownLocation) const noexcept;
     void Close() const noexcept;
 
 private:
     HandleWrapper<ModuleHandleTraits> m_hHostFxrDll;
     hostfxr_main_fn m_hostfxr_main_fn;
     hostfxr_get_native_search_directories_fn m_hostfxr_get_native_search_directories_fn;
-    hostfxr_initialize_for_app_fn m_hostfxr_initialize_for_app_fn;
+    hostfxr_initialize_for_dotnet_runtime_fn m_hostfxr_initialize_for_dotnet_commandline_fn;
     hostfxr_set_runtime_property_value_fn m_hostfxr_set_runtime_property_value_fn;
     hostfxr_run_app_fn m_hostfxr_run_app_fn;
     corehost_set_error_writer_fn m_corehost_set_error_writer_fn;
