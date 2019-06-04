@@ -811,6 +811,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         [Fact]
         [Flaky("https://github.com/dotnet/corefx/issues/30691", FlakyOn.AzP.Windows)]
+        [CollectDump]
         public async Task ConnectionNotClosedWhenClientSatisfiesMinimumDataRateGivenLargeResponseHeaders()
         {
             var headerSize = 1024 * 1024; // 1 MB for each header value
