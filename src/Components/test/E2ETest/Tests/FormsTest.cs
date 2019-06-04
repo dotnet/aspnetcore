@@ -12,6 +12,7 @@ using OpenQA.Selenium;
 using OpenQA.Selenium.Support.UI;
 using System;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
@@ -38,10 +39,14 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
         public async Task EditFormWorksWithDataAnnotationsValidator()
         {
             var appElement = MountTestComponent<SimpleValidationComponent>();
+            var form = appElement.FindElement(By.TagName("form"));
             var userNameInput = appElement.FindElement(By.ClassName("user-name")).FindElement(By.TagName("input"));
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
             var submitButton = appElement.FindElement(By.TagName("button"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // The form emits unmatched attributes
+            Browser.Equal("off", () => form.GetAttribute("autocomplete"));
 
             // Editing a field doesn't trigger validation on its own
             userNameInput.SendKeys("Bert\t");
@@ -77,6 +82,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var nameInput = appElement.FindElement(By.ClassName("name")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
+            // InputText emits unmatched attributes
+            Browser.Equal("Enter your name", () => nameInput.GetAttribute("placeholder"));
+
             // Validates on edit
             Browser.Equal("valid", () => nameInput.GetAttribute("class"));
             nameInput.SendKeys("Bert\t");
@@ -100,6 +108,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountTestComponent<TypicalValidationComponent>();
             var ageInput = appElement.FindElement(By.ClassName("age")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // InputNumber emits unmatched attributes
+            Browser.Equal("Enter your age", () => ageInput.GetAttribute("placeholder"));
 
             // Validates on edit
             Browser.Equal("valid", () => ageInput.GetAttribute("class"));
@@ -154,6 +165,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var descriptionInput = appElement.FindElement(By.ClassName("description")).FindElement(By.TagName("textarea"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
+            // InputTextArea emits unmatched attributes
+            Browser.Equal("Tell us about yourself", () => descriptionInput.GetAttribute("placeholder"));
+
             // Validates on edit
             Browser.Equal("valid", () => descriptionInput.GetAttribute("class"));
             descriptionInput.SendKeys("Hello\t");
@@ -177,6 +191,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var appElement = MountTestComponent<TypicalValidationComponent>();
             var renewalDateInput = appElement.FindElement(By.ClassName("renewal-date")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // InputDate emits unmatched attributes
+            Browser.Equal("Enter the date", () => renewalDateInput.GetAttribute("placeholder"));
 
             // Validates on edit
             Browser.Equal("valid", () => renewalDateInput.GetAttribute("class"));
@@ -232,6 +249,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var select = ticketClassInput.WrappedElement;
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
 
+            // InputSelect emits unmatched attributes
+            Browser.Equal("4", () => select.GetAttribute("size"));
+
             // Validates on edit
             Browser.Equal("valid", () => select.GetAttribute("class"));
             ticketClassInput.SelectByText("First class");
@@ -250,6 +270,9 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             var acceptsTermsInput = appElement.FindElement(By.ClassName("accepts-terms")).FindElement(By.TagName("input"));
             var isEvilInput = appElement.FindElement(By.ClassName("is-evil")).FindElement(By.TagName("input"));
             var messagesAccessor = CreateValidationMessagesAccessor(appElement);
+
+            // InputCheckbox emits unmatched attributes
+            Browser.Equal("You have to check this", () => acceptsTermsInput.GetAttribute("title"));
 
             // Correct initial checkedness
             Assert.False(acceptsTermsInput.Selected);

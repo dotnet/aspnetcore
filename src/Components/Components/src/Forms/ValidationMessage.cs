@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components.RenderTree;
 
@@ -16,6 +17,11 @@ namespace Microsoft.AspNetCore.Components.Forms
         private Expression<Func<T>> _previousFieldAccessor;
         private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
         private FieldIdentifier _fieldIdentifier;
+
+        /// <summary>
+        /// Gets or sets a collection of additional attributes that will be applied to the created <c>div</c> element.
+        /// </summary>
+        [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object> AdditionalAttributes { get; private set; }
 
         [CascadingParameter] EditContext CurrentEditContext { get; set; }
 
@@ -67,8 +73,9 @@ namespace Microsoft.AspNetCore.Components.Forms
             foreach (var message in CurrentEditContext.GetValidationMessages(_fieldIdentifier))
             {
                 builder.OpenElement(0, "div");
-                builder.AddAttribute(1, "class", "validation-message");
-                builder.AddContent(2, message);
+                builder.AddMultipleAttributes(1, AdditionalAttributes);
+                builder.AddAttribute(2, "class", "validation-message");
+                builder.AddContent(3, message);
                 builder.CloseElement();
             }
         }

@@ -59,8 +59,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{28899903-4A65-466C-B8C6-DA5A5CB5DF75}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{006042D1-A053-4788-8D58-AB08DBB2E668}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "..\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{962C2A87-DDA7-4D5E-861E-9042DA021F7D}"
 EndProject
 Global
@@ -169,10 +167,6 @@ Global
 		{28899903-4A65-466C-B8C6-DA5A5CB5DF75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{28899903-4A65-466C-B8C6-DA5A5CB5DF75}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{28899903-4A65-466C-B8C6-DA5A5CB5DF75}.Release|Any CPU.Build.0 = Release|Any CPU
-		{006042D1-A053-4788-8D58-AB08DBB2E668}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{006042D1-A053-4788-8D58-AB08DBB2E668}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{006042D1-A053-4788-8D58-AB08DBB2E668}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{006042D1-A053-4788-8D58-AB08DBB2E668}.Release|Any CPU.Build.0 = Release|Any CPU
 		{962C2A87-DDA7-4D5E-861E-9042DA021F7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{962C2A87-DDA7-4D5E-861E-9042DA021F7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{962C2A87-DDA7-4D5E-861E-9042DA021F7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -197,7 +191,6 @@ Global
 		{02741DAE-CF50-40C7-A717-1DC7182B737C} = {2A533A99-96D8-4A02-8990-BA8F94E70567}
 		{87D20FC7-94AF-4FCF-A25F-221D61A1E2D9} = {2A533A99-96D8-4A02-8990-BA8F94E70567}
 		{28899903-4A65-466C-B8C6-DA5A5CB5DF75} = {2A533A99-96D8-4A02-8990-BA8F94E70567}
-		{006042D1-A053-4788-8D58-AB08DBB2E668} = {2A533A99-96D8-4A02-8990-BA8F94E70567}
 		{962C2A87-DDA7-4D5E-861E-9042DA021F7D} = {2A533A99-96D8-4A02-8990-BA8F94E70567}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

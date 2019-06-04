@@ -33,8 +33,9 @@ namespace Microsoft.AspNetCore.Authentication
     }
     public partial class AuthenticationService : Microsoft.AspNetCore.Authentication.IAuthenticationService
     {
-        public AuthenticationService(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider schemes, Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider handlers, Microsoft.AspNetCore.Authentication.IClaimsTransformation transform) { }
+        public AuthenticationService(Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider schemes, Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider handlers, Microsoft.AspNetCore.Authentication.IClaimsTransformation transform, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authentication.AuthenticationOptions> options) { }
         public Microsoft.AspNetCore.Authentication.IAuthenticationHandlerProvider Handlers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
+        public Microsoft.AspNetCore.Authentication.AuthenticationOptions Options { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Authentication.IAuthenticationSchemeProvider Schemes { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Authentication.IClaimsTransformation Transform { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]

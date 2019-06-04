@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.Extensions.ApiDescription.Tasks
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     /// <summary>
     /// Utility methods to serialize and deserialize <see cref="ITaskItem"/> metadata.

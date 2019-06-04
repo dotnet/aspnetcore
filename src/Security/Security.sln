@@ -118,8 +118,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.Net.Http.Headers"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "..\Servers\Kestrel\Core\src\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{ADA1E8D3-C13C-4747-8B4D-F4278E7CDFEC}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "..\Servers\Kestrel\Transport.Abstractions\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{19F39424-5F0F-42BF-BE04-40B20398C255}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "..\Servers\Kestrel\Transport.Sockets\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{F59ECA2C-146A-4708-B2C4-296F452C1AF3}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Connections.Abstractions", "..\Servers\Connections.Abstractions\src\Microsoft.AspNetCore.Connections.Abstractions.csproj", "{54F2FA08-8E1C-4FC1-A5CF-51D742E29EF7}"
@@ -153,6 +151,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc", "..\Mvc\Mvc\src\Microsoft.AspNetCore.Mvc.csproj", "{27B5D7B5-75A6-4BE6-BD09-597044D06970}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Core", "..\Mvc\Mvc.Core\src\Microsoft.AspNetCore.Mvc.Core.csproj", "{553F8C79-13AF-4993-99C1-D70F2143AD8E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Certificate", "Certificate", "{4DF524BF-D9A9-46F2-882C-68C48FF5FF33}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Authentication.Certificate", "Authentication\Certificate\src\Microsoft.AspNetCore.Authentication.Certificate.csproj", "{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Certificate.Sample", "Authentication\Certificate\samples\Certificate.Sample\Certificate.Sample.csproj", "{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.HeaderPropagation", "..\Middleware\HeaderPropagation\ref\Microsoft.AspNetCore.HeaderPropagation.csproj", "{9F9CBDD0-C8B3-4E79-B2B3-9ADE4AE08AEA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -332,10 +337,6 @@ Global
 		{ADA1E8D3-C13C-4747-8B4D-F4278E7CDFEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ADA1E8D3-C13C-4747-8B4D-F4278E7CDFEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ADA1E8D3-C13C-4747-8B4D-F4278E7CDFEC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{19F39424-5F0F-42BF-BE04-40B20398C255}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{19F39424-5F0F-42BF-BE04-40B20398C255}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{19F39424-5F0F-42BF-BE04-40B20398C255}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{19F39424-5F0F-42BF-BE04-40B20398C255}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F59ECA2C-146A-4708-B2C4-296F452C1AF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F59ECA2C-146A-4708-B2C4-296F452C1AF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F59ECA2C-146A-4708-B2C4-296F452C1AF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -400,6 +401,18 @@ Global
 		{553F8C79-13AF-4993-99C1-D70F2143AD8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{553F8C79-13AF-4993-99C1-D70F2143AD8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{553F8C79-13AF-4993-99C1-D70F2143AD8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870}.Release|Any CPU.Build.0 = Release|Any CPU
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F9CBDD0-C8B3-4E79-B2B3-9ADE4AE08AEA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F9CBDD0-C8B3-4E79-B2B3-9ADE4AE08AEA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F9CBDD0-C8B3-4E79-B2B3-9ADE4AE08AEA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F9CBDD0-C8B3-4E79-B2B3-9ADE4AE08AEA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -458,7 +471,6 @@ Global
 		{A8293483-BA7A-40D3-A45C-0708EFB8F998} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{52175871-7DF6-4B40-ADCB-4101E8D3D1A2} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{ADA1E8D3-C13C-4747-8B4D-F4278E7CDFEC} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
-		{19F39424-5F0F-42BF-BE04-40B20398C255} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{F59ECA2C-146A-4708-B2C4-296F452C1AF3} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{54F2FA08-8E1C-4FC1-A5CF-51D742E29EF7} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{88803B55-E0C0-4216-9033-50709F9B726A} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
@@ -476,6 +488,10 @@ Global
 		{8771B5C8-4B96-4A40-A3FC-8CC7E16D7A82} = {A482E4FD-51C2-4061-8357-1E4757D6CF27}
 		{27B5D7B5-75A6-4BE6-BD09-597044D06970} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 		{553F8C79-13AF-4993-99C1-D70F2143AD8E} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
+		{4DF524BF-D9A9-46F2-882C-68C48FF5FF33} = {79C549BA-2932-450A-B87D-635879361343}
+		{2B88E3EA-6FBE-4690-A56E-0744FFAC9870} = {4DF524BF-D9A9-46F2-882C-68C48FF5FF33}
+		{11F3B44F-DE5F-42C4-8EC9-1AA51FB89158} = {4DF524BF-D9A9-46F2-882C-68C48FF5FF33}
+		{9F9CBDD0-C8B3-4E79-B2B3-9ADE4AE08AEA} = {A3766414-EB5C-40F7-B031-121804ED5D0A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {ABF8089E-43D0-4010-84A7-7A9DCFE49357}

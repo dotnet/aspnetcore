@@ -9,56 +9,54 @@ namespace Microsoft.AspNetCore.RequestThrottling.Internal
 {
     internal class RequestQueue : IDisposable
     {
-        private SemaphoreSlim _semaphore;
-        private object _waitingRequestsLock = new object();
-        public readonly int MaxConcurrentRequests;
-        public int WaitingRequests { get; private set; }
+        private readonly int _maxConcurrentRequests;
+        private readonly int _requestQueueLimit;
+        private readonly SemaphoreSlim _serverSemaphore;
 
-        public RequestQueue(int maxConcurrentRequests)
+        private object _totalRequestsLock = new object();
+        public int TotalRequests { get; private set; }
+
+        public RequestQueue(int maxConcurrentRequests, int requestQueueLimit)
         {
-            MaxConcurrentRequests = maxConcurrentRequests;
-            _semaphore = new SemaphoreSlim(maxConcurrentRequests);
+            _maxConcurrentRequests = maxConcurrentRequests;
+            _requestQueueLimit = requestQueueLimit;
+            _serverSemaphore = new SemaphoreSlim(_maxConcurrentRequests);
         }
 
-        public async Task EnterQueue()
+        public async Task<bool> TryEnterQueueAsync()
         {
-            var waitInQueueTask = _semaphore.WaitAsync();
+            // a return value of 'false' indicates that the request is rejected
+            // a return value of 'true' indicates that the request may proceed
+            // _serverSemaphore.Release is *not* called in this method, it is called externally when requests leave the server
 
-            var needsToWaitOnQueue = !waitInQueueTask.IsCompletedSuccessfully;
-            if (needsToWaitOnQueue)
+            lock (_totalRequestsLock)
             {
-                lock (_waitingRequestsLock)
+                if (TotalRequests >= _requestQueueLimit + _maxConcurrentRequests)
                 {
-                    WaitingRequests++;
+                    return false;
                 }
 
-                await waitInQueueTask;
-
-                lock (_waitingRequestsLock)
-                {
-                    WaitingRequests--;
-                }
+                TotalRequests++;
             }
+
+            await _serverSemaphore.WaitAsync();
+
+            return true;
         }
 
         public void Release()
         {
-            _semaphore.Release();
-        }
+            _serverSemaphore.Release();
 
-        public int Count
-        {
-            get => _semaphore.CurrentCount;
-        }
-
-        public int ConcurrentRequests
-        {
-            get => MaxConcurrentRequests - _semaphore.CurrentCount;
+            lock (_totalRequestsLock)
+            {
+                TotalRequests--;
+            }
         }
 
         public void Dispose()
         {
-            _semaphore.Dispose();
+            _serverSemaphore.Dispose();
         }
     }
 }

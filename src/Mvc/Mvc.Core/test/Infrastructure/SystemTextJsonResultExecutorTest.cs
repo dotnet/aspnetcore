@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
     {
         protected override IActionResultExecutor<JsonResult> CreateExecutor(ILoggerFactory loggerFactory)
         {
-            return new SystemTextJsonResultExecutor(Options.Create(new MvcOptions()), loggerFactory.CreateLogger<SystemTextJsonResultExecutor>());
+            return new SystemTextJsonResultExecutor(Options.Create(new JsonOptions()), loggerFactory.CreateLogger<SystemTextJsonResultExecutor>());
         }
 
         protected override object GetIndentedSettings()

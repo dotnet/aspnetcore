@@ -6,7 +6,7 @@ using System.Text;
 
 // Copied from
 // https://github.com/aspnet/AspNetCore-Tooling/blob/master/src/Razor/src/Microsoft.AspNetCore.Razor.Language/CSharpIdentifier.cs
-namespace Microsoft.Extensions.ApiDescription.Tasks
+namespace Microsoft.Extensions.ApiDescription.Client
 {
     internal static class CSharpIdentifier
     {

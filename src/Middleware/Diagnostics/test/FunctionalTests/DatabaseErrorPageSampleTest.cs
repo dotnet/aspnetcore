@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Diagnostics.FunctionalTests
 
         public HttpClient Client { get; }
 
-        [ConditionalFact(Skip = "TODO: EF query interception for opening connection. Issue #10672")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DatabaseErrorPage_ShowsError()

@@ -22,6 +22,7 @@ namespace RequestThrottlingSample
             services.Configure<RequestThrottlingOptions>(options =>
             {
                 options.MaxConcurrentRequests = 2;
+                options.RequestQueueLimit = 0;
             });
         }
 
@@ -31,7 +32,7 @@ namespace RequestThrottlingSample
 
             app.Run(async context =>
             {
-                await context.Response.WriteAsync("Hello Request Throttling! <p></p>");
+                await context.Response.WriteAsync("Hello Request Throttling! If you refresh this page a bunch, it will 503.");
                 await Task.Delay(1000);
             });
         }

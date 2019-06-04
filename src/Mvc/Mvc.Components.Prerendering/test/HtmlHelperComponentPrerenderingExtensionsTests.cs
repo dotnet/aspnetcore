@@ -7,9 +7,11 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.RenderTree;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -122,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Fact]
-        public async Task UriHelperRedirect_ThrowsInvalidOperationException()
+        public async Task UriHelperRedirect_ThrowsInvalidOperationException_WhenResponseHasAlreadyStarted()
         {
             // Arrange
             var ctx = new DefaultHttpContext();
@@ -131,7 +133,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             ctx.Request.PathBase = "/base";
             ctx.Request.Path = "/path";
             ctx.Request.QueryString = new QueryString("?query=value");
-
+            var responseMock = new Mock<IHttpResponseFeature>();
+            responseMock.Setup(r => r.HasStarted).Returns(true);
+            ctx.Features.Set(responseMock.Object);
             var helper = CreateHelper(ctx);
             var writer = new StringWriter();
 
@@ -141,11 +145,60 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 RedirectUri = "http://localhost/redirect"
             }));
 
-            Assert.Equal("Navigation commands can not be issued at this time. This is because the component is being " +
-                    "prerendered and the page has not yet loaded in the browser or because the circuit is currently disconnected. " +
-                    "Components must wrap any navigation calls in conditional logic to ensure those navigation calls are not " +
-                    "attempted during prerendering or while the client is disconnected.",
+            Assert.Equal("A navigation command was attempted during prerendering after the server already started sending the response. " +
+                            "Navigation commands can not be issued during server-side prerendering after the response from the server has started. Applications must buffer the" +
+                            "reponse and avoid using features like FlushAsync() before all components on the page have been rendered to prevent failed navigation commands.",
                 exception.Message);
+        }
+
+        [Fact]
+        public async Task HtmlHelper_Redirects_WhenComponentNavigates()
+        {
+            // Arrange
+            var ctx = new DefaultHttpContext();
+            ctx.Request.Scheme = "http";
+            ctx.Request.Host = new HostString("localhost");
+            ctx.Request.PathBase = "/base";
+            ctx.Request.Path = "/path";
+            ctx.Request.QueryString = new QueryString("?query=value");
+            var helper = CreateHelper(ctx);
+
+            // Act
+            await helper.RenderComponentAsync<RedirectComponent>(new
+            {
+                RedirectUri = "http://localhost/redirect"
+            });
+
+            // Assert
+            Assert.Equal(302, ctx.Response.StatusCode);
+            Assert.Equal("http://localhost/redirect", ctx.Response.Headers[HeaderNames.Location]);
+        }
+
+        [Fact]
+        public async Task HtmlHelper_AvoidsRendering_WhenNavigationHasHappened()
+        {
+            // Arrange
+            var ctx = new DefaultHttpContext();
+            ctx.Request.Scheme = "http";
+            ctx.Request.Host = new HostString("localhost");
+            ctx.Request.PathBase = "/base";
+            ctx.Request.Path = "/path";
+            ctx.Request.QueryString = new QueryString("?query=value");
+            var helper = CreateHelper(ctx);
+            var stringWriter = new StringWriter();
+
+            await helper.RenderComponentAsync<RedirectComponent>(new
+            {
+                RedirectUri = "http://localhost/redirect"
+            });
+
+            // Act
+            var result = await helper.RenderComponentAsync<GreetingComponent>(new { Name = "George" });
+
+            // Assert
+            Assert.NotNull(result);
+            result.WriteTo(stringWriter, HtmlEncoder.Default);
+            Assert.Equal("", stringWriter.ToString());
         }
 
         [Fact]
@@ -432,6 +485,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         {
             var services = new ServiceCollection();
             services.AddLogging();
+            services.AddDataProtection();
             services.AddSingleton(HtmlEncoder.Default);
             configureServices = configureServices ?? (s => s.AddServerSideBlazor());
             configureServices?.Invoke(services);
