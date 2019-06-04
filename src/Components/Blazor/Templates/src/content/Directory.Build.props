@@ -2,8 +2,4 @@
 <Project>
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\build\dependencies.props" />
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\build\sources.props" />
-
-  <PropertyGroup>
-    <IncludeCustomRestoreSourcesSymbol>true</IncludeCustomRestoreSourcesSymbol>
-  </PropertyGroup>
 </Project>
