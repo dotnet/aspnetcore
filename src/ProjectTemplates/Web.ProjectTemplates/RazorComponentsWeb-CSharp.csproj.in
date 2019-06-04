@@ -10,7 +10,7 @@
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">RazorComponentsWeb_CSharp</RootNamespace>
   </PropertyGroup>
 
-  <!--#if (IndividualLocalAuth && UseLocalDB) -->
+  <!--#if (IndividualLocalAuth && !UseLocalDB) -->
   <ItemGroup>
     <None Update="app.db" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

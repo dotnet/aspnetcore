@@ -33,7 +33,7 @@ namespace BlazorHosted_CSharp.Server
                 app.UseBlazorDebugging();
             }
 
-            app.UseBlazorClientSideFiles<Client.Startup>();
+            app.UseClientSideBlazorFiles<Client.Startup>();
 
             app.UseRouting();
 
