@@ -23,14 +23,15 @@
     </ItemGroup>
     <Copy
       SourceFiles="@(_PublishFiles)"
-      DestinationFolder="$(PublishDir)" />
+      DestinationFolder="$(PublishDir)"
+      ContinueOnError="true" />
     <!-- Drop a dummy sln to specify content root location -->
     <WriteLinesToFile
         File="$(PublishDir)\contentroot.sln"
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
-    <MakeDir Directories="$(PublishDir)\AzureAD.WebSite" Condition="!Exists('$(PublishDir)\AzureAD.WebSite')"  />
+    <MakeDir Directories="$(PublishDir)\AzureAD.WebSite" Condition="!Exists('$(PublishDir)\AzureAD.WebSite')" Condition="!Exists('$(PublishDir)\AzureAD.WebSite')" ContinueOnError="true" />
   </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
