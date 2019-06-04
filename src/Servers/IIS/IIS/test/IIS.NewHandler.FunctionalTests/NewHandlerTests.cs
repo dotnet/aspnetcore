@@ -10,17 +10,17 @@ using Xunit.Sdk;
 namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     [Collection(IISTestSiteCollection.Name)]
-    public class BackwardsCompatibilityTests : FixtureLoggedTest
+    public class NewHandlerTests : FixtureLoggedTest
     {
         private readonly IISTestSiteFixture _fixture;
 
-        public BackwardsCompatibilityTests(IISTestSiteFixture fixture) : base(fixture)
+        public NewHandlerTests(IISTestSiteFixture fixture) : base(fixture)
         {
             _fixture = fixture;
         }
 
         [ConditionalFact]
-        public async Task CheckBackwardsCompatibilityIsUsed()
+        public async Task CheckNewHandlerIsUsed()
         {
             var response = await _fixture.Client.GetAsync("/HelloWorld");
 

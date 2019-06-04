@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <TestGroupName>IISBackwardsCompatibility.FunctionalTests</TestGroupName>
+    <TestGroupName>IISNewHandler.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
-    <SkipTests Condition=" '$(SkipIISBackwardsCompatibilityTests)' == 'true' ">true</SkipTests>
+    <SkipTests Condition=" '$(SkipIISNewHandlerTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
@@ -16,9 +16,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Common.Tests\Common.Tests.csproj" />
-    <ProjectReference Include="..\testassets\**\*.csproj">
-      <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="..\testassets\InProcessWebSite\InProcessWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
@@ -41,7 +38,12 @@
 
   <Target Name="RemoveSourceOverride" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
     <ItemGroup>
-      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('IIS\AspNetCoreModule')) == 'true'" />
+    <!-- There is a race between which dll is copied to the bin directory between ANCM in a package and the built ANCM. 
+        We want to guarantee the ANCM in the nuget package is used, so remove all paths that contain paths in the artifacts directory.
+        -->
+      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('AspNetCoreModuleShim')) == 'true'" />
+      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('InProcessRequestHandler')) == 'true'" />
+      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('OutOfProcessRequestHandler')) == 'true'" />
       <_SourceItemsToCopyToOutputDirectory Remove="@(SourceItemsToRemove)" />
    </ItemGroup>
   </Target>
