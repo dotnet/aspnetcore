@@ -72,9 +72,7 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <SetPlatform>Platform=Win32</SetPlatform>
     </ProjectReference>
-    <Reference Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" GeneratePathProperty="true" />
-    <Reference Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" GeneratePathProperty="true" />
-      <!-- <None Include="$(Pkgruntime_win-x64_Microsoft_NETCore_DotNetAppHost)\runtimes\win-x64\native\nethost.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="x64/nethost.dll" />
-      <None Include="$(Pkgruntime_win-x86_Microsoft_NETCore_DotNetAppHost)\runtimes\win-x86\native\nethost.dll" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" Link="x86/nethost.dll" /> -->
+    <PackageReference Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNetCoreDotNetAppHostPackageVersion)" GeneratePathProperty="true" />
+    <PackageReference Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" Version="$(MicrosoftNetCoreDotNetAppHostPackageVersion)" GeneratePathProperty="true" />
   </ItemGroup>
 </Project>

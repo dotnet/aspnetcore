@@ -174,9 +174,15 @@
                     DiskId="1"
                     Vital="yes">
                 </File>
-                 <File Id="AspNetCoreModuleNetHostDll"
-                    Name="nethost.dll"
-                    Source="$(var.AspNetCoreV2NetHost)"
+              <RegistryKey Root="HKLM" Key="SYSTEM\CurrentControlSet\Services\EventLog\Application\$(var.ProductShortName)">
+                <RegistryValue Name="EventMessageFile" Type="expandable" Value="[#AspNetCoreModuleDll]"/>
+                <RegistryValue Name="TypesSupported" Type="integer" Value="7"/>
+              </RegistryKey>
+            </Component>
+            <Component Id="AspNetCoreModule" Guid="84ed6ce6-c8a3-4fa8-a872-c98a1d15dd4f" Win64="$(var.IsWin64)">
+                <File Id="AspNetCoreModuleDll"
+                    Name="aspnetcorev2.dll"
+                    Source="$(var.AspNetCoreV2ProgramFilesTargetPath)"
                     DiskId="1"
                     Vital="yes">
                 </File>
