@@ -177,9 +177,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MessagePackHubProtocol", function() { return MessagePackHubProtocol; });
 /* harmony import */ var buffer__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! buffer */ "../node_modules/buffer/index.js");
 /* harmony import */ var buffer__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(buffer__WEBPACK_IMPORTED_MODULE_0__);
-/* harmony import */ var msgpack5__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! msgpack5 */ "../node_modules/msgpack5/index.js");
+/* harmony import */ var msgpack5__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! msgpack5 */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/index.js");
 /* harmony import */ var msgpack5__WEBPACK_IMPORTED_MODULE_1___default = /*#__PURE__*/__webpack_require__.n(msgpack5__WEBPACK_IMPORTED_MODULE_1__);
-/* harmony import */ var _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @aspnet/signalr */ "../node_modules/@aspnet/signalr/dist/esm/index.js");
+/* harmony import */ var _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! @aspnet/signalr */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/index.js");
 /* harmony import */ var _BinaryMessageFormat__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./BinaryMessageFormat */ "../node_modules/@aspnet/signalr-protocol-msgpack/dist/esm/BinaryMessageFormat.js");
 /* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/dist/esm/Utils.js");
 // Copyright (c) .NET Foundation. All rights reserved.
@@ -203,10 +203,13 @@ var MessagePackHubProtocol = /** @class */ (function () {
         this.version = 1;
         /** The TransferFormat of the protocol. */
         this.transferFormat = _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"].Binary;
+        this.errorResult = 1;
+        this.voidResult = 2;
+        this.nonVoidResult = 3;
     }
     /** Creates an array of HubMessage objects from the specified serialized representation.
      *
-     * @param {ArrayBuffer | Buffer} input An ArrayBuffer containing the serialized representation.
+     * @param {ArrayBuffer | Buffer} input An ArrayBuffer or Buffer containing the serialized representation.
      * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
      */
     MessagePackHubProtocol.prototype.parseMessages = function (input, logger) {
@@ -241,10 +244,13 @@ var MessagePackHubProtocol = /** @class */ (function () {
             case _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].StreamInvocation:
                 return this.writeStreamInvocation(message);
             case _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].StreamItem:
+                return this.writeStreamItem(message);
             case _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].Completion:
-                throw new Error("Writing messages of type '" + message.type + "' is not supported.");
+                return this.writeCompletion(message);
             case _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].Ping:
                 return _BinaryMessageFormat__WEBPACK_IMPORTED_MODULE_3__["BinaryMessageFormat"].write(SERIALIZED_PING_MESSAGE);
+            case _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].CancelInvocation:
+                return this.writeCancelInvocation(message);
             default:
                 throw new Error("Invalid message type.");
         }
@@ -308,6 +314,7 @@ var MessagePackHubProtocol = /** @class */ (function () {
                 arguments: properties[4],
                 headers: headers,
                 invocationId: invocationId,
+                streamIds: [],
                 target: properties[3],
                 type: _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].Invocation,
             };
@@ -316,6 +323,7 @@ var MessagePackHubProtocol = /** @class */ (function () {
             return {
                 arguments: properties[4],
                 headers: headers,
+                streamIds: [],
                 target: properties[3],
                 type: _aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].Invocation,
             };
@@ -338,20 +346,17 @@ var MessagePackHubProtocol = /** @class */ (function () {
         if (properties.length < 4) {
             throw new Error("Invalid payload for Completion message.");
         }
-        var errorResult = 1;
-        var voidResult = 2;
-        var nonVoidResult = 3;
         var resultKind = properties[3];
-        if (resultKind !== voidResult && properties.length < 5) {
+        if (resultKind !== this.voidResult && properties.length < 5) {
             throw new Error("Invalid payload for Completion message.");
         }
         var error;
         var result;
         switch (resultKind) {
-            case errorResult:
+            case this.errorResult:
                 error = properties[4];
                 break;
-            case nonVoidResult:
+            case this.nonVoidResult:
                 result = properties[4];
                 break;
         }
@@ -367,13 +372,41 @@ var MessagePackHubProtocol = /** @class */ (function () {
     MessagePackHubProtocol.prototype.writeInvocation = function (invocationMessage) {
         var msgpack = msgpack5__WEBPACK_IMPORTED_MODULE_1__();
         var payload = msgpack.encode([_aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].Invocation, invocationMessage.headers || {}, invocationMessage.invocationId || null,
-            invocationMessage.target, invocationMessage.arguments]);
+            invocationMessage.target, invocationMessage.arguments, invocationMessage.streamIds]);
         return _BinaryMessageFormat__WEBPACK_IMPORTED_MODULE_3__["BinaryMessageFormat"].write(payload.slice());
     };
     MessagePackHubProtocol.prototype.writeStreamInvocation = function (streamInvocationMessage) {
         var msgpack = msgpack5__WEBPACK_IMPORTED_MODULE_1__();
         var payload = msgpack.encode([_aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].StreamInvocation, streamInvocationMessage.headers || {}, streamInvocationMessage.invocationId,
-            streamInvocationMessage.target, streamInvocationMessage.arguments]);
+            streamInvocationMessage.target, streamInvocationMessage.arguments, streamInvocationMessage.streamIds]);
+        return _BinaryMessageFormat__WEBPACK_IMPORTED_MODULE_3__["BinaryMessageFormat"].write(payload.slice());
+    };
+    MessagePackHubProtocol.prototype.writeStreamItem = function (streamItemMessage) {
+        var msgpack = msgpack5__WEBPACK_IMPORTED_MODULE_1__();
+        var payload = msgpack.encode([_aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].StreamItem, streamItemMessage.headers || {}, streamItemMessage.invocationId,
+            streamItemMessage.item]);
+        return _BinaryMessageFormat__WEBPACK_IMPORTED_MODULE_3__["BinaryMessageFormat"].write(payload.slice());
+    };
+    MessagePackHubProtocol.prototype.writeCompletion = function (completionMessage) {
+        var msgpack = msgpack5__WEBPACK_IMPORTED_MODULE_1__();
+        var resultKind = completionMessage.error ? this.errorResult : completionMessage.result ? this.nonVoidResult : this.voidResult;
+        var payload;
+        switch (resultKind) {
+            case this.errorResult:
+                payload = msgpack.encode([_aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.error]);
+                break;
+            case this.voidResult:
+                payload = msgpack.encode([_aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind]);
+                break;
+            case this.nonVoidResult:
+                payload = msgpack.encode([_aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].Completion, completionMessage.headers || {}, completionMessage.invocationId, resultKind, completionMessage.result]);
+                break;
+        }
+        return _BinaryMessageFormat__WEBPACK_IMPORTED_MODULE_3__["BinaryMessageFormat"].write(payload.slice());
+    };
+    MessagePackHubProtocol.prototype.writeCancelInvocation = function (cancelInvocationMessage) {
+        var msgpack = msgpack5__WEBPACK_IMPORTED_MODULE_1__();
+        var payload = msgpack.encode([_aspnet_signalr__WEBPACK_IMPORTED_MODULE_2__["MessageType"].CancelInvocation, cancelInvocationMessage.headers || {}, cancelInvocationMessage.invocationId]);
         return _BinaryMessageFormat__WEBPACK_IMPORTED_MODULE_3__["BinaryMessageFormat"].write(payload.slice());
     };
     MessagePackHubProtocol.prototype.readHeaders = function (properties) {
@@ -431,9 +464,7624 @@ __webpack_require__.r(__webpack_exports__);
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR Message Pack protocol library. */
-var VERSION = "1.1.0";
+var VERSION = "0.0.0-DEV_BUILD";
 
 //# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/AbortController.js":
+/*!*****************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/AbortController.js ***!
+  \*****************************************************************************************************************/
+/*! exports provided: AbortController */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbortController", function() { return AbortController; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Rough polyfill of https://developer.mozilla.org/en-US/docs/Web/API/AbortController
+// We don't actually ever use the API being polyfilled, we always use the polyfill because
+// it's a very new API right now.
+// Not exported from index.
+/** @private */
+var AbortController = /** @class */ (function () {
+    function AbortController() {
+        this.isAborted = false;
+        this.onabort = null;
+    }
+    AbortController.prototype.abort = function () {
+        if (!this.isAborted) {
+            this.isAborted = true;
+            if (this.onabort) {
+                this.onabort();
+            }
+        }
+    };
+    Object.defineProperty(AbortController.prototype, "signal", {
+        get: function () {
+            return this;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(AbortController.prototype, "aborted", {
+        get: function () {
+            return this.isAborted;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return AbortController;
+}());
+
+//# sourceMappingURL=AbortController.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/DefaultHttpClient.js":
+/*!*******************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/DefaultHttpClient.js ***!
+  \*******************************************************************************************************************/
+/*! exports provided: DefaultHttpClient */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultHttpClient", function() { return DefaultHttpClient; });
+/* harmony import */ var _Errors__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Errors */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Errors.js");
+/* harmony import */ var _HttpClient__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HttpClient */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpClient.js");
+/* harmony import */ var _NodeHttpClient__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./NodeHttpClient */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/NodeHttpClient.js");
+/* harmony import */ var _XhrHttpClient__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./XhrHttpClient */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/XhrHttpClient.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+
+/** Default implementation of {@link @aspnet/signalr.HttpClient}. */
+var DefaultHttpClient = /** @class */ (function (_super) {
+    __extends(DefaultHttpClient, _super);
+    /** Creates a new instance of the {@link @aspnet/signalr.DefaultHttpClient}, using the provided {@link @aspnet/signalr.ILogger} to log messages. */
+    function DefaultHttpClient(logger) {
+        var _this = _super.call(this) || this;
+        if (typeof XMLHttpRequest !== "undefined") {
+            _this.httpClient = new _XhrHttpClient__WEBPACK_IMPORTED_MODULE_3__["XhrHttpClient"](logger);
+        }
+        else {
+            _this.httpClient = new _NodeHttpClient__WEBPACK_IMPORTED_MODULE_2__["NodeHttpClient"](logger);
+        }
+        return _this;
+    }
+    /** @inheritDoc */
+    DefaultHttpClient.prototype.send = function (request) {
+        // Check that abort was not signaled before calling send
+        if (request.abortSignal && request.abortSignal.aborted) {
+            return Promise.reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["AbortError"]());
+        }
+        if (!request.method) {
+            return Promise.reject(new Error("No method defined."));
+        }
+        if (!request.url) {
+            return Promise.reject(new Error("No url defined."));
+        }
+        return this.httpClient.send(request);
+    };
+    DefaultHttpClient.prototype.getCookieString = function (url) {
+        return this.httpClient.getCookieString(url);
+    };
+    return DefaultHttpClient;
+}(_HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]));
+
+//# sourceMappingURL=DefaultHttpClient.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/DefaultReconnectPolicy.js":
+/*!************************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/DefaultReconnectPolicy.js ***!
+  \************************************************************************************************************************/
+/*! exports provided: DefaultReconnectPolicy */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultReconnectPolicy", function() { return DefaultReconnectPolicy; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// 0, 2, 10, 30 second delays before reconnect attempts.
+var DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = [0, 2000, 10000, 30000, null];
+/** @private */
+var DefaultReconnectPolicy = /** @class */ (function () {
+    function DefaultReconnectPolicy(retryDelays) {
+        this.retryDelays = retryDelays !== undefined ? retryDelays.concat([null]) : DEFAULT_RETRY_DELAYS_IN_MILLISECONDS;
+    }
+    DefaultReconnectPolicy.prototype.nextRetryDelayInMilliseconds = function (previousRetryCount) {
+        return this.retryDelays[previousRetryCount];
+    };
+    return DefaultReconnectPolicy;
+}());
+
+//# sourceMappingURL=DefaultReconnectPolicy.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Errors.js":
+/*!********************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Errors.js ***!
+  \********************************************************************************************************/
+/*! exports provided: HttpError, TimeoutError, AbortError */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HttpError", function() { return HttpError; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TimeoutError", function() { return TimeoutError; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "AbortError", function() { return AbortError; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+/** Error thrown when an HTTP request fails. */
+var HttpError = /** @class */ (function (_super) {
+    __extends(HttpError, _super);
+    /** Constructs a new instance of {@link @aspnet/signalr.HttpError}.
+     *
+     * @param {string} errorMessage A descriptive error message.
+     * @param {number} statusCode The HTTP status code represented by this error.
+     */
+    function HttpError(errorMessage, statusCode) {
+        var _newTarget = this.constructor;
+        var _this = this;
+        var trueProto = _newTarget.prototype;
+        _this = _super.call(this, errorMessage) || this;
+        _this.statusCode = statusCode;
+        // Workaround issue in Typescript compiler
+        // https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
+        _this.__proto__ = trueProto;
+        return _this;
+    }
+    return HttpError;
+}(Error));
+
+/** Error thrown when a timeout elapses. */
+var TimeoutError = /** @class */ (function (_super) {
+    __extends(TimeoutError, _super);
+    /** Constructs a new instance of {@link @aspnet/signalr.TimeoutError}.
+     *
+     * @param {string} errorMessage A descriptive error message.
+     */
+    function TimeoutError(errorMessage) {
+        var _newTarget = this.constructor;
+        if (errorMessage === void 0) { errorMessage = "A timeout occurred."; }
+        var _this = this;
+        var trueProto = _newTarget.prototype;
+        _this = _super.call(this, errorMessage) || this;
+        // Workaround issue in Typescript compiler
+        // https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
+        _this.__proto__ = trueProto;
+        return _this;
+    }
+    return TimeoutError;
+}(Error));
+
+/** Error thrown when an action is aborted. */
+var AbortError = /** @class */ (function (_super) {
+    __extends(AbortError, _super);
+    /** Constructs a new instance of {@link AbortError}.
+     *
+     * @param {string} errorMessage A descriptive error message.
+     */
+    function AbortError(errorMessage) {
+        var _newTarget = this.constructor;
+        if (errorMessage === void 0) { errorMessage = "An abort occurred."; }
+        var _this = this;
+        var trueProto = _newTarget.prototype;
+        _this = _super.call(this, errorMessage) || this;
+        // Workaround issue in Typescript compiler
+        // https://github.com/Microsoft/TypeScript/issues/13965#issuecomment-278570200
+        _this.__proto__ = trueProto;
+        return _this;
+    }
+    return AbortError;
+}(Error));
+
+//# sourceMappingURL=Errors.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HandshakeProtocol.js":
+/*!*******************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HandshakeProtocol.js ***!
+  \*******************************************************************************************************************/
+/*! exports provided: HandshakeProtocol */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(Buffer) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HandshakeProtocol", function() { return HandshakeProtocol; });
+/* harmony import */ var _TextMessageFormat__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./TextMessageFormat */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/TextMessageFormat.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+
+/** @private */
+var HandshakeProtocol = /** @class */ (function () {
+    function HandshakeProtocol() {
+    }
+    // Handshake request is always JSON
+    HandshakeProtocol.prototype.writeHandshakeRequest = function (handshakeRequest) {
+        return _TextMessageFormat__WEBPACK_IMPORTED_MODULE_0__["TextMessageFormat"].write(JSON.stringify(handshakeRequest));
+    };
+    HandshakeProtocol.prototype.parseHandshakeResponse = function (data) {
+        var responseMessage;
+        var messageData;
+        var remainingData;
+        if (Object(_Utils__WEBPACK_IMPORTED_MODULE_1__["isArrayBuffer"])(data) || (typeof Buffer !== "undefined" && data instanceof Buffer)) {
+            // Format is binary but still need to read JSON text from handshake response
+            var binaryData = new Uint8Array(data);
+            var separatorIndex = binaryData.indexOf(_TextMessageFormat__WEBPACK_IMPORTED_MODULE_0__["TextMessageFormat"].RecordSeparatorCode);
+            if (separatorIndex === -1) {
+                throw new Error("Message is incomplete.");
+            }
+            // content before separator is handshake response
+            // optional content after is additional messages
+            var responseLength = separatorIndex + 1;
+            messageData = String.fromCharCode.apply(null, binaryData.slice(0, responseLength));
+            remainingData = (binaryData.byteLength > responseLength) ? binaryData.slice(responseLength).buffer : null;
+        }
+        else {
+            var textData = data;
+            var separatorIndex = textData.indexOf(_TextMessageFormat__WEBPACK_IMPORTED_MODULE_0__["TextMessageFormat"].RecordSeparator);
+            if (separatorIndex === -1) {
+                throw new Error("Message is incomplete.");
+            }
+            // content before separator is handshake response
+            // optional content after is additional messages
+            var responseLength = separatorIndex + 1;
+            messageData = textData.substring(0, responseLength);
+            remainingData = (textData.length > responseLength) ? textData.substring(responseLength) : null;
+        }
+        // At this point we should have just the single handshake message
+        var messages = _TextMessageFormat__WEBPACK_IMPORTED_MODULE_0__["TextMessageFormat"].parse(messageData);
+        var response = JSON.parse(messages[0]);
+        if (response.type) {
+            throw new Error("Expected a handshake response from the server.");
+        }
+        responseMessage = response;
+        // multiple messages could have arrived with handshake
+        // return additional data to be parsed as usual, or null if all parsed
+        return [remainingData, responseMessage];
+    };
+    return HandshakeProtocol;
+}());
+
+//# sourceMappingURL=HandshakeProtocol.js.map
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../../../buffer/index.js */ "../node_modules/buffer/index.js").Buffer))
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpClient.js":
+/*!************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpClient.js ***!
+  \************************************************************************************************************/
+/*! exports provided: HttpResponse, HttpClient */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HttpResponse", function() { return HttpResponse; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HttpClient", function() { return HttpClient; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __assign = (undefined && undefined.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+/** Represents an HTTP response. */
+var HttpResponse = /** @class */ (function () {
+    function HttpResponse(statusCode, statusText, content) {
+        this.statusCode = statusCode;
+        this.statusText = statusText;
+        this.content = content;
+    }
+    return HttpResponse;
+}());
+
+/** Abstraction over an HTTP client.
+ *
+ * This class provides an abstraction over an HTTP client so that a different implementation can be provided on different platforms.
+ */
+var HttpClient = /** @class */ (function () {
+    function HttpClient() {
+    }
+    HttpClient.prototype.get = function (url, options) {
+        return this.send(__assign({}, options, { method: "GET", url: url }));
+    };
+    HttpClient.prototype.post = function (url, options) {
+        return this.send(__assign({}, options, { method: "POST", url: url }));
+    };
+    HttpClient.prototype.delete = function (url, options) {
+        return this.send(__assign({}, options, { method: "DELETE", url: url }));
+    };
+    /** Gets all cookies that apply to the specified URL.
+     *
+     * @param url The URL that the cookies are valid for.
+     * @returns {string} A string containing all the key-value cookie pairs for the specified URL.
+     */
+    // @ts-ignore
+    HttpClient.prototype.getCookieString = function (url) {
+        return "";
+    };
+    return HttpClient;
+}());
+
+//# sourceMappingURL=HttpClient.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpConnection.js":
+/*!****************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpConnection.js ***!
+  \****************************************************************************************************************/
+/*! exports provided: HttpConnection, TransportSendQueue */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HttpConnection", function() { return HttpConnection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TransportSendQueue", function() { return TransportSendQueue; });
+/* harmony import */ var _DefaultHttpClient__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./DefaultHttpClient */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/DefaultHttpClient.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _ITransport__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ITransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ITransport.js");
+/* harmony import */ var _LongPollingTransport__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./LongPollingTransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/LongPollingTransport.js");
+/* harmony import */ var _ServerSentEventsTransport__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./ServerSentEventsTransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ServerSentEventsTransport.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+/* harmony import */ var _WebSocketTransport__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./WebSocketTransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/WebSocketTransport.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+
+
+
+
+
+
+var MAX_REDIRECTS = 100;
+var WebSocketModule = null;
+var EventSourceModule = null;
+if (_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && "function" !== "undefined") {
+    // In order to ignore the dynamic require in webpack builds we need to do this magic
+    // @ts-ignore: TS doesn't know about these names
+    var requireFunc =  true ? require : undefined;
+    WebSocketModule = requireFunc("ws");
+    EventSourceModule = requireFunc("eventsource");
+}
+/** @private */
+var HttpConnection = /** @class */ (function () {
+    function HttpConnection(url, options) {
+        if (options === void 0) { options = {}; }
+        this.features = {};
+        _Utils__WEBPACK_IMPORTED_MODULE_5__["Arg"].isRequired(url, "url");
+        this.logger = Object(_Utils__WEBPACK_IMPORTED_MODULE_5__["createLogger"])(options.logger);
+        this.baseUrl = this.resolveUrl(url);
+        options = options || {};
+        options.logMessageContent = options.logMessageContent || false;
+        if (!_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
+            options.WebSocket = WebSocket;
+        }
+        else if (_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && !options.WebSocket) {
+            if (WebSocketModule) {
+                options.WebSocket = WebSocketModule;
+            }
+        }
+        if (!_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && typeof EventSource !== "undefined" && !options.EventSource) {
+            options.EventSource = EventSource;
+        }
+        else if (_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && !options.EventSource) {
+            if (typeof EventSourceModule !== "undefined") {
+                options.EventSource = EventSourceModule;
+            }
+        }
+        this.httpClient = options.httpClient || new _DefaultHttpClient__WEBPACK_IMPORTED_MODULE_0__["DefaultHttpClient"](this.logger);
+        this.connectionState = "Disconnected" /* Disconnected */;
+        this.connectionStarted = false;
+        this.options = options;
+        this.onreceive = null;
+        this.onclose = null;
+    }
+    HttpConnection.prototype.start = function (transferFormat) {
+        return __awaiter(this, void 0, void 0, function () {
+            var message, message;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        transferFormat = transferFormat || _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"].Binary;
+                        _Utils__WEBPACK_IMPORTED_MODULE_5__["Arg"].isIn(transferFormat, _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"], "transferFormat");
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Starting connection with transfer format '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"][transferFormat] + "'.");
+                        if (this.connectionState !== "Disconnected" /* Disconnected */) {
+                            return [2 /*return*/, Promise.reject(new Error("Cannot start an HttpConnection that is not in the 'Disconnected' state."))];
+                        }
+                        this.connectionState = "Connecting " /* Connecting */;
+                        this.startInternalPromise = this.startInternal(transferFormat);
+                        return [4 /*yield*/, this.startInternalPromise];
+                    case 1:
+                        _a.sent();
+                        if (!(this.connectionState === "Disconnecting" /* Disconnecting */)) return [3 /*break*/, 3];
+                        message = "Failed to start the HttpConnection before stop() was called.";
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, message);
+                        // We cannot await stopPromise inside startInternal since stopInternal awaits the startInternalPromise.
+                        return [4 /*yield*/, this.stopPromise];
+                    case 2:
+                        // We cannot await stopPromise inside startInternal since stopInternal awaits the startInternalPromise.
+                        _a.sent();
+                        return [2 /*return*/, Promise.reject(new Error(message))];
+                    case 3:
+                        if (this.connectionState !== "Connected" /* Connected */) {
+                            message = "HttpConnection.startInternal completed gracefully but didn't enter the connection into the connected state!";
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, message);
+                            return [2 /*return*/, Promise.reject(new Error(message))];
+                        }
+                        _a.label = 4;
+                    case 4:
+                        this.connectionStarted = true;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HttpConnection.prototype.send = function (data) {
+        if (this.connectionState !== "Connected" /* Connected */) {
+            return Promise.reject(new Error("Cannot send data if the connection is not in the 'Connected' State."));
+        }
+        if (!this.sendQueue) {
+            this.sendQueue = new TransportSendQueue(this.transport);
+        }
+        // Transport will not be null if state is connected
+        return this.sendQueue.send(data);
+    };
+    HttpConnection.prototype.stop = function (error) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.connectionState === "Disconnected" /* Disconnected */) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Call to HttpConnection.stop(" + error + ") ignored because the connection is already in the disconnected state.");
+                            return [2 /*return*/, Promise.resolve()];
+                        }
+                        if (this.connectionState === "Disconnecting" /* Disconnecting */) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Call to HttpConnection.stop(" + error + ") ignored because the connection is already in the disconnecting state.");
+                            return [2 /*return*/, this.stopPromise];
+                        }
+                        this.connectionState = "Disconnecting" /* Disconnecting */;
+                        this.stopPromise = new Promise(function (resolve) {
+                            // Don't complete stop() until stopConnection() completes.
+                            _this.stopPromiseResolver = resolve;
+                        });
+                        // stopInternal should never throw so just observe it.
+                        return [4 /*yield*/, this.stopInternal(error)];
+                    case 1:
+                        // stopInternal should never throw so just observe it.
+                        _a.sent();
+                        return [4 /*yield*/, this.stopPromise];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HttpConnection.prototype.stopInternal = function (error) {
+        return __awaiter(this, void 0, void 0, function () {
+            var e_1, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        // Set error as soon as possible otherwise there is a race between
+                        // the transport closing and providing an error and the error from a close message
+                        // We would prefer the close message error.
+                        this.stopError = error;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.startInternalPromise];
+                    case 2:
+                        _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        return [3 /*break*/, 4];
+                    case 4:
+                        if (!this.transport) return [3 /*break*/, 9];
+                        if (this.sendQueue) {
+                            this.sendQueue.stop();
+                            this.sendQueue = undefined;
+                        }
+                        _a.label = 5;
+                    case 5:
+                        _a.trys.push([5, 7, , 8]);
+                        return [4 /*yield*/, this.transport.stop()];
+                    case 6:
+                        _a.sent();
+                        return [3 /*break*/, 8];
+                    case 7:
+                        e_2 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "HttpConnection.transport.stop() threw error '" + e_2 + "'.");
+                        this.stopConnection();
+                        return [3 /*break*/, 8];
+                    case 8:
+                        this.transport = undefined;
+                        return [3 /*break*/, 10];
+                    case 9:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "HttpConnection.transport is undefined in HttpConnection.stop() because start() failed.");
+                        this.stopConnection();
+                        _a.label = 10;
+                    case 10: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HttpConnection.prototype.startInternal = function (transferFormat) {
+        return __awaiter(this, void 0, void 0, function () {
+            var url, negotiateResponse, redirects, _loop_1, this_1, e_3;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        url = this.baseUrl;
+                        this.accessTokenFactory = this.options.accessTokenFactory;
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 12, , 13]);
+                        if (!this.options.skipNegotiation) return [3 /*break*/, 5];
+                        if (!(this.options.transport === _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].WebSockets)) return [3 /*break*/, 3];
+                        // No need to add a connection ID in this case
+                        this.transport = this.constructTransport(_ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].WebSockets);
+                        // We should just call connect directly in this case.
+                        // No fallback or negotiate in this case.
+                        return [4 /*yield*/, this.transport.connect(url, transferFormat)];
+                    case 2:
+                        // We should just call connect directly in this case.
+                        // No fallback or negotiate in this case.
+                        _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3: throw new Error("Negotiation can only be skipped when using the WebSocket transport directly.");
+                    case 4: return [3 /*break*/, 11];
+                    case 5:
+                        negotiateResponse = null;
+                        redirects = 0;
+                        _loop_1 = function () {
+                            var accessToken_1;
+                            return __generator(this, function (_a) {
+                                switch (_a.label) {
+                                    case 0: return [4 /*yield*/, this_1.getNegotiationResponse(url)];
+                                    case 1:
+                                        negotiateResponse = _a.sent();
+                                        // the user tries to stop the connection when it is being started
+                                        if (this_1.connectionState === "Disconnecting" /* Disconnecting */ || this_1.connectionState === "Disconnected" /* Disconnected */) {
+                                            throw new Error("The connection was stopped during negotiation.");
+                                        }
+                                        if (negotiateResponse.error) {
+                                            throw new Error(negotiateResponse.error);
+                                        }
+                                        if (negotiateResponse.ProtocolVersion) {
+                                            throw new Error("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
+                                        }
+                                        if (negotiateResponse.url) {
+                                            url = negotiateResponse.url;
+                                        }
+                                        if (negotiateResponse.accessToken) {
+                                            accessToken_1 = negotiateResponse.accessToken;
+                                            this_1.accessTokenFactory = function () { return accessToken_1; };
+                                        }
+                                        redirects++;
+                                        return [2 /*return*/];
+                                }
+                            });
+                        };
+                        this_1 = this;
+                        _a.label = 6;
+                    case 6: return [5 /*yield**/, _loop_1()];
+                    case 7:
+                        _a.sent();
+                        _a.label = 8;
+                    case 8:
+                        if (negotiateResponse.url && redirects < MAX_REDIRECTS) return [3 /*break*/, 6];
+                        _a.label = 9;
+                    case 9:
+                        if (redirects === MAX_REDIRECTS && negotiateResponse.url) {
+                            throw new Error("Negotiate redirection limit exceeded.");
+                        }
+                        this.connectionId = negotiateResponse.connectionId;
+                        return [4 /*yield*/, this.createTransport(url, this.options.transport, negotiateResponse, transferFormat)];
+                    case 10:
+                        _a.sent();
+                        _a.label = 11;
+                    case 11:
+                        if (this.transport instanceof _LongPollingTransport__WEBPACK_IMPORTED_MODULE_3__["LongPollingTransport"]) {
+                            this.features.inherentKeepAlive = true;
+                        }
+                        this.transport.onreceive = this.onreceive;
+                        this.transport.onclose = function (e) { return _this.stopConnection(e); };
+                        if (this.connectionState === "Connecting " /* Connecting */) {
+                            // Ensure the connection transitions to the connected state prior to completing this.startInternalPromise.
+                            // start() will handle the case when stop was called and startInternal exits still in the disconnecting state.
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "The HttpConnection connected successfully.");
+                            this.connectionState = "Connected" /* Connected */;
+                        }
+                        return [3 /*break*/, 13];
+                    case 12:
+                        e_3 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to start the connection: " + e_3);
+                        this.connectionState = "Disconnected" /* Disconnected */;
+                        this.transport = undefined;
+                        return [2 /*return*/, Promise.reject(e_3)];
+                    case 13: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HttpConnection.prototype.getNegotiationResponse = function (url) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, headers, token, negotiateUrl, response, e_4;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!this.accessTokenFactory) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.accessTokenFactory()];
+                    case 1:
+                        token = _b.sent();
+                        if (token) {
+                            headers = (_a = {},
+                                _a["Authorization"] = "Bearer " + token,
+                                _a);
+                        }
+                        _b.label = 2;
+                    case 2:
+                        negotiateUrl = this.resolveNegotiateUrl(url);
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Sending negotiation request: " + negotiateUrl + ".");
+                        _b.label = 3;
+                    case 3:
+                        _b.trys.push([3, 5, , 6]);
+                        return [4 /*yield*/, this.httpClient.post(negotiateUrl, {
+                                content: "",
+                                headers: headers,
+                            })];
+                    case 4:
+                        response = _b.sent();
+                        if (response.statusCode !== 200) {
+                            return [2 /*return*/, Promise.reject(new Error("Unexpected status code returned from negotiate " + response.statusCode))];
+                        }
+                        return [2 /*return*/, JSON.parse(response.content)];
+                    case 5:
+                        e_4 = _b.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to complete negotiation with the server: " + e_4);
+                        return [2 /*return*/, Promise.reject(e_4)];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HttpConnection.prototype.createConnectUrl = function (url, connectionId) {
+        if (!connectionId) {
+            return url;
+        }
+        return url + (url.indexOf("?") === -1 ? "?" : "&") + ("id=" + connectionId);
+    };
+    HttpConnection.prototype.createTransport = function (url, requestedTransport, negotiateResponse, requestedTransferFormat) {
+        return __awaiter(this, void 0, void 0, function () {
+            var connectUrl, transportExceptions, transports, _i, transports_1, endpoint, transport, ex_1, message;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+                        if (!this.isITransport(requestedTransport)) return [3 /*break*/, 2];
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Connection was provided an instance of ITransport, using that directly.");
+                        this.transport = requestedTransport;
+                        return [4 /*yield*/, this.transport.connect(connectUrl, requestedTransferFormat)];
+                    case 1:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 2:
+                        transportExceptions = [];
+                        transports = negotiateResponse.availableTransports || [];
+                        _i = 0, transports_1 = transports;
+                        _a.label = 3;
+                    case 3:
+                        if (!(_i < transports_1.length)) return [3 /*break*/, 11];
+                        endpoint = transports_1[_i];
+                        _a.label = 4;
+                    case 4:
+                        _a.trys.push([4, 9, , 10]);
+                        transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
+                        if (!(typeof transport === "number")) return [3 /*break*/, 8];
+                        this.transport = this.constructTransport(transport);
+                        if (!!negotiateResponse.connectionId) return [3 /*break*/, 6];
+                        return [4 /*yield*/, this.getNegotiationResponse(url)];
+                    case 5:
+                        negotiateResponse = _a.sent();
+                        connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
+                        _a.label = 6;
+                    case 6: return [4 /*yield*/, this.transport.connect(connectUrl, requestedTransferFormat)];
+                    case 7:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 8: return [3 /*break*/, 10];
+                    case 9:
+                        ex_1 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to start the transport '" + endpoint.transport + "': " + ex_1);
+                        negotiateResponse.connectionId = undefined;
+                        transportExceptions.push(endpoint.transport + " failed: " + ex_1);
+                        if (this.connectionState !== "Connecting " /* Connecting */) {
+                            message = "Failed to select transport before stop() was called.";
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, message);
+                            return [2 /*return*/, Promise.reject(new Error(message))];
+                        }
+                        return [3 /*break*/, 10];
+                    case 10:
+                        _i++;
+                        return [3 /*break*/, 3];
+                    case 11:
+                        if (transportExceptions.length > 0) {
+                            return [2 /*return*/, Promise.reject(new Error("Unable to connect to the server with any of the available transports. " + transportExceptions.join(" ")))];
+                        }
+                        return [2 /*return*/, Promise.reject(new Error("None of the transports supported by the client are supported by the server."))];
+                }
+            });
+        });
+    };
+    HttpConnection.prototype.constructTransport = function (transport) {
+        switch (transport) {
+            case _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].WebSockets:
+                if (!this.options.WebSocket) {
+                    throw new Error("'WebSocket' is not supported in your environment.");
+                }
+                return new _WebSocketTransport__WEBPACK_IMPORTED_MODULE_6__["WebSocketTransport"](this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.WebSocket);
+            case _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].ServerSentEvents:
+                if (!this.options.EventSource) {
+                    throw new Error("'EventSource' is not supported in your environment.");
+                }
+                return new _ServerSentEventsTransport__WEBPACK_IMPORTED_MODULE_4__["ServerSentEventsTransport"](this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false, this.options.EventSource);
+            case _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].LongPolling:
+                return new _LongPollingTransport__WEBPACK_IMPORTED_MODULE_3__["LongPollingTransport"](this.httpClient, this.accessTokenFactory, this.logger, this.options.logMessageContent || false);
+            default:
+                throw new Error("Unknown transport: " + transport + ".");
+        }
+    };
+    HttpConnection.prototype.resolveTransport = function (endpoint, requestedTransport, requestedTransferFormat) {
+        var transport = _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][endpoint.transport];
+        if (transport === null || transport === undefined) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Skipping transport '" + endpoint.transport + "' because it is not supported by this client.");
+        }
+        else {
+            var transferFormats = endpoint.transferFormats.map(function (s) { return _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"][s]; });
+            if (transportMatches(requestedTransport, transport)) {
+                if (transferFormats.indexOf(requestedTransferFormat) >= 0) {
+                    if ((transport === _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].WebSockets && !this.options.WebSocket) ||
+                        (transport === _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].ServerSentEvents && !this.options.EventSource)) {
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Skipping transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' because it is not supported in your environment.'");
+                        throw new Error("'" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' is not supported in your environment.");
+                    }
+                    else {
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Selecting transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "'.");
+                        return transport;
+                    }
+                }
+                else {
+                    this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Skipping transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' because it does not support the requested transfer format '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"][requestedTransferFormat] + "'.");
+                    throw new Error("'" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' does not support " + _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"][requestedTransferFormat] + ".");
+                }
+            }
+            else {
+                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Skipping transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' because it was disabled by the client.");
+                throw new Error("'" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' is disabled by the client.");
+            }
+        }
+        return null;
+    };
+    HttpConnection.prototype.isITransport = function (transport) {
+        return transport && typeof (transport) === "object" && "connect" in transport;
+    };
+    HttpConnection.prototype.stopConnection = function (error) {
+        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "HttpConnection.stopConnection(" + error + ") called while in state " + this.connectionState + ".");
+        this.transport = undefined;
+        // If we have a stopError, it takes precedence over the error from the transport
+        error = this.stopError || error;
+        this.stopError = undefined;
+        if (this.connectionState === "Disconnected" /* Disconnected */) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Call to HttpConnection.stopConnection(" + error + ") was ignored because the connection is already in the disconnected state.");
+            return;
+        }
+        if (this.connectionState === "Connecting " /* Connecting */) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Warning, "Call to HttpConnection.stopConnection(" + error + ") was ignored because the connection hasn't yet left the in the connecting state.");
+            return;
+        }
+        if (this.connectionState === "Disconnecting" /* Disconnecting */) {
+            // A call to stop() induced this call to stopConnection and needs to be completed.
+            // Any stop() awaiters will be scheduled to continue after the onclose callback fires.
+            this.stopPromiseResolver();
+        }
+        if (error) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Connection disconnected with error '" + error + "'.");
+        }
+        else {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Information, "Connection disconnected.");
+        }
+        this.connectionId = undefined;
+        this.connectionState = "Disconnected" /* Disconnected */;
+        if (this.onclose && this.connectionStarted) {
+            this.connectionStarted = false;
+            try {
+                this.onclose(error);
+            }
+            catch (e) {
+                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "HttpConnection.onclose(" + error + ") threw error '" + e + "'.");
+            }
+        }
+    };
+    HttpConnection.prototype.resolveUrl = function (url) {
+        // startsWith is not supported in IE
+        if (url.lastIndexOf("https://", 0) === 0 || url.lastIndexOf("http://", 0) === 0) {
+            return url;
+        }
+        if (!_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isBrowser || !window.document) {
+            throw new Error("Cannot resolve '" + url + "'.");
+        }
+        // Setting the url to the href propery of an anchor tag handles normalization
+        // for us. There are 3 main cases.
+        // 1. Relative  path normalization e.g "b" -> "http://localhost:5000/a/b"
+        // 2. Absolute path normalization e.g "/a/b" -> "http://localhost:5000/a/b"
+        // 3. Networkpath reference normalization e.g "//localhost:5000/a/b" -> "http://localhost:5000/a/b"
+        var aTag = window.document.createElement("a");
+        aTag.href = url;
+        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Information, "Normalizing '" + url + "' to '" + aTag.href + "'.");
+        return aTag.href;
+    };
+    HttpConnection.prototype.resolveNegotiateUrl = function (url) {
+        var index = url.indexOf("?");
+        var negotiateUrl = url.substring(0, index === -1 ? url.length : index);
+        if (negotiateUrl[negotiateUrl.length - 1] !== "/") {
+            negotiateUrl += "/";
+        }
+        negotiateUrl += "negotiate";
+        negotiateUrl += index === -1 ? "" : url.substring(index);
+        return negotiateUrl;
+    };
+    return HttpConnection;
+}());
+
+function transportMatches(requestedTransport, actualTransport) {
+    return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
+}
+var TransportSendQueue = /** @class */ (function () {
+    function TransportSendQueue(transport) {
+        this.transport = transport;
+        this.buffer = [];
+        this.executing = true;
+        this.sendBufferedData = new PromiseSource();
+        this.transportResult = new PromiseSource();
+        // Suppress typescript error about handling Promises. The sendLoop doesn't need to be observed
+        this.sendLoop().then(function () { }, function (_) { });
+    }
+    TransportSendQueue.prototype.send = function (data) {
+        this.bufferData(data);
+        return this.transportResult.promise;
+    };
+    TransportSendQueue.prototype.stop = function () {
+        this.executing = false;
+        this.sendBufferedData.resolve();
+    };
+    TransportSendQueue.prototype.bufferData = function (data) {
+        if (this.buffer.length && typeof (this.buffer[0]) !== typeof (data)) {
+            throw new Error("Expected data to be of type " + typeof (this.buffer) + " but was of type " + typeof (data));
+        }
+        this.buffer.push(data);
+        this.sendBufferedData.resolve();
+    };
+    TransportSendQueue.prototype.sendLoop = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var transportResult, data, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (false) {}
+                        return [4 /*yield*/, this.sendBufferedData.promise];
+                    case 1:
+                        _a.sent();
+                        if (!this.executing) {
+                            // Did we stop?
+                            return [3 /*break*/, 6];
+                        }
+                        this.sendBufferedData = new PromiseSource();
+                        transportResult = this.transportResult;
+                        this.transportResult = new PromiseSource();
+                        data = typeof (this.buffer[0]) === "string" ?
+                            this.buffer.join("") :
+                            TransportSendQueue.concatBuffers(this.buffer);
+                        this.buffer.length = 0;
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, this.transport.send(data)];
+                    case 3:
+                        _a.sent();
+                        transportResult.resolve();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        error_1 = _a.sent();
+                        transportResult.reject(error_1);
+                        return [3 /*break*/, 5];
+                    case 5: return [3 /*break*/, 0];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TransportSendQueue.concatBuffers = function (arrayBuffers) {
+        var totalLength = arrayBuffers.map(function (b) { return b.byteLength; }).reduce(function (a, b) { return a + b; });
+        var result = new Uint8Array(totalLength);
+        var offset = 0;
+        for (var _i = 0, arrayBuffers_1 = arrayBuffers; _i < arrayBuffers_1.length; _i++) {
+            var item = arrayBuffers_1[_i];
+            result.set(new Uint8Array(item), offset);
+            offset += item.byteLength;
+        }
+        return result;
+    };
+    return TransportSendQueue;
+}());
+
+var PromiseSource = /** @class */ (function () {
+    function PromiseSource() {
+        var _this = this;
+        this.promise = new Promise(function (resolve, reject) {
+            var _a;
+            return _a = [resolve, reject], _this.resolver = _a[0], _this.rejecter = _a[1], _a;
+        });
+    }
+    PromiseSource.prototype.resolve = function () {
+        this.resolver();
+    };
+    PromiseSource.prototype.reject = function (reason) {
+        this.rejecter(reason);
+    };
+    return PromiseSource;
+}());
+//# sourceMappingURL=HttpConnection.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HubConnection.js":
+/*!***************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HubConnection.js ***!
+  \***************************************************************************************************************/
+/*! exports provided: HubConnectionState, HubConnection */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HubConnectionState", function() { return HubConnectionState; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HubConnection", function() { return HubConnection; });
+/* harmony import */ var _HandshakeProtocol__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./HandshakeProtocol */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HandshakeProtocol.js");
+/* harmony import */ var _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./IHubProtocol */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/IHubProtocol.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _Subject__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Subject */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Subject.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+
+
+
+
+var DEFAULT_TIMEOUT_IN_MS = 30 * 1000;
+var DEFAULT_PING_INTERVAL_IN_MS = 15 * 1000;
+/** Describes the current state of the {@link HubConnection} to the server. */
+var HubConnectionState;
+(function (HubConnectionState) {
+    /** The hub connection is disconnected. */
+    HubConnectionState["Disconnected"] = "Disconnected";
+    /** The hub connection is connecting. */
+    HubConnectionState["Connecting"] = "Connecting";
+    /** The hub connection is connected. */
+    HubConnectionState["Connected"] = "Connected";
+    /** The hub connection is disconnecting. */
+    HubConnectionState["Disconnecting"] = "Disconnecting";
+    /** The hub connection is reconnecting. */
+    HubConnectionState["Reconnecting"] = "Reconnecting";
+})(HubConnectionState || (HubConnectionState = {}));
+/** Represents a connection to a SignalR Hub. */
+var HubConnection = /** @class */ (function () {
+    function HubConnection(connection, logger, protocol, reconnectPolicy) {
+        var _this = this;
+        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(connection, "connection");
+        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(logger, "logger");
+        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(protocol, "protocol");
+        this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
+        this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
+        this.logger = logger;
+        this.protocol = protocol;
+        this.connection = connection;
+        this.reconnectPolicy = reconnectPolicy;
+        this.handshakeProtocol = new _HandshakeProtocol__WEBPACK_IMPORTED_MODULE_0__["HandshakeProtocol"]();
+        this.connection.onreceive = function (data) { return _this.processIncomingData(data); };
+        this.connection.onclose = function (error) { return _this.connectionClosed(error); };
+        this.callbacks = {};
+        this.methods = {};
+        this.closedCallbacks = [];
+        this.reconnectingCallbacks = [];
+        this.reconnectedCallbacks = [];
+        this.invocationId = 0;
+        this.receivedHandshakeResponse = false;
+        this.connectionState = HubConnectionState.Disconnected;
+        this.connectionStarted = false;
+        this.cachedPingMessage = this.protocol.writeMessage({ type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Ping });
+    }
+    /** @internal */
+    // Using a public static factory method means we can have a private constructor and an _internal_
+    // create method that can be used by HubConnectionBuilder. An "internal" constructor would just
+    // be stripped away and the '.d.ts' file would have no constructor, which is interpreted as a
+    // public parameter-less constructor.
+    HubConnection.create = function (connection, logger, protocol, reconnectPolicy) {
+        return new HubConnection(connection, logger, protocol, reconnectPolicy);
+    };
+    Object.defineProperty(HubConnection.prototype, "state", {
+        /** Indicates the state of the {@link HubConnection} to the server. */
+        get: function () {
+            return this.connectionState;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(HubConnection.prototype, "connectionId", {
+        /** Represents the connection id of the {@link HubConnection} on the server. The connection id will be null when the connection is either
+         *  in the disconnected state or if the negotiation step was skipped.
+         */
+        get: function () {
+            return this.connection ? (this.connection.connectionId || null) : null;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /** Starts the connection.
+     *
+     * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.
+     */
+    HubConnection.prototype.start = function () {
+        this.startPromise = this.startWithStateTransitions();
+        return this.startPromise;
+    };
+    HubConnection.prototype.startWithStateTransitions = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.connectionState !== HubConnectionState.Disconnected) {
+                            return [2 /*return*/, Promise.reject(new Error("Cannot start a HubConnection that is not in the 'Disconnected' state."))];
+                        }
+                        this.connectionState = HubConnectionState.Connecting;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Starting HubConnection.");
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.startInternal()];
+                    case 2:
+                        _a.sent();
+                        this.connectionState = HubConnectionState.Connected;
+                        this.connectionStarted = true;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "HubConnection connected successfully.");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        this.connectionState = HubConnectionState.Disconnected;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "HubConnection failed to start successfully because of error '" + e_1 + "'.");
+                        return [2 /*return*/, Promise.reject(e_1)];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HubConnection.prototype.startInternal = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var handshakePromise, handshakeRequest, e_2;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.stopDuringStartError = undefined;
+                        this.receivedHandshakeResponse = false;
+                        handshakePromise = new Promise(function (resolve, reject) {
+                            _this.handshakeResolver = resolve;
+                            _this.handshakeRejecter = reject;
+                        });
+                        return [4 /*yield*/, this.connection.start(this.protocol.transferFormat)];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 5, , 7]);
+                        handshakeRequest = {
+                            protocol: this.protocol.name,
+                            version: this.protocol.version,
+                        };
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Sending handshake request.");
+                        return [4 /*yield*/, this.sendMessage(this.handshakeProtocol.writeHandshakeRequest(handshakeRequest))];
+                    case 3:
+                        _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Using HubProtocol '" + this.protocol.name + "'.");
+                        // defensively cleanup timeout in case we receive a message from the server before we finish start
+                        this.cleanupTimeout();
+                        this.resetTimeoutPeriod();
+                        this.resetKeepAliveInterval();
+                        return [4 /*yield*/, handshakePromise];
+                    case 4:
+                        _a.sent();
+                        // It's important to check the stopDuringStartError instead of just relying on the handshakePromise
+                        // being rejected on close, because this continuation can run after both the handshake completed successfully
+                        // and the connection was closed.
+                        if (this.stopDuringStartError) {
+                            // It's important to throw instead of returning a rejected promise, because we don't want to allow any state
+                            // transitions to occur between now and the calling code observing the exceptions. Returning a rejected promise
+                            // will cause the calling continuation to get scheduled to run later.
+                            throw this.stopDuringStartError;
+                        }
+                        return [3 /*break*/, 7];
+                    case 5:
+                        e_2 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Hub handshake failed with error '" + e_2 + "' during start(). Stopping HubConnection.");
+                        this.cleanupTimeout();
+                        this.cleanupPingTimer();
+                        // HttpConnection.stop() should not complete until after the onclose callback is invoked.
+                        // This will transition the HubConnection to the disconnected state before HttpConnection.stop() completes.
+                        return [4 /*yield*/, this.connection.stop(e_2)];
+                    case 6:
+                        // HttpConnection.stop() should not complete until after the onclose callback is invoked.
+                        // This will transition the HubConnection to the disconnected state before HttpConnection.stop() completes.
+                        _a.sent();
+                        throw e_2;
+                    case 7: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    /** Stops the connection.
+     *
+     * @returns {Promise<void>} A Promise that resolves when the connection has been successfully terminated, or rejects with an error.
+     */
+    HubConnection.prototype.stop = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var startPromise, e_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        startPromise = this.startPromise;
+                        this.stopPromise = this.stopInternal();
+                        return [4 /*yield*/, this.stopPromise];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        // Awaiting undefined continues immediately
+                        return [4 /*yield*/, startPromise];
+                    case 3:
+                        // Awaiting undefined continues immediately
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        e_3 = _a.sent();
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HubConnection.prototype.stopInternal = function (error) {
+        if (this.connectionState === HubConnectionState.Disconnected) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Call to HubConnection.stop(" + error + ") ignored because it is already in the disconnected state.");
+            return Promise.resolve();
+        }
+        if (this.connectionState === HubConnectionState.Disconnecting) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Call to HttpConnection.stop(" + error + ") ignored because the connection is already in the disconnecting state.");
+            return this.stopPromise;
+        }
+        this.connectionState = HubConnectionState.Disconnecting;
+        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Stopping HubConnection.");
+        if (this.reconnectDelayHandle) {
+            // We're in a reconnect delay which means the underlying connection is currently already stopped.
+            // Just clear the handle to stop the reconnect loop (which no one is waiting on thankfully) and
+            // fire the onclose callbacks.
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection stopped during reconnect delay. Done reconnecting.");
+            clearTimeout(this.reconnectDelayHandle);
+            this.reconnectDelayHandle = undefined;
+            this.completeClose();
+            return Promise.resolve();
+        }
+        this.cleanupTimeout();
+        this.cleanupPingTimer();
+        this.stopDuringStartError = error || new Error("The connection was stopped before the hub handshake could complete.");
+        // HttpConnection.stop() should not complete until after either HttpConnection.start() fails
+        // or the onclose callback is invoked. The onclose callback will transition the HubConnection
+        // to the disconnected state if need be before HttpConnection.stop() completes.
+        return this.connection.stop(error);
+    };
+    /** Invokes a streaming hub method on the server using the specified name and arguments.
+     *
+     * @typeparam T The type of the items returned by the server.
+     * @param {string} methodName The name of the server method to invoke.
+     * @param {any[]} args The arguments used to invoke the server method.
+     * @returns {IStreamResult<T>} An object that yields results from the server as they are received.
+     */
+    HubConnection.prototype.stream = function (methodName) {
+        var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        var _a = this.replaceStreamingParams(args), streams = _a[0], streamIds = _a[1];
+        var invocationDescriptor = this.createStreamInvocation(methodName, args, streamIds);
+        var promiseQueue;
+        var subject = new _Subject__WEBPACK_IMPORTED_MODULE_3__["Subject"]();
+        subject.cancelCallback = function () {
+            var cancelInvocation = _this.createCancelInvocation(invocationDescriptor.invocationId);
+            delete _this.callbacks[invocationDescriptor.invocationId];
+            return promiseQueue.then(function () {
+                return _this.sendWithProtocol(cancelInvocation);
+            });
+        };
+        this.callbacks[invocationDescriptor.invocationId] = function (invocationEvent, error) {
+            if (error) {
+                subject.error(error);
+                return;
+            }
+            else if (invocationEvent) {
+                // invocationEvent will not be null when an error is not passed to the callback
+                if (invocationEvent.type === _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion) {
+                    if (invocationEvent.error) {
+                        subject.error(new Error(invocationEvent.error));
+                    }
+                    else {
+                        subject.complete();
+                    }
+                }
+                else {
+                    subject.next((invocationEvent.item));
+                }
+            }
+        };
+        promiseQueue = this.sendWithProtocol(invocationDescriptor)
+            .catch(function (e) {
+            subject.error(e);
+            delete _this.callbacks[invocationDescriptor.invocationId];
+        });
+        this.launchStreams(streams, promiseQueue);
+        return subject;
+    };
+    HubConnection.prototype.sendMessage = function (message) {
+        this.resetKeepAliveInterval();
+        return this.connection.send(message);
+    };
+    /**
+     * Sends a js object to the server.
+     * @param message The js object to serialize and send.
+     */
+    HubConnection.prototype.sendWithProtocol = function (message) {
+        return this.sendMessage(this.protocol.writeMessage(message));
+    };
+    /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
+     *
+     * The Promise returned by this method resolves when the client has sent the invocation to the server. The server may still
+     * be processing the invocation.
+     *
+     * @param {string} methodName The name of the server method to invoke.
+     * @param {any[]} args The arguments used to invoke the server method.
+     * @returns {Promise<void>} A Promise that resolves when the invocation has been successfully sent, or rejects with an error.
+     */
+    HubConnection.prototype.send = function (methodName) {
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        var _a = this.replaceStreamingParams(args), streams = _a[0], streamIds = _a[1];
+        var sendPromise = this.sendWithProtocol(this.createInvocation(methodName, args, true, streamIds));
+        this.launchStreams(streams, sendPromise);
+        return sendPromise;
+    };
+    /** Invokes a hub method on the server using the specified name and arguments.
+     *
+     * The Promise returned by this method resolves when the server indicates it has finished invoking the method. When the promise
+     * resolves, the server has finished invoking the method. If the server method returns a result, it is produced as the result of
+     * resolving the Promise.
+     *
+     * @typeparam T The expected return type.
+     * @param {string} methodName The name of the server method to invoke.
+     * @param {any[]} args The arguments used to invoke the server method.
+     * @returns {Promise<T>} A Promise that resolves with the result of the server method (if any), or rejects with an error.
+     */
+    HubConnection.prototype.invoke = function (methodName) {
+        var _this = this;
+        var args = [];
+        for (var _i = 1; _i < arguments.length; _i++) {
+            args[_i - 1] = arguments[_i];
+        }
+        var _a = this.replaceStreamingParams(args), streams = _a[0], streamIds = _a[1];
+        var invocationDescriptor = this.createInvocation(methodName, args, false, streamIds);
+        var p = new Promise(function (resolve, reject) {
+            // invocationId will always have a value for a non-blocking invocation
+            _this.callbacks[invocationDescriptor.invocationId] = function (invocationEvent, error) {
+                if (error) {
+                    reject(error);
+                    return;
+                }
+                else if (invocationEvent) {
+                    // invocationEvent will not be null when an error is not passed to the callback
+                    if (invocationEvent.type === _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion) {
+                        if (invocationEvent.error) {
+                            reject(new Error(invocationEvent.error));
+                        }
+                        else {
+                            resolve(invocationEvent.result);
+                        }
+                    }
+                    else {
+                        reject(new Error("Unexpected message type: " + invocationEvent.type));
+                    }
+                }
+            };
+            var promiseQueue = _this.sendWithProtocol(invocationDescriptor)
+                .catch(function (e) {
+                reject(e);
+                // invocationId will always have a value for a non-blocking invocation
+                delete _this.callbacks[invocationDescriptor.invocationId];
+            });
+            _this.launchStreams(streams, promiseQueue);
+        });
+        return p;
+    };
+    /** Registers a handler that will be invoked when the hub method with the specified method name is invoked.
+     *
+     * @param {string} methodName The name of the hub method to define.
+     * @param {Function} newMethod The handler that will be raised when the hub method is invoked.
+     */
+    HubConnection.prototype.on = function (methodName, newMethod) {
+        if (!methodName || !newMethod) {
+            return;
+        }
+        methodName = methodName.toLowerCase();
+        if (!this.methods[methodName]) {
+            this.methods[methodName] = [];
+        }
+        // Preventing adding the same handler multiple times.
+        if (this.methods[methodName].indexOf(newMethod) !== -1) {
+            return;
+        }
+        this.methods[methodName].push(newMethod);
+    };
+    HubConnection.prototype.off = function (methodName, method) {
+        if (!methodName) {
+            return;
+        }
+        methodName = methodName.toLowerCase();
+        var handlers = this.methods[methodName];
+        if (!handlers) {
+            return;
+        }
+        if (method) {
+            var removeIdx = handlers.indexOf(method);
+            if (removeIdx !== -1) {
+                handlers.splice(removeIdx, 1);
+                if (handlers.length === 0) {
+                    delete this.methods[methodName];
+                }
+            }
+        }
+        else {
+            delete this.methods[methodName];
+        }
+    };
+    /** Registers a handler that will be invoked when the connection is closed.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection is closed. Optionally receives a single argument containing the error that caused the connection to close (if any).
+     */
+    HubConnection.prototype.onclose = function (callback) {
+        if (callback) {
+            this.closedCallbacks.push(callback);
+        }
+    };
+    /** Registers a handler that will be invoked when the connection starts reconnecting.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection starts reconnecting. Optionally receives a single argument containing the error that caused the connection to start reconnecting (if any).
+     */
+    HubConnection.prototype.onreconnecting = function (callback) {
+        if (callback) {
+            this.reconnectingCallbacks.push(callback);
+        }
+    };
+    /** Registers a handler that will be invoked when the connection successfully reconnects.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection successfully reconnects.
+     */
+    HubConnection.prototype.onreconnected = function (callback) {
+        if (callback) {
+            this.reconnectedCallbacks.push(callback);
+        }
+    };
+    HubConnection.prototype.processIncomingData = function (data) {
+        this.cleanupTimeout();
+        if (!this.receivedHandshakeResponse) {
+            data = this.processHandshakeResponse(data);
+            this.receivedHandshakeResponse = true;
+        }
+        // Data may have all been read when processing handshake response
+        if (data) {
+            // Parse the messages
+            var messages = this.protocol.parseMessages(data, this.logger);
+            for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
+                var message = messages_1[_i];
+                switch (message.type) {
+                    case _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Invocation:
+                        this.invokeClientMethod(message);
+                        break;
+                    case _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].StreamItem:
+                    case _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion:
+                        var callback = this.callbacks[message.invocationId];
+                        if (callback) {
+                            if (message.type === _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion) {
+                                delete this.callbacks[message.invocationId];
+                            }
+                            callback(message);
+                        }
+                        break;
+                    case _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Ping:
+                        // Don't care about pings
+                        break;
+                    case _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Close:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Close message received from server.");
+                        // We don't want to wait on the stop itself.
+                        this.stopPromise = this.stopInternal(message.error ? new Error("Server returned an error on close: " + message.error) : undefined);
+                        break;
+                    default:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "Invalid message type: " + message.type + ".");
+                        break;
+                }
+            }
+        }
+        this.resetTimeoutPeriod();
+    };
+    HubConnection.prototype.processHandshakeResponse = function (data) {
+        var _a;
+        var responseMessage;
+        var remainingData;
+        try {
+            _a = this.handshakeProtocol.parseHandshakeResponse(data), remainingData = _a[0], responseMessage = _a[1];
+        }
+        catch (e) {
+            var message = "Error parsing handshake response: " + e;
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, message);
+            var error = new Error(message);
+            this.handshakeRejecter(error);
+            throw error;
+        }
+        if (responseMessage.error) {
+            var message = "Server returned handshake error: " + responseMessage.error;
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, message);
+            var error = new Error(message);
+            this.handshakeRejecter(error);
+            throw error;
+        }
+        else {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Server handshake complete.");
+        }
+        this.handshakeResolver();
+        return remainingData;
+    };
+    HubConnection.prototype.resetKeepAliveInterval = function () {
+        var _this = this;
+        this.cleanupPingTimer();
+        this.pingServerHandle = setTimeout(function () { return __awaiter(_this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        if (!(this.connectionState === HubConnectionState.Connected)) return [3 /*break*/, 4];
+                        _b.label = 1;
+                    case 1:
+                        _b.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.sendMessage(this.cachedPingMessage)];
+                    case 2:
+                        _b.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        _a = _b.sent();
+                        // We don't care about the error. It should be seen elsewhere in the client.
+                        // The connection is probably in a bad or closed state now, cleanup the timer so it stops triggering
+                        this.cleanupPingTimer();
+                        return [3 /*break*/, 4];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        }); }, this.keepAliveIntervalInMilliseconds);
+    };
+    HubConnection.prototype.resetTimeoutPeriod = function () {
+        var _this = this;
+        if (!this.connection.features || !this.connection.features.inherentKeepAlive) {
+            // Set the timeout timer
+            this.timeoutHandle = setTimeout(function () { return _this.serverTimeout(); }, this.serverTimeoutInMilliseconds);
+        }
+    };
+    HubConnection.prototype.serverTimeout = function () {
+        // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
+        // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.
+        // tslint:disable-next-line:no-floating-promises
+        this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
+    };
+    HubConnection.prototype.invokeClientMethod = function (invocationMessage) {
+        var _this = this;
+        var methods = this.methods[invocationMessage.target.toLowerCase()];
+        if (methods) {
+            try {
+                methods.forEach(function (m) { return m.apply(_this, invocationMessage.arguments); });
+            }
+            catch (e) {
+                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "A callback for the method " + invocationMessage.target.toLowerCase() + " threw error '" + e + "'.");
+            }
+            if (invocationMessage.invocationId) {
+                // This is not supported in v1. So we return an error to avoid blocking the server waiting for the response.
+                var message = "Server requested a response, which is not supported in this version of the client.";
+                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, message);
+                // We don't want to wait on the stop itself.
+                this.stopPromise = this.stopInternal(new Error(message));
+            }
+        }
+        else {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "No client method with the name '" + invocationMessage.target + "' found.");
+        }
+    };
+    HubConnection.prototype.connectionClosed = function (error) {
+        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "HubConnection.connectionClosed(" + error + ") called while in state " + this.connectionState + ".");
+        // Triggering this.handshakeRejecter is insufficient because it could already be resolved without the continuation having run yet.
+        this.stopDuringStartError = this.stopDuringStartError || error || new Error("The underlying connection was closed before the hub handshake could complete.");
+        // If the handshake is in progress, start will be waiting for the handshake promise, so we complete it.
+        // If it has already completed, this should just noop.
+        if (this.handshakeResolver) {
+            this.handshakeResolver();
+        }
+        this.cancelCallbacksWithError(error || new Error("Invocation canceled due to the underlying connection being closed."));
+        this.cleanupTimeout();
+        this.cleanupPingTimer();
+        if (this.connectionState === HubConnectionState.Disconnecting) {
+            this.completeClose(error);
+        }
+        else if (this.connectionState === HubConnectionState.Connected && this.reconnectPolicy) {
+            // tslint:disable-next-line:no-floating-promises
+            this.reconnect(error);
+        }
+        else if (this.connectionState === HubConnectionState.Connected) {
+            this.completeClose(error);
+        }
+        // If none of the above if conditions were true were called the HubConnection must be in either:
+        // 1. The Connecting state in which case the handshakeResolver will complete it and stopDuringStartError will fail it.
+        // 2. The Reconnecting state in which case the handshakeResolver will complete it and stopDuringStartError will fail the current reconnect attempt
+        //    and potentially continue the reconnect() loop.
+        // 3. The Disconnected state in which case we're already done.
+    };
+    HubConnection.prototype.completeClose = function (error) {
+        var _this = this;
+        if (this.connectionStarted) {
+            this.connectionState = HubConnectionState.Disconnected;
+            this.connectionStarted = false;
+            try {
+                this.closedCallbacks.forEach(function (c) { return c.apply(_this, [error]); });
+            }
+            catch (e) {
+                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "An onclose callback called with error '" + error + "' threw error '" + e + "'.");
+            }
+        }
+    };
+    HubConnection.prototype.reconnect = function (error) {
+        return __awaiter(this, void 0, void 0, function () {
+            var reconnectStartTime, previousReconnectAttempts, nextRetryDelay, e_4;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        reconnectStartTime = Date.now();
+                        previousReconnectAttempts = 0;
+                        nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, 0);
+                        if (nextRetryDelay === null) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection not reconnecting because the IReconnectPolicy returned null on the first reconnect attempt.");
+                            this.completeClose(error);
+                            return [2 /*return*/];
+                        }
+                        this.connectionState = HubConnectionState.Reconnecting;
+                        if (error) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Connection reconnecting because of error '" + error + "'.");
+                        }
+                        else {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Connection reconnecting.");
+                        }
+                        if (this.onreconnecting) {
+                            try {
+                                this.reconnectingCallbacks.forEach(function (c) { return c.apply(_this, [error]); });
+                            }
+                            catch (e) {
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "An onreconnecting callback called with error '" + error + "' threw error '" + e + "'.");
+                            }
+                            // Exit early if an onreconnecting callback called connection.stop().
+                            if (this.connectionState !== HubConnectionState.Reconnecting) {
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection left the reconnecting state in onreconnecting callback. Done reconnecting.");
+                                return [2 /*return*/];
+                            }
+                        }
+                        _a.label = 1;
+                    case 1:
+                        if (!(nextRetryDelay !== null)) return [3 /*break*/, 7];
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Reconnect attempt number " + previousReconnectAttempts + " will start in " + nextRetryDelay + " ms.");
+                        return [4 /*yield*/, new Promise(function (resolve) {
+                                _this.reconnectDelayHandle = setTimeout(resolve, nextRetryDelay);
+                            })];
+                    case 2:
+                        _a.sent();
+                        this.reconnectDelayHandle = undefined;
+                        if (this.connectionState !== HubConnectionState.Reconnecting) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection left the reconnecting state during reconnect delay. Done reconnecting.");
+                            return [2 /*return*/];
+                        }
+                        _a.label = 3;
+                    case 3:
+                        _a.trys.push([3, 5, , 6]);
+                        return [4 /*yield*/, this.startInternal()];
+                    case 4:
+                        _a.sent();
+                        this.connectionState = HubConnectionState.Connected;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "HubConnection reconnected successfully.");
+                        if (this.onreconnected) {
+                            try {
+                                this.reconnectedCallbacks.forEach(function (c) { return c.apply(_this, [_this.connection.connectionId]); });
+                            }
+                            catch (e) {
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "An onreconnected callback called with connectionId '" + this.connection.connectionId + "; threw error '" + e + "'.");
+                            }
+                        }
+                        return [2 /*return*/];
+                    case 5:
+                        e_4 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Reconnect attempt failed because of error '" + e_4 + "'.");
+                        if (this.connectionState !== HubConnectionState.Reconnecting) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection left the reconnecting state during reconnect attempt. Done reconnecting.");
+                            return [2 /*return*/];
+                        }
+                        return [3 /*break*/, 6];
+                    case 6:
+                        nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime);
+                        return [3 /*break*/, 1];
+                    case 7:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Reconnect retries have been exhausted after " + (Date.now() - reconnectStartTime) + " ms and " + previousReconnectAttempts + " failed attempts. Connection disconnecting.");
+                        this.completeClose();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HubConnection.prototype.getNextRetryDelay = function (previousRetryCount, elapsedMilliseconds) {
+        try {
+            return this.reconnectPolicy.nextRetryDelayInMilliseconds(previousRetryCount, elapsedMilliseconds);
+        }
+        catch (e) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "IReconnectPolicy.nextRetryDelayInMilliseconds(" + previousRetryCount + ", " + elapsedMilliseconds + ") threw error '" + e + "'.");
+            return null;
+        }
+    };
+    HubConnection.prototype.cancelCallbacksWithError = function (error) {
+        var callbacks = this.callbacks;
+        this.callbacks = {};
+        Object.keys(callbacks)
+            .forEach(function (key) {
+            var callback = callbacks[key];
+            callback(null, error);
+        });
+    };
+    HubConnection.prototype.cleanupPingTimer = function () {
+        if (this.pingServerHandle) {
+            clearTimeout(this.pingServerHandle);
+        }
+    };
+    HubConnection.prototype.cleanupTimeout = function () {
+        if (this.timeoutHandle) {
+            clearTimeout(this.timeoutHandle);
+        }
+    };
+    HubConnection.prototype.createInvocation = function (methodName, args, nonblocking, streamIds) {
+        if (nonblocking) {
+            return {
+                arguments: args,
+                streamIds: streamIds,
+                target: methodName,
+                type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Invocation,
+            };
+        }
+        else {
+            var invocationId = this.invocationId;
+            this.invocationId++;
+            return {
+                arguments: args,
+                invocationId: invocationId.toString(),
+                streamIds: streamIds,
+                target: methodName,
+                type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Invocation,
+            };
+        }
+    };
+    HubConnection.prototype.launchStreams = function (streams, promiseQueue) {
+        var _this = this;
+        if (streams.length === 0) {
+            return;
+        }
+        // Synchronize stream data so they arrive in-order on the server
+        if (!promiseQueue) {
+            promiseQueue = Promise.resolve();
+        }
+        var _loop_1 = function (streamId) {
+            streams[streamId].subscribe({
+                complete: function () {
+                    promiseQueue = promiseQueue.then(function () { return _this.sendWithProtocol(_this.createCompletionMessage(streamId)); });
+                },
+                error: function (err) {
+                    var message;
+                    if (err instanceof Error) {
+                        message = err.message;
+                    }
+                    else if (err && err.toString) {
+                        message = err.toString();
+                    }
+                    else {
+                        message = "Unknown error";
+                    }
+                    promiseQueue = promiseQueue.then(function () { return _this.sendWithProtocol(_this.createCompletionMessage(streamId, message)); });
+                },
+                next: function (item) {
+                    promiseQueue = promiseQueue.then(function () { return _this.sendWithProtocol(_this.createStreamItemMessage(streamId, item)); });
+                },
+            });
+        };
+        // We want to iterate over the keys, since the keys are the stream ids
+        // tslint:disable-next-line:forin
+        for (var streamId in streams) {
+            _loop_1(streamId);
+        }
+    };
+    HubConnection.prototype.replaceStreamingParams = function (args) {
+        var streams = [];
+        var streamIds = [];
+        for (var i = 0; i < args.length; i++) {
+            var argument = args[i];
+            if (this.isObservable(argument)) {
+                var streamId = this.invocationId;
+                this.invocationId++;
+                // Store the stream for later use
+                streams[streamId] = argument;
+                streamIds.push(streamId.toString());
+                // remove stream from args
+                args.splice(i, 1);
+            }
+        }
+        return [streams, streamIds];
+    };
+    HubConnection.prototype.isObservable = function (arg) {
+        // This allows other stream implementations to just work (like rxjs)
+        return arg && arg.subscribe && typeof arg.subscribe === "function";
+    };
+    HubConnection.prototype.createStreamInvocation = function (methodName, args, streamIds) {
+        var invocationId = this.invocationId;
+        this.invocationId++;
+        return {
+            arguments: args,
+            invocationId: invocationId.toString(),
+            streamIds: streamIds,
+            target: methodName,
+            type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].StreamInvocation,
+        };
+    };
+    HubConnection.prototype.createCancelInvocation = function (id) {
+        return {
+            invocationId: id,
+            type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].CancelInvocation,
+        };
+    };
+    HubConnection.prototype.createStreamItemMessage = function (id, item) {
+        return {
+            invocationId: id,
+            item: item,
+            type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].StreamItem,
+        };
+    };
+    HubConnection.prototype.createCompletionMessage = function (id, error, result) {
+        if (error) {
+            return {
+                error: error,
+                invocationId: id,
+                type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion,
+            };
+        }
+        return {
+            invocationId: id,
+            result: result,
+            type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion,
+        };
+    };
+    return HubConnection;
+}());
+
+//# sourceMappingURL=HubConnection.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HubConnectionBuilder.js":
+/*!**********************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HubConnectionBuilder.js ***!
+  \**********************************************************************************************************************/
+/*! exports provided: HubConnectionBuilder */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HubConnectionBuilder", function() { return HubConnectionBuilder; });
+/* harmony import */ var _DefaultReconnectPolicy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./DefaultReconnectPolicy */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/DefaultReconnectPolicy.js");
+/* harmony import */ var _HttpConnection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HttpConnection */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpConnection.js");
+/* harmony import */ var _HubConnection__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HubConnection */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HubConnection.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./JsonHubProtocol */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/JsonHubProtocol.js");
+/* harmony import */ var _Loggers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Loggers */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Loggers.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __assign = (undefined && undefined.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+
+
+
+
+
+
+
+// tslint:disable:object-literal-sort-keys
+var LogLevelNameMapping = {
+    trace: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Trace,
+    debug: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Debug,
+    info: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Information,
+    information: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Information,
+    warn: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Warning,
+    warning: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Warning,
+    error: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Error,
+    critical: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Critical,
+    none: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].None,
+};
+function parseLogLevel(name) {
+    // Case-insensitive matching via lower-casing
+    // Yes, I know case-folding is a complicated problem in Unicode, but we only support
+    // the ASCII strings defined in LogLevelNameMapping anyway, so it's fine -anurse.
+    var mapping = LogLevelNameMapping[name.toLowerCase()];
+    if (typeof mapping !== "undefined") {
+        return mapping;
+    }
+    else {
+        throw new Error("Unknown log level: " + name);
+    }
+}
+/** A builder for configuring {@link @aspnet/signalr.HubConnection} instances. */
+var HubConnectionBuilder = /** @class */ (function () {
+    function HubConnectionBuilder() {
+    }
+    HubConnectionBuilder.prototype.configureLogging = function (logging) {
+        _Utils__WEBPACK_IMPORTED_MODULE_6__["Arg"].isRequired(logging, "logging");
+        if (isLogger(logging)) {
+            this.logger = logging;
+        }
+        else if (typeof logging === "string") {
+            var logLevel = parseLogLevel(logging);
+            this.logger = new _Utils__WEBPACK_IMPORTED_MODULE_6__["ConsoleLogger"](logLevel);
+        }
+        else {
+            this.logger = new _Utils__WEBPACK_IMPORTED_MODULE_6__["ConsoleLogger"](logging);
+        }
+        return this;
+    };
+    HubConnectionBuilder.prototype.withUrl = function (url, transportTypeOrOptions) {
+        _Utils__WEBPACK_IMPORTED_MODULE_6__["Arg"].isRequired(url, "url");
+        this.url = url;
+        // Flow-typing knows where it's at. Since HttpTransportType is a number and IHttpConnectionOptions is guaranteed
+        // to be an object, we know (as does TypeScript) this comparison is all we need to figure out which overload was called.
+        if (typeof transportTypeOrOptions === "object") {
+            this.httpConnectionOptions = __assign({}, this.httpConnectionOptions, transportTypeOrOptions);
+        }
+        else {
+            this.httpConnectionOptions = __assign({}, this.httpConnectionOptions, { transport: transportTypeOrOptions });
+        }
+        return this;
+    };
+    /** Configures the {@link @aspnet/signalr.HubConnection} to use the specified Hub Protocol.
+     *
+     * @param {IHubProtocol} protocol The {@link @aspnet/signalr.IHubProtocol} implementation to use.
+     */
+    HubConnectionBuilder.prototype.withHubProtocol = function (protocol) {
+        _Utils__WEBPACK_IMPORTED_MODULE_6__["Arg"].isRequired(protocol, "protocol");
+        this.protocol = protocol;
+        return this;
+    };
+    HubConnectionBuilder.prototype.withAutomaticReconnect = function (retryDelaysOrReconnectPolicy) {
+        if (this.reconnectPolicy) {
+            throw new Error("A reconnectPolicy has already been set.");
+        }
+        if (!retryDelaysOrReconnectPolicy) {
+            this.reconnectPolicy = new _DefaultReconnectPolicy__WEBPACK_IMPORTED_MODULE_0__["DefaultReconnectPolicy"]();
+        }
+        else if (Array.isArray(retryDelaysOrReconnectPolicy)) {
+            this.reconnectPolicy = new _DefaultReconnectPolicy__WEBPACK_IMPORTED_MODULE_0__["DefaultReconnectPolicy"](retryDelaysOrReconnectPolicy);
+        }
+        else {
+            this.reconnectPolicy = retryDelaysOrReconnectPolicy;
+        }
+        return this;
+    };
+    /** Creates a {@link @aspnet/signalr.HubConnection} from the configuration options specified in this builder.
+     *
+     * @returns {HubConnection} The configured {@link @aspnet/signalr.HubConnection}.
+     */
+    HubConnectionBuilder.prototype.build = function () {
+        // If httpConnectionOptions has a logger, use it. Otherwise, override it with the one
+        // provided to configureLogger
+        var httpConnectionOptions = this.httpConnectionOptions || {};
+        // If it's 'null', the user **explicitly** asked for null, don't mess with it.
+        if (httpConnectionOptions.logger === undefined) {
+            // If our logger is undefined or null, that's OK, the HttpConnection constructor will handle it.
+            httpConnectionOptions.logger = this.logger;
+        }
+        // Now create the connection
+        if (!this.url) {
+            throw new Error("The 'HubConnectionBuilder.withUrl' method must be called before building the connection.");
+        }
+        var connection = new _HttpConnection__WEBPACK_IMPORTED_MODULE_1__["HttpConnection"](this.url, httpConnectionOptions);
+        return _HubConnection__WEBPACK_IMPORTED_MODULE_2__["HubConnection"].create(connection, this.logger || _Loggers__WEBPACK_IMPORTED_MODULE_5__["NullLogger"].instance, this.protocol || new _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_4__["JsonHubProtocol"](), this.reconnectPolicy);
+    };
+    return HubConnectionBuilder;
+}());
+
+function isLogger(logger) {
+    return logger.log !== undefined;
+}
+//# sourceMappingURL=HubConnectionBuilder.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/IHubProtocol.js":
+/*!**************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/IHubProtocol.js ***!
+  \**************************************************************************************************************/
+/*! exports provided: MessageType */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "MessageType", function() { return MessageType; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+/** Defines the type of a Hub Message. */
+var MessageType;
+(function (MessageType) {
+    /** Indicates the message is an Invocation message and implements the {@link @aspnet/signalr.InvocationMessage} interface. */
+    MessageType[MessageType["Invocation"] = 1] = "Invocation";
+    /** Indicates the message is a StreamItem message and implements the {@link @aspnet/signalr.StreamItemMessage} interface. */
+    MessageType[MessageType["StreamItem"] = 2] = "StreamItem";
+    /** Indicates the message is a Completion message and implements the {@link @aspnet/signalr.CompletionMessage} interface. */
+    MessageType[MessageType["Completion"] = 3] = "Completion";
+    /** Indicates the message is a Stream Invocation message and implements the {@link @aspnet/signalr.StreamInvocationMessage} interface. */
+    MessageType[MessageType["StreamInvocation"] = 4] = "StreamInvocation";
+    /** Indicates the message is a Cancel Invocation message and implements the {@link @aspnet/signalr.CancelInvocationMessage} interface. */
+    MessageType[MessageType["CancelInvocation"] = 5] = "CancelInvocation";
+    /** Indicates the message is a Ping message and implements the {@link @aspnet/signalr.PingMessage} interface. */
+    MessageType[MessageType["Ping"] = 6] = "Ping";
+    /** Indicates the message is a Close message and implements the {@link @aspnet/signalr.CloseMessage} interface. */
+    MessageType[MessageType["Close"] = 7] = "Close";
+})(MessageType || (MessageType = {}));
+//# sourceMappingURL=IHubProtocol.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js":
+/*!*********************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js ***!
+  \*********************************************************************************************************/
+/*! exports provided: LogLevel */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LogLevel", function() { return LogLevel; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// These values are designed to match the ASP.NET Log Levels since that's the pattern we're emulating here.
+/** Indicates the severity of a log message.
+ *
+ * Log Levels are ordered in increasing severity. So `Debug` is more severe than `Trace`, etc.
+ */
+var LogLevel;
+(function (LogLevel) {
+    /** Log level for very low severity diagnostic messages. */
+    LogLevel[LogLevel["Trace"] = 0] = "Trace";
+    /** Log level for low severity diagnostic messages. */
+    LogLevel[LogLevel["Debug"] = 1] = "Debug";
+    /** Log level for informational diagnostic messages. */
+    LogLevel[LogLevel["Information"] = 2] = "Information";
+    /** Log level for diagnostic messages that indicate a non-fatal problem. */
+    LogLevel[LogLevel["Warning"] = 3] = "Warning";
+    /** Log level for diagnostic messages that indicate a failure in the current operation. */
+    LogLevel[LogLevel["Error"] = 4] = "Error";
+    /** Log level for diagnostic messages that indicate a failure that will terminate the entire application. */
+    LogLevel[LogLevel["Critical"] = 5] = "Critical";
+    /** The highest possible log level. Used when configuring logging to indicate that no log messages should be emitted. */
+    LogLevel[LogLevel["None"] = 6] = "None";
+})(LogLevel || (LogLevel = {}));
+//# sourceMappingURL=ILogger.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ITransport.js":
+/*!************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ITransport.js ***!
+  \************************************************************************************************************/
+/*! exports provided: HttpTransportType, TransferFormat */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HttpTransportType", function() { return HttpTransportType; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TransferFormat", function() { return TransferFormat; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// This will be treated as a bit flag in the future, so we keep it using power-of-two values.
+/** Specifies a specific HTTP transport type. */
+var HttpTransportType;
+(function (HttpTransportType) {
+    /** Specifies no transport preference. */
+    HttpTransportType[HttpTransportType["None"] = 0] = "None";
+    /** Specifies the WebSockets transport. */
+    HttpTransportType[HttpTransportType["WebSockets"] = 1] = "WebSockets";
+    /** Specifies the Server-Sent Events transport. */
+    HttpTransportType[HttpTransportType["ServerSentEvents"] = 2] = "ServerSentEvents";
+    /** Specifies the Long Polling transport. */
+    HttpTransportType[HttpTransportType["LongPolling"] = 4] = "LongPolling";
+})(HttpTransportType || (HttpTransportType = {}));
+/** Specifies the transfer format for a connection. */
+var TransferFormat;
+(function (TransferFormat) {
+    /** Specifies that only text data will be transmitted over the connection. */
+    TransferFormat[TransferFormat["Text"] = 1] = "Text";
+    /** Specifies that binary data will be transmitted over the connection. */
+    TransferFormat[TransferFormat["Binary"] = 2] = "Binary";
+})(TransferFormat || (TransferFormat = {}));
+//# sourceMappingURL=ITransport.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/JsonHubProtocol.js":
+/*!*****************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/JsonHubProtocol.js ***!
+  \*****************************************************************************************************************/
+/*! exports provided: JsonHubProtocol */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "JsonHubProtocol", function() { return JsonHubProtocol; });
+/* harmony import */ var _IHubProtocol__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./IHubProtocol */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/IHubProtocol.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _ITransport__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ITransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ITransport.js");
+/* harmony import */ var _Loggers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Loggers */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Loggers.js");
+/* harmony import */ var _TextMessageFormat__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./TextMessageFormat */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/TextMessageFormat.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+
+
+
+
+var JSON_HUB_PROTOCOL_NAME = "json";
+/** Implements the JSON Hub Protocol. */
+var JsonHubProtocol = /** @class */ (function () {
+    function JsonHubProtocol() {
+        /** @inheritDoc */
+        this.name = JSON_HUB_PROTOCOL_NAME;
+        /** @inheritDoc */
+        this.version = 1;
+        /** @inheritDoc */
+        this.transferFormat = _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"].Text;
+    }
+    /** Creates an array of {@link @aspnet/signalr.HubMessage} objects from the specified serialized representation.
+     *
+     * @param {string} input A string containing the serialized representation.
+     * @param {ILogger} logger A logger that will be used to log messages that occur during parsing.
+     */
+    JsonHubProtocol.prototype.parseMessages = function (input, logger) {
+        // The interface does allow "ArrayBuffer" to be passed in, but this implementation does not. So let's throw a useful error.
+        if (typeof input !== "string") {
+            throw new Error("Invalid input for JSON hub protocol. Expected a string.");
+        }
+        if (!input) {
+            return [];
+        }
+        if (logger === null) {
+            logger = _Loggers__WEBPACK_IMPORTED_MODULE_3__["NullLogger"].instance;
+        }
+        // Parse the messages
+        var messages = _TextMessageFormat__WEBPACK_IMPORTED_MODULE_4__["TextMessageFormat"].parse(input);
+        var hubMessages = [];
+        for (var _i = 0, messages_1 = messages; _i < messages_1.length; _i++) {
+            var message = messages_1[_i];
+            var parsedMessage = JSON.parse(message);
+            if (typeof parsedMessage.type !== "number") {
+                throw new Error("Invalid payload.");
+            }
+            switch (parsedMessage.type) {
+                case _IHubProtocol__WEBPACK_IMPORTED_MODULE_0__["MessageType"].Invocation:
+                    this.isInvocationMessage(parsedMessage);
+                    break;
+                case _IHubProtocol__WEBPACK_IMPORTED_MODULE_0__["MessageType"].StreamItem:
+                    this.isStreamItemMessage(parsedMessage);
+                    break;
+                case _IHubProtocol__WEBPACK_IMPORTED_MODULE_0__["MessageType"].Completion:
+                    this.isCompletionMessage(parsedMessage);
+                    break;
+                case _IHubProtocol__WEBPACK_IMPORTED_MODULE_0__["MessageType"].Ping:
+                    // Single value, no need to validate
+                    break;
+                case _IHubProtocol__WEBPACK_IMPORTED_MODULE_0__["MessageType"].Close:
+                    // All optional values, no need to validate
+                    break;
+                default:
+                    // Future protocol changes can add message types, old clients can ignore them
+                    logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Information, "Unknown message type '" + parsedMessage.type + "' ignored.");
+                    continue;
+            }
+            hubMessages.push(parsedMessage);
+        }
+        return hubMessages;
+    };
+    /** Writes the specified {@link @aspnet/signalr.HubMessage} to a string and returns it.
+     *
+     * @param {HubMessage} message The message to write.
+     * @returns {string} A string containing the serialized representation of the message.
+     */
+    JsonHubProtocol.prototype.writeMessage = function (message) {
+        return _TextMessageFormat__WEBPACK_IMPORTED_MODULE_4__["TextMessageFormat"].write(JSON.stringify(message));
+    };
+    JsonHubProtocol.prototype.isInvocationMessage = function (message) {
+        this.assertNotEmptyString(message.target, "Invalid payload for Invocation message.");
+        if (message.invocationId !== undefined) {
+            this.assertNotEmptyString(message.invocationId, "Invalid payload for Invocation message.");
+        }
+    };
+    JsonHubProtocol.prototype.isStreamItemMessage = function (message) {
+        this.assertNotEmptyString(message.invocationId, "Invalid payload for StreamItem message.");
+        if (message.item === undefined) {
+            throw new Error("Invalid payload for StreamItem message.");
+        }
+    };
+    JsonHubProtocol.prototype.isCompletionMessage = function (message) {
+        if (message.result && message.error) {
+            throw new Error("Invalid payload for Completion message.");
+        }
+        if (!message.result && message.error) {
+            this.assertNotEmptyString(message.error, "Invalid payload for Completion message.");
+        }
+        this.assertNotEmptyString(message.invocationId, "Invalid payload for Completion message.");
+    };
+    JsonHubProtocol.prototype.assertNotEmptyString = function (value, errorMessage) {
+        if (typeof value !== "string" || value === "") {
+            throw new Error(errorMessage);
+        }
+    };
+    return JsonHubProtocol;
+}());
+
+//# sourceMappingURL=JsonHubProtocol.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Loggers.js":
+/*!*********************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Loggers.js ***!
+  \*********************************************************************************************************/
+/*! exports provided: NullLogger */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NullLogger", function() { return NullLogger; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+/** A logger that does nothing when log messages are sent to it. */
+var NullLogger = /** @class */ (function () {
+    function NullLogger() {
+    }
+    /** @inheritDoc */
+    // tslint:disable-next-line
+    NullLogger.prototype.log = function (_logLevel, _message) {
+    };
+    /** The singleton instance of the {@link @aspnet/signalr.NullLogger}. */
+    NullLogger.instance = new NullLogger();
+    return NullLogger;
+}());
+
+//# sourceMappingURL=Loggers.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/LongPollingTransport.js":
+/*!**********************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/LongPollingTransport.js ***!
+  \**********************************************************************************************************************/
+/*! exports provided: LongPollingTransport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "LongPollingTransport", function() { return LongPollingTransport; });
+/* harmony import */ var _AbortController__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./AbortController */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/AbortController.js");
+/* harmony import */ var _Errors__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Errors */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Errors.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _ITransport__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ITransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ITransport.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+
+
+
+
+// Not exported from 'index', this type is internal.
+/** @private */
+var LongPollingTransport = /** @class */ (function () {
+    function LongPollingTransport(httpClient, accessTokenFactory, logger, logMessageContent) {
+        this.httpClient = httpClient;
+        this.accessTokenFactory = accessTokenFactory;
+        this.logger = logger;
+        this.pollAbort = new _AbortController__WEBPACK_IMPORTED_MODULE_0__["AbortController"]();
+        this.logMessageContent = logMessageContent;
+        this.running = false;
+        this.onreceive = null;
+        this.onclose = null;
+    }
+    Object.defineProperty(LongPollingTransport.prototype, "pollAborted", {
+        // This is an internal type, not exported from 'index' so this is really just internal.
+        get: function () {
+            return this.pollAbort.aborted;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    LongPollingTransport.prototype.connect = function (url, transferFormat) {
+        return __awaiter(this, void 0, void 0, function () {
+            var pollOptions, token, pollUrl, response;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(url, "url");
+                        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(transferFormat, "transferFormat");
+                        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isIn(transferFormat, _ITransport__WEBPACK_IMPORTED_MODULE_3__["TransferFormat"], "transferFormat");
+                        this.url = url;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) Connecting.");
+                        // Allow binary format on Node and Browsers that support binary content (indicated by the presence of responseType property)
+                        if (transferFormat === _ITransport__WEBPACK_IMPORTED_MODULE_3__["TransferFormat"].Binary &&
+                            (typeof XMLHttpRequest !== "undefined" && typeof new XMLHttpRequest().responseType !== "string")) {
+                            throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
+                        }
+                        pollOptions = {
+                            abortSignal: this.pollAbort.signal,
+                            headers: {},
+                            timeout: 100000,
+                        };
+                        if (transferFormat === _ITransport__WEBPACK_IMPORTED_MODULE_3__["TransferFormat"].Binary) {
+                            pollOptions.responseType = "arraybuffer";
+                        }
+                        return [4 /*yield*/, this.getAccessToken()];
+                    case 1:
+                        token = _a.sent();
+                        this.updateHeaderToken(pollOptions, token);
+                        pollUrl = url + "&_=" + Date.now();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) polling: " + pollUrl + ".");
+                        return [4 /*yield*/, this.httpClient.get(pollUrl, pollOptions)];
+                    case 2:
+                        response = _a.sent();
+                        if (response.statusCode !== 200) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "(LongPolling transport) Unexpected response code: " + response.statusCode + ".");
+                            // Mark running as false so that the poll immediately ends and runs the close logic
+                            this.closeError = new _Errors__WEBPACK_IMPORTED_MODULE_1__["HttpError"](response.statusText || "", response.statusCode);
+                            this.running = false;
+                        }
+                        else {
+                            this.running = true;
+                        }
+                        this.receiving = this.poll(this.url, pollOptions);
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    LongPollingTransport.prototype.getAccessToken = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.accessTokenFactory) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.accessTokenFactory()];
+                    case 1: return [2 /*return*/, _a.sent()];
+                    case 2: return [2 /*return*/, null];
+                }
+            });
+        });
+    };
+    LongPollingTransport.prototype.updateHeaderToken = function (request, token) {
+        if (!request.headers) {
+            request.headers = {};
+        }
+        if (token) {
+            // tslint:disable-next-line:no-string-literal
+            request.headers["Authorization"] = "Bearer " + token;
+            return;
+        }
+        // tslint:disable-next-line:no-string-literal
+        if (request.headers["Authorization"]) {
+            // tslint:disable-next-line:no-string-literal
+            delete request.headers["Authorization"];
+        }
+    };
+    LongPollingTransport.prototype.poll = function (url, pollOptions) {
+        return __awaiter(this, void 0, void 0, function () {
+            var token, pollUrl, response, e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, , 8, 9]);
+                        _a.label = 1;
+                    case 1:
+                        if (!this.running) return [3 /*break*/, 7];
+                        return [4 /*yield*/, this.getAccessToken()];
+                    case 2:
+                        token = _a.sent();
+                        this.updateHeaderToken(pollOptions, token);
+                        _a.label = 3;
+                    case 3:
+                        _a.trys.push([3, 5, , 6]);
+                        pollUrl = url + "&_=" + Date.now();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) polling: " + pollUrl + ".");
+                        return [4 /*yield*/, this.httpClient.get(pollUrl, pollOptions)];
+                    case 4:
+                        response = _a.sent();
+                        if (response.statusCode === 204) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "(LongPolling transport) Poll terminated by server.");
+                            this.running = false;
+                        }
+                        else if (response.statusCode !== 200) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "(LongPolling transport) Unexpected response code: " + response.statusCode + ".");
+                            // Unexpected status code
+                            this.closeError = new _Errors__WEBPACK_IMPORTED_MODULE_1__["HttpError"](response.statusText || "", response.statusCode);
+                            this.running = false;
+                        }
+                        else {
+                            // Process the response
+                            if (response.content) {
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) data received. " + Object(_Utils__WEBPACK_IMPORTED_MODULE_4__["getDataDetail"])(response.content, this.logMessageContent) + ".");
+                                if (this.onreceive) {
+                                    this.onreceive(response.content);
+                                }
+                            }
+                            else {
+                                // This is another way timeout manifest.
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) Poll timed out, reissuing.");
+                            }
+                        }
+                        return [3 /*break*/, 6];
+                    case 5:
+                        e_1 = _a.sent();
+                        if (!this.running) {
+                            // Log but disregard errors that occur after stopping
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) Poll errored after shutdown: " + e_1.message);
+                        }
+                        else {
+                            if (e_1 instanceof _Errors__WEBPACK_IMPORTED_MODULE_1__["TimeoutError"]) {
+                                // Ignore timeouts and reissue the poll.
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) Poll timed out, reissuing.");
+                            }
+                            else {
+                                // Close the connection with the error as the result.
+                                this.closeError = e_1;
+                                this.running = false;
+                            }
+                        }
+                        return [3 /*break*/, 6];
+                    case 6: return [3 /*break*/, 1];
+                    case 7: return [3 /*break*/, 9];
+                    case 8:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) Polling complete.");
+                        // We will reach here with pollAborted==false when the server returned a response causing the transport to stop.
+                        // If pollAborted==true then client initiated the stop and the stop method will raise the close event after DELETE is sent.
+                        if (!this.pollAborted) {
+                            this.raiseOnClose();
+                        }
+                        return [7 /*endfinally*/];
+                    case 9: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    LongPollingTransport.prototype.send = function (data) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (!this.running) {
+                    return [2 /*return*/, Promise.reject(new Error("Cannot send until the transport is connected"))];
+                }
+                return [2 /*return*/, Object(_Utils__WEBPACK_IMPORTED_MODULE_4__["sendMessage"])(this.logger, "LongPolling", this.httpClient, this.url, this.accessTokenFactory, data, this.logMessageContent)];
+            });
+        });
+    };
+    LongPollingTransport.prototype.stop = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var deleteOptions, token;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) Stopping polling.");
+                        // Tell receiving loop to stop, abort any current request, and then wait for it to finish
+                        this.running = false;
+                        this.pollAbort.abort();
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, , 5, 6]);
+                        return [4 /*yield*/, this.receiving];
+                    case 2:
+                        _a.sent();
+                        // Send DELETE to clean up long polling on the server
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) sending DELETE request to " + this.url + ".");
+                        deleteOptions = {
+                            headers: {},
+                        };
+                        return [4 /*yield*/, this.getAccessToken()];
+                    case 3:
+                        token = _a.sent();
+                        this.updateHeaderToken(deleteOptions, token);
+                        return [4 /*yield*/, this.httpClient.delete(this.url, deleteOptions)];
+                    case 4:
+                        _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) DELETE request sent.");
+                        return [3 /*break*/, 6];
+                    case 5:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, "(LongPolling transport) Stop finished.");
+                        // Raise close event here instead of in polling
+                        // It needs to happen after the DELETE request is sent
+                        this.raiseOnClose();
+                        return [7 /*endfinally*/];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    LongPollingTransport.prototype.raiseOnClose = function () {
+        if (this.onclose) {
+            var logMessage = "(LongPolling transport) Firing onclose event.";
+            if (this.closeError) {
+                logMessage += " Error: " + this.closeError;
+            }
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Trace, logMessage);
+            this.onclose(this.closeError);
+        }
+    };
+    return LongPollingTransport;
+}());
+
+//# sourceMappingURL=LongPollingTransport.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/NodeHttpClient.js":
+/*!****************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/NodeHttpClient.js ***!
+  \****************************************************************************************************************/
+/*! exports provided: NodeHttpClient */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(Buffer) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NodeHttpClient", function() { return NodeHttpClient; });
+/* harmony import */ var _Errors__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Errors */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Errors.js");
+/* harmony import */ var _HttpClient__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HttpClient */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpClient.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign = (undefined && undefined.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+
+
+
+
+var requestModule;
+if (typeof XMLHttpRequest === "undefined") {
+    // In order to ignore the dynamic require in webpack builds we need to do this magic
+    // @ts-ignore: TS doesn't know about these names
+    var requireFunc =  true ? require : undefined;
+    requestModule = requireFunc("request");
+}
+var NodeHttpClient = /** @class */ (function (_super) {
+    __extends(NodeHttpClient, _super);
+    function NodeHttpClient(logger) {
+        var _this = _super.call(this) || this;
+        if (typeof requestModule === "undefined") {
+            throw new Error("The 'request' module could not be loaded.");
+        }
+        _this.logger = logger;
+        _this.cookieJar = requestModule.jar();
+        _this.request = requestModule.defaults({ jar: _this.cookieJar });
+        return _this;
+    }
+    NodeHttpClient.prototype.send = function (httpRequest) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var requestBody;
+            if (Object(_Utils__WEBPACK_IMPORTED_MODULE_3__["isArrayBuffer"])(httpRequest.content)) {
+                requestBody = Buffer.from(httpRequest.content);
+            }
+            else {
+                requestBody = httpRequest.content || "";
+            }
+            var currentRequest = _this.request(httpRequest.url, {
+                body: requestBody,
+                // If binary is expected 'null' should be used, otherwise for text 'utf8'
+                encoding: httpRequest.responseType === "arraybuffer" ? null : "utf8",
+                headers: __assign({ 
+                    // Tell auth middleware to 401 instead of redirecting
+                    "X-Requested-With": "XMLHttpRequest" }, httpRequest.headers),
+                method: httpRequest.method,
+                timeout: httpRequest.timeout,
+            }, function (error, response, body) {
+                if (httpRequest.abortSignal) {
+                    httpRequest.abortSignal.onabort = null;
+                }
+                if (error) {
+                    if (error.code === "ETIMEDOUT") {
+                        _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "Timeout from HTTP request.");
+                        reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["TimeoutError"]());
+                    }
+                    _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "Error from HTTP request. " + error);
+                    reject(error);
+                    return;
+                }
+                if (response.statusCode >= 200 && response.statusCode < 300) {
+                    resolve(new _HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpResponse"](response.statusCode, response.statusMessage || "", body));
+                }
+                else {
+                    reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["HttpError"](response.statusMessage || "", response.statusCode || 0));
+                }
+            });
+            if (httpRequest.abortSignal) {
+                httpRequest.abortSignal.onabort = function () {
+                    currentRequest.abort();
+                    reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["AbortError"]());
+                };
+            }
+        });
+    };
+    NodeHttpClient.prototype.getCookieString = function (url) {
+        return this.cookieJar.getCookieString(url);
+    };
+    return NodeHttpClient;
+}(_HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]));
+
+//# sourceMappingURL=NodeHttpClient.js.map
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../../../buffer/index.js */ "../node_modules/buffer/index.js").Buffer))
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ServerSentEventsTransport.js":
+/*!***************************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ServerSentEventsTransport.js ***!
+  \***************************************************************************************************************************/
+/*! exports provided: ServerSentEventsTransport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ServerSentEventsTransport", function() { return ServerSentEventsTransport; });
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _ITransport__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ITransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ITransport.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+
+
+/** @private */
+var ServerSentEventsTransport = /** @class */ (function () {
+    function ServerSentEventsTransport(httpClient, accessTokenFactory, logger, logMessageContent, eventSourceConstructor) {
+        this.httpClient = httpClient;
+        this.accessTokenFactory = accessTokenFactory;
+        this.logger = logger;
+        this.logMessageContent = logMessageContent;
+        this.eventSourceConstructor = eventSourceConstructor;
+        this.onreceive = null;
+        this.onclose = null;
+    }
+    ServerSentEventsTransport.prototype.connect = function (url, transferFormat) {
+        return __awaiter(this, void 0, void 0, function () {
+            var token;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _Utils__WEBPACK_IMPORTED_MODULE_2__["Arg"].isRequired(url, "url");
+                        _Utils__WEBPACK_IMPORTED_MODULE_2__["Arg"].isRequired(transferFormat, "transferFormat");
+                        _Utils__WEBPACK_IMPORTED_MODULE_2__["Arg"].isIn(transferFormat, _ITransport__WEBPACK_IMPORTED_MODULE_1__["TransferFormat"], "transferFormat");
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Trace, "(SSE transport) Connecting.");
+                        // set url before accessTokenFactory because this.url is only for send and we set the auth header instead of the query string for send
+                        this.url = url;
+                        if (!this.accessTokenFactory) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.accessTokenFactory()];
+                    case 1:
+                        token = _a.sent();
+                        if (token) {
+                            url += (url.indexOf("?") < 0 ? "?" : "&") + ("access_token=" + encodeURIComponent(token));
+                        }
+                        _a.label = 2;
+                    case 2: return [2 /*return*/, new Promise(function (resolve, reject) {
+                            var opened = false;
+                            if (transferFormat !== _ITransport__WEBPACK_IMPORTED_MODULE_1__["TransferFormat"].Text) {
+                                reject(new Error("The Server-Sent Events transport only supports the 'Text' transfer format"));
+                                return;
+                            }
+                            var eventSource;
+                            if (_Utils__WEBPACK_IMPORTED_MODULE_2__["Platform"].isBrowser || _Utils__WEBPACK_IMPORTED_MODULE_2__["Platform"].isWebWorker) {
+                                eventSource = new _this.eventSourceConstructor(url, { withCredentials: true });
+                            }
+                            else {
+                                // Non-browser passes cookies via the dictionary
+                                var cookies = _this.httpClient.getCookieString(url);
+                                eventSource = new _this.eventSourceConstructor(url, { withCredentials: true, headers: { Cookie: cookies } });
+                            }
+                            try {
+                                eventSource.onmessage = function (e) {
+                                    if (_this.onreceive) {
+                                        try {
+                                            _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Trace, "(SSE transport) data received. " + Object(_Utils__WEBPACK_IMPORTED_MODULE_2__["getDataDetail"])(e.data, _this.logMessageContent) + ".");
+                                            _this.onreceive(e.data);
+                                        }
+                                        catch (error) {
+                                            _this.close(error);
+                                            return;
+                                        }
+                                    }
+                                };
+                                eventSource.onerror = function (e) {
+                                    var error = new Error(e.data || "Error occurred");
+                                    if (opened) {
+                                        _this.close(error);
+                                    }
+                                    else {
+                                        reject(error);
+                                    }
+                                };
+                                eventSource.onopen = function () {
+                                    _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Information, "SSE connected to " + _this.url);
+                                    _this.eventSource = eventSource;
+                                    opened = true;
+                                    resolve();
+                                };
+                            }
+                            catch (e) {
+                                reject(e);
+                                return;
+                            }
+                        })];
+                }
+            });
+        });
+    };
+    ServerSentEventsTransport.prototype.send = function (data) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                if (!this.eventSource) {
+                    return [2 /*return*/, Promise.reject(new Error("Cannot send until the transport is connected"))];
+                }
+                return [2 /*return*/, Object(_Utils__WEBPACK_IMPORTED_MODULE_2__["sendMessage"])(this.logger, "SSE", this.httpClient, this.url, this.accessTokenFactory, data, this.logMessageContent)];
+            });
+        });
+    };
+    ServerSentEventsTransport.prototype.stop = function () {
+        this.close();
+        return Promise.resolve();
+    };
+    ServerSentEventsTransport.prototype.close = function (e) {
+        if (this.eventSource) {
+            this.eventSource.close();
+            this.eventSource = undefined;
+            if (this.onclose) {
+                this.onclose(e);
+            }
+        }
+    };
+    return ServerSentEventsTransport;
+}());
+
+//# sourceMappingURL=ServerSentEventsTransport.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Subject.js":
+/*!*********************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Subject.js ***!
+  \*********************************************************************************************************/
+/*! exports provided: Subject */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Subject", function() { return Subject; });
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+/** Stream implementation to stream items to the server. */
+var Subject = /** @class */ (function () {
+    function Subject() {
+        this.observers = [];
+    }
+    Subject.prototype.next = function (item) {
+        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
+            var observer = _a[_i];
+            observer.next(item);
+        }
+    };
+    Subject.prototype.error = function (err) {
+        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
+            var observer = _a[_i];
+            if (observer.error) {
+                observer.error(err);
+            }
+        }
+    };
+    Subject.prototype.complete = function () {
+        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
+            var observer = _a[_i];
+            if (observer.complete) {
+                observer.complete();
+            }
+        }
+    };
+    Subject.prototype.subscribe = function (observer) {
+        this.observers.push(observer);
+        return new _Utils__WEBPACK_IMPORTED_MODULE_0__["SubjectSubscription"](this, observer);
+    };
+    return Subject;
+}());
+
+//# sourceMappingURL=Subject.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/TextMessageFormat.js":
+/*!*******************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/TextMessageFormat.js ***!
+  \*******************************************************************************************************************/
+/*! exports provided: TextMessageFormat */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TextMessageFormat", function() { return TextMessageFormat; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Not exported from index
+/** @private */
+var TextMessageFormat = /** @class */ (function () {
+    function TextMessageFormat() {
+    }
+    TextMessageFormat.write = function (output) {
+        return "" + output + TextMessageFormat.RecordSeparator;
+    };
+    TextMessageFormat.parse = function (input) {
+        if (input[input.length - 1] !== TextMessageFormat.RecordSeparator) {
+            throw new Error("Message is incomplete.");
+        }
+        var messages = input.split(TextMessageFormat.RecordSeparator);
+        messages.pop();
+        return messages;
+    };
+    TextMessageFormat.RecordSeparatorCode = 0x1e;
+    TextMessageFormat.RecordSeparator = String.fromCharCode(TextMessageFormat.RecordSeparatorCode);
+    return TextMessageFormat;
+}());
+
+//# sourceMappingURL=TextMessageFormat.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js":
+/*!*******************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js ***!
+  \*******************************************************************************************************/
+/*! exports provided: Arg, Platform, getDataDetail, formatArrayBuffer, isArrayBuffer, sendMessage, createLogger, SubjectSubscription, ConsoleLogger */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Arg", function() { return Arg; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Platform", function() { return Platform; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getDataDetail", function() { return getDataDetail; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "formatArrayBuffer", function() { return formatArrayBuffer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isArrayBuffer", function() { return isArrayBuffer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sendMessage", function() { return sendMessage; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createLogger", function() { return createLogger; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SubjectSubscription", function() { return SubjectSubscription; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConsoleLogger", function() { return ConsoleLogger; });
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _Loggers__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./Loggers */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Loggers.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+
+/** @private */
+var Arg = /** @class */ (function () {
+    function Arg() {
+    }
+    Arg.isRequired = function (val, name) {
+        if (val === null || val === undefined) {
+            throw new Error("The '" + name + "' argument is required.");
+        }
+    };
+    Arg.isIn = function (val, values, name) {
+        // TypeScript enums have keys for **both** the name and the value of each enum member on the type itself.
+        if (!(val in values)) {
+            throw new Error("Unknown " + name + " value: " + val + ".");
+        }
+    };
+    return Arg;
+}());
+
+/** @private */
+var Platform = /** @class */ (function () {
+    function Platform() {
+    }
+    Object.defineProperty(Platform, "isBrowser", {
+        get: function () {
+            return typeof window === "object";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Platform, "isWebWorker", {
+        get: function () {
+            return typeof self === "object" && "importScripts" in self;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Platform, "isNode", {
+        get: function () {
+            return !this.isBrowser && !this.isWebWorker;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Platform;
+}());
+
+/** @private */
+function getDataDetail(data, includeContent) {
+    var detail = "";
+    if (isArrayBuffer(data)) {
+        detail = "Binary data of length " + data.byteLength;
+        if (includeContent) {
+            detail += ". Content: '" + formatArrayBuffer(data) + "'";
+        }
+    }
+    else if (typeof data === "string") {
+        detail = "String data of length " + data.length;
+        if (includeContent) {
+            detail += ". Content: '" + data + "'";
+        }
+    }
+    return detail;
+}
+/** @private */
+function formatArrayBuffer(data) {
+    var view = new Uint8Array(data);
+    // Uint8Array.map only supports returning another Uint8Array?
+    var str = "";
+    view.forEach(function (num) {
+        var pad = num < 16 ? "0" : "";
+        str += "0x" + pad + num.toString(16) + " ";
+    });
+    // Trim of trailing space.
+    return str.substr(0, str.length - 1);
+}
+// Also in signalr-protocol-msgpack/Utils.ts
+/** @private */
+function isArrayBuffer(val) {
+    return val && typeof ArrayBuffer !== "undefined" &&
+        (val instanceof ArrayBuffer ||
+            // Sometimes we get an ArrayBuffer that doesn't satisfy instanceof
+            (val.constructor && val.constructor.name === "ArrayBuffer"));
+}
+/** @private */
+function sendMessage(logger, transportName, httpClient, url, accessTokenFactory, content, logMessageContent) {
+    return __awaiter(this, void 0, void 0, function () {
+        var _a, headers, token, responseType, response;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    if (!accessTokenFactory) return [3 /*break*/, 2];
+                    return [4 /*yield*/, accessTokenFactory()];
+                case 1:
+                    token = _b.sent();
+                    if (token) {
+                        headers = (_a = {},
+                            _a["Authorization"] = "Bearer " + token,
+                            _a);
+                    }
+                    _b.label = 2;
+                case 2:
+                    logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Trace, "(" + transportName + " transport) sending data. " + getDataDetail(content, logMessageContent) + ".");
+                    responseType = isArrayBuffer(content) ? "arraybuffer" : "text";
+                    return [4 /*yield*/, httpClient.post(url, {
+                            content: content,
+                            headers: headers,
+                            responseType: responseType,
+                        })];
+                case 3:
+                    response = _b.sent();
+                    logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Trace, "(" + transportName + " transport) request complete. Response status: " + response.statusCode + ".");
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+/** @private */
+function createLogger(logger) {
+    if (logger === undefined) {
+        return new ConsoleLogger(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Information);
+    }
+    if (logger === null) {
+        return _Loggers__WEBPACK_IMPORTED_MODULE_1__["NullLogger"].instance;
+    }
+    if (logger.log) {
+        return logger;
+    }
+    return new ConsoleLogger(logger);
+}
+/** @private */
+var SubjectSubscription = /** @class */ (function () {
+    function SubjectSubscription(subject, observer) {
+        this.subject = subject;
+        this.observer = observer;
+    }
+    SubjectSubscription.prototype.dispose = function () {
+        var index = this.subject.observers.indexOf(this.observer);
+        if (index > -1) {
+            this.subject.observers.splice(index, 1);
+        }
+        if (this.subject.observers.length === 0 && this.subject.cancelCallback) {
+            this.subject.cancelCallback().catch(function (_) { });
+        }
+    };
+    return SubjectSubscription;
+}());
+
+/** @private */
+var ConsoleLogger = /** @class */ (function () {
+    function ConsoleLogger(minimumLogLevel) {
+        this.minimumLogLevel = minimumLogLevel;
+        this.outputConsole = console;
+    }
+    ConsoleLogger.prototype.log = function (logLevel, message) {
+        if (logLevel >= this.minimumLogLevel) {
+            switch (logLevel) {
+                case _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Critical:
+                case _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Error:
+                    this.outputConsole.error("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
+                    break;
+                case _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Warning:
+                    this.outputConsole.warn("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
+                    break;
+                case _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Information:
+                    this.outputConsole.info("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
+                    break;
+                default:
+                    // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
+                    this.outputConsole.log("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
+                    break;
+            }
+        }
+    };
+    return ConsoleLogger;
+}());
+
+//# sourceMappingURL=Utils.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/WebSocketTransport.js":
+/*!********************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/WebSocketTransport.js ***!
+  \********************************************************************************************************************/
+/*! exports provided: WebSocketTransport */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "WebSocketTransport", function() { return WebSocketTransport; });
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _ITransport__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ITransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ITransport.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (undefined && undefined.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+
+
+
+/** @private */
+var WebSocketTransport = /** @class */ (function () {
+    function WebSocketTransport(httpClient, accessTokenFactory, logger, logMessageContent, webSocketConstructor) {
+        this.logger = logger;
+        this.accessTokenFactory = accessTokenFactory;
+        this.logMessageContent = logMessageContent;
+        this.webSocketConstructor = webSocketConstructor;
+        this.httpClient = httpClient;
+        this.onreceive = null;
+        this.onclose = null;
+    }
+    WebSocketTransport.prototype.connect = function (url, transferFormat) {
+        return __awaiter(this, void 0, void 0, function () {
+            var token;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _Utils__WEBPACK_IMPORTED_MODULE_2__["Arg"].isRequired(url, "url");
+                        _Utils__WEBPACK_IMPORTED_MODULE_2__["Arg"].isRequired(transferFormat, "transferFormat");
+                        _Utils__WEBPACK_IMPORTED_MODULE_2__["Arg"].isIn(transferFormat, _ITransport__WEBPACK_IMPORTED_MODULE_1__["TransferFormat"], "transferFormat");
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Trace, "(WebSockets transport) Connecting.");
+                        if (!this.accessTokenFactory) return [3 /*break*/, 2];
+                        return [4 /*yield*/, this.accessTokenFactory()];
+                    case 1:
+                        token = _a.sent();
+                        if (token) {
+                            url += (url.indexOf("?") < 0 ? "?" : "&") + ("access_token=" + encodeURIComponent(token));
+                        }
+                        _a.label = 2;
+                    case 2: return [2 /*return*/, new Promise(function (resolve, reject) {
+                            url = url.replace(/^http/, "ws");
+                            var webSocket;
+                            var cookies = _this.httpClient.getCookieString(url);
+                            if (_Utils__WEBPACK_IMPORTED_MODULE_2__["Platform"].isNode && cookies) {
+                                // Only pass cookies when in non-browser environments
+                                webSocket = new _this.webSocketConstructor(url, undefined, {
+                                    headers: {
+                                        Cookie: "" + cookies,
+                                    },
+                                });
+                            }
+                            if (!webSocket) {
+                                // Chrome is not happy with passing 'undefined' as protocol
+                                webSocket = new _this.webSocketConstructor(url);
+                            }
+                            if (transferFormat === _ITransport__WEBPACK_IMPORTED_MODULE_1__["TransferFormat"].Binary) {
+                                webSocket.binaryType = "arraybuffer";
+                            }
+                            // tslint:disable-next-line:variable-name
+                            webSocket.onopen = function (_event) {
+                                _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Information, "WebSocket connected to " + url + ".");
+                                _this.webSocket = webSocket;
+                                resolve();
+                            };
+                            webSocket.onerror = function (event) {
+                                var error = null;
+                                // ErrorEvent is a browser only type we need to check if the type exists before using it
+                                if (typeof ErrorEvent !== "undefined" && event instanceof ErrorEvent) {
+                                    error = event.error;
+                                }
+                                reject(error);
+                            };
+                            webSocket.onmessage = function (message) {
+                                _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Trace, "(WebSockets transport) data received. " + Object(_Utils__WEBPACK_IMPORTED_MODULE_2__["getDataDetail"])(message.data, _this.logMessageContent) + ".");
+                                if (_this.onreceive) {
+                                    _this.onreceive(message.data);
+                                }
+                            };
+                            webSocket.onclose = function (event) { return _this.close(event); };
+                        })];
+                }
+            });
+        });
+    };
+    WebSocketTransport.prototype.send = function (data) {
+        if (this.webSocket && this.webSocket.readyState === this.webSocketConstructor.OPEN) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Trace, "(WebSockets transport) sending data. " + Object(_Utils__WEBPACK_IMPORTED_MODULE_2__["getDataDetail"])(data, this.logMessageContent) + ".");
+            this.webSocket.send(data);
+            return Promise.resolve();
+        }
+        return Promise.reject("WebSocket is not in the OPEN state");
+    };
+    WebSocketTransport.prototype.stop = function () {
+        if (this.webSocket) {
+            // Clear websocket handlers because we are considering the socket closed now
+            this.webSocket.onclose = function () { };
+            this.webSocket.onmessage = function () { };
+            this.webSocket.onerror = function () { };
+            this.webSocket.close();
+            this.webSocket = undefined;
+            // Manually invoke onclose callback inline so we know the HttpConnection was closed properly before returning
+            // This also solves an issue where websocket.onclose could take 18+ seconds to trigger during network disconnects
+            this.close(undefined);
+        }
+        return Promise.resolve();
+    };
+    WebSocketTransport.prototype.close = function (event) {
+        // webSocket will be null if the transport did not start successfully
+        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Trace, "(WebSockets transport) socket closed.");
+        if (this.onclose) {
+            if (event && (event.wasClean === false || event.code !== 1000)) {
+                this.onclose(new Error("WebSocket closed with status code: " + event.code + " (" + event.reason + ")."));
+            }
+            else {
+                this.onclose();
+            }
+        }
+    };
+    return WebSocketTransport;
+}());
+
+//# sourceMappingURL=WebSocketTransport.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/XhrHttpClient.js":
+/*!***************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/XhrHttpClient.js ***!
+  \***************************************************************************************************************/
+/*! exports provided: XhrHttpClient */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "XhrHttpClient", function() { return XhrHttpClient; });
+/* harmony import */ var _Errors__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Errors */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Errors.js");
+/* harmony import */ var _HttpClient__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HttpClient */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpClient.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+
+
+
+var XhrHttpClient = /** @class */ (function (_super) {
+    __extends(XhrHttpClient, _super);
+    function XhrHttpClient(logger) {
+        var _this = _super.call(this) || this;
+        _this.logger = logger;
+        return _this;
+    }
+    /** @inheritDoc */
+    XhrHttpClient.prototype.send = function (request) {
+        var _this = this;
+        // Check that abort was not signaled before calling send
+        if (request.abortSignal && request.abortSignal.aborted) {
+            return Promise.reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["AbortError"]());
+        }
+        if (!request.method) {
+            return Promise.reject(new Error("No method defined."));
+        }
+        if (!request.url) {
+            return Promise.reject(new Error("No url defined."));
+        }
+        return new Promise(function (resolve, reject) {
+            var xhr = new XMLHttpRequest();
+            xhr.open(request.method, request.url, true);
+            xhr.withCredentials = true;
+            xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            // Explicitly setting the Content-Type header for React Native on Android platform.
+            xhr.setRequestHeader("Content-Type", "text/plain;charset=UTF-8");
+            var headers = request.headers;
+            if (headers) {
+                Object.keys(headers)
+                    .forEach(function (header) {
+                    xhr.setRequestHeader(header, headers[header]);
+                });
+            }
+            if (request.responseType) {
+                xhr.responseType = request.responseType;
+            }
+            if (request.abortSignal) {
+                request.abortSignal.onabort = function () {
+                    xhr.abort();
+                    reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["AbortError"]());
+                };
+            }
+            if (request.timeout) {
+                xhr.timeout = request.timeout;
+            }
+            xhr.onload = function () {
+                if (request.abortSignal) {
+                    request.abortSignal.onabort = null;
+                }
+                if (xhr.status >= 200 && xhr.status < 300) {
+                    resolve(new _HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpResponse"](xhr.status, xhr.statusText, xhr.response || xhr.responseText));
+                }
+                else {
+                    reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["HttpError"](xhr.statusText, xhr.status));
+                }
+            };
+            xhr.onerror = function () {
+                _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "Error from HTTP request. " + xhr.status + ": " + xhr.statusText + ".");
+                reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["HttpError"](xhr.statusText, xhr.status));
+            };
+            xhr.ontimeout = function () {
+                _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "Timeout from HTTP request.");
+                reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["TimeoutError"]());
+            };
+            xhr.send(request.content || "");
+        });
+    };
+    return XhrHttpClient;
+}(_HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]));
+
+//# sourceMappingURL=XhrHttpClient.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/index.js":
+/*!*******************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/index.js ***!
+  \*******************************************************************************************************/
+/*! exports provided: VERSION, AbortError, HttpError, TimeoutError, HttpClient, HttpResponse, DefaultHttpClient, HubConnection, HubConnectionState, HubConnectionBuilder, MessageType, LogLevel, HttpTransportType, TransferFormat, NullLogger, JsonHubProtocol, Subject */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "VERSION", function() { return VERSION; });
+/* harmony import */ var _Errors__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Errors */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Errors.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "AbortError", function() { return _Errors__WEBPACK_IMPORTED_MODULE_0__["AbortError"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HttpError", function() { return _Errors__WEBPACK_IMPORTED_MODULE_0__["HttpError"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TimeoutError", function() { return _Errors__WEBPACK_IMPORTED_MODULE_0__["TimeoutError"]; });
+
+/* harmony import */ var _HttpClient__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HttpClient */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HttpClient.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HttpClient", function() { return _HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HttpResponse", function() { return _HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpResponse"]; });
+
+/* harmony import */ var _DefaultHttpClient__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./DefaultHttpClient */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/DefaultHttpClient.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "DefaultHttpClient", function() { return _DefaultHttpClient__WEBPACK_IMPORTED_MODULE_2__["DefaultHttpClient"]; });
+
+/* harmony import */ var _HubConnection__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./HubConnection */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HubConnection.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HubConnection", function() { return _HubConnection__WEBPACK_IMPORTED_MODULE_3__["HubConnection"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HubConnectionState", function() { return _HubConnection__WEBPACK_IMPORTED_MODULE_3__["HubConnectionState"]; });
+
+/* harmony import */ var _HubConnectionBuilder__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./HubConnectionBuilder */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/HubConnectionBuilder.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HubConnectionBuilder", function() { return _HubConnectionBuilder__WEBPACK_IMPORTED_MODULE_4__["HubConnectionBuilder"]; });
+
+/* harmony import */ var _IHubProtocol__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./IHubProtocol */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/IHubProtocol.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "MessageType", function() { return _IHubProtocol__WEBPACK_IMPORTED_MODULE_5__["MessageType"]; });
+
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "LogLevel", function() { return _ILogger__WEBPACK_IMPORTED_MODULE_6__["LogLevel"]; });
+
+/* harmony import */ var _ITransport__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./ITransport */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/ITransport.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "HttpTransportType", function() { return _ITransport__WEBPACK_IMPORTED_MODULE_7__["HttpTransportType"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "TransferFormat", function() { return _ITransport__WEBPACK_IMPORTED_MODULE_7__["TransferFormat"]; });
+
+/* harmony import */ var _Loggers__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./Loggers */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Loggers.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "NullLogger", function() { return _Loggers__WEBPACK_IMPORTED_MODULE_8__["NullLogger"]; });
+
+/* harmony import */ var _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./JsonHubProtocol */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/JsonHubProtocol.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "JsonHubProtocol", function() { return _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_9__["JsonHubProtocol"]; });
+
+/* harmony import */ var _Subject__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./Subject */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/@aspnet/signalr/dist/esm/Subject.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Subject", function() { return _Subject__WEBPACK_IMPORTED_MODULE_10__["Subject"]; });
+
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Version token that will be replaced by the prepack command
+/** The version of the SignalR client. */
+var VERSION = "0.0.0-DEV_BUILD";
+
+
+
+
+
+
+
+
+
+
+
+//# sourceMappingURL=index.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/bl/bl.js":
+/*!******************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/bl/bl.js ***!
+  \******************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var DuplexStream = __webpack_require__(/*! readable-stream/duplex */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/duplex-browser.js")
+  , util         = __webpack_require__(/*! util */ "../node_modules/util/util.js")
+  , Buffer       = __webpack_require__(/*! safe-buffer */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/safe-buffer/index.js").Buffer
+
+
+function BufferList (callback) {
+  if (!(this instanceof BufferList))
+    return new BufferList(callback)
+
+  this._bufs  = []
+  this.length = 0
+
+  if (typeof callback == 'function') {
+    this._callback = callback
+
+    var piper = function piper (err) {
+      if (this._callback) {
+        this._callback(err)
+        this._callback = null
+      }
+    }.bind(this)
+
+    this.on('pipe', function onPipe (src) {
+      src.on('error', piper)
+    })
+    this.on('unpipe', function onUnpipe (src) {
+      src.removeListener('error', piper)
+    })
+  } else {
+    this.append(callback)
+  }
+
+  DuplexStream.call(this)
+}
+
+
+util.inherits(BufferList, DuplexStream)
+
+
+BufferList.prototype._offset = function _offset (offset) {
+  var tot = 0, i = 0, _t
+  if (offset === 0) return [ 0, 0 ]
+  for (; i < this._bufs.length; i++) {
+    _t = tot + this._bufs[i].length
+    if (offset < _t || i == this._bufs.length - 1)
+      return [ i, offset - tot ]
+    tot = _t
+  }
+}
+
+
+BufferList.prototype.append = function append (buf) {
+  var i = 0
+
+  if (Buffer.isBuffer(buf)) {
+    this._appendBuffer(buf);
+  } else if (Array.isArray(buf)) {
+    for (; i < buf.length; i++)
+      this.append(buf[i])
+  } else if (buf instanceof BufferList) {
+    // unwrap argument into individual BufferLists
+    for (; i < buf._bufs.length; i++)
+      this.append(buf._bufs[i])
+  } else if (buf != null) {
+    // coerce number arguments to strings, since Buffer(number) does
+    // uninitialized memory allocation
+    if (typeof buf == 'number')
+      buf = buf.toString()
+
+    this._appendBuffer(Buffer.from(buf));
+  }
+
+  return this
+}
+
+
+BufferList.prototype._appendBuffer = function appendBuffer (buf) {
+  this._bufs.push(buf)
+  this.length += buf.length
+}
+
+
+BufferList.prototype._write = function _write (buf, encoding, callback) {
+  this._appendBuffer(buf)
+
+  if (typeof callback == 'function')
+    callback()
+}
+
+
+BufferList.prototype._read = function _read (size) {
+  if (!this.length)
+    return this.push(null)
+
+  size = Math.min(size, this.length)
+  this.push(this.slice(0, size))
+  this.consume(size)
+}
+
+
+BufferList.prototype.end = function end (chunk) {
+  DuplexStream.prototype.end.call(this, chunk)
+
+  if (this._callback) {
+    this._callback(null, this.slice())
+    this._callback = null
+  }
+}
+
+
+BufferList.prototype.get = function get (index) {
+  return this.slice(index, index + 1)[0]
+}
+
+
+BufferList.prototype.slice = function slice (start, end) {
+  if (typeof start == 'number' && start < 0)
+    start += this.length
+  if (typeof end == 'number' && end < 0)
+    end += this.length
+  return this.copy(null, 0, start, end)
+}
+
+
+BufferList.prototype.copy = function copy (dst, dstStart, srcStart, srcEnd) {
+  if (typeof srcStart != 'number' || srcStart < 0)
+    srcStart = 0
+  if (typeof srcEnd != 'number' || srcEnd > this.length)
+    srcEnd = this.length
+  if (srcStart >= this.length)
+    return dst || Buffer.alloc(0)
+  if (srcEnd <= 0)
+    return dst || Buffer.alloc(0)
+
+  var copy   = !!dst
+    , off    = this._offset(srcStart)
+    , len    = srcEnd - srcStart
+    , bytes  = len
+    , bufoff = (copy && dstStart) || 0
+    , start  = off[1]
+    , l
+    , i
+
+  // copy/slice everything
+  if (srcStart === 0 && srcEnd == this.length) {
+    if (!copy) { // slice, but full concat if multiple buffers
+      return this._bufs.length === 1
+        ? this._bufs[0]
+        : Buffer.concat(this._bufs, this.length)
+    }
+
+    // copy, need to copy individual buffers
+    for (i = 0; i < this._bufs.length; i++) {
+      this._bufs[i].copy(dst, bufoff)
+      bufoff += this._bufs[i].length
+    }
+
+    return dst
+  }
+
+  // easy, cheap case where it's a subset of one of the buffers
+  if (bytes <= this._bufs[off[0]].length - start) {
+    return copy
+      ? this._bufs[off[0]].copy(dst, dstStart, start, start + bytes)
+      : this._bufs[off[0]].slice(start, start + bytes)
+  }
+
+  if (!copy) // a slice, we need something to copy in to
+    dst = Buffer.allocUnsafe(len)
+
+  for (i = off[0]; i < this._bufs.length; i++) {
+    l = this._bufs[i].length - start
+
+    if (bytes > l) {
+      this._bufs[i].copy(dst, bufoff, start)
+    } else {
+      this._bufs[i].copy(dst, bufoff, start, start + bytes)
+      break
+    }
+
+    bufoff += l
+    bytes -= l
+
+    if (start)
+      start = 0
+  }
+
+  return dst
+}
+
+BufferList.prototype.shallowSlice = function shallowSlice (start, end) {
+  start = start || 0
+  end = end || this.length
+
+  if (start < 0)
+    start += this.length
+  if (end < 0)
+    end += this.length
+
+  var startOffset = this._offset(start)
+    , endOffset = this._offset(end)
+    , buffers = this._bufs.slice(startOffset[0], endOffset[0] + 1)
+
+  if (endOffset[1] == 0)
+    buffers.pop()
+  else
+    buffers[buffers.length-1] = buffers[buffers.length-1].slice(0, endOffset[1])
+
+  if (startOffset[1] != 0)
+    buffers[0] = buffers[0].slice(startOffset[1])
+
+  return new BufferList(buffers)
+}
+
+BufferList.prototype.toString = function toString (encoding, start, end) {
+  return this.slice(start, end).toString(encoding)
+}
+
+BufferList.prototype.consume = function consume (bytes) {
+  while (this._bufs.length) {
+    if (bytes >= this._bufs[0].length) {
+      bytes -= this._bufs[0].length
+      this.length -= this._bufs[0].length
+      this._bufs.shift()
+    } else {
+      this._bufs[0] = this._bufs[0].slice(bytes)
+      this.length -= bytes
+      break
+    }
+  }
+  return this
+}
+
+
+BufferList.prototype.duplicate = function duplicate () {
+  var i = 0
+    , copy = new BufferList()
+
+  for (; i < this._bufs.length; i++)
+    copy.append(this._bufs[i])
+
+  return copy
+}
+
+
+BufferList.prototype.destroy = function destroy () {
+  this._bufs.length = 0
+  this.length = 0
+  this.push(null)
+}
+
+
+;(function () {
+  var methods = {
+      'readDoubleBE' : 8
+    , 'readDoubleLE' : 8
+    , 'readFloatBE'  : 4
+    , 'readFloatLE'  : 4
+    , 'readInt32BE'  : 4
+    , 'readInt32LE'  : 4
+    , 'readUInt32BE' : 4
+    , 'readUInt32LE' : 4
+    , 'readInt16BE'  : 2
+    , 'readInt16LE'  : 2
+    , 'readUInt16BE' : 2
+    , 'readUInt16LE' : 2
+    , 'readInt8'     : 1
+    , 'readUInt8'    : 1
+  }
+
+  for (var m in methods) {
+    (function (m) {
+      BufferList.prototype[m] = function (offset) {
+        return this.slice(offset, offset + methods[m])[m](0)
+      }
+    }(m))
+  }
+}())
+
+
+module.exports = BufferList
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/core-util-is/lib/util.js":
+/*!**********************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/core-util-is/lib/util.js ***!
+  \**********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(Buffer) {// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// NOTE: These type checking functions intentionally don't use `instanceof`
+// because it is fragile and can be easily faked with `Object.create()`.
+
+function isArray(arg) {
+  if (Array.isArray) {
+    return Array.isArray(arg);
+  }
+  return objectToString(arg) === '[object Array]';
+}
+exports.isArray = isArray;
+
+function isBoolean(arg) {
+  return typeof arg === 'boolean';
+}
+exports.isBoolean = isBoolean;
+
+function isNull(arg) {
+  return arg === null;
+}
+exports.isNull = isNull;
+
+function isNullOrUndefined(arg) {
+  return arg == null;
+}
+exports.isNullOrUndefined = isNullOrUndefined;
+
+function isNumber(arg) {
+  return typeof arg === 'number';
+}
+exports.isNumber = isNumber;
+
+function isString(arg) {
+  return typeof arg === 'string';
+}
+exports.isString = isString;
+
+function isSymbol(arg) {
+  return typeof arg === 'symbol';
+}
+exports.isSymbol = isSymbol;
+
+function isUndefined(arg) {
+  return arg === void 0;
+}
+exports.isUndefined = isUndefined;
+
+function isRegExp(re) {
+  return objectToString(re) === '[object RegExp]';
+}
+exports.isRegExp = isRegExp;
+
+function isObject(arg) {
+  return typeof arg === 'object' && arg !== null;
+}
+exports.isObject = isObject;
+
+function isDate(d) {
+  return objectToString(d) === '[object Date]';
+}
+exports.isDate = isDate;
+
+function isError(e) {
+  return (objectToString(e) === '[object Error]' || e instanceof Error);
+}
+exports.isError = isError;
+
+function isFunction(arg) {
+  return typeof arg === 'function';
+}
+exports.isFunction = isFunction;
+
+function isPrimitive(arg) {
+  return arg === null ||
+         typeof arg === 'boolean' ||
+         typeof arg === 'number' ||
+         typeof arg === 'string' ||
+         typeof arg === 'symbol' ||  // ES6 symbol
+         typeof arg === 'undefined';
+}
+exports.isPrimitive = isPrimitive;
+
+exports.isBuffer = Buffer.isBuffer;
+
+function objectToString(o) {
+  return Object.prototype.toString.call(o);
+}
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../buffer/index.js */ "../node_modules/buffer/index.js").Buffer))
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/inherits/inherits_browser.js":
+/*!**************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/inherits/inherits_browser.js ***!
+  \**************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+if (typeof Object.create === 'function') {
+  // implementation from standard node.js 'util' module
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    ctor.prototype = Object.create(superCtor.prototype, {
+      constructor: {
+        value: ctor,
+        enumerable: false,
+        writable: true,
+        configurable: true
+      }
+    });
+  };
+} else {
+  // old school shim for old browsers
+  module.exports = function inherits(ctor, superCtor) {
+    ctor.super_ = superCtor
+    var TempCtor = function () {}
+    TempCtor.prototype = superCtor.prototype
+    ctor.prototype = new TempCtor()
+    ctor.prototype.constructor = ctor
+  }
+}
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/isarray/index.js":
+/*!**************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/isarray/index.js ***!
+  \**************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports) {
+
+var toString = {}.toString;
+
+module.exports = Array.isArray || function (arr) {
+  return toString.call(arr) == '[object Array]';
+};
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/index.js":
+/*!***************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/index.js ***!
+  \***************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/safe-buffer/index.js").Buffer
+var assert = __webpack_require__(/*! assert */ "../node_modules/assert/assert.js")
+var bl = __webpack_require__(/*! bl */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/bl/bl.js")
+var streams = __webpack_require__(/*! ./lib/streams */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/streams.js")
+var buildDecode = __webpack_require__(/*! ./lib/decoder */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/decoder.js")
+var buildEncode = __webpack_require__(/*! ./lib/encoder */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/encoder.js")
+
+function msgpack (options) {
+  var encodingTypes = []
+  var decodingTypes = []
+
+  options = options || {
+    forceFloat64: false,
+    compatibilityMode: false,
+    disableTimestampEncoding: false // if true, skips encoding Dates using the msgpack timestamp ext format (-1)
+  }
+
+  function registerEncoder (check, encode) {
+    assert(check, 'must have an encode function')
+    assert(encode, 'must have an encode function')
+
+    encodingTypes.push({
+      check: check, encode: encode
+    })
+
+    return this
+  }
+
+  function registerDecoder (type, decode) {
+    assert(type >= 0, 'must have a non-negative type')
+    assert(decode, 'must have a decode function')
+
+    decodingTypes.push({
+      type: type, decode: decode
+    })
+
+    return this
+  }
+
+  function register (type, constructor, encode, decode) {
+    assert(constructor, 'must have a constructor')
+    assert(encode, 'must have an encode function')
+    assert(type >= 0, 'must have a non-negative type')
+    assert(decode, 'must have a decode function')
+
+    function check (obj) {
+      return (obj instanceof constructor)
+    }
+
+    function reEncode (obj) {
+      var buf = bl()
+      var header = Buffer.allocUnsafe(1)
+
+      header.writeInt8(type, 0)
+
+      buf.append(header)
+      buf.append(encode(obj))
+
+      return buf
+    }
+
+    this.registerEncoder(check, reEncode)
+    this.registerDecoder(type, decode)
+
+    return this
+  }
+
+  return {
+    encode: buildEncode(encodingTypes, options.forceFloat64, options.compatibilityMode, options.disableTimestampEncoding),
+    decode: buildDecode(decodingTypes),
+    register: register,
+    registerEncoder: registerEncoder,
+    registerDecoder: registerDecoder,
+    encoder: streams.encoder,
+    decoder: streams.decoder,
+    // needed for levelup support
+    buffer: true,
+    type: 'msgpack5',
+    IncompleteBufferError: buildDecode.IncompleteBufferError
+  }
+}
+
+module.exports = msgpack
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/decoder.js":
+/*!*********************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/decoder.js ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+var bl = __webpack_require__(/*! bl */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/bl/bl.js")
+var util = __webpack_require__(/*! util */ "../node_modules/util/util.js")
+
+function IncompleteBufferError (message) {
+  Error.call(this) // super constructor
+  if (Error.captureStackTrace) {
+    Error.captureStackTrace(this, this.constructor) // super helper method to include stack trace in error object
+  }
+  this.name = this.constructor.name
+  this.message = message || 'unable to decode'
+}
+
+util.inherits(IncompleteBufferError, Error)
+
+module.exports = function buildDecode (decodingTypes) {
+  return decode
+
+  function getSize (first) {
+    switch (first) {
+      case 0xc4:
+        return 2
+      case 0xc5:
+        return 3
+      case 0xc6:
+        return 5
+      case 0xc7:
+        return 3
+      case 0xc8:
+        return 4
+      case 0xc9:
+        return 6
+      case 0xca:
+        return 5
+      case 0xcb:
+        return 9
+      case 0xcc:
+        return 2
+      case 0xcd:
+        return 3
+      case 0xce:
+        return 5
+      case 0xcf:
+        return 9
+      case 0xd0:
+        return 2
+      case 0xd1:
+        return 3
+      case 0xd2:
+        return 5
+      case 0xd3:
+        return 9
+      case 0xd4:
+        return 3
+      case 0xd5:
+        return 4
+      case 0xd6:
+        return 6
+      case 0xd7:
+        return 10
+      case 0xd8:
+        return 18
+      case 0xd9:
+        return 2
+      case 0xda:
+        return 3
+      case 0xdb:
+        return 5
+      case 0xde:
+        return 3
+      default:
+        return -1
+    }
+  }
+
+  function hasMinBufferSize (first, length) {
+    var size = getSize(first)
+
+    if (size !== -1 && length < size) {
+      return false
+    } else {
+      return true
+    }
+  }
+
+  function isValidDataSize (dataLength, bufLength, headerLength) {
+    return bufLength >= headerLength + dataLength
+  }
+
+  function buildDecodeResult (value, bytesConsumed) {
+    return {
+      value: value,
+      bytesConsumed: bytesConsumed
+    }
+  }
+
+  function decode (buf) {
+    if (!(buf instanceof bl)) {
+      buf = bl().append(buf)
+    }
+
+    var result = tryDecode(buf)
+    if (result) {
+      buf.consume(result.bytesConsumed)
+      return result.value
+    } else {
+      throw new IncompleteBufferError()
+    }
+  }
+
+  function tryDecode (buf, offset) {
+    offset = offset === undefined ? 0 : offset
+    var bufLength = buf.length - offset
+    if (bufLength <= 0) {
+      return null
+    }
+
+    var first = buf.readUInt8(offset)
+    var length
+    var result = 0
+    var type
+    var bytePos
+
+    if (!hasMinBufferSize(first, bufLength)) {
+      return null
+    }
+
+    switch (first) {
+      case 0xc0:
+        return buildDecodeResult(null, 1)
+      case 0xc2:
+        return buildDecodeResult(false, 1)
+      case 0xc3:
+        return buildDecodeResult(true, 1)
+      case 0xcc:
+        // 1-byte unsigned int
+        result = buf.readUInt8(offset + 1)
+        return buildDecodeResult(result, 2)
+      case 0xcd:
+        // 2-bytes BE unsigned int
+        result = buf.readUInt16BE(offset + 1)
+        return buildDecodeResult(result, 3)
+      case 0xce:
+        // 4-bytes BE unsigned int
+        result = buf.readUInt32BE(offset + 1)
+        return buildDecodeResult(result, 5)
+      case 0xcf:
+        // 8-bytes BE unsigned int
+        // Read long byte by byte, big-endian
+        for (bytePos = 7; bytePos >= 0; bytePos--) {
+          result += (buf.readUInt8(offset + bytePos + 1) * Math.pow(2, (8 * (7 - bytePos))))
+        }
+        return buildDecodeResult(result, 9)
+      case 0xd0:
+        // 1-byte signed int
+        result = buf.readInt8(offset + 1)
+        return buildDecodeResult(result, 2)
+      case 0xd1:
+        // 2-bytes signed int
+        result = buf.readInt16BE(offset + 1)
+        return buildDecodeResult(result, 3)
+      case 0xd2:
+        // 4-bytes signed int
+        result = buf.readInt32BE(offset + 1)
+        return buildDecodeResult(result, 5)
+      case 0xd3:
+        result = readInt64BE(buf.slice(offset + 1, offset + 9), 0)
+        return buildDecodeResult(result, 9)
+      case 0xca:
+        // 4-bytes float
+        result = buf.readFloatBE(offset + 1)
+        return buildDecodeResult(result, 5)
+      case 0xcb:
+        // 8-bytes double
+        result = buf.readDoubleBE(offset + 1)
+        return buildDecodeResult(result, 9)
+      case 0xd9:
+        // strings up to 2^8 - 1 bytes
+        length = buf.readUInt8(offset + 1)
+        if (!isValidDataSize(length, bufLength, 2)) {
+          return null
+        }
+        result = buf.toString('utf8', offset + 2, offset + 2 + length)
+        return buildDecodeResult(result, 2 + length)
+      case 0xda:
+        // strings up to 2^16 - 2 bytes
+        length = buf.readUInt16BE(offset + 1)
+        if (!isValidDataSize(length, bufLength, 3)) {
+          return null
+        }
+        result = buf.toString('utf8', offset + 3, offset + 3 + length)
+        return buildDecodeResult(result, 3 + length)
+      case 0xdb:
+        // strings up to 2^32 - 4 bytes
+        length = buf.readUInt32BE(offset + 1)
+        if (!isValidDataSize(length, bufLength, 5)) {
+          return null
+        }
+        result = buf.toString('utf8', offset + 5, offset + 5 + length)
+        return buildDecodeResult(result, 5 + length)
+      case 0xc4:
+        // buffers up to 2^8 - 1 bytes
+        length = buf.readUInt8(offset + 1)
+        if (!isValidDataSize(length, bufLength, 2)) {
+          return null
+        }
+        result = buf.slice(offset + 2, offset + 2 + length)
+        return buildDecodeResult(result, 2 + length)
+      case 0xc5:
+        // buffers up to 2^16 - 1 bytes
+        length = buf.readUInt16BE(offset + 1)
+        if (!isValidDataSize(length, bufLength, 3)) {
+          return null
+        }
+        result = buf.slice(offset + 3, offset + 3 + length)
+        return buildDecodeResult(result, 3 + length)
+      case 0xc6:
+        // buffers up to 2^32 - 1 bytes
+        length = buf.readUInt32BE(offset + 1)
+        if (!isValidDataSize(length, bufLength, 5)) {
+          return null
+        }
+        result = buf.slice(offset + 5, offset + 5 + length)
+        return buildDecodeResult(result, 5 + length)
+      case 0xdc:
+        // array up to 2^16 elements - 2 bytes
+        if (bufLength < 3) {
+          return null
+        }
+
+        length = buf.readUInt16BE(offset + 1)
+        return decodeArray(buf, offset, length, 3)
+      case 0xdd:
+        // array up to 2^32 elements - 4 bytes
+        if (bufLength < 5) {
+          return null
+        }
+
+        length = buf.readUInt32BE(offset + 1)
+        return decodeArray(buf, offset, length, 5)
+      case 0xde:
+        // maps up to 2^16 elements - 2 bytes
+        length = buf.readUInt16BE(offset + 1)
+        return decodeMap(buf, offset, length, 3)
+      case 0xdf:
+        throw new Error('map too big to decode in JS')
+      case 0xd4:
+        return decodeFixExt(buf, offset, 1)
+      case 0xd5:
+        return decodeFixExt(buf, offset, 2)
+      case 0xd6:
+        return decodeFixExt(buf, offset, 4)
+      case 0xd7:
+        return decodeFixExt(buf, offset, 8)
+      case 0xd8:
+        return decodeFixExt(buf, offset, 16)
+      case 0xc7:
+        // ext up to 2^8 - 1 bytes
+        length = buf.readUInt8(offset + 1)
+        type = buf.readUInt8(offset + 2)
+        if (!isValidDataSize(length, bufLength, 3)) {
+          return null
+        }
+        return decodeExt(buf, offset, type, length, 3)
+      case 0xc8:
+        // ext up to 2^16 - 1 bytes
+        length = buf.readUInt16BE(offset + 1)
+        type = buf.readUInt8(offset + 3)
+        if (!isValidDataSize(length, bufLength, 4)) {
+          return null
+        }
+        return decodeExt(buf, offset, type, length, 4)
+      case 0xc9:
+        // ext up to 2^32 - 1 bytes
+        length = buf.readUInt32BE(offset + 1)
+        type = buf.readUInt8(offset + 5)
+        if (!isValidDataSize(length, bufLength, 6)) {
+          return null
+        }
+        return decodeExt(buf, offset, type, length, 6)
+    }
+
+    if ((first & 0xf0) === 0x90) {
+      // we have an array with less than 15 elements
+      length = first & 0x0f
+      return decodeArray(buf, offset, length, 1)
+    } else if ((first & 0xf0) === 0x80) {
+      // we have a map with less than 15 elements
+      length = first & 0x0f
+      return decodeMap(buf, offset, length, 1)
+    } else if ((first & 0xe0) === 0xa0) {
+      // fixstr up to 31 bytes
+      length = first & 0x1f
+      if (isValidDataSize(length, bufLength, 1)) {
+        result = buf.toString('utf8', offset + 1, offset + length + 1)
+        return buildDecodeResult(result, length + 1)
+      } else {
+        return null
+      }
+    } else if (first >= 0xe0) {
+      // 5 bits negative ints
+      result = first - 0x100
+      return buildDecodeResult(result, 1)
+    } else if (first < 0x80) {
+      // 7-bits positive ints
+      return buildDecodeResult(first, 1)
+    } else {
+      throw new Error('not implemented yet')
+    }
+  }
+
+  function readInt64BE (buf, offset) {
+    var negate = (buf[offset] & 0x80) == 0x80 // eslint-disable-line
+
+    if (negate) {
+      var carry = 1
+      for (var i = offset + 7; i >= offset; i--) {
+        var v = (buf[i] ^ 0xff) + carry
+        buf[i] = v & 0xff
+        carry = v >> 8
+      }
+    }
+
+    var hi = buf.readUInt32BE(offset + 0)
+    var lo = buf.readUInt32BE(offset + 4)
+    return (hi * 4294967296 + lo) * (negate ? -1 : +1)
+  }
+
+  function decodeArray (buf, offset, length, headerLength) {
+    var result = []
+    var i
+    var totalBytesConsumed = 0
+
+    offset += headerLength
+    for (i = 0; i < length; i++) {
+      var decodeResult = tryDecode(buf, offset)
+      if (decodeResult) {
+        result.push(decodeResult.value)
+        offset += decodeResult.bytesConsumed
+        totalBytesConsumed += decodeResult.bytesConsumed
+      } else {
+        return null
+      }
+    }
+    return buildDecodeResult(result, headerLength + totalBytesConsumed)
+  }
+
+  function decodeMap (buf, offset, length, headerLength) {
+    var result = {}
+    var key
+    var i
+    var totalBytesConsumed = 0
+
+    offset += headerLength
+    for (i = 0; i < length; i++) {
+      var keyResult = tryDecode(buf, offset)
+      if (keyResult) {
+        offset += keyResult.bytesConsumed
+        var valueResult = tryDecode(buf, offset)
+        if (valueResult) {
+          key = keyResult.value
+          result[key] = valueResult.value
+          offset += valueResult.bytesConsumed
+          totalBytesConsumed += (keyResult.bytesConsumed + valueResult.bytesConsumed)
+        } else {
+          return null
+        }
+      } else {
+        return null
+      }
+    }
+    return buildDecodeResult(result, headerLength + totalBytesConsumed)
+  }
+
+  function decodeFixExt (buf, offset, size) {
+    var type = buf.readInt8(offset + 1) // Signed
+    return decodeExt(buf, offset, type, size, 2)
+  }
+  function decodeTimestamp (buf, size, headerSize) {
+    var seconds, nanoseconds
+    nanoseconds = 0
+
+    switch (size) {
+      case 4:
+          // timestamp 32 stores the number of seconds that have elapsed since 1970-01-01 00:00:00 UTC in an 32-bit unsigned integer
+        seconds = buf.readUInt32BE(0)
+        break
+
+      case 8: // Timestamp 64 stores the number of seconds and nanoseconds that have elapsed
+                // since 1970-01-01 00:00:00 UTC in 32-bit unsigned integers, split 30/34 bits
+        var upper = buf.readUInt32BE(0)
+        var lower = buf.readUInt32BE(4)
+        nanoseconds = upper / 4
+        seconds = ((upper & 0x03) * Math.pow(2, 32)) + lower // If we use bitwise operators, we get truncated to 32bits
+        break
+
+      case 12:
+        throw new Error('timestamp 96 is not yet implemented')
+    }
+
+    var millis = (seconds * 1000) + Math.round(nanoseconds / 1E6)
+    return buildDecodeResult(new Date(millis), size + headerSize)
+  }
+
+  function decodeExt (buf, offset, type, size, headerSize) {
+    var i,
+      toDecode
+
+    offset += headerSize
+
+    // Pre-defined
+    if (type < 0) { // Reserved for future extensions
+      switch (type) {
+        case -1: // Tiemstamp https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type
+          toDecode = buf.slice(offset, offset + size)
+          return decodeTimestamp(toDecode, size, headerSize)
+      }
+    }
+
+    for (i = 0; i < decodingTypes.length; i++) {
+      if (type === decodingTypes[i].type) {
+        toDecode = buf.slice(offset, offset + size)
+        var value = decodingTypes[i].decode(toDecode)
+        return buildDecodeResult(value, headerSize + size)
+      }
+    }
+
+    throw new Error('unable to find ext type ' + type)
+  }
+}
+
+module.exports.IncompleteBufferError = IncompleteBufferError
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/encoder.js":
+/*!*********************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/encoder.js ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/safe-buffer/index.js").Buffer
+var bl = __webpack_require__(/*! bl */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/bl/bl.js")
+var TOLERANCE = 0.1
+
+module.exports = function buildEncode (encodingTypes, forceFloat64, compatibilityMode, disableTimestampEncoding) {
+  function encode (obj, avoidSlice) {
+    var buf,
+      len
+
+    if (obj === undefined) {
+      throw new Error('undefined is not encodable in msgpack!')
+    } else if (obj === null) {
+      buf = Buffer.allocUnsafe(1)
+      buf[0] = 0xc0
+    } else if (obj === true) {
+      buf = Buffer.allocUnsafe(1)
+      buf[0] = 0xc3
+    } else if (obj === false) {
+      buf = Buffer.allocUnsafe(1)
+      buf[0] = 0xc2
+    } else if (typeof obj === 'string') {
+      len = Buffer.byteLength(obj)
+      if (len < 32) {
+        buf = Buffer.allocUnsafe(1 + len)
+        buf[0] = 0xa0 | len
+        if (len > 0) {
+          buf.write(obj, 1)
+        }
+      } else if (len <= 0xff && !compatibilityMode) {
+        // str8, but only when not in compatibility mode
+        buf = Buffer.allocUnsafe(2 + len)
+        buf[0] = 0xd9
+        buf[1] = len
+        buf.write(obj, 2)
+      } else if (len <= 0xffff) {
+        buf = Buffer.allocUnsafe(3 + len)
+        buf[0] = 0xda
+        buf.writeUInt16BE(len, 1)
+        buf.write(obj, 3)
+      } else {
+        buf = Buffer.allocUnsafe(5 + len)
+        buf[0] = 0xdb
+        buf.writeUInt32BE(len, 1)
+        buf.write(obj, 5)
+      }
+    } else if (obj && (obj.readUInt32LE || obj instanceof Uint8Array)) {
+      if (obj instanceof Uint8Array) {
+        obj = Buffer.from(obj)
+      }
+      // weird hack to support Buffer
+      // and Buffer-like objects
+      if (obj.length <= 0xff) {
+        buf = Buffer.allocUnsafe(2)
+        buf[0] = 0xc4
+        buf[1] = obj.length
+      } else if (obj.length <= 0xffff) {
+        buf = Buffer.allocUnsafe(3)
+        buf[0] = 0xc5
+        buf.writeUInt16BE(obj.length, 1)
+      } else {
+        buf = Buffer.allocUnsafe(5)
+        buf[0] = 0xc6
+        buf.writeUInt32BE(obj.length, 1)
+      }
+
+      buf = bl([buf, obj])
+    } else if (Array.isArray(obj)) {
+      if (obj.length < 16) {
+        buf = Buffer.allocUnsafe(1)
+        buf[0] = 0x90 | obj.length
+      } else if (obj.length < 65536) {
+        buf = Buffer.allocUnsafe(3)
+        buf[0] = 0xdc
+        buf.writeUInt16BE(obj.length, 1)
+      } else {
+        buf = Buffer.allocUnsafe(5)
+        buf[0] = 0xdd
+        buf.writeUInt32BE(obj.length, 1)
+      }
+
+      buf = obj.reduce(function (acc, obj) {
+        acc.append(encode(obj, true))
+        return acc
+      }, bl().append(buf))
+    } else if (!disableTimestampEncoding && typeof obj.getDate === 'function') {
+      return encodeDate(obj)
+    } else if (typeof obj === 'object') {
+      buf = encodeExt(obj) || encodeObject(obj)
+    } else if (typeof obj === 'number') {
+      if (isFloat(obj)) {
+        return encodeFloat(obj, forceFloat64)
+      } else if (obj >= 0) {
+        if (obj < 128) {
+          buf = Buffer.allocUnsafe(1)
+          buf[0] = obj
+        } else if (obj < 256) {
+          buf = Buffer.allocUnsafe(2)
+          buf[0] = 0xcc
+          buf[1] = obj
+        } else if (obj < 65536) {
+          buf = Buffer.allocUnsafe(3)
+          buf[0] = 0xcd
+          buf.writeUInt16BE(obj, 1)
+        } else if (obj <= 0xffffffff) {
+          buf = Buffer.allocUnsafe(5)
+          buf[0] = 0xce
+          buf.writeUInt32BE(obj, 1)
+        } else if (obj <= 9007199254740991) {
+          buf = Buffer.allocUnsafe(9)
+          buf[0] = 0xcf
+          write64BitUint(buf, obj)
+        } else {
+          return encodeFloat(obj, true)
+        }
+      } else {
+        if (obj >= -32) {
+          buf = Buffer.allocUnsafe(1)
+          buf[0] = 0x100 + obj
+        } else if (obj >= -128) {
+          buf = Buffer.allocUnsafe(2)
+          buf[0] = 0xd0
+          buf.writeInt8(obj, 1)
+        } else if (obj >= -32768) {
+          buf = Buffer.allocUnsafe(3)
+          buf[0] = 0xd1
+          buf.writeInt16BE(obj, 1)
+        } else if (obj > -214748365) {
+          buf = Buffer.allocUnsafe(5)
+          buf[0] = 0xd2
+          buf.writeInt32BE(obj, 1)
+        } else if (obj >= -9007199254740991) {
+          buf = Buffer.allocUnsafe(9)
+          buf[0] = 0xd3
+          write64BitInt(buf, 1, obj)
+        } else {
+          return encodeFloat(obj, true)
+        }
+      }
+    }
+
+    if (!buf) {
+      throw new Error('not implemented yet')
+    }
+
+    if (avoidSlice) {
+      return buf
+    } else {
+      return buf.slice()
+    }
+  }
+
+  function encodeDate (dt) {
+    var encoded
+    var millis = dt * 1
+    var seconds = Math.floor(millis / 1000)
+    var nanos = (millis - (seconds * 1000)) * 1E6
+
+    if (nanos || seconds > 0xFFFFFFFF) {
+        // Timestamp64
+      encoded = new Buffer(10)
+      encoded[0] = 0xd7
+      encoded[1] = -1
+
+      var upperNanos = ((nanos * 4))
+      var upperSeconds = seconds / Math.pow(2, 32)
+      var upper = (upperNanos + upperSeconds) & 0xFFFFFFFF
+      var lower = seconds & 0xFFFFFFFF
+
+      encoded.writeInt32BE(upper, 2)
+      encoded.writeInt32BE(lower, 6)
+    } else {
+        // Timestamp32
+      encoded = new Buffer(6)
+      encoded[0] = 0xd6
+      encoded[1] = -1
+      encoded.writeUInt32BE(Math.floor(millis / 1000), 2)
+    }
+    return bl().append(encoded)
+  }
+
+  function encodeExt (obj) {
+    var i
+    var encoded
+    var length = -1
+    var headers = []
+
+    for (i = 0; i < encodingTypes.length; i++) {
+      if (encodingTypes[i].check(obj)) {
+        encoded = encodingTypes[i].encode(obj)
+        break
+      }
+    }
+
+    if (!encoded) {
+      return null
+    }
+
+    // we subtract 1 because the length does not
+    // include the type
+    length = encoded.length - 1
+
+    if (length === 1) {
+      headers.push(0xd4)
+    } else if (length === 2) {
+      headers.push(0xd5)
+    } else if (length === 4) {
+      headers.push(0xd6)
+    } else if (length === 8) {
+      headers.push(0xd7)
+    } else if (length === 16) {
+      headers.push(0xd8)
+    } else if (length < 256) {
+      headers.push(0xc7)
+      headers.push(length)
+    } else if (length < 0x10000) {
+      headers.push(0xc8)
+      headers.push(length >> 8)
+      headers.push(length & 0x00ff)
+    } else {
+      headers.push(0xc9)
+      headers.push(length >> 24)
+      headers.push((length >> 16) & 0x000000ff)
+      headers.push((length >> 8) & 0x000000ff)
+      headers.push(length & 0x000000ff)
+    }
+
+    return bl().append(Buffer.from(headers)).append(encoded)
+  }
+
+  function encodeObject (obj) {
+    var acc = []
+    var length = 0
+    var key
+    var header
+
+    for (key in obj) {
+      if (obj.hasOwnProperty(key) &&
+        obj[key] !== undefined &&
+        typeof obj[key] !== 'function') {
+        ++length
+        acc.push(encode(key, true))
+        acc.push(encode(obj[key], true))
+      }
+    }
+
+    if (length < 16) {
+      header = Buffer.allocUnsafe(1)
+      header[0] = 0x80 | length
+    } else {
+      header = Buffer.allocUnsafe(3)
+      header[0] = 0xde
+      header.writeUInt16BE(length, 1)
+    }
+
+    acc.unshift(header)
+
+    var result = acc.reduce(function (list, buf) {
+      return list.append(buf)
+    }, bl())
+
+    return result
+  }
+
+  return encode
+}
+
+function write64BitUint (buf, obj) {
+  // Write long byte by byte, in big-endian order
+  for (var currByte = 7; currByte >= 0; currByte--) {
+    buf[currByte + 1] = (obj & 0xff)
+    obj = obj / 256
+  }
+}
+
+function write64BitInt (buf, offset, num) {
+  var negate = num < 0
+
+  if (negate) {
+    num = Math.abs(num)
+  }
+
+  var lo = num % 4294967296
+  var hi = num / 4294967296
+  buf.writeUInt32BE(Math.floor(hi), offset + 0)
+  buf.writeUInt32BE(lo, offset + 4)
+
+  if (negate) {
+    var carry = 1
+    for (var i = offset + 7; i >= offset; i--) {
+      var v = (buf[i] ^ 0xff) + carry
+      buf[i] = v & 0xff
+      carry = v >> 8
+    }
+  }
+}
+
+function isFloat (n) {
+  return n !== Math.floor(n)
+}
+
+function encodeFloat (obj, forceFloat64) {
+  var buf
+
+  buf = Buffer.allocUnsafe(5)
+  buf[0] = 0xca
+  buf.writeFloatBE(obj, 1)
+
+  // FIXME is there a way to check if a
+  // value fits in a float?
+  if (forceFloat64 || Math.abs(obj - buf.readFloatBE(1)) > TOLERANCE) {
+    buf = Buffer.allocUnsafe(9)
+    buf[0] = 0xcb
+    buf.writeDoubleBE(obj, 1)
+  }
+
+  return buf
+}
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/streams.js":
+/*!*********************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/msgpack5/lib/streams.js ***!
+  \*********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+var Transform = __webpack_require__(/*! readable-stream */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/readable-browser.js").Transform
+var inherits = __webpack_require__(/*! inherits */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/inherits/inherits_browser.js")
+var bl = __webpack_require__(/*! bl */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/bl/bl.js")
+
+function Base (opts) {
+  opts = opts || {}
+
+  opts.objectMode = true
+  opts.highWaterMark = 16
+
+  Transform.call(this, opts)
+
+  this._msgpack = opts.msgpack
+}
+
+inherits(Base, Transform)
+
+function Encoder (opts) {
+  if (!(this instanceof Encoder)) {
+    opts = opts || {}
+    opts.msgpack = this
+    return new Encoder(opts)
+  }
+
+  Base.call(this, opts)
+}
+
+inherits(Encoder, Base)
+
+Encoder.prototype._transform = function (obj, enc, done) {
+  var buf = null
+
+  try {
+    buf = this._msgpack.encode(obj).slice(0)
+  } catch (err) {
+    this.emit('error', err)
+    return done()
+  }
+
+  this.push(buf)
+  done()
+}
+
+function Decoder (opts) {
+  if (!(this instanceof Decoder)) {
+    opts = opts || {}
+    opts.msgpack = this
+    return new Decoder(opts)
+  }
+
+  Base.call(this, opts)
+
+  this._chunks = bl()
+}
+
+inherits(Decoder, Base)
+
+Decoder.prototype._transform = function (buf, enc, done) {
+  if (buf) {
+    this._chunks.append(buf)
+  }
+
+  try {
+    var result = this._msgpack.decode(this._chunks)
+    this.push(result)
+  } catch (err) {
+    if (err instanceof this._msgpack.IncompleteBufferError) {
+      done()
+    } else {
+      this.emit('error', err)
+    }
+    return
+  }
+
+  if (this._chunks.length > 0) {
+    this._transform(null, enc, done)
+  } else {
+    done()
+  }
+}
+
+module.exports.decoder = Decoder
+module.exports.encoder = Encoder
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/process-nextick-args/index.js":
+/*!***************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/process-nextick-args/index.js ***!
+  \***************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process) {
+
+if (!process.version ||
+    process.version.indexOf('v0.') === 0 ||
+    process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
+  module.exports = { nextTick: nextTick };
+} else {
+  module.exports = process
+}
+
+function nextTick(fn, arg1, arg2, arg3) {
+  if (typeof fn !== 'function') {
+    throw new TypeError('"callback" argument must be a function');
+  }
+  var len = arguments.length;
+  var args, i;
+  switch (len) {
+  case 0:
+  case 1:
+    return process.nextTick(fn);
+  case 2:
+    return process.nextTick(function afterTickOne() {
+      fn.call(null, arg1);
+    });
+  case 3:
+    return process.nextTick(function afterTickTwo() {
+      fn.call(null, arg1, arg2);
+    });
+  case 4:
+    return process.nextTick(function afterTickThree() {
+      fn.call(null, arg1, arg2, arg3);
+    });
+  default:
+    args = new Array(len - 1);
+    i = 0;
+    while (i < args.length) {
+      args[i++] = arguments[i];
+    }
+    return process.nextTick(function afterTick() {
+      fn.apply(null, args);
+    });
+  }
+}
+
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../process/browser.js */ "../node_modules/process/browser.js")))
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/duplex-browser.js":
+/*!*******************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/duplex-browser.js ***!
+  \*******************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! ./lib/_stream_duplex.js */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js");
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js":
+/*!***********************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js ***!
+  \***********************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a duplex stream is just a stream that is both readable and writable.
+// Since JS doesn't have multiple prototypal inheritance, this class
+// prototypally inherits from Readable, and then parasitically from
+// Writable.
+
+
+
+/*<replacement>*/
+
+var pna = __webpack_require__(/*! process-nextick-args */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/process-nextick-args/index.js");
+/*</replacement>*/
+
+/*<replacement>*/
+var objectKeys = Object.keys || function (obj) {
+  var keys = [];
+  for (var key in obj) {
+    keys.push(key);
+  }return keys;
+};
+/*</replacement>*/
+
+module.exports = Duplex;
+
+/*<replacement>*/
+var util = __webpack_require__(/*! core-util-is */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/inherits/inherits_browser.js");
+/*</replacement>*/
+
+var Readable = __webpack_require__(/*! ./_stream_readable */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_readable.js");
+var Writable = __webpack_require__(/*! ./_stream_writable */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_writable.js");
+
+util.inherits(Duplex, Readable);
+
+{
+  // avoid scope creep, the keys array can then be collected
+  var keys = objectKeys(Writable.prototype);
+  for (var v = 0; v < keys.length; v++) {
+    var method = keys[v];
+    if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
+  }
+}
+
+function Duplex(options) {
+  if (!(this instanceof Duplex)) return new Duplex(options);
+
+  Readable.call(this, options);
+  Writable.call(this, options);
+
+  if (options && options.readable === false) this.readable = false;
+
+  if (options && options.writable === false) this.writable = false;
+
+  this.allowHalfOpen = true;
+  if (options && options.allowHalfOpen === false) this.allowHalfOpen = false;
+
+  this.once('end', onend);
+}
+
+Object.defineProperty(Duplex.prototype, 'writableHighWaterMark', {
+  // making it explicit this property is not enumerable
+  // because otherwise some prototype manipulation in
+  // userland will fail
+  enumerable: false,
+  get: function () {
+    return this._writableState.highWaterMark;
+  }
+});
+
+// the no-half-open enforcer
+function onend() {
+  // if we allow half-open state, or if the writable side ended,
+  // then we're ok.
+  if (this.allowHalfOpen || this._writableState.ended) return;
+
+  // no more data can be written.
+  // But allow more writes to happen in this tick.
+  pna.nextTick(onEndNT, this);
+}
+
+function onEndNT(self) {
+  self.end();
+}
+
+Object.defineProperty(Duplex.prototype, 'destroyed', {
+  get: function () {
+    if (this._readableState === undefined || this._writableState === undefined) {
+      return false;
+    }
+    return this._readableState.destroyed && this._writableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (this._readableState === undefined || this._writableState === undefined) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._readableState.destroyed = value;
+    this._writableState.destroyed = value;
+  }
+});
+
+Duplex.prototype._destroy = function (err, cb) {
+  this.push(null);
+  this.end();
+
+  pna.nextTick(cb, err);
+};
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_passthrough.js":
+/*!****************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_passthrough.js ***!
+  \****************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a passthrough stream.
+// basically just the most minimal sort of Transform stream.
+// Every written chunk gets output as-is.
+
+
+
+module.exports = PassThrough;
+
+var Transform = __webpack_require__(/*! ./_stream_transform */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_transform.js");
+
+/*<replacement>*/
+var util = __webpack_require__(/*! core-util-is */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/inherits/inherits_browser.js");
+/*</replacement>*/
+
+util.inherits(PassThrough, Transform);
+
+function PassThrough(options) {
+  if (!(this instanceof PassThrough)) return new PassThrough(options);
+
+  Transform.call(this, options);
+}
+
+PassThrough.prototype._transform = function (chunk, encoding, cb) {
+  cb(null, chunk);
+};
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_readable.js":
+/*!*************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_readable.js ***!
+  \*************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
+
+/*<replacement>*/
+
+var pna = __webpack_require__(/*! process-nextick-args */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/process-nextick-args/index.js");
+/*</replacement>*/
+
+module.exports = Readable;
+
+/*<replacement>*/
+var isArray = __webpack_require__(/*! isarray */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/isarray/index.js");
+/*</replacement>*/
+
+/*<replacement>*/
+var Duplex;
+/*</replacement>*/
+
+Readable.ReadableState = ReadableState;
+
+/*<replacement>*/
+var EE = __webpack_require__(/*! events */ "../node_modules/events/events.js").EventEmitter;
+
+var EElistenerCount = function (emitter, type) {
+  return emitter.listeners(type).length;
+};
+/*</replacement>*/
+
+/*<replacement>*/
+var Stream = __webpack_require__(/*! ./internal/streams/stream */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/stream-browser.js");
+/*</replacement>*/
+
+/*<replacement>*/
+
+var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/safe-buffer/index.js").Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
+
+/*</replacement>*/
+
+/*<replacement>*/
+var util = __webpack_require__(/*! core-util-is */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/inherits/inherits_browser.js");
+/*</replacement>*/
+
+/*<replacement>*/
+var debugUtil = __webpack_require__(/*! util */ 0);
+var debug = void 0;
+if (debugUtil && debugUtil.debuglog) {
+  debug = debugUtil.debuglog('stream');
+} else {
+  debug = function () {};
+}
+/*</replacement>*/
+
+var BufferList = __webpack_require__(/*! ./internal/streams/BufferList */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/BufferList.js");
+var destroyImpl = __webpack_require__(/*! ./internal/streams/destroy */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/destroy.js");
+var StringDecoder;
+
+util.inherits(Readable, Stream);
+
+var kProxyEvents = ['error', 'close', 'destroy', 'pause', 'resume'];
+
+function prependListener(emitter, event, fn) {
+  // Sadly this is not cacheable as some libraries bundle their own
+  // event emitter implementation with them.
+  if (typeof emitter.prependListener === 'function') return emitter.prependListener(event, fn);
+
+  // This is a hack to make sure that our error handler is attached before any
+  // userland ones.  NEVER DO THIS. This is here only because this code needs
+  // to continue to work with older versions of Node.js that do not include
+  // the prependListener() method. The goal is to eventually remove this hack.
+  if (!emitter._events || !emitter._events[event]) emitter.on(event, fn);else if (isArray(emitter._events[event])) emitter._events[event].unshift(fn);else emitter._events[event] = [fn, emitter._events[event]];
+}
+
+function ReadableState(options, stream) {
+  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js");
+
+  options = options || {};
+
+  // Duplex streams are both readable and writable, but share
+  // the same options object.
+  // However, some cases require setting options to different
+  // values for the readable and the writable sides of the duplex stream.
+  // These options can be provided separately as readableXXX and writableXXX.
+  var isDuplex = stream instanceof Duplex;
+
+  // object stream flag. Used to make read(n) ignore n and to
+  // make all the buffer merging and length checks go away
+  this.objectMode = !!options.objectMode;
+
+  if (isDuplex) this.objectMode = this.objectMode || !!options.readableObjectMode;
+
+  // the point at which it stops calling _read() to fill the buffer
+  // Note: 0 is a valid value, means "don't call _read preemptively ever"
+  var hwm = options.highWaterMark;
+  var readableHwm = options.readableHighWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+
+  if (hwm || hwm === 0) this.highWaterMark = hwm;else if (isDuplex && (readableHwm || readableHwm === 0)) this.highWaterMark = readableHwm;else this.highWaterMark = defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = Math.floor(this.highWaterMark);
+
+  // A linked list is used to store data chunks instead of an array because the
+  // linked list can remove elements from the beginning faster than
+  // array.shift()
+  this.buffer = new BufferList();
+  this.length = 0;
+  this.pipes = null;
+  this.pipesCount = 0;
+  this.flowing = null;
+  this.ended = false;
+  this.endEmitted = false;
+  this.reading = false;
+
+  // a flag to be able to tell if the event 'readable'/'data' is emitted
+  // immediately, or on a later tick.  We set this to true at first, because
+  // any actions that shouldn't happen until "later" should generally also
+  // not happen before the first read call.
+  this.sync = true;
+
+  // whenever we return null, then we set a flag to say
+  // that we're awaiting a 'readable' event emission.
+  this.needReadable = false;
+  this.emittedReadable = false;
+  this.readableListening = false;
+  this.resumeScheduled = false;
+
+  // has it been destroyed
+  this.destroyed = false;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // the number of writers that are awaiting a drain event in .pipe()s
+  this.awaitDrain = 0;
+
+  // if true, a maybeReadMore has been scheduled
+  this.readingMore = false;
+
+  this.decoder = null;
+  this.encoding = null;
+  if (options.encoding) {
+    if (!StringDecoder) StringDecoder = __webpack_require__(/*! string_decoder/ */ "../node_modules/string_decoder/lib/string_decoder.js").StringDecoder;
+    this.decoder = new StringDecoder(options.encoding);
+    this.encoding = options.encoding;
+  }
+}
+
+function Readable(options) {
+  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js");
+
+  if (!(this instanceof Readable)) return new Readable(options);
+
+  this._readableState = new ReadableState(options, this);
+
+  // legacy
+  this.readable = true;
+
+  if (options) {
+    if (typeof options.read === 'function') this._read = options.read;
+
+    if (typeof options.destroy === 'function') this._destroy = options.destroy;
+  }
+
+  Stream.call(this);
+}
+
+Object.defineProperty(Readable.prototype, 'destroyed', {
+  get: function () {
+    if (this._readableState === undefined) {
+      return false;
+    }
+    return this._readableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._readableState) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._readableState.destroyed = value;
+  }
+});
+
+Readable.prototype.destroy = destroyImpl.destroy;
+Readable.prototype._undestroy = destroyImpl.undestroy;
+Readable.prototype._destroy = function (err, cb) {
+  this.push(null);
+  cb(err);
+};
+
+// Manually shove something into the read() buffer.
+// This returns true if the highWaterMark has not been hit yet,
+// similar to how Writable.write() returns true if you should
+// write() some more.
+Readable.prototype.push = function (chunk, encoding) {
+  var state = this._readableState;
+  var skipChunkCheck;
+
+  if (!state.objectMode) {
+    if (typeof chunk === 'string') {
+      encoding = encoding || state.defaultEncoding;
+      if (encoding !== state.encoding) {
+        chunk = Buffer.from(chunk, encoding);
+        encoding = '';
+      }
+      skipChunkCheck = true;
+    }
+  } else {
+    skipChunkCheck = true;
+  }
+
+  return readableAddChunk(this, chunk, encoding, false, skipChunkCheck);
+};
+
+// Unshift should *always* be something directly out of read()
+Readable.prototype.unshift = function (chunk) {
+  return readableAddChunk(this, chunk, null, true, false);
+};
+
+function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
+  var state = stream._readableState;
+  if (chunk === null) {
+    state.reading = false;
+    onEofChunk(stream, state);
+  } else {
+    var er;
+    if (!skipChunkCheck) er = chunkInvalid(state, chunk);
+    if (er) {
+      stream.emit('error', er);
+    } else if (state.objectMode || chunk && chunk.length > 0) {
+      if (typeof chunk !== 'string' && !state.objectMode && Object.getPrototypeOf(chunk) !== Buffer.prototype) {
+        chunk = _uint8ArrayToBuffer(chunk);
+      }
+
+      if (addToFront) {
+        if (state.endEmitted) stream.emit('error', new Error('stream.unshift() after end event'));else addChunk(stream, state, chunk, true);
+      } else if (state.ended) {
+        stream.emit('error', new Error('stream.push() after EOF'));
+      } else {
+        state.reading = false;
+        if (state.decoder && !encoding) {
+          chunk = state.decoder.write(chunk);
+          if (state.objectMode || chunk.length !== 0) addChunk(stream, state, chunk, false);else maybeReadMore(stream, state);
+        } else {
+          addChunk(stream, state, chunk, false);
+        }
+      }
+    } else if (!addToFront) {
+      state.reading = false;
+    }
+  }
+
+  return needMoreData(state);
+}
+
+function addChunk(stream, state, chunk, addToFront) {
+  if (state.flowing && state.length === 0 && !state.sync) {
+    stream.emit('data', chunk);
+    stream.read(0);
+  } else {
+    // update the buffer info.
+    state.length += state.objectMode ? 1 : chunk.length;
+    if (addToFront) state.buffer.unshift(chunk);else state.buffer.push(chunk);
+
+    if (state.needReadable) emitReadable(stream);
+  }
+  maybeReadMore(stream, state);
+}
+
+function chunkInvalid(state, chunk) {
+  var er;
+  if (!_isUint8Array(chunk) && typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  return er;
+}
+
+// if it's past the high water mark, we can push in some more.
+// Also, if we have no data yet, we can stand some
+// more bytes.  This is to work around cases where hwm=0,
+// such as the repl.  Also, if the push() triggered a
+// readable event, and the user called read(largeNumber) such that
+// needReadable was set, then we ought to push more, so that another
+// 'readable' event will be triggered.
+function needMoreData(state) {
+  return !state.ended && (state.needReadable || state.length < state.highWaterMark || state.length === 0);
+}
+
+Readable.prototype.isPaused = function () {
+  return this._readableState.flowing === false;
+};
+
+// backwards compatibility.
+Readable.prototype.setEncoding = function (enc) {
+  if (!StringDecoder) StringDecoder = __webpack_require__(/*! string_decoder/ */ "../node_modules/string_decoder/lib/string_decoder.js").StringDecoder;
+  this._readableState.decoder = new StringDecoder(enc);
+  this._readableState.encoding = enc;
+  return this;
+};
+
+// Don't raise the hwm > 8MB
+var MAX_HWM = 0x800000;
+function computeNewHighWaterMark(n) {
+  if (n >= MAX_HWM) {
+    n = MAX_HWM;
+  } else {
+    // Get the next highest power of 2 to prevent increasing hwm excessively in
+    // tiny amounts
+    n--;
+    n |= n >>> 1;
+    n |= n >>> 2;
+    n |= n >>> 4;
+    n |= n >>> 8;
+    n |= n >>> 16;
+    n++;
+  }
+  return n;
+}
+
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function howMuchToRead(n, state) {
+  if (n <= 0 || state.length === 0 && state.ended) return 0;
+  if (state.objectMode) return 1;
+  if (n !== n) {
+    // Only flow one buffer at a time
+    if (state.flowing && state.length) return state.buffer.head.data.length;else return state.length;
+  }
+  // If we're asking for more than the current hwm, then raise the hwm.
+  if (n > state.highWaterMark) state.highWaterMark = computeNewHighWaterMark(n);
+  if (n <= state.length) return n;
+  // Don't have enough
+  if (!state.ended) {
+    state.needReadable = true;
+    return 0;
+  }
+  return state.length;
+}
+
+// you can override either this method, or the async _read(n) below.
+Readable.prototype.read = function (n) {
+  debug('read', n);
+  n = parseInt(n, 10);
+  var state = this._readableState;
+  var nOrig = n;
+
+  if (n !== 0) state.emittedReadable = false;
+
+  // if we're doing read(0) to trigger a readable event, but we
+  // already have a bunch of data in the buffer, then just trigger
+  // the 'readable' event and move on.
+  if (n === 0 && state.needReadable && (state.length >= state.highWaterMark || state.ended)) {
+    debug('read: emitReadable', state.length, state.ended);
+    if (state.length === 0 && state.ended) endReadable(this);else emitReadable(this);
+    return null;
+  }
+
+  n = howMuchToRead(n, state);
+
+  // if we've ended, and we're now clear, then finish it up.
+  if (n === 0 && state.ended) {
+    if (state.length === 0) endReadable(this);
+    return null;
+  }
+
+  // All the actual chunk generation logic needs to be
+  // *below* the call to _read.  The reason is that in certain
+  // synthetic stream cases, such as passthrough streams, _read
+  // may be a completely synchronous operation which may change
+  // the state of the read buffer, providing enough data when
+  // before there was *not* enough.
+  //
+  // So, the steps are:
+  // 1. Figure out what the state of things will be after we do
+  // a read from the buffer.
+  //
+  // 2. If that resulting state will trigger a _read, then call _read.
+  // Note that this may be asynchronous, or synchronous.  Yes, it is
+  // deeply ugly to write APIs this way, but that still doesn't mean
+  // that the Readable class should behave improperly, as streams are
+  // designed to be sync/async agnostic.
+  // Take note if the _read call is sync or async (ie, if the read call
+  // has returned yet), so that we know whether or not it's safe to emit
+  // 'readable' etc.
+  //
+  // 3. Actually pull the requested chunks out of the buffer and return.
+
+  // if we need a readable event, then we need to do some reading.
+  var doRead = state.needReadable;
+  debug('need readable', doRead);
+
+  // if we currently have less than the highWaterMark, then also read some
+  if (state.length === 0 || state.length - n < state.highWaterMark) {
+    doRead = true;
+    debug('length less than watermark', doRead);
+  }
+
+  // however, if we've ended, then there's no point, and if we're already
+  // reading, then it's unnecessary.
+  if (state.ended || state.reading) {
+    doRead = false;
+    debug('reading or ended', doRead);
+  } else if (doRead) {
+    debug('do read');
+    state.reading = true;
+    state.sync = true;
+    // if the length is currently zero, then we *need* a readable event.
+    if (state.length === 0) state.needReadable = true;
+    // call internal read method
+    this._read(state.highWaterMark);
+    state.sync = false;
+    // If _read pushed data synchronously, then `reading` will be false,
+    // and we need to re-evaluate how much data we can return to the user.
+    if (!state.reading) n = howMuchToRead(nOrig, state);
+  }
+
+  var ret;
+  if (n > 0) ret = fromList(n, state);else ret = null;
+
+  if (ret === null) {
+    state.needReadable = true;
+    n = 0;
+  } else {
+    state.length -= n;
+  }
+
+  if (state.length === 0) {
+    // If we have nothing in the buffer, then we want to know
+    // as soon as we *do* get something into the buffer.
+    if (!state.ended) state.needReadable = true;
+
+    // If we tried to read() past the EOF, then emit end on the next tick.
+    if (nOrig !== n && state.ended) endReadable(this);
+  }
+
+  if (ret !== null) this.emit('data', ret);
+
+  return ret;
+};
+
+function onEofChunk(stream, state) {
+  if (state.ended) return;
+  if (state.decoder) {
+    var chunk = state.decoder.end();
+    if (chunk && chunk.length) {
+      state.buffer.push(chunk);
+      state.length += state.objectMode ? 1 : chunk.length;
+    }
+  }
+  state.ended = true;
+
+  // emit 'readable' now to make sure it gets picked up.
+  emitReadable(stream);
+}
+
+// Don't emit readable right away in sync mode, because this can trigger
+// another read() call => stack overflow.  This way, it might trigger
+// a nextTick recursion warning, but that's not so bad.
+function emitReadable(stream) {
+  var state = stream._readableState;
+  state.needReadable = false;
+  if (!state.emittedReadable) {
+    debug('emitReadable', state.flowing);
+    state.emittedReadable = true;
+    if (state.sync) pna.nextTick(emitReadable_, stream);else emitReadable_(stream);
+  }
+}
+
+function emitReadable_(stream) {
+  debug('emit readable');
+  stream.emit('readable');
+  flow(stream);
+}
+
+// at this point, the user has presumably seen the 'readable' event,
+// and called read() to consume some data.  that may have triggered
+// in turn another _read(n) call, in which case reading = true if
+// it's in progress.
+// However, if we're not ended, or reading, and the length < hwm,
+// then go ahead and try to read some more preemptively.
+function maybeReadMore(stream, state) {
+  if (!state.readingMore) {
+    state.readingMore = true;
+    pna.nextTick(maybeReadMore_, stream, state);
+  }
+}
+
+function maybeReadMore_(stream, state) {
+  var len = state.length;
+  while (!state.reading && !state.flowing && !state.ended && state.length < state.highWaterMark) {
+    debug('maybeReadMore read 0');
+    stream.read(0);
+    if (len === state.length)
+      // didn't get any data, stop spinning.
+      break;else len = state.length;
+  }
+  state.readingMore = false;
+}
+
+// abstract method.  to be overridden in specific implementation classes.
+// call cb(er, data) where data is <= n in length.
+// for virtual (non-string, non-buffer) streams, "length" is somewhat
+// arbitrary, and perhaps not very meaningful.
+Readable.prototype._read = function (n) {
+  this.emit('error', new Error('_read() is not implemented'));
+};
+
+Readable.prototype.pipe = function (dest, pipeOpts) {
+  var src = this;
+  var state = this._readableState;
+
+  switch (state.pipesCount) {
+    case 0:
+      state.pipes = dest;
+      break;
+    case 1:
+      state.pipes = [state.pipes, dest];
+      break;
+    default:
+      state.pipes.push(dest);
+      break;
+  }
+  state.pipesCount += 1;
+  debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
+
+  var doEnd = (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
+
+  var endFn = doEnd ? onend : unpipe;
+  if (state.endEmitted) pna.nextTick(endFn);else src.once('end', endFn);
+
+  dest.on('unpipe', onunpipe);
+  function onunpipe(readable, unpipeInfo) {
+    debug('onunpipe');
+    if (readable === src) {
+      if (unpipeInfo && unpipeInfo.hasUnpiped === false) {
+        unpipeInfo.hasUnpiped = true;
+        cleanup();
+      }
+    }
+  }
+
+  function onend() {
+    debug('onend');
+    dest.end();
+  }
+
+  // when the dest drains, it reduces the awaitDrain counter
+  // on the source.  This would be more elegant with a .once()
+  // handler in flow(), but adding and removing repeatedly is
+  // too slow.
+  var ondrain = pipeOnDrain(src);
+  dest.on('drain', ondrain);
+
+  var cleanedUp = false;
+  function cleanup() {
+    debug('cleanup');
+    // cleanup event handlers once the pipe is broken
+    dest.removeListener('close', onclose);
+    dest.removeListener('finish', onfinish);
+    dest.removeListener('drain', ondrain);
+    dest.removeListener('error', onerror);
+    dest.removeListener('unpipe', onunpipe);
+    src.removeListener('end', onend);
+    src.removeListener('end', unpipe);
+    src.removeListener('data', ondata);
+
+    cleanedUp = true;
+
+    // if the reader is waiting for a drain event from this
+    // specific writer, then it would cause it to never start
+    // flowing again.
+    // So, if this is awaiting a drain, then we just call it now.
+    // If we don't know, then assume that we are waiting for one.
+    if (state.awaitDrain && (!dest._writableState || dest._writableState.needDrain)) ondrain();
+  }
+
+  // If the user pushes more data while we're writing to dest then we'll end up
+  // in ondata again. However, we only want to increase awaitDrain once because
+  // dest will only emit one 'drain' event for the multiple writes.
+  // => Introduce a guard on increasing awaitDrain.
+  var increasedAwaitDrain = false;
+  src.on('data', ondata);
+  function ondata(chunk) {
+    debug('ondata');
+    increasedAwaitDrain = false;
+    var ret = dest.write(chunk);
+    if (false === ret && !increasedAwaitDrain) {
+      // If the user unpiped during `dest.write()`, it is possible
+      // to get stuck in a permanently paused state if that write
+      // also returned false.
+      // => Check whether `dest` is still a piping destination.
+      if ((state.pipesCount === 1 && state.pipes === dest || state.pipesCount > 1 && indexOf(state.pipes, dest) !== -1) && !cleanedUp) {
+        debug('false write response, pause', src._readableState.awaitDrain);
+        src._readableState.awaitDrain++;
+        increasedAwaitDrain = true;
+      }
+      src.pause();
+    }
+  }
+
+  // if the dest has an error, then stop piping into it.
+  // however, don't suppress the throwing behavior for this.
+  function onerror(er) {
+    debug('onerror', er);
+    unpipe();
+    dest.removeListener('error', onerror);
+    if (EElistenerCount(dest, 'error') === 0) dest.emit('error', er);
+  }
+
+  // Make sure our error handler is attached before userland ones.
+  prependListener(dest, 'error', onerror);
+
+  // Both close and finish should trigger unpipe, but only once.
+  function onclose() {
+    dest.removeListener('finish', onfinish);
+    unpipe();
+  }
+  dest.once('close', onclose);
+  function onfinish() {
+    debug('onfinish');
+    dest.removeListener('close', onclose);
+    unpipe();
+  }
+  dest.once('finish', onfinish);
+
+  function unpipe() {
+    debug('unpipe');
+    src.unpipe(dest);
+  }
+
+  // tell the dest that it's being piped to
+  dest.emit('pipe', src);
+
+  // start the flow if it hasn't been started already.
+  if (!state.flowing) {
+    debug('pipe resume');
+    src.resume();
+  }
+
+  return dest;
+};
+
+function pipeOnDrain(src) {
+  return function () {
+    var state = src._readableState;
+    debug('pipeOnDrain', state.awaitDrain);
+    if (state.awaitDrain) state.awaitDrain--;
+    if (state.awaitDrain === 0 && EElistenerCount(src, 'data')) {
+      state.flowing = true;
+      flow(src);
+    }
+  };
+}
+
+Readable.prototype.unpipe = function (dest) {
+  var state = this._readableState;
+  var unpipeInfo = { hasUnpiped: false };
+
+  // if we're not piping anywhere, then do nothing.
+  if (state.pipesCount === 0) return this;
+
+  // just one destination.  most common case.
+  if (state.pipesCount === 1) {
+    // passed in one, but it's not the right one.
+    if (dest && dest !== state.pipes) return this;
+
+    if (!dest) dest = state.pipes;
+
+    // got a match.
+    state.pipes = null;
+    state.pipesCount = 0;
+    state.flowing = false;
+    if (dest) dest.emit('unpipe', this, unpipeInfo);
+    return this;
+  }
+
+  // slow case. multiple pipe destinations.
+
+  if (!dest) {
+    // remove all.
+    var dests = state.pipes;
+    var len = state.pipesCount;
+    state.pipes = null;
+    state.pipesCount = 0;
+    state.flowing = false;
+
+    for (var i = 0; i < len; i++) {
+      dests[i].emit('unpipe', this, unpipeInfo);
+    }return this;
+  }
+
+  // try to find the right one.
+  var index = indexOf(state.pipes, dest);
+  if (index === -1) return this;
+
+  state.pipes.splice(index, 1);
+  state.pipesCount -= 1;
+  if (state.pipesCount === 1) state.pipes = state.pipes[0];
+
+  dest.emit('unpipe', this, unpipeInfo);
+
+  return this;
+};
+
+// set up data events if they are asked for
+// Ensure readable listeners eventually get something
+Readable.prototype.on = function (ev, fn) {
+  var res = Stream.prototype.on.call(this, ev, fn);
+
+  if (ev === 'data') {
+    // Start flowing on next tick if stream isn't explicitly paused
+    if (this._readableState.flowing !== false) this.resume();
+  } else if (ev === 'readable') {
+    var state = this._readableState;
+    if (!state.endEmitted && !state.readableListening) {
+      state.readableListening = state.needReadable = true;
+      state.emittedReadable = false;
+      if (!state.reading) {
+        pna.nextTick(nReadingNextTick, this);
+      } else if (state.length) {
+        emitReadable(this);
+      }
+    }
+  }
+
+  return res;
+};
+Readable.prototype.addListener = Readable.prototype.on;
+
+function nReadingNextTick(self) {
+  debug('readable nexttick read 0');
+  self.read(0);
+}
+
+// pause() and resume() are remnants of the legacy readable stream API
+// If the user uses them, then switch into old mode.
+Readable.prototype.resume = function () {
+  var state = this._readableState;
+  if (!state.flowing) {
+    debug('resume');
+    state.flowing = true;
+    resume(this, state);
+  }
+  return this;
+};
+
+function resume(stream, state) {
+  if (!state.resumeScheduled) {
+    state.resumeScheduled = true;
+    pna.nextTick(resume_, stream, state);
+  }
+}
+
+function resume_(stream, state) {
+  if (!state.reading) {
+    debug('resume read 0');
+    stream.read(0);
+  }
+
+  state.resumeScheduled = false;
+  state.awaitDrain = 0;
+  stream.emit('resume');
+  flow(stream);
+  if (state.flowing && !state.reading) stream.read(0);
+}
+
+Readable.prototype.pause = function () {
+  debug('call pause flowing=%j', this._readableState.flowing);
+  if (false !== this._readableState.flowing) {
+    debug('pause');
+    this._readableState.flowing = false;
+    this.emit('pause');
+  }
+  return this;
+};
+
+function flow(stream) {
+  var state = stream._readableState;
+  debug('flow', state.flowing);
+  while (state.flowing && stream.read() !== null) {}
+}
+
+// wrap an old-style stream as the async data source.
+// This is *not* part of the readable stream interface.
+// It is an ugly unfortunate mess of history.
+Readable.prototype.wrap = function (stream) {
+  var _this = this;
+
+  var state = this._readableState;
+  var paused = false;
+
+  stream.on('end', function () {
+    debug('wrapped end');
+    if (state.decoder && !state.ended) {
+      var chunk = state.decoder.end();
+      if (chunk && chunk.length) _this.push(chunk);
+    }
+
+    _this.push(null);
+  });
+
+  stream.on('data', function (chunk) {
+    debug('wrapped data');
+    if (state.decoder) chunk = state.decoder.write(chunk);
+
+    // don't skip over falsy values in objectMode
+    if (state.objectMode && (chunk === null || chunk === undefined)) return;else if (!state.objectMode && (!chunk || !chunk.length)) return;
+
+    var ret = _this.push(chunk);
+    if (!ret) {
+      paused = true;
+      stream.pause();
+    }
+  });
+
+  // proxy all the other methods.
+  // important when wrapping filters and duplexes.
+  for (var i in stream) {
+    if (this[i] === undefined && typeof stream[i] === 'function') {
+      this[i] = function (method) {
+        return function () {
+          return stream[method].apply(stream, arguments);
+        };
+      }(i);
+    }
+  }
+
+  // proxy certain important events.
+  for (var n = 0; n < kProxyEvents.length; n++) {
+    stream.on(kProxyEvents[n], this.emit.bind(this, kProxyEvents[n]));
+  }
+
+  // when we try to consume some more bytes, simply unpause the
+  // underlying stream.
+  this._read = function (n) {
+    debug('wrapped _read', n);
+    if (paused) {
+      paused = false;
+      stream.resume();
+    }
+  };
+
+  return this;
+};
+
+Object.defineProperty(Readable.prototype, 'readableHighWaterMark', {
+  // making it explicit this property is not enumerable
+  // because otherwise some prototype manipulation in
+  // userland will fail
+  enumerable: false,
+  get: function () {
+    return this._readableState.highWaterMark;
+  }
+});
+
+// exposed for testing purposes only.
+Readable._fromList = fromList;
+
+// Pluck off n bytes from an array of buffers.
+// Length is the combined lengths of all the buffers in the list.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function fromList(n, state) {
+  // nothing buffered
+  if (state.length === 0) return null;
+
+  var ret;
+  if (state.objectMode) ret = state.buffer.shift();else if (!n || n >= state.length) {
+    // read it all, truncate the list
+    if (state.decoder) ret = state.buffer.join('');else if (state.buffer.length === 1) ret = state.buffer.head.data;else ret = state.buffer.concat(state.length);
+    state.buffer.clear();
+  } else {
+    // read part of list
+    ret = fromListPartial(n, state.buffer, state.decoder);
+  }
+
+  return ret;
+}
+
+// Extracts only enough buffered data to satisfy the amount requested.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function fromListPartial(n, list, hasStrings) {
+  var ret;
+  if (n < list.head.data.length) {
+    // slice is the same for buffers and strings
+    ret = list.head.data.slice(0, n);
+    list.head.data = list.head.data.slice(n);
+  } else if (n === list.head.data.length) {
+    // first chunk is a perfect match
+    ret = list.shift();
+  } else {
+    // result spans more than one buffer
+    ret = hasStrings ? copyFromBufferString(n, list) : copyFromBuffer(n, list);
+  }
+  return ret;
+}
+
+// Copies a specified amount of characters from the list of buffered data
+// chunks.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function copyFromBufferString(n, list) {
+  var p = list.head;
+  var c = 1;
+  var ret = p.data;
+  n -= ret.length;
+  while (p = p.next) {
+    var str = p.data;
+    var nb = n > str.length ? str.length : n;
+    if (nb === str.length) ret += str;else ret += str.slice(0, n);
+    n -= nb;
+    if (n === 0) {
+      if (nb === str.length) {
+        ++c;
+        if (p.next) list.head = p.next;else list.head = list.tail = null;
+      } else {
+        list.head = p;
+        p.data = str.slice(nb);
+      }
+      break;
+    }
+    ++c;
+  }
+  list.length -= c;
+  return ret;
+}
+
+// Copies a specified amount of bytes from the list of buffered data chunks.
+// This function is designed to be inlinable, so please take care when making
+// changes to the function body.
+function copyFromBuffer(n, list) {
+  var ret = Buffer.allocUnsafe(n);
+  var p = list.head;
+  var c = 1;
+  p.data.copy(ret);
+  n -= p.data.length;
+  while (p = p.next) {
+    var buf = p.data;
+    var nb = n > buf.length ? buf.length : n;
+    buf.copy(ret, ret.length - n, 0, nb);
+    n -= nb;
+    if (n === 0) {
+      if (nb === buf.length) {
+        ++c;
+        if (p.next) list.head = p.next;else list.head = list.tail = null;
+      } else {
+        list.head = p;
+        p.data = buf.slice(nb);
+      }
+      break;
+    }
+    ++c;
+  }
+  list.length -= c;
+  return ret;
+}
+
+function endReadable(stream) {
+  var state = stream._readableState;
+
+  // If we get here before consuming all the bytes, then that is a
+  // bug in node.  Should never happen.
+  if (state.length > 0) throw new Error('"endReadable()" called on non-empty stream');
+
+  if (!state.endEmitted) {
+    state.ended = true;
+    pna.nextTick(endReadableNT, state, stream);
+  }
+}
+
+function endReadableNT(state, stream) {
+  // Check that we didn't get one last unshift.
+  if (!state.endEmitted && state.length === 0) {
+    state.endEmitted = true;
+    stream.readable = false;
+    stream.emit('end');
+  }
+}
+
+function indexOf(xs, x) {
+  for (var i = 0, l = xs.length; i < l; i++) {
+    if (xs[i] === x) return i;
+  }
+  return -1;
+}
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../../../../process/browser.js */ "../node_modules/process/browser.js")))
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_transform.js":
+/*!**************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_transform.js ***!
+  \**************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// a transform stream is a readable/writable stream where you do
+// something with the data.  Sometimes it's called a "filter",
+// but that's not a great name for it, since that implies a thing where
+// some bits pass through, and others are simply ignored.  (That would
+// be a valid example of a transform, of course.)
+//
+// While the output is causally related to the input, it's not a
+// necessarily symmetric or synchronous transformation.  For example,
+// a zlib stream might take multiple plain-text writes(), and then
+// emit a single compressed chunk some time in the future.
+//
+// Here's how this works:
+//
+// The Transform stream has all the aspects of the readable and writable
+// stream classes.  When you write(chunk), that calls _write(chunk,cb)
+// internally, and returns false if there's a lot of pending writes
+// buffered up.  When you call read(), that calls _read(n) until
+// there's enough pending readable data buffered up.
+//
+// In a transform stream, the written data is placed in a buffer.  When
+// _read(n) is called, it transforms the queued up data, calling the
+// buffered _write cb's as it consumes chunks.  If consuming a single
+// written chunk would result in multiple output chunks, then the first
+// outputted bit calls the readcb, and subsequent chunks just go into
+// the read buffer, and will cause it to emit 'readable' if necessary.
+//
+// This way, back-pressure is actually determined by the reading side,
+// since _read has to be called to start processing a new chunk.  However,
+// a pathological inflate type of transform can cause excessive buffering
+// here.  For example, imagine a stream where every byte of input is
+// interpreted as an integer from 0-255, and then results in that many
+// bytes of output.  Writing the 4 bytes {ff,ff,ff,ff} would result in
+// 1kb of data being output.  In this case, you could write a very small
+// amount of input, and end up with a very large amount of output.  In
+// such a pathological inflating mechanism, there'd be no way to tell
+// the system to stop doing the transform.  A single 4MB write could
+// cause the system to run out of memory.
+//
+// However, even in such a pathological case, only a single written chunk
+// would be consumed, and then the rest would wait (un-transformed) until
+// the results of the previous transformed chunk were consumed.
+
+
+
+module.exports = Transform;
+
+var Duplex = __webpack_require__(/*! ./_stream_duplex */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js");
+
+/*<replacement>*/
+var util = __webpack_require__(/*! core-util-is */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/inherits/inherits_browser.js");
+/*</replacement>*/
+
+util.inherits(Transform, Duplex);
+
+function afterTransform(er, data) {
+  var ts = this._transformState;
+  ts.transforming = false;
+
+  var cb = ts.writecb;
+
+  if (!cb) {
+    return this.emit('error', new Error('write callback called multiple times'));
+  }
+
+  ts.writechunk = null;
+  ts.writecb = null;
+
+  if (data != null) // single equals check for both `null` and `undefined`
+    this.push(data);
+
+  cb(er);
+
+  var rs = this._readableState;
+  rs.reading = false;
+  if (rs.needReadable || rs.length < rs.highWaterMark) {
+    this._read(rs.highWaterMark);
+  }
+}
+
+function Transform(options) {
+  if (!(this instanceof Transform)) return new Transform(options);
+
+  Duplex.call(this, options);
+
+  this._transformState = {
+    afterTransform: afterTransform.bind(this),
+    needTransform: false,
+    transforming: false,
+    writecb: null,
+    writechunk: null,
+    writeencoding: null
+  };
+
+  // start out asking for a readable event once data is transformed.
+  this._readableState.needReadable = true;
+
+  // we have implemented the _read method, and done the other things
+  // that Readable wants before the first _read call, so unset the
+  // sync guard flag.
+  this._readableState.sync = false;
+
+  if (options) {
+    if (typeof options.transform === 'function') this._transform = options.transform;
+
+    if (typeof options.flush === 'function') this._flush = options.flush;
+  }
+
+  // When the writable side finishes, then flush out anything remaining.
+  this.on('prefinish', prefinish);
+}
+
+function prefinish() {
+  var _this = this;
+
+  if (typeof this._flush === 'function') {
+    this._flush(function (er, data) {
+      done(_this, er, data);
+    });
+  } else {
+    done(this, null, null);
+  }
+}
+
+Transform.prototype.push = function (chunk, encoding) {
+  this._transformState.needTransform = false;
+  return Duplex.prototype.push.call(this, chunk, encoding);
+};
+
+// This is the part where you do stuff!
+// override this function in implementation classes.
+// 'chunk' is an input chunk.
+//
+// Call `push(newChunk)` to pass along transformed output
+// to the readable side.  You may call 'push' zero or more times.
+//
+// Call `cb(err)` when you are done with this chunk.  If you pass
+// an error, then that'll put the hurt on the whole operation.  If you
+// never call cb(), then you'll never get another chunk.
+Transform.prototype._transform = function (chunk, encoding, cb) {
+  throw new Error('_transform() is not implemented');
+};
+
+Transform.prototype._write = function (chunk, encoding, cb) {
+  var ts = this._transformState;
+  ts.writecb = cb;
+  ts.writechunk = chunk;
+  ts.writeencoding = encoding;
+  if (!ts.transforming) {
+    var rs = this._readableState;
+    if (ts.needTransform || rs.needReadable || rs.length < rs.highWaterMark) this._read(rs.highWaterMark);
+  }
+};
+
+// Doesn't matter what the args are here.
+// _transform does all the work.
+// That we got here means that the readable side wants more data.
+Transform.prototype._read = function (n) {
+  var ts = this._transformState;
+
+  if (ts.writechunk !== null && ts.writecb && !ts.transforming) {
+    ts.transforming = true;
+    this._transform(ts.writechunk, ts.writeencoding, ts.afterTransform);
+  } else {
+    // mark that we need a transform, so that any data that comes in
+    // will get processed, now that we've asked for it.
+    ts.needTransform = true;
+  }
+};
+
+Transform.prototype._destroy = function (err, cb) {
+  var _this2 = this;
+
+  Duplex.prototype._destroy.call(this, err, function (err2) {
+    cb(err2);
+    _this2.emit('close');
+  });
+};
+
+function done(stream, er, data) {
+  if (er) return stream.emit('error', er);
+
+  if (data != null) // single equals check for both `null` and `undefined`
+    stream.push(data);
+
+  // if there's nothing in the write buffer, then that means
+  // that nothing more will ever be provided
+  if (stream._writableState.length) throw new Error('Calling transform done when ws.length != 0');
+
+  if (stream._transformState.transforming) throw new Error('Calling transform done when still transforming');
+
+  return stream.push(null);
+}
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_writable.js":
+/*!*************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_writable.js ***!
+  \*************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(process, setImmediate, global) {// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+// A bit simpler than readable streams.
+// Implement an async ._write(chunk, encoding, cb), and it'll handle all
+// the drain event emission and buffering.
+
+
+
+/*<replacement>*/
+
+var pna = __webpack_require__(/*! process-nextick-args */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/process-nextick-args/index.js");
+/*</replacement>*/
+
+module.exports = Writable;
+
+/* <replacement> */
+function WriteReq(chunk, encoding, cb) {
+  this.chunk = chunk;
+  this.encoding = encoding;
+  this.callback = cb;
+  this.next = null;
+}
+
+// It seems a linked list but it is not
+// there will be only 2 of these for each stream
+function CorkedRequest(state) {
+  var _this = this;
+
+  this.next = null;
+  this.entry = null;
+  this.finish = function () {
+    onCorkedFinish(_this, state);
+  };
+}
+/* </replacement> */
+
+/*<replacement>*/
+var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : pna.nextTick;
+/*</replacement>*/
+
+/*<replacement>*/
+var Duplex;
+/*</replacement>*/
+
+Writable.WritableState = WritableState;
+
+/*<replacement>*/
+var util = __webpack_require__(/*! core-util-is */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/core-util-is/lib/util.js");
+util.inherits = __webpack_require__(/*! inherits */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/inherits/inherits_browser.js");
+/*</replacement>*/
+
+/*<replacement>*/
+var internalUtil = {
+  deprecate: __webpack_require__(/*! util-deprecate */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/util-deprecate/browser.js")
+};
+/*</replacement>*/
+
+/*<replacement>*/
+var Stream = __webpack_require__(/*! ./internal/streams/stream */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/stream-browser.js");
+/*</replacement>*/
+
+/*<replacement>*/
+
+var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/safe-buffer/index.js").Buffer;
+var OurUint8Array = global.Uint8Array || function () {};
+function _uint8ArrayToBuffer(chunk) {
+  return Buffer.from(chunk);
+}
+function _isUint8Array(obj) {
+  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
+}
+
+/*</replacement>*/
+
+var destroyImpl = __webpack_require__(/*! ./internal/streams/destroy */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/destroy.js");
+
+util.inherits(Writable, Stream);
+
+function nop() {}
+
+function WritableState(options, stream) {
+  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js");
+
+  options = options || {};
+
+  // Duplex streams are both readable and writable, but share
+  // the same options object.
+  // However, some cases require setting options to different
+  // values for the readable and the writable sides of the duplex stream.
+  // These options can be provided separately as readableXXX and writableXXX.
+  var isDuplex = stream instanceof Duplex;
+
+  // object stream flag to indicate whether or not this stream
+  // contains buffers or objects.
+  this.objectMode = !!options.objectMode;
+
+  if (isDuplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
+
+  // the point at which write() starts returning false
+  // Note: 0 is a valid value, means that we always return false if
+  // the entire buffer is not flushed immediately on write()
+  var hwm = options.highWaterMark;
+  var writableHwm = options.writableHighWaterMark;
+  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
+
+  if (hwm || hwm === 0) this.highWaterMark = hwm;else if (isDuplex && (writableHwm || writableHwm === 0)) this.highWaterMark = writableHwm;else this.highWaterMark = defaultHwm;
+
+  // cast to ints.
+  this.highWaterMark = Math.floor(this.highWaterMark);
+
+  // if _final has been called
+  this.finalCalled = false;
+
+  // drain event flag.
+  this.needDrain = false;
+  // at the start of calling end()
+  this.ending = false;
+  // when end() has been called, and returned
+  this.ended = false;
+  // when 'finish' is emitted
+  this.finished = false;
+
+  // has it been destroyed
+  this.destroyed = false;
+
+  // should we decode strings into buffers before passing to _write?
+  // this is here so that some node-core streams can optimize string
+  // handling at a lower level.
+  var noDecode = options.decodeStrings === false;
+  this.decodeStrings = !noDecode;
+
+  // Crypto is kind of old and crusty.  Historically, its default string
+  // encoding is 'binary' so we have to make this configurable.
+  // Everything else in the universe uses 'utf8', though.
+  this.defaultEncoding = options.defaultEncoding || 'utf8';
+
+  // not an actual buffer we keep track of, but a measurement
+  // of how much we're waiting to get pushed to some underlying
+  // socket or file.
+  this.length = 0;
+
+  // a flag to see when we're in the middle of a write.
+  this.writing = false;
+
+  // when true all writes will be buffered until .uncork() call
+  this.corked = 0;
+
+  // a flag to be able to tell if the onwrite cb is called immediately,
+  // or on a later tick.  We set this to true at first, because any
+  // actions that shouldn't happen until "later" should generally also
+  // not happen before the first write call.
+  this.sync = true;
+
+  // a flag to know if we're processing previously buffered items, which
+  // may call the _write() callback in the same tick, so that we don't
+  // end up in an overlapped onwrite situation.
+  this.bufferProcessing = false;
+
+  // the callback that's passed to _write(chunk,cb)
+  this.onwrite = function (er) {
+    onwrite(stream, er);
+  };
+
+  // the callback that the user supplies to write(chunk,encoding,cb)
+  this.writecb = null;
+
+  // the amount that is being written when _write is called.
+  this.writelen = 0;
+
+  this.bufferedRequest = null;
+  this.lastBufferedRequest = null;
+
+  // number of pending user-supplied write callbacks
+  // this must be 0 before 'finish' can be emitted
+  this.pendingcb = 0;
+
+  // emit prefinish if the only thing we're waiting for is _write cbs
+  // This is relevant for synchronous Transform streams
+  this.prefinished = false;
+
+  // True if the error was already emitted and should not be thrown again
+  this.errorEmitted = false;
+
+  // count buffered requests
+  this.bufferedRequestCount = 0;
+
+  // allocate the first CorkedRequest, there is always
+  // one allocated and free to use, and we maintain at most two
+  this.corkedRequestsFree = new CorkedRequest(this);
+}
+
+WritableState.prototype.getBuffer = function getBuffer() {
+  var current = this.bufferedRequest;
+  var out = [];
+  while (current) {
+    out.push(current);
+    current = current.next;
+  }
+  return out;
+};
+
+(function () {
+  try {
+    Object.defineProperty(WritableState.prototype, 'buffer', {
+      get: internalUtil.deprecate(function () {
+        return this.getBuffer();
+      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.', 'DEP0003')
+    });
+  } catch (_) {}
+})();
+
+// Test _writableState for inheritance to account for Duplex streams,
+// whose prototype chain only points to Readable.
+var realHasInstance;
+if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.prototype[Symbol.hasInstance] === 'function') {
+  realHasInstance = Function.prototype[Symbol.hasInstance];
+  Object.defineProperty(Writable, Symbol.hasInstance, {
+    value: function (object) {
+      if (realHasInstance.call(this, object)) return true;
+      if (this !== Writable) return false;
+
+      return object && object._writableState instanceof WritableState;
+    }
+  });
+} else {
+  realHasInstance = function (object) {
+    return object instanceof this;
+  };
+}
+
+function Writable(options) {
+  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js");
+
+  // Writable ctor is applied to Duplexes, too.
+  // `realHasInstance` is necessary because using plain `instanceof`
+  // would return false, as no `_writableState` property is attached.
+
+  // Trying to use the custom `instanceof` for Writable here will also break the
+  // Node.js LazyTransform implementation, which has a non-trivial getter for
+  // `_writableState` that would lead to infinite recursion.
+  if (!realHasInstance.call(Writable, this) && !(this instanceof Duplex)) {
+    return new Writable(options);
+  }
+
+  this._writableState = new WritableState(options, this);
+
+  // legacy.
+  this.writable = true;
+
+  if (options) {
+    if (typeof options.write === 'function') this._write = options.write;
+
+    if (typeof options.writev === 'function') this._writev = options.writev;
+
+    if (typeof options.destroy === 'function') this._destroy = options.destroy;
+
+    if (typeof options.final === 'function') this._final = options.final;
+  }
+
+  Stream.call(this);
+}
+
+// Otherwise people can pipe Writable streams, which is just wrong.
+Writable.prototype.pipe = function () {
+  this.emit('error', new Error('Cannot pipe, not readable'));
+};
+
+function writeAfterEnd(stream, cb) {
+  var er = new Error('write after end');
+  // TODO: defer error events consistently everywhere, not just the cb
+  stream.emit('error', er);
+  pna.nextTick(cb, er);
+}
+
+// Checks that a user-supplied chunk is valid, especially for the particular
+// mode the stream is in. Currently this means that `null` is never accepted
+// and undefined/non-string values are only allowed in object mode.
+function validChunk(stream, state, chunk, cb) {
+  var valid = true;
+  var er = false;
+
+  if (chunk === null) {
+    er = new TypeError('May not write null values to stream');
+  } else if (typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
+    er = new TypeError('Invalid non-string/buffer chunk');
+  }
+  if (er) {
+    stream.emit('error', er);
+    pna.nextTick(cb, er);
+    valid = false;
+  }
+  return valid;
+}
+
+Writable.prototype.write = function (chunk, encoding, cb) {
+  var state = this._writableState;
+  var ret = false;
+  var isBuf = !state.objectMode && _isUint8Array(chunk);
+
+  if (isBuf && !Buffer.isBuffer(chunk)) {
+    chunk = _uint8ArrayToBuffer(chunk);
+  }
+
+  if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (isBuf) encoding = 'buffer';else if (!encoding) encoding = state.defaultEncoding;
+
+  if (typeof cb !== 'function') cb = nop;
+
+  if (state.ended) writeAfterEnd(this, cb);else if (isBuf || validChunk(this, state, chunk, cb)) {
+    state.pendingcb++;
+    ret = writeOrBuffer(this, state, isBuf, chunk, encoding, cb);
+  }
+
+  return ret;
+};
+
+Writable.prototype.cork = function () {
+  var state = this._writableState;
+
+  state.corked++;
+};
+
+Writable.prototype.uncork = function () {
+  var state = this._writableState;
+
+  if (state.corked) {
+    state.corked--;
+
+    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
+  }
+};
+
+Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
+  // node::ParseEncoding() requires lower case.
+  if (typeof encoding === 'string') encoding = encoding.toLowerCase();
+  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'raw'].indexOf((encoding + '').toLowerCase()) > -1)) throw new TypeError('Unknown encoding: ' + encoding);
+  this._writableState.defaultEncoding = encoding;
+  return this;
+};
+
+function decodeChunk(state, chunk, encoding) {
+  if (!state.objectMode && state.decodeStrings !== false && typeof chunk === 'string') {
+    chunk = Buffer.from(chunk, encoding);
+  }
+  return chunk;
+}
+
+Object.defineProperty(Writable.prototype, 'writableHighWaterMark', {
+  // making it explicit this property is not enumerable
+  // because otherwise some prototype manipulation in
+  // userland will fail
+  enumerable: false,
+  get: function () {
+    return this._writableState.highWaterMark;
+  }
+});
+
+// if we're already writing something, then just put this
+// in the queue, and wait our turn.  Otherwise, call _write
+// If we return false, then we need a drain event, so set that flag.
+function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
+  if (!isBuf) {
+    var newChunk = decodeChunk(state, chunk, encoding);
+    if (chunk !== newChunk) {
+      isBuf = true;
+      encoding = 'buffer';
+      chunk = newChunk;
+    }
+  }
+  var len = state.objectMode ? 1 : chunk.length;
+
+  state.length += len;
+
+  var ret = state.length < state.highWaterMark;
+  // we must ensure that previous needDrain will not be reset to false.
+  if (!ret) state.needDrain = true;
+
+  if (state.writing || state.corked) {
+    var last = state.lastBufferedRequest;
+    state.lastBufferedRequest = {
+      chunk: chunk,
+      encoding: encoding,
+      isBuf: isBuf,
+      callback: cb,
+      next: null
+    };
+    if (last) {
+      last.next = state.lastBufferedRequest;
+    } else {
+      state.bufferedRequest = state.lastBufferedRequest;
+    }
+    state.bufferedRequestCount += 1;
+  } else {
+    doWrite(stream, state, false, len, chunk, encoding, cb);
+  }
+
+  return ret;
+}
+
+function doWrite(stream, state, writev, len, chunk, encoding, cb) {
+  state.writelen = len;
+  state.writecb = cb;
+  state.writing = true;
+  state.sync = true;
+  if (writev) stream._writev(chunk, state.onwrite);else stream._write(chunk, encoding, state.onwrite);
+  state.sync = false;
+}
+
+function onwriteError(stream, state, sync, er, cb) {
+  --state.pendingcb;
+
+  if (sync) {
+    // defer the callback if we are being called synchronously
+    // to avoid piling up things on the stack
+    pna.nextTick(cb, er);
+    // this can emit finish, and it will always happen
+    // after error
+    pna.nextTick(finishMaybe, stream, state);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+  } else {
+    // the caller expect this to happen before if
+    // it is async
+    cb(er);
+    stream._writableState.errorEmitted = true;
+    stream.emit('error', er);
+    // this can emit finish, but finish must
+    // always follow error
+    finishMaybe(stream, state);
+  }
+}
+
+function onwriteStateUpdate(state) {
+  state.writing = false;
+  state.writecb = null;
+  state.length -= state.writelen;
+  state.writelen = 0;
+}
+
+function onwrite(stream, er) {
+  var state = stream._writableState;
+  var sync = state.sync;
+  var cb = state.writecb;
+
+  onwriteStateUpdate(state);
+
+  if (er) onwriteError(stream, state, sync, er, cb);else {
+    // Check if we're actually ready to finish, but don't emit yet
+    var finished = needFinish(state);
+
+    if (!finished && !state.corked && !state.bufferProcessing && state.bufferedRequest) {
+      clearBuffer(stream, state);
+    }
+
+    if (sync) {
+      /*<replacement>*/
+      asyncWrite(afterWrite, stream, state, finished, cb);
+      /*</replacement>*/
+    } else {
+      afterWrite(stream, state, finished, cb);
+    }
+  }
+}
+
+function afterWrite(stream, state, finished, cb) {
+  if (!finished) onwriteDrain(stream, state);
+  state.pendingcb--;
+  cb();
+  finishMaybe(stream, state);
+}
+
+// Must force callback to be called on nextTick, so that we don't
+// emit 'drain' before the write() consumer gets the 'false' return
+// value, and has a chance to attach a 'drain' listener.
+function onwriteDrain(stream, state) {
+  if (state.length === 0 && state.needDrain) {
+    state.needDrain = false;
+    stream.emit('drain');
+  }
+}
+
+// if there's something in the buffer waiting, then process it
+function clearBuffer(stream, state) {
+  state.bufferProcessing = true;
+  var entry = state.bufferedRequest;
+
+  if (stream._writev && entry && entry.next) {
+    // Fast case, write everything using _writev()
+    var l = state.bufferedRequestCount;
+    var buffer = new Array(l);
+    var holder = state.corkedRequestsFree;
+    holder.entry = entry;
+
+    var count = 0;
+    var allBuffers = true;
+    while (entry) {
+      buffer[count] = entry;
+      if (!entry.isBuf) allBuffers = false;
+      entry = entry.next;
+      count += 1;
+    }
+    buffer.allBuffers = allBuffers;
+
+    doWrite(stream, state, true, state.length, buffer, '', holder.finish);
+
+    // doWrite is almost always async, defer these to save a bit of time
+    // as the hot path ends with doWrite
+    state.pendingcb++;
+    state.lastBufferedRequest = null;
+    if (holder.next) {
+      state.corkedRequestsFree = holder.next;
+      holder.next = null;
+    } else {
+      state.corkedRequestsFree = new CorkedRequest(state);
+    }
+    state.bufferedRequestCount = 0;
+  } else {
+    // Slow case, write chunks one-by-one
+    while (entry) {
+      var chunk = entry.chunk;
+      var encoding = entry.encoding;
+      var cb = entry.callback;
+      var len = state.objectMode ? 1 : chunk.length;
+
+      doWrite(stream, state, false, len, chunk, encoding, cb);
+      entry = entry.next;
+      state.bufferedRequestCount--;
+      // if we didn't call the onwrite immediately, then
+      // it means that we need to wait until it does.
+      // also, that means that the chunk and cb are currently
+      // being processed, so move the buffer counter past them.
+      if (state.writing) {
+        break;
+      }
+    }
+
+    if (entry === null) state.lastBufferedRequest = null;
+  }
+
+  state.bufferedRequest = entry;
+  state.bufferProcessing = false;
+}
+
+Writable.prototype._write = function (chunk, encoding, cb) {
+  cb(new Error('_write() is not implemented'));
+};
+
+Writable.prototype._writev = null;
+
+Writable.prototype.end = function (chunk, encoding, cb) {
+  var state = this._writableState;
+
+  if (typeof chunk === 'function') {
+    cb = chunk;
+    chunk = null;
+    encoding = null;
+  } else if (typeof encoding === 'function') {
+    cb = encoding;
+    encoding = null;
+  }
+
+  if (chunk !== null && chunk !== undefined) this.write(chunk, encoding);
+
+  // .end() fully uncorks
+  if (state.corked) {
+    state.corked = 1;
+    this.uncork();
+  }
+
+  // ignore unnecessary end() calls.
+  if (!state.ending && !state.finished) endWritable(this, state, cb);
+};
+
+function needFinish(state) {
+  return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
+}
+function callFinal(stream, state) {
+  stream._final(function (err) {
+    state.pendingcb--;
+    if (err) {
+      stream.emit('error', err);
+    }
+    state.prefinished = true;
+    stream.emit('prefinish');
+    finishMaybe(stream, state);
+  });
+}
+function prefinish(stream, state) {
+  if (!state.prefinished && !state.finalCalled) {
+    if (typeof stream._final === 'function') {
+      state.pendingcb++;
+      state.finalCalled = true;
+      pna.nextTick(callFinal, stream, state);
+    } else {
+      state.prefinished = true;
+      stream.emit('prefinish');
+    }
+  }
+}
+
+function finishMaybe(stream, state) {
+  var need = needFinish(state);
+  if (need) {
+    prefinish(stream, state);
+    if (state.pendingcb === 0) {
+      state.finished = true;
+      stream.emit('finish');
+    }
+  }
+  return need;
+}
+
+function endWritable(stream, state, cb) {
+  state.ending = true;
+  finishMaybe(stream, state);
+  if (cb) {
+    if (state.finished) pna.nextTick(cb);else stream.once('finish', cb);
+  }
+  state.ended = true;
+  stream.writable = false;
+}
+
+function onCorkedFinish(corkReq, state, err) {
+  var entry = corkReq.entry;
+  corkReq.entry = null;
+  while (entry) {
+    var cb = entry.callback;
+    state.pendingcb--;
+    cb(err);
+    entry = entry.next;
+  }
+  if (state.corkedRequestsFree) {
+    state.corkedRequestsFree.next = corkReq;
+  } else {
+    state.corkedRequestsFree = corkReq;
+  }
+}
+
+Object.defineProperty(Writable.prototype, 'destroyed', {
+  get: function () {
+    if (this._writableState === undefined) {
+      return false;
+    }
+    return this._writableState.destroyed;
+  },
+  set: function (value) {
+    // we ignore the value if the stream
+    // has not been initialized yet
+    if (!this._writableState) {
+      return;
+    }
+
+    // backward compatibility, the user is explicitly
+    // managing destroyed
+    this._writableState.destroyed = value;
+  }
+});
+
+Writable.prototype.destroy = destroyImpl.destroy;
+Writable.prototype._undestroy = destroyImpl.undestroy;
+Writable.prototype._destroy = function (err, cb) {
+  this.end();
+  cb(err);
+};
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../../process/browser.js */ "../node_modules/process/browser.js"), __webpack_require__(/*! ./../../../../../timers-browserify/main.js */ "../node_modules/timers-browserify/main.js").setImmediate, __webpack_require__(/*! ./../../../../../webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/BufferList.js":
+/*!************************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/BufferList.js ***!
+  \************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/safe-buffer/index.js").Buffer;
+var util = __webpack_require__(/*! util */ 1);
+
+function copyBuffer(src, target, offset) {
+  src.copy(target, offset);
+}
+
+module.exports = function () {
+  function BufferList() {
+    _classCallCheck(this, BufferList);
+
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
+  }
+
+  BufferList.prototype.push = function push(v) {
+    var entry = { data: v, next: null };
+    if (this.length > 0) this.tail.next = entry;else this.head = entry;
+    this.tail = entry;
+    ++this.length;
+  };
+
+  BufferList.prototype.unshift = function unshift(v) {
+    var entry = { data: v, next: this.head };
+    if (this.length === 0) this.tail = entry;
+    this.head = entry;
+    ++this.length;
+  };
+
+  BufferList.prototype.shift = function shift() {
+    if (this.length === 0) return;
+    var ret = this.head.data;
+    if (this.length === 1) this.head = this.tail = null;else this.head = this.head.next;
+    --this.length;
+    return ret;
+  };
+
+  BufferList.prototype.clear = function clear() {
+    this.head = this.tail = null;
+    this.length = 0;
+  };
+
+  BufferList.prototype.join = function join(s) {
+    if (this.length === 0) return '';
+    var p = this.head;
+    var ret = '' + p.data;
+    while (p = p.next) {
+      ret += s + p.data;
+    }return ret;
+  };
+
+  BufferList.prototype.concat = function concat(n) {
+    if (this.length === 0) return Buffer.alloc(0);
+    if (this.length === 1) return this.head.data;
+    var ret = Buffer.allocUnsafe(n >>> 0);
+    var p = this.head;
+    var i = 0;
+    while (p) {
+      copyBuffer(p.data, ret, i);
+      i += p.data.length;
+      p = p.next;
+    }
+    return ret;
+  };
+
+  return BufferList;
+}();
+
+if (util && util.inspect && util.inspect.custom) {
+  module.exports.prototype[util.inspect.custom] = function () {
+    var obj = util.inspect({ length: this.length });
+    return this.constructor.name + ' ' + obj;
+  };
+}
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/destroy.js":
+/*!*********************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/destroy.js ***!
+  \*********************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+/*<replacement>*/
+
+var pna = __webpack_require__(/*! process-nextick-args */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/process-nextick-args/index.js");
+/*</replacement>*/
+
+// undocumented cb() API, needed for core, not for public API
+function destroy(err, cb) {
+  var _this = this;
+
+  var readableDestroyed = this._readableState && this._readableState.destroyed;
+  var writableDestroyed = this._writableState && this._writableState.destroyed;
+
+  if (readableDestroyed || writableDestroyed) {
+    if (cb) {
+      cb(err);
+    } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
+      pna.nextTick(emitErrorNT, this, err);
+    }
+    return this;
+  }
+
+  // we set destroyed to true before firing error callbacks in order
+  // to make it re-entrance safe in case destroy() is called within callbacks
+
+  if (this._readableState) {
+    this._readableState.destroyed = true;
+  }
+
+  // if this is a duplex stream mark the writable part as destroyed as well
+  if (this._writableState) {
+    this._writableState.destroyed = true;
+  }
+
+  this._destroy(err || null, function (err) {
+    if (!cb && err) {
+      pna.nextTick(emitErrorNT, _this, err);
+      if (_this._writableState) {
+        _this._writableState.errorEmitted = true;
+      }
+    } else if (cb) {
+      cb(err);
+    }
+  });
+
+  return this;
+}
+
+function undestroy() {
+  if (this._readableState) {
+    this._readableState.destroyed = false;
+    this._readableState.reading = false;
+    this._readableState.ended = false;
+    this._readableState.endEmitted = false;
+  }
+
+  if (this._writableState) {
+    this._writableState.destroyed = false;
+    this._writableState.ended = false;
+    this._writableState.ending = false;
+    this._writableState.finished = false;
+    this._writableState.errorEmitted = false;
+  }
+}
+
+function emitErrorNT(self, err) {
+  self.emit('error', err);
+}
+
+module.exports = {
+  destroy: destroy,
+  undestroy: undestroy
+};
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/stream-browser.js":
+/*!****************************************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/internal/streams/stream-browser.js ***!
+  \****************************************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__(/*! events */ "../node_modules/events/events.js").EventEmitter;
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/readable-browser.js":
+/*!*********************************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/readable-browser.js ***!
+  \*********************************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(/*! ./lib/_stream_readable.js */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_readable.js");
+exports.Stream = exports;
+exports.Readable = exports;
+exports.Writable = __webpack_require__(/*! ./lib/_stream_writable.js */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_writable.js");
+exports.Duplex = __webpack_require__(/*! ./lib/_stream_duplex.js */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_duplex.js");
+exports.Transform = __webpack_require__(/*! ./lib/_stream_transform.js */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_transform.js");
+exports.PassThrough = __webpack_require__(/*! ./lib/_stream_passthrough.js */ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/readable-stream/lib/_stream_passthrough.js");
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/safe-buffer/index.js":
+/*!******************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/safe-buffer/index.js ***!
+  \******************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* eslint-disable node/no-deprecated-api */
+var buffer = __webpack_require__(/*! buffer */ "../node_modules/buffer/index.js")
+var Buffer = buffer.Buffer
+
+// alternative to using Object.keys for old browsers
+function copyProps (src, dst) {
+  for (var key in src) {
+    dst[key] = src[key]
+  }
+}
+if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
+  module.exports = buffer
+} else {
+  // Copy properties from require('buffer')
+  copyProps(buffer, exports)
+  exports.Buffer = SafeBuffer
+}
+
+function SafeBuffer (arg, encodingOrOffset, length) {
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+// Copy static methods from Buffer
+copyProps(Buffer, SafeBuffer)
+
+SafeBuffer.from = function (arg, encodingOrOffset, length) {
+  if (typeof arg === 'number') {
+    throw new TypeError('Argument must not be a number')
+  }
+  return Buffer(arg, encodingOrOffset, length)
+}
+
+SafeBuffer.alloc = function (size, fill, encoding) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  var buf = Buffer(size)
+  if (fill !== undefined) {
+    if (typeof encoding === 'string') {
+      buf.fill(fill, encoding)
+    } else {
+      buf.fill(fill)
+    }
+  } else {
+    buf.fill(0)
+  }
+  return buf
+}
+
+SafeBuffer.allocUnsafe = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return Buffer(size)
+}
+
+SafeBuffer.allocUnsafeSlow = function (size) {
+  if (typeof size !== 'number') {
+    throw new TypeError('Argument must be a number')
+  }
+  return buffer.SlowBuffer(size)
+}
+
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/util-deprecate/browser.js":
+/*!***********************************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr-protocol-msgpack/node_modules/util-deprecate/browser.js ***!
+  \***********************************************************************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {
+/**
+ * Module exports.
+ */
+
+module.exports = deprecate;
+
+/**
+ * Mark that a method should not be used.
+ * Returns a modified function which warns once by default.
+ *
+ * If `localStorage.noDeprecation = true` is set, then it is a no-op.
+ *
+ * If `localStorage.throwDeprecation = true` is set, then deprecated functions
+ * will throw an Error when invoked.
+ *
+ * If `localStorage.traceDeprecation = true` is set, then deprecated functions
+ * will invoke `console.trace()` instead of `console.error()`.
+ *
+ * @param {Function} fn - the function to deprecate
+ * @param {String} msg - the string to print to the console when `fn` is invoked
+ * @returns {Function} a new "deprecated" version of `fn`
+ * @api public
+ */
+
+function deprecate (fn, msg) {
+  if (config('noDeprecation')) {
+    return fn;
+  }
+
+  var warned = false;
+  function deprecated() {
+    if (!warned) {
+      if (config('throwDeprecation')) {
+        throw new Error(msg);
+      } else if (config('traceDeprecation')) {
+        console.trace(msg);
+      } else {
+        console.warn(msg);
+      }
+      warned = true;
+    }
+    return fn.apply(this, arguments);
+  }
+
+  return deprecated;
+}
+
+/**
+ * Checks `localStorage` for boolean values for the given `name`.
+ *
+ * @param {String} name
+ * @returns {Boolean}
+ * @api private
+ */
+
+function config (name) {
+  // accessing global.localStorage can trigger a DOMException in sandboxed iframes
+  try {
+    if (!global.localStorage) return false;
+  } catch (_) {
+    return false;
+  }
+  var val = global.localStorage[name];
+  if (null == val) return false;
+  return String(val).toLowerCase() === 'true';
+}
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -500,7 +8148,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultHttpClient", function() { return DefaultHttpClient; });
 /* harmony import */ var _Errors__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Errors */ "../node_modules/@aspnet/signalr/dist/esm/Errors.js");
 /* harmony import */ var _HttpClient__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HttpClient */ "../node_modules/@aspnet/signalr/dist/esm/HttpClient.js");
-/* harmony import */ var _XhrHttpClient__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./XhrHttpClient */ "../node_modules/@aspnet/signalr/dist/esm/XhrHttpClient.js");
+/* harmony import */ var _NodeHttpClient__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./NodeHttpClient */ "../node_modules/@aspnet/signalr/dist/esm/NodeHttpClient.js");
+/* harmony import */ var _XhrHttpClient__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./XhrHttpClient */ "../node_modules/@aspnet/signalr/dist/esm/XhrHttpClient.js");
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -516,13 +8165,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
 
 
 
-var nodeHttpClientModule;
-if (typeof XMLHttpRequest === "undefined") {
-    // In order to ignore the dynamic require in webpack builds we need to do this magic
-    // @ts-ignore: TS doesn't know about these names
-    var requireFunc =  true ? require : undefined;
-    nodeHttpClientModule = requireFunc("./NodeHttpClient");
-}
+
 /** Default implementation of {@link @aspnet/signalr.HttpClient}. */
 var DefaultHttpClient = /** @class */ (function (_super) {
     __extends(DefaultHttpClient, _super);
@@ -530,13 +8173,10 @@ var DefaultHttpClient = /** @class */ (function (_super) {
     function DefaultHttpClient(logger) {
         var _this = _super.call(this) || this;
         if (typeof XMLHttpRequest !== "undefined") {
-            _this.httpClient = new _XhrHttpClient__WEBPACK_IMPORTED_MODULE_2__["XhrHttpClient"](logger);
-        }
-        else if (typeof nodeHttpClientModule !== "undefined") {
-            _this.httpClient = new nodeHttpClientModule.NodeHttpClient(logger);
+            _this.httpClient = new _XhrHttpClient__WEBPACK_IMPORTED_MODULE_3__["XhrHttpClient"](logger);
         }
         else {
-            throw new Error("No HttpClient could be created.");
+            _this.httpClient = new _NodeHttpClient__WEBPACK_IMPORTED_MODULE_2__["NodeHttpClient"](logger);
         }
         return _this;
     }
@@ -561,6 +8201,35 @@ var DefaultHttpClient = /** @class */ (function (_super) {
 }(_HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]));
 
 //# sourceMappingURL=DefaultHttpClient.js.map
+
+/***/ }),
+
+/***/ "../node_modules/@aspnet/signalr/dist/esm/DefaultReconnectPolicy.js":
+/*!**************************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr/dist/esm/DefaultReconnectPolicy.js ***!
+  \**************************************************************************/
+/*! exports provided: DefaultReconnectPolicy */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "DefaultReconnectPolicy", function() { return DefaultReconnectPolicy; });
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// 0, 2, 10, 30 second delays before reconnect attempts.
+var DEFAULT_RETRY_DELAYS_IN_MILLISECONDS = [0, 2000, 10000, 30000, null];
+/** @private */
+var DefaultReconnectPolicy = /** @class */ (function () {
+    function DefaultReconnectPolicy(retryDelays) {
+        this.retryDelays = retryDelays !== undefined ? retryDelays.concat([null]) : DEFAULT_RETRY_DELAYS_IN_MILLISECONDS;
+    }
+    DefaultReconnectPolicy.prototype.nextRetryDelayInMilliseconds = function (previousRetryCount) {
+        return this.retryDelays[previousRetryCount];
+    };
+    return DefaultReconnectPolicy;
+}());
+
+//# sourceMappingURL=DefaultReconnectPolicy.js.map
 
 /***/ }),
 
@@ -795,12 +8464,13 @@ var HttpClient = /** @class */ (function () {
 /*!******************************************************************!*\
   !*** ../node_modules/@aspnet/signalr/dist/esm/HttpConnection.js ***!
   \******************************************************************/
-/*! exports provided: HttpConnection */
+/*! exports provided: HttpConnection, TransportSendQueue */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HttpConnection", function() { return HttpConnection; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "TransportSendQueue", function() { return TransportSendQueue; });
 /* harmony import */ var _DefaultHttpClient__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./DefaultHttpClient */ "../node_modules/@aspnet/signalr/dist/esm/DefaultHttpClient.js");
 /* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr/dist/esm/ILogger.js");
 /* harmony import */ var _ITransport__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ITransport */ "../node_modules/@aspnet/signalr/dist/esm/ITransport.js");
@@ -855,7 +8525,7 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 var MAX_REDIRECTS = 100;
 var WebSocketModule = null;
 var EventSourceModule = null;
-if (typeof window === "undefined" && "function" !== "undefined") {
+if (_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && "function" !== "undefined") {
     // In order to ignore the dynamic require in webpack builds we need to do this magic
     // @ts-ignore: TS doesn't know about these names
     var requireFunc =  true ? require : undefined;
@@ -872,54 +8542,117 @@ var HttpConnection = /** @class */ (function () {
         this.baseUrl = this.resolveUrl(url);
         options = options || {};
         options.logMessageContent = options.logMessageContent || false;
-        var isNode = typeof window === "undefined";
-        if (!isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
+        if (!_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && typeof WebSocket !== "undefined" && !options.WebSocket) {
             options.WebSocket = WebSocket;
         }
-        else if (isNode && !options.WebSocket) {
+        else if (_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && !options.WebSocket) {
             if (WebSocketModule) {
                 options.WebSocket = WebSocketModule;
             }
         }
-        if (!isNode && typeof EventSource !== "undefined" && !options.EventSource) {
+        if (!_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && typeof EventSource !== "undefined" && !options.EventSource) {
             options.EventSource = EventSource;
         }
-        else if (isNode && !options.EventSource) {
+        else if (_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isNode && !options.EventSource) {
             if (typeof EventSourceModule !== "undefined") {
                 options.EventSource = EventSourceModule;
             }
         }
         this.httpClient = options.httpClient || new _DefaultHttpClient__WEBPACK_IMPORTED_MODULE_0__["DefaultHttpClient"](this.logger);
-        this.connectionState = 2 /* Disconnected */;
+        this.connectionState = "Disconnected" /* Disconnected */;
+        this.connectionStarted = false;
         this.options = options;
         this.onreceive = null;
         this.onclose = null;
     }
     HttpConnection.prototype.start = function (transferFormat) {
-        transferFormat = transferFormat || _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"].Binary;
-        _Utils__WEBPACK_IMPORTED_MODULE_5__["Arg"].isIn(transferFormat, _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"], "transferFormat");
-        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Starting connection with transfer format '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"][transferFormat] + "'.");
-        if (this.connectionState !== 2 /* Disconnected */) {
-            return Promise.reject(new Error("Cannot start a connection that is not in the 'Disconnected' state."));
-        }
-        this.connectionState = 0 /* Connecting */;
-        this.startPromise = this.startInternal(transferFormat);
-        return this.startPromise;
-    };
-    HttpConnection.prototype.send = function (data) {
-        if (this.connectionState !== 1 /* Connected */) {
-            throw new Error("Cannot send data if the connection is not in the 'Connected' State.");
-        }
-        // Transport will not be null if state is connected
-        return this.transport.send(data);
-    };
-    HttpConnection.prototype.stop = function (error) {
         return __awaiter(this, void 0, void 0, function () {
-            var e_1;
+            var message, message;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        this.connectionState = 2 /* Disconnected */;
+                        transferFormat = transferFormat || _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"].Binary;
+                        _Utils__WEBPACK_IMPORTED_MODULE_5__["Arg"].isIn(transferFormat, _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"], "transferFormat");
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Starting connection with transfer format '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"][transferFormat] + "'.");
+                        if (this.connectionState !== "Disconnected" /* Disconnected */) {
+                            return [2 /*return*/, Promise.reject(new Error("Cannot start an HttpConnection that is not in the 'Disconnected' state."))];
+                        }
+                        this.connectionState = "Connecting " /* Connecting */;
+                        this.startInternalPromise = this.startInternal(transferFormat);
+                        return [4 /*yield*/, this.startInternalPromise];
+                    case 1:
+                        _a.sent();
+                        if (!(this.connectionState === "Disconnecting" /* Disconnecting */)) return [3 /*break*/, 3];
+                        message = "Failed to start the HttpConnection before stop() was called.";
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, message);
+                        // We cannot await stopPromise inside startInternal since stopInternal awaits the startInternalPromise.
+                        return [4 /*yield*/, this.stopPromise];
+                    case 2:
+                        // We cannot await stopPromise inside startInternal since stopInternal awaits the startInternalPromise.
+                        _a.sent();
+                        return [2 /*return*/, Promise.reject(new Error(message))];
+                    case 3:
+                        if (this.connectionState !== "Connected" /* Connected */) {
+                            message = "HttpConnection.startInternal completed gracefully but didn't enter the connection into the connected state!";
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, message);
+                            return [2 /*return*/, Promise.reject(new Error(message))];
+                        }
+                        _a.label = 4;
+                    case 4:
+                        this.connectionStarted = true;
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HttpConnection.prototype.send = function (data) {
+        if (this.connectionState !== "Connected" /* Connected */) {
+            return Promise.reject(new Error("Cannot send data if the connection is not in the 'Connected' State."));
+        }
+        if (!this.sendQueue) {
+            this.sendQueue = new TransportSendQueue(this.transport);
+        }
+        // Transport will not be null if state is connected
+        return this.sendQueue.send(data);
+    };
+    HttpConnection.prototype.stop = function (error) {
+        return __awaiter(this, void 0, void 0, function () {
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.connectionState === "Disconnected" /* Disconnected */) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Call to HttpConnection.stop(" + error + ") ignored because the connection is already in the disconnected state.");
+                            return [2 /*return*/, Promise.resolve()];
+                        }
+                        if (this.connectionState === "Disconnecting" /* Disconnecting */) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Call to HttpConnection.stop(" + error + ") ignored because the connection is already in the disconnecting state.");
+                            return [2 /*return*/, this.stopPromise];
+                        }
+                        this.connectionState = "Disconnecting" /* Disconnecting */;
+                        this.stopPromise = new Promise(function (resolve) {
+                            // Don't complete stop() until stopConnection() completes.
+                            _this.stopPromiseResolver = resolve;
+                        });
+                        // stopInternal should never throw so just observe it.
+                        return [4 /*yield*/, this.stopInternal(error)];
+                    case 1:
+                        // stopInternal should never throw so just observe it.
+                        _a.sent();
+                        return [4 /*yield*/, this.stopPromise];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HttpConnection.prototype.stopInternal = function (error) {
+        return __awaiter(this, void 0, void 0, function () {
+            var e_1, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
                         // Set error as soon as possible otherwise there is a race between
                         // the transport closing and providing an error and the error from a close message
                         // We would prefer the close message error.
@@ -927,7 +8660,7 @@ var HttpConnection = /** @class */ (function () {
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 3, , 4]);
-                        return [4 /*yield*/, this.startPromise];
+                        return [4 /*yield*/, this.startInternalPromise];
                     case 2:
                         _a.sent();
                         return [3 /*break*/, 4];
@@ -935,20 +8668,38 @@ var HttpConnection = /** @class */ (function () {
                         e_1 = _a.sent();
                         return [3 /*break*/, 4];
                     case 4:
-                        if (!this.transport) return [3 /*break*/, 6];
-                        return [4 /*yield*/, this.transport.stop()];
+                        if (!this.transport) return [3 /*break*/, 9];
+                        if (this.sendQueue) {
+                            this.sendQueue.stop();
+                            this.sendQueue = undefined;
+                        }
+                        _a.label = 5;
                     case 5:
+                        _a.trys.push([5, 7, , 8]);
+                        return [4 /*yield*/, this.transport.stop()];
+                    case 6:
                         _a.sent();
+                        return [3 /*break*/, 8];
+                    case 7:
+                        e_2 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "HttpConnection.transport.stop() threw error '" + e_2 + "'.");
+                        this.stopConnection();
+                        return [3 /*break*/, 8];
+                    case 8:
                         this.transport = undefined;
-                        _a.label = 6;
-                    case 6: return [2 /*return*/];
+                        return [3 /*break*/, 10];
+                    case 9:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "HttpConnection.transport is undefined in HttpConnection.stop() because start() failed.");
+                        this.stopConnection();
+                        _a.label = 10;
+                    case 10: return [2 /*return*/];
                 }
             });
         });
     };
     HttpConnection.prototype.startInternal = function (transferFormat) {
         return __awaiter(this, void 0, void 0, function () {
-            var url, negotiateResponse, redirects, _loop_1, this_1, state_1, e_2;
+            var url, negotiateResponse, redirects, _loop_1, this_1, e_3;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
@@ -970,7 +8721,7 @@ var HttpConnection = /** @class */ (function () {
                         // No fallback or negotiate in this case.
                         _a.sent();
                         return [3 /*break*/, 4];
-                    case 3: throw Error("Negotiation can only be skipped when using the WebSocket transport directly.");
+                    case 3: throw new Error("Negotiation can only be skipped when using the WebSocket transport directly.");
                     case 4: return [3 /*break*/, 11];
                     case 5:
                         negotiateResponse = null;
@@ -983,14 +8734,14 @@ var HttpConnection = /** @class */ (function () {
                                     case 1:
                                         negotiateResponse = _a.sent();
                                         // the user tries to stop the connection when it is being started
-                                        if (this_1.connectionState === 2 /* Disconnected */) {
-                                            return [2 /*return*/, { value: void 0 }];
+                                        if (this_1.connectionState === "Disconnecting" /* Disconnecting */ || this_1.connectionState === "Disconnected" /* Disconnected */) {
+                                            throw new Error("The connection was stopped during negotiation.");
                                         }
                                         if (negotiateResponse.error) {
-                                            throw Error(negotiateResponse.error);
+                                            throw new Error(negotiateResponse.error);
                                         }
                                         if (negotiateResponse.ProtocolVersion) {
-                                            throw Error("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
+                                            throw new Error("Detected a connection attempt to an ASP.NET SignalR Server. This client only supports connecting to an ASP.NET Core SignalR Server. See https://aka.ms/signalr-core-differences for details.");
                                         }
                                         if (negotiateResponse.url) {
                                             url = negotiateResponse.url;
@@ -1008,17 +8759,16 @@ var HttpConnection = /** @class */ (function () {
                         _a.label = 6;
                     case 6: return [5 /*yield**/, _loop_1()];
                     case 7:
-                        state_1 = _a.sent();
-                        if (typeof state_1 === "object")
-                            return [2 /*return*/, state_1.value];
+                        _a.sent();
                         _a.label = 8;
                     case 8:
                         if (negotiateResponse.url && redirects < MAX_REDIRECTS) return [3 /*break*/, 6];
                         _a.label = 9;
                     case 9:
                         if (redirects === MAX_REDIRECTS && negotiateResponse.url) {
-                            throw Error("Negotiate redirection limit exceeded.");
+                            throw new Error("Negotiate redirection limit exceeded.");
                         }
+                        this.connectionId = negotiateResponse.connectionId;
                         return [4 /*yield*/, this.createTransport(url, this.options.transport, negotiateResponse, transferFormat)];
                     case 10:
                         _a.sent();
@@ -1029,16 +8779,19 @@ var HttpConnection = /** @class */ (function () {
                         }
                         this.transport.onreceive = this.onreceive;
                         this.transport.onclose = function (e) { return _this.stopConnection(e); };
-                        // only change the state if we were connecting to not overwrite
-                        // the state if the connection is already marked as Disconnected
-                        this.changeState(0 /* Connecting */, 1 /* Connected */);
+                        if (this.connectionState === "Connecting " /* Connecting */) {
+                            // Ensure the connection transitions to the connected state prior to completing this.startInternalPromise.
+                            // start() will handle the case when stop was called and startInternal exits still in the disconnecting state.
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "The HttpConnection connected successfully.");
+                            this.connectionState = "Connected" /* Connected */;
+                        }
                         return [3 /*break*/, 13];
                     case 12:
-                        e_2 = _a.sent();
-                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to start the connection: " + e_2);
-                        this.connectionState = 2 /* Disconnected */;
+                        e_3 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to start the connection: " + e_3);
+                        this.connectionState = "Disconnected" /* Disconnected */;
                         this.transport = undefined;
-                        throw e_2;
+                        return [2 /*return*/, Promise.reject(e_3)];
                     case 13: return [2 /*return*/];
                 }
             });
@@ -1046,7 +8799,7 @@ var HttpConnection = /** @class */ (function () {
     };
     HttpConnection.prototype.getNegotiationResponse = function (url) {
         return __awaiter(this, void 0, void 0, function () {
-            var _a, headers, token, negotiateUrl, response, e_3;
+            var _a, headers, token, negotiateUrl, response, e_4;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -1073,13 +8826,13 @@ var HttpConnection = /** @class */ (function () {
                     case 4:
                         response = _b.sent();
                         if (response.statusCode !== 200) {
-                            throw Error("Unexpected status code returned from negotiate " + response.statusCode);
+                            return [2 /*return*/, Promise.reject(new Error("Unexpected status code returned from negotiate " + response.statusCode))];
                         }
                         return [2 /*return*/, JSON.parse(response.content)];
                     case 5:
-                        e_3 = _b.sent();
-                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to complete negotiation with the server: " + e_3);
-                        throw e_3;
+                        e_4 = _b.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to complete negotiation with the server: " + e_4);
+                        return [2 /*return*/, Promise.reject(e_4)];
                     case 6: return [2 /*return*/];
                 }
             });
@@ -1093,7 +8846,7 @@ var HttpConnection = /** @class */ (function () {
     };
     HttpConnection.prototype.createTransport = function (url, requestedTransport, negotiateResponse, requestedTransferFormat) {
         return __awaiter(this, void 0, void 0, function () {
-            var connectUrl, transports, _i, transports_1, endpoint, transport, ex_1;
+            var connectUrl, transportExceptions, transports, _i, transports_1, endpoint, transport, ex_1, message;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -1104,44 +8857,51 @@ var HttpConnection = /** @class */ (function () {
                         return [4 /*yield*/, this.transport.connect(connectUrl, requestedTransferFormat)];
                     case 1:
                         _a.sent();
-                        // only change the state if we were connecting to not overwrite
-                        // the state if the connection is already marked as Disconnected
-                        this.changeState(0 /* Connecting */, 1 /* Connected */);
                         return [2 /*return*/];
                     case 2:
+                        transportExceptions = [];
                         transports = negotiateResponse.availableTransports || [];
                         _i = 0, transports_1 = transports;
                         _a.label = 3;
                     case 3:
-                        if (!(_i < transports_1.length)) return [3 /*break*/, 9];
+                        if (!(_i < transports_1.length)) return [3 /*break*/, 11];
                         endpoint = transports_1[_i];
-                        this.connectionState = 0 /* Connecting */;
+                        _a.label = 4;
+                    case 4:
+                        _a.trys.push([4, 9, , 10]);
                         transport = this.resolveTransport(endpoint, requestedTransport, requestedTransferFormat);
                         if (!(typeof transport === "number")) return [3 /*break*/, 8];
                         this.transport = this.constructTransport(transport);
-                        if (!!negotiateResponse.connectionId) return [3 /*break*/, 5];
+                        if (!!negotiateResponse.connectionId) return [3 /*break*/, 6];
                         return [4 /*yield*/, this.getNegotiationResponse(url)];
-                    case 4:
+                    case 5:
                         negotiateResponse = _a.sent();
                         connectUrl = this.createConnectUrl(url, negotiateResponse.connectionId);
-                        _a.label = 5;
-                    case 5:
-                        _a.trys.push([5, 7, , 8]);
-                        return [4 /*yield*/, this.transport.connect(connectUrl, requestedTransferFormat)];
-                    case 6:
-                        _a.sent();
-                        this.changeState(0 /* Connecting */, 1 /* Connected */);
-                        return [2 /*return*/];
+                        _a.label = 6;
+                    case 6: return [4 /*yield*/, this.transport.connect(connectUrl, requestedTransferFormat)];
                     case 7:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 8: return [3 /*break*/, 10];
+                    case 9:
                         ex_1 = _a.sent();
-                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to start the transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "': " + ex_1);
-                        this.connectionState = 2 /* Disconnected */;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Failed to start the transport '" + endpoint.transport + "': " + ex_1);
                         negotiateResponse.connectionId = undefined;
-                        return [3 /*break*/, 8];
-                    case 8:
+                        transportExceptions.push(endpoint.transport + " failed: " + ex_1);
+                        if (this.connectionState !== "Connecting " /* Connecting */) {
+                            message = "Failed to select transport before stop() was called.";
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, message);
+                            return [2 /*return*/, Promise.reject(new Error(message))];
+                        }
+                        return [3 /*break*/, 10];
+                    case 10:
                         _i++;
                         return [3 /*break*/, 3];
-                    case 9: throw new Error("Unable to initialize any of the available transports.");
+                    case 11:
+                        if (transportExceptions.length > 0) {
+                            return [2 /*return*/, Promise.reject(new Error("Unable to connect to the server with any of the available transports. " + transportExceptions.join(" ")))];
+                        }
+                        return [2 /*return*/, Promise.reject(new Error("None of the transports supported by the client are supported by the server."))];
                 }
             });
         });
@@ -1176,6 +8936,7 @@ var HttpConnection = /** @class */ (function () {
                     if ((transport === _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].WebSockets && !this.options.WebSocket) ||
                         (transport === _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"].ServerSentEvents && !this.options.EventSource)) {
                         this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Skipping transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' because it is not supported in your environment.'");
+                        throw new Error("'" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' is not supported in your environment.");
                     }
                     else {
                         this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Selecting transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "'.");
@@ -1184,10 +8945,12 @@ var HttpConnection = /** @class */ (function () {
                 }
                 else {
                     this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Skipping transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' because it does not support the requested transfer format '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"][requestedTransferFormat] + "'.");
+                    throw new Error("'" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' does not support " + _ITransport__WEBPACK_IMPORTED_MODULE_2__["TransferFormat"][requestedTransferFormat] + ".");
                 }
             }
             else {
                 this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Skipping transport '" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' because it was disabled by the client.");
+                throw new Error("'" + _ITransport__WEBPACK_IMPORTED_MODULE_2__["HttpTransportType"][transport] + "' is disabled by the client.");
             }
         }
         return null;
@@ -1195,26 +8958,41 @@ var HttpConnection = /** @class */ (function () {
     HttpConnection.prototype.isITransport = function (transport) {
         return transport && typeof (transport) === "object" && "connect" in transport;
     };
-    HttpConnection.prototype.changeState = function (from, to) {
-        if (this.connectionState === from) {
-            this.connectionState = to;
-            return true;
-        }
-        return false;
-    };
     HttpConnection.prototype.stopConnection = function (error) {
+        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "HttpConnection.stopConnection(" + error + ") called while in state " + this.connectionState + ".");
         this.transport = undefined;
         // If we have a stopError, it takes precedence over the error from the transport
         error = this.stopError || error;
+        this.stopError = undefined;
+        if (this.connectionState === "Disconnected" /* Disconnected */) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Debug, "Call to HttpConnection.stopConnection(" + error + ") was ignored because the connection is already in the disconnected state.");
+            return;
+        }
+        if (this.connectionState === "Connecting " /* Connecting */) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Warning, "Call to HttpConnection.stopConnection(" + error + ") was ignored because the connection hasn't yet left the in the connecting state.");
+            return;
+        }
+        if (this.connectionState === "Disconnecting" /* Disconnecting */) {
+            // A call to stop() induced this call to stopConnection and needs to be completed.
+            // Any stop() awaiters will be scheduled to continue after the onclose callback fires.
+            this.stopPromiseResolver();
+        }
         if (error) {
             this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "Connection disconnected with error '" + error + "'.");
         }
         else {
             this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Information, "Connection disconnected.");
         }
-        this.connectionState = 2 /* Disconnected */;
-        if (this.onclose) {
-            this.onclose(error);
+        this.connectionId = undefined;
+        this.connectionState = "Disconnected" /* Disconnected */;
+        if (this.onclose && this.connectionStarted) {
+            this.connectionStarted = false;
+            try {
+                this.onclose(error);
+            }
+            catch (e) {
+                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_1__["LogLevel"].Error, "HttpConnection.onclose(" + error + ") threw error '" + e + "'.");
+            }
         }
     };
     HttpConnection.prototype.resolveUrl = function (url) {
@@ -1222,7 +9000,7 @@ var HttpConnection = /** @class */ (function () {
         if (url.lastIndexOf("https://", 0) === 0 || url.lastIndexOf("http://", 0) === 0) {
             return url;
         }
-        if (typeof window === "undefined" || !window || !window.document) {
+        if (!_Utils__WEBPACK_IMPORTED_MODULE_5__["Platform"].isBrowser || !window.document) {
             throw new Error("Cannot resolve '" + url + "'.");
         }
         // Setting the url to the href propery of an anchor tag handles normalization
@@ -1251,6 +9029,100 @@ var HttpConnection = /** @class */ (function () {
 function transportMatches(requestedTransport, actualTransport) {
     return !requestedTransport || ((actualTransport & requestedTransport) !== 0);
 }
+var TransportSendQueue = /** @class */ (function () {
+    function TransportSendQueue(transport) {
+        this.transport = transport;
+        this.buffer = [];
+        this.executing = true;
+        this.sendBufferedData = new PromiseSource();
+        this.transportResult = new PromiseSource();
+        // Suppress typescript error about handling Promises. The sendLoop doesn't need to be observed
+        this.sendLoop().then(function () { }, function (_) { });
+    }
+    TransportSendQueue.prototype.send = function (data) {
+        this.bufferData(data);
+        return this.transportResult.promise;
+    };
+    TransportSendQueue.prototype.stop = function () {
+        this.executing = false;
+        this.sendBufferedData.resolve();
+    };
+    TransportSendQueue.prototype.bufferData = function (data) {
+        if (this.buffer.length && typeof (this.buffer[0]) !== typeof (data)) {
+            throw new Error("Expected data to be of type " + typeof (this.buffer) + " but was of type " + typeof (data));
+        }
+        this.buffer.push(data);
+        this.sendBufferedData.resolve();
+    };
+    TransportSendQueue.prototype.sendLoop = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var transportResult, data, error_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (false) {}
+                        return [4 /*yield*/, this.sendBufferedData.promise];
+                    case 1:
+                        _a.sent();
+                        if (!this.executing) {
+                            // Did we stop?
+                            return [3 /*break*/, 6];
+                        }
+                        this.sendBufferedData = new PromiseSource();
+                        transportResult = this.transportResult;
+                        this.transportResult = new PromiseSource();
+                        data = typeof (this.buffer[0]) === "string" ?
+                            this.buffer.join("") :
+                            TransportSendQueue.concatBuffers(this.buffer);
+                        this.buffer.length = 0;
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        return [4 /*yield*/, this.transport.send(data)];
+                    case 3:
+                        _a.sent();
+                        transportResult.resolve();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        error_1 = _a.sent();
+                        transportResult.reject(error_1);
+                        return [3 /*break*/, 5];
+                    case 5: return [3 /*break*/, 0];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    TransportSendQueue.concatBuffers = function (arrayBuffers) {
+        var totalLength = arrayBuffers.map(function (b) { return b.byteLength; }).reduce(function (a, b) { return a + b; });
+        var result = new Uint8Array(totalLength);
+        var offset = 0;
+        for (var _i = 0, arrayBuffers_1 = arrayBuffers; _i < arrayBuffers_1.length; _i++) {
+            var item = arrayBuffers_1[_i];
+            result.set(new Uint8Array(item), offset);
+            offset += item.byteLength;
+        }
+        return result;
+    };
+    return TransportSendQueue;
+}());
+
+var PromiseSource = /** @class */ (function () {
+    function PromiseSource() {
+        var _this = this;
+        this.promise = new Promise(function (resolve, reject) {
+            var _a;
+            return _a = [resolve, reject], _this.resolver = _a[0], _this.rejecter = _a[1], _a;
+        });
+    }
+    PromiseSource.prototype.resolve = function () {
+        this.resolver();
+    };
+    PromiseSource.prototype.reject = function (reason) {
+        this.rejecter(reason);
+    };
+    return PromiseSource;
+}());
 //# sourceMappingURL=HttpConnection.js.map
 
 /***/ }),
@@ -1269,7 +9141,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _HandshakeProtocol__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./HandshakeProtocol */ "../node_modules/@aspnet/signalr/dist/esm/HandshakeProtocol.js");
 /* harmony import */ var _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./IHubProtocol */ "../node_modules/@aspnet/signalr/dist/esm/IHubProtocol.js");
 /* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr/dist/esm/ILogger.js");
-/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr/dist/esm/Utils.js");
+/* harmony import */ var _Subject__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Subject */ "../node_modules/@aspnet/signalr/dist/esm/Subject.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr/dist/esm/Utils.js");
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -1311,37 +9184,48 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
 
 
 
+
 var DEFAULT_TIMEOUT_IN_MS = 30 * 1000;
 var DEFAULT_PING_INTERVAL_IN_MS = 15 * 1000;
 /** Describes the current state of the {@link HubConnection} to the server. */
 var HubConnectionState;
 (function (HubConnectionState) {
     /** The hub connection is disconnected. */
-    HubConnectionState[HubConnectionState["Disconnected"] = 0] = "Disconnected";
+    HubConnectionState["Disconnected"] = "Disconnected";
+    /** The hub connection is connecting. */
+    HubConnectionState["Connecting"] = "Connecting";
     /** The hub connection is connected. */
-    HubConnectionState[HubConnectionState["Connected"] = 1] = "Connected";
+    HubConnectionState["Connected"] = "Connected";
+    /** The hub connection is disconnecting. */
+    HubConnectionState["Disconnecting"] = "Disconnecting";
+    /** The hub connection is reconnecting. */
+    HubConnectionState["Reconnecting"] = "Reconnecting";
 })(HubConnectionState || (HubConnectionState = {}));
 /** Represents a connection to a SignalR Hub. */
 var HubConnection = /** @class */ (function () {
-    function HubConnection(connection, logger, protocol) {
+    function HubConnection(connection, logger, protocol, reconnectPolicy) {
         var _this = this;
-        _Utils__WEBPACK_IMPORTED_MODULE_3__["Arg"].isRequired(connection, "connection");
-        _Utils__WEBPACK_IMPORTED_MODULE_3__["Arg"].isRequired(logger, "logger");
-        _Utils__WEBPACK_IMPORTED_MODULE_3__["Arg"].isRequired(protocol, "protocol");
+        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(connection, "connection");
+        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(logger, "logger");
+        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(protocol, "protocol");
         this.serverTimeoutInMilliseconds = DEFAULT_TIMEOUT_IN_MS;
         this.keepAliveIntervalInMilliseconds = DEFAULT_PING_INTERVAL_IN_MS;
         this.logger = logger;
         this.protocol = protocol;
         this.connection = connection;
+        this.reconnectPolicy = reconnectPolicy;
         this.handshakeProtocol = new _HandshakeProtocol__WEBPACK_IMPORTED_MODULE_0__["HandshakeProtocol"]();
         this.connection.onreceive = function (data) { return _this.processIncomingData(data); };
         this.connection.onclose = function (error) { return _this.connectionClosed(error); };
         this.callbacks = {};
         this.methods = {};
         this.closedCallbacks = [];
-        this.id = 0;
+        this.reconnectingCallbacks = [];
+        this.reconnectedCallbacks = [];
+        this.invocationId = 0;
         this.receivedHandshakeResponse = false;
         this.connectionState = HubConnectionState.Disconnected;
+        this.connectionStarted = false;
         this.cachedPingMessage = this.protocol.writeMessage({ type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Ping });
     }
     /** @internal */
@@ -1349,8 +9233,8 @@ var HubConnection = /** @class */ (function () {
     // create method that can be used by HubConnectionBuilder. An "internal" constructor would just
     // be stripped away and the '.d.ts' file would have no constructor, which is interpreted as a
     // public parameter-less constructor.
-    HubConnection.create = function (connection, logger, protocol) {
-        return new HubConnection(connection, logger, protocol);
+    HubConnection.create = function (connection, logger, protocol, reconnectPolicy) {
+        return new HubConnection(connection, logger, protocol, reconnectPolicy);
     };
     Object.defineProperty(HubConnection.prototype, "state", {
         /** Indicates the state of the {@link HubConnection} to the server. */
@@ -1360,22 +9244,63 @@ var HubConnection = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(HubConnection.prototype, "connectionId", {
+        /** Represents the connection id of the {@link HubConnection} on the server. The connection id will be null when the connection is either
+         *  in the disconnected state or if the negotiation step was skipped.
+         */
+        get: function () {
+            return this.connection ? (this.connection.connectionId || null) : null;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /** Starts the connection.
      *
      * @returns {Promise<void>} A Promise that resolves when the connection has been successfully established, or rejects with an error.
      */
     HubConnection.prototype.start = function () {
+        this.startPromise = this.startWithStateTransitions();
+        return this.startPromise;
+    };
+    HubConnection.prototype.startWithStateTransitions = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var handshakeRequest, handshakePromise;
+            var e_1;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (this.connectionState !== HubConnectionState.Disconnected) {
+                            return [2 /*return*/, Promise.reject(new Error("Cannot start a HubConnection that is not in the 'Disconnected' state."))];
+                        }
+                        this.connectionState = HubConnectionState.Connecting;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Starting HubConnection.");
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 3, , 4]);
+                        return [4 /*yield*/, this.startInternal()];
+                    case 2:
+                        _a.sent();
+                        this.connectionState = HubConnectionState.Connected;
+                        this.connectionStarted = true;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "HubConnection connected successfully.");
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _a.sent();
+                        this.connectionState = HubConnectionState.Disconnected;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "HubConnection failed to start successfully because of error '" + e_1 + "'.");
+                        return [2 /*return*/, Promise.reject(e_1)];
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HubConnection.prototype.startInternal = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var handshakePromise, handshakeRequest, e_2;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        handshakeRequest = {
-                            protocol: this.protocol.name,
-                            version: this.protocol.version,
-                        };
-                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Starting HubConnection.");
+                        this.stopDuringStartError = undefined;
                         this.receivedHandshakeResponse = false;
                         handshakePromise = new Promise(function (resolve, reject) {
                             _this.handshakeResolver = resolve;
@@ -1384,22 +9309,49 @@ var HubConnection = /** @class */ (function () {
                         return [4 /*yield*/, this.connection.start(this.protocol.transferFormat)];
                     case 1:
                         _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 5, , 7]);
+                        handshakeRequest = {
+                            protocol: this.protocol.name,
+                            version: this.protocol.version,
+                        };
                         this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Sending handshake request.");
                         return [4 /*yield*/, this.sendMessage(this.handshakeProtocol.writeHandshakeRequest(handshakeRequest))];
-                    case 2:
+                    case 3:
                         _a.sent();
                         this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Using HubProtocol '" + this.protocol.name + "'.");
                         // defensively cleanup timeout in case we receive a message from the server before we finish start
                         this.cleanupTimeout();
                         this.resetTimeoutPeriod();
                         this.resetKeepAliveInterval();
-                        // Wait for the handshake to complete before marking connection as connected
                         return [4 /*yield*/, handshakePromise];
-                    case 3:
-                        // Wait for the handshake to complete before marking connection as connected
+                    case 4:
                         _a.sent();
-                        this.connectionState = HubConnectionState.Connected;
-                        return [2 /*return*/];
+                        // It's important to check the stopDuringStartError instead of just relying on the handshakePromise
+                        // being rejected on close, because this continuation can run after both the handshake completed successfully
+                        // and the connection was closed.
+                        if (this.stopDuringStartError) {
+                            // It's important to throw instead of returning a rejected promise, because we don't want to allow any state
+                            // transitions to occur between now and the calling code observing the exceptions. Returning a rejected promise
+                            // will cause the calling continuation to get scheduled to run later.
+                            throw this.stopDuringStartError;
+                        }
+                        return [3 /*break*/, 7];
+                    case 5:
+                        e_2 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Hub handshake failed with error '" + e_2 + "' during start(). Stopping HubConnection.");
+                        this.cleanupTimeout();
+                        this.cleanupPingTimer();
+                        // HttpConnection.stop() should not complete until after the onclose callback is invoked.
+                        // This will transition the HubConnection to the disconnected state before HttpConnection.stop() completes.
+                        return [4 /*yield*/, this.connection.stop(e_2)];
+                    case 6:
+                        // HttpConnection.stop() should not complete until after the onclose callback is invoked.
+                        // This will transition the HubConnection to the disconnected state before HttpConnection.stop() completes.
+                        _a.sent();
+                        throw e_2;
+                    case 7: return [2 /*return*/];
                 }
             });
         });
@@ -1409,10 +9361,61 @@ var HubConnection = /** @class */ (function () {
      * @returns {Promise<void>} A Promise that resolves when the connection has been successfully terminated, or rejects with an error.
      */
     HubConnection.prototype.stop = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var startPromise, e_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        startPromise = this.startPromise;
+                        this.stopPromise = this.stopInternal();
+                        return [4 /*yield*/, this.stopPromise];
+                    case 1:
+                        _a.sent();
+                        _a.label = 2;
+                    case 2:
+                        _a.trys.push([2, 4, , 5]);
+                        // Awaiting undefined continues immediately
+                        return [4 /*yield*/, startPromise];
+                    case 3:
+                        // Awaiting undefined continues immediately
+                        _a.sent();
+                        return [3 /*break*/, 5];
+                    case 4:
+                        e_3 = _a.sent();
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HubConnection.prototype.stopInternal = function (error) {
+        if (this.connectionState === HubConnectionState.Disconnected) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Call to HubConnection.stop(" + error + ") ignored because it is already in the disconnected state.");
+            return Promise.resolve();
+        }
+        if (this.connectionState === HubConnectionState.Disconnecting) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Call to HttpConnection.stop(" + error + ") ignored because the connection is already in the disconnecting state.");
+            return this.stopPromise;
+        }
+        this.connectionState = HubConnectionState.Disconnecting;
         this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Stopping HubConnection.");
+        if (this.reconnectDelayHandle) {
+            // We're in a reconnect delay which means the underlying connection is currently already stopped.
+            // Just clear the handle to stop the reconnect loop (which no one is waiting on thankfully) and
+            // fire the onclose callbacks.
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection stopped during reconnect delay. Done reconnecting.");
+            clearTimeout(this.reconnectDelayHandle);
+            this.reconnectDelayHandle = undefined;
+            this.completeClose();
+            return Promise.resolve();
+        }
         this.cleanupTimeout();
         this.cleanupPingTimer();
-        return this.connection.stop();
+        this.stopDuringStartError = error || new Error("The connection was stopped before the hub handshake could complete.");
+        // HttpConnection.stop() should not complete until after either HttpConnection.start() fails
+        // or the onclose callback is invoked. The onclose callback will transition the HubConnection
+        // to the disconnected state if need be before HttpConnection.stop() completes.
+        return this.connection.stop(error);
     };
     /** Invokes a streaming hub method on the server using the specified name and arguments.
      *
@@ -1427,13 +9430,17 @@ var HubConnection = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        var invocationDescriptor = this.createStreamInvocation(methodName, args);
-        var subject = new _Utils__WEBPACK_IMPORTED_MODULE_3__["Subject"](function () {
+        var _a = this.replaceStreamingParams(args), streams = _a[0], streamIds = _a[1];
+        var invocationDescriptor = this.createStreamInvocation(methodName, args, streamIds);
+        var promiseQueue;
+        var subject = new _Subject__WEBPACK_IMPORTED_MODULE_3__["Subject"]();
+        subject.cancelCallback = function () {
             var cancelInvocation = _this.createCancelInvocation(invocationDescriptor.invocationId);
-            var cancelMessage = _this.protocol.writeMessage(cancelInvocation);
             delete _this.callbacks[invocationDescriptor.invocationId];
-            return _this.sendMessage(cancelMessage);
-        });
+            return promiseQueue.then(function () {
+                return _this.sendWithProtocol(cancelInvocation);
+            });
+        };
         this.callbacks[invocationDescriptor.invocationId] = function (invocationEvent, error) {
             if (error) {
                 subject.error(error);
@@ -1454,17 +9461,24 @@ var HubConnection = /** @class */ (function () {
                 }
             }
         };
-        var message = this.protocol.writeMessage(invocationDescriptor);
-        this.sendMessage(message)
+        promiseQueue = this.sendWithProtocol(invocationDescriptor)
             .catch(function (e) {
             subject.error(e);
             delete _this.callbacks[invocationDescriptor.invocationId];
         });
+        this.launchStreams(streams, promiseQueue);
         return subject;
     };
     HubConnection.prototype.sendMessage = function (message) {
         this.resetKeepAliveInterval();
         return this.connection.send(message);
+    };
+    /**
+     * Sends a js object to the server.
+     * @param message The js object to serialize and send.
+     */
+    HubConnection.prototype.sendWithProtocol = function (message) {
+        return this.sendMessage(this.protocol.writeMessage(message));
     };
     /** Invokes a hub method on the server using the specified name and arguments. Does not wait for a response from the receiver.
      *
@@ -1480,9 +9494,10 @@ var HubConnection = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        var invocationDescriptor = this.createInvocation(methodName, args, true);
-        var message = this.protocol.writeMessage(invocationDescriptor);
-        return this.sendMessage(message);
+        var _a = this.replaceStreamingParams(args), streams = _a[0], streamIds = _a[1];
+        var sendPromise = this.sendWithProtocol(this.createInvocation(methodName, args, true, streamIds));
+        this.launchStreams(streams, sendPromise);
+        return sendPromise;
     };
     /** Invokes a hub method on the server using the specified name and arguments.
      *
@@ -1501,7 +9516,8 @@ var HubConnection = /** @class */ (function () {
         for (var _i = 1; _i < arguments.length; _i++) {
             args[_i - 1] = arguments[_i];
         }
-        var invocationDescriptor = this.createInvocation(methodName, args, false);
+        var _a = this.replaceStreamingParams(args), streams = _a[0], streamIds = _a[1];
+        var invocationDescriptor = this.createInvocation(methodName, args, false, streamIds);
         var p = new Promise(function (resolve, reject) {
             // invocationId will always have a value for a non-blocking invocation
             _this.callbacks[invocationDescriptor.invocationId] = function (invocationEvent, error) {
@@ -1524,13 +9540,13 @@ var HubConnection = /** @class */ (function () {
                     }
                 }
             };
-            var message = _this.protocol.writeMessage(invocationDescriptor);
-            _this.sendMessage(message)
+            var promiseQueue = _this.sendWithProtocol(invocationDescriptor)
                 .catch(function (e) {
                 reject(e);
                 // invocationId will always have a value for a non-blocking invocation
                 delete _this.callbacks[invocationDescriptor.invocationId];
             });
+            _this.launchStreams(streams, promiseQueue);
         });
         return p;
     };
@@ -1584,6 +9600,24 @@ var HubConnection = /** @class */ (function () {
             this.closedCallbacks.push(callback);
         }
     };
+    /** Registers a handler that will be invoked when the connection starts reconnecting.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection starts reconnecting. Optionally receives a single argument containing the error that caused the connection to start reconnecting (if any).
+     */
+    HubConnection.prototype.onreconnecting = function (callback) {
+        if (callback) {
+            this.reconnectingCallbacks.push(callback);
+        }
+    };
+    /** Registers a handler that will be invoked when the connection successfully reconnects.
+     *
+     * @param {Function} callback The handler that will be invoked when the connection successfully reconnects.
+     */
+    HubConnection.prototype.onreconnected = function (callback) {
+        if (callback) {
+            this.reconnectedCallbacks.push(callback);
+        }
+    };
     HubConnection.prototype.processIncomingData = function (data) {
         this.cleanupTimeout();
         if (!this.receivedHandshakeResponse) {
@@ -1603,7 +9637,7 @@ var HubConnection = /** @class */ (function () {
                     case _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].StreamItem:
                     case _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion:
                         var callback = this.callbacks[message.invocationId];
-                        if (callback != null) {
+                        if (callback) {
                             if (message.type === _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion) {
                                 delete this.callbacks[message.invocationId];
                             }
@@ -1616,8 +9650,7 @@ var HubConnection = /** @class */ (function () {
                     case _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Close:
                         this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Close message received from server.");
                         // We don't want to wait on the stop itself.
-                        // tslint:disable-next-line:no-floating-promises
-                        this.connection.stop(message.error ? new Error("Server returned an error on close: " + message.error) : undefined);
+                        this.stopPromise = this.stopInternal(message.error ? new Error("Server returned an error on close: " + message.error) : undefined);
                         break;
                     default:
                         this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "Invalid message type: " + message.type + ".");
@@ -1638,20 +9671,15 @@ var HubConnection = /** @class */ (function () {
             var message = "Error parsing handshake response: " + e;
             this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, message);
             var error = new Error(message);
-            // We don't want to wait on the stop itself.
-            // tslint:disable-next-line:no-floating-promises
-            this.connection.stop(error);
             this.handshakeRejecter(error);
             throw error;
         }
         if (responseMessage.error) {
             var message = "Server returned handshake error: " + responseMessage.error;
             this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, message);
-            this.handshakeRejecter(message);
-            // We don't want to wait on the stop itself.
-            // tslint:disable-next-line:no-floating-promises
-            this.connection.stop(new Error(message));
-            throw new Error(message);
+            var error = new Error(message);
+            this.handshakeRejecter(error);
+            throw error;
         }
         else {
             this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Server handshake complete.");
@@ -1695,7 +9723,7 @@ var HubConnection = /** @class */ (function () {
     };
     HubConnection.prototype.serverTimeout = function () {
         // The server hasn't talked to us in a while. It doesn't like us anymore ... :(
-        // Terminate the connection, but we don't need to wait on the promise.
+        // Terminate the connection, but we don't need to wait on the promise. This could trigger reconnecting.
         // tslint:disable-next-line:no-floating-promises
         this.connection.stop(new Error("Server timeout elapsed without receiving a message from the server."));
     };
@@ -1703,14 +9731,18 @@ var HubConnection = /** @class */ (function () {
         var _this = this;
         var methods = this.methods[invocationMessage.target.toLowerCase()];
         if (methods) {
-            methods.forEach(function (m) { return m.apply(_this, invocationMessage.arguments); });
+            try {
+                methods.forEach(function (m) { return m.apply(_this, invocationMessage.arguments); });
+            }
+            catch (e) {
+                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "A callback for the method " + invocationMessage.target.toLowerCase() + " threw error '" + e + "'.");
+            }
             if (invocationMessage.invocationId) {
                 // This is not supported in v1. So we return an error to avoid blocking the server waiting for the response.
                 var message = "Server requested a response, which is not supported in this version of the client.";
                 this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, message);
-                // We don't need to wait on this Promise.
-                // tslint:disable-next-line:no-floating-promises
-                this.connection.stop(new Error(message));
+                // We don't want to wait on the stop itself.
+                this.stopPromise = this.stopInternal(new Error(message));
             }
         }
         else {
@@ -1718,23 +9750,148 @@ var HubConnection = /** @class */ (function () {
         }
     };
     HubConnection.prototype.connectionClosed = function (error) {
+        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "HubConnection.connectionClosed(" + error + ") called while in state " + this.connectionState + ".");
+        // Triggering this.handshakeRejecter is insufficient because it could already be resolved without the continuation having run yet.
+        this.stopDuringStartError = this.stopDuringStartError || error || new Error("The underlying connection was closed before the hub handshake could complete.");
+        // If the handshake is in progress, start will be waiting for the handshake promise, so we complete it.
+        // If it has already completed, this should just noop.
+        if (this.handshakeResolver) {
+            this.handshakeResolver();
+        }
+        this.cancelCallbacksWithError(error || new Error("Invocation canceled due to the underlying connection being closed."));
+        this.cleanupTimeout();
+        this.cleanupPingTimer();
+        if (this.connectionState === HubConnectionState.Disconnecting) {
+            this.completeClose(error);
+        }
+        else if (this.connectionState === HubConnectionState.Connected && this.reconnectPolicy) {
+            // tslint:disable-next-line:no-floating-promises
+            this.reconnect(error);
+        }
+        else if (this.connectionState === HubConnectionState.Connected) {
+            this.completeClose(error);
+        }
+        // If none of the above if conditions were true were called the HubConnection must be in either:
+        // 1. The Connecting state in which case the handshakeResolver will complete it and stopDuringStartError will fail it.
+        // 2. The Reconnecting state in which case the handshakeResolver will complete it and stopDuringStartError will fail the current reconnect attempt
+        //    and potentially continue the reconnect() loop.
+        // 3. The Disconnected state in which case we're already done.
+    };
+    HubConnection.prototype.completeClose = function (error) {
         var _this = this;
+        if (this.connectionStarted) {
+            this.connectionState = HubConnectionState.Disconnected;
+            this.connectionStarted = false;
+            try {
+                this.closedCallbacks.forEach(function (c) { return c.apply(_this, [error]); });
+            }
+            catch (e) {
+                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "An onclose callback called with error '" + error + "' threw error '" + e + "'.");
+            }
+        }
+    };
+    HubConnection.prototype.reconnect = function (error) {
+        return __awaiter(this, void 0, void 0, function () {
+            var reconnectStartTime, previousReconnectAttempts, nextRetryDelay, e_4;
+            var _this = this;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        reconnectStartTime = Date.now();
+                        previousReconnectAttempts = 0;
+                        nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, 0);
+                        if (nextRetryDelay === null) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection not reconnecting because the IReconnectPolicy returned null on the first reconnect attempt.");
+                            this.completeClose(error);
+                            return [2 /*return*/];
+                        }
+                        this.connectionState = HubConnectionState.Reconnecting;
+                        if (error) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Connection reconnecting because of error '" + error + "'.");
+                        }
+                        else {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Connection reconnecting.");
+                        }
+                        if (this.onreconnecting) {
+                            try {
+                                this.reconnectingCallbacks.forEach(function (c) { return c.apply(_this, [error]); });
+                            }
+                            catch (e) {
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "An onreconnecting callback called with error '" + error + "' threw error '" + e + "'.");
+                            }
+                            // Exit early if an onreconnecting callback called connection.stop().
+                            if (this.connectionState !== HubConnectionState.Reconnecting) {
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection left the reconnecting state in onreconnecting callback. Done reconnecting.");
+                                return [2 /*return*/];
+                            }
+                        }
+                        _a.label = 1;
+                    case 1:
+                        if (!(nextRetryDelay !== null)) return [3 /*break*/, 7];
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Reconnect attempt number " + previousReconnectAttempts + " will start in " + nextRetryDelay + " ms.");
+                        return [4 /*yield*/, new Promise(function (resolve) {
+                                _this.reconnectDelayHandle = setTimeout(resolve, nextRetryDelay);
+                            })];
+                    case 2:
+                        _a.sent();
+                        this.reconnectDelayHandle = undefined;
+                        if (this.connectionState !== HubConnectionState.Reconnecting) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection left the reconnecting state during reconnect delay. Done reconnecting.");
+                            return [2 /*return*/];
+                        }
+                        _a.label = 3;
+                    case 3:
+                        _a.trys.push([3, 5, , 6]);
+                        return [4 /*yield*/, this.startInternal()];
+                    case 4:
+                        _a.sent();
+                        this.connectionState = HubConnectionState.Connected;
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "HubConnection reconnected successfully.");
+                        if (this.onreconnected) {
+                            try {
+                                this.reconnectedCallbacks.forEach(function (c) { return c.apply(_this, [_this.connection.connectionId]); });
+                            }
+                            catch (e) {
+                                this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "An onreconnected callback called with connectionId '" + this.connection.connectionId + "; threw error '" + e + "'.");
+                            }
+                        }
+                        return [2 /*return*/];
+                    case 5:
+                        e_4 = _a.sent();
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Reconnect attempt failed because of error '" + e_4 + "'.");
+                        if (this.connectionState !== HubConnectionState.Reconnecting) {
+                            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Debug, "Connection left the reconnecting state during reconnect attempt. Done reconnecting.");
+                            return [2 /*return*/];
+                        }
+                        return [3 /*break*/, 6];
+                    case 6:
+                        nextRetryDelay = this.getNextRetryDelay(previousReconnectAttempts++, Date.now() - reconnectStartTime);
+                        return [3 /*break*/, 1];
+                    case 7:
+                        this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Information, "Reconnect retries have been exhausted after " + (Date.now() - reconnectStartTime) + " ms and " + previousReconnectAttempts + " failed attempts. Connection disconnecting.");
+                        this.completeClose();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    HubConnection.prototype.getNextRetryDelay = function (previousRetryCount, elapsedMilliseconds) {
+        try {
+            return this.reconnectPolicy.nextRetryDelayInMilliseconds(previousRetryCount, elapsedMilliseconds);
+        }
+        catch (e) {
+            this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Error, "IReconnectPolicy.nextRetryDelayInMilliseconds(" + previousRetryCount + ", " + elapsedMilliseconds + ") threw error '" + e + "'.");
+            return null;
+        }
+    };
+    HubConnection.prototype.cancelCallbacksWithError = function (error) {
         var callbacks = this.callbacks;
         this.callbacks = {};
-        this.connectionState = HubConnectionState.Disconnected;
-        // if handshake is in progress start will be waiting for the handshake promise, so we complete it
-        // if it has already completed this should just noop
-        if (this.handshakeRejecter) {
-            this.handshakeRejecter(error);
-        }
         Object.keys(callbacks)
             .forEach(function (key) {
             var callback = callbacks[key];
-            callback(null, error ? error : new Error("Invocation canceled due to connection being closed."));
+            callback(null, error);
         });
-        this.cleanupTimeout();
-        this.cleanupPingTimer();
-        this.closedCallbacks.forEach(function (c) { return c.apply(_this, [error]); });
     };
     HubConnection.prototype.cleanupPingTimer = function () {
         if (this.pingServerHandle) {
@@ -1746,31 +9903,93 @@ var HubConnection = /** @class */ (function () {
             clearTimeout(this.timeoutHandle);
         }
     };
-    HubConnection.prototype.createInvocation = function (methodName, args, nonblocking) {
+    HubConnection.prototype.createInvocation = function (methodName, args, nonblocking, streamIds) {
         if (nonblocking) {
             return {
                 arguments: args,
+                streamIds: streamIds,
                 target: methodName,
                 type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Invocation,
             };
         }
         else {
-            var id = this.id;
-            this.id++;
+            var invocationId = this.invocationId;
+            this.invocationId++;
             return {
                 arguments: args,
-                invocationId: id.toString(),
+                invocationId: invocationId.toString(),
+                streamIds: streamIds,
                 target: methodName,
                 type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Invocation,
             };
         }
     };
-    HubConnection.prototype.createStreamInvocation = function (methodName, args) {
-        var id = this.id;
-        this.id++;
+    HubConnection.prototype.launchStreams = function (streams, promiseQueue) {
+        var _this = this;
+        if (streams.length === 0) {
+            return;
+        }
+        // Synchronize stream data so they arrive in-order on the server
+        if (!promiseQueue) {
+            promiseQueue = Promise.resolve();
+        }
+        var _loop_1 = function (streamId) {
+            streams[streamId].subscribe({
+                complete: function () {
+                    promiseQueue = promiseQueue.then(function () { return _this.sendWithProtocol(_this.createCompletionMessage(streamId)); });
+                },
+                error: function (err) {
+                    var message;
+                    if (err instanceof Error) {
+                        message = err.message;
+                    }
+                    else if (err && err.toString) {
+                        message = err.toString();
+                    }
+                    else {
+                        message = "Unknown error";
+                    }
+                    promiseQueue = promiseQueue.then(function () { return _this.sendWithProtocol(_this.createCompletionMessage(streamId, message)); });
+                },
+                next: function (item) {
+                    promiseQueue = promiseQueue.then(function () { return _this.sendWithProtocol(_this.createStreamItemMessage(streamId, item)); });
+                },
+            });
+        };
+        // We want to iterate over the keys, since the keys are the stream ids
+        // tslint:disable-next-line:forin
+        for (var streamId in streams) {
+            _loop_1(streamId);
+        }
+    };
+    HubConnection.prototype.replaceStreamingParams = function (args) {
+        var streams = [];
+        var streamIds = [];
+        for (var i = 0; i < args.length; i++) {
+            var argument = args[i];
+            if (this.isObservable(argument)) {
+                var streamId = this.invocationId;
+                this.invocationId++;
+                // Store the stream for later use
+                streams[streamId] = argument;
+                streamIds.push(streamId.toString());
+                // remove stream from args
+                args.splice(i, 1);
+            }
+        }
+        return [streams, streamIds];
+    };
+    HubConnection.prototype.isObservable = function (arg) {
+        // This allows other stream implementations to just work (like rxjs)
+        return arg && arg.subscribe && typeof arg.subscribe === "function";
+    };
+    HubConnection.prototype.createStreamInvocation = function (methodName, args, streamIds) {
+        var invocationId = this.invocationId;
+        this.invocationId++;
         return {
             arguments: args,
-            invocationId: id.toString(),
+            invocationId: invocationId.toString(),
+            streamIds: streamIds,
             target: methodName,
             type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].StreamInvocation,
         };
@@ -1779,6 +9998,27 @@ var HubConnection = /** @class */ (function () {
         return {
             invocationId: id,
             type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].CancelInvocation,
+        };
+    };
+    HubConnection.prototype.createStreamItemMessage = function (id, item) {
+        return {
+            invocationId: id,
+            item: item,
+            type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].StreamItem,
+        };
+    };
+    HubConnection.prototype.createCompletionMessage = function (id, error, result) {
+        if (error) {
+            return {
+                error: error,
+                invocationId: id,
+                type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion,
+            };
+        }
+        return {
+            invocationId: id,
+            result: result,
+            type: _IHubProtocol__WEBPACK_IMPORTED_MODULE_1__["MessageType"].Completion,
         };
     };
     return HubConnection;
@@ -1798,44 +10038,82 @@ var HubConnection = /** @class */ (function () {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "HubConnectionBuilder", function() { return HubConnectionBuilder; });
-/* harmony import */ var _HttpConnection__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./HttpConnection */ "../node_modules/@aspnet/signalr/dist/esm/HttpConnection.js");
-/* harmony import */ var _HubConnection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HubConnection */ "../node_modules/@aspnet/signalr/dist/esm/HubConnection.js");
-/* harmony import */ var _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./JsonHubProtocol */ "../node_modules/@aspnet/signalr/dist/esm/JsonHubProtocol.js");
-/* harmony import */ var _Loggers__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Loggers */ "../node_modules/@aspnet/signalr/dist/esm/Loggers.js");
-/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr/dist/esm/Utils.js");
+/* harmony import */ var _DefaultReconnectPolicy__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./DefaultReconnectPolicy */ "../node_modules/@aspnet/signalr/dist/esm/DefaultReconnectPolicy.js");
+/* harmony import */ var _HttpConnection__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HttpConnection */ "../node_modules/@aspnet/signalr/dist/esm/HttpConnection.js");
+/* harmony import */ var _HubConnection__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./HubConnection */ "../node_modules/@aspnet/signalr/dist/esm/HubConnection.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./JsonHubProtocol */ "../node_modules/@aspnet/signalr/dist/esm/JsonHubProtocol.js");
+/* harmony import */ var _Loggers__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./Loggers */ "../node_modules/@aspnet/signalr/dist/esm/Loggers.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr/dist/esm/Utils.js");
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __assign = (undefined && undefined.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 
 
 
 
 
+
+
+// tslint:disable:object-literal-sort-keys
+var LogLevelNameMapping = {
+    trace: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Trace,
+    debug: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Debug,
+    info: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Information,
+    information: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Information,
+    warn: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Warning,
+    warning: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Warning,
+    error: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Error,
+    critical: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].Critical,
+    none: _ILogger__WEBPACK_IMPORTED_MODULE_3__["LogLevel"].None,
+};
+function parseLogLevel(name) {
+    // Case-insensitive matching via lower-casing
+    // Yes, I know case-folding is a complicated problem in Unicode, but we only support
+    // the ASCII strings defined in LogLevelNameMapping anyway, so it's fine -anurse.
+    var mapping = LogLevelNameMapping[name.toLowerCase()];
+    if (typeof mapping !== "undefined") {
+        return mapping;
+    }
+    else {
+        throw new Error("Unknown log level: " + name);
+    }
+}
 /** A builder for configuring {@link @aspnet/signalr.HubConnection} instances. */
 var HubConnectionBuilder = /** @class */ (function () {
     function HubConnectionBuilder() {
     }
     HubConnectionBuilder.prototype.configureLogging = function (logging) {
-        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(logging, "logging");
+        _Utils__WEBPACK_IMPORTED_MODULE_6__["Arg"].isRequired(logging, "logging");
         if (isLogger(logging)) {
             this.logger = logging;
         }
+        else if (typeof logging === "string") {
+            var logLevel = parseLogLevel(logging);
+            this.logger = new _Utils__WEBPACK_IMPORTED_MODULE_6__["ConsoleLogger"](logLevel);
+        }
         else {
-            this.logger = new _Utils__WEBPACK_IMPORTED_MODULE_4__["ConsoleLogger"](logging);
+            this.logger = new _Utils__WEBPACK_IMPORTED_MODULE_6__["ConsoleLogger"](logging);
         }
         return this;
     };
     HubConnectionBuilder.prototype.withUrl = function (url, transportTypeOrOptions) {
-        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(url, "url");
+        _Utils__WEBPACK_IMPORTED_MODULE_6__["Arg"].isRequired(url, "url");
         this.url = url;
         // Flow-typing knows where it's at. Since HttpTransportType is a number and IHttpConnectionOptions is guaranteed
         // to be an object, we know (as does TypeScript) this comparison is all we need to figure out which overload was called.
         if (typeof transportTypeOrOptions === "object") {
-            this.httpConnectionOptions = transportTypeOrOptions;
+            this.httpConnectionOptions = __assign({}, this.httpConnectionOptions, transportTypeOrOptions);
         }
         else {
-            this.httpConnectionOptions = {
-                transport: transportTypeOrOptions,
-            };
+            this.httpConnectionOptions = __assign({}, this.httpConnectionOptions, { transport: transportTypeOrOptions });
         }
         return this;
     };
@@ -1844,8 +10122,23 @@ var HubConnectionBuilder = /** @class */ (function () {
      * @param {IHubProtocol} protocol The {@link @aspnet/signalr.IHubProtocol} implementation to use.
      */
     HubConnectionBuilder.prototype.withHubProtocol = function (protocol) {
-        _Utils__WEBPACK_IMPORTED_MODULE_4__["Arg"].isRequired(protocol, "protocol");
+        _Utils__WEBPACK_IMPORTED_MODULE_6__["Arg"].isRequired(protocol, "protocol");
         this.protocol = protocol;
+        return this;
+    };
+    HubConnectionBuilder.prototype.withAutomaticReconnect = function (retryDelaysOrReconnectPolicy) {
+        if (this.reconnectPolicy) {
+            throw new Error("A reconnectPolicy has already been set.");
+        }
+        if (!retryDelaysOrReconnectPolicy) {
+            this.reconnectPolicy = new _DefaultReconnectPolicy__WEBPACK_IMPORTED_MODULE_0__["DefaultReconnectPolicy"]();
+        }
+        else if (Array.isArray(retryDelaysOrReconnectPolicy)) {
+            this.reconnectPolicy = new _DefaultReconnectPolicy__WEBPACK_IMPORTED_MODULE_0__["DefaultReconnectPolicy"](retryDelaysOrReconnectPolicy);
+        }
+        else {
+            this.reconnectPolicy = retryDelaysOrReconnectPolicy;
+        }
         return this;
     };
     /** Creates a {@link @aspnet/signalr.HubConnection} from the configuration options specified in this builder.
@@ -1865,8 +10158,8 @@ var HubConnectionBuilder = /** @class */ (function () {
         if (!this.url) {
             throw new Error("The 'HubConnectionBuilder.withUrl' method must be called before building the connection.");
         }
-        var connection = new _HttpConnection__WEBPACK_IMPORTED_MODULE_0__["HttpConnection"](this.url, httpConnectionOptions);
-        return _HubConnection__WEBPACK_IMPORTED_MODULE_1__["HubConnection"].create(connection, this.logger || _Loggers__WEBPACK_IMPORTED_MODULE_3__["NullLogger"].instance, this.protocol || new _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_2__["JsonHubProtocol"]());
+        var connection = new _HttpConnection__WEBPACK_IMPORTED_MODULE_1__["HttpConnection"](this.url, httpConnectionOptions);
+        return _HubConnection__WEBPACK_IMPORTED_MODULE_2__["HubConnection"].create(connection, this.logger || _Loggers__WEBPACK_IMPORTED_MODULE_5__["NullLogger"].instance, this.protocol || new _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_4__["JsonHubProtocol"](), this.reconnectPolicy);
     };
     return HubConnectionBuilder;
 }());
@@ -2442,6 +10735,121 @@ var LongPollingTransport = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "../node_modules/@aspnet/signalr/dist/esm/NodeHttpClient.js":
+/*!******************************************************************!*\
+  !*** ../node_modules/@aspnet/signalr/dist/esm/NodeHttpClient.js ***!
+  \******************************************************************/
+/*! exports provided: NodeHttpClient */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* WEBPACK VAR INJECTION */(function(Buffer) {/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "NodeHttpClient", function() { return NodeHttpClient; });
+/* harmony import */ var _Errors__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Errors */ "../node_modules/@aspnet/signalr/dist/esm/Errors.js");
+/* harmony import */ var _HttpClient__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./HttpClient */ "../node_modules/@aspnet/signalr/dist/esm/HttpClient.js");
+/* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr/dist/esm/ILogger.js");
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign = (undefined && undefined.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
+
+
+
+
+var requestModule;
+if (typeof XMLHttpRequest === "undefined") {
+    // In order to ignore the dynamic require in webpack builds we need to do this magic
+    // @ts-ignore: TS doesn't know about these names
+    var requireFunc =  true ? require : undefined;
+    requestModule = requireFunc("request");
+}
+var NodeHttpClient = /** @class */ (function (_super) {
+    __extends(NodeHttpClient, _super);
+    function NodeHttpClient(logger) {
+        var _this = _super.call(this) || this;
+        if (typeof requestModule === "undefined") {
+            throw new Error("The 'request' module could not be loaded.");
+        }
+        _this.logger = logger;
+        _this.cookieJar = requestModule.jar();
+        _this.request = requestModule.defaults({ jar: _this.cookieJar });
+        return _this;
+    }
+    NodeHttpClient.prototype.send = function (httpRequest) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var requestBody;
+            if (Object(_Utils__WEBPACK_IMPORTED_MODULE_3__["isArrayBuffer"])(httpRequest.content)) {
+                requestBody = Buffer.from(httpRequest.content);
+            }
+            else {
+                requestBody = httpRequest.content || "";
+            }
+            var currentRequest = _this.request(httpRequest.url, {
+                body: requestBody,
+                // If binary is expected 'null' should be used, otherwise for text 'utf8'
+                encoding: httpRequest.responseType === "arraybuffer" ? null : "utf8",
+                headers: __assign({ 
+                    // Tell auth middleware to 401 instead of redirecting
+                    "X-Requested-With": "XMLHttpRequest" }, httpRequest.headers),
+                method: httpRequest.method,
+                timeout: httpRequest.timeout,
+            }, function (error, response, body) {
+                if (httpRequest.abortSignal) {
+                    httpRequest.abortSignal.onabort = null;
+                }
+                if (error) {
+                    if (error.code === "ETIMEDOUT") {
+                        _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "Timeout from HTTP request.");
+                        reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["TimeoutError"]());
+                    }
+                    _this.logger.log(_ILogger__WEBPACK_IMPORTED_MODULE_2__["LogLevel"].Warning, "Error from HTTP request. " + error);
+                    reject(error);
+                    return;
+                }
+                if (response.statusCode >= 200 && response.statusCode < 300) {
+                    resolve(new _HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpResponse"](response.statusCode, response.statusMessage || "", body));
+                }
+                else {
+                    reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["HttpError"](response.statusMessage || "", response.statusCode || 0));
+                }
+            });
+            if (httpRequest.abortSignal) {
+                httpRequest.abortSignal.onabort = function () {
+                    currentRequest.abort();
+                    reject(new _Errors__WEBPACK_IMPORTED_MODULE_0__["AbortError"]());
+                };
+            }
+        });
+    };
+    NodeHttpClient.prototype.getCookieString = function (url) {
+        return this.cookieJar.getCookieString(url);
+    };
+    return NodeHttpClient;
+}(_HttpClient__WEBPACK_IMPORTED_MODULE_1__["HttpClient"]));
+
+//# sourceMappingURL=NodeHttpClient.js.map
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../../../buffer/index.js */ "../node_modules/buffer/index.js").Buffer))
+
+/***/ }),
+
 /***/ "../node_modules/@aspnet/signalr/dist/esm/ServerSentEventsTransport.js":
 /*!*****************************************************************************!*\
   !*** ../node_modules/@aspnet/signalr/dist/esm/ServerSentEventsTransport.js ***!
@@ -2534,7 +10942,7 @@ var ServerSentEventsTransport = /** @class */ (function () {
                                 return;
                             }
                             var eventSource;
-                            if (typeof window !== "undefined") {
+                            if (_Utils__WEBPACK_IMPORTED_MODULE_2__["Platform"].isBrowser || _Utils__WEBPACK_IMPORTED_MODULE_2__["Platform"].isWebWorker) {
                                 eventSource = new _this.eventSourceConstructor(url, { withCredentials: true });
                             }
                             else {
@@ -2610,6 +11018,58 @@ var ServerSentEventsTransport = /** @class */ (function () {
 
 /***/ }),
 
+/***/ "../node_modules/@aspnet/signalr/dist/esm/Subject.js":
+/*!***********************************************************!*\
+  !*** ../node_modules/@aspnet/signalr/dist/esm/Subject.js ***!
+  \***********************************************************/
+/*! exports provided: Subject */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Subject", function() { return Subject; });
+/* harmony import */ var _Utils__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./Utils */ "../node_modules/@aspnet/signalr/dist/esm/Utils.js");
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+/** Stream implementation to stream items to the server. */
+var Subject = /** @class */ (function () {
+    function Subject() {
+        this.observers = [];
+    }
+    Subject.prototype.next = function (item) {
+        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
+            var observer = _a[_i];
+            observer.next(item);
+        }
+    };
+    Subject.prototype.error = function (err) {
+        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
+            var observer = _a[_i];
+            if (observer.error) {
+                observer.error(err);
+            }
+        }
+    };
+    Subject.prototype.complete = function () {
+        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
+            var observer = _a[_i];
+            if (observer.complete) {
+                observer.complete();
+            }
+        }
+    };
+    Subject.prototype.subscribe = function (observer) {
+        this.observers.push(observer);
+        return new _Utils__WEBPACK_IMPORTED_MODULE_0__["SubjectSubscription"](this, observer);
+    };
+    return Subject;
+}());
+
+//# sourceMappingURL=Subject.js.map
+
+/***/ }),
+
 /***/ "../node_modules/@aspnet/signalr/dist/esm/TextMessageFormat.js":
 /*!*********************************************************************!*\
   !*** ../node_modules/@aspnet/signalr/dist/esm/TextMessageFormat.js ***!
@@ -2651,18 +11111,18 @@ var TextMessageFormat = /** @class */ (function () {
 /*!*********************************************************!*\
   !*** ../node_modules/@aspnet/signalr/dist/esm/Utils.js ***!
   \*********************************************************/
-/*! exports provided: Arg, getDataDetail, formatArrayBuffer, isArrayBuffer, sendMessage, createLogger, Subject, SubjectSubscription, ConsoleLogger */
+/*! exports provided: Arg, Platform, getDataDetail, formatArrayBuffer, isArrayBuffer, sendMessage, createLogger, SubjectSubscription, ConsoleLogger */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Arg", function() { return Arg; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Platform", function() { return Platform; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getDataDetail", function() { return getDataDetail; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "formatArrayBuffer", function() { return formatArrayBuffer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "isArrayBuffer", function() { return isArrayBuffer; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "sendMessage", function() { return sendMessage; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createLogger", function() { return createLogger; });
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Subject", function() { return Subject; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "SubjectSubscription", function() { return SubjectSubscription; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "ConsoleLogger", function() { return ConsoleLogger; });
 /* harmony import */ var _ILogger__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ILogger */ "../node_modules/@aspnet/signalr/dist/esm/ILogger.js");
@@ -2722,6 +11182,34 @@ var Arg = /** @class */ (function () {
         }
     };
     return Arg;
+}());
+
+/** @private */
+var Platform = /** @class */ (function () {
+    function Platform() {
+    }
+    Object.defineProperty(Platform, "isBrowser", {
+        get: function () {
+            return typeof window === "object";
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Platform, "isWebWorker", {
+        get: function () {
+            return typeof self === "object" && "importScripts" in self;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Platform, "isNode", {
+        get: function () {
+            return !this.isBrowser && !this.isWebWorker;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    return Platform;
 }());
 
 /** @private */
@@ -2808,41 +11296,6 @@ function createLogger(logger) {
     return new ConsoleLogger(logger);
 }
 /** @private */
-var Subject = /** @class */ (function () {
-    function Subject(cancelCallback) {
-        this.observers = [];
-        this.cancelCallback = cancelCallback;
-    }
-    Subject.prototype.next = function (item) {
-        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
-            var observer = _a[_i];
-            observer.next(item);
-        }
-    };
-    Subject.prototype.error = function (err) {
-        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
-            var observer = _a[_i];
-            if (observer.error) {
-                observer.error(err);
-            }
-        }
-    };
-    Subject.prototype.complete = function () {
-        for (var _i = 0, _a = this.observers; _i < _a.length; _i++) {
-            var observer = _a[_i];
-            if (observer.complete) {
-                observer.complete();
-            }
-        }
-    };
-    Subject.prototype.subscribe = function (observer) {
-        this.observers.push(observer);
-        return new SubjectSubscription(this, observer);
-    };
-    return Subject;
-}());
-
-/** @private */
 var SubjectSubscription = /** @class */ (function () {
     function SubjectSubscription(subject, observer) {
         this.subject = subject;
@@ -2853,7 +11306,7 @@ var SubjectSubscription = /** @class */ (function () {
         if (index > -1) {
             this.subject.observers.splice(index, 1);
         }
-        if (this.subject.observers.length === 0) {
+        if (this.subject.observers.length === 0 && this.subject.cancelCallback) {
             this.subject.cancelCallback().catch(function (_) { });
         }
     };
@@ -2864,23 +11317,24 @@ var SubjectSubscription = /** @class */ (function () {
 var ConsoleLogger = /** @class */ (function () {
     function ConsoleLogger(minimumLogLevel) {
         this.minimumLogLevel = minimumLogLevel;
+        this.outputConsole = console;
     }
     ConsoleLogger.prototype.log = function (logLevel, message) {
         if (logLevel >= this.minimumLogLevel) {
             switch (logLevel) {
                 case _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Critical:
                 case _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Error:
-                    console.error("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
+                    this.outputConsole.error("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
                     break;
                 case _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Warning:
-                    console.warn("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
+                    this.outputConsole.warn("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
                     break;
                 case _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"].Information:
-                    console.info("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
+                    this.outputConsole.info("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
                     break;
                 default:
                     // console.debug only goes to attached debuggers in Node, so we use console.log for Trace and Debug
-                    console.log("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
+                    this.outputConsole.log("[" + new Date().toISOString() + "] " + _ILogger__WEBPACK_IMPORTED_MODULE_0__["LogLevel"][logLevel] + ": " + message);
                     break;
             }
         }
@@ -2979,7 +11433,7 @@ var WebSocketTransport = /** @class */ (function () {
                             url = url.replace(/^http/, "ws");
                             var webSocket;
                             var cookies = _this.httpClient.getCookieString(url);
-                            if (typeof window === "undefined" && cookies) {
+                            if (_Utils__WEBPACK_IMPORTED_MODULE_2__["Platform"].isNode && cookies) {
                                 // Only pass cookies when in non-browser environments
                                 webSocket = new _this.webSocketConstructor(url, undefined, {
                                     headers: {
@@ -3168,7 +11622,7 @@ var XhrHttpClient = /** @class */ (function (_super) {
 /*!*********************************************************!*\
   !*** ../node_modules/@aspnet/signalr/dist/esm/index.js ***!
   \*********************************************************/
-/*! exports provided: VERSION, AbortError, HttpError, TimeoutError, HttpClient, HttpResponse, DefaultHttpClient, HubConnection, HubConnectionState, HubConnectionBuilder, MessageType, LogLevel, HttpTransportType, TransferFormat, NullLogger, JsonHubProtocol */
+/*! exports provided: VERSION, AbortError, HttpError, TimeoutError, HttpClient, HttpResponse, DefaultHttpClient, HubConnection, HubConnectionState, HubConnectionBuilder, MessageType, LogLevel, HttpTransportType, TransferFormat, NullLogger, JsonHubProtocol, Subject */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3214,11 +11668,15 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./JsonHubProtocol */ "../node_modules/@aspnet/signalr/dist/esm/JsonHubProtocol.js");
 /* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "JsonHubProtocol", function() { return _JsonHubProtocol__WEBPACK_IMPORTED_MODULE_9__["JsonHubProtocol"]; });
 
+/* harmony import */ var _Subject__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./Subject */ "../node_modules/@aspnet/signalr/dist/esm/Subject.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Subject", function() { return _Subject__WEBPACK_IMPORTED_MODULE_10__["Subject"]; });
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 // Version token that will be replaced by the prepack command
 /** The version of the SignalR client. */
-var VERSION = "1.1.2";
+var VERSION = "0.0.0-DEV_BUILD";
+
 
 
 
@@ -4145,401 +12603,6 @@ function fromByteArray (uint8) {
 
   return parts.join('')
 }
-
-
-/***/ }),
-
-/***/ "../node_modules/bl/bl.js":
-/*!********************************!*\
-  !*** ../node_modules/bl/bl.js ***!
-  \********************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var DuplexStream = __webpack_require__(/*! readable-stream */ "../node_modules/readable-stream/readable-browser.js").Duplex
-  , util         = __webpack_require__(/*! util */ "../node_modules/util/util.js")
-  , Buffer       = __webpack_require__(/*! safe-buffer */ "../node_modules/safe-buffer/index.js").Buffer
-
-function BufferList (callback) {
-  if (!(this instanceof BufferList))
-    return new BufferList(callback)
-
-  this._bufs  = []
-  this.length = 0
-
-  if (typeof callback == 'function') {
-    this._callback = callback
-
-    var piper = function piper (err) {
-      if (this._callback) {
-        this._callback(err)
-        this._callback = null
-      }
-    }.bind(this)
-
-    this.on('pipe', function onPipe (src) {
-      src.on('error', piper)
-    })
-    this.on('unpipe', function onUnpipe (src) {
-      src.removeListener('error', piper)
-    })
-  } else {
-    this.append(callback)
-  }
-
-  DuplexStream.call(this)
-}
-
-
-util.inherits(BufferList, DuplexStream)
-
-
-BufferList.prototype._offset = function _offset (offset) {
-  var tot = 0, i = 0, _t
-  if (offset === 0) return [ 0, 0 ]
-  for (; i < this._bufs.length; i++) {
-    _t = tot + this._bufs[i].length
-    if (offset < _t || i == this._bufs.length - 1) {
-      return [ i, offset - tot ]
-    }
-    tot = _t
-  }
-}
-
-BufferList.prototype._reverseOffset = function (blOffset) {
-  var bufferId = blOffset[0]
-  var offset = blOffset[1]
-  for (var i = 0; i < bufferId; i++) {
-    offset += this._bufs[i].length
-  }
-  return offset
-}
-
-BufferList.prototype.append = function append (buf) {
-  var i = 0
-
-  if (Buffer.isBuffer(buf)) {
-    this._appendBuffer(buf)
-  } else if (Array.isArray(buf)) {
-    for (; i < buf.length; i++)
-      this.append(buf[i])
-  } else if (buf instanceof BufferList) {
-    // unwrap argument into individual BufferLists
-    for (; i < buf._bufs.length; i++)
-      this.append(buf._bufs[i])
-  } else if (buf != null) {
-    // coerce number arguments to strings, since Buffer(number) does
-    // uninitialized memory allocation
-    if (typeof buf == 'number')
-      buf = buf.toString()
-
-    this._appendBuffer(Buffer.from(buf))
-  }
-
-  return this
-}
-
-
-BufferList.prototype._appendBuffer = function appendBuffer (buf) {
-  this._bufs.push(buf)
-  this.length += buf.length
-}
-
-
-BufferList.prototype._write = function _write (buf, encoding, callback) {
-  this._appendBuffer(buf)
-
-  if (typeof callback == 'function')
-    callback()
-}
-
-
-BufferList.prototype._read = function _read (size) {
-  if (!this.length)
-    return this.push(null)
-
-  size = Math.min(size, this.length)
-  this.push(this.slice(0, size))
-  this.consume(size)
-}
-
-
-BufferList.prototype.end = function end (chunk) {
-  DuplexStream.prototype.end.call(this, chunk)
-
-  if (this._callback) {
-    this._callback(null, this.slice())
-    this._callback = null
-  }
-}
-
-
-BufferList.prototype.get = function get (index) {
-  if (index > this.length || index < 0) {
-    return undefined
-  }
-  var offset = this._offset(index)
-  return this._bufs[offset[0]][offset[1]]
-}
-
-
-BufferList.prototype.slice = function slice (start, end) {
-  if (typeof start == 'number' && start < 0)
-    start += this.length
-  if (typeof end == 'number' && end < 0)
-    end += this.length
-  return this.copy(null, 0, start, end)
-}
-
-
-BufferList.prototype.copy = function copy (dst, dstStart, srcStart, srcEnd) {
-  if (typeof srcStart != 'number' || srcStart < 0)
-    srcStart = 0
-  if (typeof srcEnd != 'number' || srcEnd > this.length)
-    srcEnd = this.length
-  if (srcStart >= this.length)
-    return dst || Buffer.alloc(0)
-  if (srcEnd <= 0)
-    return dst || Buffer.alloc(0)
-
-  var copy   = !!dst
-    , off    = this._offset(srcStart)
-    , len    = srcEnd - srcStart
-    , bytes  = len
-    , bufoff = (copy && dstStart) || 0
-    , start  = off[1]
-    , l
-    , i
-
-  // copy/slice everything
-  if (srcStart === 0 && srcEnd == this.length) {
-    if (!copy) { // slice, but full concat if multiple buffers
-      return this._bufs.length === 1
-        ? this._bufs[0]
-        : Buffer.concat(this._bufs, this.length)
-    }
-
-    // copy, need to copy individual buffers
-    for (i = 0; i < this._bufs.length; i++) {
-      this._bufs[i].copy(dst, bufoff)
-      bufoff += this._bufs[i].length
-    }
-
-    return dst
-  }
-
-  // easy, cheap case where it's a subset of one of the buffers
-  if (bytes <= this._bufs[off[0]].length - start) {
-    return copy
-      ? this._bufs[off[0]].copy(dst, dstStart, start, start + bytes)
-      : this._bufs[off[0]].slice(start, start + bytes)
-  }
-
-  if (!copy) // a slice, we need something to copy in to
-    dst = Buffer.allocUnsafe(len)
-
-  for (i = off[0]; i < this._bufs.length; i++) {
-    l = this._bufs[i].length - start
-
-    if (bytes > l) {
-      this._bufs[i].copy(dst, bufoff, start)
-    } else {
-      this._bufs[i].copy(dst, bufoff, start, start + bytes)
-      break
-    }
-
-    bufoff += l
-    bytes -= l
-
-    if (start)
-      start = 0
-  }
-
-  return dst
-}
-
-BufferList.prototype.shallowSlice = function shallowSlice (start, end) {
-  start = start || 0
-  end = typeof end !== 'number' ? this.length : end
-
-  if (start < 0)
-    start += this.length
-  if (end < 0)
-    end += this.length
-
-  if (start === end) {
-    return new BufferList()
-  }
-  var startOffset = this._offset(start)
-    , endOffset = this._offset(end)
-    , buffers = this._bufs.slice(startOffset[0], endOffset[0] + 1)
-
-  if (endOffset[1] == 0)
-    buffers.pop()
-  else
-    buffers[buffers.length-1] = buffers[buffers.length-1].slice(0, endOffset[1])
-
-  if (startOffset[1] != 0)
-    buffers[0] = buffers[0].slice(startOffset[1])
-
-  return new BufferList(buffers)
-}
-
-BufferList.prototype.toString = function toString (encoding, start, end) {
-  return this.slice(start, end).toString(encoding)
-}
-
-BufferList.prototype.consume = function consume (bytes) {
-  while (this._bufs.length) {
-    if (bytes >= this._bufs[0].length) {
-      bytes -= this._bufs[0].length
-      this.length -= this._bufs[0].length
-      this._bufs.shift()
-    } else {
-      this._bufs[0] = this._bufs[0].slice(bytes)
-      this.length -= bytes
-      break
-    }
-  }
-  return this
-}
-
-
-BufferList.prototype.duplicate = function duplicate () {
-  var i = 0
-    , copy = new BufferList()
-
-  for (; i < this._bufs.length; i++)
-    copy.append(this._bufs[i])
-
-  return copy
-}
-
-
-BufferList.prototype.destroy = function destroy () {
-  this._bufs.length = 0
-  this.length = 0
-  this.push(null)
-}
-
-
-BufferList.prototype.indexOf = function (search, offset, encoding) {
-  if (encoding === undefined && typeof offset === 'string') {
-    encoding = offset
-    offset = undefined
-  }
-  if (typeof search === 'function' || Array.isArray(search)) {
-    throw new TypeError('The "value" argument must be one of type string, Buffer, BufferList, or Uint8Array.')
-  } else if (typeof search === 'number') {
-      search = Buffer.from([search])
-  } else if (typeof search === 'string') {
-    search = Buffer.from(search, encoding)
-  } else if (search instanceof BufferList) {
-    search = search.slice()
-  } else if (!Buffer.isBuffer(search)) {
-    search = Buffer.from(search)
-  }
-
-  offset = Number(offset || 0)
-  if (isNaN(offset)) {
-    offset = 0
-  }
-
-  if (offset < 0) {
-    offset = this.length + offset
-  }
-
-  if (offset < 0) {
-    offset = 0
-  }
-
-  if (search.length === 0) {
-    return offset > this.length ? this.length : offset
-  }
-
-  var blOffset = this._offset(offset)
-  var blIndex = blOffset[0] // index of which internal buffer we're working on
-  var buffOffset = blOffset[1] // offset of the internal buffer we're working on
-
-  // scan over each buffer
-  for (blIndex; blIndex < this._bufs.length; blIndex++) {
-    var buff = this._bufs[blIndex]
-    while(buffOffset < buff.length) {
-      var availableWindow = buff.length - buffOffset
-      if (availableWindow >= search.length) {
-        var nativeSearchResult = buff.indexOf(search, buffOffset)
-        if (nativeSearchResult !== -1) {
-          return this._reverseOffset([blIndex, nativeSearchResult])
-        }
-        buffOffset = buff.length - search.length + 1 // end of native search window
-      } else {
-        var revOffset = this._reverseOffset([blIndex, buffOffset])
-        if (this._match(revOffset, search)) {
-          return revOffset
-        }
-        buffOffset++
-      }
-    }
-    buffOffset = 0
-  }
-  return -1
-}
-
-BufferList.prototype._match = function(offset, search) {
-  if (this.length - offset < search.length) {
-    return false
-  }
-  for (var searchOffset = 0; searchOffset < search.length ; searchOffset++) {
-    if(this.get(offset + searchOffset) !== search[searchOffset]){
-      return false
-    }
-  }
-  return true
-}
-
-
-;(function () {
-  var methods = {
-      'readDoubleBE' : 8
-    , 'readDoubleLE' : 8
-    , 'readFloatBE'  : 4
-    , 'readFloatLE'  : 4
-    , 'readInt32BE'  : 4
-    , 'readInt32LE'  : 4
-    , 'readUInt32BE' : 4
-    , 'readUInt32LE' : 4
-    , 'readInt16BE'  : 2
-    , 'readInt16LE'  : 2
-    , 'readUInt16BE' : 2
-    , 'readUInt16LE' : 2
-    , 'readInt8'     : 1
-    , 'readUInt8'    : 1
-    , 'readIntBE'    : null
-    , 'readIntLE'    : null
-    , 'readUIntBE'   : null
-    , 'readUIntLE'   : null
-  }
-
-  for (var m in methods) {
-    (function (m) {
-      if (methods[m] === null) {
-        BufferList.prototype[m] = function (offset, byteLength) {
-          return this.slice(offset, offset + byteLength)[m](0, byteLength)
-        }
-      }
-      else {
-        BufferList.prototype[m] = function (offset) {
-          return this.slice(offset, offset + methods[m])[m](0)
-        }
-      }
-    }(m))
-  }
-}())
-
-
-module.exports = BufferList
 
 
 /***/ }),
@@ -6346,125 +14409,6 @@ function isnan (val) {
 
 /***/ }),
 
-/***/ "../node_modules/core-util-is/lib/util.js":
-/*!************************************************!*\
-  !*** ../node_modules/core-util-is/lib/util.js ***!
-  \************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(Buffer) {// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// NOTE: These type checking functions intentionally don't use `instanceof`
-// because it is fragile and can be easily faked with `Object.create()`.
-
-function isArray(arg) {
-  if (Array.isArray) {
-    return Array.isArray(arg);
-  }
-  return objectToString(arg) === '[object Array]';
-}
-exports.isArray = isArray;
-
-function isBoolean(arg) {
-  return typeof arg === 'boolean';
-}
-exports.isBoolean = isBoolean;
-
-function isNull(arg) {
-  return arg === null;
-}
-exports.isNull = isNull;
-
-function isNullOrUndefined(arg) {
-  return arg == null;
-}
-exports.isNullOrUndefined = isNullOrUndefined;
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-exports.isNumber = isNumber;
-
-function isString(arg) {
-  return typeof arg === 'string';
-}
-exports.isString = isString;
-
-function isSymbol(arg) {
-  return typeof arg === 'symbol';
-}
-exports.isSymbol = isSymbol;
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-exports.isUndefined = isUndefined;
-
-function isRegExp(re) {
-  return objectToString(re) === '[object RegExp]';
-}
-exports.isRegExp = isRegExp;
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-exports.isObject = isObject;
-
-function isDate(d) {
-  return objectToString(d) === '[object Date]';
-}
-exports.isDate = isDate;
-
-function isError(e) {
-  return (objectToString(e) === '[object Error]' || e instanceof Error);
-}
-exports.isError = isError;
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-exports.isFunction = isFunction;
-
-function isPrimitive(arg) {
-  return arg === null ||
-         typeof arg === 'boolean' ||
-         typeof arg === 'number' ||
-         typeof arg === 'string' ||
-         typeof arg === 'symbol' ||  // ES6 symbol
-         typeof arg === 'undefined';
-}
-exports.isPrimitive = isPrimitive;
-
-exports.isBuffer = Buffer.isBuffer;
-
-function objectToString(o) {
-  return Object.prototype.toString.call(o);
-}
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../buffer/index.js */ "../node_modules/buffer/index.js").Buffer))
-
-/***/ }),
-
 /***/ "../node_modules/events/events.js":
 /*!****************************************!*\
   !*** ../node_modules/events/events.js ***!
@@ -7070,1065 +15014,6 @@ module.exports = Array.isArray || function (arr) {
 
 /***/ }),
 
-/***/ "../node_modules/msgpack5/index.js":
-/*!*****************************************!*\
-  !*** ../node_modules/msgpack5/index.js ***!
-  \*****************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/safe-buffer/index.js").Buffer
-var assert = __webpack_require__(/*! assert */ "../node_modules/assert/assert.js")
-var bl = __webpack_require__(/*! bl */ "../node_modules/bl/bl.js")
-var streams = __webpack_require__(/*! ./lib/streams */ "../node_modules/msgpack5/lib/streams.js")
-var buildDecode = __webpack_require__(/*! ./lib/decoder */ "../node_modules/msgpack5/lib/decoder.js")
-var buildEncode = __webpack_require__(/*! ./lib/encoder */ "../node_modules/msgpack5/lib/encoder.js")
-
-function msgpack (options) {
-  var encodingTypes = []
-  var decodingTypes = []
-
-  options = options || {
-    forceFloat64: false,
-    compatibilityMode: false,
-    disableTimestampEncoding: false // if true, skips encoding Dates using the msgpack timestamp ext format (-1)
-  }
-
-  function registerEncoder (check, encode) {
-    assert(check, 'must have an encode function')
-    assert(encode, 'must have an encode function')
-
-    encodingTypes.push({
-      check: check, encode: encode
-    })
-
-    return this
-  }
-
-  function registerDecoder (type, decode) {
-    assert(type >= 0, 'must have a non-negative type')
-    assert(decode, 'must have a decode function')
-
-    decodingTypes.push({
-      type: type, decode: decode
-    })
-
-    return this
-  }
-
-  function register (type, constructor, encode, decode) {
-    assert(constructor, 'must have a constructor')
-    assert(encode, 'must have an encode function')
-    assert(type >= 0, 'must have a non-negative type')
-    assert(decode, 'must have a decode function')
-
-    function check (obj) {
-      return (obj instanceof constructor)
-    }
-
-    function reEncode (obj) {
-      var buf = bl()
-      var header = Buffer.allocUnsafe(1)
-
-      header.writeInt8(type, 0)
-
-      buf.append(header)
-      buf.append(encode(obj))
-
-      return buf
-    }
-
-    this.registerEncoder(check, reEncode)
-    this.registerDecoder(type, decode)
-
-    return this
-  }
-
-  return {
-    encode: buildEncode(encodingTypes, options.forceFloat64, options.compatibilityMode, options.disableTimestampEncoding),
-    decode: buildDecode(decodingTypes),
-    register: register,
-    registerEncoder: registerEncoder,
-    registerDecoder: registerDecoder,
-    encoder: streams.encoder,
-    decoder: streams.decoder,
-    // needed for levelup support
-    buffer: true,
-    type: 'msgpack5',
-    IncompleteBufferError: buildDecode.IncompleteBufferError
-  }
-}
-
-module.exports = msgpack
-
-
-/***/ }),
-
-/***/ "../node_modules/msgpack5/lib/decoder.js":
-/*!***********************************************!*\
-  !*** ../node_modules/msgpack5/lib/decoder.js ***!
-  \***********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var bl = __webpack_require__(/*! bl */ "../node_modules/bl/bl.js")
-var util = __webpack_require__(/*! util */ "../node_modules/util/util.js")
-
-function IncompleteBufferError (message) {
-  Error.call(this) // super constructor
-  if (Error.captureStackTrace) {
-    Error.captureStackTrace(this, this.constructor) // super helper method to include stack trace in error object
-  }
-  this.name = this.constructor.name
-  this.message = message || 'unable to decode'
-}
-
-util.inherits(IncompleteBufferError, Error)
-
-module.exports = function buildDecode (decodingTypes) {
-  return decode
-
-  function getSize (first) {
-    switch (first) {
-      case 0xc4:
-        return 2
-      case 0xc5:
-        return 3
-      case 0xc6:
-        return 5
-      case 0xc7:
-        return 3
-      case 0xc8:
-        return 4
-      case 0xc9:
-        return 6
-      case 0xca:
-        return 5
-      case 0xcb:
-        return 9
-      case 0xcc:
-        return 2
-      case 0xcd:
-        return 3
-      case 0xce:
-        return 5
-      case 0xcf:
-        return 9
-      case 0xd0:
-        return 2
-      case 0xd1:
-        return 3
-      case 0xd2:
-        return 5
-      case 0xd3:
-        return 9
-      case 0xd4:
-        return 3
-      case 0xd5:
-        return 4
-      case 0xd6:
-        return 6
-      case 0xd7:
-        return 10
-      case 0xd8:
-        return 18
-      case 0xd9:
-        return 2
-      case 0xda:
-        return 3
-      case 0xdb:
-        return 5
-      case 0xde:
-        return 3
-      default:
-        return -1
-    }
-  }
-
-  function hasMinBufferSize (first, length) {
-    var size = getSize(first)
-
-    if (size !== -1 && length < size) {
-      return false
-    } else {
-      return true
-    }
-  }
-
-  function isValidDataSize (dataLength, bufLength, headerLength) {
-    return bufLength >= headerLength + dataLength
-  }
-
-  function buildDecodeResult (value, bytesConsumed) {
-    return {
-      value: value,
-      bytesConsumed: bytesConsumed
-    }
-  }
-
-  function decode (buf) {
-    if (!(buf instanceof bl)) {
-      buf = bl().append(buf)
-    }
-
-    var result = tryDecode(buf)
-    if (result) {
-      buf.consume(result.bytesConsumed)
-      return result.value
-    } else {
-      throw new IncompleteBufferError()
-    }
-  }
-
-  function tryDecode (buf, offset) {
-    offset = offset === undefined ? 0 : offset
-    var bufLength = buf.length - offset
-    if (bufLength <= 0) {
-      return null
-    }
-
-    var first = buf.readUInt8(offset)
-    var length
-    var result = 0
-    var type
-    var bytePos
-
-    if (!hasMinBufferSize(first, bufLength)) {
-      return null
-    }
-
-    switch (first) {
-      case 0xc0:
-        return buildDecodeResult(null, 1)
-      case 0xc2:
-        return buildDecodeResult(false, 1)
-      case 0xc3:
-        return buildDecodeResult(true, 1)
-      case 0xcc:
-        // 1-byte unsigned int
-        result = buf.readUInt8(offset + 1)
-        return buildDecodeResult(result, 2)
-      case 0xcd:
-        // 2-bytes BE unsigned int
-        result = buf.readUInt16BE(offset + 1)
-        return buildDecodeResult(result, 3)
-      case 0xce:
-        // 4-bytes BE unsigned int
-        result = buf.readUInt32BE(offset + 1)
-        return buildDecodeResult(result, 5)
-      case 0xcf:
-        // 8-bytes BE unsigned int
-        // Read long byte by byte, big-endian
-        for (bytePos = 7; bytePos >= 0; bytePos--) {
-          result += (buf.readUInt8(offset + bytePos + 1) * Math.pow(2, (8 * (7 - bytePos))))
-        }
-        return buildDecodeResult(result, 9)
-      case 0xd0:
-        // 1-byte signed int
-        result = buf.readInt8(offset + 1)
-        return buildDecodeResult(result, 2)
-      case 0xd1:
-        // 2-bytes signed int
-        result = buf.readInt16BE(offset + 1)
-        return buildDecodeResult(result, 3)
-      case 0xd2:
-        // 4-bytes signed int
-        result = buf.readInt32BE(offset + 1)
-        return buildDecodeResult(result, 5)
-      case 0xd3:
-        result = readInt64BE(buf.slice(offset + 1, offset + 9), 0)
-        return buildDecodeResult(result, 9)
-      case 0xca:
-        // 4-bytes float
-        result = buf.readFloatBE(offset + 1)
-        return buildDecodeResult(result, 5)
-      case 0xcb:
-        // 8-bytes double
-        result = buf.readDoubleBE(offset + 1)
-        return buildDecodeResult(result, 9)
-      case 0xd9:
-        // strings up to 2^8 - 1 bytes
-        length = buf.readUInt8(offset + 1)
-        if (!isValidDataSize(length, bufLength, 2)) {
-          return null
-        }
-        result = buf.toString('utf8', offset + 2, offset + 2 + length)
-        return buildDecodeResult(result, 2 + length)
-      case 0xda:
-        // strings up to 2^16 - 2 bytes
-        length = buf.readUInt16BE(offset + 1)
-        if (!isValidDataSize(length, bufLength, 3)) {
-          return null
-        }
-        result = buf.toString('utf8', offset + 3, offset + 3 + length)
-        return buildDecodeResult(result, 3 + length)
-      case 0xdb:
-        // strings up to 2^32 - 4 bytes
-        length = buf.readUInt32BE(offset + 1)
-        if (!isValidDataSize(length, bufLength, 5)) {
-          return null
-        }
-        result = buf.toString('utf8', offset + 5, offset + 5 + length)
-        return buildDecodeResult(result, 5 + length)
-      case 0xc4:
-        // buffers up to 2^8 - 1 bytes
-        length = buf.readUInt8(offset + 1)
-        if (!isValidDataSize(length, bufLength, 2)) {
-          return null
-        }
-        result = buf.slice(offset + 2, offset + 2 + length)
-        return buildDecodeResult(result, 2 + length)
-      case 0xc5:
-        // buffers up to 2^16 - 1 bytes
-        length = buf.readUInt16BE(offset + 1)
-        if (!isValidDataSize(length, bufLength, 3)) {
-          return null
-        }
-        result = buf.slice(offset + 3, offset + 3 + length)
-        return buildDecodeResult(result, 3 + length)
-      case 0xc6:
-        // buffers up to 2^32 - 1 bytes
-        length = buf.readUInt32BE(offset + 1)
-        if (!isValidDataSize(length, bufLength, 5)) {
-          return null
-        }
-        result = buf.slice(offset + 5, offset + 5 + length)
-        return buildDecodeResult(result, 5 + length)
-      case 0xdc:
-        // array up to 2^16 elements - 2 bytes
-        if (bufLength < 3) {
-          return null
-        }
-
-        length = buf.readUInt16BE(offset + 1)
-        return decodeArray(buf, offset, length, 3)
-      case 0xdd:
-        // array up to 2^32 elements - 4 bytes
-        if (bufLength < 5) {
-          return null
-        }
-
-        length = buf.readUInt32BE(offset + 1)
-        return decodeArray(buf, offset, length, 5)
-      case 0xde:
-        // maps up to 2^16 elements - 2 bytes
-        length = buf.readUInt16BE(offset + 1)
-        return decodeMap(buf, offset, length, 3)
-      case 0xdf:
-        length = buf.readUInt32BE(offset + 1)
-        return decodeMap(buf, offset, length, 5)
-      case 0xd4:
-        return decodeFixExt(buf, offset, 1)
-      case 0xd5:
-        return decodeFixExt(buf, offset, 2)
-      case 0xd6:
-        return decodeFixExt(buf, offset, 4)
-      case 0xd7:
-        return decodeFixExt(buf, offset, 8)
-      case 0xd8:
-        return decodeFixExt(buf, offset, 16)
-      case 0xc7:
-        // ext up to 2^8 - 1 bytes
-        length = buf.readUInt8(offset + 1)
-        type = buf.readUInt8(offset + 2)
-        if (!isValidDataSize(length, bufLength, 3)) {
-          return null
-        }
-        return decodeExt(buf, offset, type, length, 3)
-      case 0xc8:
-        // ext up to 2^16 - 1 bytes
-        length = buf.readUInt16BE(offset + 1)
-        type = buf.readUInt8(offset + 3)
-        if (!isValidDataSize(length, bufLength, 4)) {
-          return null
-        }
-        return decodeExt(buf, offset, type, length, 4)
-      case 0xc9:
-        // ext up to 2^32 - 1 bytes
-        length = buf.readUInt32BE(offset + 1)
-        type = buf.readUInt8(offset + 5)
-        if (!isValidDataSize(length, bufLength, 6)) {
-          return null
-        }
-        return decodeExt(buf, offset, type, length, 6)
-    }
-
-    if ((first & 0xf0) === 0x90) {
-      // we have an array with less than 15 elements
-      length = first & 0x0f
-      return decodeArray(buf, offset, length, 1)
-    } else if ((first & 0xf0) === 0x80) {
-      // we have a map with less than 15 elements
-      length = first & 0x0f
-      return decodeMap(buf, offset, length, 1)
-    } else if ((first & 0xe0) === 0xa0) {
-      // fixstr up to 31 bytes
-      length = first & 0x1f
-      if (isValidDataSize(length, bufLength, 1)) {
-        result = buf.toString('utf8', offset + 1, offset + length + 1)
-        return buildDecodeResult(result, length + 1)
-      } else {
-        return null
-      }
-    } else if (first >= 0xe0) {
-      // 5 bits negative ints
-      result = first - 0x100
-      return buildDecodeResult(result, 1)
-    } else if (first < 0x80) {
-      // 7-bits positive ints
-      return buildDecodeResult(first, 1)
-    } else {
-      throw new Error('not implemented yet')
-    }
-  }
-
-  function readInt64BE (buf, offset) {
-    var negate = (buf[offset] & 0x80) == 0x80 // eslint-disable-line
-
-    if (negate) {
-      var carry = 1
-      for (var i = offset + 7; i >= offset; i--) {
-        var v = (buf[i] ^ 0xff) + carry
-        buf[i] = v & 0xff
-        carry = v >> 8
-      }
-    }
-
-    var hi = buf.readUInt32BE(offset + 0)
-    var lo = buf.readUInt32BE(offset + 4)
-    return (hi * 4294967296 + lo) * (negate ? -1 : +1)
-  }
-
-  function decodeArray (buf, offset, length, headerLength) {
-    var result = []
-    var i
-    var totalBytesConsumed = 0
-
-    offset += headerLength
-    for (i = 0; i < length; i++) {
-      var decodeResult = tryDecode(buf, offset)
-      if (decodeResult) {
-        result.push(decodeResult.value)
-        offset += decodeResult.bytesConsumed
-        totalBytesConsumed += decodeResult.bytesConsumed
-      } else {
-        return null
-      }
-    }
-    return buildDecodeResult(result, headerLength + totalBytesConsumed)
-  }
-
-  function decodeMap (buf, offset, length, headerLength) {
-    var result = {}
-    var key
-    var i
-    var totalBytesConsumed = 0
-
-    offset += headerLength
-    for (i = 0; i < length; i++) {
-      var keyResult = tryDecode(buf, offset)
-      if (keyResult) {
-        offset += keyResult.bytesConsumed
-        var valueResult = tryDecode(buf, offset)
-        if (valueResult) {
-          key = keyResult.value
-          result[key] = valueResult.value
-          offset += valueResult.bytesConsumed
-          totalBytesConsumed += (keyResult.bytesConsumed + valueResult.bytesConsumed)
-        } else {
-          return null
-        }
-      } else {
-        return null
-      }
-    }
-    return buildDecodeResult(result, headerLength + totalBytesConsumed)
-  }
-
-  function decodeFixExt (buf, offset, size) {
-    var type = buf.readInt8(offset + 1) // Signed
-    return decodeExt(buf, offset, type, size, 2)
-  }
-
-  function decodeTimestamp (buf, size, headerSize) {
-    var seconds
-    var nanoseconds = 0
-
-    switch (size) {
-      case 4:
-        // timestamp 32 stores the number of seconds that have elapsed since 1970-01-01 00:00:00 UTC in an 32-bit unsigned integer
-        seconds = buf.readUInt32BE(0)
-        break
-
-      case 8:
-        // Timestamp 64 stores the number of seconds and nanoseconds that have elapsed
-        // since 1970-01-01 00:00:00 UTC in 32-bit unsigned integers, split 30/34 bits
-        var upper = buf.readUInt32BE(0)
-        var lower = buf.readUInt32BE(4)
-        nanoseconds = upper / 4
-        seconds = ((upper & 0x03) * Math.pow(2, 32)) + lower // If we use bitwise operators, we get truncated to 32bits
-        break
-
-      case 12:
-        throw new Error('timestamp 96 is not yet implemented')
-    }
-
-    var millis = (seconds * 1000) + Math.round(nanoseconds / 1E6)
-    return buildDecodeResult(new Date(millis), size + headerSize)
-  }
-
-  function decodeExt (buf, offset, type, size, headerSize) {
-    var i,
-      toDecode
-
-    offset += headerSize
-
-    // Pre-defined
-    if (type < 0) { // Reserved for future extensions
-      switch (type) {
-        case -1: // Tiemstamp https://github.com/msgpack/msgpack/blob/master/spec.md#timestamp-extension-type
-          toDecode = buf.slice(offset, offset + size)
-          return decodeTimestamp(toDecode, size, headerSize)
-      }
-    }
-
-    for (i = 0; i < decodingTypes.length; i++) {
-      if (type === decodingTypes[i].type) {
-        toDecode = buf.slice(offset, offset + size)
-        var value = decodingTypes[i].decode(toDecode)
-        return buildDecodeResult(value, headerSize + size)
-      }
-    }
-
-    throw new Error('unable to find ext type ' + type)
-  }
-}
-
-module.exports.IncompleteBufferError = IncompleteBufferError
-
-
-/***/ }),
-
-/***/ "../node_modules/msgpack5/lib/encoder.js":
-/*!***********************************************!*\
-  !*** ../node_modules/msgpack5/lib/encoder.js ***!
-  \***********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/safe-buffer/index.js").Buffer
-var bl = __webpack_require__(/*! bl */ "../node_modules/bl/bl.js")
-
-module.exports = function buildEncode (encodingTypes, forceFloat64, compatibilityMode, disableTimestampEncoding) {
-  function encode (obj, avoidSlice) {
-    var buf
-    var len
-
-    if (obj === undefined) {
-      throw new Error('undefined is not encodable in msgpack!')
-    } else if (isNaN(obj)) {
-      throw new Error('NaN is not encodable in msgpack!')
-    } else if (obj === null) {
-      buf = Buffer.allocUnsafe(1)
-      buf[0] = 0xc0
-    } else if (obj === true) {
-      buf = Buffer.allocUnsafe(1)
-      buf[0] = 0xc3
-    } else if (obj === false) {
-      buf = Buffer.allocUnsafe(1)
-      buf[0] = 0xc2
-    } else if (typeof obj === 'string') {
-      len = Buffer.byteLength(obj)
-      if (len < 32) {
-        buf = Buffer.allocUnsafe(1 + len)
-        buf[0] = 0xa0 | len
-        if (len > 0) {
-          buf.write(obj, 1)
-        }
-      } else if (len <= 0xff && !compatibilityMode) {
-        // str8, but only when not in compatibility mode
-        buf = Buffer.allocUnsafe(2 + len)
-        buf[0] = 0xd9
-        buf[1] = len
-        buf.write(obj, 2)
-      } else if (len <= 0xffff) {
-        buf = Buffer.allocUnsafe(3 + len)
-        buf[0] = 0xda
-        buf.writeUInt16BE(len, 1)
-        buf.write(obj, 3)
-      } else {
-        buf = Buffer.allocUnsafe(5 + len)
-        buf[0] = 0xdb
-        buf.writeUInt32BE(len, 1)
-        buf.write(obj, 5)
-      }
-    } else if (obj && (obj.readUInt32LE || obj instanceof Uint8Array)) {
-      if (obj instanceof Uint8Array) {
-        obj = Buffer.from(obj)
-      }
-      // weird hack to support Buffer
-      // and Buffer-like objects
-      if (obj.length <= 0xff) {
-        buf = Buffer.allocUnsafe(2)
-        buf[0] = 0xc4
-        buf[1] = obj.length
-      } else if (obj.length <= 0xffff) {
-        buf = Buffer.allocUnsafe(3)
-        buf[0] = 0xc5
-        buf.writeUInt16BE(obj.length, 1)
-      } else {
-        buf = Buffer.allocUnsafe(5)
-        buf[0] = 0xc6
-        buf.writeUInt32BE(obj.length, 1)
-      }
-
-      buf = bl([buf, obj])
-    } else if (Array.isArray(obj)) {
-      if (obj.length < 16) {
-        buf = Buffer.allocUnsafe(1)
-        buf[0] = 0x90 | obj.length
-      } else if (obj.length < 65536) {
-        buf = Buffer.allocUnsafe(3)
-        buf[0] = 0xdc
-        buf.writeUInt16BE(obj.length, 1)
-      } else {
-        buf = Buffer.allocUnsafe(5)
-        buf[0] = 0xdd
-        buf.writeUInt32BE(obj.length, 1)
-      }
-
-      buf = obj.reduce(function (acc, obj) {
-        acc.append(encode(obj, true))
-        return acc
-      }, bl().append(buf))
-    } else if (!disableTimestampEncoding && typeof obj.getDate === 'function') {
-      return encodeDate(obj)
-    } else if (typeof obj === 'object') {
-      buf = encodeExt(obj) || encodeObject(obj)
-    } else if (typeof obj === 'number') {
-      if (isFloat(obj)) {
-        return encodeFloat(obj, forceFloat64)
-      } else if (obj >= 0) {
-        if (obj < 128) {
-          buf = Buffer.allocUnsafe(1)
-          buf[0] = obj
-        } else if (obj < 256) {
-          buf = Buffer.allocUnsafe(2)
-          buf[0] = 0xcc
-          buf[1] = obj
-        } else if (obj < 65536) {
-          buf = Buffer.allocUnsafe(3)
-          buf[0] = 0xcd
-          buf.writeUInt16BE(obj, 1)
-        } else if (obj <= 0xffffffff) {
-          buf = Buffer.allocUnsafe(5)
-          buf[0] = 0xce
-          buf.writeUInt32BE(obj, 1)
-        } else if (obj <= 9007199254740991) {
-          buf = Buffer.allocUnsafe(9)
-          buf[0] = 0xcf
-          write64BitUint(buf, obj)
-        } else {
-          return encodeFloat(obj, true)
-        }
-      } else {
-        if (obj >= -32) {
-          buf = Buffer.allocUnsafe(1)
-          buf[0] = 0x100 + obj
-        } else if (obj >= -128) {
-          buf = Buffer.allocUnsafe(2)
-          buf[0] = 0xd0
-          buf.writeInt8(obj, 1)
-        } else if (obj >= -32768) {
-          buf = Buffer.allocUnsafe(3)
-          buf[0] = 0xd1
-          buf.writeInt16BE(obj, 1)
-        } else if (obj > -214748365) {
-          buf = Buffer.allocUnsafe(5)
-          buf[0] = 0xd2
-          buf.writeInt32BE(obj, 1)
-        } else if (obj >= -9007199254740991) {
-          buf = Buffer.allocUnsafe(9)
-          buf[0] = 0xd3
-          write64BitInt(buf, 1, obj)
-        } else {
-          return encodeFloat(obj, true)
-        }
-      }
-    }
-
-    if (!buf) {
-      throw new Error('not implemented yet')
-    }
-
-    if (avoidSlice) {
-      return buf
-    } else {
-      return buf.slice()
-    }
-  }
-
-  function encodeDate (dt) {
-    var encoded
-    var millis = dt * 1
-    var seconds = Math.floor(millis / 1000)
-    var nanos = (millis - (seconds * 1000)) * 1E6
-
-    if (nanos || seconds > 0xFFFFFFFF) {
-      // Timestamp64
-      encoded = Buffer.allocUnsafe(10)
-      encoded[0] = 0xd7
-      encoded[1] = -1
-
-      var upperNanos = ((nanos * 4))
-      var upperSeconds = seconds / Math.pow(2, 32)
-      var upper = (upperNanos + upperSeconds) & 0xFFFFFFFF
-      var lower = seconds & 0xFFFFFFFF
-
-      encoded.writeInt32BE(upper, 2)
-      encoded.writeInt32BE(lower, 6)
-    } else {
-      // Timestamp32
-      encoded = Buffer.allocUnsafe(6)
-      encoded[0] = 0xd6
-      encoded[1] = -1
-      encoded.writeUInt32BE(Math.floor(millis / 1000), 2)
-    }
-    return bl().append(encoded)
-  }
-
-  function encodeExt (obj) {
-    var i
-    var encoded
-    var length = -1
-    var headers = []
-
-    for (i = 0; i < encodingTypes.length; i++) {
-      if (encodingTypes[i].check(obj)) {
-        encoded = encodingTypes[i].encode(obj)
-        break
-      }
-    }
-
-    if (!encoded) {
-      return null
-    }
-
-    // we subtract 1 because the length does not
-    // include the type
-    length = encoded.length - 1
-
-    if (length === 1) {
-      headers.push(0xd4)
-    } else if (length === 2) {
-      headers.push(0xd5)
-    } else if (length === 4) {
-      headers.push(0xd6)
-    } else if (length === 8) {
-      headers.push(0xd7)
-    } else if (length === 16) {
-      headers.push(0xd8)
-    } else if (length < 256) {
-      headers.push(0xc7)
-      headers.push(length)
-    } else if (length < 0x10000) {
-      headers.push(0xc8)
-      headers.push(length >> 8)
-      headers.push(length & 0x00ff)
-    } else {
-      headers.push(0xc9)
-      headers.push(length >> 24)
-      headers.push((length >> 16) & 0x000000ff)
-      headers.push((length >> 8) & 0x000000ff)
-      headers.push(length & 0x000000ff)
-    }
-
-    return bl().append(Buffer.from(headers)).append(encoded)
-  }
-
-  function encodeObject (obj) {
-    var acc = []
-    var length = 0
-    var key
-    var header
-
-    for (key in obj) {
-      if (obj.hasOwnProperty(key) &&
-        obj[key] !== undefined &&
-        typeof obj[key] !== 'function') {
-        ++length
-        acc.push(encode(key, true))
-        acc.push(encode(obj[key], true))
-      }
-    }
-
-    if (length < 16) {
-      header = Buffer.allocUnsafe(1)
-      header[0] = 0x80 | length
-    } else if (length < 0xFFFF) {
-      header = Buffer.allocUnsafe(3)
-      header[0] = 0xde
-      header.writeUInt16BE(length, 1)
-    } else {
-      header = Buffer.allocUnsafe(5)
-      header[0] = 0xdf
-      header.writeUInt32BE(length, 1)
-    }
-
-    acc.unshift(header)
-
-    var result = acc.reduce(function (list, buf) {
-      return list.append(buf)
-    }, bl())
-
-    return result
-  }
-
-  return encode
-}
-
-function write64BitUint (buf, obj) {
-  // Write long byte by byte, in big-endian order
-  for (var currByte = 7; currByte >= 0; currByte--) {
-    buf[currByte + 1] = (obj & 0xff)
-    obj = obj / 256
-  }
-}
-
-function write64BitInt (buf, offset, num) {
-  var negate = num < 0
-
-  if (negate) {
-    num = Math.abs(num)
-  }
-
-  var lo = num % 4294967296
-  var hi = num / 4294967296
-  buf.writeUInt32BE(Math.floor(hi), offset + 0)
-  buf.writeUInt32BE(lo, offset + 4)
-
-  if (negate) {
-    var carry = 1
-    for (var i = offset + 7; i >= offset; i--) {
-      var v = (buf[i] ^ 0xff) + carry
-      buf[i] = v & 0xff
-      carry = v >> 8
-    }
-  }
-}
-
-function isFloat (n) {
-  return n % 1 !== 0
-}
-
-function isNaN (n) {
-  /* eslint-disable no-self-compare */
-  return n !== n && typeof n === 'number'
-  /* eslint-enable no-self-compare */
-}
-
-function encodeFloat (obj, forceFloat64) {
-  var useDoublePrecision = true
-
-  // If `fround` is supported, we can check if a float
-  // is double or single precision by rounding the object
-  // to single precision and comparing the difference.
-  // If it's not supported, it's safer to use a 64 bit
-  // float so we don't lose precision without meaning to.
-  if (Math.fround) {
-    useDoublePrecision = Math.fround(obj) !== obj
-  }
-
-  if (forceFloat64) {
-    useDoublePrecision = true
-  }
-
-  var buf
-
-  if (useDoublePrecision) {
-    buf = Buffer.allocUnsafe(9)
-    buf[0] = 0xcb
-    buf.writeDoubleBE(obj, 1)
-  } else {
-    buf = Buffer.allocUnsafe(5)
-    buf[0] = 0xca
-    buf.writeFloatBE(obj, 1)
-  }
-
-  return buf
-}
-
-
-/***/ }),
-
-/***/ "../node_modules/msgpack5/lib/streams.js":
-/*!***********************************************!*\
-  !*** ../node_modules/msgpack5/lib/streams.js ***!
-  \***********************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var Transform = __webpack_require__(/*! readable-stream */ "../node_modules/readable-stream/readable-browser.js").Transform
-var inherits = __webpack_require__(/*! inherits */ "../node_modules/inherits/inherits_browser.js")
-var bl = __webpack_require__(/*! bl */ "../node_modules/bl/bl.js")
-
-function Base (opts) {
-  opts = opts || {}
-
-  opts.objectMode = true
-  opts.highWaterMark = 16
-
-  Transform.call(this, opts)
-
-  this._msgpack = opts.msgpack
-}
-
-inherits(Base, Transform)
-
-function Encoder (opts) {
-  if (!(this instanceof Encoder)) {
-    opts = opts || {}
-    opts.msgpack = this
-    return new Encoder(opts)
-  }
-
-  Base.call(this, opts)
-  this._wrap = ('wrap' in opts) && opts.wrap
-}
-
-inherits(Encoder, Base)
-
-Encoder.prototype._transform = function (obj, enc, done) {
-  var buf = null
-
-  try {
-    buf = this._msgpack.encode(this._wrap ? obj.value : obj).slice(0)
-  } catch (err) {
-    this.emit('error', err)
-    return done()
-  }
-
-  this.push(buf)
-  done()
-}
-
-function Decoder (opts) {
-  if (!(this instanceof Decoder)) {
-    opts = opts || {}
-    opts.msgpack = this
-    return new Decoder(opts)
-  }
-
-  Base.call(this, opts)
-
-  this._chunks = bl()
-  this._wrap = ('wrap' in opts) && opts.wrap
-}
-
-inherits(Decoder, Base)
-
-Decoder.prototype._transform = function (buf, enc, done) {
-  if (buf) {
-    this._chunks.append(buf)
-  }
-
-  try {
-    var result = this._msgpack.decode(this._chunks)
-    if (this._wrap) {
-      result = {value: result}
-    }
-    this.push(result)
-  } catch (err) {
-    if (err instanceof this._msgpack.IncompleteBufferError) {
-      done()
-    } else {
-      this.emit('error', err)
-    }
-    return
-  }
-
-  if (this._chunks.length > 0) {
-    this._transform(null, enc, done)
-  } else {
-    done()
-  }
-}
-
-module.exports.decoder = Decoder
-module.exports.encoder = Encoder
-
-
-/***/ }),
-
-/***/ "../node_modules/process-nextick-args/index.js":
-/*!*****************************************************!*\
-  !*** ../node_modules/process-nextick-args/index.js ***!
-  \*****************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process) {
-
-if (!process.version ||
-    process.version.indexOf('v0.') === 0 ||
-    process.version.indexOf('v1.') === 0 && process.version.indexOf('v1.8.') !== 0) {
-  module.exports = { nextTick: nextTick };
-} else {
-  module.exports = process
-}
-
-function nextTick(fn, arg1, arg2, arg3) {
-  if (typeof fn !== 'function') {
-    throw new TypeError('"callback" argument must be a function');
-  }
-  var len = arguments.length;
-  var args, i;
-  switch (len) {
-  case 0:
-  case 1:
-    return process.nextTick(fn);
-  case 2:
-    return process.nextTick(function afterTickOne() {
-      fn.call(null, arg1);
-    });
-  case 3:
-    return process.nextTick(function afterTickTwo() {
-      fn.call(null, arg1, arg2);
-    });
-  case 4:
-    return process.nextTick(function afterTickThree() {
-      fn.call(null, arg1, arg2, arg3);
-    });
-  default:
-    args = new Array(len - 1);
-    i = 0;
-    while (i < args.length) {
-      args[i++] = arguments[i];
-    }
-    return process.nextTick(function afterTick() {
-      fn.apply(null, args);
-    });
-  }
-}
-
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../process/browser.js */ "../node_modules/process/browser.js")))
-
-/***/ }),
-
 /***/ "../node_modules/process/browser.js":
 /*!******************************************!*\
   !*** ../node_modules/process/browser.js ***!
@@ -8320,2366 +15205,6 @@ process.chdir = function (dir) {
     throw new Error('process.chdir is not supported');
 };
 process.umask = function() { return 0; };
-
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/lib/_stream_duplex.js":
-/*!*************************************************************!*\
-  !*** ../node_modules/readable-stream/lib/_stream_duplex.js ***!
-  \*************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// a duplex stream is just a stream that is both readable and writable.
-// Since JS doesn't have multiple prototypal inheritance, this class
-// prototypally inherits from Readable, and then parasitically from
-// Writable.
-
-
-
-/*<replacement>*/
-
-var pna = __webpack_require__(/*! process-nextick-args */ "../node_modules/process-nextick-args/index.js");
-/*</replacement>*/
-
-/*<replacement>*/
-var objectKeys = Object.keys || function (obj) {
-  var keys = [];
-  for (var key in obj) {
-    keys.push(key);
-  }return keys;
-};
-/*</replacement>*/
-
-module.exports = Duplex;
-
-/*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "../node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "../node_modules/inherits/inherits_browser.js");
-/*</replacement>*/
-
-var Readable = __webpack_require__(/*! ./_stream_readable */ "../node_modules/readable-stream/lib/_stream_readable.js");
-var Writable = __webpack_require__(/*! ./_stream_writable */ "../node_modules/readable-stream/lib/_stream_writable.js");
-
-util.inherits(Duplex, Readable);
-
-{
-  // avoid scope creep, the keys array can then be collected
-  var keys = objectKeys(Writable.prototype);
-  for (var v = 0; v < keys.length; v++) {
-    var method = keys[v];
-    if (!Duplex.prototype[method]) Duplex.prototype[method] = Writable.prototype[method];
-  }
-}
-
-function Duplex(options) {
-  if (!(this instanceof Duplex)) return new Duplex(options);
-
-  Readable.call(this, options);
-  Writable.call(this, options);
-
-  if (options && options.readable === false) this.readable = false;
-
-  if (options && options.writable === false) this.writable = false;
-
-  this.allowHalfOpen = true;
-  if (options && options.allowHalfOpen === false) this.allowHalfOpen = false;
-
-  this.once('end', onend);
-}
-
-Object.defineProperty(Duplex.prototype, 'writableHighWaterMark', {
-  // making it explicit this property is not enumerable
-  // because otherwise some prototype manipulation in
-  // userland will fail
-  enumerable: false,
-  get: function () {
-    return this._writableState.highWaterMark;
-  }
-});
-
-// the no-half-open enforcer
-function onend() {
-  // if we allow half-open state, or if the writable side ended,
-  // then we're ok.
-  if (this.allowHalfOpen || this._writableState.ended) return;
-
-  // no more data can be written.
-  // But allow more writes to happen in this tick.
-  pna.nextTick(onEndNT, this);
-}
-
-function onEndNT(self) {
-  self.end();
-}
-
-Object.defineProperty(Duplex.prototype, 'destroyed', {
-  get: function () {
-    if (this._readableState === undefined || this._writableState === undefined) {
-      return false;
-    }
-    return this._readableState.destroyed && this._writableState.destroyed;
-  },
-  set: function (value) {
-    // we ignore the value if the stream
-    // has not been initialized yet
-    if (this._readableState === undefined || this._writableState === undefined) {
-      return;
-    }
-
-    // backward compatibility, the user is explicitly
-    // managing destroyed
-    this._readableState.destroyed = value;
-    this._writableState.destroyed = value;
-  }
-});
-
-Duplex.prototype._destroy = function (err, cb) {
-  this.push(null);
-  this.end();
-
-  pna.nextTick(cb, err);
-};
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/lib/_stream_passthrough.js":
-/*!******************************************************************!*\
-  !*** ../node_modules/readable-stream/lib/_stream_passthrough.js ***!
-  \******************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// a passthrough stream.
-// basically just the most minimal sort of Transform stream.
-// Every written chunk gets output as-is.
-
-
-
-module.exports = PassThrough;
-
-var Transform = __webpack_require__(/*! ./_stream_transform */ "../node_modules/readable-stream/lib/_stream_transform.js");
-
-/*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "../node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "../node_modules/inherits/inherits_browser.js");
-/*</replacement>*/
-
-util.inherits(PassThrough, Transform);
-
-function PassThrough(options) {
-  if (!(this instanceof PassThrough)) return new PassThrough(options);
-
-  Transform.call(this, options);
-}
-
-PassThrough.prototype._transform = function (chunk, encoding, cb) {
-  cb(null, chunk);
-};
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/lib/_stream_readable.js":
-/*!***************************************************************!*\
-  !*** ../node_modules/readable-stream/lib/_stream_readable.js ***!
-  \***************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(global, process) {// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
-
-/*<replacement>*/
-
-var pna = __webpack_require__(/*! process-nextick-args */ "../node_modules/process-nextick-args/index.js");
-/*</replacement>*/
-
-module.exports = Readable;
-
-/*<replacement>*/
-var isArray = __webpack_require__(/*! isarray */ "../node_modules/isarray/index.js");
-/*</replacement>*/
-
-/*<replacement>*/
-var Duplex;
-/*</replacement>*/
-
-Readable.ReadableState = ReadableState;
-
-/*<replacement>*/
-var EE = __webpack_require__(/*! events */ "../node_modules/events/events.js").EventEmitter;
-
-var EElistenerCount = function (emitter, type) {
-  return emitter.listeners(type).length;
-};
-/*</replacement>*/
-
-/*<replacement>*/
-var Stream = __webpack_require__(/*! ./internal/streams/stream */ "../node_modules/readable-stream/lib/internal/streams/stream-browser.js");
-/*</replacement>*/
-
-/*<replacement>*/
-
-var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/safe-buffer/index.js").Buffer;
-var OurUint8Array = global.Uint8Array || function () {};
-function _uint8ArrayToBuffer(chunk) {
-  return Buffer.from(chunk);
-}
-function _isUint8Array(obj) {
-  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
-}
-
-/*</replacement>*/
-
-/*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "../node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "../node_modules/inherits/inherits_browser.js");
-/*</replacement>*/
-
-/*<replacement>*/
-var debugUtil = __webpack_require__(/*! util */ 0);
-var debug = void 0;
-if (debugUtil && debugUtil.debuglog) {
-  debug = debugUtil.debuglog('stream');
-} else {
-  debug = function () {};
-}
-/*</replacement>*/
-
-var BufferList = __webpack_require__(/*! ./internal/streams/BufferList */ "../node_modules/readable-stream/lib/internal/streams/BufferList.js");
-var destroyImpl = __webpack_require__(/*! ./internal/streams/destroy */ "../node_modules/readable-stream/lib/internal/streams/destroy.js");
-var StringDecoder;
-
-util.inherits(Readable, Stream);
-
-var kProxyEvents = ['error', 'close', 'destroy', 'pause', 'resume'];
-
-function prependListener(emitter, event, fn) {
-  // Sadly this is not cacheable as some libraries bundle their own
-  // event emitter implementation with them.
-  if (typeof emitter.prependListener === 'function') return emitter.prependListener(event, fn);
-
-  // This is a hack to make sure that our error handler is attached before any
-  // userland ones.  NEVER DO THIS. This is here only because this code needs
-  // to continue to work with older versions of Node.js that do not include
-  // the prependListener() method. The goal is to eventually remove this hack.
-  if (!emitter._events || !emitter._events[event]) emitter.on(event, fn);else if (isArray(emitter._events[event])) emitter._events[event].unshift(fn);else emitter._events[event] = [fn, emitter._events[event]];
-}
-
-function ReadableState(options, stream) {
-  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "../node_modules/readable-stream/lib/_stream_duplex.js");
-
-  options = options || {};
-
-  // Duplex streams are both readable and writable, but share
-  // the same options object.
-  // However, some cases require setting options to different
-  // values for the readable and the writable sides of the duplex stream.
-  // These options can be provided separately as readableXXX and writableXXX.
-  var isDuplex = stream instanceof Duplex;
-
-  // object stream flag. Used to make read(n) ignore n and to
-  // make all the buffer merging and length checks go away
-  this.objectMode = !!options.objectMode;
-
-  if (isDuplex) this.objectMode = this.objectMode || !!options.readableObjectMode;
-
-  // the point at which it stops calling _read() to fill the buffer
-  // Note: 0 is a valid value, means "don't call _read preemptively ever"
-  var hwm = options.highWaterMark;
-  var readableHwm = options.readableHighWaterMark;
-  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
-
-  if (hwm || hwm === 0) this.highWaterMark = hwm;else if (isDuplex && (readableHwm || readableHwm === 0)) this.highWaterMark = readableHwm;else this.highWaterMark = defaultHwm;
-
-  // cast to ints.
-  this.highWaterMark = Math.floor(this.highWaterMark);
-
-  // A linked list is used to store data chunks instead of an array because the
-  // linked list can remove elements from the beginning faster than
-  // array.shift()
-  this.buffer = new BufferList();
-  this.length = 0;
-  this.pipes = null;
-  this.pipesCount = 0;
-  this.flowing = null;
-  this.ended = false;
-  this.endEmitted = false;
-  this.reading = false;
-
-  // a flag to be able to tell if the event 'readable'/'data' is emitted
-  // immediately, or on a later tick.  We set this to true at first, because
-  // any actions that shouldn't happen until "later" should generally also
-  // not happen before the first read call.
-  this.sync = true;
-
-  // whenever we return null, then we set a flag to say
-  // that we're awaiting a 'readable' event emission.
-  this.needReadable = false;
-  this.emittedReadable = false;
-  this.readableListening = false;
-  this.resumeScheduled = false;
-
-  // has it been destroyed
-  this.destroyed = false;
-
-  // Crypto is kind of old and crusty.  Historically, its default string
-  // encoding is 'binary' so we have to make this configurable.
-  // Everything else in the universe uses 'utf8', though.
-  this.defaultEncoding = options.defaultEncoding || 'utf8';
-
-  // the number of writers that are awaiting a drain event in .pipe()s
-  this.awaitDrain = 0;
-
-  // if true, a maybeReadMore has been scheduled
-  this.readingMore = false;
-
-  this.decoder = null;
-  this.encoding = null;
-  if (options.encoding) {
-    if (!StringDecoder) StringDecoder = __webpack_require__(/*! string_decoder/ */ "../node_modules/string_decoder/lib/string_decoder.js").StringDecoder;
-    this.decoder = new StringDecoder(options.encoding);
-    this.encoding = options.encoding;
-  }
-}
-
-function Readable(options) {
-  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "../node_modules/readable-stream/lib/_stream_duplex.js");
-
-  if (!(this instanceof Readable)) return new Readable(options);
-
-  this._readableState = new ReadableState(options, this);
-
-  // legacy
-  this.readable = true;
-
-  if (options) {
-    if (typeof options.read === 'function') this._read = options.read;
-
-    if (typeof options.destroy === 'function') this._destroy = options.destroy;
-  }
-
-  Stream.call(this);
-}
-
-Object.defineProperty(Readable.prototype, 'destroyed', {
-  get: function () {
-    if (this._readableState === undefined) {
-      return false;
-    }
-    return this._readableState.destroyed;
-  },
-  set: function (value) {
-    // we ignore the value if the stream
-    // has not been initialized yet
-    if (!this._readableState) {
-      return;
-    }
-
-    // backward compatibility, the user is explicitly
-    // managing destroyed
-    this._readableState.destroyed = value;
-  }
-});
-
-Readable.prototype.destroy = destroyImpl.destroy;
-Readable.prototype._undestroy = destroyImpl.undestroy;
-Readable.prototype._destroy = function (err, cb) {
-  this.push(null);
-  cb(err);
-};
-
-// Manually shove something into the read() buffer.
-// This returns true if the highWaterMark has not been hit yet,
-// similar to how Writable.write() returns true if you should
-// write() some more.
-Readable.prototype.push = function (chunk, encoding) {
-  var state = this._readableState;
-  var skipChunkCheck;
-
-  if (!state.objectMode) {
-    if (typeof chunk === 'string') {
-      encoding = encoding || state.defaultEncoding;
-      if (encoding !== state.encoding) {
-        chunk = Buffer.from(chunk, encoding);
-        encoding = '';
-      }
-      skipChunkCheck = true;
-    }
-  } else {
-    skipChunkCheck = true;
-  }
-
-  return readableAddChunk(this, chunk, encoding, false, skipChunkCheck);
-};
-
-// Unshift should *always* be something directly out of read()
-Readable.prototype.unshift = function (chunk) {
-  return readableAddChunk(this, chunk, null, true, false);
-};
-
-function readableAddChunk(stream, chunk, encoding, addToFront, skipChunkCheck) {
-  var state = stream._readableState;
-  if (chunk === null) {
-    state.reading = false;
-    onEofChunk(stream, state);
-  } else {
-    var er;
-    if (!skipChunkCheck) er = chunkInvalid(state, chunk);
-    if (er) {
-      stream.emit('error', er);
-    } else if (state.objectMode || chunk && chunk.length > 0) {
-      if (typeof chunk !== 'string' && !state.objectMode && Object.getPrototypeOf(chunk) !== Buffer.prototype) {
-        chunk = _uint8ArrayToBuffer(chunk);
-      }
-
-      if (addToFront) {
-        if (state.endEmitted) stream.emit('error', new Error('stream.unshift() after end event'));else addChunk(stream, state, chunk, true);
-      } else if (state.ended) {
-        stream.emit('error', new Error('stream.push() after EOF'));
-      } else {
-        state.reading = false;
-        if (state.decoder && !encoding) {
-          chunk = state.decoder.write(chunk);
-          if (state.objectMode || chunk.length !== 0) addChunk(stream, state, chunk, false);else maybeReadMore(stream, state);
-        } else {
-          addChunk(stream, state, chunk, false);
-        }
-      }
-    } else if (!addToFront) {
-      state.reading = false;
-    }
-  }
-
-  return needMoreData(state);
-}
-
-function addChunk(stream, state, chunk, addToFront) {
-  if (state.flowing && state.length === 0 && !state.sync) {
-    stream.emit('data', chunk);
-    stream.read(0);
-  } else {
-    // update the buffer info.
-    state.length += state.objectMode ? 1 : chunk.length;
-    if (addToFront) state.buffer.unshift(chunk);else state.buffer.push(chunk);
-
-    if (state.needReadable) emitReadable(stream);
-  }
-  maybeReadMore(stream, state);
-}
-
-function chunkInvalid(state, chunk) {
-  var er;
-  if (!_isUint8Array(chunk) && typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
-    er = new TypeError('Invalid non-string/buffer chunk');
-  }
-  return er;
-}
-
-// if it's past the high water mark, we can push in some more.
-// Also, if we have no data yet, we can stand some
-// more bytes.  This is to work around cases where hwm=0,
-// such as the repl.  Also, if the push() triggered a
-// readable event, and the user called read(largeNumber) such that
-// needReadable was set, then we ought to push more, so that another
-// 'readable' event will be triggered.
-function needMoreData(state) {
-  return !state.ended && (state.needReadable || state.length < state.highWaterMark || state.length === 0);
-}
-
-Readable.prototype.isPaused = function () {
-  return this._readableState.flowing === false;
-};
-
-// backwards compatibility.
-Readable.prototype.setEncoding = function (enc) {
-  if (!StringDecoder) StringDecoder = __webpack_require__(/*! string_decoder/ */ "../node_modules/string_decoder/lib/string_decoder.js").StringDecoder;
-  this._readableState.decoder = new StringDecoder(enc);
-  this._readableState.encoding = enc;
-  return this;
-};
-
-// Don't raise the hwm > 8MB
-var MAX_HWM = 0x800000;
-function computeNewHighWaterMark(n) {
-  if (n >= MAX_HWM) {
-    n = MAX_HWM;
-  } else {
-    // Get the next highest power of 2 to prevent increasing hwm excessively in
-    // tiny amounts
-    n--;
-    n |= n >>> 1;
-    n |= n >>> 2;
-    n |= n >>> 4;
-    n |= n >>> 8;
-    n |= n >>> 16;
-    n++;
-  }
-  return n;
-}
-
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function howMuchToRead(n, state) {
-  if (n <= 0 || state.length === 0 && state.ended) return 0;
-  if (state.objectMode) return 1;
-  if (n !== n) {
-    // Only flow one buffer at a time
-    if (state.flowing && state.length) return state.buffer.head.data.length;else return state.length;
-  }
-  // If we're asking for more than the current hwm, then raise the hwm.
-  if (n > state.highWaterMark) state.highWaterMark = computeNewHighWaterMark(n);
-  if (n <= state.length) return n;
-  // Don't have enough
-  if (!state.ended) {
-    state.needReadable = true;
-    return 0;
-  }
-  return state.length;
-}
-
-// you can override either this method, or the async _read(n) below.
-Readable.prototype.read = function (n) {
-  debug('read', n);
-  n = parseInt(n, 10);
-  var state = this._readableState;
-  var nOrig = n;
-
-  if (n !== 0) state.emittedReadable = false;
-
-  // if we're doing read(0) to trigger a readable event, but we
-  // already have a bunch of data in the buffer, then just trigger
-  // the 'readable' event and move on.
-  if (n === 0 && state.needReadable && (state.length >= state.highWaterMark || state.ended)) {
-    debug('read: emitReadable', state.length, state.ended);
-    if (state.length === 0 && state.ended) endReadable(this);else emitReadable(this);
-    return null;
-  }
-
-  n = howMuchToRead(n, state);
-
-  // if we've ended, and we're now clear, then finish it up.
-  if (n === 0 && state.ended) {
-    if (state.length === 0) endReadable(this);
-    return null;
-  }
-
-  // All the actual chunk generation logic needs to be
-  // *below* the call to _read.  The reason is that in certain
-  // synthetic stream cases, such as passthrough streams, _read
-  // may be a completely synchronous operation which may change
-  // the state of the read buffer, providing enough data when
-  // before there was *not* enough.
-  //
-  // So, the steps are:
-  // 1. Figure out what the state of things will be after we do
-  // a read from the buffer.
-  //
-  // 2. If that resulting state will trigger a _read, then call _read.
-  // Note that this may be asynchronous, or synchronous.  Yes, it is
-  // deeply ugly to write APIs this way, but that still doesn't mean
-  // that the Readable class should behave improperly, as streams are
-  // designed to be sync/async agnostic.
-  // Take note if the _read call is sync or async (ie, if the read call
-  // has returned yet), so that we know whether or not it's safe to emit
-  // 'readable' etc.
-  //
-  // 3. Actually pull the requested chunks out of the buffer and return.
-
-  // if we need a readable event, then we need to do some reading.
-  var doRead = state.needReadable;
-  debug('need readable', doRead);
-
-  // if we currently have less than the highWaterMark, then also read some
-  if (state.length === 0 || state.length - n < state.highWaterMark) {
-    doRead = true;
-    debug('length less than watermark', doRead);
-  }
-
-  // however, if we've ended, then there's no point, and if we're already
-  // reading, then it's unnecessary.
-  if (state.ended || state.reading) {
-    doRead = false;
-    debug('reading or ended', doRead);
-  } else if (doRead) {
-    debug('do read');
-    state.reading = true;
-    state.sync = true;
-    // if the length is currently zero, then we *need* a readable event.
-    if (state.length === 0) state.needReadable = true;
-    // call internal read method
-    this._read(state.highWaterMark);
-    state.sync = false;
-    // If _read pushed data synchronously, then `reading` will be false,
-    // and we need to re-evaluate how much data we can return to the user.
-    if (!state.reading) n = howMuchToRead(nOrig, state);
-  }
-
-  var ret;
-  if (n > 0) ret = fromList(n, state);else ret = null;
-
-  if (ret === null) {
-    state.needReadable = true;
-    n = 0;
-  } else {
-    state.length -= n;
-  }
-
-  if (state.length === 0) {
-    // If we have nothing in the buffer, then we want to know
-    // as soon as we *do* get something into the buffer.
-    if (!state.ended) state.needReadable = true;
-
-    // If we tried to read() past the EOF, then emit end on the next tick.
-    if (nOrig !== n && state.ended) endReadable(this);
-  }
-
-  if (ret !== null) this.emit('data', ret);
-
-  return ret;
-};
-
-function onEofChunk(stream, state) {
-  if (state.ended) return;
-  if (state.decoder) {
-    var chunk = state.decoder.end();
-    if (chunk && chunk.length) {
-      state.buffer.push(chunk);
-      state.length += state.objectMode ? 1 : chunk.length;
-    }
-  }
-  state.ended = true;
-
-  // emit 'readable' now to make sure it gets picked up.
-  emitReadable(stream);
-}
-
-// Don't emit readable right away in sync mode, because this can trigger
-// another read() call => stack overflow.  This way, it might trigger
-// a nextTick recursion warning, but that's not so bad.
-function emitReadable(stream) {
-  var state = stream._readableState;
-  state.needReadable = false;
-  if (!state.emittedReadable) {
-    debug('emitReadable', state.flowing);
-    state.emittedReadable = true;
-    if (state.sync) pna.nextTick(emitReadable_, stream);else emitReadable_(stream);
-  }
-}
-
-function emitReadable_(stream) {
-  debug('emit readable');
-  stream.emit('readable');
-  flow(stream);
-}
-
-// at this point, the user has presumably seen the 'readable' event,
-// and called read() to consume some data.  that may have triggered
-// in turn another _read(n) call, in which case reading = true if
-// it's in progress.
-// However, if we're not ended, or reading, and the length < hwm,
-// then go ahead and try to read some more preemptively.
-function maybeReadMore(stream, state) {
-  if (!state.readingMore) {
-    state.readingMore = true;
-    pna.nextTick(maybeReadMore_, stream, state);
-  }
-}
-
-function maybeReadMore_(stream, state) {
-  var len = state.length;
-  while (!state.reading && !state.flowing && !state.ended && state.length < state.highWaterMark) {
-    debug('maybeReadMore read 0');
-    stream.read(0);
-    if (len === state.length)
-      // didn't get any data, stop spinning.
-      break;else len = state.length;
-  }
-  state.readingMore = false;
-}
-
-// abstract method.  to be overridden in specific implementation classes.
-// call cb(er, data) where data is <= n in length.
-// for virtual (non-string, non-buffer) streams, "length" is somewhat
-// arbitrary, and perhaps not very meaningful.
-Readable.prototype._read = function (n) {
-  this.emit('error', new Error('_read() is not implemented'));
-};
-
-Readable.prototype.pipe = function (dest, pipeOpts) {
-  var src = this;
-  var state = this._readableState;
-
-  switch (state.pipesCount) {
-    case 0:
-      state.pipes = dest;
-      break;
-    case 1:
-      state.pipes = [state.pipes, dest];
-      break;
-    default:
-      state.pipes.push(dest);
-      break;
-  }
-  state.pipesCount += 1;
-  debug('pipe count=%d opts=%j', state.pipesCount, pipeOpts);
-
-  var doEnd = (!pipeOpts || pipeOpts.end !== false) && dest !== process.stdout && dest !== process.stderr;
-
-  var endFn = doEnd ? onend : unpipe;
-  if (state.endEmitted) pna.nextTick(endFn);else src.once('end', endFn);
-
-  dest.on('unpipe', onunpipe);
-  function onunpipe(readable, unpipeInfo) {
-    debug('onunpipe');
-    if (readable === src) {
-      if (unpipeInfo && unpipeInfo.hasUnpiped === false) {
-        unpipeInfo.hasUnpiped = true;
-        cleanup();
-      }
-    }
-  }
-
-  function onend() {
-    debug('onend');
-    dest.end();
-  }
-
-  // when the dest drains, it reduces the awaitDrain counter
-  // on the source.  This would be more elegant with a .once()
-  // handler in flow(), but adding and removing repeatedly is
-  // too slow.
-  var ondrain = pipeOnDrain(src);
-  dest.on('drain', ondrain);
-
-  var cleanedUp = false;
-  function cleanup() {
-    debug('cleanup');
-    // cleanup event handlers once the pipe is broken
-    dest.removeListener('close', onclose);
-    dest.removeListener('finish', onfinish);
-    dest.removeListener('drain', ondrain);
-    dest.removeListener('error', onerror);
-    dest.removeListener('unpipe', onunpipe);
-    src.removeListener('end', onend);
-    src.removeListener('end', unpipe);
-    src.removeListener('data', ondata);
-
-    cleanedUp = true;
-
-    // if the reader is waiting for a drain event from this
-    // specific writer, then it would cause it to never start
-    // flowing again.
-    // So, if this is awaiting a drain, then we just call it now.
-    // If we don't know, then assume that we are waiting for one.
-    if (state.awaitDrain && (!dest._writableState || dest._writableState.needDrain)) ondrain();
-  }
-
-  // If the user pushes more data while we're writing to dest then we'll end up
-  // in ondata again. However, we only want to increase awaitDrain once because
-  // dest will only emit one 'drain' event for the multiple writes.
-  // => Introduce a guard on increasing awaitDrain.
-  var increasedAwaitDrain = false;
-  src.on('data', ondata);
-  function ondata(chunk) {
-    debug('ondata');
-    increasedAwaitDrain = false;
-    var ret = dest.write(chunk);
-    if (false === ret && !increasedAwaitDrain) {
-      // If the user unpiped during `dest.write()`, it is possible
-      // to get stuck in a permanently paused state if that write
-      // also returned false.
-      // => Check whether `dest` is still a piping destination.
-      if ((state.pipesCount === 1 && state.pipes === dest || state.pipesCount > 1 && indexOf(state.pipes, dest) !== -1) && !cleanedUp) {
-        debug('false write response, pause', src._readableState.awaitDrain);
-        src._readableState.awaitDrain++;
-        increasedAwaitDrain = true;
-      }
-      src.pause();
-    }
-  }
-
-  // if the dest has an error, then stop piping into it.
-  // however, don't suppress the throwing behavior for this.
-  function onerror(er) {
-    debug('onerror', er);
-    unpipe();
-    dest.removeListener('error', onerror);
-    if (EElistenerCount(dest, 'error') === 0) dest.emit('error', er);
-  }
-
-  // Make sure our error handler is attached before userland ones.
-  prependListener(dest, 'error', onerror);
-
-  // Both close and finish should trigger unpipe, but only once.
-  function onclose() {
-    dest.removeListener('finish', onfinish);
-    unpipe();
-  }
-  dest.once('close', onclose);
-  function onfinish() {
-    debug('onfinish');
-    dest.removeListener('close', onclose);
-    unpipe();
-  }
-  dest.once('finish', onfinish);
-
-  function unpipe() {
-    debug('unpipe');
-    src.unpipe(dest);
-  }
-
-  // tell the dest that it's being piped to
-  dest.emit('pipe', src);
-
-  // start the flow if it hasn't been started already.
-  if (!state.flowing) {
-    debug('pipe resume');
-    src.resume();
-  }
-
-  return dest;
-};
-
-function pipeOnDrain(src) {
-  return function () {
-    var state = src._readableState;
-    debug('pipeOnDrain', state.awaitDrain);
-    if (state.awaitDrain) state.awaitDrain--;
-    if (state.awaitDrain === 0 && EElistenerCount(src, 'data')) {
-      state.flowing = true;
-      flow(src);
-    }
-  };
-}
-
-Readable.prototype.unpipe = function (dest) {
-  var state = this._readableState;
-  var unpipeInfo = { hasUnpiped: false };
-
-  // if we're not piping anywhere, then do nothing.
-  if (state.pipesCount === 0) return this;
-
-  // just one destination.  most common case.
-  if (state.pipesCount === 1) {
-    // passed in one, but it's not the right one.
-    if (dest && dest !== state.pipes) return this;
-
-    if (!dest) dest = state.pipes;
-
-    // got a match.
-    state.pipes = null;
-    state.pipesCount = 0;
-    state.flowing = false;
-    if (dest) dest.emit('unpipe', this, unpipeInfo);
-    return this;
-  }
-
-  // slow case. multiple pipe destinations.
-
-  if (!dest) {
-    // remove all.
-    var dests = state.pipes;
-    var len = state.pipesCount;
-    state.pipes = null;
-    state.pipesCount = 0;
-    state.flowing = false;
-
-    for (var i = 0; i < len; i++) {
-      dests[i].emit('unpipe', this, unpipeInfo);
-    }return this;
-  }
-
-  // try to find the right one.
-  var index = indexOf(state.pipes, dest);
-  if (index === -1) return this;
-
-  state.pipes.splice(index, 1);
-  state.pipesCount -= 1;
-  if (state.pipesCount === 1) state.pipes = state.pipes[0];
-
-  dest.emit('unpipe', this, unpipeInfo);
-
-  return this;
-};
-
-// set up data events if they are asked for
-// Ensure readable listeners eventually get something
-Readable.prototype.on = function (ev, fn) {
-  var res = Stream.prototype.on.call(this, ev, fn);
-
-  if (ev === 'data') {
-    // Start flowing on next tick if stream isn't explicitly paused
-    if (this._readableState.flowing !== false) this.resume();
-  } else if (ev === 'readable') {
-    var state = this._readableState;
-    if (!state.endEmitted && !state.readableListening) {
-      state.readableListening = state.needReadable = true;
-      state.emittedReadable = false;
-      if (!state.reading) {
-        pna.nextTick(nReadingNextTick, this);
-      } else if (state.length) {
-        emitReadable(this);
-      }
-    }
-  }
-
-  return res;
-};
-Readable.prototype.addListener = Readable.prototype.on;
-
-function nReadingNextTick(self) {
-  debug('readable nexttick read 0');
-  self.read(0);
-}
-
-// pause() and resume() are remnants of the legacy readable stream API
-// If the user uses them, then switch into old mode.
-Readable.prototype.resume = function () {
-  var state = this._readableState;
-  if (!state.flowing) {
-    debug('resume');
-    state.flowing = true;
-    resume(this, state);
-  }
-  return this;
-};
-
-function resume(stream, state) {
-  if (!state.resumeScheduled) {
-    state.resumeScheduled = true;
-    pna.nextTick(resume_, stream, state);
-  }
-}
-
-function resume_(stream, state) {
-  if (!state.reading) {
-    debug('resume read 0');
-    stream.read(0);
-  }
-
-  state.resumeScheduled = false;
-  state.awaitDrain = 0;
-  stream.emit('resume');
-  flow(stream);
-  if (state.flowing && !state.reading) stream.read(0);
-}
-
-Readable.prototype.pause = function () {
-  debug('call pause flowing=%j', this._readableState.flowing);
-  if (false !== this._readableState.flowing) {
-    debug('pause');
-    this._readableState.flowing = false;
-    this.emit('pause');
-  }
-  return this;
-};
-
-function flow(stream) {
-  var state = stream._readableState;
-  debug('flow', state.flowing);
-  while (state.flowing && stream.read() !== null) {}
-}
-
-// wrap an old-style stream as the async data source.
-// This is *not* part of the readable stream interface.
-// It is an ugly unfortunate mess of history.
-Readable.prototype.wrap = function (stream) {
-  var _this = this;
-
-  var state = this._readableState;
-  var paused = false;
-
-  stream.on('end', function () {
-    debug('wrapped end');
-    if (state.decoder && !state.ended) {
-      var chunk = state.decoder.end();
-      if (chunk && chunk.length) _this.push(chunk);
-    }
-
-    _this.push(null);
-  });
-
-  stream.on('data', function (chunk) {
-    debug('wrapped data');
-    if (state.decoder) chunk = state.decoder.write(chunk);
-
-    // don't skip over falsy values in objectMode
-    if (state.objectMode && (chunk === null || chunk === undefined)) return;else if (!state.objectMode && (!chunk || !chunk.length)) return;
-
-    var ret = _this.push(chunk);
-    if (!ret) {
-      paused = true;
-      stream.pause();
-    }
-  });
-
-  // proxy all the other methods.
-  // important when wrapping filters and duplexes.
-  for (var i in stream) {
-    if (this[i] === undefined && typeof stream[i] === 'function') {
-      this[i] = function (method) {
-        return function () {
-          return stream[method].apply(stream, arguments);
-        };
-      }(i);
-    }
-  }
-
-  // proxy certain important events.
-  for (var n = 0; n < kProxyEvents.length; n++) {
-    stream.on(kProxyEvents[n], this.emit.bind(this, kProxyEvents[n]));
-  }
-
-  // when we try to consume some more bytes, simply unpause the
-  // underlying stream.
-  this._read = function (n) {
-    debug('wrapped _read', n);
-    if (paused) {
-      paused = false;
-      stream.resume();
-    }
-  };
-
-  return this;
-};
-
-Object.defineProperty(Readable.prototype, 'readableHighWaterMark', {
-  // making it explicit this property is not enumerable
-  // because otherwise some prototype manipulation in
-  // userland will fail
-  enumerable: false,
-  get: function () {
-    return this._readableState.highWaterMark;
-  }
-});
-
-// exposed for testing purposes only.
-Readable._fromList = fromList;
-
-// Pluck off n bytes from an array of buffers.
-// Length is the combined lengths of all the buffers in the list.
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function fromList(n, state) {
-  // nothing buffered
-  if (state.length === 0) return null;
-
-  var ret;
-  if (state.objectMode) ret = state.buffer.shift();else if (!n || n >= state.length) {
-    // read it all, truncate the list
-    if (state.decoder) ret = state.buffer.join('');else if (state.buffer.length === 1) ret = state.buffer.head.data;else ret = state.buffer.concat(state.length);
-    state.buffer.clear();
-  } else {
-    // read part of list
-    ret = fromListPartial(n, state.buffer, state.decoder);
-  }
-
-  return ret;
-}
-
-// Extracts only enough buffered data to satisfy the amount requested.
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function fromListPartial(n, list, hasStrings) {
-  var ret;
-  if (n < list.head.data.length) {
-    // slice is the same for buffers and strings
-    ret = list.head.data.slice(0, n);
-    list.head.data = list.head.data.slice(n);
-  } else if (n === list.head.data.length) {
-    // first chunk is a perfect match
-    ret = list.shift();
-  } else {
-    // result spans more than one buffer
-    ret = hasStrings ? copyFromBufferString(n, list) : copyFromBuffer(n, list);
-  }
-  return ret;
-}
-
-// Copies a specified amount of characters from the list of buffered data
-// chunks.
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function copyFromBufferString(n, list) {
-  var p = list.head;
-  var c = 1;
-  var ret = p.data;
-  n -= ret.length;
-  while (p = p.next) {
-    var str = p.data;
-    var nb = n > str.length ? str.length : n;
-    if (nb === str.length) ret += str;else ret += str.slice(0, n);
-    n -= nb;
-    if (n === 0) {
-      if (nb === str.length) {
-        ++c;
-        if (p.next) list.head = p.next;else list.head = list.tail = null;
-      } else {
-        list.head = p;
-        p.data = str.slice(nb);
-      }
-      break;
-    }
-    ++c;
-  }
-  list.length -= c;
-  return ret;
-}
-
-// Copies a specified amount of bytes from the list of buffered data chunks.
-// This function is designed to be inlinable, so please take care when making
-// changes to the function body.
-function copyFromBuffer(n, list) {
-  var ret = Buffer.allocUnsafe(n);
-  var p = list.head;
-  var c = 1;
-  p.data.copy(ret);
-  n -= p.data.length;
-  while (p = p.next) {
-    var buf = p.data;
-    var nb = n > buf.length ? buf.length : n;
-    buf.copy(ret, ret.length - n, 0, nb);
-    n -= nb;
-    if (n === 0) {
-      if (nb === buf.length) {
-        ++c;
-        if (p.next) list.head = p.next;else list.head = list.tail = null;
-      } else {
-        list.head = p;
-        p.data = buf.slice(nb);
-      }
-      break;
-    }
-    ++c;
-  }
-  list.length -= c;
-  return ret;
-}
-
-function endReadable(stream) {
-  var state = stream._readableState;
-
-  // If we get here before consuming all the bytes, then that is a
-  // bug in node.  Should never happen.
-  if (state.length > 0) throw new Error('"endReadable()" called on non-empty stream');
-
-  if (!state.endEmitted) {
-    state.ended = true;
-    pna.nextTick(endReadableNT, state, stream);
-  }
-}
-
-function endReadableNT(state, stream) {
-  // Check that we didn't get one last unshift.
-  if (!state.endEmitted && state.length === 0) {
-    state.endEmitted = true;
-    stream.readable = false;
-    stream.emit('end');
-  }
-}
-
-function indexOf(xs, x) {
-  for (var i = 0, l = xs.length; i < l; i++) {
-    if (xs[i] === x) return i;
-  }
-  return -1;
-}
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js"), __webpack_require__(/*! ./../../process/browser.js */ "../node_modules/process/browser.js")))
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/lib/_stream_transform.js":
-/*!****************************************************************!*\
-  !*** ../node_modules/readable-stream/lib/_stream_transform.js ***!
-  \****************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// a transform stream is a readable/writable stream where you do
-// something with the data.  Sometimes it's called a "filter",
-// but that's not a great name for it, since that implies a thing where
-// some bits pass through, and others are simply ignored.  (That would
-// be a valid example of a transform, of course.)
-//
-// While the output is causally related to the input, it's not a
-// necessarily symmetric or synchronous transformation.  For example,
-// a zlib stream might take multiple plain-text writes(), and then
-// emit a single compressed chunk some time in the future.
-//
-// Here's how this works:
-//
-// The Transform stream has all the aspects of the readable and writable
-// stream classes.  When you write(chunk), that calls _write(chunk,cb)
-// internally, and returns false if there's a lot of pending writes
-// buffered up.  When you call read(), that calls _read(n) until
-// there's enough pending readable data buffered up.
-//
-// In a transform stream, the written data is placed in a buffer.  When
-// _read(n) is called, it transforms the queued up data, calling the
-// buffered _write cb's as it consumes chunks.  If consuming a single
-// written chunk would result in multiple output chunks, then the first
-// outputted bit calls the readcb, and subsequent chunks just go into
-// the read buffer, and will cause it to emit 'readable' if necessary.
-//
-// This way, back-pressure is actually determined by the reading side,
-// since _read has to be called to start processing a new chunk.  However,
-// a pathological inflate type of transform can cause excessive buffering
-// here.  For example, imagine a stream where every byte of input is
-// interpreted as an integer from 0-255, and then results in that many
-// bytes of output.  Writing the 4 bytes {ff,ff,ff,ff} would result in
-// 1kb of data being output.  In this case, you could write a very small
-// amount of input, and end up with a very large amount of output.  In
-// such a pathological inflating mechanism, there'd be no way to tell
-// the system to stop doing the transform.  A single 4MB write could
-// cause the system to run out of memory.
-//
-// However, even in such a pathological case, only a single written chunk
-// would be consumed, and then the rest would wait (un-transformed) until
-// the results of the previous transformed chunk were consumed.
-
-
-
-module.exports = Transform;
-
-var Duplex = __webpack_require__(/*! ./_stream_duplex */ "../node_modules/readable-stream/lib/_stream_duplex.js");
-
-/*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "../node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "../node_modules/inherits/inherits_browser.js");
-/*</replacement>*/
-
-util.inherits(Transform, Duplex);
-
-function afterTransform(er, data) {
-  var ts = this._transformState;
-  ts.transforming = false;
-
-  var cb = ts.writecb;
-
-  if (!cb) {
-    return this.emit('error', new Error('write callback called multiple times'));
-  }
-
-  ts.writechunk = null;
-  ts.writecb = null;
-
-  if (data != null) // single equals check for both `null` and `undefined`
-    this.push(data);
-
-  cb(er);
-
-  var rs = this._readableState;
-  rs.reading = false;
-  if (rs.needReadable || rs.length < rs.highWaterMark) {
-    this._read(rs.highWaterMark);
-  }
-}
-
-function Transform(options) {
-  if (!(this instanceof Transform)) return new Transform(options);
-
-  Duplex.call(this, options);
-
-  this._transformState = {
-    afterTransform: afterTransform.bind(this),
-    needTransform: false,
-    transforming: false,
-    writecb: null,
-    writechunk: null,
-    writeencoding: null
-  };
-
-  // start out asking for a readable event once data is transformed.
-  this._readableState.needReadable = true;
-
-  // we have implemented the _read method, and done the other things
-  // that Readable wants before the first _read call, so unset the
-  // sync guard flag.
-  this._readableState.sync = false;
-
-  if (options) {
-    if (typeof options.transform === 'function') this._transform = options.transform;
-
-    if (typeof options.flush === 'function') this._flush = options.flush;
-  }
-
-  // When the writable side finishes, then flush out anything remaining.
-  this.on('prefinish', prefinish);
-}
-
-function prefinish() {
-  var _this = this;
-
-  if (typeof this._flush === 'function') {
-    this._flush(function (er, data) {
-      done(_this, er, data);
-    });
-  } else {
-    done(this, null, null);
-  }
-}
-
-Transform.prototype.push = function (chunk, encoding) {
-  this._transformState.needTransform = false;
-  return Duplex.prototype.push.call(this, chunk, encoding);
-};
-
-// This is the part where you do stuff!
-// override this function in implementation classes.
-// 'chunk' is an input chunk.
-//
-// Call `push(newChunk)` to pass along transformed output
-// to the readable side.  You may call 'push' zero or more times.
-//
-// Call `cb(err)` when you are done with this chunk.  If you pass
-// an error, then that'll put the hurt on the whole operation.  If you
-// never call cb(), then you'll never get another chunk.
-Transform.prototype._transform = function (chunk, encoding, cb) {
-  throw new Error('_transform() is not implemented');
-};
-
-Transform.prototype._write = function (chunk, encoding, cb) {
-  var ts = this._transformState;
-  ts.writecb = cb;
-  ts.writechunk = chunk;
-  ts.writeencoding = encoding;
-  if (!ts.transforming) {
-    var rs = this._readableState;
-    if (ts.needTransform || rs.needReadable || rs.length < rs.highWaterMark) this._read(rs.highWaterMark);
-  }
-};
-
-// Doesn't matter what the args are here.
-// _transform does all the work.
-// That we got here means that the readable side wants more data.
-Transform.prototype._read = function (n) {
-  var ts = this._transformState;
-
-  if (ts.writechunk !== null && ts.writecb && !ts.transforming) {
-    ts.transforming = true;
-    this._transform(ts.writechunk, ts.writeencoding, ts.afterTransform);
-  } else {
-    // mark that we need a transform, so that any data that comes in
-    // will get processed, now that we've asked for it.
-    ts.needTransform = true;
-  }
-};
-
-Transform.prototype._destroy = function (err, cb) {
-  var _this2 = this;
-
-  Duplex.prototype._destroy.call(this, err, function (err2) {
-    cb(err2);
-    _this2.emit('close');
-  });
-};
-
-function done(stream, er, data) {
-  if (er) return stream.emit('error', er);
-
-  if (data != null) // single equals check for both `null` and `undefined`
-    stream.push(data);
-
-  // if there's nothing in the write buffer, then that means
-  // that nothing more will ever be provided
-  if (stream._writableState.length) throw new Error('Calling transform done when ws.length != 0');
-
-  if (stream._transformState.transforming) throw new Error('Calling transform done when still transforming');
-
-  return stream.push(null);
-}
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/lib/_stream_writable.js":
-/*!***************************************************************!*\
-  !*** ../node_modules/readable-stream/lib/_stream_writable.js ***!
-  \***************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-/* WEBPACK VAR INJECTION */(function(process, setImmediate, global) {// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-// A bit simpler than readable streams.
-// Implement an async ._write(chunk, encoding, cb), and it'll handle all
-// the drain event emission and buffering.
-
-
-
-/*<replacement>*/
-
-var pna = __webpack_require__(/*! process-nextick-args */ "../node_modules/process-nextick-args/index.js");
-/*</replacement>*/
-
-module.exports = Writable;
-
-/* <replacement> */
-function WriteReq(chunk, encoding, cb) {
-  this.chunk = chunk;
-  this.encoding = encoding;
-  this.callback = cb;
-  this.next = null;
-}
-
-// It seems a linked list but it is not
-// there will be only 2 of these for each stream
-function CorkedRequest(state) {
-  var _this = this;
-
-  this.next = null;
-  this.entry = null;
-  this.finish = function () {
-    onCorkedFinish(_this, state);
-  };
-}
-/* </replacement> */
-
-/*<replacement>*/
-var asyncWrite = !process.browser && ['v0.10', 'v0.9.'].indexOf(process.version.slice(0, 5)) > -1 ? setImmediate : pna.nextTick;
-/*</replacement>*/
-
-/*<replacement>*/
-var Duplex;
-/*</replacement>*/
-
-Writable.WritableState = WritableState;
-
-/*<replacement>*/
-var util = __webpack_require__(/*! core-util-is */ "../node_modules/core-util-is/lib/util.js");
-util.inherits = __webpack_require__(/*! inherits */ "../node_modules/inherits/inherits_browser.js");
-/*</replacement>*/
-
-/*<replacement>*/
-var internalUtil = {
-  deprecate: __webpack_require__(/*! util-deprecate */ "../node_modules/util-deprecate/browser.js")
-};
-/*</replacement>*/
-
-/*<replacement>*/
-var Stream = __webpack_require__(/*! ./internal/streams/stream */ "../node_modules/readable-stream/lib/internal/streams/stream-browser.js");
-/*</replacement>*/
-
-/*<replacement>*/
-
-var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/safe-buffer/index.js").Buffer;
-var OurUint8Array = global.Uint8Array || function () {};
-function _uint8ArrayToBuffer(chunk) {
-  return Buffer.from(chunk);
-}
-function _isUint8Array(obj) {
-  return Buffer.isBuffer(obj) || obj instanceof OurUint8Array;
-}
-
-/*</replacement>*/
-
-var destroyImpl = __webpack_require__(/*! ./internal/streams/destroy */ "../node_modules/readable-stream/lib/internal/streams/destroy.js");
-
-util.inherits(Writable, Stream);
-
-function nop() {}
-
-function WritableState(options, stream) {
-  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "../node_modules/readable-stream/lib/_stream_duplex.js");
-
-  options = options || {};
-
-  // Duplex streams are both readable and writable, but share
-  // the same options object.
-  // However, some cases require setting options to different
-  // values for the readable and the writable sides of the duplex stream.
-  // These options can be provided separately as readableXXX and writableXXX.
-  var isDuplex = stream instanceof Duplex;
-
-  // object stream flag to indicate whether or not this stream
-  // contains buffers or objects.
-  this.objectMode = !!options.objectMode;
-
-  if (isDuplex) this.objectMode = this.objectMode || !!options.writableObjectMode;
-
-  // the point at which write() starts returning false
-  // Note: 0 is a valid value, means that we always return false if
-  // the entire buffer is not flushed immediately on write()
-  var hwm = options.highWaterMark;
-  var writableHwm = options.writableHighWaterMark;
-  var defaultHwm = this.objectMode ? 16 : 16 * 1024;
-
-  if (hwm || hwm === 0) this.highWaterMark = hwm;else if (isDuplex && (writableHwm || writableHwm === 0)) this.highWaterMark = writableHwm;else this.highWaterMark = defaultHwm;
-
-  // cast to ints.
-  this.highWaterMark = Math.floor(this.highWaterMark);
-
-  // if _final has been called
-  this.finalCalled = false;
-
-  // drain event flag.
-  this.needDrain = false;
-  // at the start of calling end()
-  this.ending = false;
-  // when end() has been called, and returned
-  this.ended = false;
-  // when 'finish' is emitted
-  this.finished = false;
-
-  // has it been destroyed
-  this.destroyed = false;
-
-  // should we decode strings into buffers before passing to _write?
-  // this is here so that some node-core streams can optimize string
-  // handling at a lower level.
-  var noDecode = options.decodeStrings === false;
-  this.decodeStrings = !noDecode;
-
-  // Crypto is kind of old and crusty.  Historically, its default string
-  // encoding is 'binary' so we have to make this configurable.
-  // Everything else in the universe uses 'utf8', though.
-  this.defaultEncoding = options.defaultEncoding || 'utf8';
-
-  // not an actual buffer we keep track of, but a measurement
-  // of how much we're waiting to get pushed to some underlying
-  // socket or file.
-  this.length = 0;
-
-  // a flag to see when we're in the middle of a write.
-  this.writing = false;
-
-  // when true all writes will be buffered until .uncork() call
-  this.corked = 0;
-
-  // a flag to be able to tell if the onwrite cb is called immediately,
-  // or on a later tick.  We set this to true at first, because any
-  // actions that shouldn't happen until "later" should generally also
-  // not happen before the first write call.
-  this.sync = true;
-
-  // a flag to know if we're processing previously buffered items, which
-  // may call the _write() callback in the same tick, so that we don't
-  // end up in an overlapped onwrite situation.
-  this.bufferProcessing = false;
-
-  // the callback that's passed to _write(chunk,cb)
-  this.onwrite = function (er) {
-    onwrite(stream, er);
-  };
-
-  // the callback that the user supplies to write(chunk,encoding,cb)
-  this.writecb = null;
-
-  // the amount that is being written when _write is called.
-  this.writelen = 0;
-
-  this.bufferedRequest = null;
-  this.lastBufferedRequest = null;
-
-  // number of pending user-supplied write callbacks
-  // this must be 0 before 'finish' can be emitted
-  this.pendingcb = 0;
-
-  // emit prefinish if the only thing we're waiting for is _write cbs
-  // This is relevant for synchronous Transform streams
-  this.prefinished = false;
-
-  // True if the error was already emitted and should not be thrown again
-  this.errorEmitted = false;
-
-  // count buffered requests
-  this.bufferedRequestCount = 0;
-
-  // allocate the first CorkedRequest, there is always
-  // one allocated and free to use, and we maintain at most two
-  this.corkedRequestsFree = new CorkedRequest(this);
-}
-
-WritableState.prototype.getBuffer = function getBuffer() {
-  var current = this.bufferedRequest;
-  var out = [];
-  while (current) {
-    out.push(current);
-    current = current.next;
-  }
-  return out;
-};
-
-(function () {
-  try {
-    Object.defineProperty(WritableState.prototype, 'buffer', {
-      get: internalUtil.deprecate(function () {
-        return this.getBuffer();
-      }, '_writableState.buffer is deprecated. Use _writableState.getBuffer ' + 'instead.', 'DEP0003')
-    });
-  } catch (_) {}
-})();
-
-// Test _writableState for inheritance to account for Duplex streams,
-// whose prototype chain only points to Readable.
-var realHasInstance;
-if (typeof Symbol === 'function' && Symbol.hasInstance && typeof Function.prototype[Symbol.hasInstance] === 'function') {
-  realHasInstance = Function.prototype[Symbol.hasInstance];
-  Object.defineProperty(Writable, Symbol.hasInstance, {
-    value: function (object) {
-      if (realHasInstance.call(this, object)) return true;
-      if (this !== Writable) return false;
-
-      return object && object._writableState instanceof WritableState;
-    }
-  });
-} else {
-  realHasInstance = function (object) {
-    return object instanceof this;
-  };
-}
-
-function Writable(options) {
-  Duplex = Duplex || __webpack_require__(/*! ./_stream_duplex */ "../node_modules/readable-stream/lib/_stream_duplex.js");
-
-  // Writable ctor is applied to Duplexes, too.
-  // `realHasInstance` is necessary because using plain `instanceof`
-  // would return false, as no `_writableState` property is attached.
-
-  // Trying to use the custom `instanceof` for Writable here will also break the
-  // Node.js LazyTransform implementation, which has a non-trivial getter for
-  // `_writableState` that would lead to infinite recursion.
-  if (!realHasInstance.call(Writable, this) && !(this instanceof Duplex)) {
-    return new Writable(options);
-  }
-
-  this._writableState = new WritableState(options, this);
-
-  // legacy.
-  this.writable = true;
-
-  if (options) {
-    if (typeof options.write === 'function') this._write = options.write;
-
-    if (typeof options.writev === 'function') this._writev = options.writev;
-
-    if (typeof options.destroy === 'function') this._destroy = options.destroy;
-
-    if (typeof options.final === 'function') this._final = options.final;
-  }
-
-  Stream.call(this);
-}
-
-// Otherwise people can pipe Writable streams, which is just wrong.
-Writable.prototype.pipe = function () {
-  this.emit('error', new Error('Cannot pipe, not readable'));
-};
-
-function writeAfterEnd(stream, cb) {
-  var er = new Error('write after end');
-  // TODO: defer error events consistently everywhere, not just the cb
-  stream.emit('error', er);
-  pna.nextTick(cb, er);
-}
-
-// Checks that a user-supplied chunk is valid, especially for the particular
-// mode the stream is in. Currently this means that `null` is never accepted
-// and undefined/non-string values are only allowed in object mode.
-function validChunk(stream, state, chunk, cb) {
-  var valid = true;
-  var er = false;
-
-  if (chunk === null) {
-    er = new TypeError('May not write null values to stream');
-  } else if (typeof chunk !== 'string' && chunk !== undefined && !state.objectMode) {
-    er = new TypeError('Invalid non-string/buffer chunk');
-  }
-  if (er) {
-    stream.emit('error', er);
-    pna.nextTick(cb, er);
-    valid = false;
-  }
-  return valid;
-}
-
-Writable.prototype.write = function (chunk, encoding, cb) {
-  var state = this._writableState;
-  var ret = false;
-  var isBuf = !state.objectMode && _isUint8Array(chunk);
-
-  if (isBuf && !Buffer.isBuffer(chunk)) {
-    chunk = _uint8ArrayToBuffer(chunk);
-  }
-
-  if (typeof encoding === 'function') {
-    cb = encoding;
-    encoding = null;
-  }
-
-  if (isBuf) encoding = 'buffer';else if (!encoding) encoding = state.defaultEncoding;
-
-  if (typeof cb !== 'function') cb = nop;
-
-  if (state.ended) writeAfterEnd(this, cb);else if (isBuf || validChunk(this, state, chunk, cb)) {
-    state.pendingcb++;
-    ret = writeOrBuffer(this, state, isBuf, chunk, encoding, cb);
-  }
-
-  return ret;
-};
-
-Writable.prototype.cork = function () {
-  var state = this._writableState;
-
-  state.corked++;
-};
-
-Writable.prototype.uncork = function () {
-  var state = this._writableState;
-
-  if (state.corked) {
-    state.corked--;
-
-    if (!state.writing && !state.corked && !state.finished && !state.bufferProcessing && state.bufferedRequest) clearBuffer(this, state);
-  }
-};
-
-Writable.prototype.setDefaultEncoding = function setDefaultEncoding(encoding) {
-  // node::ParseEncoding() requires lower case.
-  if (typeof encoding === 'string') encoding = encoding.toLowerCase();
-  if (!(['hex', 'utf8', 'utf-8', 'ascii', 'binary', 'base64', 'ucs2', 'ucs-2', 'utf16le', 'utf-16le', 'raw'].indexOf((encoding + '').toLowerCase()) > -1)) throw new TypeError('Unknown encoding: ' + encoding);
-  this._writableState.defaultEncoding = encoding;
-  return this;
-};
-
-function decodeChunk(state, chunk, encoding) {
-  if (!state.objectMode && state.decodeStrings !== false && typeof chunk === 'string') {
-    chunk = Buffer.from(chunk, encoding);
-  }
-  return chunk;
-}
-
-Object.defineProperty(Writable.prototype, 'writableHighWaterMark', {
-  // making it explicit this property is not enumerable
-  // because otherwise some prototype manipulation in
-  // userland will fail
-  enumerable: false,
-  get: function () {
-    return this._writableState.highWaterMark;
-  }
-});
-
-// if we're already writing something, then just put this
-// in the queue, and wait our turn.  Otherwise, call _write
-// If we return false, then we need a drain event, so set that flag.
-function writeOrBuffer(stream, state, isBuf, chunk, encoding, cb) {
-  if (!isBuf) {
-    var newChunk = decodeChunk(state, chunk, encoding);
-    if (chunk !== newChunk) {
-      isBuf = true;
-      encoding = 'buffer';
-      chunk = newChunk;
-    }
-  }
-  var len = state.objectMode ? 1 : chunk.length;
-
-  state.length += len;
-
-  var ret = state.length < state.highWaterMark;
-  // we must ensure that previous needDrain will not be reset to false.
-  if (!ret) state.needDrain = true;
-
-  if (state.writing || state.corked) {
-    var last = state.lastBufferedRequest;
-    state.lastBufferedRequest = {
-      chunk: chunk,
-      encoding: encoding,
-      isBuf: isBuf,
-      callback: cb,
-      next: null
-    };
-    if (last) {
-      last.next = state.lastBufferedRequest;
-    } else {
-      state.bufferedRequest = state.lastBufferedRequest;
-    }
-    state.bufferedRequestCount += 1;
-  } else {
-    doWrite(stream, state, false, len, chunk, encoding, cb);
-  }
-
-  return ret;
-}
-
-function doWrite(stream, state, writev, len, chunk, encoding, cb) {
-  state.writelen = len;
-  state.writecb = cb;
-  state.writing = true;
-  state.sync = true;
-  if (writev) stream._writev(chunk, state.onwrite);else stream._write(chunk, encoding, state.onwrite);
-  state.sync = false;
-}
-
-function onwriteError(stream, state, sync, er, cb) {
-  --state.pendingcb;
-
-  if (sync) {
-    // defer the callback if we are being called synchronously
-    // to avoid piling up things on the stack
-    pna.nextTick(cb, er);
-    // this can emit finish, and it will always happen
-    // after error
-    pna.nextTick(finishMaybe, stream, state);
-    stream._writableState.errorEmitted = true;
-    stream.emit('error', er);
-  } else {
-    // the caller expect this to happen before if
-    // it is async
-    cb(er);
-    stream._writableState.errorEmitted = true;
-    stream.emit('error', er);
-    // this can emit finish, but finish must
-    // always follow error
-    finishMaybe(stream, state);
-  }
-}
-
-function onwriteStateUpdate(state) {
-  state.writing = false;
-  state.writecb = null;
-  state.length -= state.writelen;
-  state.writelen = 0;
-}
-
-function onwrite(stream, er) {
-  var state = stream._writableState;
-  var sync = state.sync;
-  var cb = state.writecb;
-
-  onwriteStateUpdate(state);
-
-  if (er) onwriteError(stream, state, sync, er, cb);else {
-    // Check if we're actually ready to finish, but don't emit yet
-    var finished = needFinish(state);
-
-    if (!finished && !state.corked && !state.bufferProcessing && state.bufferedRequest) {
-      clearBuffer(stream, state);
-    }
-
-    if (sync) {
-      /*<replacement>*/
-      asyncWrite(afterWrite, stream, state, finished, cb);
-      /*</replacement>*/
-    } else {
-      afterWrite(stream, state, finished, cb);
-    }
-  }
-}
-
-function afterWrite(stream, state, finished, cb) {
-  if (!finished) onwriteDrain(stream, state);
-  state.pendingcb--;
-  cb();
-  finishMaybe(stream, state);
-}
-
-// Must force callback to be called on nextTick, so that we don't
-// emit 'drain' before the write() consumer gets the 'false' return
-// value, and has a chance to attach a 'drain' listener.
-function onwriteDrain(stream, state) {
-  if (state.length === 0 && state.needDrain) {
-    state.needDrain = false;
-    stream.emit('drain');
-  }
-}
-
-// if there's something in the buffer waiting, then process it
-function clearBuffer(stream, state) {
-  state.bufferProcessing = true;
-  var entry = state.bufferedRequest;
-
-  if (stream._writev && entry && entry.next) {
-    // Fast case, write everything using _writev()
-    var l = state.bufferedRequestCount;
-    var buffer = new Array(l);
-    var holder = state.corkedRequestsFree;
-    holder.entry = entry;
-
-    var count = 0;
-    var allBuffers = true;
-    while (entry) {
-      buffer[count] = entry;
-      if (!entry.isBuf) allBuffers = false;
-      entry = entry.next;
-      count += 1;
-    }
-    buffer.allBuffers = allBuffers;
-
-    doWrite(stream, state, true, state.length, buffer, '', holder.finish);
-
-    // doWrite is almost always async, defer these to save a bit of time
-    // as the hot path ends with doWrite
-    state.pendingcb++;
-    state.lastBufferedRequest = null;
-    if (holder.next) {
-      state.corkedRequestsFree = holder.next;
-      holder.next = null;
-    } else {
-      state.corkedRequestsFree = new CorkedRequest(state);
-    }
-    state.bufferedRequestCount = 0;
-  } else {
-    // Slow case, write chunks one-by-one
-    while (entry) {
-      var chunk = entry.chunk;
-      var encoding = entry.encoding;
-      var cb = entry.callback;
-      var len = state.objectMode ? 1 : chunk.length;
-
-      doWrite(stream, state, false, len, chunk, encoding, cb);
-      entry = entry.next;
-      state.bufferedRequestCount--;
-      // if we didn't call the onwrite immediately, then
-      // it means that we need to wait until it does.
-      // also, that means that the chunk and cb are currently
-      // being processed, so move the buffer counter past them.
-      if (state.writing) {
-        break;
-      }
-    }
-
-    if (entry === null) state.lastBufferedRequest = null;
-  }
-
-  state.bufferedRequest = entry;
-  state.bufferProcessing = false;
-}
-
-Writable.prototype._write = function (chunk, encoding, cb) {
-  cb(new Error('_write() is not implemented'));
-};
-
-Writable.prototype._writev = null;
-
-Writable.prototype.end = function (chunk, encoding, cb) {
-  var state = this._writableState;
-
-  if (typeof chunk === 'function') {
-    cb = chunk;
-    chunk = null;
-    encoding = null;
-  } else if (typeof encoding === 'function') {
-    cb = encoding;
-    encoding = null;
-  }
-
-  if (chunk !== null && chunk !== undefined) this.write(chunk, encoding);
-
-  // .end() fully uncorks
-  if (state.corked) {
-    state.corked = 1;
-    this.uncork();
-  }
-
-  // ignore unnecessary end() calls.
-  if (!state.ending && !state.finished) endWritable(this, state, cb);
-};
-
-function needFinish(state) {
-  return state.ending && state.length === 0 && state.bufferedRequest === null && !state.finished && !state.writing;
-}
-function callFinal(stream, state) {
-  stream._final(function (err) {
-    state.pendingcb--;
-    if (err) {
-      stream.emit('error', err);
-    }
-    state.prefinished = true;
-    stream.emit('prefinish');
-    finishMaybe(stream, state);
-  });
-}
-function prefinish(stream, state) {
-  if (!state.prefinished && !state.finalCalled) {
-    if (typeof stream._final === 'function') {
-      state.pendingcb++;
-      state.finalCalled = true;
-      pna.nextTick(callFinal, stream, state);
-    } else {
-      state.prefinished = true;
-      stream.emit('prefinish');
-    }
-  }
-}
-
-function finishMaybe(stream, state) {
-  var need = needFinish(state);
-  if (need) {
-    prefinish(stream, state);
-    if (state.pendingcb === 0) {
-      state.finished = true;
-      stream.emit('finish');
-    }
-  }
-  return need;
-}
-
-function endWritable(stream, state, cb) {
-  state.ending = true;
-  finishMaybe(stream, state);
-  if (cb) {
-    if (state.finished) pna.nextTick(cb);else stream.once('finish', cb);
-  }
-  state.ended = true;
-  stream.writable = false;
-}
-
-function onCorkedFinish(corkReq, state, err) {
-  var entry = corkReq.entry;
-  corkReq.entry = null;
-  while (entry) {
-    var cb = entry.callback;
-    state.pendingcb--;
-    cb(err);
-    entry = entry.next;
-  }
-  if (state.corkedRequestsFree) {
-    state.corkedRequestsFree.next = corkReq;
-  } else {
-    state.corkedRequestsFree = corkReq;
-  }
-}
-
-Object.defineProperty(Writable.prototype, 'destroyed', {
-  get: function () {
-    if (this._writableState === undefined) {
-      return false;
-    }
-    return this._writableState.destroyed;
-  },
-  set: function (value) {
-    // we ignore the value if the stream
-    // has not been initialized yet
-    if (!this._writableState) {
-      return;
-    }
-
-    // backward compatibility, the user is explicitly
-    // managing destroyed
-    this._writableState.destroyed = value;
-  }
-});
-
-Writable.prototype.destroy = destroyImpl.destroy;
-Writable.prototype._undestroy = destroyImpl.undestroy;
-Writable.prototype._destroy = function (err, cb) {
-  this.end();
-  cb(err);
-};
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../process/browser.js */ "../node_modules/process/browser.js"), __webpack_require__(/*! ./../../timers-browserify/main.js */ "../node_modules/timers-browserify/main.js").setImmediate, __webpack_require__(/*! ./../../webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/lib/internal/streams/BufferList.js":
-/*!**************************************************************************!*\
-  !*** ../node_modules/readable-stream/lib/internal/streams/BufferList.js ***!
-  \**************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-var Buffer = __webpack_require__(/*! safe-buffer */ "../node_modules/safe-buffer/index.js").Buffer;
-var util = __webpack_require__(/*! util */ 1);
-
-function copyBuffer(src, target, offset) {
-  src.copy(target, offset);
-}
-
-module.exports = function () {
-  function BufferList() {
-    _classCallCheck(this, BufferList);
-
-    this.head = null;
-    this.tail = null;
-    this.length = 0;
-  }
-
-  BufferList.prototype.push = function push(v) {
-    var entry = { data: v, next: null };
-    if (this.length > 0) this.tail.next = entry;else this.head = entry;
-    this.tail = entry;
-    ++this.length;
-  };
-
-  BufferList.prototype.unshift = function unshift(v) {
-    var entry = { data: v, next: this.head };
-    if (this.length === 0) this.tail = entry;
-    this.head = entry;
-    ++this.length;
-  };
-
-  BufferList.prototype.shift = function shift() {
-    if (this.length === 0) return;
-    var ret = this.head.data;
-    if (this.length === 1) this.head = this.tail = null;else this.head = this.head.next;
-    --this.length;
-    return ret;
-  };
-
-  BufferList.prototype.clear = function clear() {
-    this.head = this.tail = null;
-    this.length = 0;
-  };
-
-  BufferList.prototype.join = function join(s) {
-    if (this.length === 0) return '';
-    var p = this.head;
-    var ret = '' + p.data;
-    while (p = p.next) {
-      ret += s + p.data;
-    }return ret;
-  };
-
-  BufferList.prototype.concat = function concat(n) {
-    if (this.length === 0) return Buffer.alloc(0);
-    if (this.length === 1) return this.head.data;
-    var ret = Buffer.allocUnsafe(n >>> 0);
-    var p = this.head;
-    var i = 0;
-    while (p) {
-      copyBuffer(p.data, ret, i);
-      i += p.data.length;
-      p = p.next;
-    }
-    return ret;
-  };
-
-  return BufferList;
-}();
-
-if (util && util.inspect && util.inspect.custom) {
-  module.exports.prototype[util.inspect.custom] = function () {
-    var obj = util.inspect({ length: this.length });
-    return this.constructor.name + ' ' + obj;
-  };
-}
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/lib/internal/streams/destroy.js":
-/*!***********************************************************************!*\
-  !*** ../node_modules/readable-stream/lib/internal/streams/destroy.js ***!
-  \***********************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-/*<replacement>*/
-
-var pna = __webpack_require__(/*! process-nextick-args */ "../node_modules/process-nextick-args/index.js");
-/*</replacement>*/
-
-// undocumented cb() API, needed for core, not for public API
-function destroy(err, cb) {
-  var _this = this;
-
-  var readableDestroyed = this._readableState && this._readableState.destroyed;
-  var writableDestroyed = this._writableState && this._writableState.destroyed;
-
-  if (readableDestroyed || writableDestroyed) {
-    if (cb) {
-      cb(err);
-    } else if (err && (!this._writableState || !this._writableState.errorEmitted)) {
-      pna.nextTick(emitErrorNT, this, err);
-    }
-    return this;
-  }
-
-  // we set destroyed to true before firing error callbacks in order
-  // to make it re-entrance safe in case destroy() is called within callbacks
-
-  if (this._readableState) {
-    this._readableState.destroyed = true;
-  }
-
-  // if this is a duplex stream mark the writable part as destroyed as well
-  if (this._writableState) {
-    this._writableState.destroyed = true;
-  }
-
-  this._destroy(err || null, function (err) {
-    if (!cb && err) {
-      pna.nextTick(emitErrorNT, _this, err);
-      if (_this._writableState) {
-        _this._writableState.errorEmitted = true;
-      }
-    } else if (cb) {
-      cb(err);
-    }
-  });
-
-  return this;
-}
-
-function undestroy() {
-  if (this._readableState) {
-    this._readableState.destroyed = false;
-    this._readableState.reading = false;
-    this._readableState.ended = false;
-    this._readableState.endEmitted = false;
-  }
-
-  if (this._writableState) {
-    this._writableState.destroyed = false;
-    this._writableState.ended = false;
-    this._writableState.ending = false;
-    this._writableState.finished = false;
-    this._writableState.errorEmitted = false;
-  }
-}
-
-function emitErrorNT(self, err) {
-  self.emit('error', err);
-}
-
-module.exports = {
-  destroy: destroy,
-  undestroy: undestroy
-};
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/lib/internal/streams/stream-browser.js":
-/*!******************************************************************************!*\
-  !*** ../node_modules/readable-stream/lib/internal/streams/stream-browser.js ***!
-  \******************************************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(/*! events */ "../node_modules/events/events.js").EventEmitter;
-
-
-/***/ }),
-
-/***/ "../node_modules/readable-stream/readable-browser.js":
-/*!***********************************************************!*\
-  !*** ../node_modules/readable-stream/readable-browser.js ***!
-  \***********************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-exports = module.exports = __webpack_require__(/*! ./lib/_stream_readable.js */ "../node_modules/readable-stream/lib/_stream_readable.js");
-exports.Stream = exports;
-exports.Readable = exports;
-exports.Writable = __webpack_require__(/*! ./lib/_stream_writable.js */ "../node_modules/readable-stream/lib/_stream_writable.js");
-exports.Duplex = __webpack_require__(/*! ./lib/_stream_duplex.js */ "../node_modules/readable-stream/lib/_stream_duplex.js");
-exports.Transform = __webpack_require__(/*! ./lib/_stream_transform.js */ "../node_modules/readable-stream/lib/_stream_transform.js");
-exports.PassThrough = __webpack_require__(/*! ./lib/_stream_passthrough.js */ "../node_modules/readable-stream/lib/_stream_passthrough.js");
 
 
 /***/ }),
@@ -11332,85 +15857,6 @@ exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
 exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
                          (typeof global !== "undefined" && global.clearImmediate) ||
                          (this && this.clearImmediate);
-
-/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
-
-/***/ }),
-
-/***/ "../node_modules/util-deprecate/browser.js":
-/*!*************************************************!*\
-  !*** ../node_modules/util-deprecate/browser.js ***!
-  \*************************************************/
-/*! no static exports found */
-/***/ (function(module, exports, __webpack_require__) {
-
-/* WEBPACK VAR INJECTION */(function(global) {
-/**
- * Module exports.
- */
-
-module.exports = deprecate;
-
-/**
- * Mark that a method should not be used.
- * Returns a modified function which warns once by default.
- *
- * If `localStorage.noDeprecation = true` is set, then it is a no-op.
- *
- * If `localStorage.throwDeprecation = true` is set, then deprecated functions
- * will throw an Error when invoked.
- *
- * If `localStorage.traceDeprecation = true` is set, then deprecated functions
- * will invoke `console.trace()` instead of `console.error()`.
- *
- * @param {Function} fn - the function to deprecate
- * @param {String} msg - the string to print to the console when `fn` is invoked
- * @returns {Function} a new "deprecated" version of `fn`
- * @api public
- */
-
-function deprecate (fn, msg) {
-  if (config('noDeprecation')) {
-    return fn;
-  }
-
-  var warned = false;
-  function deprecated() {
-    if (!warned) {
-      if (config('throwDeprecation')) {
-        throw new Error(msg);
-      } else if (config('traceDeprecation')) {
-        console.trace(msg);
-      } else {
-        console.warn(msg);
-      }
-      warned = true;
-    }
-    return fn.apply(this, arguments);
-  }
-
-  return deprecated;
-}
-
-/**
- * Checks `localStorage` for boolean values for the given `name`.
- *
- * @param {String} name
- * @returns {Boolean}
- * @api private
- */
-
-function config (name) {
-  // accessing global.localStorage can trigger a DOMException in sandboxed iframes
-  try {
-    if (!global.localStorage) return false;
-  } catch (_) {
-    return false;
-  }
-  var val = global.localStorage[name];
-  if (null == val) return false;
-  return String(val).toLowerCase() === 'true';
-}
 
 /* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "../node_modules/webpack/buildin/global.js")))
 
