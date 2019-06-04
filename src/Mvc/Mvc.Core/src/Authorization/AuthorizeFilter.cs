@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
         private async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
         {
-            var effectivePolicy = await ComputePolicyAsync();
+            var effectivePolicy = Policy;
 
             if (_mvcOptions == null) 
             {
@@ -141,6 +141,19 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
                 effectivePolicy = builder.Build();
             }
+            
+            if (effectivePolicy == null)
+            {
+                if (PolicyProvider == null)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatAuthorizeFilter_AuthorizationPolicyCannotBeCreated(
+                            nameof(AuthorizationPolicy),
+                            nameof(IAuthorizationPolicyProvider)));
+                }
+
+                effectivePolicy = await AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
+            }            
 
             return effectivePolicy;
         }
