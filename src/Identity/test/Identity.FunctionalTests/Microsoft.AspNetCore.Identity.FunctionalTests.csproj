@@ -39,8 +39,8 @@
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
-    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" />
-    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" />
+    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\Pages" Condition="!Exists('$(PublishDir)\Identity.DefaultUI.WebSite\Pages')" />
+    <MakeDir Directories="$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot" Condition="!Exists('$(PublishDir)\Identity.DefaultUI.WebSite\wwwroot')" />
   </Target>
 
 </Project>
