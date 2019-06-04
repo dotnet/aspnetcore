@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
         public static string GetInProcessTestSitesName()
         {
-            return DeployerSelector.IsNewShimTest ? "InProcessForwardsCompatWebSite" : "InProcessWebSite";
+            return DeployerSelector.IsNewShimTest ? "InProcessNewShimWebSite" : "InProcessWebSite";
         }
 
         public static async Task AssertStarts(this IISDeploymentResult deploymentResult, string path = "/HelloWorld")
