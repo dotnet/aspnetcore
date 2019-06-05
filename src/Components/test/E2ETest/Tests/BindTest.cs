@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using BasicTestApp;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure;
 using Microsoft.AspNetCore.Components.E2ETest.Infrastructure.ServerFixtures;
@@ -537,6 +538,49 @@ namespace Microsoft.AspNetCore.Components.E2ETest.Tests
             target.SendKeys("1\t");
             Browser.Equal("0.011", () => boundValue.Text);
             Assert.Equal("0.011", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextboxGenericInt()
+        {
+            var target = Browser.FindElement(By.Id("textbox-generic-int"));
+            var boundValue = Browser.FindElement(By.Id("textbox-generic-int-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-generic-int-mirror"));
+            Assert.Equal("-42", target.GetAttribute("value"));
+            Assert.Equal("-42", boundValue.Text);
+            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+
+            // Modify target; value is not updated because it's not convertable.
+            target.Clear();
+            Browser.Equal("-42", () => boundValue.Text);
+            Assert.Equal("-42", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            target.SendKeys("42\t");
+            Browser.Equal("42", () => boundValue.Text);
+            Assert.Equal("42", mirrorValue.GetAttribute("value"));
+        }
+
+        [Fact]
+        public void CanBindTextboxGenericGuid()
+        {
+            var target = Browser.FindElement(By.Id("textbox-generic-guid"));
+            var boundValue = Browser.FindElement(By.Id("textbox-generic-guid-value"));
+            var mirrorValue = Browser.FindElement(By.Id("textbox-generic-guid-mirror"));
+            Assert.Equal("00000000-0000-0000-0000-000000000000", target.GetAttribute("value"));
+            Assert.Equal("00000000-0000-0000-0000-000000000000", boundValue.Text);
+            Assert.Equal("00000000-0000-0000-0000-000000000000", mirrorValue.GetAttribute("value"));
+
+            // Modify target; value is not updated because it's not convertable.
+            target.Clear();
+            Browser.Equal("00000000-0000-0000-0000-000000000000", () => boundValue.Text);
+            Assert.Equal("00000000-0000-0000-0000-000000000000", mirrorValue.GetAttribute("value"));
+
+            // Modify target; verify value is updated and that textboxes linked to the same data are updated
+            var newValue = Guid.NewGuid().ToString();
+            target.SendKeys(newValue + "\t");
+            Browser.Equal(newValue, () => boundValue.Text);
+            Assert.Equal(newValue, mirrorValue.GetAttribute("value"));
         }
     }
 }
