@@ -26,21 +26,5 @@ namespace Microsoft.AspNetCore.Builder
 
             return app.UseMiddleware<RequestThrottlingMiddleware>();
         }
-
-        /// <summary>
-        /// Adds the <see cref="RequestThrottlingMiddleware"/> to limit the number of concurrently-executing requests.
-        /// </summary>
-        /// <param name="app">The <see cref="IApplicationBuilder"/>.</param>
-        /// <param name="options">The <see cref="RequestThrottlingOptions"/>.</param>
-        /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
-        public static IApplicationBuilder UseRequestThrottling(this IApplicationBuilder app, RequestThrottlingOptions options)
-        {
-            if (app == null)
-            {
-                throw new ArgumentNullException(nameof(app));
-            }
-
-            return app.UseMiddleware<RequestThrottlingMiddleware>(Options.Create(options));
-        }
     }
 }
