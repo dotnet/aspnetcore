@@ -13,21 +13,10 @@ Usage: <ZIP> <OUTPUT>
 Example: dotnet run ./archive.zip files.txt
 ```
 
-## Example for servicing updates
+## Servicing updates
 
-To generate a new manifest for the incremental CI server package caches, you would run
+For convenience, this folder contains [./UpdateBaselines.ps1](./UpdateBaselines.ps1) to update
+the baselines from the last patch release.
 
-```ps1
-$ProdConBuild='20180919-01'
-$Version='2.2.1'
-
-$patchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-2/${ProdconBuild}/final/assets/aspnetcore/Runtime/${Version}/nuGetPackagesArchive-ci-server-${Version}.patch.zip"
-
-dotnet run $patchUrl "../Archive.CiServer.Patch/ArchiveBaseline.${Version}.txt"
-
-$compatPatchUrl = "https://dotnetfeed.blob.core.windows.net/orchestrated-release-2-2/${ProdconBuild}/final/assets/aspnetcore/Runtime/${Version}/nuGetPackagesArchive-ci-server-compat-${Version}.patch.zip"
-
-dotnet run $compatPatchUrl "../Archive.CiServer.Patch.Compat/ArchiveBaseline.${Version}.txt"
-```
-
-For convenience, this folder contains [./UpdateBaselines.ps1](./UpdateBaselines.ps1) to run these steps.
+Using version.props to figure out the last version, this script reads the build manifests from https://github.com/dotnet/versions/tree/master/build-info/dotnet/product/cli/release and
+invokes the manifest generator

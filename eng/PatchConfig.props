@@ -71,5 +71,4 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Mvc.Api.Analyzers;
     </PackagesInPatch>
   </PropertyGroup>
-
 </Project>
