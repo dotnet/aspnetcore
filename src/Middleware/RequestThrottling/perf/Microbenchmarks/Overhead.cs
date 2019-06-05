@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Running;
@@ -12,15 +14,15 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
 {
     public class Overhead
     {
-        private const int _numRequests = 2000;
+        private const int _numRequests = 20000;
 
         private RequestThrottlingMiddleware _middleware;
-        private RequestDelegate _nextDelay;
+        private RequestDelegate _restOfServer;
 
         [GlobalSetup]
         public void GlobalSetup()
         {
-            _nextDelay = NextDelay;
+            _restOfServer = YieldsThreadInternally ? (RequestDelegate)YieldsThread : (RequestDelegate)CompletesImmediately;
 
             var options = new RequestThrottlingOptions
             {
@@ -29,7 +31,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
             };
 
             _middleware = new RequestThrottlingMiddleware(
-                    next: _nextDelay,
+                    next: _restOfServer,
                     loggerFactory: NullLoggerFactory.Instance,
                     options: Options.Create(options)
                 );
@@ -41,29 +43,35 @@ namespace Microsoft.AspNetCore.RequestThrottling.Microbenchmarks
         [Params(_numRequests)]
         public int RequestQueueLimit;
 
+        [Params(false, true)]
+        public bool YieldsThreadInternally;
+
         [Benchmark(OperationsPerInvoke = _numRequests)]
         public async Task Baseline()
         {
             for (int i = 0; i < _numRequests; i++)
             {
-                await NextDelay(null);
+                await _restOfServer(null);
             }
         }
 
         [Benchmark(OperationsPerInvoke = _numRequests)]
         public async Task WithEmptyQueueOverhead()
         {
-            // this one should not change with MaxConcurrentRequests
             for (int i = 0; i < _numRequests; i++)
             {
                 await _middleware.Invoke(null);
             }
         }
 
-        private async Task NextDelay(HttpContext context)
+        private static async Task YieldsThread(HttpContext context)
         {
-            for (int i = 0; i < 1000; i++) { }
             await Task.Yield();
+        }
+
+        private static Task CompletesImmediately(HttpContext context)
+        {
+            return Task.CompletedTask;
         }
     }
 }

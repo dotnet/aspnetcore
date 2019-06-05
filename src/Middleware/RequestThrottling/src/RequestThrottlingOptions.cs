@@ -7,8 +7,6 @@ using Microsoft.AspNetCore.RequestThrottling;
 
 namespace Microsoft.AspNetCore.RequestThrottling
 {
-    // TODO :: Update to match new RequestQueue interface
-
     /// <summary>
     /// Specifies options for the <see cref="RequestThrottlingMiddleware"/>.
     /// </summary>
