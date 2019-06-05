@@ -32,6 +32,6 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 );
         }
 
-        internal static RequestQueue CreateRequestQueue(int maxConcurrentRequests) => new RequestQueue(maxConcurrentRequests, 5000);
+        internal static RequestQueue CreateRequestQueue(int maxConcurrentRequests) => new TailDrop(maxConcurrentRequests, 5000);
     }
 }

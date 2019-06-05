@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
 
             _next = next;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
-            _requestQueue = new RequestQueue(
+            _requestQueue = new TailDrop(
                 _requestThrottlingOptions.MaxConcurrentRequests.Value,
                 _requestThrottlingOptions.RequestQueueLimit);
         }
@@ -64,24 +64,26 @@ namespace Microsoft.AspNetCore.RequestThrottling
         public async Task Invoke(HttpContext context)
         {
             var waitInQueueTask = _requestQueue.TryEnterQueueAsync();
-            if (waitInQueueTask.IsCompletedSuccessfully && !waitInQueueTask.Result)
+
+            if (waitInQueueTask.IsCompletedSuccessfully)
             {
                 RequestThrottlingLog.RequestRejectedQueueFull(_logger);
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 await _requestThrottlingOptions.OnRejected(context);
                 return;
             }
-            else if (!waitInQueueTask.IsCompletedSuccessfully)
-            {
-                RequestThrottlingLog.RequestEnqueued(_logger, ActiveRequestCount);
-                var result = await waitInQueueTask;
-                RequestThrottlingLog.RequestDequeued(_logger, ActiveRequestCount);
-
-                Debug.Assert(result);
-            }
             else
             {
-                RequestThrottlingLog.RequestRunImmediately(_logger, ActiveRequestCount);
+                RequestThrottlingLog.RequestEnqueued(_logger, ActiveRequestCount);
+                await waitInQueueTask;
+                RequestThrottlingLog.RequestDequeued(_logger, ActiveRequestCount);
+            }
+
+            if (!waitInQueueTask.Result)
+            {
+                RequestThrottlingLog.RequestRejectedQueueFull(_logger);
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+                return;
             }
 
             try
@@ -98,7 +100,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// The number of requests currently on the server.
         /// Cannot exceeed the sum of <see cref="RequestThrottlingOptions.RequestQueueLimit"> and </see>/><see cref="RequestThrottlingOptions.MaxConcurrentRequests"/>.
         /// </summary>
-        internal int ActiveRequestCount
+        public int ActiveRequestCount
         {
             get => _requestQueue.TotalRequests;
         }

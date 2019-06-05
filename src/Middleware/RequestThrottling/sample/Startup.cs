@@ -15,6 +15,8 @@ namespace RequestThrottlingSample
 {
     public class Startup
     {
+        private int totalLoads = 0;
+
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -32,7 +34,9 @@ namespace RequestThrottlingSample
 
             app.Run(async context =>
             {
+                totalLoads++;
                 await context.Response.WriteAsync("Hello Request Throttling! If you refresh this page a bunch, it will 503.");
+                await context.Response.WriteAsync($"\n\n This is load number {totalLoads}");
                 await Task.Delay(1000);
             });
         }
