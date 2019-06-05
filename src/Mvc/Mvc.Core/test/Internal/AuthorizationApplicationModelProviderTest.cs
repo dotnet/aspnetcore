@@ -59,6 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Single(authorizeFilters);
 
             Assert.NotNull(authorizeFilters.First().Policy);
+            Assert.Equal(3, authorizeFilters.First().Policy.Requirements.Count()); // Basic + Basic2 + Derived authorize
             Assert.Null(authorizeFilters.First().PolicyProvider);
             Assert.Null(authorizeFilters.First().AuthorizeData);
         }
