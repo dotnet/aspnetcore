@@ -24,11 +24,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private readonly DiagnosticListener _diagnosticListener;
         private readonly ILogger _logger;
+        private readonly IHttpCounters _counters;
+        private readonly HostingEventSource _hostingEventSource;
 
-        public HostingApplicationDiagnostics(ILogger logger, DiagnosticListener diagnosticListener)
+        public HostingApplicationDiagnostics(ILogger logger, DiagnosticListener diagnosticListener, IHttpCounters counters, HostingEventSource hostingEventSource)
         {
             _logger = logger;
             _diagnosticListener = diagnosticListener;
+            _counters = counters;
+            _hostingEventSource = hostingEventSource;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -36,12 +40,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         {
             long startTimestamp = 0;
 
-            if (HostingEventSource.Log.IsEnabled())
+            if (_hostingEventSource?.IsEnabled() == true)
             {
                 context.EventLogEnabled = true;
                 // To keep the hot path short we defer logging in this function to non-inlines
                 RecordRequestStartEventLog(httpContext);
             }
+
+            _counters?.RequestStart();
 
             var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
             var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
@@ -86,6 +92,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void RequestEnd(HttpContext httpContext, Exception exception, HostingApplication.Context context)
         {
+            if (_counters != null)
+            {
+                if (exception != null)
+                {
+                    _counters.RequestException();
+                }
+
+                _counters.RequestStop();
+            }
+
             // Local cache items resolved multiple items, in order of use so they are primed in cpu pipeline when used
             var startTimestamp = context.StartTimestamp;
             long currentTimestamp = 0;
@@ -139,7 +155,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (context.EventLogEnabled && exception != null)
             {
                 // Non-inline
-                HostingEventSource.Log.UnhandledException();
+                _hostingEventSource.UnhandledException();
             }
 
             // Logging Scope is finshed with
@@ -152,7 +168,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             if (context.EventLogEnabled)
             {
                 // Non-inline
-                HostingEventSource.Log.RequestStop();
+                _hostingEventSource.RequestStop();
             }
         }
 
@@ -224,9 +240,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private static void RecordRequestStartEventLog(HttpContext httpContext)
+        private void RecordRequestStartEventLog(HttpContext httpContext)
         {
-            HostingEventSource.Log.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
+            _hostingEventSource.RequestStart(httpContext.Request.Method, httpContext.Request.Path);
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

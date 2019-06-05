@@ -21,18 +21,22 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly ILogger _logger;
         private readonly Func<object, Task> _clearCacheHeadersDelegate;
         private readonly DiagnosticListener _diagnosticListener;
+        private readonly IHttpCounters _counters;
 
         public ExceptionHandlerMiddleware(
             RequestDelegate next,
             ILoggerFactory loggerFactory,
             IOptions<ExceptionHandlerOptions> options,
-            DiagnosticListener diagnosticListener)
+            DiagnosticListener diagnosticListener,
+            IHttpCounters counters)
         {
             _next = next;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
             _clearCacheHeadersDelegate = ClearCacheHeaders;
             _diagnosticListener = diagnosticListener;
+            _counters = counters;
+
             if (_options.ExceptionHandler == null)
             {
                 if (_options.ExceptionHandlingPath == null)
@@ -89,6 +93,8 @@ namespace Microsoft.AspNetCore.Diagnostics
 
         private async Task HandleException(HttpContext context, ExceptionDispatchInfo edi)
         {
+            _counters.RequestException();
+
             _logger.UnhandledException(edi.SourceException);
             // We can't do anything if the response has already started, just abort.
             if (context.Response.HasStarted)

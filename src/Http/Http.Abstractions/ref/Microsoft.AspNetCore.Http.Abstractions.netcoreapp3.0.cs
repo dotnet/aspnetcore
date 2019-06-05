@@ -306,6 +306,15 @@ namespace Microsoft.AspNetCore.Http
         Microsoft.AspNetCore.Http.HttpContext Create(Microsoft.AspNetCore.Http.Features.IFeatureCollection featureCollection);
         void Dispose(Microsoft.AspNetCore.Http.HttpContext httpContext);
     }
+    public partial interface IHttpCounters
+    {
+        long CurrentRequests { get; }
+        long FailedRequests { get; }
+        long TotalRequests { get; }
+        void RequestException();
+        void RequestStart();
+        void RequestStop();
+    }
     public partial interface IMiddleware
     {
         System.Threading.Tasks.Task InvokeAsync(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Http.RequestDelegate next);

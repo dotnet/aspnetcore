@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
     }
     public partial class HostingApplication : Microsoft.AspNetCore.Hosting.Server.IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context>
     {
-        public HostingApplication(Microsoft.AspNetCore.Http.RequestDelegate application, Microsoft.Extensions.Logging.ILogger logger, System.Diagnostics.DiagnosticListener diagnosticSource, Microsoft.AspNetCore.Http.IHttpContextFactory httpContextFactory) { }
+        public HostingApplication(Microsoft.AspNetCore.Http.RequestDelegate application, Microsoft.Extensions.Logging.ILogger logger, System.Diagnostics.DiagnosticListener diagnosticSource, Microsoft.AspNetCore.Http.IHttpContextFactory httpContextFactory, Microsoft.AspNetCore.Http.IHttpCounters counters = null, Microsoft.AspNetCore.Hosting.Internal.HostingEventSource hostingEventSource = null) { }
         public Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context CreateContext(Microsoft.AspNetCore.Http.Features.IFeatureCollection contextFeatures) { throw null; }
         public void DisposeContext(Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context context, System.Exception exception) { }
         public System.Threading.Tasks.Task ProcessRequestAsync(Microsoft.AspNetCore.Hosting.Internal.HostingApplication.Context context) { throw null; }
@@ -145,15 +145,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public static void Initialize(this Microsoft.AspNetCore.Hosting.IHostingEnvironment hostingEnvironment, string contentRootPath, Microsoft.AspNetCore.Hosting.Internal.WebHostOptions options) { }
         public static void Initialize(this Microsoft.AspNetCore.Hosting.IWebHostEnvironment hostingEnvironment, string contentRootPath, Microsoft.AspNetCore.Hosting.Internal.WebHostOptions options) { }
     }
-    [System.Diagnostics.Tracing.EventSourceAttribute(Name="Microsoft-AspNetCore-Hosting")]
     public sealed partial class HostingEventSource : System.Diagnostics.Tracing.EventSource
     {
-        internal HostingEventSource() { }
-        public static readonly Microsoft.AspNetCore.Hosting.Internal.HostingEventSource Log;
+        public HostingEventSource(Microsoft.AspNetCore.Http.IHttpCounters counters) { }
         [System.Diagnostics.Tracing.EventAttribute(1, Level=System.Diagnostics.Tracing.EventLevel.Informational)]
         public void HostStart() { }
         [System.Diagnostics.Tracing.EventAttribute(2, Level=System.Diagnostics.Tracing.EventLevel.Informational)]
         public void HostStop() { }
+        protected override void OnEventCommand(System.Diagnostics.Tracing.EventCommandEventArgs command) { }
         [System.Diagnostics.Tracing.EventAttribute(3, Level=System.Diagnostics.Tracing.EventLevel.Informational)]
         public void RequestStart(string method, string path) { }
         [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.NoInlining)][System.Diagnostics.Tracing.EventAttribute(4, Level=System.Diagnostics.Tracing.EventLevel.Informational)]

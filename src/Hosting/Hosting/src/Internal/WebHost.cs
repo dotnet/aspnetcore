@@ -47,6 +47,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private bool _stopped;
         private bool _startedServer;
 
+        private HostingEventSource _hostingEventSource;
+
         // Used for testing only
         internal WebHostOptions Options => _options;
 
@@ -140,7 +142,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public virtual async Task StartAsync(CancellationToken cancellationToken = default)
         {
-            HostingEventSource.Log.HostStart();
+            _hostingEventSource = _applicationServices.GetRequiredService<HostingEventSource>();
+            var counters = _applicationServices.GetRequiredService<IHttpCounters>();
+
+            _hostingEventSource.HostStart();
             _logger = _applicationServices.GetRequiredService<ILoggerFactory>().CreateLogger("Microsoft.AspNetCore.Hosting.Diagnostics");
             _logger.Starting();
 
@@ -150,7 +155,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             _hostedServiceExecutor = _applicationServices.GetRequiredService<HostedServiceExecutor>();
             var diagnosticSource = _applicationServices.GetRequiredService<DiagnosticListener>();
             var httpContextFactory = _applicationServices.GetRequiredService<IHttpContextFactory>();
-            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory);
+            var hostingApp = new HostingApplication(application, _logger, diagnosticSource, httpContextFactory, counters, _hostingEventSource);
             await Server.StartAsync(hostingApp, cancellationToken).ConfigureAwait(false);
             _startedServer = true;
 
@@ -346,7 +351,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Fire IApplicationLifetime.Stopped
             _applicationLifetime?.NotifyStopped();
 
-            HostingEventSource.Log.HostStop();
+            _hostingEventSource?.HostStop();
         }
 
         public void Dispose()

@@ -34,7 +34,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                                      IApplicationBuilderFactory applicationBuilderFactory,
                                      IEnumerable<IStartupFilter> startupFilters,
                                      IConfiguration configuration,
-                                     IWebHostEnvironment hostingEnvironment)
+                                     IWebHostEnvironment hostingEnvironment,
+                                     HostingEventSource hostingEventSource,
+                                     IHttpCounters counters)
         {
             Options = options.Value;
             Server = server;
@@ -46,6 +48,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             StartupFilters = startupFilters;
             Configuration = configuration;
             HostingEnvironment = hostingEnvironment;
+            HostingEventSource = hostingEventSource;
+            Counters = counters;
         }
 
         public GenericWebHostServiceOptions Options { get; }
@@ -59,10 +63,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public IEnumerable<IStartupFilter> StartupFilters { get; }
         public IConfiguration Configuration { get; }
         public IWebHostEnvironment HostingEnvironment { get; }
+        public HostingEventSource HostingEventSource { get; }
+        public IHttpCounters Counters { get; }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            HostingEventSource.Log.HostStart();
+            HostingEventSource.HostStart();
 
             var serverAddressesFeature = Server.Features?.Get<IServerAddressesFeature>();
             var addresses = serverAddressesFeature?.Addresses;
@@ -115,7 +121,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 application = BuildErrorPageApplication(ex);
             }
 
-            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, HttpContextFactory);
+            var httpApplication = new HostingApplication(application, Logger, DiagnosticListener, HttpContextFactory, Counters, HostingEventSource);
 
             await Server.StartAsync(httpApplication, cancellationToken);
 
@@ -199,7 +205,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
             finally
             {
-                HostingEventSource.Log.HostStop();
+                HostingEventSource.HostStop();
             }
         }
     }

@@ -34,6 +34,7 @@ namespace Microsoft.AspNetCore.Diagnostics
         private readonly DiagnosticSource _diagnosticSource;
         private readonly ExceptionDetailsProvider _exceptionDetailsProvider;
         private readonly Func<ErrorContext, Task> _exceptionHandler;
+        private readonly IHttpCounters _counters;
         private static readonly MediaTypeHeaderValue _textHtmlMediaType = new MediaTypeHeaderValue("text/html");
 
         /// <summary>
@@ -45,13 +46,15 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// <param name="hostingEnvironment"></param>
         /// <param name="diagnosticSource"></param>
         /// <param name="filters"></param>
+        /// <param name="counters"></param>
         public DeveloperExceptionPageMiddleware(
             RequestDelegate next,
             IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
             IWebHostEnvironment hostingEnvironment,
             DiagnosticSource diagnosticSource,
-            IEnumerable<IDeveloperPageExceptionFilter> filters)
+            IEnumerable<IDeveloperPageExceptionFilter> filters,
+            IHttpCounters counters)
         {
             if (next == null)
             {
@@ -75,6 +78,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             _diagnosticSource = diagnosticSource;
             _exceptionDetailsProvider = new ExceptionDetailsProvider(_fileProvider, _options.SourceCodeLineCount);
             _exceptionHandler = DisplayException;
+            _counters = counters;
 
             foreach (var filter in filters.Reverse())
             {
@@ -96,6 +100,8 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
             catch (Exception ex)
             {
+                _counters.RequestException();
+
                 _logger.UnhandledException(ex);
 
                 if (context.Response.HasStarted)

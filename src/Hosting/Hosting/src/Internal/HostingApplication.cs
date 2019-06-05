@@ -21,10 +21,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             RequestDelegate application,
             ILogger logger,
             DiagnosticListener diagnosticSource,
-            IHttpContextFactory httpContextFactory)
+            IHttpContextFactory httpContextFactory,
+            IHttpCounters counters = null,
+            HostingEventSource hostingEventSource = null)
         {
             _application = application;
-            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource);
+            _diagnostics = new HostingApplicationDiagnostics(logger, diagnosticSource, counters, hostingEventSource);
             _httpContextFactory = httpContextFactory;
         }
 

@@ -1,17 +1,34 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics.Tracing;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
 {
-    [EventSource(Name = "Microsoft-AspNetCore-Hosting")]
     public sealed class HostingEventSource : EventSource
     {
-        public static readonly HostingEventSource Log = new HostingEventSource();
+        private readonly IHttpCounters _counters;
 
-        private HostingEventSource() { }
+        private IncrementingPollingCounter _requestsPerSecondCounter;
+        private PollingCounter _totalRequestsCounter;
+        private PollingCounter _failedRequestsCounter;
+        private PollingCounter _currentRequestsCounter;
+
+        public HostingEventSource(IHttpCounters counters)
+            : this(counters, "Microsoft.AspNetCore.Hosting")
+        {
+
+        }
+
+        // Internal for testing
+        internal HostingEventSource(IHttpCounters counters, string eventSourceName)
+            : base(eventSourceName)
+        {
+            _counters = counters;
+        }
 
         // NOTE
         // - The 'Start' and 'Stop' suffixes on the following event names have special meaning in EventSource. They
@@ -50,6 +67,36 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public void UnhandledException()
         {
             WriteEvent(5);
+        }
+
+        protected override void OnEventCommand(EventCommandEventArgs command)
+        {
+            if (command.Command == EventCommand.Enable)
+            {
+                // This is the convention for initializing counters in the RuntimeEventSource (lazily on the first enable command).
+                // They aren't disabled afterwards...
+
+                _requestsPerSecondCounter ??= new IncrementingPollingCounter("requests-per-second", this, () => _counters.TotalRequests)
+                {
+                    DisplayName = "Requests",
+                    DisplayRateTimeScale = TimeSpan.FromSeconds(1)
+                };
+
+                _totalRequestsCounter ??= new PollingCounter("total-requests", this, () => _counters.TotalRequests)
+                {
+                    DisplayName = "Total Requests",
+                };
+
+                _currentRequestsCounter ??= new PollingCounter("current-requests", this, () => _counters.CurrentRequests)
+                {
+                    DisplayName = "Current Requests"
+                };
+
+                _failedRequestsCounter ??= new PollingCounter("failed-requests", this, () => _counters.FailedRequests)
+                {
+                    DisplayName = "Failed Requests"
+                };
+            }
         }
     }
 }

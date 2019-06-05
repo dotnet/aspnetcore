@@ -86,6 +86,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 services.TryAddSingleton<IHttpContextFactory, DefaultHttpContextFactory>();
                 services.TryAddScoped<IMiddlewareFactory, MiddlewareFactory>();
                 services.TryAddSingleton<IApplicationBuilderFactory, ApplicationBuilderFactory>();
+                services.TryAddSingleton<HostingEventSource>();
+                services.TryAddSingleton<IHttpCounters, DefaultHttpCounters>();
 
                 // IMPORTANT: This needs to run *before* direct calls on the builder (like UseStartup)
                 _hostingStartupWebHostBuilder?.ConfigureServices(webhostContext, services);

@@ -281,6 +281,8 @@ namespace Microsoft.AspNetCore.Hosting
             services.AddSingleton<DiagnosticListener>(listener);
             services.AddSingleton<DiagnosticSource>(listener);
 
+            services.AddSingleton<HostingEventSource>();
+            services.AddSingleton<IHttpCounters, DefaultHttpCounters>();
             services.AddTransient<IApplicationBuilderFactory, ApplicationBuilderFactory>();
             services.AddTransient<IHttpContextFactory, DefaultHttpContextFactory>();
             services.AddScoped<IMiddlewareFactory, MiddlewareFactory>();
