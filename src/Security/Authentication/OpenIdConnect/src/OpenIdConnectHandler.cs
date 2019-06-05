@@ -373,9 +373,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // https://tools.ietf.org/html/rfc7636
             if (Options.UsePkse)
             {
-                var verifierBytes = new byte[32];
-                CryptoRandom.GetBytes(verifierBytes);
-                var codeVerifier = WebEncoders.Base64UrlEncode(verifierBytes);
+                var codeVerifier = GenerateUniqueId();
 
                 // Store this for use during the code redemption. See RunAuthorizationCodeReceivedEventAsync.
                 properties.Items.Add(CodeVerifierKey, codeVerifier);
@@ -1123,6 +1121,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             if (properties.Items.TryGetValue(CodeVerifierKey, out var codeVerifier))
             {
                 tokenEndpointRequest.Parameters.Add(CodeVerifierKey, codeVerifier);
+                properties.Items.Remove(CodeVerifierKey);
             }
 
             var context = new AuthorizationCodeReceivedContext(Context, Scheme, Options, properties)

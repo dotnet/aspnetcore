@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -21,6 +22,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions, new()
     {
+        private const string CodeVerifierKey = "code_verifier";
+        private const string CodeChallengeKey = "code_challenge";
+        private const string CodeChallengeMethodKey = "code_challenge_method";
+        private const string CodeChallengeMethodS256 = "S256";
+
         protected HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
@@ -99,76 +105,83 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 return HandleRequestResult.Fail("Code was not found.", properties);
             }
 
-            using (var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath)))
+            var codeExchangeContext = new OAuthCodeExchangeContext(properties, code, BuildRedirectUri(Options.CallbackPath));
+            using var tokens = await ExchangeCodeAsync(codeExchangeContext);
+
+            if (tokens.Error != null)
             {
-                if (tokens.Error != null)
+                return HandleRequestResult.Fail(tokens.Error, properties);
+            }
+
+            if (string.IsNullOrEmpty(tokens.AccessToken))
+            {
+                return HandleRequestResult.Fail("Failed to retrieve access token.", properties);
+            }
+
+            var identity = new ClaimsIdentity(ClaimsIssuer);
+
+            if (Options.SaveTokens)
+            {
+                var authTokens = new List<AuthenticationToken>();
+
+                authTokens.Add(new AuthenticationToken { Name = "access_token", Value = tokens.AccessToken });
+                if (!string.IsNullOrEmpty(tokens.RefreshToken))
                 {
-                    return HandleRequestResult.Fail(tokens.Error, properties);
+                    authTokens.Add(new AuthenticationToken { Name = "refresh_token", Value = tokens.RefreshToken });
                 }
 
-                if (string.IsNullOrEmpty(tokens.AccessToken))
+                if (!string.IsNullOrEmpty(tokens.TokenType))
                 {
-                    return HandleRequestResult.Fail("Failed to retrieve access token.", properties);
+                    authTokens.Add(new AuthenticationToken { Name = "token_type", Value = tokens.TokenType });
                 }
 
-                var identity = new ClaimsIdentity(ClaimsIssuer);
-
-                if (Options.SaveTokens)
+                if (!string.IsNullOrEmpty(tokens.ExpiresIn))
                 {
-                    var authTokens = new List<AuthenticationToken>();
-
-                    authTokens.Add(new AuthenticationToken { Name = "access_token", Value = tokens.AccessToken });
-                    if (!string.IsNullOrEmpty(tokens.RefreshToken))
+                    int value;
+                    if (int.TryParse(tokens.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
                     {
-                        authTokens.Add(new AuthenticationToken { Name = "refresh_token", Value = tokens.RefreshToken });
-                    }
-
-                    if (!string.IsNullOrEmpty(tokens.TokenType))
-                    {
-                        authTokens.Add(new AuthenticationToken { Name = "token_type", Value = tokens.TokenType });
-                    }
-
-                    if (!string.IsNullOrEmpty(tokens.ExpiresIn))
-                    {
-                        int value;
-                        if (int.TryParse(tokens.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+                        // https://www.w3.org/TR/xmlschema-2/#dateTime
+                        // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
+                        var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
+                        authTokens.Add(new AuthenticationToken
                         {
-                            // https://www.w3.org/TR/xmlschema-2/#dateTime
-                            // https://msdn.microsoft.com/en-us/library/az4se3k1(v=vs.110).aspx
-                            var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
-                            authTokens.Add(new AuthenticationToken
-                            {
-                                Name = "expires_at",
-                                Value = expiresAt.ToString("o", CultureInfo.InvariantCulture)
-                            });
-                        }
+                            Name = "expires_at",
+                            Value = expiresAt.ToString("o", CultureInfo.InvariantCulture)
+                        });
                     }
-
-                    properties.StoreTokens(authTokens);
                 }
 
-                var ticket = await CreateTicketAsync(identity, properties, tokens);
-                if (ticket != null)
-                {
-                    return HandleRequestResult.Success(ticket);
-                }
-                else
-                {
-                    return HandleRequestResult.Fail("Failed to retrieve user information from remote server.", properties);
-                }
+                properties.StoreTokens(authTokens);
+            }
+
+            var ticket = await CreateTicketAsync(identity, properties, tokens);
+            if (ticket != null)
+            {
+                return HandleRequestResult.Success(ticket);
+            }
+            else
+            {
+                return HandleRequestResult.Fail("Failed to retrieve user information from remote server.", properties);
             }
         }
 
-        protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(string code, string redirectUri)
+        protected virtual async Task<OAuthTokenResponse> ExchangeCodeAsync(OAuthCodeExchangeContext context)
         {
             var tokenRequestParameters = new Dictionary<string, string>()
             {
                 { "client_id", Options.ClientId },
-                { "redirect_uri", redirectUri },
+                { "redirect_uri", context.RedirectUri },
                 { "client_secret", Options.ClientSecret },
-                { "code", code },
+                { "code", context.Code },
                 { "grant_type", "authorization_code" },
             };
+
+            // PKCE https://tools.ietf.org/html/rfc7636#section-4.5, see BuildChallengeUrl
+            if (context.Properties.Items.TryGetValue(CodeVerifierKey, out var codeVerifier))
+            {
+                tokenRequestParameters.Add(CodeVerifierKey, codeVerifier);
+                context.Properties.Items.Remove(CodeVerifierKey);
+            }
 
             var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
 
@@ -241,15 +254,31 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var scopeParameter = properties.GetParameter<ICollection<string>>(OAuthChallengeProperties.ScopeKey);
             var scope = scopeParameter != null ? FormatScope(scopeParameter) : FormatScope();
 
-            var state = Options.StateDataFormat.Protect(properties);
             var parameters = new Dictionary<string, string>
             {
                 { "client_id", Options.ClientId },
                 { "scope", scope },
                 { "response_type", "code" },
                 { "redirect_uri", redirectUri },
-                { "state", state },
             };
+
+            if (Options.UsePkse)
+            {
+                var codeVerifier = GenerateUniqueId();
+
+                // Store this for use during the code redemption.
+                properties.Items.Add(CodeVerifierKey, codeVerifier);
+
+                using var sha256 = SHA256.Create();
+                var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
+                var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
+
+                parameters[CodeChallengeKey] = codeChallenge;
+                parameters[CodeChallengeMethodKey] = CodeChallengeMethodS256;
+            }
+
+            parameters["state"] = Options.StateDataFormat.Protect(properties);
+
             return QueryHelpers.AddQueryString(Options.AuthorizationEndpoint, parameters);
         }
 

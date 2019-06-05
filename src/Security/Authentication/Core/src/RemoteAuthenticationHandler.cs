@@ -186,6 +186,17 @@ namespace Microsoft.AspNetCore.Authentication
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
             => Context.ForbidAsync(SignInScheme);
 
+        /// <summary>
+        /// Creates a 32 bit random Id and Base64Url encodes it.
+        /// </summary>
+        /// <returns></returns>
+        protected virtual string GenerateUniqueId()
+        {
+            var bytes = new byte[32];
+            CryptoRandom.GetBytes(bytes);
+            return Base64UrlTextEncoder.Encode(bytes);
+        }
+
         protected virtual void GenerateCorrelationId(AuthenticationProperties properties)
         {
             if (properties == null)
@@ -193,9 +204,7 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new ArgumentNullException(nameof(properties));
             }
 
-            var bytes = new byte[32];
-            CryptoRandom.GetBytes(bytes);
-            var correlationId = Base64UrlTextEncoder.Encode(bytes);
+            var correlationId = GenerateUniqueId();
 
             var cookieOptions = Options.CorrelationCookie.Build(Context, Clock.UtcNow);
 
