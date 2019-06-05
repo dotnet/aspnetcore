@@ -331,7 +331,7 @@ public class HubConnection {
                         transport = new LongPollingTransport(headers, httpClient, tokenProvider);
                         break;
                     default:
-                        transport = new WebSocketTransport(headers, httpClient);
+                        transport = new WebSocketTransport(headers, httpClient, tokenProvider);
                 }
             }
 

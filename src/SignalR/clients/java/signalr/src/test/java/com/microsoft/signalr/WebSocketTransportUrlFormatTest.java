@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
+import io.reactivex.Single;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -24,7 +25,7 @@ class WebSocketTransportUrlFormatTest {
     @ParameterizedTest
     @MethodSource("protocols")
     public void checkWebsocketUrlProtocol(String url, String expectedUrl) {
-        WebSocketTransport webSocketTransport = new WebSocketTransport(new HashMap<>(), new TestHttpClient());
+        WebSocketTransport webSocketTransport = new WebSocketTransport(new HashMap<>(), new TestHttpClient(), Single.just(""));
         try {
             webSocketTransport.start(url);
         } catch (Exception e) {}
