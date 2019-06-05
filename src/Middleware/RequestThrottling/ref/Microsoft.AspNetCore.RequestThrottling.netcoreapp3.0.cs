@@ -6,7 +6,6 @@ namespace Microsoft.AspNetCore.Builder
     public static partial class RequestThrottlingExtensions
     {
         public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseRequestThrottling(this Microsoft.AspNetCore.Builder.IApplicationBuilder app) { throw null; }
-        public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseRequestThrottling(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.RequestThrottling.RequestThrottlingOptions options) { throw null; }
     }
 }
 namespace Microsoft.AspNetCore.RequestThrottling
