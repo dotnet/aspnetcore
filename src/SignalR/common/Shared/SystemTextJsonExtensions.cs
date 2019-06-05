@@ -57,23 +57,6 @@ namespace Microsoft.AspNetCore.Internal
             }
         }
 
-        // Remove after https://github.com/dotnet/corefx/issues/33295 is done
-        public static void Skip(this ref Utf8JsonReader reader)
-        {
-            if (reader.TokenType == JsonTokenType.PropertyName)
-            {
-                reader.Read();
-            }
-
-            if (reader.TokenType == JsonTokenType.StartObject || reader.TokenType == JsonTokenType.StartArray)
-            {
-                int depth = reader.CurrentDepth;
-                while (reader.Read() && depth < reader.CurrentDepth)
-                {
-                }
-            }
-        }
-
         public static string ReadAsString(this ref Utf8JsonReader reader, string propertyName)
         {
             reader.Read();
