@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 
             foreach (ProcessModule handle in handles)
             {
-                if (handle.ModuleName == "aspnetcorev2.dll")
+                if (handle.ModuleName == "aspnetcorev2.dll" || handle.ModuleName == "aspnetcorev2_outofprocess.dll")
                 {
                     Assert.Equal("12.2.18316.0", handle.FileVersionInfo.FileVersion);
                     return;

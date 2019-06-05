@@ -36,16 +36,4 @@
     <Reference Include="System.Net.WebSockets.WebSocketProtocol" />
   </ItemGroup>
 
-  <Target Name="RemoveSourceOverride" BeforeTargets="_CopyOutOfDateSourceItemsToOutputDirectory">
-    <ItemGroup>
-    <!-- There is a race between which dll is copied to the bin directory between ANCM in a package and the built ANCM. 
-        We want to guarantee the ANCM in the nuget package is used, so remove all paths that contain paths in the artifacts directory.
-        -->
-      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('AspNetCoreModuleShim')) == 'true'" />
-      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('InProcessRequestHandler')) == 'true'" />
-      <SourceItemsToRemove Include="@(_SourceItemsToCopyToOutputDirectory)" Condition="$([System.String]::Copy(%(_SourceItemsToCopyToOutputDirectory.FullPath)).Contains('OutOfProcessRequestHandler')) == 'true'" />
-      <_SourceItemsToCopyToOutputDirectory Remove="@(SourceItemsToRemove)" />
-   </ItemGroup>
-  </Target>
-
 </Project>
