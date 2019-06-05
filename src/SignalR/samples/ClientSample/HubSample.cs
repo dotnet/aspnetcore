@@ -53,64 +53,71 @@ namespace ClientSample
 
             connectionBuilder.WithAutomaticReconnect();
 
-            await using var connection = connectionBuilder.Build();
             using var closedTokenSource = new CancellationTokenSource();
+            var connection = connectionBuilder.Build();
 
-            Console.CancelKeyPress += (sender, a) =>
+            try
             {
-                a.Cancel = true;
-                closedTokenSource.Cancel();
-                connection.StopAsync().GetAwaiter().GetResult();
-            };
+                Console.CancelKeyPress += (sender, a) =>
+                {
+                    a.Cancel = true;
+                    closedTokenSource.Cancel();
+                    connection.StopAsync().GetAwaiter().GetResult();
+                };
 
-            // Set up handler
-            connection.On<string>("Send", Console.WriteLine);
+                // Set up handler
+                connection.On<string>("Send", Console.WriteLine);
 
-            connection.Closed += e =>
-            {
-                Console.WriteLine("Connection closed...");
-                closedTokenSource.Cancel();
-                return Task.CompletedTask;
-            };
+                connection.Closed += e =>
+                {
+                    Console.WriteLine("Connection closed...");
+                    closedTokenSource.Cancel();
+                    return Task.CompletedTask;
+                };
 
-            if (!await ConnectAsync(connection, closedTokenSource.Token))
-            {
-                Console.WriteLine("Failed to establish a connection to '{0}' because the CancelKeyPress event fired first. Exiting...", uri);
-                return 0;
+                if (!await ConnectAsync(connection, closedTokenSource.Token))
+                {
+                    Console.WriteLine("Failed to establish a connection to '{0}' because the CancelKeyPress event fired first. Exiting...", uri);
+                    return 0;
+                }
+
+                Console.WriteLine("Connected to {0}", uri);
+
+                // Handle the connected connection
+                while (true)
+                {
+                    // If the underlying connection closes while waiting for user input, the user will not observe
+                    // the connection close aside from "Connection closed..." being printed to the console. That's
+                    // because cancelling Console.ReadLine() is a royal pain.
+                    var line = Console.ReadLine();
+
+                    if (line == null || closedTokenSource.Token.IsCancellationRequested)
+                    {
+                        Console.WriteLine("Exiting...");
+                        break;
+                    }
+
+                    try
+                    {
+                        await connection.InvokeAsync<object>("Send", line);
+                    }
+                    catch when (closedTokenSource.IsCancellationRequested)
+                    {
+                        // We're shutting down the client
+                        Console.WriteLine("Failed to send '{0}' because the CancelKeyPress event fired first. Exiting...", line);
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Send could have failed because the connection closed
+                        // Continue to loop because we should be reconnecting.
+                        Console.WriteLine(ex);
+                    }
+                }
             }
-
-            Console.WriteLine("Connected to {0}", uri);
-
-            // Handle the connected connection
-            while (true)
+            finally
             {
-                // If the underlying connection closes while waiting for user input, the user will not observe
-                // the connection close aside from "Connection closed..." being printed to the console. That's
-                // because cancelling Console.ReadLine() is a royal pain.
-                var line = Console.ReadLine();
-
-                if (line == null || closedTokenSource.Token.IsCancellationRequested)
-                {
-                    Console.WriteLine("Exiting...");
-                    break;
-                }
-
-                try
-                {
-                    await connection.InvokeAsync<object>("Send", line);
-                }
-                catch when (closedTokenSource.IsCancellationRequested)
-                {
-                    // We're shutting down the client
-                    Console.WriteLine("Failed to send '{0}' because the CancelKeyPress event fired first. Exiting...", line);
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    // Send could have failed because the connection closed
-                    // Continue to loop because we should be reconnecting.
-                    Console.WriteLine(ex);
-                }
+                await connection.StopAsync();
             }
 
             return 0;
