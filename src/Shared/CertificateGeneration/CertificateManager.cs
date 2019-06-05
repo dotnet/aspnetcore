@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 }
                 else
                 {
-                    // Version is in the last byte of the byte array.
+                    // Version is in the only byte of the byte array.
                     return byteArray[0] >= AspNetHttpsCertificateVersion;
                 }
             }
