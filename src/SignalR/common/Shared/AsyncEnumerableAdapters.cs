@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             public IAsyncEnumerator<TResult> GetAsyncEnumerator(CancellationToken cancellationToken = default)
             {
-                var enumerator = _asyncEnumerable.GetAsyncEnumerator();
+                var enumerator = _asyncEnumerable.GetAsyncEnumerator(cancellationToken);
                 if (cancellationToken.CanBeCanceled)
                 {
                     var registration = cancellationToken.Register((ctsState) =>
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                         ((CancellationTokenSource)ctsState).Cancel();
                     }, _cts);
 
-                    return new CancelableEnumerator<TResult>(_asyncEnumerable.GetAsyncEnumerator(), registration);
+                    return new CancelableEnumerator<TResult>(enumerator, registration);
                 }
 
                 return enumerator;
