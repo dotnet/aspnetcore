@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.RequestThrottling;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Builder
 {
