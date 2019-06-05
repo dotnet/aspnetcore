@@ -177,6 +177,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         public System.Func<Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext, System.Threading.Tasks.Task<bool>> Handler { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         [System.Diagnostics.DebuggerStepThroughAttribute]
         public System.Threading.Tasks.Task HandleAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context) { throw null; }
+        public override string ToString() { throw null; }
     }
     public partial class ClaimsAuthorizationRequirement : Microsoft.AspNetCore.Authorization.AuthorizationHandler<Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement>, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement
     {
@@ -184,22 +185,26 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         public System.Collections.Generic.IEnumerable<string> AllowedValues { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string ClaimType { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Threading.Tasks.Task HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context, Microsoft.AspNetCore.Authorization.Infrastructure.ClaimsAuthorizationRequirement requirement) { throw null; }
+        public override string ToString() { throw null; }
     }
     public partial class DenyAnonymousAuthorizationRequirement : Microsoft.AspNetCore.Authorization.AuthorizationHandler<Microsoft.AspNetCore.Authorization.Infrastructure.DenyAnonymousAuthorizationRequirement>, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement
     {
         public DenyAnonymousAuthorizationRequirement() { }
         protected override System.Threading.Tasks.Task HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context, Microsoft.AspNetCore.Authorization.Infrastructure.DenyAnonymousAuthorizationRequirement requirement) { throw null; }
+        public override string ToString() { throw null; }
     }
     public partial class NameAuthorizationRequirement : Microsoft.AspNetCore.Authorization.AuthorizationHandler<Microsoft.AspNetCore.Authorization.Infrastructure.NameAuthorizationRequirement>, Microsoft.AspNetCore.Authorization.IAuthorizationRequirement
     {
         public NameAuthorizationRequirement(string requiredName) { }
         public string RequiredName { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Threading.Tasks.Task HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context, Microsoft.AspNetCore.Authorization.Infrastructure.NameAuthorizationRequirement requirement) { throw null; }
+        public override string ToString() { throw null; }
     }
     public partial class OperationAuthorizationRequirement : Microsoft.AspNetCore.Authorization.IAuthorizationRequirement
     {
         public OperationAuthorizationRequirement() { }
         public string Name { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public override string ToString() { throw null; }
     }
     public partial class PassThroughAuthorizationHandler : Microsoft.AspNetCore.Authorization.IAuthorizationHandler
     {
@@ -212,6 +217,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         public RolesAuthorizationRequirement(System.Collections.Generic.IEnumerable<string> allowedRoles) { }
         public System.Collections.Generic.IEnumerable<string> AllowedRoles { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         protected override System.Threading.Tasks.Task HandleRequirementAsync(Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext context, Microsoft.AspNetCore.Authorization.Infrastructure.RolesAuthorizationRequirement requirement) { throw null; }
+        public override string ToString() { throw null; }
     }
 }
 namespace Microsoft.Extensions.DependencyInjection
