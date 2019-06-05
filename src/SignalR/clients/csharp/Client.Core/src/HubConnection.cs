@@ -1944,7 +1944,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public async Task<ConnectionState> WaitForActiveConnectionAsync(string methodName, [CallerMemberName] string memberName = null, [CallerFilePath] string filePath = null, [CallerLineNumber] int lineNumber = 0)
             {
-                await WaitConnectionLockAsync();
+                await WaitConnectionLockAsync(methodName);
 
                 if (CurrentConnectionStateUnsynchronized == null || CurrentConnectionStateUnsynchronized.Stopping)
                 {
