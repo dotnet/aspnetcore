@@ -58,6 +58,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     opt.Authority = TestServerBuilder.DefaultAuthority;
                     opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                    opt.ResponseType = OpenIdConnectResponseType.Code;
                     opt.ClientId = "Test Id";
                     opt.UsePkce = include;
                 });
@@ -79,6 +80,33 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 Assert.DoesNotContain("code_challenge=", res.Headers.Location.Query);
                 Assert.DoesNotContain("code_challenge_method=", res.Headers.Location.Query);
             }
+        }
+
+        [Theory]
+        [InlineData(OpenIdConnectResponseType.Token)]
+        [InlineData(OpenIdConnectResponseType.IdToken)]
+        [InlineData(OpenIdConnectResponseType.CodeIdToken)]
+        public async Task ChallengeDoesNotIncludePkceForOtherResponseTypes(string responseType)
+        {
+            var settings = new TestSettings(
+                opt =>
+                {
+                    opt.Authority = TestServerBuilder.DefaultAuthority;
+                    opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                    opt.ResponseType = responseType;
+                    opt.ClientId = "Test Id";
+                    opt.UsePkce = true;
+                });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+
+            Assert.DoesNotContain("code_challenge=", res.Headers.Location.Query);
+            Assert.DoesNotContain("code_challenge_method=", res.Headers.Location.Query);
         }
 
         [Fact]

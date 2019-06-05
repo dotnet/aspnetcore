@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             };
 
             // https://tools.ietf.org/html/rfc7636
-            if (Options.UsePkce)
+            if (Options.UsePkce && Options.ResponseType == OpenIdConnectResponseType.Code)
             {
                 var codeVerifier = GenerateUniqueId();
 
