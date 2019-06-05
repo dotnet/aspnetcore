@@ -130,14 +130,14 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     .Single()
                     .RawData;
 
-                if (byteArray.Length == AspNetHttpsOidFriendlyName.Length || byteArray.Length == 0)
+                if ((byteArray.Length == AspNetHttpsOidFriendlyName.Length && byteArray[0] == (byte)'A') || byteArray.Length == 0)
                 {
                     // No Version set, default to 0
                     return 0 >= AspNetHttpsCertificateVersion;
                 }
                 else
                 {
-                    // Version is in the last byte of the byte array.
+                    // Version is in the only byte of the byte array.
                     return byteArray[0] >= AspNetHttpsCertificateVersion;
                 }
             }
