@@ -31,7 +31,7 @@
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
-    <MakeDir Directories="$(PublishDir)\AzureAD.WebSite" Condition="!Exists('$(PublishDir)\AzureAD.WebSite')" Condition="!Exists('$(PublishDir)\AzureAD.WebSite')" ContinueOnError="true" />
+    <MakeDir Directories="$(PublishDir)\AzureAD.WebSite" Condition="!Exists('$(PublishDir)\AzureAD.WebSite')" ContinueOnError="true" />
   </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
