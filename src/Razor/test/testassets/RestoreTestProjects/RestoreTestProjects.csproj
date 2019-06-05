@@ -21,6 +21,8 @@
     <ProjectReference Include="..\SimpleMvcFSharp\SimpleMvcFSharp.fsproj" />
     <ProjectReference Include="..\SimpleMvc\SimpleMvc.csproj" />
     <ProjectReference Include="..\SimplePages\SimplePages.csproj" />
+    <ProjectReference Include="..\PackageLibraryDirectDependency\PackageLibraryDirectDependency.csproj" />
+    <ProjectReference Include="..\PackageLibraryTransitiveDependency\PackageLibraryTransitiveDependency.csproj" />
 
     <!--
       We don't add AppWithPackageAndP2PReference, PackageLibraryDirectDependency or PackageLibraryTransitiveDependency here
