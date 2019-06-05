@@ -95,10 +95,10 @@ HostFxrResolver::GetHostFxrParameters(
             if (!is_regular_file(applicationDllPath))
             {
                 errorContext.subStatusCode = 38;
-                errorContext.errorReason = "Application dll not found. Confirm the application dll is present. Single-file deployments are not supported in IIS.";
-                errorContext.generalErrorType = "ANCM Application Dll Not Found";
+                errorContext.errorReason = "Application DLL not found. Confirm the application dll is present. Single-file deployments are not supported in IIS.";
+                errorContext.generalErrorType = "ANCM Application DLL Not Found";
                 throw InvalidOperationException(
-                    format(L"Application .dll was not found at %s. Confirm the application dll is present. Single-file deployments are not supported in IIS.",
+                    format(L"Application DLL was not found at %s. Confirm the application dll is present. Single-file deployments are not supported in IIS.",
                         applicationDllPath.c_str()));
             }
 
