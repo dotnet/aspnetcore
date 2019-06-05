@@ -245,7 +245,6 @@
     <ClCompile Include="file_utility.cpp" />
     <ClCompile Include="fx_ver.cpp" />
     <ClCompile Include="GlobalVersionUtility.cpp" />
-    <ClCompile Include="HandleWrapper.cpp" />
     <ClCompile Include="HostFxr.cpp" />
     <ClCompile Include="HostFxrResolver.cpp" />
     <ClCompile Include="HostFxrResolutionResult.cpp" />
