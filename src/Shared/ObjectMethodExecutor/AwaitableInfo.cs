@@ -74,10 +74,7 @@ namespace Microsoft.Extensions.Internal
             }
 
             // INotifyCompletion supplies a method matching "void OnCompleted(Action action)"
-            var iNotifyCompletionMap = awaiterType
-                .GetTypeInfo()
-                .GetRuntimeInterfaceMap(typeof(INotifyCompletion));
-            var onCompletedMethod = iNotifyCompletionMap.InterfaceMethods.Single(m =>
+            var onCompletedMethod = typeof(INotifyCompletion).GetRuntimeMethods().Single(m =>
                 m.Name.Equals("OnCompleted", StringComparison.OrdinalIgnoreCase)
                 && m.ReturnType == typeof(void)
                 && m.GetParameters().Length == 1
@@ -89,10 +86,7 @@ namespace Microsoft.Extensions.Internal
             if (implementsICriticalNotifyCompletion)
             {
                 // ICriticalNotifyCompletion supplies a method matching "void UnsafeOnCompleted(Action action)"
-                var iCriticalNotifyCompletionMap = awaiterType
-                    .GetTypeInfo()
-                    .GetRuntimeInterfaceMap(typeof(ICriticalNotifyCompletion));
-                unsafeOnCompletedMethod = iCriticalNotifyCompletionMap.InterfaceMethods.Single(m =>
+                unsafeOnCompletedMethod = typeof(ICriticalNotifyCompletion).GetRuntimeMethods().Single(m =>
                     m.Name.Equals("UnsafeOnCompleted", StringComparison.OrdinalIgnoreCase)
                     && m.ReturnType == typeof(void)
                     && m.GetParameters().Length == 1

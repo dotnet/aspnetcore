@@ -13,5 +13,9 @@
   <assembly fullname="System">
     <!-- Without this, [Required(typeof(bool), "true", "true", ErrorMessage = "...")] fails -->
     <type fullname="System.ComponentModel.BooleanConverter" />
+
+    <!-- TypeConverters are only used through reflection. These are two built-in TypeConverters that are useful. -->
+    <type fullname="System.ComponentModel.GuidConverter" />
+    <type fullname="System.ComponentModel.TimeSpanConverter" />
   </assembly>
 </linker>
