@@ -12,12 +12,13 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 {
     public static class TestUtils
     {
-        public static RequestThrottlingMiddleware CreateTestMiddleware(int? maxConcurrentRequests, int requestQueueLimit = 5000, RequestDelegate next = null)
+        public static RequestThrottlingMiddleware CreateTestMiddleware(int? maxConcurrentRequests, int requestQueueLimit = 5000, RequestDelegate onRejected = null, RequestDelegate next = null)
         {
             var options = new RequestThrottlingOptions
             {
                 MaxConcurrentRequests = maxConcurrentRequests,
-                RequestQueueLimit = requestQueueLimit
+                RequestQueueLimit = requestQueueLimit,
+                OnRejected = onRejected
             };
 
             return new RequestThrottlingMiddleware(

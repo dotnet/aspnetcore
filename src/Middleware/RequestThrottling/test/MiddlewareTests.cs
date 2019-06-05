@@ -127,5 +127,24 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             _ = middleware.Invoke(new DefaultHttpContext());
             Assert.Equal(2, middleware.ActiveRequestCount);
         }
+
+        [Fact]
+        public async void FullQueueInvokesOnRejected()
+        {
+            bool onRejectedInvoked = false;
+
+            var middleware = TestUtils.CreateTestMiddleware(
+                maxConcurrentRequests: 0,
+                requestQueueLimit: 0,
+                onRejected: httpContext =>
+                {
+                    onRejectedInvoked = true;
+                    return Task.CompletedTask;
+                });
+
+            var context = new DefaultHttpContext();
+            await middleware.Invoke(context);
+            Assert.True(onRejectedInvoked);
+        }
     }
 }
