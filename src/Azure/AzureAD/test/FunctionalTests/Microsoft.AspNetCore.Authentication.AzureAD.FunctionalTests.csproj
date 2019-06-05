@@ -15,6 +15,7 @@
   <ItemGroup>
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
+    <Content Include="..\testassets\AzureAD.WebSite\**\*" />
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
@@ -31,7 +32,6 @@
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
-    <MakeDir Directories="$(PublishDir)\AzureAD.WebSite" Condition="!Exists('$(PublishDir)\AzureAD.WebSite')" ContinueOnError="true" />
   </Target>
 
   <Import Project="$(MvcTestingTargets)" Condition="'$(MvcTestingTargets)' != ''" />
