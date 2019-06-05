@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
     {
         public const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
         public const string AspNetHttpsOidFriendlyName = "ASP.NET Core HTTPS development certificate";
+        private const int AspNetHttpsOidFriendlyNameLength = 42;
 
         private const string ServerAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.1";
         private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
@@ -41,7 +42,10 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSTrustCertificateCommandLine = "sudo";
         private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
         private const int UserCancelledErrorCode = 1223;
-        private const byte AspNetHttpsVersion = 1; // TODO make this public somehow
+
+        // Setting to 0 means we don't append the version byte,
+        // which is what all machines currently have.
+        public int AspNetHttpsCertificateVersion { get; set; } = 1;
 
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
@@ -119,6 +123,21 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             bool HasOid(X509Certificate2 certificate, string oid) =>
                 certificate.Extensions.OfType<X509Extension>()
                     .Any(e => string.Equals(oid, e.Oid.Value, StringComparison.Ordinal));
+
+            bool MatchesVersion(X509Certificate2 c)
+            {
+                var byteArray = c.Extensions.OfType<X509Extension>().Where(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal)).Single().RawData;
+                if (byteArray.Length == AspNetHttpsOidFriendlyNameLength)
+                {
+                    // No Version set, default to null/0
+                    return 0 >= AspNetHttpsCertificateVersion;
+                }
+                else
+                {
+                    // Version is in the last byte of the byte array.
+                    return byteArray[AspNetHttpsOidFriendlyNameLength] >= AspNetHttpsCertificateVersion;
+                }
+            }
 #if !XPLAT
             bool IsExportable(X509Certificate2 c) =>
                 ((c.GetRSAPrivateKey() is RSACryptoServiceProvider rsaPrivateKey &&
@@ -135,16 +154,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 ((c.GetRSAPrivateKey() is RSACryptoServiceProvider rsaPrivateKey &&
                     rsaPrivateKey.CspKeyContainerInfo.Exportable) || !(c.GetRSAPrivateKey() is RSACryptoServiceProvider));
 #endif
-        }
-
-        private bool MatchesVersion(X509Certificate2 c)
-        {
-            // TODO this may not be correct
-            // todo save GetByteCount as a field
-            var byteArray = c.Extensions[AspNetHttpsOidFriendlyName].RawData;
-            var length = Encoding.ASCII.GetByteCount(AspNetHttpsOidFriendlyName);
-            var version = byteArray[length];
-            return version == AspNetHttpsVersion;
         }
 
         private static void DisposeCertificates(IEnumerable<X509Certificate2> disposables)
@@ -183,18 +192,23 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 pathLengthConstraint: 0,
                 critical: true);
 
-            // Add a version here
-            var byteCount = Encoding.ASCII.GetByteCount(AspNetHttpsOidFriendlyName);
+            byte[] bytePayload;
 
-            var bytePayload = new byte[byteCount + 1];
-            Encoding.ASCII.GetBytes(AspNetHttpsOidFriendlyName, bytePayload);
+            if (AspNetHttpsCertificateVersion != 0)
+            {
+                bytePayload = new byte[AspNetHttpsOidFriendlyNameLength + 1];
+                Encoding.ASCII.GetBytes(AspNetHttpsOidFriendlyName, bytePayload);
+                bytePayload[AspNetHttpsOidFriendlyNameLength] = (byte)AspNetHttpsCertificateVersion;
+            }
+            else
+            {
+                bytePayload = Encoding.ASCII.GetBytes(AspNetHttpsOidFriendlyName);
+            }
 
-            bytePayload[byteCount] = AspNetHttpsVersion;
             var aspNetHttpsExtension = new X509Extension(
                 new AsnEncodedData(
                     new Oid(AspNetHttpsOid, AspNetHttpsOidFriendlyName),
-                    bytePayload
-                    ),
+                    bytePayload),
                 critical: false);
 
             extensions.Add(basicConstraints);
@@ -653,7 +667,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             }
         }
 
-        public EnsureCertificateResult EnsureAspNetCoreHttpsDevelopmentCertificate(
+        public DetailedEnsureCertificateResult EnsureAspNetCoreHttpsDevelopmentCertificate(
             DateTimeOffset notBefore,
             DateTimeOffset notAfter,
             string path = null,
@@ -665,109 +679,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
             return EnsureValidCertificateExists(notBefore, notAfter, CertificatePurpose.HTTPS, path, trust, includePrivateKey, password, subject);
         }
 
-        public EnsureCertificateResult EnsureValidCertificateExists(
-            DateTimeOffset notBefore,
-            DateTimeOffset notAfter,
-            CertificatePurpose purpose,
-            string path = null,
-            bool trust = false,
-            bool includePrivateKey = false,
-            string password = null,
-            string subjectOverride = null)
-        {
-            if (purpose == CertificatePurpose.All)
-            {
-                throw new ArgumentException("The certificate must have a specific purpose.");
-            }
-
-            var certificates = ListCertificates(purpose, StoreName.My, StoreLocation.CurrentUser, isValid: true).Concat(
-                ListCertificates(purpose, StoreName.My, StoreLocation.LocalMachine, isValid: true));
-
-            certificates = subjectOverride == null ? certificates : certificates.Where(c => c.Subject == subjectOverride);
-
-            var result = EnsureCertificateResult.Succeeded;
-
-            X509Certificate2 certificate = null;
-            if (certificates.Count() > 0)
-            {
-                certificate = certificates.FirstOrDefault();
-                result = EnsureCertificateResult.ValidCertificatePresent;
-            }
-            else
-            {
-                try
-                {
-                    switch (purpose)
-                    {
-                        case CertificatePurpose.All:
-                            throw new InvalidOperationException("The certificate must have a specific purpose.");
-                        case CertificatePurpose.HTTPS:
-                            certificate = CreateAspNetCoreHttpsDevelopmentCertificate(notBefore, notAfter, subjectOverride);
-                            break;
-                        default:
-                            throw new InvalidOperationException("The certificate must have a purpose.");
-                    }
-                }
-                catch
-                {
-                    return EnsureCertificateResult.ErrorCreatingTheCertificate;
-                }
-
-                try
-                {
-                    certificate = SaveCertificateInStore(certificate, StoreName.My, StoreLocation.CurrentUser);
-                }
-                catch
-                {
-                    return EnsureCertificateResult.ErrorSavingTheCertificateIntoTheCurrentUserPersonalStore;
-                }
-            }
-            if (path != null)
-            {
-                try
-                {
-                    ExportCertificate(certificate, path, includePrivateKey, password);
-                }
-                catch
-                {
-                    return EnsureCertificateResult.ErrorExportingTheCertificate;
-                }
-            }
-
-            if ((RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) && trust)
-            {
-                try
-                {
-                    TrustCertificate(certificate);
-                }
-                catch (UserCancelledTrustException)
-                {
-                    return EnsureCertificateResult.UserCancelledTrustStep;
-                }
-                catch
-                {
-                    return EnsureCertificateResult.FailedToTrustTheCertificate;
-                }
-            }
-
-            return result;
-        }
-
-        // This is just to avoid breaking changes across repos.
-        // Will be renamed back to EnsureAspNetCoreHttpsDevelopmentCertificate once updates are made elsewhere.
-        public DetailedEnsureCertificateResult EnsureAspNetCoreHttpsDevelopmentCertificate2(
-            DateTimeOffset notBefore,
-            DateTimeOffset notAfter,
-            string path = null,
-            bool trust = false,
-            bool includePrivateKey = false,
-            string password = null,
-            string subject = LocalhostHttpsDistinguishedName)
-        {
-            return EnsureValidCertificateExists2(notBefore, notAfter, CertificatePurpose.HTTPS, path, trust, includePrivateKey, password, subject);
-        }
-
-        public DetailedEnsureCertificateResult EnsureValidCertificateExists2(
+        public DetailedEnsureCertificateResult EnsureValidCertificateExists(
             DateTimeOffset notBefore,
             DateTimeOffset notAfter,
             CertificatePurpose purpose,
