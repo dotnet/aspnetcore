@@ -394,9 +394,9 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
             // Assert
             Assert.NotSame(authorizeFilter, result);
             var actual = Assert.IsType<AuthorizeFilter>(result);
-            Assert.NotNull(actual.Policy);
-            Assert.Null(actual.PolicyProvider);
-            Assert.Null(actual.AuthorizeData);
+            Assert.Null(actual.Policy);
+            Assert.NotNull(actual.PolicyProvider);
+            Assert.NotNull(actual.AuthorizeData);
         }
 
         [Theory]
