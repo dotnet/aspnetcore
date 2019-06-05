@@ -17,6 +17,8 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 if (_formatterResolvers == null)
                 {
+                    // The default set of resolvers trigger a static constructor that throws on AOT environments.
+                    // This gives users the chance to use an AOT friendly formatter.
                     _formatterResolvers = MessagePackHubProtocol.CreateDefaultFormatterResolvers();
                 }
 
