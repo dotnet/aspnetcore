@@ -18,7 +18,6 @@ namespace Microsoft.AspNetCore.Certificates.Generation
     {
         public const string AspNetHttpsOid = "1.3.6.1.4.1.311.84.1.1";
         public const string AspNetHttpsOidFriendlyName = "ASP.NET Core HTTPS development certificate";
-        private const int AspNetHttpsOidFriendlyNameLength = 42;
 
         private const string ServerAuthenticationEnhancedKeyUsageOid = "1.3.6.1.5.5.7.3.1";
         private const string ServerAuthenticationEnhancedKeyUsageOidFriendlyName = "Server Authentication";
@@ -131,7 +130,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                     .Single()
                     .RawData;
 
-                if (byteArray.Length == AspNetHttpsOidFriendlyNameLength)
+                if (byteArray.Length == AspNetHttpsOidFriendlyName.Length || byteArray.Length == 0)
                 {
                     // No Version set, default to 0
                     return 0 >= AspNetHttpsCertificateVersion;
@@ -139,7 +138,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 else
                 {
                     // Version is in the last byte of the byte array.
-                    return byteArray[AspNetHttpsOidFriendlyNameLength] >= AspNetHttpsCertificateVersion;
+                    return byteArray[0] >= AspNetHttpsCertificateVersion;
                 }
             }
 #if !XPLAT
@@ -200,9 +199,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             if (AspNetHttpsCertificateVersion != 0)
             {
-                bytePayload = new byte[AspNetHttpsOidFriendlyNameLength + 1];
-                Encoding.ASCII.GetBytes(AspNetHttpsOidFriendlyName, bytePayload);
-                bytePayload[AspNetHttpsOidFriendlyNameLength] = (byte)AspNetHttpsCertificateVersion;
+                bytePayload = new byte[1];
+                bytePayload[0] = (byte)AspNetHttpsCertificateVersion;
             }
             else
             {

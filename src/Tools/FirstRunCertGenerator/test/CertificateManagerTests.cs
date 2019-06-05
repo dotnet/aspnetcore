@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         public ITestOutputHelper Output { get; }
 
-        [Fact(Skip = "true")]
+        [Fact(Skip = "Modifies global machine state")]
         public void EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e.Critical == false &&
                         e.Oid.Value == "1.3.6.1.4.1.311.84.1.1" &&
-                        Encoding.ASCII.GetString(e.RawData).StartsWith("ASP.NET Core HTTPS development certificate"));
+                        e.RawData[0] == manager.AspNetHttpsCertificateVersion);
 
                 Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             }
         }
 
-        [Fact(Skip = "true")]
+        [Fact(Skip = "Modifies global machine state")]
         public void EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
         {
             // Arrange
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
         }
 
-        [Fact(Skip = "true")]
+        [Fact(Skip = "Modifies global machine state")]
         public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateIfVersionIsIncorrect()
         {
             var manager = new CertificateManager();
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Empty(httpsCertificateList);
         }
 
-        [Fact(Skip = "true")]
+        [Fact(Skip = "Modifies global machine state")]
         public void EnsureCreateHttpsCertificate_ReturnsExpiredCertificateForEmptyVersionField()
         {
             var manager = new CertificateManager();
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.Empty(httpsCertificateList);
         }
 
-        [Fact(Skip = "true")]
+        [Fact(Skip = "Modifies global machine state")]
         public void EnsureCreateHttpsCertificate_ReturnsValidIfVersionIsZero()
         {
             var manager = new CertificateManager();
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
             Assert.NotEmpty(httpsCertificateList);
         }
 
-        [Fact(Skip = "true")]
+        [Fact(Skip = "Modifies global machine state")]
         public void EnsureCreateHttpsCertificate_ReturnValidIfCertIsNewer()
         {
             var manager = new CertificateManager();
