@@ -15,7 +15,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
     public class MaxKeyLengthSchemaTest : IClassFixture<ScratchDatabaseFixture>
     {
         private readonly ApplicationBuilder _builder;
-        private const string DatabaseName = nameof(MaxKeyLengthSchemaTest);
 
         public MaxKeyLengthSchemaTest(ScratchDatabaseFixture fixture)
         {
@@ -49,9 +48,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
         
         [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public void EnsureDefaultSchema()
         {
             using (var scope = _builder.ApplicationServices.GetRequiredService<IServiceScopeFactory>().CreateScope())
