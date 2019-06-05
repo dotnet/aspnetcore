@@ -12,5 +12,9 @@
     <ProjectReference Include="..\signalr\signalr.npmproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ReplacePackageContent Include="link:../signalr" ReplaceWith=">=$(PackageVersion)" />
+  </ItemGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), Directory.Build.targets))\Directory.Build.targets" />
 </Project>
