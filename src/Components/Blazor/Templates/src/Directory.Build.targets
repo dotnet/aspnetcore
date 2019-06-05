@@ -3,15 +3,11 @@
 
   <Target Name="SetTemplateJsonSymbolReplacements">
     <PropertyGroup>
-      <IncludeCustomRestoreSourcesValue>true</IncludeCustomRestoreSourcesValue>
-      <IncludeCustomRestoreSourcesValue Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</IncludeCustomRestoreSourcesValue>
-
       <!--
         Properties here will be injected into the template config *.json files
         during the build, replacing tokens of the form ${PropertyName}
       -->
       <GeneratedContentProperties>
-        IncludeCustomRestoreSources=$(IncludeCustomRestoreSourcesValue);
         TemplateBlazorVersion=$(PackageVersion);
         TemplateComponentsVersion=$(ComponentsPackageVersion);
         RepositoryCommit=$(SourceRevisionId);

@@ -9,8 +9,6 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UseAppHost>false</UseAppHost>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <IsImplementationProject>false</IsImplementationProject>
   </PropertyGroup>
 
   <ItemGroup>

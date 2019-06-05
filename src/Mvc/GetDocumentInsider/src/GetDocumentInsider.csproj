@@ -8,8 +8,6 @@
     <RootNamespace>Microsoft.Extensions.ApiDescription.Tool</RootNamespace>
     <TargetFrameworks>netcoreapp2.1;net461</TargetFrameworks>
     <VersionPrefix>$(ExperimentalVersionPrefix)</VersionPrefix>
-    <SuppressFinalPackageVersion>true</SuppressFinalPackageVersion>
-    <IsImplementationProject>false</IsImplementationProject>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
