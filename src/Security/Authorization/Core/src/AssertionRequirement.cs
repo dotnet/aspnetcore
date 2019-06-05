@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public override string ToString()
         {
-            return $"{nameof(AssertionRequirement)}:{Handler}={bool.TrueString}";
+            return $"{nameof(AssertionRequirement)}:{nameof(Handler)} return {bool.TrueString}";
         }
     }
 }

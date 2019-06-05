@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -64,7 +65,8 @@ namespace Microsoft.AspNetCore.Authorization.Test
             {
                 services.AddAuthorization(options =>
                 {
-                    options.AddPolicy("Basic", policy => {
+                    options.AddPolicy("Basic", policy =>
+                    {
                         policy.AddAuthenticationSchemes("Basic");
                         policy.RequireClaim("Permission", "CanViewPage");
                     });
@@ -710,7 +712,8 @@ namespace Microsoft.AspNetCore.Authorization.Test
 
             protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, PassThroughRequirement requirement)
             {
-                if (Succeed) {
+                if (Succeed)
+                {
                     context.Succeed(requirement);
                 }
                 return Task.FromResult(0);
@@ -1174,5 +1177,105 @@ namespace Microsoft.AspNetCore.Authorization.Test
             Assert.False((await authorizationService.AuthorizeAsync(null, "Success")).Succeeded);
         }
 
+        public class LogRequirement : IAuthorizationRequirement
+        {
+            public override string ToString()
+            {
+                return "LogRequirement";
+            }
+        }
+
+        public class DefaultAuthorizationServiceTestLogger : ILogger<DefaultAuthorizationService>
+        {
+            private Action<LogLevel, EventId, object, Exception, Func<object, Exception, string>> _assertion;
+
+            public DefaultAuthorizationServiceTestLogger(Action<LogLevel, EventId, object, Exception, Func<object, Exception, string>> assertion)
+            {
+                _assertion = assertion;
+            }
+
+            public IDisposable BeginScope<TState>(TState state)
+            {
+                throw new NotImplementedException();
+            }
+
+            public bool IsEnabled(LogLevel logLevel)
+            {
+                return true;
+            }
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                _assertion(logLevel, eventId, state, exception, (s, e) => formatter?.Invoke((TState)s, e));
+            }
+        }
+
+        [Fact]
+        public async Task Authorize_ShouldLogRequirementDetailWhenUnHandled()
+        {
+            // Arrange
+
+            static void Assertion(LogLevel level, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            {
+                Assert.Equal(LogLevel.Information, level);
+                Assert.Equal(2, eventId.Id);
+                Assert.Equal("UserAuthorizationFailed", eventId.Name);
+                var message = formatter(state, exception);
+
+                Assert.Equal("Authorization failed for Following requirement not met " + Environment.NewLine + "LogRequirement" + Environment.NewLine + "LogRequirement", message);
+            }
+
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddSingleton<ILogger<DefaultAuthorizationService>>(new DefaultAuthorizationServiceTestLogger(Assertion));
+                services.AddAuthorization(options => options.AddPolicy("Log", p =>
+                {
+                    p.Requirements.Add(new LogRequirement());
+                    p.Requirements.Add(new LogRequirement());
+                }));
+            });
+
+            var user = new ClaimsPrincipal();
+
+            // Act
+            var result = await authorizationService.AuthorizeAsync(user, "Log");
+
+            // Assert
+
+        }
+        [Fact]
+        public async Task Authorize_ShouldLogExplicitFailedWhenFailedCall()
+        {
+            // Arrange
+
+            static void Assertion(LogLevel level, EventId eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+            {
+                Assert.Equal(LogLevel.Information, level);
+                Assert.Equal(2, eventId.Id);
+                Assert.Equal("UserAuthorizationFailed", eventId.Name);
+                var message = formatter(state, exception);
+
+                Assert.Equal("Authorization failed for Explicit called fail", message);
+            }
+
+            var authorizationService = BuildAuthorizationService(services =>
+            {
+                services.AddSingleton<IAuthorizationHandler, FailHandler>();
+                services.AddSingleton<ILogger<DefaultAuthorizationService>>(new DefaultAuthorizationServiceTestLogger(Assertion));
+                services.AddAuthorization(options => options.AddPolicy("Log", p =>
+                {
+                    p.Requirements.Add(new LogRequirement());
+                    p.Requirements.Add(new LogRequirement());
+                }));
+            });
+
+            var user = new ClaimsPrincipal();
+
+            // Act
+            var result = await authorizationService.AuthorizeAsync(user, "Log");
+
+            // Assert
+
+        }
     }
 }

@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.Logging
         {
             var reason = failure.FailCalled
                 ? "Explicit called fail"
-                : "Following requirement not met" + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
+                : "Following requirement not met " + Environment.NewLine + string.Join(Environment.NewLine, failure.FailedRequirements);
 
             _userAuthorizationFailed(logger, reason, null);
         }

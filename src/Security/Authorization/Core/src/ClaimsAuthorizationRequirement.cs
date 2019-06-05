@@ -75,9 +75,9 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
         {
             var value = (AllowedValues == null || !AllowedValues.Any())
                 ? string.Empty
-                : $"AND Claim.Type in ({string.Join("|", AllowedValues)})";
+                : $" AND Claim.Value in ({string.Join("|", AllowedValues)})";
 
-            return $"{nameof(ClaimsAuthorizationRequirement)}:Claim.Type={ClaimType} {value}";
+            return $"{nameof(ClaimsAuthorizationRequirement)}:Claim.Type={ClaimType}{value}";
         }
     }
 }

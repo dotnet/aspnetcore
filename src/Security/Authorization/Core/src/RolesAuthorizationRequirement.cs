@@ -66,9 +66,7 @@ namespace Microsoft.AspNetCore.Authorization.Infrastructure
 
         public override string ToString()
         {
-            var roles = (AllowedRoles == null || !AllowedRoles.Any())
-                ? string.Empty
-                : $"Roles in ({string.Join("|", AllowedRoles)})";
+            var roles = $"Roles in ({string.Join("|", AllowedRoles)})";
 
             return $"{nameof(RolesAuthorizationRequirement)}:{roles}";
         }
