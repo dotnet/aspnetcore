@@ -375,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests.InProcess
             File.Delete(Path.Combine(deploymentResult.ContentRoot, "InProcessWebSite.dll"));
             if (DeployerSelector.HasNewShim)
             {
-                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.38 - ANCM Application Dll Not Found");
+                await AssertSiteFailsToStartWithInProcessStaticContent(deploymentResult, "HTTP Error 500.38 - ANCM Application DLL Not Found");
             }
             else
             {
