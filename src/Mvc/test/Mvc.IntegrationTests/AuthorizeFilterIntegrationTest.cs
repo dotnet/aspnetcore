@@ -121,11 +121,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal(2, policyProvider.GetPolicyCount);
         }
 
-        private HttpContext GetHttpContext()
+        private HttpContext GetHttpContext(bool combineAuthorize = false)
         {
             var httpContext = new DefaultHttpContext();
 
-            httpContext.RequestServices = GetServices();
+            httpContext.RequestServices = GetServices(combineAuthorize);
             return httpContext;
         }
 
@@ -140,18 +140,18 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             return context;
         }
 
-        private static IServiceProvider GetServices()
+        private static IServiceProvider GetServices(bool combineAuthorize = false)
         {
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddAuthorization();
-            serviceCollection.AddMvc();
+            serviceCollection.AddMvc(o => o.AllowCombiningAuthorizeFilters = combineAuthorize);
             serviceCollection
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .AddTransient<ILogger<DefaultAuthorizationService>, Logger<DefaultAuthorizationService>>()
                 .AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
             return serviceCollection.BuildServiceProvider();
         }
-
+        
         public class TestAuthorizationPolicyProvider : IAuthorizationPolicyProvider
         {
             public int GetPolicyCount = 0;
