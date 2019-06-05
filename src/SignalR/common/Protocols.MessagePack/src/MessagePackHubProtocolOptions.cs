@@ -9,6 +9,23 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class MessagePackHubProtocolOptions
     {
-        public IList<IFormatterResolver> FormatterResolvers { get; set; } = MessagePackHubProtocol.CreateDefaultFormatterResolvers();
+        private IList<IFormatterResolver> _formatterResolvers;
+
+        public IList<IFormatterResolver> FormatterResolvers
+        {
+            get
+            {
+                if (_formatterResolvers == null)
+                {
+                    _formatterResolvers = MessagePackHubProtocol.CreateDefaultFormatterResolvers();
+                }
+
+                return _formatterResolvers;
+            }
+            set
+            {
+                _formatterResolvers = value;
+            }
+        }
     }
 }
