@@ -126,10 +126,13 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 
             bool MatchesVersion(X509Certificate2 c)
             {
-                var byteArray = c.Extensions.OfType<X509Extension>().Where(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal)).Single().RawData;
+                var byteArray = c.Extensions.OfType<X509Extension>()
+                                    .Where(e => string.Equals(AspNetHttpsOid, e.Oid.Value, StringComparison.Ordinal))
+                                    .Single()
+                                    .RawData;
                 if (byteArray.Length == AspNetHttpsOidFriendlyNameLength)
                 {
-                    // No Version set, default to null/0
+                    // No Version set, default to 0
                     return 0 >= AspNetHttpsCertificateVersion;
                 }
                 else
