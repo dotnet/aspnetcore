@@ -30,3 +30,6 @@ Add `--help` to see more details. For example,
 ```
 dotnet watch --help
 ```
+
+To test any of these projects, do the following:
+

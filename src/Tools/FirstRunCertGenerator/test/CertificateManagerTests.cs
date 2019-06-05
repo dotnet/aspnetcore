@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         public ITestOutputHelper Output { get; }
 
-        [Fact(Skip = "True")]
+        [Fact]
         public void EnsureCreateHttpsCertificate_CreatesACertificate_WhenThereAreNoHttpsCertificates()
         {
             try
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
                     httpsCertificate.Extensions.OfType<X509Extension>(),
                     e => e.Critical == false &&
                         e.Oid.Value == "1.3.6.1.4.1.311.84.1.1" &&
-                        Encoding.ASCII.GetString(e.RawData) == "ASP.NET Core HTTPS development certificate");
+                        Encoding.ASCII.GetString(e.RawData).StartsWith("ASP.NET Core HTTPS development certificate"));
 
                 Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
 
@@ -213,6 +213,42 @@ namespace Microsoft.AspNetCore.Certificates.Generation.Tests
 
         [Fact(Skip = "true")]
         public void EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates()
+        {
+            // Arrange
+            const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";
+            var certificatePassword = Guid.NewGuid().ToString();
+
+            var manager = new CertificateManager();
+
+            manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, TestCertificateSubject);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                manager.RemoveAllCertificates(CertificatePurpose.HTTPS, StoreName.Root, StoreLocation.CurrentUser, TestCertificateSubject);
+            }
+
+            DateTimeOffset now = DateTimeOffset.UtcNow;
+            now = new DateTimeOffset(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second, 0, now.Offset);
+            manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), path: null, trust: false, subject: TestCertificateSubject);
+
+            var httpsCertificate = manager.ListCertificates(CertificatePurpose.HTTPS, StoreName.My, StoreLocation.CurrentUser, isValid: false).Single(c => c.Subject == TestCertificateSubject);
+
+            // Act
+            var result = manager.EnsureAspNetCoreHttpsDevelopmentCertificate(now, now.AddYears(1), CertificateName, trust: false, includePrivateKey: true, password: certificatePassword, subject: TestCertificateSubject);
+
+            // Assert
+            Assert.Equal(EnsureCertificateResult.ValidCertificatePresent, result);
+            Assert.True(File.Exists(CertificateName));
+
+            var exportedCertificate = new X509Certificate2(File.ReadAllBytes(CertificateName), certificatePassword);
+            Assert.NotNull(exportedCertificate);
+            Assert.True(exportedCertificate.HasPrivateKey);
+
+
+            Assert.Equal(httpsCertificate.GetCertHashString(), exportedCertificate.GetCertHashString());
+        }
+
+        [Fact(Skip = "true")]
+        public void EnsureCreateHttpsCertificate_ShowsExpiredCertificateIfVersionIsIncorrect()
         {
             // Arrange
             const string CertificateName = nameof(EnsureCreateHttpsCertificate_DoesNotCreateACertificate_WhenThereIsAnExistingHttpsCertificates) + ".pfx";

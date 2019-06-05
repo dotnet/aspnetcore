@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Certificates.Generation
         private const string MacOSTrustCertificateCommandLine = "sudo";
         private static readonly string MacOSTrustCertificateCommandLineArguments = "security add-trusted-cert -d -r trustRoot -k " + MacOSSystemKeyChain + " ";
         private const int UserCancelledErrorCode = 1223;
+        private const byte AspNetHttpsVersion = 1; // TODO make this public somehow
 
         public IList<X509Certificate2> ListCertificates(
             CertificatePurpose purpose,
@@ -83,7 +84,8 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                         var validCertificates = matchingCertificates
                             .Where(c => c.NotBefore <= now &&
                                 now <= c.NotAfter &&
-                                (!requireExportable || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || IsExportable(c)))
+                                (!requireExportable || !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || IsExportable(c))
+                                && MatchesVersion(c))
                             .ToArray();
 
                         var invalidCertificates = matchingCertificates.Except(validCertificates);
@@ -135,6 +137,16 @@ namespace Microsoft.AspNetCore.Certificates.Generation
 #endif
         }
 
+        private bool MatchesVersion(X509Certificate2 c)
+        {
+            // TODO this may not be correct
+            // todo save GetByteCount as a field
+            var byteArray = c.Extensions[AspNetHttpsOidFriendlyName].RawData;
+            var length = Encoding.ASCII.GetByteCount(AspNetHttpsOidFriendlyName);
+            var version = byteArray[length];
+            return version == AspNetHttpsVersion;
+        }
+
         private static void DisposeCertificates(IEnumerable<X509Certificate2> disposables)
         {
             foreach (var disposable in disposables)
@@ -171,10 +183,18 @@ namespace Microsoft.AspNetCore.Certificates.Generation
                 pathLengthConstraint: 0,
                 critical: true);
 
+            // Add a version here
+            var byteCount = Encoding.ASCII.GetByteCount(AspNetHttpsOidFriendlyName);
+
+            var bytePayload = new byte[byteCount + 1];
+            Encoding.ASCII.GetBytes(AspNetHttpsOidFriendlyName, bytePayload);
+
+            bytePayload[byteCount] = AspNetHttpsVersion;
             var aspNetHttpsExtension = new X509Extension(
                 new AsnEncodedData(
                     new Oid(AspNetHttpsOid, AspNetHttpsOidFriendlyName),
-                    Encoding.ASCII.GetBytes(AspNetHttpsOidFriendlyName)),
+                    bytePayload
+                    ),
                 critical: false);
 
             extensions.Add(basicConstraints);
