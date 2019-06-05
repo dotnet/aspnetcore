@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
 
         private async Task<AuthorizationPolicy> GetEffectivePolicyAsync(AuthorizationFilterContext context)
         {
-            var effectivePolicy = await ComputePolicyAsync();
+            AuthorizationPolicy effectivePolicy = null;
 
             if (_mvcOptions == null) 
             {
@@ -141,15 +141,10 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                     return null;
                 }
 
-                // Combine all authorize filters into single effective policy that's only run on the closest filter
-                var builder = new AuthorizationPolicyBuilder(effectivePolicy);
+                // Combine all authorize filters into single effective policy
+                var builder = new AuthorizationPolicyBuilder();
                 for (var i = 0; i < context.Filters.Count; i++)
                 {
-                    if (ReferenceEquals(this, context.Filters[i]))
-                    {
-                        continue;
-                    }
-                    
                     if (context.Filters[i] is AuthorizeFilter authorizeFilter)
                     {
                         builder.Combine(await authorizeFilter.ComputePolicyAsync());
@@ -159,20 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 effectivePolicy = builder.Build();
             }
             
-            if (effectivePolicy == null)
-            {
-                if (PolicyProvider == null)
-                {
-                    throw new InvalidOperationException(
-                        Resources.FormatAuthorizeFilter_AuthorizationPolicyCannotBeCreated(
-                            nameof(AuthorizationPolicy),
-                            nameof(IAuthorizationPolicyProvider)));
-                }
-
-                effectivePolicy = await AuthorizationPolicy.CombineAsync(PolicyProvider, AuthorizeData);
-            }            
-
-            return effectivePolicy;
+            return effectivePolicy ?? await ComputePolicyAsync();
         }
 
         /// <inheritdoc />
