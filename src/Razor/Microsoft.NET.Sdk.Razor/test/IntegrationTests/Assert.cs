@@ -345,58 +345,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
         }
 
-        public static Stream ContainsEmbeddedResource(string assemblyPath, string resourceName)
-        {
-            var stream = ExtractEmbeddedResource(assemblyPath, resourceName);
-            Assert.NotNull(stream);
-
-            return stream;
-        }
-
-        public static void DoesNotContainEmbeddedResource(string assemblyPath, string resourceName)
-        {
-            var stream = ExtractEmbeddedResource(assemblyPath, resourceName);
-            Assert.Null(stream);
-        }
-
-        private static Stream ExtractEmbeddedResource(string path, string expectedResourceName)
-        {
-            using (var peStream = File.OpenRead(path))
-            {
-                using (var peReader = new PEReader(peStream))
-                {
-                    var mdReader = peReader.GetMetadataReader();
-
-                    foreach (var resourceHandle in mdReader.ManifestResources)
-                    {
-                        var resource = mdReader.GetManifestResource(resourceHandle);
-
-                        if (!resource.Implementation.IsNil)
-                        {
-                            continue; // resource is not embedded.
-                        }
-
-                        var resourceName = mdReader.GetString(resource.Name);
-                        if (!string.Equals(expectedResourceName, resourceName))
-                        {
-                            continue;
-                        }
-
-                        // We are not taking resource.Offset into account here.
-                        // We currently only have the casuistic that we are embedding a single resource.
-                        // If that changes we'll have to change this test code, but as its hard we won't do it for now.
-                        var resourcesSection = peReader.GetSectionData(peReader.PEHeaders.CorHeader.ResourcesDirectory.RelativeVirtualAddress);
-                        var resourcesReader = resourcesSection.GetReader();
-                        var resourceSizeInBytes = resourcesReader.ReadInt32();
-                        var resourceBytes = resourcesReader.ReadBytes(resourceSizeInBytes);
-                        return new MemoryStream(resourceBytes, writable: false);
-                    }
-                }
-            }
-
-            return null;
-        }
-
         public static void NuspecContains(MSBuildResult result, string nuspecPath, string expected)
         {
             if (result == null)

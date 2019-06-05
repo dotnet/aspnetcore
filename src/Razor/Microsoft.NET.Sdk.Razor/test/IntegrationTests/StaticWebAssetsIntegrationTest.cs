@@ -54,14 +54,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             var path = Assert.FileExists(result, OutputPath, "AppWithPackageAndP2PReference.dll");
-            var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticWebAssets.xml");
-            using (var reader = new StreamReader(assembly))
-            {
-                var data = await reader.ReadToEndAsync();
-                Output.WriteLine("Manifest:");
-                Output.WriteLine(data);
-                Assert.Equal(expectedManifest, data);
-            }
+            var manifest = Assert.FileExists(result, OutputPath, "AppWithPackageAndP2PReference.StaticWebAssets.xml");
+            var data = File.ReadAllText(manifest);
+            Assert.Equal(expectedManifest, data);
         }
 
         [Fact]
@@ -124,7 +119,6 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             Assert.FileDoesNotExist(result, OutputPath, "SimpleMvc.StaticWebAssets.xml");
 
             var path = Assert.FileExists(result, OutputPath, "SimpleMvc.dll");
-            Assert.DoesNotContainEmbeddedResource(path, "SimpleMvc.StaticWebAssets.xml");
         }
 
         [Fact]
@@ -190,12 +184,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
             }
 
             var path = Assert.FileExists(result, OutputPath, "AppWithPackageAndP2PReference.dll");
-            var assembly = Assert.ContainsEmbeddedResource(path, "Microsoft.AspNetCore.StaticWebAssets.xml");
-            using (var reader = new StreamReader(assembly))
-            {
-                var data = reader.ReadToEnd();
-                Assert.Equal(expectedManifest, data);
-            }
+            var manifest = Assert.FileExists(result, OutputPath, "AppWithPackageAndP2PReference.StaticWebAssets.xml");
+            var data = File.ReadAllText(manifest);
+            Assert.Equal(expectedManifest, data);
         }
 
         [Fact]
@@ -274,6 +265,9 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
 
     public class PackageTestProjectsFixture
     {
+        private const int MaxPackRetries = 3;
+        private const int MaxPackTimeoutInMinutes = 5;
+
         private bool _packed;
 
         internal async Task PackAsync(ITestOutputHelper output)
@@ -305,12 +299,23 @@ namespace Microsoft.AspNetCore.Razor.Design.IntegrationTests
                     RedirectStandardError = true
                 };
 
-                var result = await MSBuildProcessManager.RunProcessCoreAsync(
-                    psi,
-                    TimeSpan.FromMinutes(2));
+                for (int i = 0; i < MaxPackRetries; i++)
+                {
+                    try
+                    {
+                        var result = await MSBuildProcessManager.RunProcessCoreAsync(
+                            psi,
+                            TimeSpan.FromMinutes(MaxPackTimeoutInMinutes));
 
-                output.WriteLine(result.Output);
-                Assert.Equal(0, result.ExitCode);
+                        output.WriteLine(result.Output);
+                        Assert.Equal(0, result.ExitCode);
+                        break;
+                    }
+                    catch
+                    {
+                        await Task.Delay(1000);
+                    }
+                }
             }
 
             _packed = true;

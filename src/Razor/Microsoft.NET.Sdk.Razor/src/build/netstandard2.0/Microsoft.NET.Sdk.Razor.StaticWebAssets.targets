@@ -182,11 +182,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
       <!-- This is the list of inputs that will be used for generating the manifest used during development. -->
     <ItemGroup>
-      <EmbeddedResource Condition="'@(_ExternalStaticWebAsset->Count())' != '0'"
-        Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
-        LogicalName="Microsoft.AspNetCore.StaticWebAssets.xml" />
-
-      <!-- Include it as content as we plan to avoid using an embedded file for the manifest -->
       <Content
         Include="$(_GeneratedStaticWebAssetsDevelopmentManifest)"
         Condition="'@(_ExternalStaticWebAsset->Count())' != '0'"
