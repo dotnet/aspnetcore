@@ -136,10 +136,19 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 StopActivity(httpContext, activity, context.HasDiagnosticListener);
             }
 
-            if (context.EventLogEnabled && exception != null)
+            if (context.EventLogEnabled)
             {
-                // Non-inline
-                HostingEventSource.Log.UnhandledException();
+                if (exception != null)
+                {
+                    // Non-inline
+                    HostingEventSource.Log.UnhandledException();
+                }
+
+                // Count 500 as failed requests
+                if (httpContext.Response.StatusCode >= 500)
+                {
+                    HostingEventSource.Log.RequestFailed();
+                }
             }
 
             // Logging Scope is finshed with
