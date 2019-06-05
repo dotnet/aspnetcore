@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.SignalR
     public partial class MessagePackHubProtocolOptions
     {
         public MessagePackHubProtocolOptions() { }
-        public System.Collections.Generic.IList<MessagePack.IFormatterResolver> FormatterResolvers { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public System.Collections.Generic.IList<MessagePack.IFormatterResolver> FormatterResolvers { get { throw null; } set { } }
     }
 }
 namespace Microsoft.AspNetCore.SignalR.Protocol
