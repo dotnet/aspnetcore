@@ -126,6 +126,7 @@
         <NodeJsProjects Include="
                           $(RepoRoot)src\SignalR\**\*.npmproj;
                           $(RepoRoot)src\Middleware\**\*.npmproj;
+                          $(RepoRoot)src\Components\Browser.JS\**\*.npmproj;
                           "
                         RestoreInParallel="false"
                         Exclude="@(ProjectToExclude)" />

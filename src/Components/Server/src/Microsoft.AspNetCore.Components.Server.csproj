@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
@@ -50,14 +50,10 @@
     <Compile Include="$(MessagePackRoot)SequenceReaderExtensions.cs" LinkBase="BlazorPack\MessagePack" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <BlazorServerJSFile>..\..\Browser.JS\dist\Release\blazor.server.js</BlazorServerJSFile>
-    <BlazorServerJSFile Condition="'$(Configuration)' == 'Debug' AND Exists('..\..\Browser.JS\dist\Debug\blazor.server.js')">..\..\Browser.JS\dist\Debug\blazor.server.js</BlazorServerJSFile>
-  </PropertyGroup>
-
   <ItemGroup>
-    <EmbeddedResource Include="$(BlazorServerJSFile)" LogicalName="_framework/%(Filename)%(Extension)" />
-    <EmbeddedResource Include="$(BlazorServerJSFile).map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('$(BlazorServerJSFile).map')" />
+    <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js" LogicalName="_framework/%(Filename)%(Extension)" />
+
+    <EmbeddedResource Include="..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map" LogicalName="_framework/%(Filename)%(Extension)" Condition="Exists('..\..\Browser.JS\dist\$(Configuration)\blazor.server.js.map')" />
   </ItemGroup>
 
 </Project>
