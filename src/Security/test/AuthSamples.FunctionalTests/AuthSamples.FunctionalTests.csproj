@@ -25,6 +25,13 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="AngleSharp" />
+    <Content Include="..\..\samples\Cookies\**\*" />    
+    <Content Include="..\..\samples\ClaimsTransformation\**\*" />    
+    <Content Include="..\..\samples\CustomPolicyProvider\**\*" />    
+    <Content Include="..\..\samples\DynamicSchemes\**\*" />    
+    <Content Include="..\..\samples\Identity.ExternalClaims\**\*" />    
+    <Content Include="..\..\samples\PathSchemeSelection\**\*" />    
+    <Content Include="..\..\samples\StaticFilesAuth\**\*" />    
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
