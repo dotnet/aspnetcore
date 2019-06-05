@@ -40,5 +40,4 @@ Later on, this will be checked using this condition:
       Microsoft.AspNetCore.Mvc.Core;
     </PackagesInPatch>
   </PropertyGroup>
-
 </Project>

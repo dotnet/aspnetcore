@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 
@@ -20,6 +21,8 @@ Usage: <ZIP> <OUTPUT>
 <ZIP>      A file path or URL to the ZIP file.
 <OUTPUT>   The output file path for the ZIP manifest file.");
         }
+
+        private const int ZipDoesNotExist = 404;
 
         public static async Task<int> Main(string[] args)
         {
@@ -42,6 +45,13 @@ Usage: <ZIP> <OUTPUT>
                 Console.WriteLine($"log: Downloading {url}");
                 zipPath = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName() + ".zip");
                 var response = await new HttpClient().GetAsync(url);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                {
+                    Console.Error.WriteLine($"Could not find {url}.");
+                    return ZipDoesNotExist;
+                }
+
                 response.EnsureSuccessStatusCode();
 
                 using (var outStream = File.Create(zipPath))
