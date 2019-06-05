@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                     opt.Authority = TestServerBuilder.DefaultAuthority;
                     opt.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
                     opt.ClientId = "Test Id";
-                    opt.UsePkse = include;
+                    opt.UsePkce = include;
                 });
 
             var server = settings.CreateTestServer();

@@ -304,7 +304,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// See https://tools.ietf.org/html/rfc7636.
         /// The default value is `true`.
         /// </summary>
-        public bool UsePkse { get; set; } = true;
+        public bool UsePkce { get; set; } = true;
 
         private class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
         {

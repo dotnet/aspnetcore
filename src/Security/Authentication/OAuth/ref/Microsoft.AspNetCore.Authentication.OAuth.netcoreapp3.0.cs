@@ -35,6 +35,13 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public Microsoft.AspNetCore.Authentication.AuthenticationProperties Properties { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public string RedirectUri { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
     }
+    public static partial class OAuthConstants
+    {
+        public static readonly string CodeChallengeKey;
+        public static readonly string CodeChallengeMethodKey;
+        public static readonly string CodeChallengeMethodS256;
+        public static readonly string CodeVerifierKey;
+    }
     public partial class OAuthCreatingTicketContext : Microsoft.AspNetCore.Authentication.ResultContext<Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions>
     {
         public OAuthCreatingTicketContext(System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationScheme scheme, Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions options, System.Net.Http.HttpClient backchannel, Microsoft.AspNetCore.Authentication.OAuth.OAuthTokenResponse tokens, System.Text.Json.JsonElement user) : base (default(Microsoft.AspNetCore.Http.HttpContext), default(Microsoft.AspNetCore.Authentication.AuthenticationScheme), default(Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions)) { }
@@ -90,7 +97,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public System.Collections.Generic.ICollection<string> Scope { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } }
         public Microsoft.AspNetCore.Authentication.ISecureDataFormat<Microsoft.AspNetCore.Authentication.AuthenticationProperties> StateDataFormat { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string TokenEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
-        public bool UsePkse { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
+        public bool UsePkce { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public string UserInformationEndpoint { [System.Runtime.CompilerServices.CompilerGeneratedAttribute]get { throw null; } [System.Runtime.CompilerServices.CompilerGeneratedAttribute]set { } }
         public override void Validate() { }
     }

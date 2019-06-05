@@ -179,7 +179,7 @@ namespace SocialSample
                     o.UserInformationEndpoint = "https://demo.identityserver.io/connect/userinfo";
                     o.ClaimsIssuer = "IdentityServer";
                     o.SaveTokens = true;
-                    o.UsePkse = true;
+                    o.UsePkce = true;
                     // Retrieving user information is unique to each provider.
                     o.ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "sub");
                     o.ClaimActions.MapJsonKey(ClaimTypes.Name, "name");

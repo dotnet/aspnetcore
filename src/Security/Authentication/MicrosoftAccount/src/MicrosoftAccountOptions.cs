@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             AuthorizationEndpoint = MicrosoftAccountDefaults.AuthorizationEndpoint;
             TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint;
             UserInformationEndpoint = MicrosoftAccountDefaults.UserInformationEndpoint;
-            UsePkse = true;
+            UsePkce = true;
             Scope.Add("https://graph.microsoft.com/user.read");
 
             ClaimActions.MapJsonKey(ClaimTypes.NameIdentifier, "id");

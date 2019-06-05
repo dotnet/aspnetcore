@@ -22,11 +22,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 {
     public class OAuthHandler<TOptions> : RemoteAuthenticationHandler<TOptions> where TOptions : OAuthOptions, new()
     {
-        private const string CodeVerifierKey = "code_verifier";
-        private const string CodeChallengeKey = "code_challenge";
-        private const string CodeChallengeMethodKey = "code_challenge_method";
-        private const string CodeChallengeMethodS256 = "S256";
-
         protected HttpClient Backchannel => Options.Backchannel;
 
         /// <summary>
@@ -177,10 +172,10 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             };
 
             // PKCE https://tools.ietf.org/html/rfc7636#section-4.5, see BuildChallengeUrl
-            if (context.Properties.Items.TryGetValue(CodeVerifierKey, out var codeVerifier))
+            if (context.Properties.Items.TryGetValue(OAuthConstants.CodeVerifierKey, out var codeVerifier))
             {
-                tokenRequestParameters.Add(CodeVerifierKey, codeVerifier);
-                context.Properties.Items.Remove(CodeVerifierKey);
+                tokenRequestParameters.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
+                context.Properties.Items.Remove(OAuthConstants.CodeVerifierKey);
             }
 
             var requestContent = new FormUrlEncodedContent(tokenRequestParameters);
@@ -262,19 +257,19 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 { "redirect_uri", redirectUri },
             };
 
-            if (Options.UsePkse)
+            if (Options.UsePkce)
             {
                 var codeVerifier = GenerateUniqueId();
 
                 // Store this for use during the code redemption.
-                properties.Items.Add(CodeVerifierKey, codeVerifier);
+                properties.Items.Add(OAuthConstants.CodeVerifierKey, codeVerifier);
 
                 using var sha256 = SHA256.Create();
                 var challengeBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(codeVerifier));
                 var codeChallenge = WebEncoders.Base64UrlEncode(challengeBytes);
 
-                parameters[CodeChallengeKey] = codeChallenge;
-                parameters[CodeChallengeMethodKey] = CodeChallengeMethodS256;
+                parameters[OAuthConstants.CodeChallengeKey] = codeChallenge;
+                parameters[OAuthConstants.CodeChallengeMethodKey] = OAuthConstants.CodeChallengeMethodS256;
             }
 
             parameters["state"] = Options.StateDataFormat.Protect(properties);
