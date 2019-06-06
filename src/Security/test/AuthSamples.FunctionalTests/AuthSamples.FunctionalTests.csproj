@@ -25,7 +25,7 @@
     <Reference Include="Microsoft.AspNetCore.TestHost" />
     <Reference Include="Microsoft.AspNetCore.Mvc.Testing" />
     <Reference Include="AngleSharp" />
-    <Content Include="..\..\samples\**\*" />    
+    <Content Include="..\..\samples\**\*" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="PublishAssets" AfterTargets="Publish">
@@ -55,19 +55,6 @@
         Lines="Ignored"
         Overwrite="true"
         Encoding="Unicode"/>
-    <MakeDir Directories="$(PublishDir)\ClaimsTransformation\wwwroot" Condition="!Exists('$(PublishDir)\ClaimsTransformation\wwwroot')" ContinueOnError="true" />
-    <MakeDir Directories="$(PublishDir)\Cookies\wwwroot" Condition="!Exists('$(PublishDir)\Cookies\wwwroot')" ContinueOnError="true" />
-    <MakeDir Directories="$(PublishDir)\DynamicSchemes\wwwroot" Condition="!Exists('$(PublishDir)\DynamicSchemes\wwwroot')" ContinueOnError="true" />
-    <MakeDir Directories="$(PublishDir)\Identity.ExternalClaims\wwwroot" Condition="!Exists('$(PublishDir)\Identity.ExternalClaims\wwwroot')" ContinueOnError="true" />
-    <MakeDir Directories="$(PublishDir)\PathSchemeSelection\wwwroot" Condition="!Exists('$(PublishDir)\PathSchemeSelection\wwwroot')" ContinueOnError="true" />
-    <Copy
-      SourceFiles="@(_customProviderFiles)"
-      DestinationFolder="$(PublishDir)\CustomPolicyProvider\\%(RecursiveDir)" 
-      ContinueOnError="true" />
-    <Copy
-      SourceFiles="@(_staticFiles)"
-      DestinationFolder="$(PublishDir)\StaticFilesAuth\\%(RecursiveDir)"
-      ContinueOnError="true" />
   </Target>
 
 </Project>
