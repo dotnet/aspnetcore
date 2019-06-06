@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Fact]
         public void ReadCaseInsensitivePropertiesByDefault()
         {
-            var input = Frame("{\"type\":2,\"invocationId\":\"123\",\"item\":{\"StrIngProp\":\"test\",\"DoublePrOp\":3.14159,\"IntProp\":43,\"DateTimeProp\":\"2019-06-03T22:00:00\",\"NuLLProp\":null,\"ByteARRProp\":[2,4,6]}}");
+            var input = Frame("{\"type\":2,\"invocationId\":\"123\",\"item\":{\"StrIngProp\":\"test\",\"DoublePrOp\":3.14159,\"IntProp\":43,\"DateTimeProp\":\"2019-06-03T22:00:00\",\"NuLLProp\":null,\"ByteARRProp\":\"AgQG\"}}");
 
             var binder = new TestBinder(null, typeof(TemporaryCustomObject));
             var data = new ReadOnlySequence<byte>(Encoding.UTF8.GetBytes(input));
