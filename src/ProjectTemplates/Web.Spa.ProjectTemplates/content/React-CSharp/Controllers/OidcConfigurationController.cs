@@ -5,9 +5,12 @@ namespace Company.WebApplication1.Controllers
 {
     public class OidcConfigurationController : Controller
     {
-        public OidcConfigurationController(IClientRequestParametersProvider clientRequestParametersProvider)
+        private readonly ILogger<SampleDataController> logger;
+
+        public OidcConfigurationController(IClientRequestParametersProvider clientRequestParametersProvider, ILogger<SampleDataController> _logger)
         {
             ClientRequestParametersProvider = clientRequestParametersProvider;
+            logger = _logger;
         }
 
         public IClientRequestParametersProvider ClientRequestParametersProvider { get; }
