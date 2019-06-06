@@ -29,30 +29,27 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <param name="options">The <see cref="RequestThrottlingOptions"/> containing the initialization parameters.</param>
         public RequestThrottlingMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<RequestThrottlingOptions> options)
         {
-            if (options.Value.MaxConcurrentRequests == null)
+            _requestThrottlingOptions = options.Value;
+
+            if (_requestThrottlingOptions.MaxConcurrentRequests == null)
             {
                 throw new ArgumentException("The value of 'options.MaxConcurrentRequests' must be specified.", nameof(options));
             }
-            if (options.Value.RequestQueueLimit < 0)
+            if (_requestThrottlingOptions.RequestQueueLimit < 0)
             {
                 throw new ArgumentException("The value of 'options.RequestQueueLimit' must be a positive integer.", nameof(options));
             }
 
-            if (options.Value.OnRejected == null)
+            if (_requestThrottlingOptions.OnRejected == null)
             {
-                options.Value.OnRejected = context =>
-                {
-                    context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                    return Task.CompletedTask;
-                };
+                throw new ArgumentException("The value of 'options.OnRejected' must not be null.", nameof(options));
             }
 
             _next = next;
-            _requestThrottlingOptions = options.Value;
             _logger = loggerFactory.CreateLogger<RequestThrottlingMiddleware>();
             _requestQueue = new RequestQueue(
-                options.Value.MaxConcurrentRequests.Value,
-                options.Value.RequestQueueLimit);
+                _requestThrottlingOptions.MaxConcurrentRequests.Value,
+                _requestThrottlingOptions.RequestQueueLimit);
         }
 
         /// <summary>

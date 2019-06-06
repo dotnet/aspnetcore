@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
 
             Assert.Equal(0, middleware.ActiveRequestCount);
 
-            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext()));
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
 
             Assert.Equal(0, middleware.ActiveRequestCount);
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                     throw new NotImplementedException();
                 });
 
-            await middleware.Invoke(new DefaultHttpContext());
+            await middleware.Invoke(new DefaultHttpContext()).OrTimeout();
         }
 
         [Fact]
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 requestQueueLimit: 0);
 
             var context = new DefaultHttpContext();
-            await middleware.Invoke(context);
+            await middleware.Invoke(context).OrTimeout();
             Assert.Equal(503, context.Response.StatusCode);
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
                 });
 
             var context = new DefaultHttpContext();
-            await middleware.Invoke(context);
+            await middleware.Invoke(context).OrTimeout();
             Assert.True(onRejectedInvoked);
         }
     }

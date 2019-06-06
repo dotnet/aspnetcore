@@ -17,9 +17,13 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             var options = new RequestThrottlingOptions
             {
                 MaxConcurrentRequests = maxConcurrentRequests,
-                RequestQueueLimit = requestQueueLimit,
-                OnRejected = onRejected
+                RequestQueueLimit = requestQueueLimit
             };
+
+            if (onRejected != null)
+            {
+                options.OnRejected = onRejected;
+            }
 
             return new RequestThrottlingMiddleware(
                     next: next ?? (context => Task.CompletedTask),

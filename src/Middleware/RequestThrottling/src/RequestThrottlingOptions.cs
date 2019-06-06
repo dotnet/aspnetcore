@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.RequestThrottling;
 
@@ -27,6 +28,10 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// <summary>
         /// 
         /// </summary>
-        public RequestDelegate OnRejected { get; set; }
+        public RequestDelegate OnRejected { get; set; } = context =>
+        {
+            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            return Task.CompletedTask;
+        };
     }
 }
