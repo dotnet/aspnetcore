@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.RequestThrottling
             if (waitInQueueTask.IsCompletedSuccessfully && !waitInQueueTask.Result)
             {
                 RequestThrottlingLog.RequestRejectedQueueFull(_logger);
+                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 await _requestThrottlingOptions.OnRejected(context);
                 return;
             }

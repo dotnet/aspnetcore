@@ -145,20 +145,41 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             var context = new DefaultHttpContext();
             await middleware.Invoke(context).OrTimeout();
             Assert.True(onRejectedInvoked);
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
         }
 
         [Fact]
         public async void ExceptionThrownDuringOnRejected()
         {
+            TaskCompletionSource<bool> tsc = new TaskCompletionSource<bool>();
+
             var middleware = TestUtils.CreateTestMiddleware(
-                maxConcurrentRequests: 0,
+                maxConcurrentRequests: 1,
                 requestQueueLimit: 0,
                 onRejected: httpContext =>
                 {
                     throw new DivideByZeroException();
+                },
+                next: httpContext =>
+                {
+                    return tsc.Task;
                 });
 
-            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
+            var firstRequest = middleware.Invoke(new DefaultHttpContext());
+
+            var context = new DefaultHttpContext();
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(context)).OrTimeout();
+            Assert.Equal(StatusCodes.Status503ServiceUnavailable, context.Response.StatusCode);
+
+            tsc.SetResult(true);
+
+            Assert.True(firstRequest.IsCompletedSuccessfully);
+
+            var thirdRequest = middleware.Invoke(new DefaultHttpContext());
+
+            Assert.True(thirdRequest.IsCompletedSuccessfully);
+
+            Assert.Equal(0, middleware.ActiveRequestCount);
         }
     }
 }

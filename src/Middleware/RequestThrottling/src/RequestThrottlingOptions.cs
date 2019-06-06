@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.RequestThrottling
         /// </summary>
         public RequestDelegate OnRejected { get; set; } = context =>
         {
-            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
             return Task.CompletedTask;
         };
     }
