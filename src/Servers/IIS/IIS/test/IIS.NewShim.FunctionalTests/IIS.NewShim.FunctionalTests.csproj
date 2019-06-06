@@ -2,9 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.0</TargetFramework>
-    <TestGroupName>IISForwardsCompatibility.FunctionalTests</TestGroupName>
+    <TestGroupName>IISNewShim.FunctionalTests</TestGroupName>
     <DisableFastUpToDateCheck>True</DisableFastUpToDateCheck>
-    <SkipTests Condition=" '$(SkipIISForwardsCompatibilityTests)' == 'true' ">true</SkipTests>
+    <SkipTests Condition=" '$(SkipIISNewShimTests)' == 'true' ">true</SkipTests>
   </PropertyGroup>
 
   <Import Project="../FunctionalTest.props" />
@@ -13,7 +13,7 @@
     <ProjectReference Include="..\testassets\IIS.Common.TestLib\IIS.Common.TestLib.csproj" />
     <ProjectReference Include="$(RepoRoot)src\Hosting\Server.IntegrationTesting\src\Microsoft.AspNetCore.Server.IntegrationTesting.csproj" />
 
-    <ProjectReference Include="..\testassets\InProcessForwardsCompatWebSite\InProcessForwardsCompatWebSite.csproj">
+    <ProjectReference Include="..\testassets\InProcessNewShimWebSite\InProcessNewShimWebSite.csproj">
       <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>

@@ -7,7 +7,7 @@ import { HubConnection } from "./HubConnection";
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions";
 import { IHubProtocol } from "./IHubProtocol";
 import { ILogger, LogLevel } from "./ILogger";
-import { IReconnectPolicy } from "./IReconnectPolicy";
+import { IRetryPolicy } from "./IRetryPolicy";
 import { HttpTransportType } from "./ITransport";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { NullLogger } from "./Loggers";
@@ -51,7 +51,7 @@ export class HubConnectionBuilder {
 
     /** If defined, this indicates the client should automatically attempt to reconnect if the connection is lost. */
     /** @internal */
-    public reconnectPolicy?: IReconnectPolicy;
+    public reconnectPolicy?: IRetryPolicy;
 
     /** Configures console logging for the {@link @aspnet/signalr.HubConnection}.
      *
@@ -164,10 +164,10 @@ export class HubConnectionBuilder {
 
     /** Configures the {@link @aspnet/signalr.HubConnection} to automatically attempt to reconnect if the connection is lost.
      *
-     * @param {IReconnectPolicy} reconnectPolicy An {@link @aspnet/signalR.IReconnectPolicy} that controls the timing and number of reconnect attempts.
+     * @param {IRetryPolicy} reconnectPolicy An {@link @aspnet/signalR.IRetryPolicy} that controls the timing and number of reconnect attempts.
      */
-    public withAutomaticReconnect(reconnectPolicy: IReconnectPolicy): HubConnectionBuilder;
-    public withAutomaticReconnect(retryDelaysOrReconnectPolicy?: number[] | IReconnectPolicy): HubConnectionBuilder {
+    public withAutomaticReconnect(reconnectPolicy: IRetryPolicy): HubConnectionBuilder;
+    public withAutomaticReconnect(retryDelaysOrReconnectPolicy?: number[] | IRetryPolicy): HubConnectionBuilder {
         if (this.reconnectPolicy) {
             throw new Error("A reconnectPolicy has already been set.");
         }

@@ -45,7 +45,6 @@
     <ClCompile Include="ConfigUtilityTests.cpp" />
     <ClCompile Include="GlobalVersionTests.cpp" />
     <ClCompile Include="Helpers.cpp" />
-    <ClCompile Include="hostfxr_utility_tests.cpp" />
     <ClCompile Include="inprocess_application_tests.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="StandardOutputRedirectionTest.cpp" />

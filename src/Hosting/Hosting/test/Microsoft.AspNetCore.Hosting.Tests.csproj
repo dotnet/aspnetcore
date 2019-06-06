@@ -19,6 +19,7 @@
     <Reference Include="Microsoft.Extensions.Hosting" />
     <Reference Include="Microsoft.Extensions.Logging.Testing" />
     <Reference Include="Microsoft.Extensions.Options" />
+    <Reference Include="System.Threading.Channels" />
   </ItemGroup>
 
 </Project>
