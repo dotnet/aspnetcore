@@ -7,6 +7,8 @@
      The version of NodeJS to install.
  .PARAMETER InstallDir
      The directory to install NodeJS to.
+ .PARAMETER Arch
+     The target architecture to install.
  .LINK 
      https://nodejs.org/en/
  #> 
@@ -16,6 +18,9 @@ param(
     
     [Parameter(Mandatory = $true)]
     $InstallDir
+    
+    [Parameter(Mandatory = $true)]
+    $Arch
 )
 
 $ErrorActionPreference = 'Stop'
@@ -35,7 +40,7 @@ if (Test-Path "$output_dir\node.exe")
     exit
 }
 
-$nodeFile="node-v$Version-win-x64"
+$nodeFile="node-v$Version-win-$Arch"
 $url="http://nodejs.org/dist/v$Version/$nodeFile.zip"
 Write-Host "Starting download of NodeJs ${Version} from $url"
 Invoke-WebRequest -UseBasicParsing -Uri "$url" -OutFile "nodejs.zip"
