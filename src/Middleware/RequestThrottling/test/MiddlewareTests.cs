@@ -146,5 +146,19 @@ namespace Microsoft.AspNetCore.RequestThrottling.Tests
             await middleware.Invoke(context).OrTimeout();
             Assert.True(onRejectedInvoked);
         }
+
+        [Fact]
+        public async void ExceptionThrownDuringOnRejected()
+        {
+            var middleware = TestUtils.CreateTestMiddleware(
+                maxConcurrentRequests: 0,
+                requestQueueLimit: 0,
+                onRejected: httpContext =>
+                {
+                    throw new DivideByZeroException();
+                });
+
+            await Assert.ThrowsAsync<DivideByZeroException>(() => middleware.Invoke(new DefaultHttpContext())).OrTimeout();
+        }
     }
 }
